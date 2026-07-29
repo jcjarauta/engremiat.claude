@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial, sans-serif; font-size: 13px; margin: 10px; }
+      h3 { margin-bottom: 4px; }
+      label { display: block; margin-top: 10px; font-weight: bold; }
+      select, button { width: 100%; margin-top: 4px; padding: 5px; box-sizing: border-box; }
+      button { margin-top: 12px; cursor: pointer; }
+      .seccion { margin-top: 16px; border-top: 1px solid #ddd; padding-top: 10px; }
+      .resumen-linea { display: flex; justify-content: space-between; padding: 2px 0; }
+      .badge { background: #eee; border-radius: 8px; padding: 1px 8px; font-size: 12px; }
+      .item { padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+      .item.alerta { color: #b00020; }
+      .vacio { color: #888; font-style: italic; }
+      #estado-carga { color: #888; }
+      #resultado { display: none; }
+    </style>
+  </head>
+  <body>
+    <h3>Informes</h3>
+
+    <label for="tipo">Tipo de informe</label>
+    <select id="tipo">
+      <option value="CAMPANA">Informe de campaña</option>
+      <option value="PROYECTO">Informe de proyecto</option>
+      <option value="MEMORIA">Memoria de producción</option>
+    </select>
+
+    <div id="contenedor-registro">
+      <label for="registro">Registro</label>
+      <select id="registro"></select>
+    </div>
+
+    <button id="btn-generar">Generar informe</button>
+    <button id="btn-exportar-csv" disabled>Exportar CSV</button>
+    <button id="btn-exportar-pdf" disabled>Exportar PDF</button>
+
+    <div id="estado-carga"></div>
+
+    <div id="resultado">
+      <div class="seccion">
+        <h4>Resumen por estado</h4>
+        <div id="resumen"></div>
+      </div>
+      <div class="seccion">
+        <h4>Tareas retrasadas</h4>
+        <div id="tareas-retrasadas"></div>
+      </div>
+      <div class="seccion">
+        <h4>Decisiones pendientes</h4>
+        <div id="decisiones-pendientes"></div>
+      </div>
+      <div class="seccion">
+        <h4>Incidencias abiertas</h4>
+        <div id="incidencias-abiertas"></div>
+      </div>
+    </div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
+      }
+
+      function renderLista(idContenedor, lista, plantillaFn) {
+        var contenedor = document.getElementById(idContenedor);
+        if (!lista || lista.length === 0) {
+          contenedor.innerHTML = '<div class="vacio">Ninguna.</div>';
+          return;
+        }
+        contenedor.innerHTML = lista.map(plantillaFn).join('');
+      }
+
+      function renderResumenObjeto(conteo) {
+        var claves = Object.keys(conteo || {});
+        if (claves.length === 0) return '<div class="vacio">Sin registros.</div>';
+        return claves.map(function (estado) {
+          return '<div class="resumen-linea"><span>' + escapeHtml(estado) + '</span>' +
+            '<span class="badge">' + conteo[estado] + '</span></div>';
+        }).join('');
+      }
+
+      function cargarOpcionesRegistro() {
+        var tipo = document.getElementById('tipo').value;
+        var contenedorRegistro = document.getElementById('contenedor-registro');
+        var select = document.getElementById('registro');
+
+        if (tipo === 'MEMORIA') {
+          contenedorRegistro.style.display = 'none';
+          return;
+        }
+        contenedorRegistro.style.display = 'block';
+        select.innerHTML = '<option>Cargando...</option>';
+        google.script.run
+          .withSuccessHandler(function (opciones) {
+            select.innerHTML = opciones.map(function (op) {
+              return '<option value="' + escapeHtml(op.id) + '">' + escapeHtml(op.etiqueta) + '</option>';
+            }).join('');
+          })
+          .withFailureHandler(mostrarError)
+          .obtenerOpcionesInforme(tipo);
+      }
+
+      function renderInforme(informe) {
+        document.getElementById('estado-carga').textContent = '';
+        document.getElementById('resultado').style.display = 'block';
+
+        var conteoTareas = informe.tipo === 'MEMORIA'
+          ? (informe.resumenGlobal ? informe.resumenGlobal.TAREA : {})
+          : informe.tareasPorEstado;
+        var resumen = informe.tipo === 'MEMORIA' ? informe.resumenGlobal : {
+          PROYECTOS: informe.proyectosPorEstado || null,
+          TAREAS: conteoTareas
+        };
+
+        if (informe.tipo === 'MEMORIA') {
+          document.getElementById('resumen').innerHTML = renderResumenObjeto(informe.resumenGlobal.TAREA) +
+            '<div class="resumen-linea"><strong>Campañas</strong><span class="badge">' + informe.campanas.length + '</span></div>';
+        } else {
+          document.getElementById('resumen').innerHTML = renderResumenObjeto(conteoTareas);
+        }
+
+        renderLista('tareas-retrasadas', informe.tareasRetrasadas, function (tarea) {
+          return '<div class="item alerta">' + escapeHtml(tarea.NOMBRE) + ' — vencía ' + escapeHtml(tarea.FECHA_FIN_PLAN) + '</div>';
+        });
+
+        renderLista('decisiones-pendientes', informe.decisionesPendientes, function (decision) {
+          var vencida = decision.VENCIDA ? ' (VENCIDA)' : '';
+          return '<div class="item' + (decision.VENCIDA ? ' alerta' : '') + '">' +
+            escapeHtml(decision.TITULO) + ' — ' + escapeHtml(decision.ESTADO) + vencida + '</div>';
+        });
+
+        renderLista('incidencias-abiertas', informe.incidenciasAbiertas, function (incidencia) {
+          return '<div class="item alerta">' + escapeHtml(incidencia.TITULO) + ' — ' + escapeHtml(incidencia.ESTADO) +
+            ' (' + escapeHtml(incidencia.PRIORIDAD) + ')</div>';
+        });
+      }
+
+      function mostrarError(error) {
+        document.getElementById('estado-carga').textContent = 'Error: ' + (error && error.message ? error.message : error);
+      }
+
+      var tipoActual = null;
+      var filtroActual = null;
+
+      function generarInformeActual() {
+        var tipo = document.getElementById('tipo').value;
+        var registro = document.getElementById('registro').value;
+        tipoActual = tipo;
+        filtroActual = (tipo === 'MEMORIA') ? null : registro;
+        document.getElementById('btn-exportar-csv').disabled = true;
+        document.getElementById('btn-exportar-pdf').disabled = true;
+        document.getElementById('resultado').style.display = 'none';
+        document.getElementById('estado-carga').textContent = 'Generando informe...';
+        google.script.run
+          .withSuccessHandler(function (informe) { renderInforme(informe); document.getElementById('btn-exportar-csv').disabled = false; document.getElementById('btn-exportar-pdf').disabled = false; })
+          .withFailureHandler(mostrarError)
+          .generarInforme(tipo, tipo === 'MEMORIA' ? null : registro);
+      }
+
+      document.getElementById('btn-exportar-csv').addEventListener('click', function () {
+        if (!tipoActual) return;
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarCSV(tipoActual, filtroActual);
+      });
+      document.getElementById('btn-exportar-pdf').addEventListener('click', function () {
+        if (!tipoActual) return;
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual);
+      });
+      document.getElementById('tipo').addEventListener('change', cargarOpcionesRegistro);
+      document.getElementById('btn-generar').addEventListener('click', generarInformeActual);
+
+      cargarOpcionesRegistro();
+    </script>
+  </body>
+</html>

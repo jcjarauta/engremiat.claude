@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; padding: 12px; }
+    h3 { margin-top: 0; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+    #mensaje { margin-top: 12px; font-weight: bold; min-height: 18px; }
+    #mensaje.error { color: #b00020; }
+    #mensaje.ok { color: #1a7f37; }
+    .acciones { margin-top: 16px; text-align: right; }
+    button { padding: 8px 16px; cursor: pointer; }
+    .campo-oculto { display: none; }
+  </style>
+</head>
+<body>
+  <h3><?= titulo ?></h3>
+  <div id="campos">Cargando formulario...</div>
+  <div id="mensaje"></div>
+  <div class="acciones">
+    <button id="btnGuardar" onclick="guardar()" disabled>Guardar</button>
+  </div>
+  <script>
+    var ENTIDAD = <?!= JSON.stringify(entidad) ?>;
+    var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+    var esquemaActual = [];
+
+    function renderCampo(campo) {
+      var id = "campo_" + campo.campo;
+      var claseOculto = campo.visibleSi ? " campo-oculto" : "";
+      var html = "<div class=\"campo-contenedor" + claseOculto + "\" id=\"contenedor_" + id + "\" data-campo=\"" + campo.campo + "\">";
+      html += "<label for=\"" + id + "\">" + campo.etiqueta + (campo.requerido ? " *" : "") + "</label>";
+      if (campo.tipo === "catalogo" || campo.tipo === "fk") {
+        html += "<select id=\"" + id + "\"><option value=\"\">-- seleccionar --</option>";
+        campo.opciones.forEach(function (op) {
+          if (campo.tipo === "fk") {
+            html += "<option value=\"" + op.id + "\">" + op.etiqueta + "</option>";
+          } else {
+            html += "<option value=\"" + op + "\">" + op + "</option>";
+          }
+        });
+        html += "</select>";
+      } else if (campo.tipo === "fk_dependiente") {
+        html += "<select id=\"" + id + "\" disabled><option value=\"\">-- seleccione primero " + campo.dependeDe + " --</option></select>";
+      } else if (campo.tipo === "fecha") {
+        html += "<input type=\"date\" id=\"" + id + "\">";
+      } else if (campo.tipo === "numero") {
+        html += "<input type=\"number\" id=\"" + id + "\">";
+      } else {
+        html += "<input type=\"text\" id=\"" + id + "\">";
+      }
+      html += "</div>";
+      return html;
+    }
+
+    function mostrarError(error) {
+      var el = document.getElementById("mensaje");
+      el.className = "error";
+      el.textContent = (error && error.message) ? error.message : String(error);
+    }
+    function aplicarVisibilidad_(campo) {
+      if (!campo.visibleSi) return;
+      var elControl = document.getElementById("campo_" + campo.visibleSi.campo);
+      var contenedor = document.getElementById("contenedor_campo_" + campo.campo);
+      if (!elControl || !contenedor) return;
+      var actualizar = function () {
+        var visible = campo.visibleSi.valores.indexOf(elControl.value) !== -1;
+        contenedor.classList.toggle("campo-oculto", !visible);
+      };
+      elControl.addEventListener("change", actualizar);
+      actualizar();
+    }
+
+    function activarVisibilidadCondicional_() {
+      esquemaActual.forEach(function (campo) {
+        if (campo.visibleSi) aplicarVisibilidad_(campo);
+      });
+    }
+
+    function repoblarDependiente_(campo, valorPadre) {
+      var el = document.getElementById("campo_" + campo.campo);
+      if (!el) return;
+      el.disabled = true;
+      el.innerHTML = "<option value=\"\">Cargando...</option>";
+      if (!valorPadre) {
+        el.innerHTML = "<option value=\"\">-- seleccione primero " + campo.dependeDe + " --</option>";
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function (opciones) {
+          el.innerHTML = "<option value=\"\">-- seleccionar --</option>";
+          opciones.forEach(function (op) {
+            el.innerHTML += "<option value=\"" + op.id + "\">" + op.etiqueta + "</option>";
+          });
+          el.disabled = false;
+          if (campo.valorActual !== undefined && campo.valorActual !== null && campo.valorActual !== "") {
+            el.value = campo.valorActual;
+            campo.valorActual = undefined;
+          }
+          if (el.value) {
+            el.dispatchEvent(new Event("change"));
+          }
+        })
+        .withFailureHandler(mostrarError)
+        .obtenerOpcionesDependientes(campo.mapaEntidad, valorPadre);
+    }
+
+    function activarDependenciasFk_() {
+      esquemaActual.forEach(function (campo) {
+        if (campo.tipo !== "fk_dependiente") return;
+        var elPadre = document.getElementById("campo_" + campo.dependeDe);
+        if (!elPadre) return;
+        elPadre.addEventListener("change", function () {
+          repoblarDependiente_(campo, elPadre.value);
+        });
+      });
+    }
+
+    function cargarEsquema() {
+      google.script.run
+        .withSuccessHandler(function (esquema) {
+          esquemaActual = esquema;
+          document.getElementById("campos").innerHTML = esquema.map(renderCampo).join("");
+          esquema.forEach(function (campo) {
+            if (campo.valorActual === undefined || campo.valorActual === null) return;
+            var el = document.getElementById("campo_" + campo.campo);
+            if (el) el.value = campo.valorActual;
+          });
+          activarVisibilidadCondicional_();
+          activarDependenciasFk_();
+          esquema.forEach(function (campo) {
+            if (campo.tipo === "fk_dependiente") {
+              var elPadre = document.getElementById("campo_" + campo.dependeDe);
+              if (elPadre && elPadre.value) repoblarDependiente_(campo, elPadre.value);
+            }
+          });
+          document.getElementById("btnGuardar").disabled = false;
+        })
+        .withFailureHandler(mostrarError)
+        .obtenerEsquemaFormulario(ENTIDAD, ID_REGISTRO);
+    }
+
+    function guardar() {
+      var datos = {};
+      esquemaActual.forEach(function (campo) {
+        var el = document.getElementById("campo_" + campo.campo);
+        datos[campo.campo] = el.value;
+      });
+      document.getElementById("btnGuardar").disabled = true;
+      google.script.run
+        .withSuccessHandler(function () {
+          var el = document.getElementById("mensaje");
+          el.className = "ok";
+          el.textContent = "Guardado correctamente.";
+          setTimeout(function () { google.script.host.close(); }, 900);
+        })
+        .withFailureHandler(function (error) {
+          mostrarError(error);
+          document.getElementById("btnGuardar").disabled = false;
+        })
+        .guardarFormulario(ENTIDAD, ID_REGISTRO, datos);
+    }
+
+    cargarEsquema();
+  </script>
+</body>
+</html>

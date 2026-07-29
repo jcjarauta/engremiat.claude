@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; padding: 10px; }
+    h3 { margin-top: 0; }
+    h4 { margin-bottom: 4px; margin-top: 18px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
+    .resumen-linea { display: flex; justify-content: space-between; padding: 2px 0; }
+    .badge { display: inline-block; min-width: 18px; text-align: center; background: #eee; border-radius: 10px; padding: 1px 6px; font-weight: bold; }
+    .item { border-left: 3px solid #ccc; padding: 4px 8px; margin-bottom: 6px; background: #fafafa; }
+    .item.alerta { border-left-color: #b00020; }
+    .item .titulo { font-weight: bold; }
+    .item .detalle { color: #555; font-size: 11px; }
+    .vacio { color: #888; font-style: italic; }
+    #estado-carga { color: #888; }
+    .btn-abrir { margin-top: 4px; font-size: 10px; padding: 2px 8px; cursor: pointer; border: 1px solid #999; background: #fff; border-radius: 3px; }
+    .btn-abrir:hover { background: #eee; }
+  </style>
+</head>
+<body>
+  <h3>Panel operativo</h3>
+  <div id="estado-carga">Cargando datos...</div>
+  <div id="contenido" style="display:none;">
+    <h4>Resumen por estado</h4>
+    <div id="resumen"></div>
+
+    <h4>Tareas retrasadas</h4>
+    <div id="tareasRetrasadas"></div>
+
+    <h4>Tareas bloqueadas</h4>
+    <div id="tareasBloqueadas"></div>
+
+    <h4>Tareas pospuestas</h4>
+    <div id="tareasPospuestas"></div>
+
+    <h4>Decisiones pendientes</h4>
+    <div id="decisionesPendientes"></div>
+
+    <h4>Incidencias abiertas</h4>
+    <div id="incidenciasAbiertas"></div>
+
+    <h4>Recursos no disponibles</h4>
+    <div id="recursosNoDisponibles"></div>
+
+    <h4>Sobreasignaciones</h4>
+    <div id="sobreasignaciones"></div>
+
+    <h4>Tareas sin responsable</h4>
+    <div id="tareasSinResponsable"></div>
+
+    <h4>Productos sin proyecto</h4>
+    <div id="productosSinProyecto"></div>
+
+    <h4>Procesos sin fechas</h4>
+    <div id="procesosSinFechas"></div>
+
+    <h4>Relaciones incompletas</h4>
+    <div id="relacionesIncompletas"></div>
+
+    <h4>Capacidad de recursos</h4>
+    <div id="capacidadRecursos"></div>
+
+    <h4>Materiales con stock bajo</h4>
+    <div id="materialesStockBajo"></div>
+
+    <h4>Materiales agotados</h4>
+    <div id="materialesAgotados"></div>
+
+    <h4>Reservas superiores al stock</h4>
+    <div id="reservasSuperanStock"></div>
+
+    <h4>Necesidades de reposición</h4>
+    <div id="necesidadesReposicion"></div>
+
+    <h4>Materiales críticos</h4>
+    <div id="materialesCriticos"></div>
+
+    <h4>Consumo y desperdicio</h4>
+    <div id="consumoDesperdicio"></div>
+  </div>
+
+  <script>
+    function escaparHtml(texto) {
+      var div = document.createElement('div');
+      div.textContent = texto === undefined || texto === null ? '' : String(texto);
+      return div.innerHTML;
+    }
+
+    function botonAbrir_(entidad, id) {
+      if (!id) return '';
+      return '<button class="btn-abrir" onclick="abrirRegistro(' + JSON.stringify(entidad) + ',' + JSON.stringify(id) + ')">Abrir ' + escaparHtml(id) + '</button>';
+    }
+
+    function abrirRegistro(entidad, id) {
+      google.script.run
+        .withFailureHandler(mostrarError)
+        .abrirFormularioEditarPorId(entidad, id);
+    }
+
+    function renderResumen(resumen) {
+      var contenedor = document.getElementById('resumen');
+      var entidades = Object.keys(resumen);
+      var html = '';
+      entidades.forEach(function (entidad) {
+        var estados = resumen[entidad];
+        var claves = Object.keys(estados);
+        if (claves.length === 0) return;
+        html += '<div class="resumen-linea"><span>' + escaparHtml(entidad) + '</span><span>';
+        html += claves.map(function (estado) {
+          return escaparHtml(estado) + ' <span class="badge">' + estados[estado] + '</span>';
+        }).join(' &nbsp; ');
+        html += '</span></div>';
+      });
+      contenedor.innerHTML = html || '<div class="vacio">Sin datos activos.</div>';
+    }
+
+    function renderLista(idContenedor, items, render) {
+      var contenedor = document.getElementById(idContenedor);
+      if (!items || items.length === 0) {
+        contenedor.innerHTML = '<div class="vacio">Ninguna.</div>';
+        return;
+      }
+      contenedor.innerHTML = items.map(render).join('');
+    }
+
+    function renderPanel(panel) {
+      renderResumen(panel.resumen);
+
+      renderLista('tareasRetrasadas', panel.tareasRetrasadas, function (t) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(t.NOMBRE) + '</div>' +
+          '<div class="detalle">Fin plan: ' + escaparHtml(t.FECHA_FIN_PLAN) + ' -- Estado: ' + escaparHtml(t.ESTADO) + '</div></div>';
+      });
+
+      renderLista('tareasBloqueadas', panel.tareasBloqueadas, function (t) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(t.NOMBRE) + '</div>' +
+          '<div class="detalle">' + escaparHtml(t.MOTIVO_BLOQUEO || 'Sin motivo registrado') + '</div></div>';
+      });
+
+      renderLista('tareasPospuestas', panel.tareasPospuestas, function (t) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(t.NOMBRE) + '</div>' +
+          '<div class="detalle">' + escaparHtml(t.MOTIVO_POSPOSICION || '') + '</div></div>';
+      });
+
+      renderLista('decisionesPendientes', panel.decisionesPendientes, function (d) {
+        return '<div class="item' + (d.VENCIDA ? ' alerta' : '') + '"><div class="titulo">' + escaparHtml(d.TITULO) + '</div>' +
+          '<div class="detalle">Estado: ' + escaparHtml(d.ESTADO) + (d.FECHA_LIMITE ? ' -- Limite: ' + escaparHtml(d.FECHA_LIMITE) : '') +
+          (d.VENCIDA ? ' (VENCIDA)' : '') + '</div>' + botonAbrir_('DECISION', d.ID) + '</div>';
+      });
+
+      renderLista('incidenciasAbiertas', panel.incidenciasAbiertas, function (i) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(i.TITULO) + '</div>' +
+          '<div class="detalle">Estado: ' + escaparHtml(i.ESTADO) + ' -- Prioridad: ' + escaparHtml(i.PRIORIDAD) + '</div>' + botonAbrir_('INCIDENCIA', i.ID) + '</div>';
+      });
+
+      renderLista('recursosNoDisponibles', panel.recursos.noDisponibles, function (r) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(r.NOMBRE) + '</div>' +
+          '<div class="detalle">Estado: ' + escaparHtml(r.ESTADO) + '</div></div>';
+      });
+
+      renderLista('sobreasignaciones', panel.recursos.sobreasignaciones, function (s) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(s.PERSONA_EQUIPO_ID) + '</div>' +
+          '<div class="detalle">Dedicación total: ' + s.PORCENTAJE_TOTAL + '%</div></div>';
+      });
+
+      renderLista('tareasSinResponsable', panel.recursos.tareasSinResponsable, function (t) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(t.NOMBRE) + '</div></div>';
+      });
+
+      renderLista('productosSinProyecto', panel.excepciones.productosSinProyecto, function (p) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(p.NOMBRE) + '</div></div>';
+      });
+
+      renderLista('procesosSinFechas', panel.excepciones.procesosSinFechas, function (p) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(p.NOMBRE) + '</div></div>';
+      });
+
+      renderLista('relacionesIncompletas', panel.excepciones.relacionesIncompletas, function (r) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(r.PROYECTO_ID) + ' -- ' + escaparHtml(r.PRODUCTO_ID) + '</div></div>';
+      });
+
+      renderLista('capacidadRecursos', panel.recursos.capacidad, function (r) {
+        return '<div class="item"><div class="titulo">' + escaparHtml(r.NOMBRE) + '</div>' +
+          '<div class="detalle">Dedicación: ' + r.DEDICACION_TOTAL_PORCENTAJE + '% -- Días libres: ' + r.DIAS_LIBRES + '</div></div>';
+      });
+
+      renderLista('materialesStockBajo', panel.materiales.stockBajo, function (m) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(m.NOMBRE) + '</div>' +
+          '<div class="detalle">Stock: ' + m.STOCK_ACTUAL + ' / mínimo ' + m.STOCK_MINIMO + '</div></div>';
+      });
+
+      renderLista('materialesAgotados', panel.materiales.agotados, function (m) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(m.NOMBRE) + '</div></div>';
+      });
+
+      renderLista('reservasSuperanStock', panel.materiales.reservasSuperanStock, function (m) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(m.NOMBRE) + '</div>' +
+          '<div class="detalle">Reservado: ' + m.CANTIDAD_RESERVADA + ' > stock ' + m.STOCK_ACTUAL + '</div></div>';
+      });
+
+      renderLista('necesidadesReposicion', panel.materiales.necesidadesReposicion, function (m) {
+        return '<div class="item"><div class="titulo">' + escaparHtml(m.NOMBRE) + '</div>' +
+          '<div class="detalle">Plazo: ' + escaparHtml(m.PLAZO_REPOSICION_DIAS) + ' días -- Proveedor: ' + escaparHtml(m.PROVEEDOR || m.PROVEEDOR_ID || '') + '</div></div>';
+      });
+
+      renderLista('materialesCriticos', panel.materiales.criticos, function (m) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(m.NOMBRE) + '</div></div>';
+      });
+
+      renderLista('consumoDesperdicio', panel.materiales.consumoDesperdicio, function (tm) {
+        return '<div class="item"><div class="titulo">' + escaparHtml(tm.MATERIAL_ID) + '</div>' +
+          '<div class="detalle">Consumido: ' + tm.CANTIDAD_CONSUMIDA + ' -- Desperdiciado: ' + tm.CANTIDAD_DESPERDICIADA + (tm.MOTIVO_DESVIACION ? ' -- Motivo: ' + escaparHtml(tm.MOTIVO_DESVIACION) : '') + '</div></div>';
+      });
+
+      document.getElementById('estado-carga').style.display = 'none';
+      document.getElementById('contenido').style.display = 'block';
+    }
+
+    function mostrarError(error) {
+      document.getElementById('estado-carga').textContent = 'Error al cargar el panel: ' + error.message;
+    }
+
+    google.script.run.withSuccessHandler(renderPanel).withFailureHandler(mostrarError).obtenerPanelOperativo();
+  </script>
+</body>
+</html>
