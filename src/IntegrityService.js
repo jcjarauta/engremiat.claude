@@ -1219,7 +1219,17 @@ function detectarProblemasTareaMaterial_(agregar) {
 }
 
 function detectarProblemasTarea_(agregar) {
-  listarRegistros('TAREA', {ACTIVO: 'SÍ'})
+  var tareasActivas = listarRegistros('TAREA', {ACTIVO: 'SÍ'});
+  var tareasActivasPorId = {};
+
+  tareasActivas.forEach(function (tarea) {
+    var tareaId = String(tarea.ID || '').trim().toUpperCase();
+    if (tareaId) {
+      tareasActivasPorId[tareaId] = tarea;
+    }
+  });
+
+  tareasActivas
     .forEach(function (t) {
       if (
         t.ESTADO === 'Terminada' &&
@@ -1388,6 +1398,87 @@ function detectarProblemasTarea_(agregar) {
           'Tarea Terminada con DURACION_REAL_DIAS no numérica o menor o igual que 0.',
           'ERROR',
           'Informar una DURACION_REAL_DIAS numérica mayor que 0.'
+        );
+      }
+      var tareaPredecesoraId =
+        String(t.TAREA_PREDECESORA_ID || '')
+          .trim()
+          .toUpperCase();
+
+      if (
+        tareaPredecesoraId &&
+        !tareasActivasPorId[tareaPredecesoraId]
+      ) {
+        agregar(
+          'FUNC-TAREA-010',
+          'TAREA',
+          t.ID,
+          'TAREA con TAREA_PREDECESORA_ID inexistente: ' + tareaPredecesoraId + '.',
+          'ERROR',
+          'Corregir TAREA_PREDECESORA_ID o eliminar la referencia huérfana.'
+        );
+      }
+
+      var tareaPredecesora =
+        tareaPredecesoraId
+          ? tareasActivasPorId[tareaPredecesoraId]
+          : null;
+
+      var procesoTareaActual =
+        String(t.PROCESO_ID || '')
+          .trim()
+          .toUpperCase();
+
+      var procesoTareaPredecesora =
+        tareaPredecesora
+          ? String(tareaPredecesora.PROCESO_ID || '')
+              .trim()
+              .toUpperCase()
+          : '';
+
+      if (
+        tareaPredecesora &&
+        procesoTareaActual &&
+        procesoTareaPredecesora &&
+        procesoTareaActual !== procesoTareaPredecesora
+      ) {
+        agregar(
+          'FUNC-TAREA-011',
+          'TAREA',
+          t.ID,
+          'TAREA con TAREA_PREDECESORA_ID perteneciente a otro PROCESO_ID: ' +
+            tareaPredecesoraId +
+            ' (' + procesoTareaPredecesora + ' != ' + procesoTareaActual + ').',
+          'ERROR',
+          'Asignar una tarea predecesora del mismo PROCESO_ID o corregir la relación.'
+        );
+      }
+
+      var ordenTareaActual =
+        Number(t.ORDEN_SECUENCIA);
+
+      var ordenTareaPredecesora =
+        tareaPredecesora
+          ? Number(tareaPredecesora.ORDEN_SECUENCIA)
+          : NaN;
+
+      if (
+        tareaPredecesora &&
+        procesoTareaActual &&
+        procesoTareaActual === procesoTareaPredecesora &&
+        !isNaN(ordenTareaActual) &&
+        !isNaN(ordenTareaPredecesora) &&
+        ordenTareaPredecesora >= ordenTareaActual
+      ) {
+        agregar(
+          'FUNC-TAREA-012',
+          'TAREA',
+          t.ID,
+          'TAREA con ORDEN_SECUENCIA de la TAREA_PREDECESORA_ID igual o posterior: ' +
+            tareaPredecesoraId +
+            ' (' + ordenTareaPredecesora + ' >= ' + ordenTareaActual + ').',
+          'ERROR',
+          'Corregir ORDEN_SECUENCIA o asignar una tarea predecesora anterior.'
         );
       }
     });

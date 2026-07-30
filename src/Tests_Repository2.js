@@ -16744,3 +16744,545 @@ function auditarFaseC04_DuracionRealInvalidaTarea() {
   if (errorFinal) throw errorFinal;
   return true;
 }
+function auditarFaseC05A_TareaPredecesoraHuerfana() {
+  var packageName = 'F03_C05_A_TAREA_PREDECESORA_HUERFANA';
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');
+  var filaObjetivo = null;
+  var valoresOriginales = null;
+  var indices = {};
+  var celdaPredecesora = null;
+  var validacionOriginal = null;
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hoja) throw new Error('F03_C05_A_ERROR: no existe 06_TAREAS');
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+    if (ultimaFila < 2) throw new Error('F03_C05_A_ERROR: 06_TAREAS no contiene registros');
+    var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getDisplayValues()[0].map(function(c) { return String(c || "").trim(); });
+    ['ID', 'PROCESO_ID', 'ORDEN_SECUENCIA', 'TAREA_PREDECESORA_ID', 'ACTIVO'].forEach(function(campo) {
+      indices[campo] = cabeceras.indexOf(campo);
+      if (indices[campo] === -1) throw new Error('F03_C05_A_ERROR: falta columna ' + campo);
+    });
+    var filas = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+    for (var i = 0; i < filas.length; i++) {
+      var id = String(filas[i][indices.ID] || '').trim();
+      var procesoId = String(filas[i][indices.PROCESO_ID] || '').trim();
+      var activo = String(filas[i][indices.ACTIVO] || '').trim().toUpperCase();
+      if (id && procesoId && activo !== 'NO') { filaObjetivo = i + 2; valoresOriginales = filas[i].slice(); break; }
+    }
+    if (!filaObjetivo) throw new Error('F03_C05_A_ERROR: no existe una TAREA activa utilizable');
+    var registroId = String(valoresOriginales[indices.ID] || '').trim();
+    var idHuerfano = 'TAR-INEXISTENTE-C05';
+    celdaPredecesora = hoja.getRange(filaObjetivo, indices.TAREA_PREDECESORA_ID + 1);
+    validacionOriginal = celdaPredecesora.getDataValidation();
+    celdaPredecesora.clearDataValidations();
+    console.log('OK validacion_predecesora_suspendida=true');
+    celdaPredecesora.setValue(idHuerfano);
+    SpreadsheetApp.flush();
+    console.log('OK registro_id=' + registroId);
+    console.log('OK mutacion_directa_aplicada=true tarea_predecesora_id=' + idHuerfano);
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var detectado = hallazgos.some(function(hallazgo) {
+      return String(hallazgo.entidad || '').trim() === 'TAREA' &&
+        String(hallazgo.registroId || '').trim() === registroId &&
+        String(hallazgo.descripcion || '').toUpperCase().indexOf('TAREA_PREDECESORA_ID') !== -1;
+    });
+    console.log('OK hallazgo_predecesora_huerfana=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C05_A_NO_GO: IntegrityService no detecta TAREA_PREDECESORA_ID huérfana');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    if (filaObjetivo && valoresOriginales) {
+      hoja.getRange(filaObjetivo, 1, 1, valoresOriginales.length).setValues([valoresOriginales]);
+      if (celdaPredecesora) {
+        if (validacionOriginal) {
+          celdaPredecesora.setDataValidation(validacionOriginal);
+        } else {
+          celdaPredecesora.clearDataValidations();
+        }
+      }
+      SpreadsheetApp.flush();
+      console.log('OK validacion_predecesora_restaurada=true');
+      console.log('OK restauracion_completa=true');
+      var reporteRestaurado = obtenerReporteIntegridad();
+      var hallazgosRestaurados = [].concat(reporteRestaurado.funcional.errores || [], reporteRestaurado.funcional.advertencias || [], reporteRestaurado.funcional.informacion || []);
+      var registroOriginalId = String(valoresOriginales[indices.ID] || '').trim();
+      var persiste = hallazgosRestaurados.some(function(hallazgo) {
+        return String(hallazgo.entidad || '').trim() === 'TAREA' &&
+          String(hallazgo.registroId || '').trim() === registroOriginalId &&
+          String(hallazgo.descripcion || '').toUpperCase().indexOf('TAREA_PREDECESORA_ID') !== -1;
+      });
+      console.log('OK integridad_restaurada=' + !persiste);
+      if (persiste) errorFinal = errorFinal || new Error('F03_C05_A_ERROR: el hallazgo persiste tras restaurar la TAREA');
+    }
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_TAREA_010' : 'NEXT cerrar_C05_A');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
+function inspeccionarFixtureC05B_TareasProcesosDistintos() {
+  var packageName = 'F03_C05_B_INSPECT_CROSS_PROCESS_TASK_FIXTURE';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');
+  if (!hoja) {
+    throw new Error('F03_C05_B_ERROR: no existe 06_TAREAS');
+  }
+
+  var ultimaFila = hoja.getLastRow();
+  var ultimaColumna = hoja.getLastColumn();
+
+  if (ultimaFila < 2) {
+    throw new Error('F03_C05_B_ERROR: 06_TAREAS no contiene registros');
+  }
+
+  var cabeceras = hoja
+    .getRange(1, 1, 1, ultimaColumna)
+    .getDisplayValues()[0]
+    .map(function(c) {
+      return String(c || '').trim();
+    });
+
+  var indiceId = cabeceras.indexOf('ID');
+  var indiceProceso = cabeceras.indexOf('PROCESO_ID');
+  var indiceOrden = cabeceras.indexOf('ORDEN_SECUENCIA');
+  var indiceActivo = cabeceras.indexOf('ACTIVO');
+
+  if (
+    indiceId === -1 ||
+    indiceProceso === -1 ||
+    indiceOrden === -1 ||
+    indiceActivo === -1
+  ) {
+    throw new Error('F03_C05_B_ERROR: faltan columnas necesarias');
+  }
+
+  var filas = hoja
+    .getRange(2, 1, ultimaFila - 1, ultimaColumna)
+    .getDisplayValues();
+
+  var tareas = filas
+    .map(function(fila, indice) {
+      return {
+        fila: indice + 2,
+        id: String(fila[indiceId] || '').trim(),
+        procesoId: String(fila[indiceProceso] || '').trim(),
+        orden: String(fila[indiceOrden] || '').trim(),
+        activo: String(fila[indiceActivo] || '').trim().toUpperCase()
+      };
+    })
+    .filter(function(tarea) {
+      return (
+        tarea.id &&
+        tarea.procesoId &&
+        tarea.activo !== 'NO'
+      );
+    });
+
+  var procesos = {};
+  tareas.forEach(function(tarea) {
+    procesos[tarea.procesoId] = procesos[tarea.procesoId] || [];
+    procesos[tarea.procesoId].push(tarea);
+  });
+
+  var procesosIds = Object.keys(procesos);
+
+  console.log('OK tareas_activas_utilizables=' + tareas.length);
+  console.log('OK procesos_con_tareas=' + procesosIds.length);
+
+  procesosIds.forEach(function(procesoId) {
+    console.log(
+      'OK proceso_id=' +
+        procesoId +
+        ' tareas=' +
+        procesos[procesoId]
+          .map(function(tarea) {
+            return tarea.id + ':orden=' + tarea.orden;
+          })
+          .join(',')
+    );
+  });
+
+  if (procesosIds.length < 2) {
+    console.log('NEXT crear_fixture_controlado_C05_B');
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' status=NO_GO'
+    );
+    throw new Error(
+      'F03_C05_B_NO_GO: no existen tareas activas en dos procesos diferentes'
+    );
+  }
+
+  var tareaObjetivo = procesos[procesosIds[0]][0];
+  var tareaOtroProceso = procesos[procesosIds[1]][0];
+
+  console.log(
+    'OK tarea_objetivo=' +
+      tareaObjetivo.id +
+      ' proceso=' +
+      tareaObjetivo.procesoId +
+      ' fila=' +
+      tareaObjetivo.fila
+  );
+
+  console.log(
+    'OK tarea_predecesora_otro_proceso=' +
+      tareaOtroProceso.id +
+      ' proceso=' +
+      tareaOtroProceso.procesoId +
+      ' fila=' +
+      tareaOtroProceso.fila
+  );
+
+  console.log('OK fixture_cross_process_ready=true');
+  console.log('NEXT diseñar_diagnostico_C05_B');
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' status=OK'
+  );
+
+  return true;
+}
+function inspeccionarFixtureC05B_ProcesosDisponibles() {
+  var packageName = 'F03_C05_B_INSPECT_AVAILABLE_PROCESSES';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hojaProcesos = ss.getSheetByName('05_PROCESOS');
+  var hojaTareas = ss.getSheetByName('06_TAREAS');
+  if (!hojaProcesos || !hojaTareas) {
+    throw new Error('F03_C05_B_ERROR: faltan 05_PROCESOS o 06_TAREAS');
+  }
+  function leerHoja(hoja) {
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+    if (ultimaFila < 1 || ultimaColumna < 1) return {cabeceras: [], filas: []};
+    var valores = hoja.getRange(1, 1, ultimaFila, ultimaColumna).getDisplayValues();
+    return {
+      cabeceras: valores[0].map(function(c) { return String(c || '').trim(); }),
+      filas: valores.slice(1)
+    };
+  }
+  var procesosData = leerHoja(hojaProcesos);
+  var tareasData = leerHoja(hojaTareas);
+  var pId = procesosData.cabeceras.indexOf('ID');
+  var pProducto = procesosData.cabeceras.indexOf('PRODUCTO_ID');
+  var pNombre = procesosData.cabeceras.indexOf('NOMBRE');
+  var pEstado = procesosData.cabeceras.indexOf('ESTADO');
+  var pActivo = procesosData.cabeceras.indexOf('ACTIVO');
+  var tProceso = tareasData.cabeceras.indexOf('PROCESO_ID');
+  var tActivo = tareasData.cabeceras.indexOf('ACTIVO');
+  if (pId === -1 || pProducto === -1 || pActivo === -1 || tProceso === -1 || tActivo === -1) {
+    throw new Error('F03_C05_B_ERROR: faltan columnas necesarias');
+  }
+  var tareasActivasPorProceso = {};
+  tareasData.filas.forEach(function(fila) {
+    var activo = String(fila[tActivo] || '').trim().toUpperCase();
+    var procesoId = String(fila[tProceso] || '').trim();
+    if (procesoId && activo !== 'NO') {
+      tareasActivasPorProceso[procesoId] = (tareasActivasPorProceso[procesoId] || 0) + 1;
+    }
+  });
+  var procesosActivos = procesosData.filas.map(function(fila, indice) {
+    return {
+      fila: indice + 2,
+      id: String(fila[pId] || '').trim(),
+      productoId: String(fila[pProducto] || '').trim(),
+      nombre: pNombre === -1 ? '' : String(fila[pNombre] || '').trim(),
+      estado: pEstado === -1 ? '' : String(fila[pEstado] || '').trim(),
+      activo: String(fila[pActivo] || '').trim().toUpperCase()
+    };
+  }).filter(function(proceso) {
+    return proceso.id && proceso.productoId && proceso.activo !== 'NO';
+  });
+  console.log('OK procesos_activos=' + procesosActivos.length);
+  procesosActivos.forEach(function(proceso) {
+    console.log(
+      'OK proceso_id=' + proceso.id +
+      ' producto_id=' + proceso.productoId +
+      ' estado=' + proceso.estado +
+      ' tareas_activas=' + (tareasActivasPorProceso[proceso.id] || 0) +
+      ' fila=' + proceso.fila +
+      ' nombre=' + proceso.nombre
+    );
+  });
+  var procesosAlternativos = procesosActivos.filter(function(proceso) {
+    return proceso.id !== 'PCS-0001';
+  });
+  console.log('OK procesos_alternativos=' + procesosAlternativos.length);
+  if (procesosAlternativos.length === 0) {
+    console.log('NEXT crear_proceso_y_tarea_temporales_C05_B');
+    console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=NO_GO');
+    throw new Error('F03_C05_B_NO_GO: no existe un segundo proceso activo utilizable');
+  }
+  console.log('OK proceso_alternativo_id=' + procesosAlternativos[0].id);
+  console.log('OK fixture_process_ready=true');
+  console.log('NEXT crear_tarea_temporal_en_proceso_alternativo_C05_B');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}
+function auditarFaseC05B_PredecessoraOtroProceso() {
+  var packageName = 'F03_C05_B_PREDECESORA_OTRO_PROCESO';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hojaProcesos = ss.getSheetByName('05_PROCESOS');
+  var hojaTareas = ss.getSheetByName('06_TAREAS');
+  var filaProcesoTemporal = null;
+  var filasTareaRestaurar = [];
+  var validacionesRestaurar = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hojaProcesos || !hojaTareas) throw new Error('F03_C05_B_ERROR: faltan 05_PROCESOS o 06_TAREAS');
+    function leerCabeceras(hoja) {
+      return hoja.getRange(1, 1, 1, hoja.getLastColumn()).getDisplayValues()[0].map(function(c) { return String(c || '').trim(); });
+    }
+    var cabecerasProcesos = leerCabeceras(hojaProcesos);
+    var cabecerasTareas = leerCabeceras(hojaTareas);
+    var pId = cabecerasProcesos.indexOf('ID');
+    var tId = cabecerasTareas.indexOf('ID');
+    var tProceso = cabecerasTareas.indexOf('PROCESO_ID');
+    var tOrden = cabecerasTareas.indexOf('ORDEN_SECUENCIA');
+    var tPredecesora = cabecerasTareas.indexOf('TAREA_PREDECESORA_ID');
+    var tActivo = cabecerasTareas.indexOf('ACTIVO');
+    if (pId === -1 || tId === -1 || tProceso === -1 || tOrden === -1 || tPredecesora === -1 || tActivo === -1) throw new Error('F03_C05_B_ERROR: faltan columnas necesarias');
+    if (hojaProcesos.getLastRow() < 2 || hojaTareas.getLastRow() < 3) throw new Error('F03_C05_B_ERROR: faltan registros base');
+    var procesos = hojaProcesos.getRange(2, 1, hojaProcesos.getLastRow() - 1, hojaProcesos.getLastColumn()).getValues();
+    var tareas = hojaTareas.getRange(2, 1, hojaTareas.getLastRow() - 1, hojaTareas.getLastColumn()).getValues();
+    var procesoBase = null;
+    for (var i = 0; i < procesos.length; i++) {
+      if (String(procesos[i][pId] || '').trim() === 'PCS-0001') { procesoBase = procesos[i].slice(); break; }
+    }
+    if (!procesoBase) throw new Error('F03_C05_B_ERROR: no existe PCS-0001');
+    var tareaAnterior = null;
+    var tareaDependiente = null;
+    for (var j = 0; j < tareas.length; j++) {
+      var tareaId = String(tareas[j][tId] || '').trim();
+      var activa = String(tareas[j][tActivo] || '').trim().toUpperCase() !== 'NO';
+      if (tareaId === 'TAR-0001' && activa) tareaAnterior = {fila: j + 2, valores: tareas[j].slice()};
+      if (tareaId === 'TAR-0002' && activa) tareaDependiente = {fila: j + 2, valores: tareas[j].slice()};
+    }
+    if (!tareaAnterior || !tareaDependiente) throw new Error('F03_C05_B_ERROR: faltan TAR-0001 o TAR-0002 activas');
+    if (Number(tareaAnterior.valores[tOrden]) >= Number(tareaDependiente.valores[tOrden])) throw new Error('F03_C05_B_ERROR: el orden base no permite aislar la prueba');
+    var procesoTemporalId = 'PCS-AUD-C05B';
+    var existenteTemporal = procesos.some(function(fila) { return String(fila[pId] || '').trim() === procesoTemporalId; });
+    if (existenteTemporal) throw new Error('F03_C05_B_ERROR: ya existe ' + procesoTemporalId);
+    procesoBase[pId] = procesoTemporalId;
+    hojaProcesos.appendRow(procesoBase);
+    filaProcesoTemporal = hojaProcesos.getLastRow();
+    console.log('OK proceso_temporal_creado=' + procesoTemporalId + ' fila=' + filaProcesoTemporal);
+    filasTareaRestaurar.push(tareaAnterior, tareaDependiente);
+    [tareaAnterior, tareaDependiente].forEach(function(tarea) {
+      var celdaProceso = hojaTareas.getRange(tarea.fila, tProceso + 1);
+      var celdaPredecesora = hojaTareas.getRange(tarea.fila, tPredecesora + 1);
+      validacionesRestaurar.push({celda: celdaProceso, validacion: celdaProceso.getDataValidation()});
+      validacionesRestaurar.push({celda: celdaPredecesora, validacion: celdaPredecesora.getDataValidation()});
+      celdaProceso.clearDataValidations();
+      celdaPredecesora.clearDataValidations();
+    });
+    hojaTareas.getRange(tareaAnterior.fila, tProceso + 1).setValue(procesoTemporalId);
+    hojaTareas.getRange(tareaDependiente.fila, tPredecesora + 1).setValue('TAR-0001');
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true tarea_objetivo=TAR-0002 proceso_objetivo=PCS-0001 predecesora=TAR-0001 proceso_predecesora=' + procesoTemporalId);
+    console.log('OK orden_predecesora=' + tareaAnterior.valores[tOrden] + ' orden_dependiente=' + tareaDependiente.valores[tOrden]);
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var detectado = hallazgos.some(function(hallazgo) {
+      var descripcion = String(hallazgo.descripcion || '').toUpperCase();
+      return String(hallazgo.entidad || '').trim() === 'TAREA' && String(hallazgo.registroId || '').trim() === 'TAR-0002' && descripcion.indexOf('TAREA_PREDECESORA_ID') !== -1 && descripcion.indexOf('PROCESO') !== -1;
+    });
+    console.log('OK hallazgo_predecesora_otro_proceso=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C05_B_NO_GO: IntegrityService no detecta predecesora perteneciente a otro proceso');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    filasTareaRestaurar.forEach(function(tarea) {
+      hojaTareas.getRange(tarea.fila, 1, 1, tarea.valores.length).setValues([tarea.valores]);
+    });
+    validacionesRestaurar.forEach(function(item) {
+      if (item.validacion) item.celda.setDataValidation(item.validacion); else item.celda.clearDataValidations();
+    });
+    if (filaProcesoTemporal && filaProcesoTemporal <= hojaProcesos.getLastRow()) hojaProcesos.deleteRow(filaProcesoTemporal);
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK tareas_restauradas=' + filasTareaRestaurar.length);
+    console.log('OK proceso_temporal_eliminado=' + Boolean(filaProcesoTemporal));
+    var reporteRestaurado = obtenerReporteIntegridad();
+    var hallazgosRestaurados = [].concat(reporteRestaurado.funcional.errores || [], reporteRestaurado.funcional.advertencias || [], reporteRestaurado.funcional.informacion || []);
+    var persiste = hallazgosRestaurados.some(function(hallazgo) {
+      var descripcion = String(hallazgo.descripcion || '').toUpperCase();
+      return String(hallazgo.entidad || '').trim() === 'TAREA' && descripcion.indexOf('TAREA_PREDECESORA_ID') !== -1 && descripcion.indexOf('PROCESO') !== -1;
+    });
+    console.log('OK integridad_restaurada=' + !persiste);
+    if (persiste) errorFinal = errorFinal || new Error('F03_C05_B_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_TAREA_011' : 'NEXT cerrar_C05_B');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
+function auditarFaseC05C_OrdenPredecesoraInvalido() {
+  var packageName = 'F03_C05_C_ORDEN_PREDECESORA_INVALIDO';
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');
+  var tareasRestaurar = [];
+  var validacionesRestaurar = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hoja) throw new Error('F03_C05_C_ERROR: no existe 06_TAREAS');
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+    if (ultimaFila < 3) throw new Error('F03_C05_C_ERROR: faltan tareas base');
+    var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getDisplayValues()[0].map(function(c) { return String(c || '').trim(); });
+    var indiceId = cabeceras.indexOf('ID');
+    var indiceProceso = cabeceras.indexOf('PROCESO_ID');
+    var indiceOrden = cabeceras.indexOf('ORDEN_SECUENCIA');
+    var indicePredecesora = cabeceras.indexOf('TAREA_PREDECESORA_ID');
+    var indiceActivo = cabeceras.indexOf('ACTIVO');
+    if (indiceId === -1 || indiceProceso === -1 || indiceOrden === -1 || indicePredecesora === -1 || indiceActivo === -1) throw new Error('F03_C05_C_ERROR: faltan columnas necesarias');
+    var filas = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+    var predecesora = null;
+    var dependiente = null;
+    filas.forEach(function(fila, indice) {
+      var id = String(fila[indiceId] || '').trim();
+      var activa = String(fila[indiceActivo] || '').trim().toUpperCase() !== 'NO';
+      if (id === 'TAR-0001' && activa) predecesora = {fila: indice + 2, valores: fila.slice()};
+      if (id === 'TAR-0002' && activa) dependiente = {fila: indice + 2, valores: fila.slice()};
+    });
+    if (!predecesora || !dependiente) throw new Error('F03_C05_C_ERROR: faltan TAR-0001 o TAR-0002 activas');
+    var procesoPredecesora = String(predecesora.valores[indiceProceso] || '').trim();
+    var procesoDependiente = String(dependiente.valores[indiceProceso] || '').trim();
+    if (!procesoPredecesora || procesoPredecesora !== procesoDependiente) throw new Error('F03_C05_C_ERROR: las tareas base no pertenecen al mismo proceso');
+    tareasRestaurar.push(predecesora, dependiente);
+    [predecesora, dependiente].forEach(function(tarea) {
+      [indiceOrden, indicePredecesora].forEach(function(indiceColumna) {
+        var celda = hoja.getRange(tarea.fila, indiceColumna + 1);
+        validacionesRestaurar.push({celda: celda, validacion: celda.getDataValidation()});
+        celda.clearDataValidations();
+      });
+    });
+    hoja.getRange(predecesora.fila, indiceOrden + 1).setValue(2);
+    hoja.getRange(dependiente.fila, indiceOrden + 1).setValue(1);
+    hoja.getRange(dependiente.fila, indicePredecesora + 1).setValue('TAR-0001');
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true tarea_dependiente=TAR-0002 predecesora=TAR-0001');
+    console.log('OK proceso_compartido=' + procesoDependiente);
+    console.log('OK orden_predecesora=2 orden_dependiente=1');
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var detectado = hallazgos.some(function(hallazgo) {
+      var descripcion = String(hallazgo.descripcion || '').toUpperCase();
+      return String(hallazgo.entidad || '').trim() === 'TAREA' && String(hallazgo.registroId || '').trim() === 'TAR-0002' && descripcion.indexOf('TAREA_PREDECESORA_ID') !== -1 && descripcion.indexOf('ORDEN') !== -1;
+    });
+    console.log('OK hallazgo_orden_predecesora_invalido=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C05_C_NO_GO: IntegrityService no detecta orden inválido de la tarea predecesora');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    tareasRestaurar.forEach(function(tarea) {
+      hoja.getRange(tarea.fila, 1, 1, tarea.valores.length).setValues([tarea.valores]);
+    });
+    validacionesRestaurar.forEach(function(item) {
+      if (item.validacion) item.celda.setDataValidation(item.validacion); else item.celda.clearDataValidations();
+    });
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK tareas_restauradas=' + tareasRestaurar.length);
+    var reporteRestaurado = obtenerReporteIntegridad();
+    var hallazgosRestaurados = [].concat(reporteRestaurado.funcional.errores || [], reporteRestaurado.funcional.advertencias || [], reporteRestaurado.funcional.informacion || []);
+    var persiste = hallazgosRestaurados.some(function(hallazgo) {
+      var descripcion = String(hallazgo.descripcion || '').toUpperCase();
+      return String(hallazgo.entidad || '').trim() === 'TAREA' && descripcion.indexOf('TAREA_PREDECESORA_ID') !== -1 && descripcion.indexOf('ORDEN') !== -1;
+    });
+    console.log('OK integridad_restaurada=' + !persiste);
+    if (persiste) errorFinal = errorFinal || new Error('F03_C05_C_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_TAREA_012' : 'NEXT cerrar_C05_C');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
+function auditarFaseC05D_CicloEntreTareas() {
+  var packageName = 'F03_C05_D_CICLO_ENTRE_TAREAS';
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');
+  var tareasRestaurar = [];
+  var validacionesRestaurar = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hoja) throw new Error('F03_C05_D_ERROR: no existe 06_TAREAS');
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+    if (ultimaFila < 3) throw new Error('F03_C05_D_ERROR: faltan tareas base');
+    var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getDisplayValues()[0].map(function(c) { return String(c || '').trim(); });
+    var indiceId = cabeceras.indexOf('ID');
+    var indiceProceso = cabeceras.indexOf('PROCESO_ID');
+    var indiceOrden = cabeceras.indexOf('ORDEN_SECUENCIA');
+    var indicePredecesora = cabeceras.indexOf('TAREA_PREDECESORA_ID');
+    var indiceActivo = cabeceras.indexOf('ACTIVO');
+    if (indiceId === -1 || indiceProceso === -1 || indiceOrden === -1 || indicePredecesora === -1 || indiceActivo === -1) throw new Error('F03_C05_D_ERROR: faltan columnas necesarias');
+    var filas = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+    var tarea1 = null;
+    var tarea2 = null;
+    filas.forEach(function(fila, indice) {
+      var id = String(fila[indiceId] || '').trim();
+      var activa = String(fila[indiceActivo] || '').trim().toUpperCase() !== 'NO';
+      if (id === 'TAR-0001' && activa) tarea1 = {fila: indice + 2, valores: fila.slice()};
+      if (id === 'TAR-0002' && activa) tarea2 = {fila: indice + 2, valores: fila.slice()};
+    });
+    if (!tarea1 || !tarea2) throw new Error('F03_C05_D_ERROR: faltan TAR-0001 o TAR-0002 activas');
+    var proceso1 = String(tarea1.valores[indiceProceso] || '').trim();
+    var proceso2 = String(tarea2.valores[indiceProceso] || '').trim();
+    if (!proceso1 || proceso1 !== proceso2) throw new Error('F03_C05_D_ERROR: las tareas no pertenecen al mismo proceso');
+    tareasRestaurar.push(tarea1, tarea2);
+    [tarea1, tarea2].forEach(function(tarea) {
+      var celda = hoja.getRange(tarea.fila, indicePredecesora + 1);
+      validacionesRestaurar.push({celda: celda, validacion: celda.getDataValidation()});
+      celda.clearDataValidations();
+    });
+    hoja.getRange(tarea1.fila, indiceOrden + 1).setValue(1);
+    hoja.getRange(tarea2.fila, indiceOrden + 1).setValue(2);
+    hoja.getRange(tarea1.fila, indicePredecesora + 1).setValue('TAR-0002');
+    hoja.getRange(tarea2.fila, indicePredecesora + 1).setValue('TAR-0001');
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true ciclo=TAR-0001->TAR-0002->TAR-0001');
+    console.log('OK proceso_compartido=' + proceso1);
+    console.log('OK orden_TAR_0001=1 orden_TAR_0002=2');
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var hallazgosCiclo = hallazgos.filter(function(hallazgo) {
+      return String(hallazgo.codigo || '').trim() === 'FUNC-TAREA-012' && ['TAR-0001', 'TAR-0002'].indexOf(String(hallazgo.registroId || '').trim()) !== -1;
+    });
+    var detectado = hallazgosCiclo.length > 0;
+    console.log('OK hallazgos_func_tarea_012=' + hallazgosCiclo.length);
+    console.log('OK ciclo_detectado_por_invariante_orden=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C05_D_NO_GO: el ciclo entre tareas no genera ningún hallazgo funcional');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    tareasRestaurar.forEach(function(tarea) {
+      hoja.getRange(tarea.fila, 1, 1, tarea.valores.length).setValues([tarea.valores]);
+    });
+    validacionesRestaurar.forEach(function(item) {
+      if (item.validacion) item.celda.setDataValidation(item.validacion); else item.celda.clearDataValidations();
+    });
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK tareas_restauradas=' + tareasRestaurar.length);
+    var reporteRestaurado = obtenerReporteIntegridad();
+    var hallazgosRestaurados = [].concat(reporteRestaurado.funcional.errores || [], reporteRestaurado.funcional.advertencias || [], reporteRestaurado.funcional.informacion || []);
+    var persiste = hallazgosRestaurados.some(function(hallazgo) {
+      return String(hallazgo.codigo || '').trim() === 'FUNC-TAREA-012' && ['TAR-0001', 'TAR-0002'].indexOf(String(hallazgo.registroId || '').trim()) !== -1;
+    });
+    console.log('OK integridad_restaurada=' + !persiste);
+    if (persiste) errorFinal = errorFinal || new Error('F03_C05_D_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT añadir_regla_especifica_de_ciclo' : 'NEXT cerrar_C05_D');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
