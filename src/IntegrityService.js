@@ -1260,6 +1260,30 @@ function detectarProblemasTarea_(agregar) {
           'Corregir FECHA_INICIO_REAL o FECHA_FIN_REAL.'
         );
       }
+      var fechaInicioPlanTarea =
+        t.FECHA_INICIO_PLAN instanceof Date
+          ? new Date(t.FECHA_INICIO_PLAN.getTime())
+          : new Date(t.FECHA_INICIO_PLAN);
+
+      var fechaFinPlanTarea =
+        t.FECHA_FIN_PLAN instanceof Date
+          ? new Date(t.FECHA_FIN_PLAN.getTime())
+          : new Date(t.FECHA_FIN_PLAN);
+
+      if (
+        !isNaN(fechaInicioPlanTarea.getTime()) &&
+        !isNaN(fechaFinPlanTarea.getTime()) &&
+        fechaFinPlanTarea.getTime() < fechaInicioPlanTarea.getTime()
+      ) {
+        agregar(
+          'FUNC-TAREA-003',
+          'TAREA',
+          t.ID,
+          'Tarea con FECHA_FIN_PLAN anterior a FECHA_INICIO_PLAN.',
+          'ERROR',
+          'Corregir FECHA_INICIO_PLAN o FECHA_FIN_PLAN.'
+        );
+      }
     });
 }
 
