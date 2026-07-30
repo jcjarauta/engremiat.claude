@@ -1284,6 +1284,24 @@ function detectarProblemasTarea_(agregar) {
           'Corregir FECHA_INICIO_PLAN o FECHA_FIN_PLAN.'
         );
       }
+      var tieneFechaInicioRealTarea =
+        t.FECHA_INICIO_REAL !== undefined &&
+        t.FECHA_INICIO_REAL !== null &&
+        String(t.FECHA_INICIO_REAL).trim() !== '';
+
+      if (
+        (t.ESTADO === 'Pendiente' || t.ESTADO === 'Preparada') &&
+        tieneFechaInicioRealTarea
+      ) {
+        agregar(
+          'FUNC-TAREA-004',
+          'TAREA',
+          t.ID,
+          'Tarea en estado ' + t.ESTADO + ' con FECHA_INICIO_REAL informada.',
+          'ERROR',
+          'Eliminar FECHA_INICIO_REAL o corregir el estado de la tarea.'
+        );
+      }
     });
 }
 
