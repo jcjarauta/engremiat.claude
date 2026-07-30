@@ -1356,6 +1356,24 @@ function detectarProblemasTarea_(agregar) {
           'Informar FECHA_FIN_REAL o corregir el estado de la tarea.'
         );
       }
+      var tieneDuracionRealTerminada =
+        t.DURACION_REAL_DIAS !== undefined &&
+        t.DURACION_REAL_DIAS !== null &&
+        String(t.DURACION_REAL_DIAS).trim() !== '';
+
+      if (
+        t.ESTADO === 'Terminada' &&
+        !tieneDuracionRealTerminada
+      ) {
+        agregar(
+          'FUNC-TAREA-008',
+          'TAREA',
+          t.ID,
+          'Tarea Terminada sin DURACION_REAL_DIAS.',
+          'ERROR',
+          'Informar DURACION_REAL_DIAS o corregir el estado de la tarea.'
+        );
+      }
     });
 }
 
