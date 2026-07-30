@@ -1302,6 +1302,24 @@ function detectarProblemasTarea_(agregar) {
           'Eliminar FECHA_INICIO_REAL o corregir el estado de la tarea.'
         );
       }
+      var tieneFechaInicioRealEnProceso =
+        t.FECHA_INICIO_REAL !== undefined &&
+        t.FECHA_INICIO_REAL !== null &&
+        String(t.FECHA_INICIO_REAL).trim() !== '';
+
+      if (
+        t.ESTADO === 'En proceso' &&
+        !tieneFechaInicioRealEnProceso
+      ) {
+        agregar(
+          'FUNC-TAREA-005',
+          'TAREA',
+          t.ID,
+          'Tarea En proceso sin FECHA_INICIO_REAL.',
+          'ERROR',
+          'Informar FECHA_INICIO_REAL o corregir el estado de la tarea.'
+        );
+      }
     });
 }
 
