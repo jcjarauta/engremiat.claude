@@ -16440,3 +16440,73 @@ function auditarFaseC03_EnProcesoSinFechaInicioReal() {
   if (errorFinal) throw errorFinal;
   return true;
 }
+function auditarFaseC03_TerminadaSinFechaInicioReal() {
+  var packageName = 'F03_C03_TERMINADA_SIN_FECHA_INICIO_REAL';
+  var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');
+  var filaObjetivo = null;
+  var valoresOriginales = null;
+  var indices = {};
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hoja) throw new Error('F03_C03_ERROR: no existe 06_TAREAS');
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+    if (ultimaFila < 2) throw new Error('F03_C03_ERROR: 06_TAREAS no contiene registros');
+    var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getDisplayValues()[0].map(function(c) { return String(c || "").trim(); });
+    ['ID', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'PORCENTAJE_AVANCE', 'ACTIVO'].forEach(function(campo) {
+      indices[campo] = cabeceras.indexOf(campo);
+      if (indices[campo] === -1) throw new Error('F03_C03_ERROR: falta columna ' + campo);
+    });
+    var filas = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+    for (var i = 0; i < filas.length; i++) {
+      var id = String(filas[i][indices.ID] || '').trim();
+      var activo = String(filas[i][indices.ACTIVO] || '').trim().toUpperCase();
+      if (id && activo !== 'NO') { filaObjetivo = i + 2; valoresOriginales = filas[i].slice(); break; }
+    }
+    if (!filaObjetivo) throw new Error('F03_C03_ERROR: no existe una TAREA activa utilizable');
+    var registroId = String(valoresOriginales[indices.ID] || '').trim();
+    var fechaFin = new Date(2026, 6, 3, 12, 0, 0);
+    hoja.getRange(filaObjetivo, indices.ESTADO + 1).setValue('Terminada');
+    hoja.getRange(filaObjetivo, indices.PORCENTAJE_AVANCE + 1).setValue(100);
+    hoja.getRange(filaObjetivo, indices.FECHA_INICIO_REAL + 1).setValue('');
+    hoja.getRange(filaObjetivo, indices.FECHA_FIN_REAL + 1).setValue(fechaFin);
+    hoja.getRange(filaObjetivo, indices.DURACION_REAL_DIAS + 1).setValue(1);
+    SpreadsheetApp.flush();
+    console.log('OK registro_id=' + registroId);
+    console.log('OK mutacion_directa_aplicada=true estado=Terminada fecha_inicio_real=VACIA fecha_fin_real=' + fechaFin.toISOString() + ' duracion_real_dias=1 porcentaje_avance=100');
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var detectado = hallazgos.some(function(hallazgo) {
+      return String(hallazgo.entidad || '').trim() === 'TAREA' &&
+        String(hallazgo.registroId || '').trim() === registroId &&
+        String(hallazgo.descripcion || '').toUpperCase().indexOf('TERMINADA') !== -1 &&
+        String(hallazgo.descripcion || '').toUpperCase().indexOf('FECHA_INICIO_REAL') !== -1;
+    });
+    console.log('OK hallazgo_terminada_sin_fecha_inicio_real=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C03_NO_GO: IntegrityService no detecta TAREA Terminada sin FECHA_INICIO_REAL');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    if (filaObjetivo && valoresOriginales) {
+      hoja.getRange(filaObjetivo, 1, 1, valoresOriginales.length).setValues([valoresOriginales]);
+      SpreadsheetApp.flush();
+      console.log('OK restauracion_completa=true');
+      var reporteRestaurado = obtenerReporteIntegridad();
+      var erroresRestaurados = reporteRestaurado && reporteRestaurado.funcional ? reporteRestaurado.funcional.errores || [] : [];
+      var registroOriginalId = String(valoresOriginales[indices.ID] || "").trim();
+      var persiste = erroresRestaurados.some(function(hallazgo) {
+        return String(hallazgo.entidad || '').trim() === 'TAREA' &&
+          String(hallazgo.registroId || '').trim() === registroOriginalId &&
+          String(hallazgo.descripcion || '').toUpperCase().indexOf('TERMINADA') !== -1 &&
+          String(hallazgo.descripcion || '').toUpperCase().indexOf('FECHA_INICIO_REAL') !== -1;
+      });
+      console.log('OK integridad_restaurada=' + !persiste);
+      if (persiste) errorFinal = errorFinal || new Error('F03_C03_ERROR: el hallazgo persiste tras restaurar la TAREA');
+    }
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_TAREA_006' : 'NEXT cerrar_C03_C');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
