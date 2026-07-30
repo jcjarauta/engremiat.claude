@@ -1374,6 +1374,22 @@ function detectarProblemasTarea_(agregar) {
           'Informar DURACION_REAL_DIAS o corregir el estado de la tarea.'
         );
       }
+      var valorDuracionRealTarea = Number(t.DURACION_REAL_DIAS);
+
+      if (
+        t.ESTADO === 'Terminada' &&
+        tieneDuracionRealTerminada &&
+        (isNaN(valorDuracionRealTarea) || valorDuracionRealTarea <= 0)
+      ) {
+        agregar(
+          'FUNC-TAREA-009',
+          'TAREA',
+          t.ID,
+          'Tarea Terminada con DURACION_REAL_DIAS no numérica o menor o igual que 0.',
+          'ERROR',
+          'Informar una DURACION_REAL_DIAS numérica mayor que 0.'
+        );
+      }
     });
 }
 
