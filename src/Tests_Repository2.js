@@ -15835,3 +15835,324 @@ function auditarFaseB10_CierreIntegridadRelacionesMateriales() {
     throw error;
   }
 }
+function auditarFaseC01_FechaFinRealAnteriorInicioReal() {
+  var packageName = 'F03_C01_FECHA_FIN_REAL_ANTERIOR_INICIO_REAL';
+  var s = SpreadsheetApp.getActiveSpreadsheet();
+  var hoja = s.getSheetByName('06_TAREAS');
+  var filaObjetivo = null;
+  var valoresOriginales = null;
+  var errorFinal = null;
+
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  try {
+    if (!hoja) {
+      throw new Error('F03_C01_ERROR: no existe la hoja 06_TAREAS');
+    }
+
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
+
+    if (ultimaFila < 2) {
+      throw new Error('F03_C01_ERROR: 06_TAREAS no contiene registros');
+    }
+
+    var cabeceras = hoja
+      .getRange(1, 1, 1, ultimaColumna)
+      .getDisplayValues()[0]
+      .map(function(cabecera) {
+        return String(cabecera || '').trim();
+      });
+
+    var campos = [
+      'ID',
+      'ESTADO',
+      'PORCENTAJE_AVANCE',
+      'FECHA_INICIO_REAL',
+      'FECHA_FIN_REAL',
+      'DURACION_REAL_DIAS',
+      'ACTIVO'
+    ];
+
+    var indices = {};
+
+    campos.forEach(function(campo) {
+      indices[campo] = cabeceras.indexOf(campo);
+
+      if (indices[campo] === -1) {
+        throw new Error(
+          'F03_C01_ERROR: 06_TAREAS no contiene la columna ' + campo
+        );
+      }
+    });
+
+    var filas = hoja
+      .getRange(2, 1, ultimaFila - 1, ultimaColumna)
+      .getValues();
+
+    for (var i = 0; i < filas.length; i++) {
+      var id = String(filas[i][indices.ID] || '').trim();
+      var activo = String(filas[i][indices.ACTIVO] || '')
+        .trim()
+        .toUpperCase();
+
+      if (id && activo !== 'NO') {
+        filaObjetivo = i + 2;
+        valoresOriginales = filas[i].slice();
+        break;
+      }
+    }
+
+    if (!filaObjetivo) {
+      throw new Error(
+        'F03_C01_ERROR: no existe una TAREA activa utilizable'
+      );
+    }
+
+    var registroId = String(
+      valoresOriginales[indices.ID] || ''
+    ).trim();
+
+    var fechaInicio = new Date(2026, 6, 2, 12, 0, 0);
+    var fechaFin = new Date(2026, 6, 1, 12, 0, 0);
+
+    hoja
+      .getRange(filaObjetivo, indices.ESTADO + 1)
+      .setValue('Terminada');
+
+    hoja
+      .getRange(filaObjetivo, indices.PORCENTAJE_AVANCE + 1)
+      .setValue(100);
+
+    hoja
+      .getRange(filaObjetivo, indices.FECHA_INICIO_REAL + 1)
+      .setValue(fechaInicio);
+
+    hoja
+      .getRange(filaObjetivo, indices.FECHA_FIN_REAL + 1)
+      .setValue(fechaFin);
+
+    hoja
+      .getRange(filaObjetivo, indices.DURACION_REAL_DIAS + 1)
+      .setValue(1);
+
+    SpreadsheetApp.flush();
+
+    console.log('OK registro_id=' + registroId);
+    console.log(
+      'OK mutacion_directa_aplicada=true fecha_inicio_real=' +
+        fechaInicio.toISOString() +
+        ' fecha_fin_real=' +
+        fechaFin.toISOString()
+    );
+
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [];
+
+    if (reporte && reporte.funcional) {
+      hallazgos = hallazgos
+        .concat(reporte.funcional.errores || [])
+        .concat(reporte.funcional.advertencias || [])
+        .concat(reporte.funcional.informacion || []);
+    }
+
+    var detectado = hallazgos.some(function(hallazgo) {
+      var descripcion = String(hallazgo.descripcion || '')
+        .toUpperCase();
+
+      return (
+        String(hallazgo.entidad || '').trim() === 'TAREA' &&
+        String(hallazgo.registroId || '').trim() === registroId &&
+        descripcion.indexOf('FECHA_FIN_REAL') !== -1 &&
+        descripcion.indexOf('FECHA_INICIO_REAL') !== -1
+      );
+    });
+
+    console.log('OK hallazgo fecha_fin_anterior_inicio=' + detectado);
+
+    if (!detectado) {
+      errorFinal = new Error(
+        'F03_C01_NO_GO: IntegrityService no detecta FECHA_FIN_REAL anterior a FECHA_INICIO_REAL en TAREA'
+      );
+    }
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    if (filaObjetivo && valoresOriginales) {
+      hoja
+        .getRange(filaObjetivo, 1, 1, valoresOriginales.length)
+        .setValues([valoresOriginales]);
+
+      SpreadsheetApp.flush();
+
+      console.log('OK restauracion_completa=true');
+
+      var reporteRestaurado = obtenerReporteIntegridad();
+      var erroresRestaurados =
+        reporteRestaurado && reporteRestaurado.funcional
+          ? reporteRestaurado.funcional.errores || []
+          : [];
+
+      var persiste = erroresRestaurados.some(function(hallazgo) {
+        return (
+          String(hallazgo.entidad || '').trim() === 'TAREA' &&
+          String(hallazgo.registroId || '').trim() ===
+            String(valoresOriginales[indices.ID] || '').trim() &&
+          String(hallazgo.descripcion || '')
+            .toUpperCase()
+            .indexOf('FECHA_FIN_REAL') !== -1
+        );
+      });
+
+      console.log('OK integridad_restaurada=' + !persiste);
+
+      if (persiste) {
+        errorFinal =
+          errorFinal ||
+          new Error(
+            'F03_C01_ERROR: el hallazgo persiste tras restaurar la TAREA'
+          );
+      }
+    }
+  }
+
+  console.log(
+    errorFinal
+      ? 'NEXT reparar_IntegrityService_fechas_reales_TAREA'
+      : 'NEXT auditar_fechas_planificadas_TAREA'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' status=' +
+      (errorFinal ? 'NO_GO' : 'OK')
+  );
+
+  if (errorFinal) {
+    throw errorFinal;
+  }
+
+  return true;
+}
+
+function diagnosticarFaseC01_EstadoOriginalTarea() {
+  var packageName = 'F03_C01_DIAGNOSTICAR_ESTADO_ORIGINAL_TAREA';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var tareas = listarRegistros('TAREA', {ACTIVO: 'SÍ'});
+  var tarea = tareas.filter(function (item) {
+    return String(item.ID || '').trim() === 'TAR-0001';
+  })[0];
+
+  if (!tarea) {
+    console.log('ERR message=No se encontró TAR-0001 activa');
+    console.log('NEXT detener_y_revisar_datos_TAREA');
+    console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=NO_GO');
+    throw new Error('F03_C01_DIAGNOSTICO: no se encontró TAR-0001 activa');
+  }
+
+  function describirValor_(valor) {
+    var tipo = Object.prototype.toString.call(valor);
+    var texto = String(valor === null || valor === undefined ? '' : valor);
+    var fecha = valor instanceof Date ? valor : new Date(valor);
+    var iso = !isNaN(fecha.getTime()) ? fecha.toISOString() : 'INVALID_DATE';
+    return 'tipo=' + tipo + ' texto=' + texto + ' iso=' + iso;
+  }
+
+  console.log('OK registro_id=' + tarea.ID);
+  console.log('OK estado=' + tarea.ESTADO);
+  console.log('OK porcentaje_avance=' + tarea.PORCENTAJE_AVANCE);
+  console.log('OK fecha_inicio_real ' + describirValor_(tarea.FECHA_INICIO_REAL));
+  console.log('OK fecha_fin_real ' + describirValor_(tarea.FECHA_FIN_REAL));
+  console.log('OK duracion_real_dias=' + tarea.DURACION_REAL_DIAS);
+
+  var reporte = obtenerReporteIntegridad();
+  var hallazgos = []
+    .concat(reporte.funcional.errores || [])
+    .concat(reporte.funcional.advertencias || [])
+    .concat(reporte.funcional.informacion || []);
+
+  var coincidentes = hallazgos.filter(function (hallazgo) {
+    return (
+      String(hallazgo.codigo || '').trim() === 'FUNC-TAREA-002' &&
+      String(hallazgo.entidad || '').trim() === 'TAREA' &&
+      String(hallazgo.registroId || '').trim() === String(tarea.ID || '').trim()
+    );
+  });
+
+  console.log('OK func_tarea_002_coincidentes=' + coincidentes.length);
+  coincidentes.forEach(function (hallazgo, indice) {
+    console.log('OK hallazgo_' + (indice + 1) + '=' + JSON.stringify(hallazgo));
+  });
+
+  var inicio = tarea.FECHA_INICIO_REAL instanceof Date
+    ? tarea.FECHA_INICIO_REAL
+    : new Date(tarea.FECHA_INICIO_REAL);
+  var fin = tarea.FECHA_FIN_REAL instanceof Date
+    ? tarea.FECHA_FIN_REAL
+    : new Date(tarea.FECHA_FIN_REAL);
+  var fechasValidas = !isNaN(inicio.getTime()) && !isNaN(fin.getTime());
+  var finAnterior = fechasValidas && fin.getTime() < inicio.getTime();
+
+  console.log('OK fechas_validas=' + fechasValidas);
+  console.log('OK estado_original_fin_anterior_inicio=' + finAnterior);
+  console.log(
+    finAnterior
+      ? 'NEXT decidir_correccion_dato_historico_TAR_0001'
+      : 'NEXT revisar_filtro_restauracion_prueba_C01'
+  );
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' status=' +
+      (finAnterior ? 'WARN' : 'OK')
+  );
+
+  return {
+    registroId: tarea.ID,
+    fechasValidas: fechasValidas,
+    finAnteriorInicio: finAnterior,
+    hallazgos: coincidentes
+  };
+}
+
+function repararFaseC01_Tarea0001() {
+  var packageName = 'F03_C01_REPARAR_TAR_0001';
+  var id = 'TAR-0001';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  var antes = obtenerTarea(id);
+  if (!antes) throw new Error('F03_C01_ERROR: no existe TAR-0001');
+  console.log('OK antes=' + JSON.stringify({ESTADO: antes.ESTADO, PORCENTAJE_AVANCE: antes.PORCENTAJE_AVANCE, FECHA_INICIO_REAL: antes.FECHA_INICIO_REAL, FECHA_FIN_REAL: antes.FECHA_FIN_REAL, DURACION_REAL_DIAS: antes.DURACION_REAL_DIAS}));
+  var inicio = antes.FECHA_INICIO_REAL instanceof Date ? antes.FECHA_INICIO_REAL : new Date(antes.FECHA_INICIO_REAL);
+  var fin = antes.FECHA_FIN_REAL instanceof Date ? antes.FECHA_FIN_REAL : new Date(antes.FECHA_FIN_REAL);
+  if (String(antes.ESTADO || '').trim() !== 'Terminada' || Number(antes.PORCENTAJE_AVANCE) !== 100 || isNaN(inicio.getTime()) || isNaN(fin.getTime()) || fin.getTime() >= inicio.getTime()) {
+    throw new Error('F03_C01_ABORT: TAR-0001 ya no coincide con el estado diagnosticado');
+  }
+  var resultado = actualizarTarea(id, {
+    ESTADO: 'Pendiente',
+    PORCENTAJE_AVANCE: 0,
+    FECHA_INICIO_REAL: '',
+    FECHA_FIN_REAL: '',
+    DURACION_REAL_DIAS: ''
+  }, {origen: 'ADMIN'});
+  console.log('OK actualizacion_resultado=' + JSON.stringify(resultado));
+  var despues = obtenerTarea(id);
+  var reparada = String(despues.ESTADO || '').trim() === 'Pendiente' && Number(despues.PORCENTAJE_AVANCE) === 0 && String(despues.FECHA_INICIO_REAL || '').trim() === '' && String(despues.FECHA_FIN_REAL || '').trim() === '' && String(despues.DURACION_REAL_DIAS || '').trim() === '';
+  console.log('OK dato_reparado=' + reparada);
+  if (!reparada) throw new Error('F03_C01_ERROR: TAR-0001 no quedó restaurada al estado trazable');
+  var reporte = obtenerReporteIntegridad();
+  var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+  var persiste = hallazgos.some(function(h) { return String(h.codigo || '') === 'FUNC-TAREA-002' && String(h.entidad || '') === 'TAREA' && String(h.registroId || '') === id; });
+  console.log('OK func_tarea_002_resuelto=' + !persiste);
+  if (persiste) throw new Error('F03_C01_ERROR: persiste FUNC-TAREA-002 tras la reparación');
+  var historial = listarHistorialDeRegistro('TAREA', id);
+  var ultimo = historial.length ? historial[historial.length - 1] : null;
+  console.log('OK historial_ultimo=' + JSON.stringify(ultimo));
+  var trazada = !!ultimo && String(ultimo.ACCION || '') === 'ACTUALIZAR' && String(ultimo.ORIGEN || '') === 'ADMIN';
+  console.log('OK reparacion_trazada=' + trazada);
+  if (!trazada) throw new Error('F03_C01_ERROR: la reparación no quedó trazada como ADMIN');
+  console.log('NEXT repetir_auditarFaseC01_FechaFinRealAnteriorInicioReal');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}

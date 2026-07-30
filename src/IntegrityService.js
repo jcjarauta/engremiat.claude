@@ -1236,6 +1236,30 @@ function detectarProblemasTarea_(agregar) {
           'Corregir el porcentaje de avance o el estado.'
         );
       }
+      var fechaInicioRealTarea =
+        t.FECHA_INICIO_REAL instanceof Date
+          ? new Date(t.FECHA_INICIO_REAL.getTime())
+          : new Date(t.FECHA_INICIO_REAL);
+
+      var fechaFinRealTarea =
+        t.FECHA_FIN_REAL instanceof Date
+          ? new Date(t.FECHA_FIN_REAL.getTime())
+          : new Date(t.FECHA_FIN_REAL);
+
+      if (
+        !isNaN(fechaInicioRealTarea.getTime()) &&
+        !isNaN(fechaFinRealTarea.getTime()) &&
+        fechaFinRealTarea.getTime() < fechaInicioRealTarea.getTime()
+      ) {
+        agregar(
+          'FUNC-TAREA-002',
+          'TAREA',
+          t.ID,
+          'Tarea con FECHA_FIN_REAL anterior a FECHA_INICIO_REAL.',
+          'ERROR',
+          'Corregir FECHA_INICIO_REAL o FECHA_FIN_REAL.'
+        );
+      }
     });
 }
 
