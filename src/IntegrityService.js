@@ -1646,6 +1646,113 @@ detectarDuplicidadesRelacionesMaterial_(
    */
   detectarProblemasProyectoProducto_(agregar);
 
+
+  /*
+   * FUNC-PROCESO-001
+   * Un proceso Completado no puede mantener tareas activas no Terminadas.
+   */
+  var tareasActivasPorProceso_ = {};
+
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (tarea) {
+    var procesoId =
+      String(tarea.PROCESO_ID || '').trim();
+
+    if (!procesoId) {
+      return;
+    }
+
+    if (!tareasActivasPorProceso_[procesoId]) {
+      tareasActivasPorProceso_[procesoId] = [];
+    }
+
+    tareasActivasPorProceso_[procesoId].push(tarea);
+  });
+
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    if (proceso.ESTADO !== 'Completado') {
+      return;
+    }
+
+    var procesoId =
+      String(proceso.ID || '').trim();
+
+    var tareasNoTerminadas =
+      (tareasActivasPorProceso_[procesoId] || [])
+        .filter(function (tarea) {
+          return tarea.ESTADO !== 'Terminada';
+        });
+
+    if (tareasNoTerminadas.length > 0) {
+      var idsTareas =
+        tareasNoTerminadas.map(function (tarea) {
+          return String(tarea.ID || '').trim();
+        });
+
+      agregar(
+        'FUNC-PROCESO-001',
+        'PROCESO',
+        proceso.ID,
+        'Proceso Completado con TAREA activa no Terminada: ' +
+          idsTareas.join(', ') +
+          '.',
+        'ERROR',
+        'Terminar las tareas activas pendientes o corregir el estado del proceso.'
+      );
+    }
+  });
+
+  /*
+   * FUNC-PROCESO-002
+   * Un proceso Pendiente o Preparado no puede mantener tareas activas iniciadas.
+   */
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    if (
+      proceso.ESTADO !== 'Pendiente' &&
+      proceso.ESTADO !== 'Preparado'
+    ) {
+      return;
+    }
+
+    var procesoId =
+      String(proceso.ID || '').trim();
+
+    var tareasIniciadas =
+      (tareasActivasPorProceso_[procesoId] || [])
+        .filter(function (tarea) {
+          return (
+            tarea.ESTADO === 'En proceso' ||
+            tarea.ESTADO === 'Terminada'
+          );
+        });
+
+    if (tareasIniciadas.length > 0) {
+      var idsTareasIniciadas =
+        tareasIniciadas.map(function (tarea) {
+          return String(tarea.ID || '').trim();
+        });
+
+      agregar(
+        'FUNC-PROCESO-002',
+        'PROCESO',
+        proceso.ID,
+        'Proceso ' + proceso.ESTADO +
+          ' con TAREA activa En proceso o Terminada: ' +
+          idsTareasIniciadas.join(', ') +
+          '.',
+        'ERROR',
+        'Iniciar el proceso o corregir el estado de las tareas activas.'
+      );
+    }
+  });
   return {
     errores: hallazgos.filter(function (h) {
       return h.gravedad === 'ERROR';

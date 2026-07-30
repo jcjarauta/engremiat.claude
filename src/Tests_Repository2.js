@@ -17286,3 +17286,233 @@ function auditarFaseC05D_CicloEntreTareas() {
   if (errorFinal) throw errorFinal;
   return true;
 }
+function auditarFaseC06A_ProcesoCompletadoConTareaNoTerminada() {
+  var packageName = 'F03_C06_A_PROCESO_COMPLETADO_CON_TAREA_NO_TERMINADA';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hojaProcesos = ss.getSheetByName('05_PROCESOS');
+  var hojaTareas = ss.getSheetByName('06_TAREAS');
+  var respaldoProceso = null;
+  var respaldoTarea = null;
+  var validaciones = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hojaProcesos || !hojaTareas) throw new Error('F03_C06_A_ERROR: faltan hojas 05_PROCESOS o 06_TAREAS');
+    var cabProcesos = hojaProcesos.getRange(1, 1, 1, hojaProcesos.getLastColumn()).getDisplayValues()[0].map(function(v) { return String(v || '').trim(); });
+    var cabTareas = hojaTareas.getRange(1, 1, 1, hojaTareas.getLastColumn()).getDisplayValues()[0].map(function(v) { return String(v || '').trim(); });
+    var pId = cabProcesos.indexOf('ID');
+    var pEstado = cabProcesos.indexOf('ESTADO');
+    var pInicio = cabProcesos.indexOf('FECHA_INICIO_REAL');
+    var pFin = cabProcesos.indexOf('FECHA_FIN_REAL');
+    var pDuracion = cabProcesos.indexOf('DURACION_REAL_DIAS');
+    var tId = cabTareas.indexOf('ID');
+    var tProceso = cabTareas.indexOf('PROCESO_ID');
+    var tEstado = cabTareas.indexOf('ESTADO');
+    var tActivo = cabTareas.indexOf('ACTIVO');
+    if ([pId,pEstado,pInicio,pFin,pDuracion,tId,tProceso,tEstado,tActivo].some(function(i){return i === -1;})) throw new Error('F03_C06_A_ERROR: faltan columnas necesarias');
+    var procesos = hojaProcesos.getRange(2, 1, hojaProcesos.getLastRow() - 1, hojaProcesos.getLastColumn()).getValues();
+    var tareas = hojaTareas.getRange(2, 1, hojaTareas.getLastRow() - 1, hojaTareas.getLastColumn()).getValues();
+    var proceso = null;
+    var tarea = null;
+    procesos.forEach(function(fila, i) { if (String(fila[pId] || '').trim() === 'PCS-0001') proceso = {fila:i+2,valores:fila.slice()}; });
+    tareas.forEach(function(fila, i) {
+      var activa = String(fila[tActivo] || '').trim().toUpperCase() !== 'NO';
+      if (!tarea && activa && String(fila[tProceso] || '').trim() === 'PCS-0001') tarea = {fila:i+2,valores:fila.slice(),id:String(fila[tId] || '').trim()};
+    });
+    if (!proceso || !tarea) throw new Error('F03_C06_A_ERROR: no existe fixture PCS-0001 con tarea activa');
+    respaldoProceso = proceso;
+    respaldoTarea = tarea;
+    [
+      {hoja:hojaProcesos,fila:proceso.fila,columnas:[pEstado,pInicio,pFin,pDuracion]},
+      {hoja:hojaTareas,fila:tarea.fila,columnas:[tEstado]}
+    ].forEach(function(grupo){grupo.columnas.forEach(function(indice){var celda=grupo.hoja.getRange(grupo.fila,indice+1);validaciones.push({celda:celda,validacion:celda.getDataValidation()});celda.clearDataValidations();});});
+    var ahora = new Date();
+    var inicio = new Date(ahora.getTime() - 86400000);
+    hojaProcesos.getRange(proceso.fila, pEstado + 1).setValue('Completado');
+    hojaProcesos.getRange(proceso.fila, pInicio + 1).setValue(inicio);
+    hojaProcesos.getRange(proceso.fila, pFin + 1).setValue(ahora);
+    hojaProcesos.getRange(proceso.fila, pDuracion + 1).setValue(1);
+    hojaTareas.getRange(tarea.fila, tEstado + 1).setValue('Pendiente');
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true proceso=PCS-0001 estado_proceso=Completado');
+    console.log('OK tarea_no_terminada=' + tarea.id + ' estado_tarea=Pendiente');
+    console.log('OK proceso_fechas_reales_validas=true duracion_real_dias=1');
+    var reporte = obtenerReporteIntegridad();
+    var hallazgos = [].concat(reporte.funcional.errores || [], reporte.funcional.advertencias || [], reporte.funcional.informacion || []);
+    var detectado = hallazgos.some(function(h) {
+      var descripcion = String(h.descripcion || '').toUpperCase();
+      return String(h.entidad || '').trim() === 'PROCESO' && String(h.registroId || '').trim() === 'PCS-0001' && descripcion.indexOf('TAREA') !== -1 && descripcion.indexOf('TERMINADA') !== -1;
+    });
+    console.log('OK hallazgo_proceso_completado_con_tarea_no_terminada=' + detectado);
+    if (!detectado) errorFinal = new Error('F03_C06_A_NO_GO: IntegrityService no detecta proceso Completado con tarea no Terminada');
+  } catch (error) {
+    errorFinal = errorFinal || error;
+  } finally {
+    if (respaldoProceso) hojaProcesos.getRange(respaldoProceso.fila,1,1,respaldoProceso.valores.length).setValues([respaldoProceso.valores]);
+    if (respaldoTarea) hojaTareas.getRange(respaldoTarea.fila,1,1,respaldoTarea.valores.length).setValues([respaldoTarea.valores]);
+    validaciones.forEach(function(item){if(item.validacion)item.celda.setDataValidation(item.validacion);else item.celda.clearDataValidations();});
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK proceso_restaurado=' + Boolean(respaldoProceso));
+    console.log('OK tarea_restaurada=' + Boolean(respaldoTarea));
+    var restaurado = obtenerReporteIntegridad();
+    var hallazgosRestaurados = [].concat(restaurado.funcional.errores || [], restaurado.funcional.advertencias || [], restaurado.funcional.informacion || []);
+    var persiste = hallazgosRestaurados.some(function(h){var d=String(h.descripcion||'').toUpperCase();return String(h.entidad||'').trim()==='PROCESO' && String(h.registroId||'').trim()==='PCS-0001' && d.indexOf('TAREA')!==-1 && d.indexOf('TERMINADA')!==-1;});
+    console.log('OK integridad_restaurada=' + !persiste);
+    if (persiste) errorFinal = errorFinal || new Error('F03_C06_A_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_PROCESO_001' : 'NEXT cerrar_C06_A');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if (errorFinal) throw errorFinal;
+  return true;
+}
+function auditarFaseC06B_ProcesoPendienteConTareaIniciada() {
+  var packageName = 'F03_C06_B_PROCESO_PENDIENTE_CON_TAREA_INICIADA';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hojaProcesos = ss.getSheetByName('05_PROCESOS');
+  var hojaTareas = ss.getSheetByName('06_TAREAS');
+  var respaldoProceso = null;
+  var respaldoTarea = null;
+  var validaciones = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hojaProcesos || !hojaTareas) throw new Error('F03_C06_B_ERROR: faltan hojas necesarias');
+    var cabProcesos = hojaProcesos.getRange(1,1,1,hojaProcesos.getLastColumn()).getDisplayValues()[0].map(function(v){return String(v||'').trim();});
+    var cabTareas = hojaTareas.getRange(1,1,1,hojaTareas.getLastColumn()).getDisplayValues()[0].map(function(v){return String(v||'').trim();});
+    var pId=cabProcesos.indexOf('ID');
+    var pEstado=cabProcesos.indexOf('ESTADO');
+    var pInicio=cabProcesos.indexOf('FECHA_INICIO_REAL');
+    var pFin=cabProcesos.indexOf('FECHA_FIN_REAL');
+    var pDuracion=cabProcesos.indexOf('DURACION_REAL_DIAS');
+    var tId=cabTareas.indexOf('ID');
+    var tProceso=cabTareas.indexOf('PROCESO_ID');
+    var tEstado=cabTareas.indexOf('ESTADO');
+    var tInicio=cabTareas.indexOf('FECHA_INICIO_REAL');
+    var tFin=cabTareas.indexOf('FECHA_FIN_REAL');
+    var tDuracion=cabTareas.indexOf('DURACION_REAL_DIAS');
+    var tActivo=cabTareas.indexOf('ACTIVO');
+    if ([pId,pEstado,pInicio,pFin,pDuracion,tId,tProceso,tEstado,tInicio,tFin,tDuracion,tActivo].some(function(i){return i===-1;})) throw new Error('F03_C06_B_ERROR: faltan columnas necesarias');
+    var procesos=hojaProcesos.getRange(2,1,hojaProcesos.getLastRow()-1,hojaProcesos.getLastColumn()).getValues();
+    var tareas=hojaTareas.getRange(2,1,hojaTareas.getLastRow()-1,hojaTareas.getLastColumn()).getValues();
+    var proceso=null;
+    var tarea=null;
+    procesos.forEach(function(fila,i){if(String(fila[pId]||'').trim()==='PCS-0001') proceso={fila:i+2,valores:fila.slice()};});
+    tareas.forEach(function(fila,i){var activa=String(fila[tActivo]||'').trim().toUpperCase()!=='NO';if(!tarea&&activa&&String(fila[tProceso]||'').trim()==='PCS-0001') tarea={fila:i+2,valores:fila.slice(),id:String(fila[tId]||'').trim()};});
+    if (!proceso || !tarea) throw new Error('F03_C06_B_ERROR: no existe fixture PCS-0001 con tarea activa');
+    respaldoProceso=proceso;
+    respaldoTarea=tarea;
+    [{hoja:hojaProcesos,fila:proceso.fila,columnas:[pEstado,pInicio,pFin,pDuracion]},{hoja:hojaTareas,fila:tarea.fila,columnas:[tEstado,tInicio,tFin,tDuracion]}].forEach(function(grupo){grupo.columnas.forEach(function(indice){var celda=grupo.hoja.getRange(grupo.fila,indice+1);validaciones.push({celda:celda,validacion:celda.getDataValidation()});celda.clearDataValidations();});});
+    hojaProcesos.getRange(proceso.fila,pEstado+1).setValue('Pendiente');
+    hojaProcesos.getRange(proceso.fila,pInicio+1).clearContent();
+    hojaProcesos.getRange(proceso.fila,pFin+1).clearContent();
+    hojaProcesos.getRange(proceso.fila,pDuracion+1).clearContent();
+    hojaTareas.getRange(tarea.fila,tEstado+1).setValue('En proceso');
+    hojaTareas.getRange(tarea.fila,tInicio+1).setValue(new Date());
+    hojaTareas.getRange(tarea.fila,tFin+1).clearContent();
+    hojaTareas.getRange(tarea.fila,tDuracion+1).clearContent();
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true proceso=PCS-0001 estado_proceso=Pendiente');
+    console.log('OK tarea_iniciada=' + tarea.id + ' estado_tarea=En proceso');
+    console.log('OK coherencia_interna_proceso=true coherencia_interna_tarea=true');
+    var reporte=obtenerReporteIntegridad();
+    var hallazgos=[].concat(reporte.funcional.errores||[],reporte.funcional.advertencias||[],reporte.funcional.informacion||[]);
+    var detectado=hallazgos.some(function(h){var descripcion=String(h.descripcion||'').toUpperCase();return String(h.entidad||'').trim()==='PROCESO'&&String(h.registroId||'').trim()==='PCS-0001'&&descripcion.indexOf('PENDIENTE')!==-1&&descripcion.indexOf('TAREA')!==-1&&descripcion.indexOf('EN PROCESO')!==-1;});
+    console.log('OK hallazgo_proceso_pendiente_con_tarea_iniciada=' + detectado);
+    if(!detectado) errorFinal=new Error('F03_C06_B_NO_GO: IntegrityService no detecta proceso Pendiente con tarea En proceso');
+  } catch(error) {
+    errorFinal=errorFinal||error;
+  } finally {
+    if(respaldoProceso) hojaProcesos.getRange(respaldoProceso.fila,1,1,respaldoProceso.valores.length).setValues([respaldoProceso.valores]);
+    if(respaldoTarea) hojaTareas.getRange(respaldoTarea.fila,1,1,respaldoTarea.valores.length).setValues([respaldoTarea.valores]);
+    validaciones.forEach(function(item){if(item.validacion)item.celda.setDataValidation(item.validacion);else item.celda.clearDataValidations();});
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK proceso_restaurado=' + Boolean(respaldoProceso));
+    console.log('OK tarea_restaurada=' + Boolean(respaldoTarea));
+    var restaurado=obtenerReporteIntegridad();
+    var hallazgosRestaurados=[].concat(restaurado.funcional.errores||[],restaurado.funcional.advertencias||[],restaurado.funcional.informacion||[]);
+    var persiste=hallazgosRestaurados.some(function(h){var d=String(h.descripcion||'').toUpperCase();return String(h.entidad||'').trim()==='PROCESO'&&String(h.registroId||'').trim()==='PCS-0001'&&d.indexOf('PENDIENTE')!==-1&&d.indexOf('EN PROCESO')!==-1;});
+    console.log('OK integridad_restaurada=' + !persiste);
+    if(persiste) errorFinal=errorFinal||new Error('F03_C06_B_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT añadir_FUNC_PROCESO_002' : 'NEXT cerrar_C06_B');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if(errorFinal) throw errorFinal;
+  return true;
+}
+function auditarFaseC06C_ProcesoPreparadoConTareaTerminada() {
+  var packageName = 'F03_C06_C_PROCESO_PREPARADO_CON_TAREA_TERMINADA';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var hojaProcesos = ss.getSheetByName('05_PROCESOS');
+  var hojaTareas = ss.getSheetByName('06_TAREAS');
+  var respaldoProceso = null;
+  var respaldoTarea = null;
+  var validaciones = [];
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  try {
+    if (!hojaProcesos || !hojaTareas) throw new Error('F03_C06_C_ERROR: faltan hojas necesarias');
+    var cabProcesos = hojaProcesos.getRange(1,1,1,hojaProcesos.getLastColumn()).getDisplayValues()[0].map(function(v){return String(v||'').trim();});
+    var cabTareas = hojaTareas.getRange(1,1,1,hojaTareas.getLastColumn()).getDisplayValues()[0].map(function(v){return String(v||'').trim();});
+    var pId=cabProcesos.indexOf('ID');
+    var pEstado=cabProcesos.indexOf('ESTADO');
+    var pInicio=cabProcesos.indexOf('FECHA_INICIO_REAL');
+    var pFin=cabProcesos.indexOf('FECHA_FIN_REAL');
+    var pDuracion=cabProcesos.indexOf('DURACION_REAL_DIAS');
+    var tId=cabTareas.indexOf('ID');
+    var tProceso=cabTareas.indexOf('PROCESO_ID');
+    var tEstado=cabTareas.indexOf('ESTADO');
+    var tInicio=cabTareas.indexOf('FECHA_INICIO_REAL');
+    var tFin=cabTareas.indexOf('FECHA_FIN_REAL');
+    var tDuracion=cabTareas.indexOf('DURACION_REAL_DIAS');
+    var tAvance=cabTareas.indexOf('PORCENTAJE_AVANCE');
+    var tActivo=cabTareas.indexOf('ACTIVO');
+    if ([pId,pEstado,pInicio,pFin,pDuracion,tId,tProceso,tEstado,tInicio,tFin,tDuracion,tAvance,tActivo].some(function(i){return i===-1;})) throw new Error('F03_C06_C_ERROR: faltan columnas necesarias');
+    var procesos=hojaProcesos.getRange(2,1,hojaProcesos.getLastRow()-1,hojaProcesos.getLastColumn()).getValues();
+    var tareas=hojaTareas.getRange(2,1,hojaTareas.getLastRow()-1,hojaTareas.getLastColumn()).getValues();
+    var proceso=null;
+    var tarea=null;
+    procesos.forEach(function(fila,i){if(String(fila[pId]||'').trim()==='PCS-0001') proceso={fila:i+2,valores:fila.slice()};});
+    tareas.forEach(function(fila,i){var activa=String(fila[tActivo]||'').trim().toUpperCase()!=='NO';if(!tarea&&activa&&String(fila[tProceso]||'').trim()==='PCS-0001') tarea={fila:i+2,valores:fila.slice(),id:String(fila[tId]||'').trim()};});
+    if (!proceso || !tarea) throw new Error('F03_C06_C_ERROR: no existe fixture PCS-0001 con tarea activa');
+    respaldoProceso=proceso; respaldoTarea=tarea;
+    [{hoja:hojaProcesos,fila:proceso.fila,columnas:[pEstado,pInicio,pFin,pDuracion]},{hoja:hojaTareas,fila:tarea.fila,columnas:[tEstado,tInicio,tFin,tDuracion,tAvance]}].forEach(function(grupo){grupo.columnas.forEach(function(indice){var celda=grupo.hoja.getRange(grupo.fila,indice+1);validaciones.push({celda:celda,validacion:celda.getDataValidation()});celda.clearDataValidations();});});
+    var fin=new Date(); var inicio=new Date(fin.getTime()-86400000);
+    hojaProcesos.getRange(proceso.fila,pEstado+1).setValue('Preparado');
+    hojaProcesos.getRange(proceso.fila,pInicio+1).clearContent();
+    hojaProcesos.getRange(proceso.fila,pFin+1).clearContent();
+    hojaProcesos.getRange(proceso.fila,pDuracion+1).clearContent();
+    hojaTareas.getRange(tarea.fila,tEstado+1).setValue('Terminada');
+    hojaTareas.getRange(tarea.fila,tInicio+1).setValue(inicio);
+    hojaTareas.getRange(tarea.fila,tFin+1).setValue(fin);
+    hojaTareas.getRange(tarea.fila,tDuracion+1).setValue(1);
+    hojaTareas.getRange(tarea.fila,tAvance+1).setValue(100);
+    SpreadsheetApp.flush();
+    console.log('OK mutacion_directa_aplicada=true proceso=PCS-0001 estado_proceso=Preparado');
+    console.log('OK tarea_terminada=' + tarea.id + ' estado_tarea=Terminada avance=100');
+    console.log('OK coherencia_interna_proceso=true coherencia_interna_tarea=true');
+    var reporte=obtenerReporteIntegridad();
+    var hallazgos=[].concat(reporte.funcional.errores||[],reporte.funcional.advertencias||[],reporte.funcional.informacion||[]);
+    var detectado=hallazgos.some(function(h){return String(h.codigo||'').trim()==='FUNC-PROCESO-002'&&String(h.entidad||'').trim()==='PROCESO'&&String(h.registroId||'').trim()==='PCS-0001';});
+    console.log('OK hallazgo_proceso_preparado_con_tarea_terminada=' + detectado);
+    if(!detectado) errorFinal=new Error('F03_C06_C_NO_GO: FUNC-PROCESO-002 no detecta proceso Preparado con tarea Terminada');
+  } catch(error) { errorFinal=errorFinal||error; } finally {
+    if(respaldoProceso) hojaProcesos.getRange(respaldoProceso.fila,1,1,respaldoProceso.valores.length).setValues([respaldoProceso.valores]);
+    if(respaldoTarea) hojaTareas.getRange(respaldoTarea.fila,1,1,respaldoTarea.valores.length).setValues([respaldoTarea.valores]);
+    validaciones.forEach(function(item){if(item.validacion)item.celda.setDataValidation(item.validacion);else item.celda.clearDataValidations();});
+    SpreadsheetApp.flush();
+    console.log('OK validaciones_restauradas=true');
+    console.log('OK proceso_restaurado=' + Boolean(respaldoProceso));
+    console.log('OK tarea_restaurada=' + Boolean(respaldoTarea));
+    var restaurado=obtenerReporteIntegridad();
+    var hallazgosRestaurados=[].concat(restaurado.funcional.errores||[],restaurado.funcional.advertencias||[],restaurado.funcional.informacion||[]);
+    var persiste=hallazgosRestaurados.some(function(h){return String(h.codigo||'').trim()==='FUNC-PROCESO-002'&&String(h.registroId||'').trim()==='PCS-0001';});
+    console.log('OK integridad_restaurada=' + !persiste);
+    if(persiste) errorFinal=errorFinal||new Error('F03_C06_C_ERROR: persiste hallazgo tras restaurar');
+  }
+  console.log(errorFinal ? 'NEXT revisar_FUNC_PROCESO_002' : 'NEXT cerrar_C06_C');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
+  if(errorFinal) throw errorFinal;
+  return true;
+}
