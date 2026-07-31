@@ -1,7 +1,9 @@
-# Hashes SHA-256 — cierre de sesión de auditoría
+# Hashes SHA-256 — cierre de auditoría global (Paso 9)
 
-Generado: 2026-07-31 12:50:31    
-Referencia: sucesor de BL-CODE-AUDIT-CLOSE-01
+Generado: 2026-07-31 13:20 (actualizado tras cerrar el gap de cobertura `FUNC-TAREA-008`, commit `03d0571`)    
+Referencia: sucesor de `BL-CODE-AUDIT-CLOSE-01`, etiquetado como `BL-CODE-AUDIT-CLOSE-02`
+
+Única diferencia frente al snapshot de Fase J (12:50:31): `src/Tests_Repository2.js` cambia de hash por la incorporación de `auditarFaseC04B_TerminadaSinDuracionReal`.
 
 ```
 b2a3ceaaf206d71eae20ff7c0fc916fca97654ce9e7360f16e5b919215dd5401 *src/CacheLecturaService.js
@@ -32,7 +34,7 @@ d81b5f1232f5f2a9a8d82191f3ad508bfb150c0cbd2782304099daf9f94b0735 *src/Reversion.
 6bc902c0ecce4c563e3431147b93dbf9352009841f83a4c359bc5d3169f2e42f *src/TareaService.js
 8e340fe672eb2757b5709d836d04181c12ee67b6b6e912caa29338a366386b1a *src/Tests_IntegrityService_cobertura_directa_10_reglas.js
 d31821d51b7ee80616dd9372e3e64be89d141e45e51fa227b58704d8f3082eb6 *src/Tests_Repository.js
-6ea6a1b1fa4a778e657a6311494d55b0748815551c01a9d6ccd40416d5054bda *src/Tests_Repository2.js
+76e326e5e93da4a6a965e919b6d06adf99cede5bcb0c44d6de2e4ae820a49815 *src/Tests_Repository2.js
 6f88b5c5d29db911b32f1e97443a5e63265c41b9fa2c05d9018f99700f3a1aae *src/Validation.js
 4196f4f9ea53f24842b618df93ae7076880bfd5fd342125b00fa66278594d75a *src/appsscript.json
 ```

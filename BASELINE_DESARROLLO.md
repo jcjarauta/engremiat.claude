@@ -1,7 +1,8 @@
 # BASELINE DE DESARROLLO — LaTroballa Audit
 
-**Fecha de este snapshot:** 2026-07-30
+**Fecha de este snapshot:** 2026-07-30 (actualizado 2026-07-31 al cerrar Paso 9)
 **Baseline de código previa referenciada:** `BL-CODE-AUDIT-CLOSE-01` (26 archivos reconciliados, 23 funcionales + 3 de test, cobertura 27/27, integridad global limpia en su momento)
+**Baseline sucesora de este ciclo:** `BL-CODE-AUDIT-CLOSE-02` (2026-07-31, commit `03d0571`) — ver `INFORME_CIERRE_AUDITORIA_GLOBAL.md`
 
 ## 1. Identificación técnica
 

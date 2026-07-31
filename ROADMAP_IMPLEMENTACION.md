@@ -107,8 +107,8 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 - ✅ **Backup formal del Sheet**: hecho por el usuario (copia manual en Drive). Spreadsheet `1IfjoIJPBQvnPoFDwmdHPsYbhQkuyZ15HO8ra62UGRwg`, verificado con las 19 hojas completas. Script ID de la copia (`1Si1EHFak...`) documentado como distinto del de producción — no usar para `clasp push`.
 **Estimación: 1 sesión.**
 
-## Paso 9 — Cierre de auditoría global
-Informe final + nueva baseline (sucesora de `BL-CODE-AUDIT-CLOSE-01`).
+## Paso 9 — Cierre de auditoría global ✅ CERRADO
+Informe final: `INFORME_CIERRE_AUDITORIA_GLOBAL.md`. Nueva baseline: `BL-CODE-AUDIT-CLOSE-02` (sucesora de `BL-CODE-AUDIT-CLOSE-01`), tag apuntando al commit `03d0571`. Cierra también el gap de cobertura pendiente de Fase J (`FUNC-TAREA-008`): matriz final 62/62 reglas `FUNC-*` con prueba reactiva verificada.
 
 ---
 
