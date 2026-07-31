@@ -25,9 +25,18 @@ Instrumentación añadida (`src/InstrumentacionService.js`, sin refactor, solo c
 
 Confirma el riesgo de Fase I: 70 lecturas completas de hoja para una sola pasada, muchas redundantes (misma entidad releída sin caché entre llamadas a `obtenerIdsDeEntidad_`). Sin uso de `flush` (esperado, es solo lectura). Este dato alimenta directamente el Paso 6.
 
-## Paso 3 — Fase E: Jerarquía principal
-Campaña→proyecto→producto→proceso→tarea: 7 reglas de coherencia cruzada.
-**Estimación: 2 sesiones.**
+## Paso 3 — Fase E: Jerarquía principal ✅ CERRADO
+7 reglas de coherencia cruzada campaña→proyecto→producto→proceso, implementadas en 4 funciones (`IntegrityService.js`) y verificadas con `result=OK` en Apps Script real. Catálogos de ESTADO confirmados contra la hoja `90_CONFIGURACION` (no asumidos):
+
+| Código | Regla |
+|---|---|
+| `FUNC-JER-001` | Proyecto con `FECHA_INICIO_PLAN` anterior a la de su campaña |
+| `FUNC-JER-002` | Proyecto con `FECHA_FIN_PLAN` posterior a la de su campaña |
+| `FUNC-JER-003` | Campaña cerrada (Completada/Cancelada) con proyecto activo no cerrado |
+| `FUNC-JER-004` | Proyecto cerrado con producto vinculado (vía PROYECTO_PRODUCTO) no cerrado |
+| `FUNC-JER-005` | Producto cerrado con proceso activo no cerrado |
+| `FUNC-JER-006` | Proceso con `FECHA_FIN_PLAN` posterior a la `FECHA_REQUERIDA` de su producto |
+| `FUNC-JER-007` | Relación proyecto-producto con `FECHA_REQUERIDA` anterior al inicio planificado del proyecto |
 
 ## Paso 4 — Fase F: Documentos
 Bloque DOCUMENTO (FK polimórfica, versión, vigencia, duplicados).

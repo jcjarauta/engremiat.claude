@@ -21,6 +21,7 @@
 - Fase D recortada: 4 reglas nuevas (`FUNC-REC-002` a `FUNC-REC-005`) y sus pruebas reactivas añadidas a `src/IntegrityService.js` y `src/Tests_Repository2.js`, desplegadas vía `clasp push` y verificadas con `result=OK` en el editor de Apps Script real.
 - Paso 2 del roadmap (instrumentación barata) cerrado: `src/InstrumentacionService.js` nuevo, enganchado en los dos caminos de lectura de hoja existentes (`Repository.js` y `IntegrityService.js`).
 - Paso 6 del roadmap (refactor de lectura, adelantado antes de Paso 3) cerrado: `src/CacheLecturaService.js` nuevo, caché de lectura con alcance de una sola ejecución. Ver Fase I en la tabla siguiente para los números medidos.
+- Paso 3 del roadmap (Fase E, jerarquía) cerrado: 7 reglas nuevas (`FUNC-JER-001` a `FUNC-JER-007`) y sus pruebas reactivas, verificadas con `result=OK` en Apps Script real.
 - La divergencia clasp↔git detectada anteriormente (función `auditarFaseC05A_TareaPredecesoraHuerfana` traída por `clasp pull` sin commitear) **quedó resuelta** — ya está incorporada en el commit `35b50d0`.
 - Tamaño actual del código fuente: ~27 archivos, ~35.000 líneas. Los archivos dominantes siguen siendo `Repository.js`, `Tests_Repository.js` y `Tests_Repository2.js`.
 
@@ -31,7 +32,7 @@
 | A-B | Estructura, configuración, CRUD/trazabilidad | Cerrado (WARN aceptable) | — |
 | C | Coherencia de TAREA (fechas, estados, predecesoras, procesos) | **En curso** (activo ahora mismo) | `auditarFaseC06A` en desarrollo; posibles C06B+ |
 | D | Recursos humanos y capacidad | **Cerrada (recortada)** | 4/5 reglas implementadas y verificadas: `FUNC-REC-002` (solapamiento temporal), `FUNC-REC-003` (persona inactiva con asignación activa), `FUNC-REC-004` (densidad vs capacidad semanal), `FUNC-REC-005` (sobrecarga por periodo). "Equipo/persona" **diferida** — no existe tabla de membresía equipo↔persona en el esquema, no modelable sin entidad nueva. "Disponibilidad real por fecha" también fuera de alcance — requiere entidad nueva (`PERSONA_EQUIPO` no tiene campos de fecha, solo `DISPONIBILIDAD` categórica estática) |
-| E | Jerarquía (campaña→proyecto→producto→proceso→tarea) | Parcial | 7 reglas de coherencia de fechas/estados cruzados |
+| E | Jerarquía (campaña→proyecto→producto→proceso→tarea) | **Cerrada** | 7/7 reglas implementadas y verificadas (`FUNC-JER-001` a `FUNC-JER-007`): coherencia temporal campaña↔proyecto, cierre de estado en cascada campaña→proyecto→producto→proceso, coherencia temporal proceso↔producto y relación↔proyecto. Catálogos de ESTADO confirmados contra la hoja `90_CONFIGURACION`, no asumidos |
 | F | Documentos, decisiones, incidencias | Casi completada | Bloque DOCUMENTO (FK polimórfica, versión, vigencia) |
 | G | Historial y reversión | Verificado | Revisión consolidada final, no desarrollo |
 | H | UI, panel e informes | **Pendiente — riesgo principal** | Todo: estabilidad, tiempos de carga, informes, exportación, prueba visual de usuario |

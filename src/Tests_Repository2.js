@@ -12488,6 +12488,550 @@ function probarIntegridadSobrecargaPorPeriodo() {
 }
 
 
+function probarIntegridadProyectoInicioAnteriorCampana() {
+  var campanasPorId_ = {};
+
+  listarRegistros(
+    'CAMPANA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (campana) {
+    campanasPorId_[campana.ID] = campana;
+  });
+
+  var proyecto =
+    listarRegistros(
+      'PROYECTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      var campana =
+        campanasPorId_[registro.CAMPANA_ID];
+
+      if (!campana) {
+        return false;
+      }
+
+      var inicioCampana =
+        parseFechaIntegridad_(campana.FECHA_INICIO_PLAN);
+
+      return !isNaN(inicioCampana.getTime());
+    })[0];
+
+  if (!proyecto) {
+    throw new Error(
+      'FUNC-JER-001_TEST_ERROR: no existe un proyecto activo con campana activa de fecha valida'
+    );
+  }
+
+  var campana =
+    campanasPorId_[proyecto.CAMPANA_ID];
+
+  var inicioCampana =
+    parseFechaIntegridad_(campana.FECHA_INICIO_PLAN);
+
+  var fechaAnterior =
+    new Date(
+      inicioCampana.getTime() - 86400000
+    );
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_001',
+
+    codigo:
+      'FUNC-JER-001',
+
+    entidad:
+      'PROYECTO',
+
+    registro:
+      proyecto,
+
+    mutaciones: {
+      FECHA_INICIO_PLAN: fechaAnterior
+    }
+  });
+}
+
+
+function probarIntegridadProyectoFinPosteriorCampana() {
+  var campanasPorId_ = {};
+
+  listarRegistros(
+    'CAMPANA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (campana) {
+    campanasPorId_[campana.ID] = campana;
+  });
+
+  var proyecto =
+    listarRegistros(
+      'PROYECTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      var campana =
+        campanasPorId_[registro.CAMPANA_ID];
+
+      if (!campana) {
+        return false;
+      }
+
+      var finCampana =
+        parseFechaIntegridad_(campana.FECHA_FIN_PLAN);
+
+      return !isNaN(finCampana.getTime());
+    })[0];
+
+  if (!proyecto) {
+    throw new Error(
+      'FUNC-JER-002_TEST_ERROR: no existe un proyecto activo con campana activa de fecha valida'
+    );
+  }
+
+  var campana =
+    campanasPorId_[proyecto.CAMPANA_ID];
+
+  var finCampana =
+    parseFechaIntegridad_(campana.FECHA_FIN_PLAN);
+
+  var fechaPosterior =
+    new Date(
+      finCampana.getTime() + 86400000
+    );
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_002',
+
+    codigo:
+      'FUNC-JER-002',
+
+    entidad:
+      'PROYECTO',
+
+    registro:
+      proyecto,
+
+    mutaciones: {
+      FECHA_FIN_PLAN: fechaPosterior
+    }
+  });
+}
+
+
+function probarIntegridadCampanaCerradaConProyectoActivo() {
+  var proyectosPorCampana_ = {};
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    if (
+      ESTADOS_CIERRE_PROYECTO_.indexOf(proyecto.ESTADO) !== -1
+    ) {
+      return;
+    }
+
+    var campanaId =
+      String(proyecto.CAMPANA_ID || '').trim();
+
+    if (!campanaId) {
+      return;
+    }
+
+    if (!proyectosPorCampana_[campanaId]) {
+      proyectosPorCampana_[campanaId] = [];
+    }
+
+    proyectosPorCampana_[campanaId].push(proyecto);
+  });
+
+  var campana =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      return (
+        ESTADOS_CIERRE_CAMPANA_.indexOf(registro.ESTADO) === -1 &&
+        (proyectosPorCampana_[registro.ID] || []).length > 0
+      );
+    })[0];
+
+  if (!campana) {
+    throw new Error(
+      'FUNC-JER-003_TEST_ERROR: no existe una campana no cerrada con proyecto activo no cerrado'
+    );
+  }
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_003',
+
+    codigo:
+      'FUNC-JER-003',
+
+    entidad:
+      'CAMPANA',
+
+    registro:
+      campana,
+
+    mutaciones: {
+      ESTADO: 'Completada'
+    }
+  });
+}
+
+
+function probarIntegridadProyectoProductoCerradoConProductoActivo() {
+  var proyectosPorId_ = {};
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    proyectosPorId_[proyecto.ID] = proyecto;
+  });
+
+  var productosPorId_ = {};
+
+  listarRegistros(
+    'PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (producto) {
+    productosPorId_[producto.ID] = producto;
+  });
+
+  var relacion =
+    listarRegistros(
+      'PROYECTO_PRODUCTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      var proyecto =
+        proyectosPorId_[registro.PROYECTO_ID];
+
+      var producto =
+        productosPorId_[registro.PRODUCTO_ID];
+
+      return (
+        proyecto &&
+        producto &&
+        ESTADOS_CIERRE_PROYECTO_.indexOf(proyecto.ESTADO) === -1 &&
+        ESTADOS_CIERRE_PRODUCTO_.indexOf(producto.ESTADO) === -1
+      );
+    })[0];
+
+  if (!relacion) {
+    throw new Error(
+      'FUNC-JER-004_TEST_ERROR: no existe una relacion PROYECTO_PRODUCTO con proyecto y producto no cerrados'
+    );
+  }
+
+  var proyecto =
+    proyectosPorId_[relacion.PROYECTO_ID];
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_004',
+
+    codigo:
+      'FUNC-JER-004',
+
+    entidadMutada:
+      'PROYECTO',
+
+    entidad:
+      'PROYECTO_PRODUCTO',
+
+    registro:
+      proyecto,
+
+    registroIdEsperado:
+      relacion.ID,
+
+    mutaciones: {
+      ESTADO: 'Completado'
+    }
+  });
+}
+
+
+function probarIntegridadProductoCerradoConProcesoActivo() {
+  var procesosPorProducto_ = {};
+
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    if (
+      ESTADOS_CIERRE_PROCESO_JERARQUIA_.indexOf(proceso.ESTADO) !== -1
+    ) {
+      return;
+    }
+
+    var productoId =
+      String(proceso.PRODUCTO_ID || '').trim();
+
+    if (!productoId) {
+      return;
+    }
+
+    if (!procesosPorProducto_[productoId]) {
+      procesosPorProducto_[productoId] = [];
+    }
+
+    procesosPorProducto_[productoId].push(proceso);
+  });
+
+  var producto =
+    listarRegistros(
+      'PRODUCTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      return (
+        ESTADOS_CIERRE_PRODUCTO_.indexOf(registro.ESTADO) === -1 &&
+        (procesosPorProducto_[registro.ID] || []).length > 0
+      );
+    })[0];
+
+  if (!producto) {
+    throw new Error(
+      'FUNC-JER-005_TEST_ERROR: no existe un producto no cerrado con proceso activo no cerrado'
+    );
+  }
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_005',
+
+    codigo:
+      'FUNC-JER-005',
+
+    entidad:
+      'PRODUCTO',
+
+    registro:
+      producto,
+
+    mutaciones: {
+      ESTADO: 'Completado'
+    }
+  });
+}
+
+
+function probarIntegridadProcesoFinPosteriorProductoRequerido() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_JER_006';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var productosPorId_ = {};
+
+  listarRegistros(
+    'PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (producto) {
+    productosPorId_[producto.ID] = producto;
+  });
+
+  var proceso =
+    listarRegistros(
+      'PROCESO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      return Boolean(
+        productosPorId_[registro.PRODUCTO_ID]
+      );
+    })[0];
+
+  if (!proceso) {
+    throw new Error(
+      'FUNC-JER-006_TEST_ERROR: no existe un proceso activo con producto activo vinculado'
+    );
+  }
+
+  var producto =
+    productosPorId_[proceso.PRODUCTO_ID];
+
+  var hojaProcesos =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PROCESO'
+    );
+
+  var hojaProductos =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PRODUCTO'
+    );
+
+  var filaProceso =
+    buscarFilaPorIdIntegridad_(
+      hojaProcesos,
+      proceso.ID
+    );
+
+  var filaProducto =
+    buscarFilaPorIdIntegridad_(
+      hojaProductos,
+      producto.ID
+    );
+
+  var columnaFinProceso =
+    obtenerMapaCabecerasIntegridad_(
+      hojaProcesos
+    ).mapa.FECHA_FIN_PLAN;
+
+  var columnaRequeridaProducto =
+    obtenerMapaCabecerasIntegridad_(
+      hojaProductos
+    ).mapa.FECHA_REQUERIDA;
+
+  var celdaFinProceso =
+    hojaProcesos.getRange(
+      filaProceso,
+      columnaFinProceso
+    );
+
+  var celdaRequeridaProducto =
+    hojaProductos.getRange(
+      filaProducto,
+      columnaRequeridaProducto
+    );
+
+  var valorOriginalFinProceso =
+    celdaFinProceso.getValue();
+
+  var valorOriginalRequeridaProducto =
+    celdaRequeridaProducto.getValue();
+
+  var requeridaProducto = new Date();
+
+  var finPosterior =
+    new Date(
+      requeridaProducto.getTime() + 86400000
+    );
+
+  try {
+    celdaRequeridaProducto.setValue(
+      requeridaProducto
+    );
+
+    celdaFinProceso.setValue(
+      finPosterior
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-JER-006',
+      'PROCESO',
+      proceso.ID,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-JER-006'
+    );
+
+  } finally {
+    celdaFinProceso.setValue(
+      valorOriginalFinProceso
+    );
+
+    celdaRequeridaProducto.setValue(
+      valorOriginalRequeridaProducto
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-JER-006',
+    'PROCESO',
+    proceso.ID
+  );
+
+  console.log(
+    'OK registros_restaurados=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadRelacionFechaRequeridaAnteriorProyecto() {
+  var proyectosPorId_ = {};
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    proyectosPorId_[proyecto.ID] = proyecto;
+  });
+
+  var relacion =
+    listarRegistros(
+      'PROYECTO_PRODUCTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      var proyecto =
+        proyectosPorId_[registro.PROYECTO_ID];
+
+      if (!proyecto) {
+        return false;
+      }
+
+      var inicioProyecto =
+        parseFechaIntegridad_(proyecto.FECHA_INICIO_PLAN);
+
+      return !isNaN(inicioProyecto.getTime());
+    })[0];
+
+  if (!relacion) {
+    throw new Error(
+      'FUNC-JER-007_TEST_ERROR: no existe una relacion PROYECTO_PRODUCTO con proyecto de FECHA_INICIO_PLAN valida'
+    );
+  }
+
+  var proyecto =
+    proyectosPorId_[relacion.PROYECTO_ID];
+
+  var inicioProyecto =
+    parseFechaIntegridad_(proyecto.FECHA_INICIO_PLAN);
+
+  var fechaAnterior =
+    new Date(
+      inicioProyecto.getTime() - 86400000
+    );
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      'PROBAR_INTEGRIDAD_FUNC_JER_007',
+
+    codigo:
+      'FUNC-JER-007',
+
+    entidad:
+      'PROYECTO_PRODUCTO',
+
+    registro:
+      relacion,
+
+    mutaciones: {
+      FECHA_REQUERIDA: fechaAnterior
+    }
+  });
+}
+
+
 /**
  * Ejecuta una prueba basada en mutación temporal de un registro.
  */

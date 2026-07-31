@@ -1873,6 +1873,315 @@ function detectarProblemasProyectoProducto_(agregar) {
   });
 }
 
+var ESTADOS_CIERRE_CAMPANA_ = ['Completada', 'Cancelada'];
+var ESTADOS_CIERRE_PROYECTO_ = ['Completado', 'Cancelado'];
+var ESTADOS_CIERRE_PRODUCTO_ = ['Completado', 'Cancelado'];
+var ESTADOS_CIERRE_PROCESO_JERARQUIA_ = ['Completado', 'Cancelado'];
+
+function parseFechaJerarquia_(valor) {
+  return valor instanceof Date
+    ? new Date(valor.getTime())
+    : new Date(valor);
+}
+
+function detectarProyectoFueraDeVentanaCampana_(agregar) {
+  var campanasPorId_ = {};
+
+  listarRegistros(
+    'CAMPANA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (campana) {
+    campanasPorId_[campana.ID] = campana;
+  });
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    var campana =
+      campanasPorId_[proyecto.CAMPANA_ID];
+
+    if (!campana) {
+      return;
+    }
+
+    var inicioProyecto =
+      parseFechaJerarquia_(proyecto.FECHA_INICIO_PLAN);
+
+    var inicioCampana =
+      parseFechaJerarquia_(campana.FECHA_INICIO_PLAN);
+
+    if (
+      !isNaN(inicioProyecto.getTime()) &&
+      !isNaN(inicioCampana.getTime()) &&
+      inicioProyecto.getTime() < inicioCampana.getTime()
+    ) {
+      agregar(
+        'FUNC-JER-001',
+        'PROYECTO',
+        proyecto.ID,
+        'Proyecto con FECHA_INICIO_PLAN anterior a la FECHA_INICIO_PLAN de su campana ' +
+          campana.ID +
+          '.',
+        'ERROR',
+        'Ajustar la fecha de inicio del proyecto o de la campana.'
+      );
+    }
+
+    var finProyecto =
+      parseFechaJerarquia_(proyecto.FECHA_FIN_PLAN);
+
+    var finCampana =
+      parseFechaJerarquia_(campana.FECHA_FIN_PLAN);
+
+    if (
+      !isNaN(finProyecto.getTime()) &&
+      !isNaN(finCampana.getTime()) &&
+      finProyecto.getTime() > finCampana.getTime()
+    ) {
+      agregar(
+        'FUNC-JER-002',
+        'PROYECTO',
+        proyecto.ID,
+        'Proyecto con FECHA_FIN_PLAN posterior a la FECHA_FIN_PLAN de su campana ' +
+          campana.ID +
+          '.',
+        'ERROR',
+        'Ajustar la fecha de fin del proyecto o de la campana.'
+      );
+    }
+  });
+}
+
+function detectarCampanaCerradaConProyectoActivo_(agregar) {
+  var proyectosPorCampana_ = {};
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    var campanaId =
+      String(proyecto.CAMPANA_ID || '').trim();
+
+    if (!campanaId) {
+      return;
+    }
+
+    if (!proyectosPorCampana_[campanaId]) {
+      proyectosPorCampana_[campanaId] = [];
+    }
+
+    proyectosPorCampana_[campanaId].push(proyecto);
+  });
+
+  listarRegistros(
+    'CAMPANA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (campana) {
+    if (
+      ESTADOS_CIERRE_CAMPANA_.indexOf(campana.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var proyectosNoCerrados =
+      (proyectosPorCampana_[campana.ID] || [])
+        .filter(function (proyecto) {
+          return (
+            ESTADOS_CIERRE_PROYECTO_.indexOf(proyecto.ESTADO) === -1
+          );
+        });
+
+    if (proyectosNoCerrados.length > 0) {
+      agregar(
+        'FUNC-JER-003',
+        'CAMPANA',
+        campana.ID,
+        'Campana ' + campana.ESTADO +
+          ' con PROYECTO activo no cerrado: ' +
+          proyectosNoCerrados
+            .map(function (proyecto) {
+              return proyecto.ID;
+            })
+            .join(', ') +
+          '.',
+        'ERROR',
+        'Cerrar los proyectos activos o revisar el estado de la campana.'
+      );
+    }
+  });
+}
+
+function detectarProblemasProyectoProductoJerarquia_(agregar) {
+  var proyectosPorId_ = {};
+
+  listarRegistros(
+    'PROYECTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proyecto) {
+    proyectosPorId_[proyecto.ID] = proyecto;
+  });
+
+  var productosPorId_ = {};
+
+  listarRegistros(
+    'PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (producto) {
+    productosPorId_[producto.ID] = producto;
+  });
+
+  listarRegistros(
+    'PROYECTO_PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (relacion) {
+    var proyecto =
+      proyectosPorId_[relacion.PROYECTO_ID];
+
+    var producto =
+      productosPorId_[relacion.PRODUCTO_ID];
+
+    if (
+      proyecto &&
+      producto &&
+      ESTADOS_CIERRE_PROYECTO_.indexOf(proyecto.ESTADO) !== -1 &&
+      ESTADOS_CIERRE_PRODUCTO_.indexOf(producto.ESTADO) === -1
+    ) {
+      agregar(
+        'FUNC-JER-004',
+        'PROYECTO_PRODUCTO',
+        relacion.ID,
+        'Proyecto ' + proyecto.ID + ' ' + proyecto.ESTADO +
+          ' con PRODUCTO ' + producto.ID +
+          ' no cerrado (' + producto.ESTADO + ').',
+        'ERROR',
+        'Cerrar el producto vinculado o revisar el estado del proyecto.'
+      );
+    }
+
+    if (proyecto) {
+      var fechaRequerida =
+        parseFechaJerarquia_(relacion.FECHA_REQUERIDA);
+
+      var inicioProyecto =
+        parseFechaJerarquia_(proyecto.FECHA_INICIO_PLAN);
+
+      if (
+        !isNaN(fechaRequerida.getTime()) &&
+        !isNaN(inicioProyecto.getTime()) &&
+        fechaRequerida.getTime() < inicioProyecto.getTime()
+      ) {
+        agregar(
+          'FUNC-JER-007',
+          'PROYECTO_PRODUCTO',
+          relacion.ID,
+          'FECHA_REQUERIDA anterior a la FECHA_INICIO_PLAN del proyecto ' +
+            proyecto.ID +
+            '.',
+          'ERROR',
+          'Ajustar la fecha requerida de la relacion o la fecha de inicio del proyecto.'
+        );
+      }
+    }
+  });
+}
+
+function detectarProblemasProductoProcesoJerarquia_(agregar) {
+  var productosPorId_ = {};
+
+  listarRegistros(
+    'PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (producto) {
+    productosPorId_[producto.ID] = producto;
+  });
+
+  var procesosPorProducto_ = {};
+
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    var productoId =
+      String(proceso.PRODUCTO_ID || '').trim();
+
+    if (!productoId) {
+      return;
+    }
+
+    if (!procesosPorProducto_[productoId]) {
+      procesosPorProducto_[productoId] = [];
+    }
+
+    procesosPorProducto_[productoId].push(proceso);
+
+    var producto = productosPorId_[productoId];
+
+    if (!producto) {
+      return;
+    }
+
+    var finProceso =
+      parseFechaJerarquia_(proceso.FECHA_FIN_PLAN);
+
+    var requeridaProducto =
+      parseFechaJerarquia_(producto.FECHA_REQUERIDA);
+
+    if (
+      !isNaN(finProceso.getTime()) &&
+      !isNaN(requeridaProducto.getTime()) &&
+      finProceso.getTime() > requeridaProducto.getTime()
+    ) {
+      agregar(
+        'FUNC-JER-006',
+        'PROCESO',
+        proceso.ID,
+        'Proceso con FECHA_FIN_PLAN posterior a la FECHA_REQUERIDA del producto ' +
+          producto.ID +
+          '.',
+        'ERROR',
+        'Ajustar la planificacion del proceso o la fecha requerida del producto.'
+      );
+    }
+  });
+
+  Object.keys(productosPorId_).forEach(function (productoId) {
+    var producto = productosPorId_[productoId];
+
+    if (
+      ESTADOS_CIERRE_PRODUCTO_.indexOf(producto.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var procesosNoCerrados =
+      (procesosPorProducto_[productoId] || [])
+        .filter(function (proceso) {
+          return (
+            ESTADOS_CIERRE_PROCESO_JERARQUIA_.indexOf(proceso.ESTADO) === -1
+          );
+        });
+
+    if (procesosNoCerrados.length > 0) {
+      agregar(
+        'FUNC-JER-005',
+        'PRODUCTO',
+        producto.ID,
+        'Producto ' + producto.ESTADO +
+          ' con PROCESO activo no cerrado: ' +
+          procesosNoCerrados
+            .map(function (proceso) {
+              return proceso.ID;
+            })
+            .join(', ') +
+          '.',
+        'ERROR',
+        'Cerrar los procesos activos o revisar el estado del producto.'
+      );
+    }
+  });
+}
+
 function detectarProblemasFuncionales_() {
   var hallazgos = [];
 
@@ -1987,6 +2296,31 @@ detectarDuplicidadesRelacionesMaterial_(
    * Integridad funcional histórica.
    */
   detectarProblemasProyectoProducto_(agregar);
+
+  /*
+   * FUNC-JER-001 / FUNC-JER-002
+   * Proyecto planificado fuera de la ventana temporal de su campana.
+   */
+  detectarProyectoFueraDeVentanaCampana_(agregar);
+
+  /*
+   * FUNC-JER-003
+   * Campana cerrada (Completada/Cancelada) con un proyecto activo no cerrado.
+   */
+  detectarCampanaCerradaConProyectoActivo_(agregar);
+
+  /*
+   * FUNC-JER-004 / FUNC-JER-007
+   * Coherencia de estado y fecha requerida entre PROYECTO y PRODUCTO
+   * (via PROYECTO_PRODUCTO).
+   */
+  detectarProblemasProyectoProductoJerarquia_(agregar);
+
+  /*
+   * FUNC-JER-005 / FUNC-JER-006
+   * Coherencia de estado y fecha entre PRODUCTO y sus PROCESO.
+   */
+  detectarProblemasProductoProcesoJerarquia_(agregar);
 
 
   /*
