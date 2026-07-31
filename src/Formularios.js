@@ -7,24 +7,29 @@
  * reutilizando el repositorio comun (insertarRegistroTransaccional / actualizarRegistroTransaccional).
  */
 
+/*
+ * Claves = texto exacto del catalogo CFG_ENTIDAD_DOCUMENTO (columna VALOR de
+ * 90_CONFIGURACION, lo que realmente se guarda en DOCUMENTO.ENTIDAD_TIPO,
+ * no la clave interna en mayusculas). Valores = nombre de entidad interno
+ * que espera listarRegistros/ENTIDADES_MVP.
+ */
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
-  CAMPANA: '01_CAMPANAS',
-  PROYECTO: '02_PROYECTOS',
-  PRODUCTO: '03_PRODUCTOS',
-  PROCESO: '05_PROCESOS',
-  TAREA: '06_TAREAS',
-  MATERIAL: '08_MATERIALES',
-  PERSONA_EQUIPO: '11_PERSONAS_EQUIPOS',
-  PROVEEDOR: '15_PROVEEDORES'
+  'Campaña': 'CAMPANA',
+  'Proyecto': 'PROYECTO',
+  'Producto': 'PRODUCTO',
+  'Proceso': 'PROCESO',
+  'Tarea': 'TAREA',
+  'Decisión': 'DECISION',
+  'Incidencia': 'INCIDENCIA'
 });
 
 var MAPAS_DEPENDENCIA_MVP = Object.freeze({
   DOCUMENTO_ENTIDAD_ID: Object.freeze({
     campoPadre: 'ENTIDAD_TIPO',
     resolver: function (valorPadre) {
-      var hoja = ENTIDAD_DOCUMENTO_A_MVP[valorPadre];
-      if (!hoja) return [];
-      return listarRegistros(valorPadre, { ACTIVO: 'SÍ' }).map(function (r) {
+      var entidad = ENTIDAD_DOCUMENTO_A_MVP[valorPadre];
+      if (!entidad) return [];
+      return listarRegistros(entidad, { ACTIVO: 'SÍ' }).map(function (r) {
         return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || r.TITULO || '') };
       });
     }
@@ -204,12 +209,12 @@ PROYECTO: [
     { campo: 'ORDEN_SECUENCIA', etiqueta: 'Orden de secuencia', tipo: 'numero', requerido: true },
     { campo: 'PROCESO_PREDECESOR_ID', etiqueta: 'Proceso predecesor', tipo: 'fk', entidadFk: 'PROCESO' },
     { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true },
-    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Terminado', 'Cancelado'] } },
+    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO' },
     { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha' },
     { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha' },
-    { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En curso', 'Terminado', 'Cancelado'] } },
-    { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Terminado', 'Cancelado'] } },
+    { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En proceso', 'Completado', 'Cancelado'] } },
+    { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
     { campo: 'PORCENTAJE_AVANCE', etiqueta: 'Porcentaje de avance', tipo: 'numero', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROCESO', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
@@ -224,7 +229,7 @@ PROYECTO: [
     { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
     { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha' },
     { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha' },
-    { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En curso', 'Terminada', 'Cancelada'] } },
+    { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En proceso', 'Terminada', 'Cancelada'] } },
     { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
     { campo: 'PORCENTAJE_AVANCE', etiqueta: 'Porcentaje de avance', tipo: 'numero', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_TAREA', requerido: true },

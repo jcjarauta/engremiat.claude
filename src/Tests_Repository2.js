@@ -13039,7 +13039,7 @@ function construirDocumentoPruebaIntegridad_(
   return Object.assign(
     {
       ID: idTemporal,
-      ENTIDAD_TIPO: 'TAREA',
+      ENTIDAD_TIPO: 'Tarea',
       ENTIDAD_ID: 'TAR-0001',
       TIPO_DOCUMENTO: 'Informe',
       TITULO: 'AUDITORIA DOCUMENTO ' + idTemporal,
@@ -13084,7 +13084,7 @@ function probarIntegridadDocumentoEntidadIdHuerfano() {
       construirDocumentoPruebaIntegridad_(
         idTemporal,
         {
-          ENTIDAD_TIPO: 'TAREA',
+          ENTIDAD_TIPO: 'Tarea',
           ENTIDAD_ID: 'TAR-INEXISTENTE-DOC'
         }
       )
@@ -13172,7 +13172,7 @@ function probarIntegridadDocumentoReferenciaInactiva() {
       construirDocumentoPruebaIntegridad_(
         idTemporal,
         {
-          ENTIDAD_TIPO: 'PROYECTO',
+          ENTIDAD_TIPO: 'Proyecto',
           ENTIDAD_ID: padreInactivo.ID
         }
       )

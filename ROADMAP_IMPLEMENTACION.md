@@ -87,9 +87,13 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 - **`aplanarInformeParaExportar_`** (exportar CSV/PDF) solo aplanaba un nivel de anidación, dejando `[object Object]` y JSON crudo en las exportaciones. Reescrita para aplanar recursivamente cualquier profundidad.
 - `obtenerPanelOperativo()` y `generarInforme()` también conectados a la caché de lectura de Paso 6 (no la tenían).
 
-**Verificado visualmente por el usuario en Apps Script real**: Panel operativo, Informes (campaña y memoria de producción), exportación CSV y PDF — todos cargan y muestran datos reales correctamente tras el arreglo.
+- **Bug crítico #2**: el formulario "Nuevo documento" tenía el desplegable dependiente "Registro" siempre vacío al elegir cualquier tipo de entidad. Causa: `ENTIDAD_DOCUMENTO_A_MVP` (Formularios.js) usaba claves internas en mayúsculas sin tilde (`TAREA`, `DECISION`) mientras que `DOCUMENTO.ENTIDAD_TIPO` guarda el texto real del catálogo (`"Tarea"`, `"Decisión"`, con tilde) — nunca coincidían. Además, aunque hubiera coincidido, el código pasaba el valor sin traducir a `listarRegistros(...)`, que exige el nombre interno de entidad exacto. Corregido el mapa (claves = texto real del catálogo, valores = nombre interno de entidad) y el resolver. Las reglas `FUNC-DOC-001`/`FUNC-DOC-002` (Fase F) tenían el mismo problema de mayúsculas — nunca habían detectado nada en documentos reales creados vía formulario — corregidas para reutilizar el mismo mapa como única fuente de verdad, junto con las pruebas reactivas correspondientes.
 
-**Pendiente de la checklist de Fase H**: formularios (modal 420×520, revisar si se cortan con esquemas largos), resto de tipos de informe (proyecto), y verificación general de estabilidad.
+**Verificado visualmente por el usuario en Apps Script real**: Panel operativo, Informes (campaña, proyecto y memoria de producción), exportación CSV y PDF, creación de Tarea con campos condicionales (Fase H bug #3, ver más abajo), creación de Documento con FK dependiente — todos funcionan correctamente tras los arreglos. Las 6 reglas de Fase F re-verificadas `result=OK` tras el cambio.
+
+- **Bug crítico #3** (mismo patrón que el #2, encontrado durante la prueba de formularios): en `ESQUEMAS_FORMULARIO_MVP`, los campos condicionales (`visibleSi`) de TAREA y PROCESO usaban valores de catálogo inventados/desactualizados (`'En curso'` en vez de `'En proceso'`; `'Terminado'` en vez de `'Completado'` para PROCESO) — el campo "Fecha inicio real" nunca aparecía en el formulario al poner una tarea/proceso "En proceso", bloqueando el guardado (el motor de inserción exige esa fecha en ese estado). Confirmado contra el catálogo real de `90_CONFIGURACION` y corregidas las 4 ocurrencias. Verificado end-to-end: tarea creada con éxito con el campo visible y guardado correcto.
+
+**Pendiente de la checklist de Fase H**: verificación general de estabilidad con más volumen de datos; revisar si existen más desincronizaciones catálogo↔código en otros formularios no probados todavía (Decisión, Incidencia, Material, etc.).
 **Estimación: 2-4 sesiones.**
 
 ## Paso 8 — Fase J: Cierre de seguridad y baseline final

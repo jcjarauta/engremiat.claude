@@ -2182,38 +2182,27 @@ function detectarProblemasProductoProcesoJerarquia_(agregar) {
   });
 }
 
-/*
- * Entidades que un DOCUMENTO puede referenciar via ENTIDAD_TIPO/ENTIDAD_ID,
- * segun el catalogo real ENTIDAD_DOCUMENTO de la hoja 90_CONFIGURACION
- * (CFG-0103 a CFG-0109). No reutiliza ENTIDAD_DOCUMENTO_A_MVP de
- * Formularios.js porque ese mapa esta desincronizado del catalogo real
- * (le faltan DECISION/INCIDENCIA y le sobran MATERIAL/PERSONA_EQUIPO/
- * PROVEEDOR, que el catalogo ya no permite).
- */
-var ENTIDADES_DOCUMENTO_VALIDAS_ = [
-  'CAMPANA',
-  'PROYECTO',
-  'PRODUCTO',
-  'PROCESO',
-  'TAREA',
-  'DECISION',
-  'INCIDENCIA'
-];
-
 function detectarProblemasDocumento_(agregar) {
   var registrosPorEntidad_ = {};
 
+  /*
+   * Reutiliza ENTIDAD_DOCUMENTO_A_MVP (Formularios.js) como unica fuente
+   * de verdad: sus claves son el texto exacto del catalogo real
+   * (DOCUMENTO.ENTIDAD_TIPO guarda "Tarea", "Decisión", etc., no las
+   * claves internas en mayusculas), y sus valores son el nombre de
+   * entidad interno que espera listarRegistros.
+   */
   function obtenerMapaEntidad_(entidadTipo) {
-    if (
-      ENTIDADES_DOCUMENTO_VALIDAS_.indexOf(entidadTipo) === -1
-    ) {
+    var entidadInterna = ENTIDAD_DOCUMENTO_A_MVP[entidadTipo];
+
+    if (!entidadInterna) {
       return null;
     }
 
     if (!registrosPorEntidad_[entidadTipo]) {
       var mapa = {};
 
-      listarRegistros(entidadTipo)
+      listarRegistros(entidadInterna)
         .forEach(function (registro) {
           mapa[registro.ID] = registro;
         });
