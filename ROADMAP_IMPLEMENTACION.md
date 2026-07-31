@@ -79,7 +79,7 @@ Alcance decidido y aplicado: **caché de lectura con alcance de una sola ejecuci
 
 **Regresión verificada sin fallos**: `ejecutarSuiteIntegridadCoberturaDirectaPendiente` (10 reglas), las 4 pruebas nuevas de Fase D (`FUNC-REC-002` a `FUNC-REC-005`) y `probarIntegridadProveedorCodigoDuplicado` (ruta de duplicados) — todas `result=OK` tras el cambio.
 
-## Paso 7 — Fase H: UI, panel e informes — EN CURSO (bug crítico encontrado y corregido)
+## Paso 7 — Fase H: UI, panel e informes ✅ CERRADO (3 bugs críticos encontrados y corregidos)
 Revisión de código previa a la verificación visual detectó y corrigió, con verificación humana real en Apps Script:
 
 - **`IntegridadReporte.html` sin `withFailureHandler`** — corregido, ahora muestra error en vez de colgarse.
@@ -93,7 +93,9 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 
 - **Bug crítico #3** (mismo patrón que el #2, encontrado durante la prueba de formularios): en `ESQUEMAS_FORMULARIO_MVP`, los campos condicionales (`visibleSi`) de TAREA y PROCESO usaban valores de catálogo inventados/desactualizados (`'En curso'` en vez de `'En proceso'`; `'Terminado'` en vez de `'Completado'` para PROCESO) — el campo "Fecha inicio real" nunca aparecía en el formulario al poner una tarea/proceso "En proceso", bloqueando el guardado (el motor de inserción exige esa fecha en ese estado). Confirmado contra el catálogo real de `90_CONFIGURACION` y corregidas las 4 ocurrencias. Verificado end-to-end: tarea creada con éxito con el campo visible y guardado correcto.
 
-**Pendiente de la checklist de Fase H**: verificación general de estabilidad con más volumen de datos; revisar si existen más desincronizaciones catálogo↔código en otros formularios no probados todavía (Decisión, Incidencia, Material, etc.).
+**Checklist completa, verificada por el usuario en Apps Script real**: Panel operativo, los 3 tipos de Informe (campaña/proyecto/memoria) con exportación CSV y PDF, y los 5 formularios principales — Tarea (campos condicionales), Documento (FK dependiente), Decisión, Incidencia y Material (estos tres últimos sin bugs adicionales encontrados).
+
+**Riesgo residual documentado (no bloqueante)**: solo se verificaron manualmente 5 de los ~15 formularios existentes (Campaña, Proyecto, Producto, Proceso, Proveedor, Persona/Equipo y las relaciones N:M no se probaron). Dado el patrón de bugs encontrado (valores de catálogo hardcodeados desincronizados de `90_CONFIGURACION`), no es descartable que aparezcan casos similares ahí — queda para una revisión puntual futura si se detectan síntomas parecidos (campos condicionales que no aparecen, desplegables dependientes vacíos).
 **Estimación: 2-4 sesiones.**
 
 ## Paso 8 — Fase J: Cierre de seguridad y baseline final
