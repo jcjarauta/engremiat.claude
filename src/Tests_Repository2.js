@@ -11157,6 +11157,95 @@ function probarIntegridadMaterialCategoriaInvalida() {
 }
 
 
+function diagnosticarInstrumentacionReporteIntegridad() {
+  var packageName =
+    'DIAGNOSTICAR_INSTRUMENTACION_REPORTE_INTEGRIDAD';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var reporte =
+    obtenerReporteIntegridad();
+
+  if (!reporte.instrumentacion) {
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=ERR'
+    );
+
+    throw new Error(
+      'INSTRUMENTACION_ERROR: obtenerReporteIntegridad no devolvió reporte.instrumentacion'
+    );
+  }
+
+  var instrumentacion =
+    reporte.instrumentacion;
+
+  console.log(
+    'OK duracion_total_ms=' +
+    instrumentacion.duracionTotalMs
+  );
+
+  console.log(
+    'OK estructural=' +
+    JSON.stringify(instrumentacion.estructural)
+  );
+
+  console.log(
+    'OK funcional=' +
+    JSON.stringify(instrumentacion.funcional)
+  );
+
+  var totalLecturasHoja =
+    instrumentacion.estructural.lecturasHoja +
+    instrumentacion.funcional.lecturasHoja;
+
+  console.log(
+    'OK total_lecturas_hoja=' +
+    totalLecturasHoja
+  );
+
+  if (!(instrumentacion.duracionTotalMs >= 0)) {
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=ERR'
+    );
+
+    throw new Error(
+      'INSTRUMENTACION_ERROR: duracionTotalMs no es un número válido'
+    );
+  }
+
+  if (!(totalLecturasHoja > 0)) {
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=ERR'
+    );
+
+    throw new Error(
+      'INSTRUMENTACION_ERROR: no se contabilizó ninguna lectura de hoja, revisar el enganche en leerFilasEntidadComoObjetos_'
+    );
+  }
+
+  console.log(
+    'NEXT usar_estos_datos_para_decidir_alcance_refactor_lectura_Paso_6'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return instrumentacion;
+}
+
+
 function diagnosticarLecturaCategoriaMaterial() {
   var packageName = 'DIAGNOSTICAR_LECTURA_CATEGORIA_MATERIAL';
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);

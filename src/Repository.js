@@ -8281,6 +8281,7 @@ function obtenerHojaEntidad_(entidad) {
 }
 
 function leerFilasEntidadComoObjetos_(entidad) {
+  instrumentacionRegistrarLecturaHoja_();
   var hoja = obtenerHojaEntidad_(entidad);
   var lastRow = hoja.getLastRow();
   var lastCol = hoja.getLastColumn();

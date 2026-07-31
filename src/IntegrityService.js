@@ -70,6 +70,7 @@ var MAPA_FK_MVP = {
 };
 
 function obtenerIdsDeEntidad_(entidad) {
+  instrumentacionRegistrarLecturaHoja_();
   var hoja = obtenerHojaEntidad_(entidad);
   var valores = hoja.getDataRange().getDisplayValues();
   var idxId = valores[0].indexOf('ID');
@@ -110,6 +111,7 @@ function detectarReferenciasHuerfanas(entidad) {
     return [];
   }
 
+  instrumentacionRegistrarLecturaHoja_();
   var hoja = obtenerHojaEntidad_(entidad);
   var valores = hoja.getDataRange().getDisplayValues();
 
@@ -2104,32 +2106,69 @@ detectarDuplicidadesRelacionesMaterial_(
 }
 
 function obtenerReporteIntegridad() {
+  instrumentacionReiniciarContadores();
+
+  var inicioTotal = Date.now();
+
   var reporte = {
     idsDuplicados: {},
     referenciasHuerfanas: {}
   };
 
-  Object.keys(ENTIDADES_MVP)
-    .forEach(function (entidad) {
-      var duplicados =
-        detectarIdsDuplicados(entidad);
+  var medicionEstructural =
+    instrumentacionMedirFuncion_(
+      'estructural_duplicados_huerfanas',
+      function () {
+        Object.keys(ENTIDADES_MVP)
+          .forEach(function (entidad) {
+            var duplicados =
+              detectarIdsDuplicados(entidad);
 
-      if (duplicados.length > 0) {
-        reporte.idsDuplicados[entidad] =
-          duplicados;
+            if (duplicados.length > 0) {
+              reporte.idsDuplicados[entidad] =
+                duplicados;
+            }
+
+            var huerfanas =
+              detectarReferenciasHuerfanas(entidad);
+
+            if (huerfanas.length > 0) {
+              reporte.referenciasHuerfanas[entidad] =
+                huerfanas;
+            }
+          });
       }
+    );
 
-      var huerfanas =
-        detectarReferenciasHuerfanas(entidad);
-
-      if (huerfanas.length > 0) {
-        reporte.referenciasHuerfanas[entidad] =
-          huerfanas;
+  var medicionFuncional =
+    instrumentacionMedirFuncion_(
+      'funcional',
+      function () {
+        reporte.funcional =
+          detectarProblemasFuncionales_();
       }
-    });
+    );
 
-  reporte.funcional =
-    detectarProblemasFuncionales_();
+  reporte.instrumentacion = {
+    duracionTotalMs: Date.now() - inicioTotal,
+    estructural: medicionEstructural.medicion,
+    funcional: medicionFuncional.medicion
+  };
+
+  console.log(
+    'INSTR etiqueta=obtenerReporteIntegridad_total' +
+    ' duracion_ms=' + reporte.instrumentacion.duracionTotalMs +
+    ' lecturas_hoja=' +
+      (
+        medicionEstructural.medicion.lecturasHoja +
+        medicionFuncional.medicion.lecturasHoja
+      ) +
+    ' flushes=' +
+      (
+        medicionEstructural.medicion.flushes +
+        medicionFuncional.medicion.flushes
+      )
+  );
 
   return reporte;
 }

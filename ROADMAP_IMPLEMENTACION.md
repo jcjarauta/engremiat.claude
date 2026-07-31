@@ -12,9 +12,18 @@ No se construye automatización (menú, `AuditRunner`, gateway multi-IA) por del
 ## Paso 1 — Fase D recortada ✅ CERRADO (4/5 reglas)
 Implementadas y verificadas con `result=OK` en Apps Script real: `FUNC-REC-002` (solapamientos temporales), `FUNC-REC-003` (personas inactivas con asignación activa), `FUNC-REC-004` (capacidad semanal vs duración), `FUNC-REC-005` (carga por periodos). "Equipo/persona" diferida (no modelable sin entidad nueva de membresía). "Disponibilidad real por fecha" queda fuera (ver baseline).
 
-## Paso 2 — Instrumentación barata de Fase I (adelantada) — EN CURSO
-Antes de construir Fase H, medir: tiempos por prueba, número de lecturas de hoja, uso de `flush`. Esto no requiere refactor todavía, solo logging. Se hace ahora porque Fase H depende de la misma arquitectura de lectura que ya sabemos que falla bajo carga.
-**Estimación: 0.5-1 sesión.**
+## Paso 2 — Instrumentación barata de Fase I (adelantada) ✅ CERRADO
+Instrumentación añadida (`src/InstrumentacionService.js`, sin refactor, solo contadores de lecturas de hoja/flush y medición de duración) enganchada en los dos caminos de lectura reales: `leerFilasEntidadComoObjetos_` (Repository.js) y `obtenerIdsDeEntidad_`/`detectarReferenciasHuerfanas` (IntegrityService.js, ruta separada que se leía directo de la hoja sin pasar por Repository).
+
+**Datos medidos con `diagnosticarInstrumentacionReporteIntegridad()` en Apps Script real (una ejecución de `obtenerReporteIntegridad()`):**
+
+| Bloque | Duración | Lecturas de hoja | Flushes |
+|---|---|---|---|
+| Estructural (duplicados/huérfanas) | 16.5s | 38 | 0 |
+| Funcional (27 reglas) | 14.2s | 32 | 0 |
+| **Total** | **30.7s** | **70** | **0** |
+
+Confirma el riesgo de Fase I: 70 lecturas completas de hoja para una sola pasada, muchas redundantes (misma entidad releída sin caché entre llamadas a `obtenerIdsDeEntidad_`). Sin uso de `flush` (esperado, es solo lectura). Este dato alimenta directamente el Paso 6.
 
 ## Paso 3 — Fase E: Jerarquía principal
 Campaña→proyecto→producto→proceso→tarea: 7 reglas de coherencia cruzada.

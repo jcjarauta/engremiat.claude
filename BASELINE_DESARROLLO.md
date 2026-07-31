@@ -19,6 +19,7 @@
 
 - Fase C (`auditarFaseC06A_ProcesoCompletadoConTareaNoTerminada`) quedó cerrada y commiteada en un ciclo previo (commit `0981818`).
 - Fase D recortada: 4 reglas nuevas (`FUNC-REC-002` a `FUNC-REC-005`) y sus pruebas reactivas añadidas a `src/IntegrityService.js` y `src/Tests_Repository2.js`, desplegadas vía `clasp push` y verificadas con `result=OK` en el editor de Apps Script real.
+- Paso 2 del roadmap (instrumentación barata) cerrado: `src/InstrumentacionService.js` nuevo, enganchado en los dos caminos de lectura de hoja existentes (`Repository.js` y `IntegrityService.js`). Datos reales capturados, ver Fase I en la tabla siguiente.
 - La divergencia clasp↔git detectada anteriormente (función `auditarFaseC05A_TareaPredecesoraHuerfana` traída por `clasp pull` sin commitear) **quedó resuelta** — ya está incorporada en el commit `35b50d0`.
 - Tamaño actual del código fuente: ~27 archivos, ~35.000 líneas. Los archivos dominantes siguen siendo `Repository.js`, `Tests_Repository.js` y `Tests_Repository2.js`.
 
@@ -33,7 +34,7 @@
 | F | Documentos, decisiones, incidencias | Casi completada | Bloque DOCUMENTO (FK polimórfica, versión, vigencia) |
 | G | Historial y reversión | Verificado | Revisión consolidada final, no desarrollo |
 | H | UI, panel e informes | **Pendiente — riesgo principal** | Todo: estabilidad, tiempos de carga, informes, exportación, prueba visual de usuario |
-| I | Rendimiento y robustez | No verificado | **Riesgo confirmado empíricamente**: una suite de 10 reglas ya superó el tiempo máximo de ejecución de Apps Script. `IntegrityService` tarda 20-30s |
+| I | Rendimiento y robustez | Instrumentado (Paso 2), refactor pendiente (Paso 6) | **Riesgo confirmado y ahora medido con precisión**: `obtenerReporteIntegridad()` completo tarda 30.7s reales y ejecuta 70 lecturas completas de hoja (38 en el bloque estructural duplicados/huérfanas, 32 en el funcional), 0 flushes. Instrumentación en `src/InstrumentacionService.js`, verificable con `diagnosticarInstrumentacionReporteIntegridad()`. Candidato claro a refactor: `obtenerIdsDeEntidad_` se releé sin caché entre llamadas |
 | J | Seguridad, despliegue, baseline | Parcial avanzado | Backup formal del Sheet, hashes, acta de cierre, revisión de scopes/secretos |
 
 ## 4. Decisiones tomadas en este ciclo de trabajo
