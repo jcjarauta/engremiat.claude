@@ -98,8 +98,13 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 **Riesgo residual documentado (no bloqueante)**: solo se verificaron manualmente 5 de los ~15 formularios existentes (Campaña, Proyecto, Producto, Proceso, Proveedor, Persona/Equipo y las relaciones N:M no se probaron). Dado el patrón de bugs encontrado (valores de catálogo hardcodeados desincronizados de `90_CONFIGURACION`), no es descartable que aparezcan casos similares ahí — queda para una revisión puntual futura si se detectan síntomas parecidos (campos condicionales que no aparecen, desplegables dependientes vacíos).
 **Estimación: 2-4 sesiones.**
 
-## Paso 8 — Fase J: Cierre de seguridad y baseline final
-Backup formal del Sheet, hashes, acta de cierre, revisión de scopes OAuth, decidir archivos temporales que permanecen, matriz de cobertura final.
+## Paso 8 — Fase J: Cierre de seguridad y baseline final — EN CURSO
+- ✅ **Revisión de scopes OAuth**: 5/6 justificados sin cambios; `drive` (acceso total) reducido a `drive.file` (el único uso real es crear carpetas/archivos nuevos en `ExportarCodigoProduccion.js`, nunca lee/modifica contenido preexistente). Desplegado.
+- ✅ **Hashes**: `HASHES_CIERRE.md`, SHA-256 de los 31 archivos fuente.
+- ✅ **Acta de cierre**: `ACTA_CIERRE_SESION.md`, resumen completo de la sesión (Pasos 1-7), bugs encontrados, riesgos residuales, trazabilidad de commits.
+- ⏳ **Backup formal del Sheet**: pendiente, requiere autorización explícita del usuario (acción sobre su Drive).
+- ⏳ **Matriz de cobertura final**: pendiente (27 reglas originales + 17 nuevas de esta sesión = 44).
+- ⏳ **Archivos temporales que permanecen**: pendiente de decisión.
 **Estimación: 1 sesión.**
 
 ## Paso 9 — Cierre de auditoría global
