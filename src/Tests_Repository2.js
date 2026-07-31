@@ -13058,6 +13058,153 @@ function probarIntegridadProveedorActivoSinContacto() {
 }
 
 
+function probarIntegridadProductoCodigoNoNormalizado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_PRD_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var producto =
+    listarRegistros(
+      'PRODUCTO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!producto) {
+    throw new Error(
+      'FUNC-PRD-001_TEST_ERROR: no existe un PRODUCTO activo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PRODUCTO'
+    );
+
+  var codigoOriginal = producto.CODIGO || '';
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      producto.ID,
+      {CODIGO: 'código con espacios ñ'}
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-PRD-001',
+      'PRODUCTO',
+      producto.ID,
+      1
+    );
+
+    console.log(
+      'OK codigo_no_normalizado_detectado=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      producto.ID,
+      {CODIGO: codigoOriginal}
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-PRD-001',
+    'PRODUCTO',
+    producto.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadCatalogosAmpliadosL2() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CATALOGOS_AMPLIADOS_L2';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tiposIncidencia =
+    obtenerCatalogo('CFG_TIPO_INCIDENCIA');
+
+  var esperadosIncidencia = [
+    'Funcional', 'Usabilidad', 'Datos', 'Integración',
+    'Rendimiento', 'Trazabilidad', 'Automatización', 'Otra'
+  ];
+
+  esperadosIncidencia.forEach(function (valor) {
+    if (tiposIncidencia.indexOf(valor) === -1) {
+      throw new Error(
+        'CATALOGOS_AMPLIADOS_L2_TEST_ERROR: falta "' +
+          valor +
+          '" en CFG_TIPO_INCIDENCIA (valores actuales: ' +
+          tiposIncidencia.join(', ') +
+          ')'
+      );
+    }
+  });
+
+  console.log(
+    'OK CFG_TIPO_INCIDENCIA_completo=true valores=' +
+      tiposIncidencia.length
+  );
+
+  var tiposDocumento =
+    obtenerCatalogo('CFG_TIPO_DOCUMENTO');
+
+  var esperadosDocumento = [
+    'Plan', 'Especificación', 'Requisitos', 'Tutorial', 'Checklist',
+    'Memoria', 'Evidencia', 'Prueba', 'Referencia', 'Decisión', 'Otro'
+  ];
+
+  esperadosDocumento.forEach(function (valor) {
+    if (tiposDocumento.indexOf(valor) === -1) {
+      throw new Error(
+        'CATALOGOS_AMPLIADOS_L2_TEST_ERROR: falta "' +
+          valor +
+          '" en CFG_TIPO_DOCUMENTO (valores actuales: ' +
+          tiposDocumento.join(', ') +
+          ')'
+      );
+    }
+  });
+
+  console.log(
+    'OK CFG_TIPO_DOCUMENTO_completo=true valores=' +
+      tiposDocumento.length
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

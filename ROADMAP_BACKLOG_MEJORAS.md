@@ -67,16 +67,21 @@ Sin instalador — no se toca esquema ni catálogo, solo lógica de `IntegritySe
 
 ---
 
-## Fase L2 — Ganancias baratas (en paralelo con L1)
-No dependen de los mecanismos transversales, se pueden hacer en cualquier momento:
+## Fase L2 — Ganancias baratas ✅ CERRADA (2026-07-31)
 
-- F-058 — ampliar catálogo `TIPO` de INCIDENCIA.
-- F-071 — ampliar catálogo `TIPO_DOCUMENTO`.
-- F-042 — exponer `MOTIVO_BLOQUEO`/`MOTIVO_POSPOSICION`/`MOTIVO_CANCELACION` en el formulario de TAREA.
-- Validación condicional en DECISION (resolución+fecha obligatorias al aprobar/rechazar).
-- F-014 — normalización de código de PRODUCTO (verificar contra `Ids.js` primero).
+**Dos de los cinco elementos ya estaban resueltos, verificado antes de tocar nada**:
+- **F-042 — falso hallazgo.** `git blame` confirma que `MOTIVO_BLOQUEO`/`MOTIVO_POSPOSICION`/`MOTIVO_CANCELACION` están en `ESQUEMAS_FORMULARIO_MVP.TAREA` con su `visibleSi` correcto desde el primer commit de la auditoría (`7d76bba`), antes de que empezara esta sesión. La fricción original confundió "campo oculto condicionalmente porque el estado de la tarea no lo requiere" con "campo ausente del formulario".
+- **Validación condicional en DECISION — ya existía.** `FUNC-DEC-001` ya exige `RESOLUCION`+`FECHA_RESOLUCION` para los estados de cierre (`Aprobada`/`Rechazada`/`Sustituida`, vía `ESTADOS_DECISION_CIERRE_`), en `ERROR` — más estricto de lo planeado.
 
-**Estimación: 1 sesión, todo el bloque junto (son cambios pequeños e independientes).**
+**Construido** (los 3 elementos restantes, genuinamente pendientes):
+- **F-058** — catálogo `TIPO_INCIDENCIA` ampliado con 7 valores (Funcional/Usabilidad/Datos/Integración/Rendimiento/Trazabilidad/Automatización).
+- **F-071** — catálogo `TIPO_DOCUMENTO` ampliado con 10 valores (Plan/Especificación/Requisitos/Tutorial/Checklist/Memoria/Evidencia/Prueba/Referencia/Decisión).
+- Ambos insertados **antes** de la opción "Otra"/"Otro" de cada catálogo (que queda como última opción), con el named range `CFG_TIPO_INCIDENCIA`/`CFG_TIPO_DOCUMENTO` recalculado para seguir siendo un bloque contiguo tras el desplazamiento de filas — misma lección técnica que L1.2. Instalador `instalarCatalogosAmpliadosL2` (idempotente, reutilizable como patrón general `ampliarCatalogoL2_` para futuras ampliaciones de catálogo).
+- **F-014** — `FUNC-PRD-001`: `PRODUCTO.CODIGO` con minúsculas/espacios/acentos genera `ADVERTENCIA` (aviso de calidad de datos, no reescribe el valor).
+
+**Verificado**: `instalarCatalogosAmpliadosL2` (`status=OK`, named ranges recalculados `64:77` y `97:114`), `probarIntegridadCatalogosAmpliadosL2` (`result=OK`, 14 y 18 valores respectivamente, sin roturas en el resto de reglas tras el desplazamiento de filas), `probarIntegridadProductoCodigoNoNormalizado` (`result=OK`).
+
+**Estimación real: 1 sesión**, como se había previsto — aunque el alcance real fue 3 elementos, no 5.
 
 ---
 

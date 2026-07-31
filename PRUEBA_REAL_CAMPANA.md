@@ -338,9 +338,9 @@ Prioridad: alta
 ### F-036 a F-045 — Alta de TAREA (TAR-0004)
 Fecha: 2026-07-31
 Entidad afectada: TAREA
-Resumen: responsable ausente en el alta (F-036, patrón asignación N:M 6ª vez), duración sin esfuerzo (F-037), predecesora única confirmada contra hoja real (F-038, grafo de dependencias 4ª vez), avance manual incoherente (F-039), sin criterios de aceptación (F-040, 6ª vez), sin vínculo a documentos/evidencias (F-041), **bloqueo persistido en el modelo real pero ausente del formulario — confirmado con columnas reales de `06_TAREAS` vía gsheets (F-042)**, sin reutilización/plantilla (F-043), estado "Preparada" sin precondiciones (F-044), fechas opcionales sin declarar el motivo (F-045)
+Resumen: responsable ausente en el alta (F-036, patrón asignación N:M 6ª vez), duración sin esfuerzo (F-037), predecesora única confirmada contra hoja real (F-038, grafo de dependencias 4ª vez), avance manual incoherente (F-039), sin criterios de aceptación (F-040, 6ª vez), sin vínculo a documentos/evidencias (F-041), **F-042 — INVALIDADO en Fase L2 (2026-07-31): `git blame` confirma que `MOTIVO_BLOQUEO`/`MOTIVO_POSPOSICION`/`MOTIVO_CANCELACION` ya estaban en el formulario con `visibleSi` correcto desde el primer commit de la auditoría (`7d76bba`); se confundió ocultación condicional por estado con ausencia real**, sin reutilización/plantilla (F-043), estado "Preparada" sin precondiciones (F-044), fechas opcionales sin declarar el motivo (F-045)
 Diseño completo: ver `PROPUESTA_TAREA_ALTA.md`
-Prioridad: alta en F-036, F-037, F-039, F-040, F-041, F-042, F-044, F-045; media en F-038
+Prioridad: alta en F-036, F-037, F-039, F-040, F-041, F-044, F-045; media en F-038; F-042 cerrado sin acción (invalidado)
 Nota transversal: TAREA cierra el recorrido completo de la jerarquía — los mismos ~6 mecanismos (asignación N:M, grafo de dependencias, clasificación por tipo, criterios de aceptación, avance derivado, y ahora desconexión modelo/UI) se repiten en los 5 niveles probados
 
 ### F-046 — Personas y equipos mezclados

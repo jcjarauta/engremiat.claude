@@ -2972,6 +2972,34 @@ detectarDuplicidadesRelacionesMaterial_(
     }
   });
 
+  /*
+   * Fase L2 del backlog consolidado — ganancias baratas.
+   *
+   * FUNC-PRD-001 (F-014)
+   * CODIGO de PRODUCTO sin normalizar (minusculas, espacios o acentos)
+   * pierde utilidad para busqueda, integracion y automatizacion. Aviso
+   * de calidad de datos, no bloqueo — no se reescribe el valor.
+   */
+  var patronCodigoNormalizado_ = /^[A-Z0-9-]+$/;
+
+  listarRegistros(
+    'PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (producto) {
+    var codigo = String(producto.CODIGO || '').trim();
+
+    if (codigo && !patronCodigoNormalizado_.test(codigo)) {
+      agregar(
+        'FUNC-PRD-001',
+        'PRODUCTO',
+        producto.ID,
+        'CODIGO no normalizado (' + codigo + '): debe contener solo mayusculas, numeros y guiones.',
+        'ADVERTENCIA',
+        'Normalizar el codigo a mayusculas, sin espacios ni acentos, usando solo A-Z, 0-9 y guiones.'
+      );
+    }
+  });
+
   return {
     errores: hallazgos.filter(function (h) {
       return h.gravedad === 'ERROR';
