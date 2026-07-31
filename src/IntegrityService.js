@@ -1531,6 +1531,317 @@ function detectarProblemasTareaResponsable_(agregar) {
     });
 }
 
+function detectarSolapamientoTemporalTareaResponsable_(agregar) {
+  var asignacionesPorPersona_ = {};
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (a) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(a.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var fechaInicio =
+      a.FECHA_INICIO_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_INICIO_ASIGNACION.getTime())
+        : new Date(a.FECHA_INICIO_ASIGNACION);
+
+    var fechaFin =
+      a.FECHA_FIN_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_FIN_ASIGNACION.getTime())
+        : new Date(a.FECHA_FIN_ASIGNACION);
+
+    if (
+      isNaN(fechaInicio.getTime()) ||
+      isNaN(fechaFin.getTime())
+    ) {
+      return;
+    }
+
+    if (!asignacionesPorPersona_[a.PERSONA_EQUIPO_ID]) {
+      asignacionesPorPersona_[a.PERSONA_EQUIPO_ID] = [];
+    }
+
+    asignacionesPorPersona_[a.PERSONA_EQUIPO_ID].push({
+      tareaId: a.TAREA_ID,
+      inicio: fechaInicio.getTime(),
+      fin: fechaFin.getTime()
+    });
+  });
+
+  Object.keys(asignacionesPorPersona_)
+    .forEach(function (personaId) {
+      var asignaciones =
+        asignacionesPorPersona_[personaId];
+
+      for (var i = 0; i < asignaciones.length; i++) {
+        for (var j = i + 1; j < asignaciones.length; j++) {
+          var solapan =
+            asignaciones[i].inicio <= asignaciones[j].fin &&
+            asignaciones[j].inicio <= asignaciones[i].fin;
+
+          if (solapan) {
+            agregar(
+              'FUNC-REC-002',
+              'PERSONA_EQUIPO',
+              personaId,
+              'Asignaciones activas solapadas en el tiempo: TAREA ' +
+                asignaciones[i].tareaId +
+                ' y TAREA ' +
+                asignaciones[j].tareaId +
+                '.',
+              'ADVERTENCIA',
+              'Revisar si el solapamiento es intencionado o redistribuir las fechas de asignación.'
+            );
+          }
+        }
+      }
+    });
+}
+
+function detectarPersonaInactivaConAsignacionActiva_(agregar) {
+  var personasPorId_ = {};
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (p) {
+    personasPorId_[p.ID] = p;
+  });
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (a) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(a.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var persona =
+      personasPorId_[a.PERSONA_EQUIPO_ID];
+
+    if (persona && persona.ESTADO === 'Inactivo') {
+      agregar(
+        'FUNC-REC-003',
+        'TAREA_RESPONSABLE',
+        a.ID,
+        'Asignacion ' + a.ESTADO +
+          ' de TAREA ' + a.TAREA_ID +
+          ' a PERSONA_EQUIPO ' + a.PERSONA_EQUIPO_ID +
+          ' con ESTADO Inactivo.',
+        'ERROR',
+        'Reasignar la tarea o cerrar la asignacion de la persona inactiva.'
+      );
+    }
+  });
+}
+
+function detectarCapacidadSemanalInsuficiente_(agregar) {
+  var tareasPorId_ = {};
+
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (t) {
+    tareasPorId_[t.ID] = t;
+  });
+
+  var personasPorId_ = {};
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (p) {
+    personasPorId_[p.ID] = p;
+  });
+
+  var MS_POR_SEMANA_ = 7 * 24 * 60 * 60 * 1000;
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (a) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(a.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var tarea = tareasPorId_[a.TAREA_ID];
+    var persona = personasPorId_[a.PERSONA_EQUIPO_ID];
+
+    if (!tarea || !persona) {
+      return;
+    }
+
+    var capacidadSemanal =
+      Number(persona.CAPACIDAD_SEMANAL_DIAS);
+
+    var duracionPrevista =
+      Number(tarea.DURACION_PREVISTA_DIAS);
+
+    var pct =
+      Number(a.PORCENTAJE_DEDICACION);
+
+    if (
+      !(capacidadSemanal > 0) ||
+      !(duracionPrevista > 0) ||
+      !(pct > 0)
+    ) {
+      return;
+    }
+
+    var fechaInicio =
+      a.FECHA_INICIO_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_INICIO_ASIGNACION.getTime())
+        : new Date(a.FECHA_INICIO_ASIGNACION);
+
+    var fechaFin =
+      a.FECHA_FIN_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_FIN_ASIGNACION.getTime())
+        : new Date(a.FECHA_FIN_ASIGNACION);
+
+    if (
+      isNaN(fechaInicio.getTime()) ||
+      isNaN(fechaFin.getTime()) ||
+      fechaFin.getTime() <= fechaInicio.getTime()
+    ) {
+      return;
+    }
+
+    var semanas =
+      (fechaFin.getTime() - fechaInicio.getTime()) / MS_POR_SEMANA_;
+
+    var diasRequeridosSemana =
+      (duracionPrevista * (pct / 100)) / semanas;
+
+    if (diasRequeridosSemana > capacidadSemanal) {
+      agregar(
+        'FUNC-REC-004',
+        'TAREA_RESPONSABLE',
+        a.ID,
+        'Densidad de trabajo requerida (' +
+          diasRequeridosSemana.toFixed(2) +
+          ' dias/semana) supera la capacidad semanal de la persona (' +
+          capacidadSemanal +
+          ' dias/semana).',
+        'ADVERTENCIA',
+        'Ampliar el plazo de la asignacion, reducir la dedicacion o reforzar el equipo.'
+      );
+    }
+  });
+}
+
+function detectarSobrecargaPorPeriodo_(agregar) {
+  var asignacionesPorPersona_ = {};
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (a) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(a.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var pct =
+      Number(a.PORCENTAJE_DEDICACION) || 0;
+
+    var fechaInicio =
+      a.FECHA_INICIO_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_INICIO_ASIGNACION.getTime())
+        : new Date(a.FECHA_INICIO_ASIGNACION);
+
+    var fechaFin =
+      a.FECHA_FIN_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_FIN_ASIGNACION.getTime())
+        : new Date(a.FECHA_FIN_ASIGNACION);
+
+    if (
+      isNaN(fechaInicio.getTime()) ||
+      isNaN(fechaFin.getTime()) ||
+      !(pct > 0)
+    ) {
+      return;
+    }
+
+    if (!asignacionesPorPersona_[a.PERSONA_EQUIPO_ID]) {
+      asignacionesPorPersona_[a.PERSONA_EQUIPO_ID] = [];
+    }
+
+    asignacionesPorPersona_[a.PERSONA_EQUIPO_ID].push({
+      tareaId: a.TAREA_ID,
+      inicio: fechaInicio.getTime(),
+      fin: fechaFin.getTime(),
+      pct: pct
+    });
+  });
+
+  Object.keys(asignacionesPorPersona_)
+    .forEach(function (personaId) {
+      var asignaciones =
+        asignacionesPorPersona_[personaId];
+
+      var firmasReportadas_ = {};
+
+      asignaciones.forEach(function (base) {
+        var solapadas =
+          asignaciones.filter(function (otra) {
+            return (
+              base.inicio <= otra.fin &&
+              otra.inicio <= base.fin
+            );
+          });
+
+        var totalPct =
+          solapadas.reduce(function (acc, s) {
+            return acc + s.pct;
+          }, 0);
+
+        if (totalPct > 100) {
+          var firma =
+            solapadas
+              .map(function (s) {
+                return s.tareaId;
+              })
+              .sort()
+              .join('|');
+
+          if (!firmasReportadas_[firma]) {
+            firmasReportadas_[firma] = true;
+
+            agregar(
+              'FUNC-REC-005',
+              'PERSONA_EQUIPO',
+              personaId,
+              'Carga solapada en el periodo (' +
+                totalPct +
+                '%) supera el 100% entre las tareas: ' +
+                solapadas
+                  .map(function (s) {
+                    return s.tareaId;
+                  })
+                  .join(', ') +
+                '.',
+              'ADVERTENCIA',
+              'Redistribuir la carga entre el periodo solapado o ajustar las fechas de asignacion.'
+            );
+          }
+        }
+      });
+    });
+}
+
 function detectarProblemasProyectoProducto_(agregar) {
   listarRegistros(
     'PROYECTO_PRODUCTO',
@@ -1615,6 +1926,30 @@ detectarDuplicidadesRelacionesMaterial_(
    * Integridad funcional histórica.
    */
   detectarProblemasTareaResponsable_(agregar);
+
+  /*
+   * FUNC-REC-002
+   * Solapamiento temporal de asignaciones activas de una misma persona.
+   */
+  detectarSolapamientoTemporalTareaResponsable_(agregar);
+
+  /*
+   * FUNC-REC-003
+   * Persona con ESTADO Inactivo que mantiene una asignacion activa.
+   */
+  detectarPersonaInactivaConAsignacionActiva_(agregar);
+
+  /*
+   * FUNC-REC-004
+   * Densidad de trabajo de la asignacion por encima de la capacidad semanal.
+   */
+  detectarCapacidadSemanalInsuficiente_(agregar);
+
+  /*
+   * FUNC-REC-005
+   * Suma de dedicacion en periodos solapados de una misma persona por encima del 100%.
+   */
+  detectarSobrecargaPorPeriodo_(agregar);
 
   /*
    * DECISION

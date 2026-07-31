@@ -11840,6 +11840,565 @@ function probarIntegridadDedicacionPersonaSuperior100() {
 }
 
 
+function parseFechaIntegridad_(
+  valor
+) {
+  var fecha =
+    valor instanceof Date
+      ? new Date(valor.getTime())
+      : new Date(valor);
+
+  return fecha;
+}
+
+
+function probarIntegridadSolapamientoTemporalTareaResponsable() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_REC_002';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var asignaciones =
+    listarRegistros(
+      'TAREA_RESPONSABLE',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      if (
+        ['Planificada', 'Activa']
+          .indexOf(registro.ESTADO) === -1 ||
+        String(
+          registro.PERSONA_EQUIPO_ID || ''
+        ).trim() === ''
+      ) {
+        return false;
+      }
+
+      var inicio =
+        parseFechaIntegridad_(
+          registro.FECHA_INICIO_ASIGNACION
+        );
+
+      var fin =
+        parseFechaIntegridad_(
+          registro.FECHA_FIN_ASIGNACION
+        );
+
+      return (
+        !isNaN(inicio.getTime()) &&
+        !isNaN(fin.getTime())
+      );
+    });
+
+  if (asignaciones.length === 0) {
+    throw new Error(
+      'FUNC-REC-002_TEST_ERROR: no existe asignación activa o planificada con fechas de asignación válidas'
+    );
+  }
+
+  var base =
+    asignaciones[0];
+
+  var personaId =
+    String(
+      base.PERSONA_EQUIPO_ID
+    ).trim();
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA_RESPONSABLE'
+    );
+
+  var idTemporal =
+    'TRE-AUD-FUNC-REC-002';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign(
+        {},
+        base,
+        {
+          ID:
+            idTemporal,
+
+          ESTADO:
+            'Activa',
+
+          ACTIVO:
+            'SÍ'
+        }
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-REC-002',
+      'PERSONA_EQUIPO',
+      personaId,
+      1
+    );
+
+    console.log(
+      'OK asignacion_solapada_temporal_insertada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-REC-002',
+    'PERSONA_EQUIPO',
+    personaId
+  );
+
+  console.log(
+    'OK asignacion_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadPersonaInactivaConAsignacionActiva() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_REC_003';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var personasPorId_ = {};
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (persona) {
+    personasPorId_[persona.ID] = persona;
+  });
+
+  var asignacion =
+    listarRegistros(
+      'TAREA_RESPONSABLE',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      var persona =
+        personasPorId_[registro.PERSONA_EQUIPO_ID];
+
+      return (
+        ['Planificada', 'Activa']
+          .indexOf(registro.ESTADO) !== -1 &&
+        persona &&
+        persona.ESTADO !== 'Inactivo'
+      );
+    })[0];
+
+  if (!asignacion) {
+    throw new Error(
+      'FUNC-REC-003_TEST_ERROR: no existe asignación activa con persona no Inactiva'
+    );
+  }
+
+  var persona =
+    personasPorId_[asignacion.PERSONA_EQUIPO_ID];
+
+  ejecutarPruebaIntegridadMutacion_({
+    packageName:
+      packageName,
+
+    codigo:
+      'FUNC-REC-003',
+
+    entidad:
+      'TAREA_RESPONSABLE',
+
+    entidadMutada:
+      'PERSONA_EQUIPO',
+
+    registro:
+      persona,
+
+    registroIdEsperado:
+      asignacion.ID,
+
+    mutaciones: {
+      ESTADO: 'Inactivo'
+    }
+  });
+
+  return true;
+}
+
+
+function probarIntegridadCapacidadSemanalInsuficiente() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_REC_004';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tareasPorId_ = {};
+
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (tarea) {
+    tareasPorId_[tarea.ID] = tarea;
+  });
+
+  var personasPorId_ = {};
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (persona) {
+    personasPorId_[persona.ID] = persona;
+  });
+
+  var asignaciones =
+    listarRegistros(
+      'TAREA_RESPONSABLE',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      if (
+        ['Planificada', 'Activa']
+          .indexOf(registro.ESTADO) === -1
+      ) {
+        return false;
+      }
+
+      var tarea =
+        tareasPorId_[registro.TAREA_ID];
+
+      var persona =
+        personasPorId_[registro.PERSONA_EQUIPO_ID];
+
+      return (
+        tarea &&
+        Number(tarea.DURACION_PREVISTA_DIAS) > 0 &&
+        persona &&
+        Number(persona.CAPACIDAD_SEMANAL_DIAS) > 0
+      );
+    });
+
+  if (asignaciones.length === 0) {
+    throw new Error(
+      'FUNC-REC-004_TEST_ERROR: no existe asignación con tarea y persona con duración/capacidad válidas'
+    );
+  }
+
+  var base =
+    asignaciones[0];
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA_RESPONSABLE'
+    );
+
+  var idTemporal =
+    'TRE-AUD-FUNC-REC-004';
+
+  var ahora =
+    new Date();
+
+  var finVentanaCorta =
+    new Date(
+      ahora.getTime() +
+        6 * 60 * 60 * 1000
+    );
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign(
+        {},
+        base,
+        {
+          ID:
+            idTemporal,
+
+          FECHA_INICIO_ASIGNACION:
+            ahora,
+
+          FECHA_FIN_ASIGNACION:
+            finVentanaCorta,
+
+          PORCENTAJE_DEDICACION:
+            100,
+
+          ESTADO:
+            'Activa',
+
+          ACTIVO:
+            'SÍ'
+        }
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-REC-004',
+      'TAREA_RESPONSABLE',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK asignacion_densidad_temporal_insertada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-REC-004',
+    'TAREA_RESPONSABLE',
+    idTemporal
+  );
+
+  console.log(
+    'OK asignacion_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadSobrecargaPorPeriodo() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_REC_005';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var asignaciones =
+    listarRegistros(
+      'TAREA_RESPONSABLE',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (registro) {
+      if (
+        ['Planificada', 'Activa']
+          .indexOf(registro.ESTADO) === -1 ||
+        String(
+          registro.PERSONA_EQUIPO_ID || ''
+        ).trim() === ''
+      ) {
+        return false;
+      }
+
+      var inicio =
+        parseFechaIntegridad_(
+          registro.FECHA_INICIO_ASIGNACION
+        );
+
+      var fin =
+        parseFechaIntegridad_(
+          registro.FECHA_FIN_ASIGNACION
+        );
+
+      return (
+        !isNaN(inicio.getTime()) &&
+        !isNaN(fin.getTime())
+      );
+    });
+
+  if (asignaciones.length === 0) {
+    throw new Error(
+      'FUNC-REC-005_TEST_ERROR: no existe asignación activa o planificada con fechas de asignación válidas'
+    );
+  }
+
+  var base =
+    asignaciones[0];
+
+  var personaId =
+    String(
+      base.PERSONA_EQUIPO_ID
+    ).trim();
+
+  var baseInicio =
+    parseFechaIntegridad_(
+      base.FECHA_INICIO_ASIGNACION
+    ).getTime();
+
+  var baseFin =
+    parseFechaIntegridad_(
+      base.FECHA_FIN_ASIGNACION
+    ).getTime();
+
+  var totalCohorteSolapada =
+    asignaciones
+      .filter(function (registro) {
+        if (
+          String(
+            registro.PERSONA_EQUIPO_ID || ''
+          ).trim() !== personaId
+        ) {
+          return false;
+        }
+
+        var inicio =
+          parseFechaIntegridad_(
+            registro.FECHA_INICIO_ASIGNACION
+          ).getTime();
+
+        var fin =
+          parseFechaIntegridad_(
+            registro.FECHA_FIN_ASIGNACION
+          ).getTime();
+
+        return (
+          baseInicio <= fin &&
+          inicio <= baseFin
+        );
+      })
+      .reduce(function (total, registro) {
+        return (
+          total +
+          (
+            Number(
+              registro.PORCENTAJE_DEDICACION
+            ) || 0
+          )
+        );
+      }, 0);
+
+  var porcentajeTemporal =
+    Math.max(
+      1,
+      101 - totalCohorteSolapada
+    );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA_RESPONSABLE'
+    );
+
+  var idTemporal =
+    'TRE-AUD-FUNC-REC-005';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign(
+        {},
+        base,
+        {
+          ID:
+            idTemporal,
+
+          FECHA_INICIO_ASIGNACION:
+            base.FECHA_INICIO_ASIGNACION,
+
+          FECHA_FIN_ASIGNACION:
+            base.FECHA_FIN_ASIGNACION,
+
+          PORCENTAJE_DEDICACION:
+            porcentajeTemporal,
+
+          ESTADO:
+            'Activa',
+
+          ACTIVO:
+            'SÍ'
+        }
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-REC-005',
+      'PERSONA_EQUIPO',
+      personaId,
+      1
+    );
+
+    console.log(
+      'OK carga_solapada_temporal=' +
+        (
+          totalCohorteSolapada +
+          porcentajeTemporal
+        )
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-REC-005',
+    'PERSONA_EQUIPO',
+    personaId
+  );
+
+  console.log(
+    'OK asignacion_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 /**
  * Ejecuta una prueba basada en mutación temporal de un registro.
  */
@@ -17514,5 +18073,40 @@ function auditarFaseC06C_ProcesoPreparadoConTareaTerminada() {
   console.log(errorFinal ? 'NEXT revisar_FUNC_PROCESO_002' : 'NEXT cerrar_C06_C');
   console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=' + (errorFinal ? 'NO_GO' : 'OK'));
   if(errorFinal) throw errorFinal;
+  return true;
+}
+function ejecutarFaseC07_RegresionFinalProcesoTarea() {
+  var packageName = 'F03_C07_REGRESION_FINAL_PROCESO_TAREA';
+  var pruebas = [
+    {nombre: 'PASO_161_PROCESO_ID_INEXISTENTE', ejecutar: pruebaPaso161_ProcesoTareaInexistente},
+    {nombre: 'PASO_167_PREDECESORA_INEXISTENTE', ejecutar: pruebaPaso167_TareaPredecesoraInvalida},
+    {nombre: 'PASO_168_PREDECESORA_OTRO_PROCESO', ejecutar: pruebaPaso168_PredecessoraOtroProceso},
+    {nombre: 'PASO_198_EN_PROCESO_SIN_INICIO_REAL', ejecutar: pruebaPaso198_TareaEnProcesoRequiereFechaInicioReal},
+    {nombre: 'PASO_199_TERMINADA_SIN_FECHAS', ejecutar: pruebaPaso199_TareaTerminadaRequiereFechas},
+    {nombre: 'PASO_200_TERMINADA_SIN_DURACION', ejecutar: pruebaPaso200_TareaTerminadaRequiereDuracionReal},
+    {nombre: 'PASO_201_TERMINADA_VALIDA_DRY_RUN', ejecutar: pruebaPaso201_TareaTerminadaValidaDryRun}
+  ];
+  var resultados = [];
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+  pruebas.forEach(function(prueba) {
+    console.log('OK regression_test_begin=' + prueba.nombre);
+    prueba.ejecutar();
+    resultados.push(prueba.nombre);
+    console.log('OK regression_test_end=' + prueba.nombre + ' status=OK');
+  });
+  var reporte = obtenerReporteIntegridad();
+  var duplicados = Object.keys(reporte.idsDuplicados || {});
+  var huerfanas = Object.keys(reporte.referenciasHuerfanas || {});
+  var errores = (reporte.funcional && reporte.funcional.errores) || [];
+  console.log('OK regression_tests_passed=' + resultados.length);
+  console.log('OK ids_duplicados_entidades=' + duplicados.length);
+  console.log('OK referencias_huerfanas_entidades=' + huerfanas.length);
+  console.log('OK errores_funcionales=' + errores.length);
+  if (duplicados.length > 0) throw new Error('F03_C07_NO_GO: existen IDs duplicados tras la regresión');
+  if (huerfanas.length > 0) throw new Error('F03_C07_NO_GO: existen referencias huérfanas tras la regresión');
+  if (errores.length > 0) throw new Error('F03_C07_NO_GO: existen errores funcionales tras la regresión: ' + JSON.stringify(errores));
+  console.log('OK integridad_final_limpia=true');
+  console.log('NEXT cerrar_C07_y_Fase_C');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
   return true;
 }
