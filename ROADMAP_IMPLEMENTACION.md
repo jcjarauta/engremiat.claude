@@ -102,9 +102,9 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 - ✅ **Revisión de scopes OAuth**: 5/6 justificados sin cambios; `drive` (acceso total) reducido a `drive.file` (el único uso real es crear carpetas/archivos nuevos en `ExportarCodigoProduccion.js`, nunca lee/modifica contenido preexistente). Desplegado.
 - ✅ **Hashes**: `HASHES_CIERRE.md`, SHA-256 de los 31 archivos fuente.
 - ✅ **Acta de cierre**: `ACTA_CIERRE_SESION.md`, resumen completo de la sesión (Pasos 1-7), bugs encontrados, riesgos residuales, trazabilidad de commits.
-- ⏳ **Backup formal del Sheet**: pendiente, requiere autorización explícita del usuario (acción sobre su Drive).
-- ⏳ **Matriz de cobertura final**: pendiente (27 reglas originales + 17 nuevas de esta sesión = 44).
-- ⏳ **Archivos temporales que permanecen**: pendiente de decisión.
+- ✅ **Matriz de cobertura**: snapshot generado (62 reglas totales, 17 nuevas con 100% cobertura verificada). Metodología por grep literal, no fiable para las 45 preexistentes — reconciliación manual real queda pendiente para antes del Paso 9.
+- ✅ **Archivos temporales**: revisados, nada temporal identificado — los 3 servicios nuevos son código de producción permanente, los `.md` de gobierno quedan como registro de auditoría.
+- ⏳ **Backup formal del Sheet**: pendiente por decisión explícita del usuario (no se ha hecho todavía, requiere su autorización cuando quiera retomarlo).
 **Estimación: 1 sesión.**
 
 ## Paso 9 — Cierre de auditoría global

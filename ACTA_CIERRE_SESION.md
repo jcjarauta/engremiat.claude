@@ -61,11 +61,26 @@ Ver `HASHES_CIERRE.md` — SHA-256 de los 31 archivos fuente en el momento de es
 - **Gap de cobertura de pruebas preexistente**: 9 de las 27 reglas originales (antes de esta sesión) seguían sin prueba reactiva localizada — no se cerró en esta sesión, sigue pendiente.
 - **Backup formal del Sheet**: no realizado en esta sesión — pendiente de decisión del usuario (ver siguiente sección).
 
-## 8. Pendiente para considerar el cierre de Fase J completo
+## 8. Matriz de cobertura (snapshot, metodología limitada — ver nota)
+
+**Total de reglas `FUNC-*` en el sistema hoy: 62** (verificado por grep sobre `IntegrityService.js`, no por el recuento manual "27" del baseline previo — la discrepancia no se ha reconciliado, ver nota abajo).
+
+| Origen | Reglas | Cobertura de prueba |
+|---|---|---|
+| Nuevas de esta sesión (`FUNC-REC-002..005`, `FUNC-JER-001..007`, `FUNC-DOC-001..006`) | 17 | **100%** — todas con prueba reactiva explícita, verificadas `result=OK` en Apps Script real |
+| Preexistentes (resto) | 45 | Grep de cita literal del código encuentra 24 con prueba explícita y 21 sin ella — **pero esta cifra es una cota inferior poco fiable**, no un recuento real |
+
+**Nota metodológica importante**: el grep busca la cadena literal `'FUNC-XXX-NNN'` dentro de los archivos de test. Comprobé a mano varios de los 21 "sin prueba" y **no lo están** — p. ej. `FUNC-PROCESO-001` se verifica en `auditarFaseC06A_ProcesoCompletadoConTareaNoTerminada` y la familia `FUNC-TMA`/`FUNC-PMA` tiene cobertura de comportamiento en `auditarFaseB01/B03/B09` — simplemente son pruebas de una convención anterior (numeradas `PASO`/`Fase B`/`Fase C`) que verifican el comportamiento sin citar el código `FUNC-*` en el texto. Reconciliar esto con precisión requiere leer cada prueba antigua una por una, algo que no se ha hecho en esta sesión. El baseline previo a esta sesión ya había hecho ese trabajo más cuidadoso para las 27 reglas que conocía entonces, y llegó a una cifra de 9 sin prueba reactiva localizada — probablemente más fiable que el grep crudo de esta acta.
+
+## 9. Archivos temporales que permanecen
+
+Los 3 archivos de servicio nuevos (`CacheLecturaService.js`, `InstrumentacionService.js`, `SerializacionService.js`) son código de producción permanente, no temporal — quedan en `src/` y desplegados. Los documentos de gobierno (`BASELINE_DESARROLLO.md`, `ROADMAP_IMPLEMENTACION.md`, `ACTA_CIERRE_SESION.md`, `HASHES_CIERRE.md`) viven en la raíz del repositorio local, fuera de `src/` (no se despliegan a Apps Script) — permanecen como registro de auditoría versionado en git. No se identificó ningún archivo genuinamente temporal/desechable en esta sesión.
+
+## 10. Pendiente para considerar el cierre de Fase J completo
 
 - [ ] Backup formal de la Sheet real (copia en Drive) — acción que toca el Drive del usuario, requiere su autorización explícita antes de ejecutarla.
-- [ ] Matriz de cobertura final consolidada (27 reglas originales + 17 nuevas = 44 reglas).
-- [ ] Decidir si el gap de 9 reglas sin prueba reactiva se cierra antes o después del cierre global de auditoría (Paso 9).
+- [ ] Reconciliación manual real de la matriz de cobertura (línea por línea, no por grep) — candidato natural para una sesión dedicada antes del cierre global (Paso 9).
+- [ ] Decidir si el gap de reglas sin prueba reactiva se cierra antes o después del cierre global de auditoría (Paso 9).
 
 ## 9. Trazabilidad
 
