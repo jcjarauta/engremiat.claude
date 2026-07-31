@@ -61,16 +61,17 @@ Ver `HASHES_CIERRE.md` — SHA-256 de los 31 archivos fuente en el momento de es
 - **Gap de cobertura de pruebas preexistente**: 9 de las 27 reglas originales (antes de esta sesión) seguían sin prueba reactiva localizada — no se cerró en esta sesión, sigue pendiente.
 - ~~**Backup formal del Sheet**: no realizado en esta sesión~~ — completado por el usuario más tarde en la misma sesión (ver sección 10).
 
-## 8. Matriz de cobertura (snapshot, metodología limitada — ver nota)
+## 8. Matriz de cobertura (reconciliada manualmente — cierre)
 
-**Total de reglas `FUNC-*` en el sistema hoy: 62** (verificado por grep sobre `IntegrityService.js`, no por el recuento manual "27" del baseline previo — la discrepancia no se ha reconciliado, ver nota abajo).
+**Total de reglas `FUNC-*` en el sistema hoy: 62** (verificado por grep sobre `IntegrityService.js`).
 
 | Origen | Reglas | Cobertura de prueba |
 |---|---|---|
 | Nuevas de esta sesión (`FUNC-REC-002..005`, `FUNC-JER-001..007`, `FUNC-DOC-001..006`) | 17 | **100%** — todas con prueba reactiva explícita, verificadas `result=OK` en Apps Script real |
-| Preexistentes (resto) | 45 | Grep de cita literal del código encuentra 24 con prueba explícita y 21 sin ella — **pero esta cifra es una cota inferior poco fiable**, no un recuento real |
+| Preexistentes (resto) | 45 | **100%** — reconciliadas a mano una por una (ver nota) |
+| **Total** | **62** | **62/62 (100%)** |
 
-**Nota metodológica importante**: el grep busca la cadena literal `'FUNC-XXX-NNN'` dentro de los archivos de test. Comprobé a mano varios de los 21 "sin prueba" y **no lo están** — p. ej. `FUNC-PROCESO-001` se verifica en `auditarFaseC06A_ProcesoCompletadoConTareaNoTerminada` y la familia `FUNC-TMA`/`FUNC-PMA` tiene cobertura de comportamiento en `auditarFaseB01/B03/B09` — simplemente son pruebas de una convención anterior (numeradas `PASO`/`Fase B`/`Fase C`) que verifican el comportamiento sin citar el código `FUNC-*` en el texto. Reconciliar esto con precisión requiere leer cada prueba antigua una por una, algo que no se ha hecho en esta sesión. El baseline previo a esta sesión ya había hecho ese trabajo más cuidadoso para las 27 reglas que conocía entonces, y llegó a una cifra de 9 sin prueba reactiva localizada — probablemente más fiable que el grep crudo de esta acta.
+**Reconciliación manual realizada**: el snapshot inicial por grep de cita literal `'FUNC-XXX-NNN'` marcaba 21 reglas preexistentes como "sin prueba", una cota inferior poco fiable porque muchas pruebas de convenciones anteriores (numeradas `PASO`/`Fase B`/`Fase C`) verifican el comportamiento sin citar el código `FUNC-*` en el texto. Se abrieron y leyeron una por una las 21 reglas marcadas. Resultado: 20/21 tenían cobertura real ya existente (comportamiento verificado contra `obtenerReporteIntegridad()`, no solo contra el validador de inserción `Repository_InsertarRegistro.js`, que es una capa distinta y no prueba lo mismo). El único gap genuino era **`FUNC-TAREA-008`** (TAREA `Terminada` con `DURACION_REAL_DIAS` vacío/ausente — distinto de `FUNC-TAREA-009`, que cubre valor presente pero inválido). Se escribió `auditarFaseC04B_TerminadaSinDuracionReal` (`src/Tests_Repository2.js`), desplegada y verificada con `result=OK` en Apps Script real: hallazgo detectado con `DURACION_REAL_DIAS` vacío, y confirmado que no persiste tras restaurar el valor original. Matriz de cobertura ahora al 100% verificado, no estimado.
 
 ## 9. Archivos temporales que permanecen
 
@@ -92,8 +93,8 @@ Verificado por metadata vía API: 19 hojas, misma estructura que el original. **
 ## 11. Pendiente para considerar el cierre de Fase J completo
 
 - [x] Backup formal de la Sheet real — completado (ver sección 10).
-- [ ] Reconciliación manual real de la matriz de cobertura (línea por línea, no por grep) — candidato natural para una sesión dedicada antes del cierre global (Paso 9).
-- [ ] Decidir si el gap de reglas sin prueba reactiva se cierra antes o después del cierre global de auditoría (Paso 9).
+- [x] Reconciliación manual real de la matriz de cobertura (línea por línea, no por grep) — completada, ver sección 8: 62/62 reglas verificadas.
+- [x] Gap de cobertura (`FUNC-TAREA-008`) cerrado con prueba reactiva nueva, verificada `result=OK` en Apps Script real.
 
 ## 12. Trazabilidad
 
