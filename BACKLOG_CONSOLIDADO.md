@@ -28,7 +28,7 @@ Cada uno resuelve varias fricciones simultáneamente. Orden sugerido por número
 | # | Mecanismo | Fricciones que resuelve | Apariciones |
 |---|---|---|---|
 | 1 | **Asignación N:M polimórfica** (persona/equipo → cualquier entidad, con rol/dedicación/fechas) | F-002, F-009, F-036, F-046, F-047, F-049, F-050, F-051, F-053, F-060 | 7+ |
-| 2 | **Grafo de relaciones/dependencias** entre entidades del mismo tipo (tipo de relación + desfase) | F-013, F-028, F-038, F-052 | 4+ |
+| 2 | **Grafo de relaciones/dependencias** entre entidades del mismo tipo (tipo de relación + desfase) | F-013, F-028, F-038 | 3+ |
 | 3 | **Criterios de aceptación / Definition of Done** estructurados | F-011, F-017, F-030/F-035 (fusionadas), F-040, F-054 | 5+ |
 | 4 | **Clasificación en 3 ejes** (tipo / prioridad / madurez, separados) | F-008, F-016, F-034 | 3 |
 | 5 | **Vínculo polimórfico genérico** (`ENTIDAD_TIPO`+`ENTIDAD_ID` → cualquier entidad, para documentos/decisiones/bloqueos/recursos) | F-052, F-067, F-079 (`RECURSO_REFERENCIA`) | 3+ |
@@ -41,6 +41,8 @@ Cada uno resuelve varias fricciones simultáneamente. Orden sugerido por número
 | 12 | **Exponer campos ya persistidos pero ausentes del formulario** | F-042 (confirmado con columnas reales) | 1 confirmado — revisar si se repite en otras entidades antes de descartarlo como aislado |
 
 **Recomendación de orden**: mecanismos 1, 2, 3 y 6 primero (más fricciones resueltas, menor ambigüedad de diseño); 5 y 8 después (dependen de que 1-2 ya estén decididos); 10 puede ir en paralelo (es UI, no dato).
+
+**Estado (actualizado en `ROADMAP_BACKLOG_MEJORAS.md`)**: mecanismo 1 (asignación N:M polimórfica) y mecanismo 2 (grafo de relaciones) construidos y verificados en Fases L1.1/L1.2. F-052 se recategorizó de mecanismo 2 a mecanismo 5 durante L1.2 (es un vínculo entre tipos distintos, no entre entidades del mismo tipo) — corrección de categorización, no hallazgo nuevo.
 
 ---
 

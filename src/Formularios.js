@@ -85,7 +85,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   PRODUCTO_MATERIAL: ['PRODUCTO_ID', 'MATERIAL_ID'],
   TAREA_MATERIAL: ['TAREA_ID', 'MATERIAL_ID'],
   DOCUMENTO: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'TIPO_DOCUMENTO', 'VERSION'],
-  ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO']
+  ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO'],
+  RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION']
 });
 
 
@@ -500,6 +501,26 @@ INCIDENCIA: [
     { campo: 'FECHA_FIN_ASIGNACION', etiqueta: 'Fecha fin asignación', tipo: 'fecha' },
     { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Grafo de relaciones/dependencias entre dos registros del mismo tipo
+   * de entidad (CAMPANA-CAMPANA, PROYECTO-PROYECTO, PRODUCTO-PRODUCTO,
+   * PROCESO-PROCESO, TAREA-TAREA...). Ambos extremos reutilizan el mismo
+   * resolver de FK dependiente que DOCUMENTO/ASIGNACION. TAREA sigue
+   * teniendo TAREA_PREDECESORA_ID para el caso simple de un único
+   * predecesor; RELACION es un mecanismo adicional para redes de
+   * dependencias más ricas (varios tipos de relación, varias entidades),
+   * no lo sustituye.
+   */
+  RELACION: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Tipo de entidad', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_DOCUMENTO', requerido: true },
+    { campo: 'ENTIDAD_ORIGEN_ID', etiqueta: 'Registro origen', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'ENTIDAD_DESTINO_ID', etiqueta: 'Registro destino', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'TIPO_RELACION', etiqueta: 'Tipo de relación', tipo: 'catalogo', catalogo: 'CFG_TIPO_RELACION', requerido: true },
+    { campo: 'DESFASE_DIAS', etiqueta: 'Desfase (días)', tipo: 'numero' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
 });
@@ -1553,6 +1574,7 @@ function onOpen() {
         .addItem('Producto-Material', 'abrirEditarProductoMaterial')
         .addItem('Tarea-Material', 'abrirEditarTareaMaterial')
         .addItem('Asignación', 'abrirEditarAsignacion')
+        .addItem('Relación (grafo de dependencias)', 'abrirEditarRelacion')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1561,6 +1583,7 @@ function onOpen() {
         .addItem('Producto - Material', 'abrirFormularioCrearProductoMaterial')
         .addItem('Tarea - Material', 'abrirFormularioCrearTareaMaterial')
         .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
+        .addItem('Relación / dependencia (grafo)', 'abrirFormularioCrearRelacion')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1647,6 +1670,7 @@ function abrirEditarTareaResponsable() { abrirEditarRegistroPorEntidad_('TAREA_R
 function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCTO_MATERIAL', 'Producto-Material'); }
 function abrirEditarTareaMaterial() { abrirEditarRegistroPorEntidad_('TAREA_MATERIAL', 'Tarea-Material'); }
 function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 'Asignación'); }
+function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Relación'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1656,6 +1680,7 @@ function abrirFormularioCrearTareaResponsable() { abrirFormularioCrear_('TAREA_R
 function abrirFormularioCrearProductoMaterial() { abrirFormularioCrear_('PRODUCTO_MATERIAL', 'Nueva relación producto-material'); }
 function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material'); }
 function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
+function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

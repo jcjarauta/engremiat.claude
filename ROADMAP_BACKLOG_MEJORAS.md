@@ -33,9 +33,15 @@ Los cuatro de mayor apalancamiento (resuelven 20+ fricciones combinadas). Diseñ
 
 F-046/F-047/F-049/F-050/F-051 quedan reclasificadas hacia L3.5 (buscador en selectores) y una futura integración de UX de `TAREA_RESPONSABLE`, no cerradas por L1.1.
 
-### L1.2 — Grafo de relaciones/dependencias entre entidades del mismo tipo
-Diseño único reutilizable en PROYECTO, PROCESO, TAREA, PRODUCTO: `RELACION(ENTIDAD_ORIGEN_ID, ENTIDAD_DESTINO_ID, TIPO_RELACION, DESFASE)`.
-Resuelve: F-013, F-028, F-038, F-052.
+### L1.2 — Grafo de relaciones/dependencias entre entidades del mismo tipo ✅ CERRADA (2026-07-31)
+
+**Construido**: entidad `RELACION` (hoja `17_RELACION`, prefijo `REL`) — `ENTIDAD_TIPO`, `ENTIDAD_ORIGEN_ID`, `ENTIDAD_DESTINO_ID` (ambos FK dependientes reutilizando el resolver `DOCUMENTO_ENTIDAD_ID`), `TIPO_RELACION`, `DESFASE_DIAS`, `ESTADO` (reutiliza `CFG_ESTADO_RELACION`, ya existente), `OBSERVACIONES`. Catálogo nuevo `TIPO_RELACION` (10 valores: Depende de/Bloquea/Requiere/Duplica/Complementa/Sustituye/Comparte recursos/Fin a inicio/Inicio a inicio/Fin a fin) — a diferencia de L1.1 sí hizo falta crear catálogo nuevo. Menú "Relación / dependencia (grafo)" / "Relación" (editar) añadido. Regla de integridad `FUNC-GRF-001` (autorreferencia: origen=destino) — alcance mínimo a propósito, detección de ciclos más allá del par directo queda fuera de esta fase. `TAREA_PREDECESORA_ID` no se toca; `RELACION` es mecanismo adicional, no sustituto. Instalador `instalarEntidadRelacion` (idempotente) crea hoja + filas de catálogo + **named range `CFG_TIPO_RELACION`**.
+
+**Hallazgo técnico de esta fase**: los campos `tipo: 'catalogo'` de los formularios resuelven contra un *named range* de Google Sheets (`obtenerCatalogo()`, `ConfigRepository.js`), no contra las filas de `90_CONFIGURACION` directamente — cualquier catálogo nuevo futuro necesita también su named range, no solo sus filas. Documentado aquí porque L1.1 no lo necesitó (reutilizó catálogos ya existentes) y casi se pasa por alto en L1.2.
+
+**Verificado**: `probarIntegridadAltaRelacionDryRun` (`result=OK`, ID `REL-0001`), `probarIntegridadRelacionAutoreferenciaDetectada` (`result=OK`), y **alta real en la UI** (`REL-0001`, PRO-0003→PRO-0001, "Comparte recursos", `HIS-1276`, `RESULTADO=OK` — catálogo nuevo y ambos desplegables dependientes funcionaron correctamente).
+
+**Alcance real vs. backlog original**: F-013 (PROYECTO_RELACION) y F-028 (PROCESO_DEPENDENCIA) quedan resueltas — mecanismo disponible para ambos. F-038 (TAREA_PREDECESORA_ID único) queda **parcialmente** resuelta: existe una alternativa N:M vía `RELACION`, pero el campo simple de TAREA sigue igual, sin integración entre ambos. **F-052 se retira de esta fase**: es un vínculo *entre tipos distintos* (DECISION→PRODUCTO/PROCESO/TAREA), no una relación *entre entidades del mismo tipo* — pertenece al mecanismo #5 (vínculo polimórfico genérico, L3.1), no a este. Corrección de categorización del backlog original, no un hallazgo nuevo.
 
 ### L1.3 — Criterios de aceptación / Definition of Done
 Campos estructurados reutilizables (`OBJETIVO`, `RESULTADO_ESPERADO`, `CRITERIOS_ACEPTACION`, `DEFINITION_OF_DONE`, `VALIDADOR_ID`) aplicados a PROYECTO, PRODUCTO, PROCESO (F-030/F-035 fusionadas), TAREA, DECISION.

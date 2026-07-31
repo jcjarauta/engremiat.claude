@@ -119,6 +119,14 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'ROL_ASIGNADO',
     'PORCENTAJE_DEDICACION',
     'ESTADO'
+  ]),
+
+  RELACION: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ORIGEN_ID',
+    'ENTIDAD_DESTINO_ID',
+    'TIPO_RELACION',
+    'ESTADO'
   ])
 });
 

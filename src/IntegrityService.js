@@ -1740,6 +1740,29 @@ function detectarSolapamientoTemporalTareaResponsable_(agregar) {
     });
 }
 
+function detectarProblemasRelacion_(agregar) {
+  listarRegistros(
+    'RELACION',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (r) {
+    var origen = String(r.ENTIDAD_ORIGEN_ID || '').trim();
+    var destino = String(r.ENTIDAD_DESTINO_ID || '').trim();
+
+    if (origen && destino && origen === destino) {
+      agregar(
+        'FUNC-GRF-001',
+        'RELACION',
+        r.ID,
+        'La relacion referencia el mismo registro como origen y destino (' +
+          origen +
+          ').',
+        'ERROR',
+        'Corregir el registro destino o eliminar la relacion.'
+      );
+    }
+  });
+}
+
 function detectarPersonaInactivaConAsignacionActiva_(agregar) {
   var personasPorId_ = {};
 
@@ -2571,6 +2594,15 @@ detectarDuplicidadesRelacionesMaterial_(
    * documentado en Fase L1.1 del roadmap de backlog.
    */
   detectarProblemasAsignacion_(agregar);
+
+  /*
+   * FUNC-GRF-001
+   * Grafo de relaciones/dependencias entre entidades del mismo tipo:
+   * una relacion no puede referenciar el mismo registro como origen y
+   * destino. Alcance minimo de esta fase (L1.2) — deteccion de ciclos
+   * mas alla del par directo queda fuera por ahora.
+   */
+  detectarProblemasRelacion_(agregar);
 
   /*
    * FUNC-REC-002

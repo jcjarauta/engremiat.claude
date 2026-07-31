@@ -12426,6 +12426,160 @@ function probarIntegridadDedicacionAsignacionSoloCuentaPeriodosSolapados() {
 }
 
 
+function probarIntegridadAltaRelacionDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_RELACION_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proyectos =
+    listarRegistros(
+      'PROYECTO',
+      {ACTIVO: 'SÍ'}
+    );
+
+  if (proyectos.length < 2) {
+    throw new Error(
+      'ALTA_RELACION_DRYRUN_TEST_ERROR: se necesitan al menos 2 PROYECTO activos para origen y destino'
+    );
+  }
+
+  var origen = proyectos[0];
+  var destino = proyectos[1];
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'RELACION',
+      {
+        ENTIDAD_TIPO: 'Proyecto',
+        ENTIDAD_ORIGEN_ID: origen.ID,
+        ENTIDAD_DESTINO_ID: destino.ID,
+        TIPO_RELACION: 'Depende de',
+        ESTADO: 'Planificada'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_RELACION_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  if (!/^REL-\d{4}$/.test(resultado.id)) {
+    throw new Error(
+      'ALTA_RELACION_DRYRUN_TEST_ERROR: ID generado con formato inesperado: ' +
+        resultado.id
+    );
+  }
+
+  console.log(
+    'OK dryRun_id_generado=' + resultado.id
+  );
+
+  console.log(
+    'OK dryRun_origen=' + origen.ID + ' destino=' + destino.ID
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadRelacionAutoreferenciaDetectada() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_GRF_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var campanaBase =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!campanaBase) {
+    throw new Error(
+      'FUNC-GRF-001_TEST_ERROR: no existe una CAMPANA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'RELACION'
+    );
+
+  var idTemporal = 'REL-AUD-GRF-001';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      {
+        ID: idTemporal,
+        ENTIDAD_TIPO: 'Campaña',
+        ENTIDAD_ORIGEN_ID: campanaBase.ID,
+        ENTIDAD_DESTINO_ID: campanaBase.ID,
+        TIPO_RELACION: 'Depende de',
+        ESTADO: 'Activa',
+        ACTIVO: 'SÍ'
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-GRF-001',
+      'RELACION',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK autoreferencia_detectada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-GRF-001',
+    'RELACION',
+    idTemporal
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
