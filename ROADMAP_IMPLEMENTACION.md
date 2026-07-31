@@ -52,8 +52,18 @@ Confirma el riesgo de Fase I: 70 lecturas completas de hoja para una sola pasada
 
 **Hallazgo colateral**: el mapa `ENTIDAD_DOCUMENTO_A_MVP` (`Formularios.js`) está desincronizado del catálogo real `ENTIDAD_DOCUMENTO` de la hoja — le faltan `DECISION`/`INCIDENCIA` y le sobran `MATERIAL`/`PERSONA_EQUIPO`/`PROVEEDOR`. Es un bug de la UI (selector de registro dependiente), no de datos, así que no se implementó como regla de auditoría — se dejó como tarea aparte para corregir el código del formulario.
 
-## Paso 5 — Fase G: Revisión consolidada de Historial/Reversión
-No es desarrollo nuevo, es cierre formal de algo ya verificado.
+## Paso 5 — Fase G: Revisión consolidada de Historial/Reversión ✅ CERRADO
+La revisión encontró que la verificación previa se apoyaba en una prueba rota: `ejecutarSuitePaso252a255` (`Tests_Repository.js`) usaba nombres de columna del esquema viejo de historial (`VALOR_NUEVO`/`VALOR_ANTERIOR`/`ID`) en vez del esquema vigente de 15 columnas (`DESPUES_JSON`/`ANTES_JSON`/`ID_HISTORIAL`). Además, su limpieza de filas de historial de prueba nunca funcionó (`eliminarRegistroPruebaPorId_` busca una columna `ID` que `91_HISTORIAL` no tiene), dejando residuos acumulados de ejecuciones anteriores.
+
+**Corregido y verificado, no solo documentado:**
+- Nombres de columna actualizados en las 4 pruebas.
+- Nueva función `eliminarFilaHistorialPorId_` (busca por `ID_HISTORIAL`) para limpiar de verdad las filas de prueba en `91_HISTORIAL`.
+- Aserciones de conteo exacto (`historial.length !== 1`) sustituidas por búsqueda del hallazgo esperado, robustas a que el ID de CAMPANA se reutilice tras borrar filas de prueba anteriores (causa real del primer fallo: 7 filas de historial heredadas de un ID reutilizado).
+- `ejecutarSuitePaso252a255` (HistorialService: crear/actualizar/desactivar-reactivar/filtrado) y `pruebaPaso308`/`pruebaPaso309` (Reversion: revierte actualización, rechaza doble reversión, rechaza revertir una creación, rechaza entidad inválida) — todas `result=OK` en Apps Script real.
+
+**Riesgos residuales documentados (no bloqueantes, por diseño):**
+- `91_HISTORIAL` no tiene purga ni archivado (1247 filas actuales) — lecturas `getDataRange()` completas en cada consulta, sin la caché aplicada en Paso 6. Aceptable mientras el volumen no lo haga inviable; revisar si Fase H expone lentitud.
+- `revertirUltimoCambioControlado` solo revierte el último `ACTUALIZAR`, nunca `CREAR`/`DESACTIVAR`/`REACTIVAR` ni cadenas de reversión — decisión de diseño explícita en el propio código, no un defecto.
 **Estimación: 1 sesión corta.**
 
 ## Paso 6 — Fase I completa: Rendimiento ✅ CERRADO (adelantado antes del Paso 3)

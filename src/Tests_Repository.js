@@ -5693,6 +5693,35 @@ function ejecutarSuitePaso248a251() {
   Logger.log('SUITE PASO 248-251 (CONFIG_REPOSITORY) COMPLETADA CON EXITO');
 }
 
+function eliminarFilaHistorialPorId_(hoja, idHistorial) {
+  if (!hoja || !idHistorial || hoja.getLastRow() < 2) {
+    return;
+  }
+
+  var cabeceras = hoja
+    .getRange(1, 1, 1, hoja.getLastColumn())
+    .getDisplayValues()[0]
+    .map(function (valor) {
+      return String(valor).trim();
+    });
+
+  var indiceId = cabeceras.indexOf('ID_HISTORIAL');
+
+  if (indiceId === -1) {
+    return;
+  }
+
+  var ids = hoja
+    .getRange(2, indiceId + 1, hoja.getLastRow() - 1, 1)
+    .getDisplayValues();
+
+  for (var i = ids.length - 1; i >= 0; i--) {
+    if (String(ids[i][0]).trim() === String(idHistorial).trim()) {
+      hoja.deleteRow(i + 2);
+    }
+  }
+}
+
 function pruebaPaso252_CrearRegistraHistorialConAccionCrear() {
   var campana = crearCampana({
     NOMBRE: 'Campana historial P252',
@@ -5705,21 +5734,37 @@ function pruebaPaso252_CrearRegistraHistorialConAccionCrear() {
   var historial = listarHistorialDeRegistro('CAMPANA', campana.id);
 
   try {
-    if (historial.length !== 1) {
-      throw new Error('PASO252 FALLÓ: se esperaba 1 fila de historial, hay ' + historial.length);
-    }
-    if (historial[0].ACCION !== 'CREAR') {
-      throw new Error('PASO252 FALLÓ: ACCION esperada CREAR, obtenida ' + historial[0].ACCION);
-    }
-    var valorNuevo = JSON.parse(historial[0].VALOR_NUEVO);
-    if (valorNuevo.NOMBRE !== 'Campana historial P252') {
-      throw new Error('PASO252 FALLÓ: VALOR_NUEVO no contiene el NOMBRE esperado.');
+    /*
+     * No se asume historial vacío: el ID de CAMPANA puede reutilizarse
+     * tras borrar filas de prueba anteriores, así que puede haber
+     * entradas de ejecuciones previas con el mismo REGISTRO_ID. Se
+     * busca la entrada CREAR de esta ejecución en vez de exigir
+     * exactamente 1 fila.
+     */
+    var filaCreacion =
+      historial.filter(function (fila) {
+        if (fila.ACCION !== 'CREAR') {
+          return false;
+        }
+
+        try {
+          return (
+            JSON.parse(fila.DESPUES_JSON).NOMBRE ===
+            'Campana historial P252'
+          );
+        } catch (e) {
+          return false;
+        }
+      })[0];
+
+    if (!filaCreacion) {
+      throw new Error('PASO252 FALLÓ: no se encontró una fila de historial con ACCION CREAR y el NOMBRE esperado.');
     }
 
     Logger.log('PASO 252 OK: crearCampana registra una fila de historial con ACCION CREAR.');
   } finally {
     historial.forEach(function (fila) {
-      eliminarRegistroPruebaPorId_(hoja, fila.ID);
+      eliminarFilaHistorialPorId_(hoja, fila.ID_HISTORIAL);
     });
     eliminarRegistroPruebaPorId_(obtenerHojaEntidad_('CAMPANA'), campana.id);
   }
@@ -5739,23 +5784,38 @@ function pruebaPaso253_ActualizarRegistraHistorialConDiferencias() {
   var historial = listarHistorialDeRegistro('CAMPANA', campana.id);
 
   try {
-    if (historial.length !== 2) {
-      throw new Error('PASO253 FALLÓ: se esperaban 2 filas de historial (crear + actualizar), hay ' + historial.length);
-    }
-    var filaActualizacion = historial.filter(function (fila) { return fila.ACCION === 'ACTUALIZAR'; })[0];
+    /*
+     * No se asume un total exacto de filas: el ID de CAMPANA puede
+     * reutilizarse tras borrar filas de prueba anteriores. Se busca
+     * la fila ACTUALIZAR con el diff exacto de esta ejecución.
+     */
+    var filaActualizacion =
+      historial.filter(function (fila) {
+        if (fila.ACCION !== 'ACTUALIZAR') {
+          return false;
+        }
+
+        try {
+          var anterior = JSON.parse(fila.ANTES_JSON);
+          var nuevo = JSON.parse(fila.DESPUES_JSON);
+
+          return (
+            anterior.ESTADO === 'Borrador' &&
+            nuevo.ESTADO === 'Activa'
+          );
+        } catch (e) {
+          return false;
+        }
+      })[0];
+
     if (!filaActualizacion) {
-      throw new Error('PASO253 FALLÓ: no se encontró una fila con ACCION ACTUALIZAR.');
-    }
-    var anterior = JSON.parse(filaActualizacion.VALOR_ANTERIOR);
-    var nuevo = JSON.parse(filaActualizacion.VALOR_NUEVO);
-    if (anterior.ESTADO !== 'Borrador' || nuevo.ESTADO !== 'Activa') {
-      throw new Error('PASO253 FALLÓ: el diff de ESTADO no es el esperado.');
+      throw new Error('PASO253 FALLÓ: no se encontró una fila ACTUALIZAR con el diff ESTADO Borrador->Activa esperado.');
     }
 
     Logger.log('PASO 253 OK: actualizarCampana registra una fila de historial con el diff correcto.');
   } finally {
     historial.forEach(function (fila) {
-      eliminarRegistroPruebaPorId_(hoja, fila.ID);
+      eliminarFilaHistorialPorId_(hoja, fila.ID_HISTORIAL);
     });
     eliminarRegistroPruebaPorId_(obtenerHojaEntidad_('CAMPANA'), campana.id);
   }
@@ -5787,7 +5847,7 @@ function pruebaPaso254_DesactivarYReactivarAfinanLaAccion() {
     Logger.log('PASO 254 OK: desactivarRegistro y reactivarRegistro afinan la ACCION a DESACTIVAR/REACTIVAR.');
   } finally {
     historial.forEach(function (fila) {
-      eliminarRegistroPruebaPorId_(hoja, fila.ID);
+      eliminarFilaHistorialPorId_(hoja, fila.ID_HISTORIAL);
     });
     eliminarRegistroPruebaPorId_(obtenerHojaEntidad_('CAMPANA'), campana.id);
   }
@@ -5813,17 +5873,33 @@ function pruebaPaso255_ListarHistorialDeRegistroFiltraPorEntidadYId() {
   var historialB = listarHistorialDeRegistro('CAMPANA', campanaB.id);
 
   try {
-    if (historialA.length !== 1 || historialB.length !== 1) {
-      throw new Error('PASO255 FALLÓ: cada campaña debería tener exactamente 1 fila de historial propia.');
+    /*
+     * No se asume un total exacto de filas (el ID puede reutilizarse
+     * tras borrar filas de prueba anteriores): lo que importa es que
+     * ninguna fila de historialA referencie a campanaB y viceversa.
+     */
+    if (historialA.length < 1 || historialB.length < 1) {
+      throw new Error('PASO255 FALLÓ: cada campaña debería tener al menos 1 fila de historial propia.');
     }
-    if (historialA[0].REGISTRO_ID !== campanaA.id || historialB[0].REGISTRO_ID !== campanaB.id) {
+
+    var mezclaA =
+      historialA.some(function (fila) {
+        return fila.REGISTRO_ID !== campanaA.id;
+      });
+
+    var mezclaB =
+      historialB.some(function (fila) {
+        return fila.REGISTRO_ID !== campanaB.id;
+      });
+
+    if (mezclaA || mezclaB) {
       throw new Error('PASO255 FALLÓ: listarHistorialDeRegistro mezcló registros de distintas campañas.');
     }
 
     Logger.log('PASO 255 OK: listarHistorialDeRegistro filtra correctamente por entidad y registroId.');
   } finally {
     historialA.concat(historialB).forEach(function (fila) {
-      eliminarRegistroPruebaPorId_(hoja, fila.ID);
+      eliminarFilaHistorialPorId_(hoja, fila.ID_HISTORIAL);
     });
     eliminarRegistroPruebaPorId_(obtenerHojaEntidad_('CAMPANA'), campanaA.id);
     eliminarRegistroPruebaPorId_(obtenerHojaEntidad_('CAMPANA'), campanaB.id);
