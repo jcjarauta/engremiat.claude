@@ -13032,6 +13032,526 @@ function probarIntegridadRelacionFechaRequeridaAnteriorProyecto() {
 }
 
 
+function construirDocumentoPruebaIntegridad_(
+  idTemporal,
+  overrides
+) {
+  return Object.assign(
+    {
+      ID: idTemporal,
+      ENTIDAD_TIPO: 'TAREA',
+      ENTIDAD_ID: 'TAR-0001',
+      TIPO_DOCUMENTO: 'Informe',
+      TITULO: 'AUDITORIA DOCUMENTO ' + idTemporal,
+      DESCRIPCION: '',
+      VERSION: '1.0',
+      URL: 'https://ejemplo.local/documento',
+      ESTADO: 'Borrador',
+      FECHA_DOCUMENTO: '',
+      OBSERVACIONES: '',
+      ACTIVO: 'SÍ'
+    },
+    overrides || {}
+  );
+}
+
+
+function probarIntegridadDocumentoEntidadIdHuerfano() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idTemporal =
+    'DOC-AUD-FUNC-DOC-001';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idTemporal,
+        {
+          ENTIDAD_TIPO: 'TAREA',
+          ENTIDAD_ID: 'TAR-INEXISTENTE-DOC'
+        }
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-001',
+      'DOCUMENTO',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-001'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-001',
+    'DOCUMENTO',
+    idTemporal
+  );
+
+  console.log(
+    'OK fila_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDocumentoReferenciaInactiva() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_002';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var padreInactivo =
+    listarRegistros(
+      'PROYECTO',
+      {ACTIVO: 'NO'}
+    )[0];
+
+  if (!padreInactivo) {
+    throw new Error(
+      'FUNC-DOC-002_TEST_ERROR: no existe un PROYECTO inactivo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idTemporal =
+    'DOC-AUD-FUNC-DOC-002';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idTemporal,
+        {
+          ENTIDAD_TIPO: 'PROYECTO',
+          ENTIDAD_ID: padreInactivo.ID
+        }
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-002',
+      'DOCUMENTO',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-002'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-002',
+    'DOCUMENTO',
+    idTemporal
+  );
+
+  console.log(
+    'OK fila_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDocumentoDobleVigente() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_003';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idA =
+    'DOC-AUD-FUNC-DOC-003-A';
+
+  var idB =
+    'DOC-AUD-FUNC-DOC-003-B';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idA,
+        {ESTADO: 'Vigente', VERSION: '1.0'}
+      )
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idB,
+        {ESTADO: 'Vigente', VERSION: '2.0'}
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-003',
+      'DOCUMENTO',
+      idA,
+      1
+    );
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-003',
+      'DOCUMENTO',
+      idB,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-003'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-003',
+    'DOCUMENTO',
+    idA
+  );
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-003',
+    'DOCUMENTO',
+    idB
+  );
+
+  console.log(
+    'OK filas_temporales_restauradas=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDocumentoDuplicadoExacto() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_004';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idA =
+    'DOC-AUD-FUNC-DOC-004-A';
+
+  var idB =
+    'DOC-AUD-FUNC-DOC-004-B';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idA,
+        {VERSION: '1.0'}
+      )
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idB,
+        {VERSION: '1.0'}
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-004',
+      'DOCUMENTO',
+      idA,
+      1
+    );
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-004',
+      'DOCUMENTO',
+      idB,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-004'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-004',
+    'DOCUMENTO',
+    idA
+  );
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-004',
+    'DOCUMENTO',
+    idB
+  );
+
+  console.log(
+    'OK filas_temporales_restauradas=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDocumentoVersionInvalida() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_005';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idTemporal =
+    'DOC-AUD-FUNC-DOC-005';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idTemporal,
+        {VERSION: 'version-x'}
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-005',
+      'DOCUMENTO',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-005'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-005',
+    'DOCUMENTO',
+    idTemporal
+  );
+
+  console.log(
+    'OK fila_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDocumentoUrlInvalida() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_DOC_006';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+    packageName
+  );
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'DOCUMENTO'
+    );
+
+  var idTemporal =
+    'DOC-AUD-FUNC-DOC-006';
+
+  try {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      construirDocumentoPruebaIntegridad_(
+        idTemporal,
+        {URL: 'no-es-una-url'}
+      )
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-DOC-006',
+      'DOCUMENTO',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK hallazgo_detectado=FUNC-DOC-006'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(
+      hoja,
+      idTemporal
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-DOC-006',
+    'DOCUMENTO',
+    idTemporal
+  );
+
+  console.log(
+    'OK fila_temporal_restaurada=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+    packageName +
+    ' result=OK'
+  );
+
+  return true;
+}
+
+
 /**
  * Ejecuta una prueba basada en mutación temporal de un registro.
  */

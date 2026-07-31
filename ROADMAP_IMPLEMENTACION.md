@@ -38,9 +38,19 @@ Confirma el riesgo de Fase I: 70 lecturas completas de hoja para una sola pasada
 | `FUNC-JER-006` | Proceso con `FECHA_FIN_PLAN` posterior a la `FECHA_REQUERIDA` de su producto |
 | `FUNC-JER-007` | Relación proyecto-producto con `FECHA_REQUERIDA` anterior al inicio planificado del proyecto |
 
-## Paso 4 — Fase F: Documentos
-Bloque DOCUMENTO (FK polimórfica, versión, vigencia, duplicados).
-**Estimación: 1 sesión.**
+## Paso 4 — Fase F: Documentos ✅ CERRADO
+6 reglas sobre el bloque DOCUMENTO, implementadas en `IntegrityService.js` y verificadas con `result=OK` en Apps Script real (con filas temporales, ya que `14_DOCUMENTOS` no tenía registros en producción):
+
+| Código | Regla | Gravedad |
+|---|---|---|
+| `FUNC-DOC-001` | `ENTIDAD_ID` huérfano (referencia polimórfica sin registro destino) | ERROR |
+| `FUNC-DOC-002` | `ENTIDAD_ID` referencia un registro padre inactivo | ADVERTENCIA |
+| `FUNC-DOC-003` | Más de un documento `Vigente` simultáneo para la misma combinación | ERROR |
+| `FUNC-DOC-004` | Duplicado exacto (mismo tipo+entidad+versión) | ERROR |
+| `FUNC-DOC-005` | `VERSION` con formato inválido | ADVERTENCIA |
+| `FUNC-DOC-006` | `URL` sin `http://`/`https://` | ADVERTENCIA |
+
+**Hallazgo colateral**: el mapa `ENTIDAD_DOCUMENTO_A_MVP` (`Formularios.js`) está desincronizado del catálogo real `ENTIDAD_DOCUMENTO` de la hoja — le faltan `DECISION`/`INCIDENCIA` y le sobran `MATERIAL`/`PERSONA_EQUIPO`/`PROVEEDOR`. Es un bug de la UI (selector de registro dependiente), no de datos, así que no se implementó como regla de auditoría — se dejó como tarea aparte para corregir el código del formulario.
 
 ## Paso 5 — Fase G: Revisión consolidada de Historial/Reversión
 No es desarrollo nuevo, es cierre formal de algo ya verificado.

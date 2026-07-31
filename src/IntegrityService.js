@@ -2182,6 +2182,206 @@ function detectarProblemasProductoProcesoJerarquia_(agregar) {
   });
 }
 
+/*
+ * Entidades que un DOCUMENTO puede referenciar via ENTIDAD_TIPO/ENTIDAD_ID,
+ * segun el catalogo real ENTIDAD_DOCUMENTO de la hoja 90_CONFIGURACION
+ * (CFG-0103 a CFG-0109). No reutiliza ENTIDAD_DOCUMENTO_A_MVP de
+ * Formularios.js porque ese mapa esta desincronizado del catalogo real
+ * (le faltan DECISION/INCIDENCIA y le sobran MATERIAL/PERSONA_EQUIPO/
+ * PROVEEDOR, que el catalogo ya no permite).
+ */
+var ENTIDADES_DOCUMENTO_VALIDAS_ = [
+  'CAMPANA',
+  'PROYECTO',
+  'PRODUCTO',
+  'PROCESO',
+  'TAREA',
+  'DECISION',
+  'INCIDENCIA'
+];
+
+function detectarProblemasDocumento_(agregar) {
+  var registrosPorEntidad_ = {};
+
+  function obtenerMapaEntidad_(entidadTipo) {
+    if (
+      ENTIDADES_DOCUMENTO_VALIDAS_.indexOf(entidadTipo) === -1
+    ) {
+      return null;
+    }
+
+    if (!registrosPorEntidad_[entidadTipo]) {
+      var mapa = {};
+
+      listarRegistros(entidadTipo)
+        .forEach(function (registro) {
+          mapa[registro.ID] = registro;
+        });
+
+      registrosPorEntidad_[entidadTipo] = mapa;
+    }
+
+    return registrosPorEntidad_[entidadTipo];
+  }
+
+  var documentosPorClaveVigente_ = {};
+  var documentosPorClaveDuplicado_ = {};
+
+  listarRegistros(
+    'DOCUMENTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (documento) {
+    var entidadTipo =
+      String(documento.ENTIDAD_TIPO || '').trim();
+
+    var entidadId =
+      String(documento.ENTIDAD_ID || '').trim();
+
+    if (entidadTipo && entidadId) {
+      var mapaEntidad =
+        obtenerMapaEntidad_(entidadTipo);
+
+      if (mapaEntidad) {
+        var padre = mapaEntidad[entidadId];
+
+        if (!padre) {
+          agregar(
+            'FUNC-DOC-001',
+            'DOCUMENTO',
+            documento.ID,
+            'Documento con ENTIDAD_ID huerfano: ' +
+              entidadTipo + ' ' + entidadId +
+              ' no existe.',
+            'ERROR',
+            'Corregir la referencia o eliminar el documento.'
+          );
+        } else if (
+          String(padre.ACTIVO || '').trim() !== 'SÍ'
+        ) {
+          agregar(
+            'FUNC-DOC-002',
+            'DOCUMENTO',
+            documento.ID,
+            'Documento referencia un registro inactivo: ' +
+              entidadTipo + ' ' + entidadId + '.',
+            'ADVERTENCIA',
+            'Revisar si el documento sigue siendo necesario tras desactivar el registro padre.'
+          );
+        }
+      }
+    }
+
+    if (documento.ESTADO === 'Vigente') {
+      var claveVigente =
+        entidadTipo + '|' + entidadId + '|' +
+        String(documento.TIPO_DOCUMENTO || '').trim();
+
+      if (!documentosPorClaveVigente_[claveVigente]) {
+        documentosPorClaveVigente_[claveVigente] = [];
+      }
+
+      documentosPorClaveVigente_[claveVigente].push(documento);
+    }
+
+    var claveDuplicado =
+      entidadTipo + '|' + entidadId + '|' +
+      String(documento.TIPO_DOCUMENTO || '').trim() + '|' +
+      String(documento.VERSION || '').trim();
+
+    if (!documentosPorClaveDuplicado_[claveDuplicado]) {
+      documentosPorClaveDuplicado_[claveDuplicado] = [];
+    }
+
+    documentosPorClaveDuplicado_[claveDuplicado].push(documento);
+
+    var version =
+      String(documento.VERSION || '').trim();
+
+    if (
+      version &&
+      !/^[vV]?\d+(\.\d+){0,3}$/.test(version)
+    ) {
+      agregar(
+        'FUNC-DOC-005',
+        'DOCUMENTO',
+        documento.ID,
+        'Documento con VERSION en formato invalido: ' +
+          version + '.',
+        'ADVERTENCIA',
+        'Usar un formato como 1, 1.0 o v1.2.3.'
+      );
+    }
+
+    var url =
+      String(documento.URL || '').trim();
+
+    if (
+      url &&
+      !/^https?:\/\/.+/i.test(url)
+    ) {
+      agregar(
+        'FUNC-DOC-006',
+        'DOCUMENTO',
+        documento.ID,
+        'Documento con URL en formato invalido (debe empezar por http:// o https://): ' +
+          url + '.',
+        'ADVERTENCIA',
+        'Corregir la URL del documento.'
+      );
+    }
+  });
+
+  Object.keys(documentosPorClaveVigente_)
+    .forEach(function (clave) {
+      var documentos =
+        documentosPorClaveVigente_[clave];
+
+      if (documentos.length > 1) {
+        documentos.forEach(function (documento) {
+          agregar(
+            'FUNC-DOC-003',
+            'DOCUMENTO',
+            documento.ID,
+            'Mas de un documento Vigente para la misma combinacion ENTIDAD_TIPO/ENTIDAD_ID/TIPO_DOCUMENTO: ' +
+              documentos
+                .map(function (d) {
+                  return d.ID;
+                })
+                .join(', ') +
+              '.',
+            'ERROR',
+            'Marcar como Obsoleto todos menos uno de los documentos vigentes.'
+          );
+        });
+      }
+    });
+
+  Object.keys(documentosPorClaveDuplicado_)
+    .forEach(function (clave) {
+      var documentos =
+        documentosPorClaveDuplicado_[clave];
+
+      if (documentos.length > 1) {
+        documentos.forEach(function (documento) {
+          agregar(
+            'FUNC-DOC-004',
+            'DOCUMENTO',
+            documento.ID,
+            'Documento duplicado (misma ENTIDAD_TIPO/ENTIDAD_ID/TIPO_DOCUMENTO/VERSION): ' +
+              documentos
+                .map(function (d) {
+                  return d.ID;
+                })
+                .join(', ') +
+              '.',
+            'ERROR',
+            'Eliminar o corregir los documentos duplicados.'
+          );
+        });
+      }
+    });
+}
+
 function detectarProblemasFuncionales_() {
   var hallazgos = [];
 
@@ -2321,6 +2521,13 @@ detectarDuplicidadesRelacionesMaterial_(
    * Coherencia de estado y fecha entre PRODUCTO y sus PROCESO.
    */
   detectarProblemasProductoProcesoJerarquia_(agregar);
+
+  /*
+   * FUNC-DOC-001 a FUNC-DOC-006
+   * Referencia polimorfica de DOCUMENTO, vigencia unica y duplicados,
+   * formato de VERSION y URL.
+   */
+  detectarProblemasDocumento_(agregar);
 
 
   /*
