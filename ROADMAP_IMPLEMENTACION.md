@@ -37,9 +37,18 @@ Bloque DOCUMENTO (FK polimórfica, versión, vigencia, duplicados).
 No es desarrollo nuevo, es cierre formal de algo ya verificado.
 **Estimación: 1 sesión corta.**
 
-## Paso 6 — Fase I completa: Rendimiento
-Con los datos del Paso 2 ya medidos, decidir alcance real del refactor de lectura (contexto de datos único, evitar `listarRegistros` repetido, reducir `flush`). Puede ser ligero o significativo según lo que midáis.
-**Estimación: 1-3 sesiones.**
+## Paso 6 — Fase I completa: Rendimiento ✅ CERRADO (adelantado antes del Paso 3)
+Alcance decidido y aplicado: **caché de lectura con alcance de una sola ejecución** (`src/CacheLecturaService.js`), sin tocar `Repository.js` en su arquitectura ni ninguna lógica de negocio. Engancha `leerFilasEntidadComoObjetos_` y `obtenerIdsDeEntidad_`/`detectarReferenciasHuerfanas`; el contexto se abre y cierra dentro de `obtenerReporteIntegridad()` (try/finally), así que no afecta el patrón mutar→flush→comprobar→restaurar de las pruebas reactivas (cada llamada arranca con caché limpio).
+
+**Resultado verificado en Apps Script real:**
+
+| Métrica | Antes | Después | Mejora |
+|---|---|---|---|
+| Duración total | 30.7s | 14.7s | ~52% |
+| Lecturas de hoja | 70 | 27 | ~61% |
+| Flushes | 0 | 0 | — |
+
+**Regresión verificada sin fallos**: `ejecutarSuiteIntegridadCoberturaDirectaPendiente` (10 reglas), las 4 pruebas nuevas de Fase D (`FUNC-REC-002` a `FUNC-REC-005`) y `probarIntegridadProveedorCodigoDuplicado` (ruta de duplicados) — todas `result=OK` tras el cambio.
 
 ## Paso 7 — Fase H: UI, panel e informes
 El bloque más débil y de mayor riesgo. Requiere verificación visual humana en cada iteración — no delegable.

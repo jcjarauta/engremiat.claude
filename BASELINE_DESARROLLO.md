@@ -19,7 +19,8 @@
 
 - Fase C (`auditarFaseC06A_ProcesoCompletadoConTareaNoTerminada`) quedó cerrada y commiteada en un ciclo previo (commit `0981818`).
 - Fase D recortada: 4 reglas nuevas (`FUNC-REC-002` a `FUNC-REC-005`) y sus pruebas reactivas añadidas a `src/IntegrityService.js` y `src/Tests_Repository2.js`, desplegadas vía `clasp push` y verificadas con `result=OK` en el editor de Apps Script real.
-- Paso 2 del roadmap (instrumentación barata) cerrado: `src/InstrumentacionService.js` nuevo, enganchado en los dos caminos de lectura de hoja existentes (`Repository.js` y `IntegrityService.js`). Datos reales capturados, ver Fase I en la tabla siguiente.
+- Paso 2 del roadmap (instrumentación barata) cerrado: `src/InstrumentacionService.js` nuevo, enganchado en los dos caminos de lectura de hoja existentes (`Repository.js` y `IntegrityService.js`).
+- Paso 6 del roadmap (refactor de lectura, adelantado antes de Paso 3) cerrado: `src/CacheLecturaService.js` nuevo, caché de lectura con alcance de una sola ejecución. Ver Fase I en la tabla siguiente para los números medidos.
 - La divergencia clasp↔git detectada anteriormente (función `auditarFaseC05A_TareaPredecesoraHuerfana` traída por `clasp pull` sin commitear) **quedó resuelta** — ya está incorporada en el commit `35b50d0`.
 - Tamaño actual del código fuente: ~27 archivos, ~35.000 líneas. Los archivos dominantes siguen siendo `Repository.js`, `Tests_Repository.js` y `Tests_Repository2.js`.
 
@@ -34,7 +35,7 @@
 | F | Documentos, decisiones, incidencias | Casi completada | Bloque DOCUMENTO (FK polimórfica, versión, vigencia) |
 | G | Historial y reversión | Verificado | Revisión consolidada final, no desarrollo |
 | H | UI, panel e informes | **Pendiente — riesgo principal** | Todo: estabilidad, tiempos de carga, informes, exportación, prueba visual de usuario |
-| I | Rendimiento y robustez | Instrumentado (Paso 2), refactor pendiente (Paso 6) | **Riesgo confirmado y ahora medido con precisión**: `obtenerReporteIntegridad()` completo tarda 30.7s reales y ejecuta 70 lecturas completas de hoja (38 en el bloque estructural duplicados/huérfanas, 32 en el funcional), 0 flushes. Instrumentación en `src/InstrumentacionService.js`, verificable con `diagnosticarInstrumentacionReporteIntegridad()`. Candidato claro a refactor: `obtenerIdsDeEntidad_` se releé sin caché entre llamadas |
+| I | Rendimiento y robustez | **Cerrada (mejora ligera aplicada)** | Refactor de lectura aplicado (`src/CacheLecturaService.js`, caché con alcance de una sola ejecución, sin tocar `Repository.js` ni lógica de negocio): `obtenerReporteIntegridad()` bajó de 30.7s/70 lecturas a 14.7s/27 lecturas (~52%/~61% de mejora), 0 flushes en ambos casos. Verificado sin regresión: 10 reglas de cobertura directa + 4 reglas nuevas de Fase D + duplicidad de proveedor, todas `result=OK`. Pendiente: si Fase H (UI) revela más presión de tiempo, reevaluar si hace falta ir más allá de esta caché ligera |
 | J | Seguridad, despliegue, baseline | Parcial avanzado | Backup formal del Sheet, hashes, acta de cierre, revisión de scopes/secretos |
 
 ## 4. Decisiones tomadas en este ciclo de trabajo

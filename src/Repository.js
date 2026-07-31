@@ -8281,25 +8281,27 @@ function obtenerHojaEntidad_(entidad) {
 }
 
 function leerFilasEntidadComoObjetos_(entidad) {
-  instrumentacionRegistrarLecturaHoja_();
-  var hoja = obtenerHojaEntidad_(entidad);
-  var lastRow = hoja.getLastRow();
-  var lastCol = hoja.getLastColumn();
-  if (lastRow < 2) {
-    return [];
-  }
-  var valores = hoja.getRange(1, 1, lastRow, lastCol).getValues();
-  var cabeceras = valores[0];
-  var filas = [];
-  for (var i = 1; i < valores.length; i++) {
-    var fila = valores[i];
-    var objeto = {};
-    for (var c = 0; c < cabeceras.length; c++) {
-      objeto[cabeceras[c]] = fila[c];
+  return cacheLecturaFilasObjetos_(entidad, function () {
+    instrumentacionRegistrarLecturaHoja_();
+    var hoja = obtenerHojaEntidad_(entidad);
+    var lastRow = hoja.getLastRow();
+    var lastCol = hoja.getLastColumn();
+    if (lastRow < 2) {
+      return [];
     }
-    filas.push(objeto);
-  }
-  return filas;
+    var valores = hoja.getRange(1, 1, lastRow, lastCol).getValues();
+    var cabeceras = valores[0];
+    var filas = [];
+    for (var i = 1; i < valores.length; i++) {
+      var fila = valores[i];
+      var objeto = {};
+      for (var c = 0; c < cabeceras.length; c++) {
+        objeto[cabeceras[c]] = fila[c];
+      }
+      filas.push(objeto);
+    }
+    return filas;
+  });
 }
 
 /**

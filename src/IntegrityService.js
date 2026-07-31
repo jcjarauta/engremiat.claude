@@ -70,9 +70,12 @@ var MAPA_FK_MVP = {
 };
 
 function obtenerIdsDeEntidad_(entidad) {
-  instrumentacionRegistrarLecturaHoja_();
-  var hoja = obtenerHojaEntidad_(entidad);
-  var valores = hoja.getDataRange().getDisplayValues();
+  var valores = cacheLecturaValoresMostrados_(entidad, function () {
+    instrumentacionRegistrarLecturaHoja_();
+    var hoja = obtenerHojaEntidad_(entidad);
+    return hoja.getDataRange().getDisplayValues();
+  });
+
   var idxId = valores[0].indexOf('ID');
 
   return valores.slice(1)
@@ -111,9 +114,11 @@ function detectarReferenciasHuerfanas(entidad) {
     return [];
   }
 
-  instrumentacionRegistrarLecturaHoja_();
-  var hoja = obtenerHojaEntidad_(entidad);
-  var valores = hoja.getDataRange().getDisplayValues();
+  var valores = cacheLecturaValoresMostrados_(entidad, function () {
+    instrumentacionRegistrarLecturaHoja_();
+    var hoja = obtenerHojaEntidad_(entidad);
+    return hoja.getDataRange().getDisplayValues();
+  });
 
   if (!valores || valores.length < 2) {
     return [];
@@ -2107,6 +2112,7 @@ detectarDuplicidadesRelacionesMaterial_(
 
 function obtenerReporteIntegridad() {
   instrumentacionReiniciarContadores();
+  cacheLecturaIniciarContexto_();
 
   var inicioTotal = Date.now();
 
@@ -2115,39 +2121,46 @@ function obtenerReporteIntegridad() {
     referenciasHuerfanas: {}
   };
 
-  var medicionEstructural =
-    instrumentacionMedirFuncion_(
-      'estructural_duplicados_huerfanas',
-      function () {
-        Object.keys(ENTIDADES_MVP)
-          .forEach(function (entidad) {
-            var duplicados =
-              detectarIdsDuplicados(entidad);
+  var medicionEstructural;
+  var medicionFuncional;
 
-            if (duplicados.length > 0) {
-              reporte.idsDuplicados[entidad] =
-                duplicados;
-            }
+  try {
+    medicionEstructural =
+      instrumentacionMedirFuncion_(
+        'estructural_duplicados_huerfanas',
+        function () {
+          Object.keys(ENTIDADES_MVP)
+            .forEach(function (entidad) {
+              var duplicados =
+                detectarIdsDuplicados(entidad);
 
-            var huerfanas =
-              detectarReferenciasHuerfanas(entidad);
+              if (duplicados.length > 0) {
+                reporte.idsDuplicados[entidad] =
+                  duplicados;
+              }
 
-            if (huerfanas.length > 0) {
-              reporte.referenciasHuerfanas[entidad] =
-                huerfanas;
-            }
-          });
-      }
-    );
+              var huerfanas =
+                detectarReferenciasHuerfanas(entidad);
 
-  var medicionFuncional =
-    instrumentacionMedirFuncion_(
-      'funcional',
-      function () {
-        reporte.funcional =
-          detectarProblemasFuncionales_();
-      }
-    );
+              if (huerfanas.length > 0) {
+                reporte.referenciasHuerfanas[entidad] =
+                  huerfanas;
+              }
+            });
+        }
+      );
+
+    medicionFuncional =
+      instrumentacionMedirFuncion_(
+        'funcional',
+        function () {
+          reporte.funcional =
+            detectarProblemasFuncionales_();
+        }
+      );
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
 
   reporte.instrumentacion = {
     duracionTotalMs: Date.now() - inicioTotal,
