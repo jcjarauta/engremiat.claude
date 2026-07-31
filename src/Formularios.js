@@ -84,7 +84,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   TAREA_RESPONSABLE: ['TAREA_ID', 'PERSONA_EQUIPO_ID'],
   PRODUCTO_MATERIAL: ['PRODUCTO_ID', 'MATERIAL_ID'],
   TAREA_MATERIAL: ['TAREA_ID', 'MATERIAL_ID'],
-  DOCUMENTO: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'TIPO_DOCUMENTO', 'VERSION']
+  DOCUMENTO: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'TIPO_DOCUMENTO', 'VERSION'],
+  ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO']
 });
 
 
@@ -478,6 +479,27 @@ INCIDENCIA: [
     { campo: 'URL', etiqueta: 'URL', tipo: 'texto', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_DOCUMENTO', requerido: true },
     { campo: 'FECHA_DOCUMENTO', etiqueta: 'Fecha del documento', tipo: 'fecha' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Asignación N:M genérica de persona/equipo a cualquier entidad de la
+   * jerarquía (CAMPANA/PROYECTO/PRODUCTO/PROCESO/DECISION/INCIDENCIA).
+   * Reutiliza los mismos catálogos y el mismo resolver de FK dependiente
+   * que ya usan DOCUMENTO y TAREA_RESPONSABLE, para no duplicar diseño.
+   * TAREA sigue gestionándose por TAREA_RESPONSABLE (ya existente, con sus
+   * propias reglas FUNC-REC-*) — ASIGNACION no la sustituye en esta fase,
+   * cubre los seis niveles que hoy no tienen ningún mecanismo de asignación.
+   */
+  ASIGNACION: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Tipo de entidad', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_DOCUMENTO', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'PERSONA_EQUIPO_ID', etiqueta: 'Persona / equipo', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true },
+    { campo: 'ROL_ASIGNADO', etiqueta: 'Rol asignado', tipo: 'catalogo', catalogo: 'CFG_ROL_ASIGNACION', requerido: true },
+    { campo: 'FECHA_INICIO_ASIGNACION', etiqueta: 'Fecha inicio asignación', tipo: 'fecha' },
+    { campo: 'FECHA_FIN_ASIGNACION', etiqueta: 'Fecha fin asignación', tipo: 'fecha' },
+    { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
 });
@@ -1530,6 +1552,7 @@ function onOpen() {
         .addItem('Tarea-Responsable', 'abrirEditarTareaResponsable')
         .addItem('Producto-Material', 'abrirEditarProductoMaterial')
         .addItem('Tarea-Material', 'abrirEditarTareaMaterial')
+        .addItem('Asignación', 'abrirEditarAsignacion')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1537,6 +1560,7 @@ function onOpen() {
         .addItem('Tarea - Responsable', 'abrirFormularioCrearTareaResponsable')
         .addItem('Producto - Material', 'abrirFormularioCrearProductoMaterial')
         .addItem('Tarea - Material', 'abrirFormularioCrearTareaMaterial')
+        .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1622,6 +1646,7 @@ function abrirEditarProyectoProducto() { abrirEditarRegistroPorEntidad_('PROYECT
 function abrirEditarTareaResponsable() { abrirEditarRegistroPorEntidad_('TAREA_RESPONSABLE', 'Tarea-Responsable'); }
 function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCTO_MATERIAL', 'Producto-Material'); }
 function abrirEditarTareaMaterial() { abrirEditarRegistroPorEntidad_('TAREA_MATERIAL', 'Tarea-Material'); }
+function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 'Asignación'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1630,6 +1655,7 @@ function abrirFormularioCrearProyectoProducto() { abrirFormularioCrear_('PROYECT
 function abrirFormularioCrearTareaResponsable() { abrirFormularioCrear_('TAREA_RESPONSABLE', 'Nueva asignación tarea-responsable'); }
 function abrirFormularioCrearProductoMaterial() { abrirFormularioCrear_('PRODUCTO_MATERIAL', 'Nueva relación producto-material'); }
 function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material'); }
+function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

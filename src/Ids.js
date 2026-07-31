@@ -58,6 +58,10 @@ const ENTIDADES_MVP = Object.freeze({
   PROVEEDOR: Object.freeze({
     hoja: '15_PROVEEDORES',
     prefijo: 'PRV'
+  }),
+  ASIGNACION: Object.freeze({
+    hoja: '16_ASIGNACION',
+    prefijo: 'ASG'
   })
 });
 

@@ -20,9 +20,18 @@ Continúa la serie de fases del roadmap original (A-J, Pasos 0-10). Estas son **
 ## Fase L1 — Mecanismos transversales fundamentales
 Los cuatro de mayor apalancamiento (resuelven 20+ fricciones combinadas). Diseñar y verificar cada uno por separado, no como un único cambio monolítico.
 
-### L1.1 — Asignación N:M polimórfica
-Sustituye el patrón repetido 7 veces (`TAREA_RESPONSABLE` ya existe; `CAMPANA_RESPONSABLE`, `PROYECTO_PARTICIPANTE`, `PROCESO_PARTICIPANTE`, `PRODUCTO_PARTICIPANTE`, roles en `DECISION`/`INCIDENCIA` estaban diseñados como tablas separadas). Diseño único: `ASIGNACION(ENTIDAD_TIPO, ENTIDAD_ID, PERSONA_EQUIPO_ID, ROL, DEDICACION, FECHA_INICIO, FECHA_FIN)`.
-Resuelve: F-002, F-009, F-036, F-046, F-047, F-049, F-050, F-051, F-053, F-060.
+### L1.1 — Asignación N:M polimórfica ✅ CERRADA (2026-07-31)
+
+**Construido**: entidad `ASIGNACION` (hoja `16_ASIGNACION`, prefijo `ASG`) — `ENTIDAD_TIPO`, `ENTIDAD_ID` (FK dependiente), `PERSONA_EQUIPO_ID`, `ROL_ASIGNADO`, `FECHA_INICIO_ASIGNACION`, `FECHA_FIN_ASIGNACION`, `PORCENTAJE_DEDICACION`, `ESTADO`, `OBSERVACIONES`. Reutiliza sin crear nada nuevo: catálogo `CFG_ENTIDAD_DOCUMENTO`, resolver `DOCUMENTO_ENTIDAD_ID`, catálogos `CFG_ROL_ASIGNACION`/`CFG_ESTADO_ASIGNACION` (ya existían en `90_CONFIGURACION`, usados por `TAREA_RESPONSABLE`). Menú "Nueva asignación"/"Asignación" (editar) añadido. Regla de integridad `FUNC-ASG-001` (dedicación simultánea >100%) reutilizando el mismo barrido temporal del bug F-048, extraído a un helper compartido `calcularDedicacionMaximaSimultaneaPorPersona_`. Instalador `instalarEntidadAsignacion` (idempotente) para crear la hoja.
+
+**Verificado**: `probarIntegridadAltaAsignacionDryRun` (`result=OK`, ID `ASG-0001` generado correctamente), `probarIntegridadDedicacionAsignacionSoloCuentaPeriodosSolapados` (`result=OK`, mismo patrón que L0), y **alta real en la UI** (`ASG-0001`, `HIS-1275`, `RESULTADO=OK` — desplegable dependiente de `ENTIDAD_ID` resolvió `CAM-0010` correctamente al elegir "Campaña").
+
+**Corrección de alcance (tras construirlo, no asumido de antemano)**: de las fricciones originalmente listadas, solo **F-002** (CAMPANA sin responsable) y **F-009** (PROYECTO sin estructura de responsables) — y su equivalente para PRODUCTO/PROCESO/DECISION/INCIDENCIA — quedan realmente resueltas: son los 6 niveles que antes no tenían ningún mecanismo de asignación y ahora sí. **No resuelto todavía**:
+- **F-036** (TAREA sin responsable en su propia alta) y **F-046/F-047/F-049/F-050/F-051** (mejoras de UX de `TAREA_RESPONSABLE`: buscador, horas, desglose de equipo, disponibilidad visible) — `TAREA_RESPONSABLE` se dejó intacta a propósito, sigue siendo el mecanismo de tareas.
+- **F-053/F-060** (roles en DECISION/INCIDENCIA) — el mecanismo ya existe como relación independiente vía `ASIGNACION`, pero los formularios de DECISION/INCIDENCIA siguen mostrando un único `RESPONSABLE_ID`, sin integrar la nueva relación.
+- **Límite de alcance documentado en código**: `FUNC-REC-001` (TAREA_RESPONSABLE) y `FUNC-ASG-001` (ASIGNACION) no se combinan — una persona podría superar el 100% real sumando ambas tablas sin que ninguna regla lo detecte todavía.
+
+F-046/F-047/F-049/F-050/F-051 quedan reclasificadas hacia L3.5 (buscador en selectores) y una futura integración de UX de `TAREA_RESPONSABLE`, no cerradas por L1.1.
 
 ### L1.2 — Grafo de relaciones/dependencias entre entidades del mismo tipo
 Diseño único reutilizable en PROYECTO, PROCESO, TAREA, PRODUCTO: `RELACION(ENTIDAD_ORIGEN_ID, ENTIDAD_DESTINO_ID, TIPO_RELACION, DESFASE)`.

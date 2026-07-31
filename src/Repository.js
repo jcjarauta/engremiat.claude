@@ -110,7 +110,16 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'ESTADO'
   ]),
 
-  PROVEEDOR: Object.freeze(['CODIGO', 'NOMBRE', 'ESTADO'])
+  PROVEEDOR: Object.freeze(['CODIGO', 'NOMBRE', 'ESTADO']),
+
+  ASIGNACION: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ID',
+    'PERSONA_EQUIPO_ID',
+    'ROL_ASIGNADO',
+    'PORCENTAJE_DEDICACION',
+    'ESTADO'
+  ])
 });
 
 /**

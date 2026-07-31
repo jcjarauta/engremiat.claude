@@ -12139,6 +12139,293 @@ function probarIntegridadDedicacionSoloCuentaPeriodosSolapados() {
 }
 
 
+function probarIntegridadAltaAsignacionDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_ASIGNACION_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var campanaBase =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var personaBase =
+    listarRegistros(
+      'PERSONA_EQUIPO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (persona) {
+      return persona.ESTADO !== 'Inactivo';
+    })[0];
+
+  if (!campanaBase) {
+    throw new Error(
+      'ALTA_ASIGNACION_DRYRUN_TEST_ERROR: no existe una CAMPANA activa utilizable'
+    );
+  }
+
+  if (!personaBase) {
+    throw new Error(
+      'ALTA_ASIGNACION_DRYRUN_TEST_ERROR: no existe una PERSONA_EQUIPO activa utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'ASIGNACION',
+      {
+        ENTIDAD_TIPO: 'Campaña',
+        ENTIDAD_ID: campanaBase.ID,
+        PERSONA_EQUIPO_ID: personaBase.ID,
+        ROL_ASIGNADO: 'Responsable',
+        PORCENTAJE_DEDICACION: 10,
+        ESTADO: 'Planificada'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_ASIGNACION_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  if (!/^ASG-\d{4}$/.test(resultado.id)) {
+    throw new Error(
+      'ALTA_ASIGNACION_DRYRUN_TEST_ERROR: ID generado con formato inesperado: ' +
+        resultado.id
+    );
+  }
+
+  console.log(
+    'OK dryRun_id_generado=' + resultado.id
+  );
+
+  console.log(
+    'OK dryRun_fila_destino=' + resultado.filaDestino
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadDedicacionAsignacionSoloCuentaPeriodosSolapados() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_ASG_001_SOLAPAMIENTO';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var dedicacionSinFechasPorPersona_ = {};
+
+  listarRegistros(
+    'ASIGNACION',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (registro) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(registro.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var inicio =
+      parseFechaIntegridad_(
+        registro.FECHA_INICIO_ASIGNACION
+      );
+
+    var fin =
+      parseFechaIntegridad_(
+        registro.FECHA_FIN_ASIGNACION
+      );
+
+    var tieneFechas =
+      !isNaN(inicio.getTime()) &&
+      !isNaN(fin.getTime());
+
+    if (tieneFechas) {
+      return;
+    }
+
+    var personaId =
+      String(registro.PERSONA_EQUIPO_ID || '').trim();
+
+    if (!personaId) {
+      return;
+    }
+
+    dedicacionSinFechasPorPersona_[personaId] =
+      (dedicacionSinFechasPorPersona_[personaId] || 0) +
+      (Number(registro.PORCENTAJE_DEDICACION) || 0);
+  });
+
+  var personaId = null;
+  var dedicacionBase = 0;
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).filter(function (persona) {
+    return persona.ESTADO !== 'Inactivo';
+  }).some(function (persona) {
+    var id = String(persona.ID).trim();
+    var base = dedicacionSinFechasPorPersona_[id] || 0;
+
+    if (base < 100) {
+      personaId = id;
+      dedicacionBase = base;
+      return true;
+    }
+
+    return false;
+  });
+
+  if (!personaId) {
+    throw new Error(
+      'FUNC-ASG-001_SOLAPAMIENTO_TEST_ERROR: no existe una PERSONA_EQUIPO activa con margen de dedicación disponible para aislar la prueba'
+    );
+  }
+
+  var pct = 100 - dedicacionBase;
+
+  console.log(
+    'OK persona_id=' + personaId +
+      ' dedicacion_base_sin_fechas=' + dedicacionBase +
+      ' pct_sintetico=' + pct
+  );
+
+  var campanaBase =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!campanaBase) {
+    throw new Error(
+      'FUNC-ASG-001_SOLAPAMIENTO_TEST_ERROR: no existe una CAMPANA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'ASIGNACION'
+    );
+
+  var idA = 'ASG-AUD-001-A';
+  var idB = 'ASG-AUD-001-B';
+
+  var filaBase = {
+    ENTIDAD_TIPO: 'Campaña',
+    ENTIDAD_ID: campanaBase.ID,
+    PERSONA_EQUIPO_ID: personaId,
+    ROL_ASIGNADO: 'Responsable',
+    PORCENTAJE_DEDICACION: pct,
+    ESTADO: 'Activa',
+    ACTIVO: 'SÍ'
+  };
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    // Caso 1: dos asignaciones de "pct" cada una (baseline+pct=100)
+    // en periodos NO solapados (fechas de 2035) — no debe superar
+    // el 100% simultáneo.
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign({}, filaBase, {
+        ID: idA,
+        FECHA_INICIO_ASIGNACION: new Date(2035, 0, 1),
+        FECHA_FIN_ASIGNACION: new Date(2035, 0, 31)
+      })
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign({}, filaBase, {
+        ID: idB,
+        FECHA_INICIO_ASIGNACION: new Date(2035, 1, 1),
+        FECHA_FIN_ASIGNACION: new Date(2035, 1, 28)
+      })
+    );
+
+    SpreadsheetApp.flush();
+
+    assertSinHallazgoIntegridad_(
+      'FUNC-ASG-001',
+      'PERSONA_EQUIPO',
+      personaId
+    );
+
+    console.log(
+      'OK sin_solapamiento_sin_falso_positivo=true'
+    );
+
+    // Caso 2: se traslada la asignación B para que solape con A.
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      idB,
+      {
+        FECHA_INICIO_ASIGNACION: new Date(2035, 0, 15),
+        FECHA_FIN_ASIGNACION: new Date(2035, 1, 15)
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-ASG-001',
+      'PERSONA_EQUIPO',
+      personaId,
+      1
+    );
+
+    console.log(
+      'OK con_solapamiento_genera_hallazgo=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-ASG-001',
+    'PERSONA_EQUIPO',
+    personaId
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

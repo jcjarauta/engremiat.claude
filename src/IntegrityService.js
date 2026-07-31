@@ -1491,118 +1491,175 @@ function detectarProblemasTarea_(agregar) {
     });
 }
 
-function detectarProblemasTareaResponsable_(agregar) {
-  var asignacionesPorPersona_ = {};
+/**
+ * Agrupa una lista plana de asignaciones {personaId, etiqueta, pct,
+ * fechaInicio, fechaFin} por persona y calcula, para cada una, la
+ * dedicacion maxima que llega a estar simultaneamente activa (barrido
+ * temporal / sweep-line). Las asignaciones sin fechas validas se tratan
+ * como siempre activas. En empates de instante los inicios se procesan
+ * antes que los fines, para que el criterio de solapamiento sea el mismo
+ * que usa detectarSolapamientoTemporalTareaResponsable_ (FUNC-REC-002).
+ *
+ * Devuelve un array de {personaId, maxima, etiquetasEnMaximo}.
+ */
+function calcularDedicacionMaximaSimultaneaPorPersona_(asignaciones) {
+  var porPersona_ = {};
 
-  listarRegistros(
-    'TAREA_RESPONSABLE',
-    {ACTIVO: 'SÍ'}
-  ).forEach(function (a) {
-    if (
-      ['Planificada', 'Activa']
-        .indexOf(a.ESTADO) === -1
-    ) {
+  asignaciones.forEach(function (a) {
+    var personaId = String(a.personaId || '').trim();
+
+    if (!personaId) {
       return;
     }
 
-    var pct = Number(a.PORCENTAJE_DEDICACION) || 0;
-
     var fechaInicio =
-      a.FECHA_INICIO_ASIGNACION instanceof Date
-        ? new Date(a.FECHA_INICIO_ASIGNACION.getTime())
-        : new Date(a.FECHA_INICIO_ASIGNACION);
+      a.fechaInicio instanceof Date
+        ? new Date(a.fechaInicio.getTime())
+        : new Date(a.fechaInicio);
 
     var fechaFin =
-      a.FECHA_FIN_ASIGNACION instanceof Date
-        ? new Date(a.FECHA_FIN_ASIGNACION.getTime())
-        : new Date(a.FECHA_FIN_ASIGNACION);
+      a.fechaFin instanceof Date
+        ? new Date(a.fechaFin.getTime())
+        : new Date(a.fechaFin);
 
     var tieneFechas =
       !isNaN(fechaInicio.getTime()) &&
       !isNaN(fechaFin.getTime());
 
-    if (!asignacionesPorPersona_[a.PERSONA_EQUIPO_ID]) {
-      asignacionesPorPersona_[a.PERSONA_EQUIPO_ID] = [];
+    if (!porPersona_[personaId]) {
+      porPersona_[personaId] = [];
     }
 
-    asignacionesPorPersona_[a.PERSONA_EQUIPO_ID].push({
-      tareaId: a.TAREA_ID,
-      pct: pct,
+    porPersona_[personaId].push({
+      etiqueta: a.etiqueta,
+      pct: Number(a.pct) || 0,
       inicio: tieneFechas ? fechaInicio.getTime() : null,
       fin: tieneFechas ? fechaFin.getTime() : null
     });
   });
 
-  Object.keys(asignacionesPorPersona_)
-    .forEach(function (personaId) {
-      var asignaciones = asignacionesPorPersona_[personaId];
+  return Object.keys(porPersona_).map(function (personaId) {
+    var lista = porPersona_[personaId];
 
-      var sinFechas = asignaciones.filter(function (a) {
-        return a.inicio === null;
+    var sinFechas = lista.filter(function (a) { return a.inicio === null; });
+    var conFechas = lista.filter(function (a) { return a.inicio !== null; });
+
+    var sumaSinFechas = sinFechas.reduce(function (total, a) {
+      return total + a.pct;
+    }, 0);
+
+    var maxima = sumaSinFechas;
+
+    var etiquetasEnMaximo = sinFechas.map(function (a) {
+      return a.etiqueta;
+    });
+
+    if (conFechas.length > 0) {
+      var eventos = [];
+
+      conFechas.forEach(function (a) {
+        eventos.push({t: a.inicio, tipo: 'inicio', pct: a.pct, etiqueta: a.etiqueta});
+        eventos.push({t: a.fin, tipo: 'fin', pct: a.pct, etiqueta: a.etiqueta});
       });
 
-      var conFechas = asignaciones.filter(function (a) {
-        return a.inicio !== null;
+      eventos.sort(function (x, y) {
+        if (x.t !== y.t) {
+          return x.t - y.t;
+        }
+        return (x.tipo === 'fin' ? 1 : 0) - (y.tipo === 'fin' ? 1 : 0);
       });
 
-      var sumaSinFechas = sinFechas.reduce(function (total, a) {
-        return total + a.pct;
-      }, 0);
+      var acumulado = sumaSinFechas;
+      var activasDatadas_ = {};
 
-      var maxima = sumaSinFechas;
+      eventos.forEach(function (evento) {
+        if (evento.tipo === 'inicio') {
+          acumulado += evento.pct;
+          activasDatadas_[evento.etiqueta] = true;
+        } else {
+          acumulado -= evento.pct;
+          delete activasDatadas_[evento.etiqueta];
+        }
 
-      var tareasEnMaximo = sinFechas.map(function (a) {
-        return a.tareaId;
+        if (acumulado > maxima) {
+          maxima = acumulado;
+          etiquetasEnMaximo = Object.keys(activasDatadas_).concat(
+            sinFechas.map(function (a) { return a.etiqueta; })
+          );
+        }
       });
+    }
 
-      if (conFechas.length > 0) {
-        var eventos = [];
+    return {
+      personaId: personaId,
+      maxima: maxima,
+      etiquetasEnMaximo: etiquetasEnMaximo
+    };
+  });
+}
 
-        conFechas.forEach(function (a) {
-          eventos.push({t: a.inicio, tipo: 'inicio', pct: a.pct, tareaId: a.tareaId});
-          eventos.push({t: a.fin, tipo: 'fin', pct: a.pct, tareaId: a.tareaId});
-        });
+function detectarProblemasTareaResponsable_(agregar) {
+  var asignaciones = listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).filter(function (a) {
+    return ['Planificada', 'Activa'].indexOf(a.ESTADO) !== -1;
+  }).map(function (a) {
+    return {
+      personaId: a.PERSONA_EQUIPO_ID,
+      etiqueta: a.TAREA_ID,
+      pct: a.PORCENTAJE_DEDICACION,
+      fechaInicio: a.FECHA_INICIO_ASIGNACION,
+      fechaFin: a.FECHA_FIN_ASIGNACION
+    };
+  });
 
-        // Fechas de fin son inclusivas: en un empate de instante, procesar
-        // primero los inicios que los fines, para que un solapamiento en el
-        // mismo dia se detecte igual que en detectarSolapamientoTemporalTareaResponsable_.
-        eventos.sort(function (x, y) {
-          if (x.t !== y.t) {
-            return x.t - y.t;
-          }
-          return (x.tipo === 'fin' ? 1 : 0) - (y.tipo === 'fin' ? 1 : 0);
-        });
-
-        var acumulado = sumaSinFechas;
-        var activasDatadas_ = {};
-
-        eventos.forEach(function (evento) {
-          if (evento.tipo === 'inicio') {
-            acumulado += evento.pct;
-            activasDatadas_[evento.tareaId] = true;
-          } else {
-            acumulado -= evento.pct;
-            delete activasDatadas_[evento.tareaId];
-          }
-
-          if (acumulado > maxima) {
-            maxima = acumulado;
-            tareasEnMaximo = Object.keys(activasDatadas_).concat(
-              sinFechas.map(function (a) { return a.tareaId; })
-            );
-          }
-        });
-      }
-
-      if (maxima > 100) {
+  calcularDedicacionMaximaSimultaneaPorPersona_(asignaciones)
+    .forEach(function (resultado) {
+      if (resultado.maxima > 100) {
         agregar(
           'FUNC-REC-001',
           'PERSONA_EQUIPO',
-          personaId,
+          resultado.personaId,
           'Dedicacion simultanea maxima (' +
-            maxima +
+            resultado.maxima +
             '%) supera el 100% en las tareas: ' +
-            tareasEnMaximo.join(', ') +
+            resultado.etiquetasEnMaximo.join(', ') +
+            '.',
+          'ADVERTENCIA',
+          'Redistribuir la carga o revisar las fechas/porcentajes de las asignaciones solapadas.'
+        );
+      }
+    });
+}
+
+function detectarProblemasAsignacion_(agregar) {
+  var asignaciones = listarRegistros(
+    'ASIGNACION',
+    {ACTIVO: 'SÍ'}
+  ).filter(function (a) {
+    return ['Planificada', 'Activa'].indexOf(a.ESTADO) !== -1;
+  }).map(function (a) {
+    return {
+      personaId: a.PERSONA_EQUIPO_ID,
+      etiqueta: a.ENTIDAD_TIPO + ':' + a.ENTIDAD_ID,
+      pct: a.PORCENTAJE_DEDICACION,
+      fechaInicio: a.FECHA_INICIO_ASIGNACION,
+      fechaFin: a.FECHA_FIN_ASIGNACION
+    };
+  });
+
+  calcularDedicacionMaximaSimultaneaPorPersona_(asignaciones)
+    .forEach(function (resultado) {
+      if (resultado.maxima > 100) {
+        agregar(
+          'FUNC-ASG-001',
+          'PERSONA_EQUIPO',
+          resultado.personaId,
+          'Dedicacion simultanea maxima en ASIGNACION (' +
+            resultado.maxima +
+            '%) supera el 100% en: ' +
+            resultado.etiquetasEnMaximo.join(', ') +
             '.',
           'ADVERTENCIA',
           'Redistribuir la carga o revisar las fechas/porcentajes de las asignaciones solapadas.'
@@ -2504,6 +2561,16 @@ detectarDuplicidadesRelacionesMaterial_(
    * Integridad funcional histórica.
    */
   detectarProblemasTareaResponsable_(agregar);
+
+  /*
+   * FUNC-ASG-001
+   * Dedicacion simultanea de una persona/equipo superior al 100% en la
+   * relacion generica ASIGNACION (CAMPANA/PROYECTO/PRODUCTO/PROCESO/
+   * DECISION/INCIDENCIA). No se combina con la dedicacion de
+   * TAREA_RESPONSABLE (FUNC-REC-001) en esta fase — limite de alcance
+   * documentado en Fase L1.1 del roadmap de backlog.
+   */
+  detectarProblemasAsignacion_(agregar);
 
   /*
    * FUNC-REC-002
