@@ -65,4 +65,4 @@ Todos los cambios de código de este ciclo se desplegaron vía `clasp push` con 
 git tag -a BL-CODE-AUDIT-CLOSE-02 -m "Baseline local verificada BL-CODE-AUDIT-CLOSE-02 — cierre auditoría global, sucesora de BL-CODE-AUDIT-CLOSE-01"
 ```
 
-Apunta al commit `4d0aaa4` (último commit de este ciclo, solo documentación). El código fuente (`src/`) en ese commit es idéntico al de `03d0571` — los commits posteriores no tocan `src/`, así que los hashes de `HASHES_CIERRE.md` siguen siendo exactos.
+El tag apunta al commit exacto donde se creó (`git rev-parse BL-CODE-AUDIT-CLOSE-02`), un commit posterior a `03d0571` que solo añade/corrige documentación de cierre. El código fuente (`src/`) no cambia entre `03d0571` y el commit etiquetado, así que los hashes de `HASHES_CIERRE.md` (generados sobre el estado de `03d0571`) siguen siendo exactos para el `src/` de la baseline etiquetada.
