@@ -59,7 +59,7 @@ Ver `HASHES_CIERRE.md` — SHA-256 de los 31 archivos fuente en el momento de es
 - **Fase G**: `91_HISTORIAL` sin purga/archivado (1247 filas); `revertirUltimoCambioControlado` limitado a un solo paso de `ACTUALIZAR` (decisión de diseño).
 - **Fase H**: ~10 formularios no verificados manualmente todavía (Campaña, Proyecto, Producto, Proceso, Proveedor, Persona/Equipo, relaciones N:M) — dado el patrón de bugs encontrado, no descartable que aparezcan casos similares.
 - **Gap de cobertura de pruebas preexistente**: 9 de las 27 reglas originales (antes de esta sesión) seguían sin prueba reactiva localizada — no se cerró en esta sesión, sigue pendiente.
-- **Backup formal del Sheet**: no realizado en esta sesión — pendiente de decisión del usuario (ver siguiente sección).
+- ~~**Backup formal del Sheet**: no realizado en esta sesión~~ — completado por el usuario más tarde en la misma sesión (ver sección 10).
 
 ## 8. Matriz de cobertura (snapshot, metodología limitada — ver nota)
 
@@ -76,13 +76,26 @@ Ver `HASHES_CIERRE.md` — SHA-256 de los 31 archivos fuente en el momento de es
 
 Los 3 archivos de servicio nuevos (`CacheLecturaService.js`, `InstrumentacionService.js`, `SerializacionService.js`) son código de producción permanente, no temporal — quedan en `src/` y desplegados. Los documentos de gobierno (`BASELINE_DESARROLLO.md`, `ROADMAP_IMPLEMENTACION.md`, `ACTA_CIERRE_SESION.md`, `HASHES_CIERRE.md`) viven en la raíz del repositorio local, fuera de `src/` (no se despliegan a Apps Script) — permanecen como registro de auditoría versionado en git. No se identificó ningún archivo genuinamente temporal/desechable en esta sesión.
 
-## 10. Pendiente para considerar el cierre de Fase J completo
+## 10. Backup formal del Sheet
 
-- [ ] Backup formal de la Sheet real (copia en Drive) — acción que toca el Drive del usuario, requiere su autorización explícita antes de ejecutarla.
+Realizado por el usuario manualmente ("Archivo → Hacer una copia" en Google Sheets):
+
+| Campo | Valor |
+|---|---|
+| Spreadsheet ID (copia) | `1IfjoIJPBQvnPoFDwmdHPsYbhQkuyZ15HO8ra62UGRwg` |
+| Título | "Copia de 5.Copia de TALLER_PRODUCCION_DEV" |
+| Script ID atado a la copia | `1Si1EHFak5HHKwA7bI40mM592nANsvmdGFSxqKYu31yDe8MnrnQVXAqLy` |
+| Fecha | 2026-07-31 |
+
+Verificado por metadata vía API: 19 hojas, misma estructura que el original. **Importante**: el script ID de la copia es distinto del de producción (`1kCjXYmMPOIPdK3zYC9w1cGz53ag74BCW2fT5lnTjWzWWcI1NHGmhVDzx`, el que sigue configurado en `.clasp.json`, verificado sin cambios) — no debe usarse nunca para `clasp push`, es solo el script que Google ató automáticamente a la copia de la Sheet.
+
+## 11. Pendiente para considerar el cierre de Fase J completo
+
+- [x] Backup formal de la Sheet real — completado (ver sección 10).
 - [ ] Reconciliación manual real de la matriz de cobertura (línea por línea, no por grep) — candidato natural para una sesión dedicada antes del cierre global (Paso 9).
 - [ ] Decidir si el gap de reglas sin prueba reactiva se cierra antes o después del cierre global de auditoría (Paso 9).
 
-## 9. Trazabilidad
+## 12. Trazabilidad
 
 Commits de esta sesión (orden cronológico):
 ```

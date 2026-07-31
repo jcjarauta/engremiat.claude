@@ -98,13 +98,13 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 **Riesgo residual documentado (no bloqueante)**: solo se verificaron manualmente 5 de los ~15 formularios existentes (Campaña, Proyecto, Producto, Proceso, Proveedor, Persona/Equipo y las relaciones N:M no se probaron). Dado el patrón de bugs encontrado (valores de catálogo hardcodeados desincronizados de `90_CONFIGURACION`), no es descartable que aparezcan casos similares ahí — queda para una revisión puntual futura si se detectan síntomas parecidos (campos condicionales que no aparecen, desplegables dependientes vacíos).
 **Estimación: 2-4 sesiones.**
 
-## Paso 8 — Fase J: Cierre de seguridad y baseline final — EN CURSO
+## Paso 8 — Fase J: Cierre de seguridad y baseline final ✅ CERRADO
 - ✅ **Revisión de scopes OAuth**: 5/6 justificados sin cambios; `drive` (acceso total) reducido a `drive.file` (el único uso real es crear carpetas/archivos nuevos en `ExportarCodigoProduccion.js`, nunca lee/modifica contenido preexistente). Desplegado.
 - ✅ **Hashes**: `HASHES_CIERRE.md`, SHA-256 de los 31 archivos fuente.
 - ✅ **Acta de cierre**: `ACTA_CIERRE_SESION.md`, resumen completo de la sesión (Pasos 1-7), bugs encontrados, riesgos residuales, trazabilidad de commits.
 - ✅ **Matriz de cobertura**: snapshot generado (62 reglas totales, 17 nuevas con 100% cobertura verificada). Metodología por grep literal, no fiable para las 45 preexistentes — reconciliación manual real queda pendiente para antes del Paso 9.
 - ✅ **Archivos temporales**: revisados, nada temporal identificado — los 3 servicios nuevos son código de producción permanente, los `.md` de gobierno quedan como registro de auditoría.
-- ⏳ **Backup formal del Sheet**: pendiente por decisión explícita del usuario (no se ha hecho todavía, requiere su autorización cuando quiera retomarlo).
+- ✅ **Backup formal del Sheet**: hecho por el usuario (copia manual en Drive). Spreadsheet `1IfjoIJPBQvnPoFDwmdHPsYbhQkuyZ15HO8ra62UGRwg`, verificado con las 19 hojas completas. Script ID de la copia (`1Si1EHFak...`) documentado como distinto del de producción — no usar para `clasp push`.
 **Estimación: 1 sesión.**
 
 ## Paso 9 — Cierre de auditoría global
