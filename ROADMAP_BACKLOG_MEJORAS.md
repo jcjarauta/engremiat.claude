@@ -8,13 +8,12 @@ Continúa la serie de fases del roadmap original (A-J, Pasos 0-10). Estas son **
 
 ---
 
-## Fase L0 — Corrección de bug: `FUNC-REC-001` ✅ PRIORIDAD MÁXIMA, AISLADA
-**No espera al resto del backlog.**
+## Fase L0 — Corrección de bug: `FUNC-REC-001` ✅ CERRADA (2026-07-31)
 
-- Corregir `detectarProblemasTareaResponsable_` (`IntegrityService.js:1494-1528`) para calcular dedicación por solapamiento temporal de fechas, no por suma global.
-- Prueba reactiva: mutación con dos asignaciones al 100% en periodos no solapados → no debe generar `FUNC-REC-001`; con solapamiento real → sí debe generarlo.
-- Regresión: reejecutar la prueba original que sí detecta sobrecarga real (Fase D).
-- **Estimación: 1 sesión corta.**
+- **Corregido** `detectarProblemasTareaResponsable_` (`IntegrityService.js`): ahora calcula la dedicación máxima simultánea por barrido temporal (sweep-line) en vez de sumar todas las asignaciones activas sin comparar fechas. Las asignaciones sin fechas se tratan como siempre activas (mismo criterio que el resto del sistema); en empates de instante se procesan primero los inicios que los fines, igual que `detectarSolapamientoTemporalTareaResponsable_` (FUNC-REC-002), para mantener el mismo criterio de solapamiento inclusivo en todo el sistema.
+- **Prueba reactiva nueva**: `probarIntegridadDedicacionSoloCuentaPeriodosSolapados` (`Tests_Repository2.js`) — calcula dinámicamente el margen de dedicación disponible de la persona de prueba (no exige una persona sin asignaciones), construye dos asignaciones sintéticas en fechas de 2035 (fuera de cualquier dato real): sin solapar no supera el 100% simultáneo, solapando sí lo supera. Verificada `result=OK` en Apps Script real, con restauración limpia.
+- **Regresión verificada**: `probarIntegridadDedicacionPersonaSuperior100` (FUNC-REC-001 original, `result=OK`) y `probarIntegridadSolapamientoTemporalTareaResponsable` (FUNC-REC-002, `result=OK`) — sin cambios de comportamiento.
+- **Estimación real: 1 sesión corta**, como se había previsto.
 
 ---
 

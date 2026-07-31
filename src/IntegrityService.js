@@ -1505,34 +1505,107 @@ function detectarProblemasTareaResponsable_(agregar) {
       return;
     }
 
-    var pct =
-      Number(a.PORCENTAJE_DEDICACION) || 0;
+    var pct = Number(a.PORCENTAJE_DEDICACION) || 0;
 
-    asignacionesPorPersona_[
-      a.PERSONA_EQUIPO_ID
-    ] =
-      (
-        asignacionesPorPersona_[
-          a.PERSONA_EQUIPO_ID
-        ] || 0
-      ) + pct;
+    var fechaInicio =
+      a.FECHA_INICIO_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_INICIO_ASIGNACION.getTime())
+        : new Date(a.FECHA_INICIO_ASIGNACION);
+
+    var fechaFin =
+      a.FECHA_FIN_ASIGNACION instanceof Date
+        ? new Date(a.FECHA_FIN_ASIGNACION.getTime())
+        : new Date(a.FECHA_FIN_ASIGNACION);
+
+    var tieneFechas =
+      !isNaN(fechaInicio.getTime()) &&
+      !isNaN(fechaFin.getTime());
+
+    if (!asignacionesPorPersona_[a.PERSONA_EQUIPO_ID]) {
+      asignacionesPorPersona_[a.PERSONA_EQUIPO_ID] = [];
+    }
+
+    asignacionesPorPersona_[a.PERSONA_EQUIPO_ID].push({
+      tareaId: a.TAREA_ID,
+      pct: pct,
+      inicio: tieneFechas ? fechaInicio.getTime() : null,
+      fin: tieneFechas ? fechaFin.getTime() : null
+    });
   });
 
   Object.keys(asignacionesPorPersona_)
     .forEach(function (personaId) {
-      var total =
-        asignacionesPorPersona_[personaId];
+      var asignaciones = asignacionesPorPersona_[personaId];
 
-      if (total > 100) {
+      var sinFechas = asignaciones.filter(function (a) {
+        return a.inicio === null;
+      });
+
+      var conFechas = asignaciones.filter(function (a) {
+        return a.inicio !== null;
+      });
+
+      var sumaSinFechas = sinFechas.reduce(function (total, a) {
+        return total + a.pct;
+      }, 0);
+
+      var maxima = sumaSinFechas;
+
+      var tareasEnMaximo = sinFechas.map(function (a) {
+        return a.tareaId;
+      });
+
+      if (conFechas.length > 0) {
+        var eventos = [];
+
+        conFechas.forEach(function (a) {
+          eventos.push({t: a.inicio, tipo: 'inicio', pct: a.pct, tareaId: a.tareaId});
+          eventos.push({t: a.fin, tipo: 'fin', pct: a.pct, tareaId: a.tareaId});
+        });
+
+        // Fechas de fin son inclusivas: en un empate de instante, procesar
+        // primero los inicios que los fines, para que un solapamiento en el
+        // mismo dia se detecte igual que en detectarSolapamientoTemporalTareaResponsable_.
+        eventos.sort(function (x, y) {
+          if (x.t !== y.t) {
+            return x.t - y.t;
+          }
+          return (x.tipo === 'fin' ? 1 : 0) - (y.tipo === 'fin' ? 1 : 0);
+        });
+
+        var acumulado = sumaSinFechas;
+        var activasDatadas_ = {};
+
+        eventos.forEach(function (evento) {
+          if (evento.tipo === 'inicio') {
+            acumulado += evento.pct;
+            activasDatadas_[evento.tareaId] = true;
+          } else {
+            acumulado -= evento.pct;
+            delete activasDatadas_[evento.tareaId];
+          }
+
+          if (acumulado > maxima) {
+            maxima = acumulado;
+            tareasEnMaximo = Object.keys(activasDatadas_).concat(
+              sinFechas.map(function (a) { return a.tareaId; })
+            );
+          }
+        });
+      }
+
+      if (maxima > 100) {
         agregar(
           'FUNC-REC-001',
           'PERSONA_EQUIPO',
           personaId,
-          'Dedicacion total asignada (' +
-            total +
-            '%) supera el 100%.',
+          'Dedicacion simultanea maxima (' +
+            maxima +
+            '%) supera el 100% en las tareas: ' +
+            tareasEnMaximo.join(', ') +
+            '.',
           'ADVERTENCIA',
-          'Redistribuir la carga o revisar las asignaciones.'
+          'Redistribuir la carga o revisar las fechas/porcentajes de las asignaciones solapadas.'
         );
       }
     });

@@ -11929,6 +11929,216 @@ function probarIntegridadDedicacionPersonaSuperior100() {
 }
 
 
+function probarIntegridadDedicacionSoloCuentaPeriodosSolapados() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_REC_001_SOLAPAMIENTO';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  // Las fechas sintéticas de esta prueba están deliberadamente en 2035,
+  // fuera de cualquier dato real de la hoja, por lo que solo las
+  // asignaciones ACTIVAS SIN FECHAS de una persona cuentan como "carga
+  // de fondo" que se solapa con esa ventana (se tratan como siempre
+  // activas, igual que en detectarProblemasTareaResponsable_).
+  var dedicacionSinFechasPorPersona_ = {};
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (registro) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(registro.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var inicio =
+      parseFechaIntegridad_(
+        registro.FECHA_INICIO_ASIGNACION
+      );
+
+    var fin =
+      parseFechaIntegridad_(
+        registro.FECHA_FIN_ASIGNACION
+      );
+
+    var tieneFechas =
+      !isNaN(inicio.getTime()) &&
+      !isNaN(fin.getTime());
+
+    if (tieneFechas) {
+      return;
+    }
+
+    var personaId =
+      String(registro.PERSONA_EQUIPO_ID || '').trim();
+
+    if (!personaId) {
+      return;
+    }
+
+    dedicacionSinFechasPorPersona_[personaId] =
+      (dedicacionSinFechasPorPersona_[personaId] || 0) +
+      (Number(registro.PORCENTAJE_DEDICACION) || 0);
+  });
+
+  var personaId = null;
+  var dedicacionBase = 0;
+
+  listarRegistros(
+    'PERSONA_EQUIPO',
+    {ACTIVO: 'SÍ'}
+  ).filter(function (persona) {
+    return persona.ESTADO !== 'Inactivo';
+  }).some(function (persona) {
+    var id = String(persona.ID).trim();
+    var base = dedicacionSinFechasPorPersona_[id] || 0;
+
+    if (base < 100) {
+      personaId = id;
+      dedicacionBase = base;
+      return true;
+    }
+
+    return false;
+  });
+
+  if (!personaId) {
+    throw new Error(
+      'FUNC-REC-001_SOLAPAMIENTO_TEST_ERROR: no existe una PERSONA_EQUIPO activa con margen de dedicación disponible para aislar la prueba'
+    );
+  }
+
+  // pct se calcula para que baseline+pct=100 (caso sin solapamiento,
+  // no debe superar el 100%) y baseline+2*pct>100 (caso solapado,
+  // debe superarlo), sea cual sea la dedicación previa sin fechas.
+  var pct = 100 - dedicacionBase;
+
+  console.log(
+    'OK persona_id=' + personaId +
+      ' dedicacion_base_sin_fechas=' + dedicacionBase +
+      ' pct_sintetico=' + pct
+  );
+
+  var tareaBase =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tareaBase) {
+    throw new Error(
+      'FUNC-REC-001_SOLAPAMIENTO_TEST_ERROR: no existe una TAREA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA_RESPONSABLE'
+    );
+
+  var idA = 'TRE-AUD-REC-001-A';
+  var idB = 'TRE-AUD-REC-001-B';
+
+  var filaBase = {
+    TAREA_ID: tareaBase.ID,
+    PERSONA_EQUIPO_ID: personaId,
+    ROL_ASIGNADO: 'Responsable',
+    PORCENTAJE_DEDICACION: pct,
+    ESTADO: 'Activa',
+    ACTIVO: 'SÍ'
+  };
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+
+    // Caso 1: dos asignaciones de "pct" cada una (baseline+pct=100)
+    // en periodos NO solapados (fechas lejanas, fuera de cualquier
+    // dato real de la hoja) — no debe superar el 100% simultáneo.
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign({}, filaBase, {
+        ID: idA,
+        FECHA_INICIO_ASIGNACION: new Date(2035, 0, 1),
+        FECHA_FIN_ASIGNACION: new Date(2035, 0, 31)
+      })
+    );
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      Object.assign({}, filaBase, {
+        ID: idB,
+        FECHA_INICIO_ASIGNACION: new Date(2035, 1, 1),
+        FECHA_FIN_ASIGNACION: new Date(2035, 1, 28)
+      })
+    );
+
+    SpreadsheetApp.flush();
+
+    assertSinHallazgoIntegridad_(
+      'FUNC-REC-001',
+      'PERSONA_EQUIPO',
+      personaId
+    );
+
+    console.log(
+      'OK sin_solapamiento_sin_falso_positivo=true'
+    );
+
+    // Caso 2: se traslada la asignación B para que solape con A.
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      idB,
+      {
+        FECHA_INICIO_ASIGNACION: new Date(2035, 0, 15),
+        FECHA_FIN_ASIGNACION: new Date(2035, 1, 15)
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-REC-001',
+      'PERSONA_EQUIPO',
+      personaId,
+      1
+    );
+
+    console.log(
+      'OK con_solapamiento_genera_hallazgo=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idA);
+    eliminarFilaPorIdIntegridad_(hoja, idB);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-REC-001',
+    'PERSONA_EQUIPO',
+    personaId
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
