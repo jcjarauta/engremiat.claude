@@ -183,6 +183,33 @@ PROYECTO: [
     requerido: true
   },
   {
+    campo: 'OBJETIVO',
+    etiqueta: 'Objetivo',
+    tipo: 'texto'
+  },
+  {
+    campo: 'RESULTADO_ESPERADO',
+    etiqueta: 'Resultado esperado',
+    tipo: 'texto'
+  },
+  {
+    campo: 'CRITERIOS_ACEPTACION',
+    etiqueta: 'Criterios de aceptación',
+    tipo: 'textarea'
+  },
+  {
+    campo: 'DEFINITION_OF_DONE',
+    etiqueta: 'Definition of Done',
+    tipo: 'textarea'
+  },
+  {
+    campo: 'VALIDADOR_ID',
+    etiqueta: 'Validador',
+    tipo: 'fk',
+    entidadFk: 'PERSONA_EQUIPO',
+    excluirEstados: ['Inactivo']
+  },
+  {
     campo: 'OBSERVACIONES',
     etiqueta: 'Observaciones',
     tipo: 'texto'
@@ -201,6 +228,11 @@ PROYECTO: [
     { campo: 'PRIORIDAD', etiqueta: 'Prioridad', tipo: 'catalogo', catalogo: 'CFG_PRIORIDAD', requerido: true },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PRODUCTO', requerido: true },
+    { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
+    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
+    { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
+    { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
+    { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -219,6 +251,11 @@ PROYECTO: [
     { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
     { campo: 'PORCENTAJE_AVANCE', etiqueta: 'Porcentaje de avance', tipo: 'numero', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROCESO', requerido: true },
+    { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
+    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
+    { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
+    { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
+    { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
   TAREA: [
@@ -238,6 +275,11 @@ PROYECTO: [
     { campo: 'MOTIVO_BLOQUEO', etiqueta: 'Motivo de bloqueo', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Bloqueada'] } },
     { campo: 'MOTIVO_POSPOSICION', etiqueta: 'Motivo de posposición', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Pospuesta'] } },
     { campo: 'MOTIVO_CANCELACION', etiqueta: 'Motivo de cancelación', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Cancelada'] } },
+    { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
+    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
+    { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
+    { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
+    { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -345,6 +387,17 @@ DECISION: [
   { campo: 'IMPACTO', etiqueta: 'Impacto', tipo: 'catalogo', catalogo: 'CFG_IMPACTO' },
   { campo: 'RESOLUCION', etiqueta: 'Resolución', tipo: 'textarea' },
   { campo: 'FECHA_RESOLUCION', etiqueta: 'Fecha de resolución', tipo: 'fecha' },
+  { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'textarea' },
+  { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'textarea' },
+  { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
+  { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
+  {
+    campo: 'VALIDADOR_ID',
+    etiqueta: 'Validador',
+    tipo: 'fk',
+    entidadFk: 'PERSONA_EQUIPO',
+    excluirEstados: ['Inactivo']
+  },
   { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'textarea' }
 ],
 

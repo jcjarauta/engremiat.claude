@@ -12580,6 +12580,122 @@ function probarIntegridadRelacionAutoreferenciaDetectada() {
 }
 
 
+function probarIntegridadCamposCriteriosAceptacionDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CRITERIOS_ACEPTACION_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var casos = [
+    {entidad: 'PROYECTO', prefijo: 'PRO'},
+    {entidad: 'PRODUCTO', prefijo: 'PRD'},
+    {entidad: 'PROCESO', prefijo: 'PCS'},
+    {entidad: 'TAREA', prefijo: 'TAR'},
+    {entidad: 'DECISION', prefijo: 'DEC'}
+  ];
+
+  casos.forEach(function (caso) {
+    var registros =
+      listarRegistros(
+        caso.entidad,
+        {ACTIVO: 'SÍ'}
+      );
+
+    if (registros.length === 0) {
+      throw new Error(
+        'CRITERIOS_ACEPTACION_DRYRUN_TEST_ERROR: no existe ningún registro activo de ' +
+          caso.entidad
+      );
+    }
+
+    var base = registros[0];
+
+    var camposObligatorios =
+      CAMPOS_OBLIGATORIOS_MVP[caso.entidad] || [];
+
+    var datos = {};
+
+    camposObligatorios.forEach(function (campo) {
+      datos[campo] = base[campo];
+    });
+
+    // PRODUCTO valida unicidad de CODIGO incluso en dryRun: reutilizar el
+    // código exacto de un producto real provocaría un falso ERROR.
+    if (caso.entidad === 'PRODUCTO') {
+      datos.CODIGO =
+        'AUD-CRIT-DRYRUN-' + new Date().getTime();
+    }
+
+    // PROCESO y TAREA validan unicidad de ORDEN_SECUENCIA dentro de su
+    // padre incluso en dryRun: reutilizar el orden exacto de un registro
+    // real provocaría un falso ERROR.
+    if (
+      caso.entidad === 'PROCESO' ||
+      caso.entidad === 'TAREA'
+    ) {
+      datos.ORDEN_SECUENCIA = 9000 + Math.floor(Math.random() * 999);
+    }
+
+    datos.OBJETIVO =
+      'Objetivo de prueba (dryRun)';
+
+    datos.RESULTADO_ESPERADO =
+      'Resultado esperado de prueba (dryRun)';
+
+    datos.CRITERIOS_ACEPTACION =
+      'Criterios de prueba (dryRun)';
+
+    datos.DEFINITION_OF_DONE =
+      'Definition of Done de prueba (dryRun)';
+
+    var resultado =
+      insertarRegistroTransaccional(
+        caso.entidad,
+        datos,
+        {dryRun: true}
+      );
+
+    if (
+      !resultado ||
+      resultado.ok !== true ||
+      resultado.dryRun !== true
+    ) {
+      throw new Error(
+        'CRITERIOS_ACEPTACION_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido para ' +
+          caso.entidad
+      );
+    }
+
+    var patronId =
+      new RegExp('^' + caso.prefijo + '-\\d{4}$');
+
+    if (!patronId.test(resultado.id)) {
+      throw new Error(
+        'CRITERIOS_ACEPTACION_DRYRUN_TEST_ERROR: ID inesperado para ' +
+          caso.entidad +
+          ': ' +
+          resultado.id
+      );
+    }
+
+    console.log(
+      'OK ' + caso.entidad + '_dryRun_id=' + resultado.id
+    );
+  });
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

@@ -43,9 +43,13 @@ F-046/F-047/F-049/F-050/F-051 quedan reclasificadas hacia L3.5 (buscador en sele
 
 **Alcance real vs. backlog original**: F-013 (PROYECTO_RELACION) y F-028 (PROCESO_DEPENDENCIA) quedan resueltas — mecanismo disponible para ambos. F-038 (TAREA_PREDECESORA_ID único) queda **parcialmente** resuelta: existe una alternativa N:M vía `RELACION`, pero el campo simple de TAREA sigue igual, sin integración entre ambos. **F-052 se retira de esta fase**: es un vínculo *entre tipos distintos* (DECISION→PRODUCTO/PROCESO/TAREA), no una relación *entre entidades del mismo tipo* — pertenece al mecanismo #5 (vínculo polimórfico genérico, L3.1), no a este. Corrección de categorización del backlog original, no un hallazgo nuevo.
 
-### L1.3 — Criterios de aceptación / Definition of Done
-Campos estructurados reutilizables (`OBJETIVO`, `RESULTADO_ESPERADO`, `CRITERIOS_ACEPTACION`, `DEFINITION_OF_DONE`, `VALIDADOR_ID`) aplicados a PROYECTO, PRODUCTO, PROCESO (F-030/F-035 fusionadas), TAREA, DECISION.
-Resuelve: F-011, F-017, F-030/F-035, F-040, F-054.
+### L1.3 — Criterios de aceptación / Definition of Done ✅ CERRADA (2026-07-31)
+
+**Construido**: 5 campos opcionales (`OBJETIVO`, `RESULTADO_ESPERADO`, `CRITERIOS_ACEPTACION`, `DEFINITION_OF_DONE`, `VALIDADOR_ID`) añadidos a `PROYECTO`, `PRODUCTO`, `PROCESO`, `TAREA`, `DECISION`. Columnas añadidas **al final** de cada hoja real (append puro, no inserción en medio) por seguridad frente a cientos de filas históricas ya existentes (`PROYECTO` 767, `TAREA` 824, etc.) — decisión explícita de minimizar riesgo, no descuido de la convención visual del resto del sistema. Ningún campo obligatorio, para no romper el histórico ni bloquear el flujo actual. `CRITERIOS_ACEPTACION`/`DEFINITION_OF_DONE` como `textarea` en las 5 entidades (ajustado tras revisión visual: el `texto` de una línea inicial no encajaba con contenido de varios puntos). Sin regla de integridad nueva — son campos descriptivos, no hay invariante objetivo que validar en esta fase. Instalador `instalarCriteriosAceptacion` (idempotente).
+
+**Verificado**: `probarIntegridadCamposCriteriosAceptacionDryRun` (`result=OK` para las 5 entidades, tras dos correcciones de la propia prueba: `PRODUCTO` valida unicidad de `CODIGO` incluso en `dryRun`, `PROCESO`/`TAREA` validan unicidad de `ORDEN_SECUENCIA` dentro de su padre incluso en `dryRun` — ninguna de las dos es un defecto, son validaciones ya existentes que la prueba no tuvo en cuenta al reutilizar datos de un registro real). Alta real en la UI confirmada visualmente (formulario "Nueva tarea": los 5 campos aparecen correctamente antes de Observaciones).
+
+**Alcance**: F-011 (PROYECTO), F-017 (PRODUCTO), F-030/F-035 (PROCESO, fusionadas), F-040 (TAREA), F-054 (DECISION, parcial — cubre criterios/objetivo/resultado, no las alternativas estructuradas completas que pedía F-054) quedan con el mecanismo disponible. **Limitación explícita**: al no ser obligatorios, la adopción es voluntaria — el campo existe pero nada fuerza su uso todavía. Puente natural hacia L1.4 (precondiciones por estado): exigir `CRITERIOS_ACEPTACION` relleno antes de permitir el paso a estados terminales cerraría esto del todo.
 
 ### L1.4 — Precondiciones deterministas por estado
 Reglas de validación de transición de estado (no campos nuevos, solo reglas) para PROCESO, TAREA, INCIDENCIA, PROVEEDOR.
