@@ -1,0 +1,146 @@
+# Roadmap de desarrollo — Backlog consolidado de la prueba operativa real
+
+**Basado en:** `BACKLOG_CONSOLIDADO.md` (cierre 2026-07-31, Paso 10 de `ROADMAP_IMPLEMENTACION.md`).
+**Principio de secuenciación:** igual que todo el roadmap anterior — diseño contra datos reales → código → prueba reactiva → `clasp push` con autorización explícita → verificación humana en Apps Script real → commit → actualizar baseline. Ningún bloque se abre sin cerrar el anterior. Cambios mínimos, sin refactor de `Repository.js`, sin construir por delante de necesidad demostrada.
+
+## Numeración
+Continúa la serie de fases del roadmap original (A-J, Pasos 0-10). Estas son **Fases L en adelante**, para no chocar con la numeración ya cerrada.
+
+---
+
+## Fase L0 — Corrección de bug: `FUNC-REC-001` ✅ PRIORIDAD MÁXIMA, AISLADA
+**No espera al resto del backlog.**
+
+- Corregir `detectarProblemasTareaResponsable_` (`IntegrityService.js:1494-1528`) para calcular dedicación por solapamiento temporal de fechas, no por suma global.
+- Prueba reactiva: mutación con dos asignaciones al 100% en periodos no solapados → no debe generar `FUNC-REC-001`; con solapamiento real → sí debe generarlo.
+- Regresión: reejecutar la prueba original que sí detecta sobrecarga real (Fase D).
+- **Estimación: 1 sesión corta.**
+
+---
+
+## Fase L1 — Mecanismos transversales fundamentales
+Los cuatro de mayor apalancamiento (resuelven 20+ fricciones combinadas). Diseñar y verificar cada uno por separado, no como un único cambio monolítico.
+
+### L1.1 — Asignación N:M polimórfica
+Sustituye el patrón repetido 7 veces (`TAREA_RESPONSABLE` ya existe; `CAMPANA_RESPONSABLE`, `PROYECTO_PARTICIPANTE`, `PROCESO_PARTICIPANTE`, `PRODUCTO_PARTICIPANTE`, roles en `DECISION`/`INCIDENCIA` estaban diseñados como tablas separadas). Diseño único: `ASIGNACION(ENTIDAD_TIPO, ENTIDAD_ID, PERSONA_EQUIPO_ID, ROL, DEDICACION, FECHA_INICIO, FECHA_FIN)`.
+Resuelve: F-002, F-009, F-036, F-046, F-047, F-049, F-050, F-051, F-053, F-060.
+
+### L1.2 — Grafo de relaciones/dependencias entre entidades del mismo tipo
+Diseño único reutilizable en PROYECTO, PROCESO, TAREA, PRODUCTO: `RELACION(ENTIDAD_ORIGEN_ID, ENTIDAD_DESTINO_ID, TIPO_RELACION, DESFASE)`.
+Resuelve: F-013, F-028, F-038, F-052.
+
+### L1.3 — Criterios de aceptación / Definition of Done
+Campos estructurados reutilizables (`OBJETIVO`, `RESULTADO_ESPERADO`, `CRITERIOS_ACEPTACION`, `DEFINITION_OF_DONE`, `VALIDADOR_ID`) aplicados a PROYECTO, PRODUCTO, PROCESO (F-030/F-035 fusionadas), TAREA, DECISION.
+Resuelve: F-011, F-017, F-030/F-035, F-040, F-054.
+
+### L1.4 — Precondiciones deterministas por estado
+Reglas de validación de transición de estado (no campos nuevos, solo reglas) para PROCESO, TAREA, INCIDENCIA, PROVEEDOR.
+Resuelve: F-033, F-044, F-065, F-095.
+
+Cada submódulo: prueba reactiva propia, `clasp push` propio, verificación humana propia, commit propio. **Estimación: 3-5 sesiones en total (una por submódulo, más integración).**
+
+---
+
+## Fase L2 — Ganancias baratas (en paralelo con L1)
+No dependen de los mecanismos transversales, se pueden hacer en cualquier momento:
+
+- F-058 — ampliar catálogo `TIPO` de INCIDENCIA.
+- F-071 — ampliar catálogo `TIPO_DOCUMENTO`.
+- F-042 — exponer `MOTIVO_BLOQUEO`/`MOTIVO_POSPOSICION`/`MOTIVO_CANCELACION` en el formulario de TAREA.
+- Validación condicional en DECISION (resolución+fecha obligatorias al aprobar/rechazar).
+- F-014 — normalización de código de PRODUCTO (verificar contra `Ids.js` primero).
+
+**Estimación: 1 sesión, todo el bloque junto (son cambios pequeños e independientes).**
+
+---
+
+## Fase L3 — Mecanismos transversales secundarios
+Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
+
+### L3.1 — Vínculo polimórfico genérico
+`DOCUMENTO_CONTEXTO`/`DECISION_CONTEXTO`/`INCIDENCIA_BLOQUEO`/`RECURSO_REFERENCIA` como una única tabla `VINCULO(ENTIDAD_ORIGEN_TIPO, ENTIDAD_ORIGEN_ID, ENTIDAD_DESTINO_TIPO, ENTIDAD_DESTINO_ID, TIPO_VINCULO)`.
+Resuelve: F-052, F-067, parte de F-079.
+
+### L3.2 — Recurso compartido reutilizado (`MODO_USO`)
+Resuelve: F-022, F-026, F-049.
+
+### L3.3 — Libro de movimientos
+`MOVIMIENTO_MATERIAL`/`RECURSO_MOVIMIENTO` unificado — precondición para Fase L5 (RECURSO).
+Resuelve: F-083, base de F-098.
+
+### L3.4 — Definición vs. ejecución
+`EJECUCION_TAREA` como entidad separada de `TAREA`.
+Resuelve: necesidad anotada en `PROPUESTA_TAREA_ALTA.md`, F-086.
+
+### L3.5 — Buscador/filtro en selectores FK
+Patrón de UI, no de datos — aplicable a todos los `<select>` del sistema.
+Resuelve: F-021, F-050, F-062, selector de PROVEEDOR.
+
+### L3.6 — Avance derivado vs. manual
+`METODO_CALCULO_AVANCE` en PROCESO y TAREA.
+Resuelve: F-029, F-039.
+
+**Estimación: 4-6 sesiones (uno por submódulo).**
+
+---
+
+## Fase L4 — Funcionalidades específicas de alto valor
+Se apoyan en los mecanismos de L1/L3 ya construidos:
+
+- **F-063 (crítica)** — `INCIDENCIA_TAREA` + botón "Crear tarea correctora". Usa L1.2 (grafo de relaciones) como base.
+- **F-015** — "Guardar y vincular" compuesto (PRODUCTO+PROYECTO_PRODUCTO), reutilizando `CORRELATION_ID`+reversión ya existente.
+- **F-093** — `PROVEEDOR_MATERIAL` N:M.
+
+**Estimación: 2-3 sesiones.**
+
+---
+
+## Fase L5 — Bloques estructurales grandes (uno a la vez)
+Cada uno es del tamaño de una fase completa del roadmap original — no se abre el siguiente sin cerrar el anterior:
+
+### L5.1 — Abstracción RECURSO (fases R1-R4 de `PROPUESTA_RECURSO_MATERIAL.md`)
+R1 (abstracción sin romper MATERIAL/PERSONA_EQUIPO existentes) → R2 (nuevos tipos de recurso) → R3 (inventario unificado, migración de MATERIAL) → R4 (planificación de capacidad).
+**No empezar sin L1.1 y L3.3 ya cerrados** (reutiliza asignación N:M y libro de movimientos).
+
+### L5.2 — Pedidos y recepciones de proveedor
+`SOLICITUD_COMPRA → PEDIDO_PROVEEDOR → RECEPCION`, actualizando inventario vía L3.3.
+**Depende de L5.1.**
+
+### L5.3 — Importación masiva de campaña completa
+Árbol `CAMPANA→PROYECTO→PRODUCTO→PROCESO→TAREA` de una vez, con plantilla+staging+dryRun+aprobación humana. Ya priorizado antes de la prueba operativa; ahora con más certeza de qué campos hacen falta en cada nivel gracias a las Fases L1-L4.
+
+**Estimación: 3-4 sesiones por bloque (L5.1 es el mayor, probablemente 2-3 sesiones él solo).**
+
+---
+
+## Fase L6 — Explícitamente diferido (sin fecha, revisar solo si cambia el contexto)
+- Motor por eventos y sistema de recomendaciones.
+- Espacio de simulación de escenarios.
+- Entrada conversacional con IA para generar campañas/tutoriales.
+- Sincronización con Google Calendar.
+- Sistema de tutoriales en vídeo y gamificación.
+
+No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evidencia de que sigue haciendo falta con la misma forma en que se planteó durante la prueba operativa.
+
+---
+
+## Resumen de secuencia y estimación total
+
+| Fase | Contenido | Estimación | Depende de |
+|---|---|---|---|
+| L0 | Bug F-048 | 1 sesión | — |
+| L1 | 4 mecanismos transversales fundamentales | 3-5 sesiones | — (puede empezar tras L0) |
+| L2 | Ganancias baratas | 1 sesión | — (paralelo a L1) |
+| L3 | 6 mecanismos transversales secundarios | 4-6 sesiones | L1 |
+| L4 | 3 funcionalidades específicas | 2-3 sesiones | L1, L3 |
+| L5 | 3 bloques estructurales grandes | 8-10 sesiones | L1, L3, L4 |
+| L6 | Diferido | — | revisión de contexto |
+
+**Total estimado L0-L5: ~19-26 sesiones**, con gate humano en cada submódulo — no es una cifra para comprometerse como plazo, es una referencia de esfuerzo relativo entre fases, igual que las estimaciones del roadmap original.
+
+## Principios de gobierno (heredados, sin cambios)
+- Git local, sin remoto. `clasp push` solo con autorización explícita.
+- Ninguna IA colaboradora despliega o cierra fase por sí misma.
+- Cambios mínimos, una modificación funcional por bloque, reversibilidad total.
+- Gate humano obligatorio antes de cerrar cualquier fase.
+- Cada fase, al cerrar, actualiza `BASELINE_DESARROLLO.md` y este roadmap — mismo patrón que Fases D-J.
