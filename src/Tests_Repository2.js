@@ -12696,6 +12696,368 @@ function probarIntegridadCamposCriteriosAceptacionDryRun() {
 }
 
 
+function probarIntegridadProcesoPreparadoSinPrecondiciones() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_PROCESO_003';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proceso =
+    listarRegistros(
+      'PROCESO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proceso) {
+    throw new Error(
+      'FUNC-PROCESO-003_TEST_ERROR: no existe un PROCESO activo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PROCESO'
+    );
+
+  var valoresOriginales = {
+    ESTADO: proceso.ESTADO || '',
+    RESPONSABLE_ID: proceso.RESPONSABLE_ID || '',
+    CRITERIOS_ACEPTACION: proceso.CRITERIOS_ACEPTACION || ''
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proceso.ID,
+      {
+        ESTADO: 'Preparado',
+        RESPONSABLE_ID: '',
+        CRITERIOS_ACEPTACION: ''
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-PROCESO-003',
+      'PROCESO',
+      proceso.ID,
+      1
+    );
+
+    console.log(
+      'OK precondiciones_faltantes_detectadas=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proceso.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-PROCESO-003',
+    'PROCESO',
+    proceso.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadTareaPreparadaSinPrecondiciones() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_TAREA_013';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tareasConResponsable_ = {};
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (a) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(a.ESTADO) !== -1
+    ) {
+      tareasConResponsable_[
+        String(a.TAREA_ID || '').trim()
+      ] = true;
+    }
+  });
+
+  var tarea =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (t) {
+      return !tareasConResponsable_[
+        String(t.ID || '').trim()
+      ];
+    })[0];
+
+  if (!tarea) {
+    throw new Error(
+      'FUNC-TAREA-013_TEST_ERROR: no existe una TAREA activa sin responsable asignado para aislar la prueba'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA'
+    );
+
+  var valoresOriginales = {
+    ESTADO: tarea.ESTADO || '',
+    CRITERIOS_ACEPTACION: tarea.CRITERIOS_ACEPTACION || ''
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      tarea.ID,
+      {
+        ESTADO: 'Preparada',
+        CRITERIOS_ACEPTACION: ''
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-TAREA-013',
+      'TAREA',
+      tarea.ID,
+      1
+    );
+
+    console.log(
+      'OK precondiciones_faltantes_detectadas=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      tarea.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-TAREA-013',
+    'TAREA',
+    tarea.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadIncidenciaResueltaSinAccionCorrectora() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_INC_004';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var incidencia =
+    listarRegistros(
+      'INCIDENCIA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!incidencia) {
+    throw new Error(
+      'FUNC-INC-004_TEST_ERROR: no existe una INCIDENCIA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'INCIDENCIA'
+    );
+
+  var valoresOriginales = {
+    ESTADO: incidencia.ESTADO || '',
+    ACCION_CORRECTORA: incidencia.ACCION_CORRECTORA || '',
+    FECHA_RESOLUCION: incidencia.FECHA_RESOLUCION || ''
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      incidencia.ID,
+      {
+        ESTADO: 'Resuelta',
+        ACCION_CORRECTORA: '',
+        FECHA_RESOLUCION: ''
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-INC-004',
+      'INCIDENCIA',
+      incidencia.ID,
+      1
+    );
+
+    console.log(
+      'OK precondiciones_faltantes_detectadas=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      incidencia.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-INC-004',
+    'INCIDENCIA',
+    incidencia.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadProveedorActivoSinContacto() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_PRV_006';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proveedor =
+    listarRegistros(
+      'PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proveedor) {
+    throw new Error(
+      'FUNC-PRV-006_TEST_ERROR: no existe un PROVEEDOR activo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PROVEEDOR'
+    );
+
+  var valoresOriginales = {
+    ESTADO: proveedor.ESTADO || '',
+    NIF_CIF: proveedor.NIF_CIF || '',
+    PERSONA_CONTACTO: proveedor.PERSONA_CONTACTO || ''
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proveedor.ID,
+      {
+        ESTADO: 'Activo',
+        NIF_CIF: '',
+        PERSONA_CONTACTO: ''
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-PRV-006',
+      'PROVEEDOR',
+      proveedor.ID,
+      1
+    );
+
+    console.log(
+      'OK precondiciones_faltantes_detectadas=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proveedor.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-PRV-006',
+    'PROVEEDOR',
+    proveedor.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

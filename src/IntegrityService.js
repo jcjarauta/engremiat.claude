@@ -2797,6 +2797,181 @@ detectarDuplicidadesRelacionesMaterial_(
       );
     }
   });
+
+  /*
+   * Fase L1.4 del backlog consolidado — precondiciones deterministas por
+   * estado. No añaden campos nuevos: solo comprueban que los campos ya
+   * existentes (incluidos los de Fase L1.3) estén rellenos cuando el
+   * estado declarado dice que el registro está listo/resuelto/activo.
+   * Todas en ADVERTENCIA (nudge de calidad de datos, no bloqueo).
+   */
+
+  /*
+   * FUNC-PROCESO-003 (F-033)
+   * Un PROCESO "Preparado" sin responsable ni criterios de aceptación
+   * no garantiza que esté realmente preparado.
+   */
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    if (proceso.ESTADO !== 'Preparado') {
+      return;
+    }
+
+    var faltantes = [];
+
+    if (!String(proceso.RESPONSABLE_ID || '').trim()) {
+      faltantes.push('RESPONSABLE_ID');
+    }
+
+    if (!String(proceso.CRITERIOS_ACEPTACION || '').trim()) {
+      faltantes.push('CRITERIOS_ACEPTACION');
+    }
+
+    if (faltantes.length > 0) {
+      agregar(
+        'FUNC-PROCESO-003',
+        'PROCESO',
+        proceso.ID,
+        'Proceso Preparado sin: ' + faltantes.join(', ') + '.',
+        'ADVERTENCIA',
+        'Completar el responsable y los criterios de aceptación antes de dar el proceso por preparado.'
+      );
+    }
+  });
+
+  /*
+   * FUNC-TAREA-013 (F-044)
+   * Una TAREA "Preparada" sin responsable asignado (via TAREA_RESPONSABLE)
+   * ni criterios de aceptación no garantiza que esté realmente preparada.
+   */
+  var tareasConResponsableActivo_ = {};
+
+  listarRegistros(
+    'TAREA_RESPONSABLE',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (asignacion) {
+    if (
+      ['Planificada', 'Activa']
+        .indexOf(asignacion.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    tareasConResponsableActivo_[
+      String(asignacion.TAREA_ID || '').trim()
+    ] = true;
+  });
+
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (tarea) {
+    if (tarea.ESTADO !== 'Preparada') {
+      return;
+    }
+
+    var faltantes = [];
+
+    if (!tareasConResponsableActivo_[String(tarea.ID || '').trim()]) {
+      faltantes.push('responsable asignado (TAREA_RESPONSABLE)');
+    }
+
+    if (!String(tarea.CRITERIOS_ACEPTACION || '').trim()) {
+      faltantes.push('CRITERIOS_ACEPTACION');
+    }
+
+    if (faltantes.length > 0) {
+      agregar(
+        'FUNC-TAREA-013',
+        'TAREA',
+        tarea.ID,
+        'Tarea Preparada sin: ' + faltantes.join(', ') + '.',
+        'ADVERTENCIA',
+        'Asignar un responsable activo y completar los criterios de aceptación antes de dar la tarea por preparada.'
+      );
+    }
+  });
+
+  /*
+   * FUNC-INC-004 (F-065)
+   * Una INCIDENCIA Resuelta o Cerrada sin accion correctora ni fecha de
+   * resolucion no diferencia una correccion aplicada de una verificada.
+   */
+  listarRegistros(
+    'INCIDENCIA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (incidencia) {
+    if (
+      ['Resuelta', 'Cerrada']
+        .indexOf(incidencia.ESTADO) === -1
+    ) {
+      return;
+    }
+
+    var faltantes = [];
+
+    if (!String(incidencia.ACCION_CORRECTORA || '').trim()) {
+      faltantes.push('ACCION_CORRECTORA');
+    }
+
+    var fechaResolucion =
+      incidencia.FECHA_RESOLUCION instanceof Date
+        ? incidencia.FECHA_RESOLUCION
+        : new Date(incidencia.FECHA_RESOLUCION);
+
+    if (isNaN(fechaResolucion.getTime())) {
+      faltantes.push('FECHA_RESOLUCION');
+    }
+
+    if (faltantes.length > 0) {
+      agregar(
+        'FUNC-INC-004',
+        'INCIDENCIA',
+        incidencia.ID,
+        'Incidencia ' + incidencia.ESTADO + ' sin: ' + faltantes.join(', ') + '.',
+        'ADVERTENCIA',
+        'Completar la acción correctora y la fecha de resolución antes de marcar la incidencia como resuelta o cerrada.'
+      );
+    }
+  });
+
+  /*
+   * FUNC-PRV-006 (F-095)
+   * Un PROVEEDOR Activo sin NIF/CIF ni contacto no representa todavia
+   * una relacion comercial confirmada.
+   */
+  listarRegistros(
+    'PROVEEDOR',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proveedor) {
+    if (proveedor.ESTADO !== 'Activo') {
+      return;
+    }
+
+    var faltantes = [];
+
+    if (!String(proveedor.NIF_CIF || '').trim()) {
+      faltantes.push('NIF_CIF');
+    }
+
+    if (!String(proveedor.PERSONA_CONTACTO || '').trim()) {
+      faltantes.push('PERSONA_CONTACTO');
+    }
+
+    if (faltantes.length > 0) {
+      agregar(
+        'FUNC-PRV-006',
+        'PROVEEDOR',
+        proveedor.ID,
+        'Proveedor Activo sin: ' + faltantes.join(', ') + '.',
+        'ADVERTENCIA',
+        'Completar el NIF/CIF y la persona de contacto antes de marcar el proveedor como activo, o revisar el estado si aún no es una relación comercial confirmada.'
+      );
+    }
+  });
+
   return {
     errores: hallazgos.filter(function (h) {
       return h.gravedad === 'ERROR';

@@ -51,11 +51,19 @@ F-046/F-047/F-049/F-050/F-051 quedan reclasificadas hacia L3.5 (buscador en sele
 
 **Alcance**: F-011 (PROYECTO), F-017 (PRODUCTO), F-030/F-035 (PROCESO, fusionadas), F-040 (TAREA), F-054 (DECISION, parcial — cubre criterios/objetivo/resultado, no las alternativas estructuradas completas que pedía F-054) quedan con el mecanismo disponible. **Limitación explícita**: al no ser obligatorios, la adopción es voluntaria — el campo existe pero nada fuerza su uso todavía. Puente natural hacia L1.4 (precondiciones por estado): exigir `CRITERIOS_ACEPTACION` relleno antes de permitir el paso a estados terminales cerraría esto del todo.
 
-### L1.4 — Precondiciones deterministas por estado
-Reglas de validación de transición de estado (no campos nuevos, solo reglas) para PROCESO, TAREA, INCIDENCIA, PROVEEDOR.
-Resuelve: F-033, F-044, F-065, F-095.
+### L1.4 — Precondiciones deterministas por estado ✅ CERRADA (2026-07-31)
 
-Cada submódulo: prueba reactiva propia, `clasp push` propio, verificación humana propia, commit propio. **Estimación: 3-5 sesiones en total (una por submódulo, más integración).**
+**Construido**: 4 reglas nuevas, sin campos nuevos — aprovechan campos ya existentes, incluidos los añadidos en L1.3 (cierra el "puente" anotado al cerrar esa fase). Todas en `ADVERTENCIA`.
+- `FUNC-PROCESO-003` (F-033): PROCESO "Preparado" sin `RESPONSABLE_ID` o `CRITERIOS_ACEPTACION`.
+- `FUNC-TAREA-013` (F-044): TAREA "Preparada" sin responsable activo en `TAREA_RESPONSABLE` o sin `CRITERIOS_ACEPTACION`.
+- `FUNC-INC-004` (F-065): INCIDENCIA "Resuelta"/"Cerrada" sin `ACCION_CORRECTORA` o `FECHA_RESOLUCION` — **campos que ya existían en la hoja y en el formulario** (condicionalmente visibles), no vistos en el análisis original de F-065.
+- `FUNC-PRV-006` (F-095): PROVEEDOR "Activo" sin `NIF_CIF` o `PERSONA_CONTACTO` — la misma situación real observada en `PRV-0005` durante la prueba operativa.
+
+Sin instalador — no se toca esquema ni catálogo, solo lógica de `IntegrityService.js`.
+
+**Verificado**: las 4 pruebas reactivas (`probarIntegridadProcesoPreparadoSinPrecondiciones`, `probarIntegridadTareaPreparadaSinPrecondiciones`, `probarIntegridadIncidenciaResueltaSinAccionCorrectora`, `probarIntegridadProveedorActivoSinContacto`) con `result=OK`, cada una detectando el hallazgo al mutar un registro real (`PCS-0001`, `TAR-0003`, `INC-0001`, `PRV-0001`) y confirmando su desaparición tras restaurar. Sin verificación visual de UI adicional — a diferencia de L1.1/L1.2, esta fase no añade formularios ni desplegables nuevos; la prueba reactiva ya ejercita el mismo camino (`obtenerReporteIntegridad`) que usa producción.
+
+**Alcance**: las 4 fricciones quedan resueltas como aviso de calidad de datos (no bloqueo) — coherente con el resto del sistema, que no impone reglas duras de transición de estado en ningún otro punto.
 
 ---
 
