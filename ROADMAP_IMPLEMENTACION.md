@@ -110,6 +110,10 @@ Revisión de código previa a la verificación visual detectó y corrigió, con 
 ## Paso 9 — Cierre de auditoría global ✅ CERRADO
 Informe final: `INFORME_CIERRE_AUDITORIA_GLOBAL.md`. Nueva baseline: `BL-CODE-AUDIT-CLOSE-02` (sucesora de `BL-CODE-AUDIT-CLOSE-01`), tag apuntando al commit `03d0571`. Cierra también el gap de cobertura pendiente de Fase J (`FUNC-TAREA-008`): matriz final 62/62 reglas `FUNC-*` con prueba reactiva verificada.
 
+## Paso 10 — Prueba operativa real y consolidación de backlog ✅ CERRADO
+Campaña real completa ejecutada en el sistema tal cual estaba (`PRUEBA_REAL_CAMPANA.md`, campaña `CAM-0010` "Desarrollo y mejora del sistema LaTroballa"), sin datos sintéticos: jerarquía completa CAMPANA→PROYECTO→PRODUCTO→PROCESO→TAREA, asignación de personas/equipos, DOCUMENTO, DECISION, INCIDENCIA, MATERIAL, TAREA_MATERIAL, PROVEEDOR — todo con altas reales, no hipótesis. Resultado: 98 números de fricción emitidos, 89 activas tras invalidar 2 por verificación directa contra la hoja real. Hallazgo estructural principal: la mayoría de fricciones no son problemas de una entidad, son el mismo patrón repetido en 4-7 entidades — 12 mecanismos transversales identificados (asignación N:M polimórfica, grafo de relaciones, criterios de aceptación, clasificación en 3 ejes, vínculo polimórfico genérico, precondiciones por estado, recurso compartido reutilizado, libro de movimientos, definición-vs-ejecución, buscador en selectores, avance derivado, exposición de campos ya persistidos). Se confirmó además un bug real y activo en producción (`FUNC-REC-001` no considera solapamiento temporal). Backlog priorizado consolidado en `BACKLOG_CONSOLIDADO.md` (Tiers 0-5). Ningún código modificado durante la prueba — disciplina de "solo diseño, sin desarrollo" mantenida en las ~15 rondas de la prueba.
+**Siguiente paso**: retomar desarrollo siguiendo el orden del backlog consolidado (bug F-048 primero, después mecanismos transversales), con el mismo ritmo de gate humano de todo el roadmap.
+
 ---
 
 ## En paralelo, cuando convenga: automatización (Opción A)
