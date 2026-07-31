@@ -194,33 +194,41 @@ function listarConsumoDesperdicioMaterial() {
   });
 }
 function obtenerPanelOperativo() {
-  return {
-    resumen: obtenerResumenGlobal(),
-    tareasRetrasadas: listarTareasRetrasadas(),
-    tareasBloqueadas: listarTareasBloqueadas(),
-    tareasPospuestas: listarTareasPospuestas(),
-    decisionesPendientes: listarDecisionesPendientes(),
-    incidenciasAbiertas: listarIncidenciasAbiertas(),
-    recursos: {
-      noDisponibles: listarRecursosNoDisponibles(),
-      sobreasignaciones: listarSobreasignaciones(),
-      tareasSinResponsable: listarTareasSinResponsable(),
-      capacidad: listarCapacidadRecursos()
-    },
-    excepciones: {
-      productosSinProyecto: listarProductosSinProyecto(),
-      procesosSinFechas: listarProcesosSinFechas(),
-      relacionesIncompletas: listarRelacionesIncompletas()
-    },
-    materiales: {
-      stockBajo: listarMaterialesStockBajo(),
-      agotados: listarMaterialesAgotados(),
-      reservasSuperanStock: listarReservasSuperanStock(),
-      necesidadesReposicion: listarNecesidadesReposicion(),
-      criticos: listarMaterialesCriticos(),
-      consumoDesperdicio: listarConsumoDesperdicioMaterial()
-    }
-  };
+  cacheLecturaIniciarContexto_();
+
+  try {
+    var panel = {
+      resumen: obtenerResumenGlobal(),
+      tareasRetrasadas: listarTareasRetrasadas(),
+      tareasBloqueadas: listarTareasBloqueadas(),
+      tareasPospuestas: listarTareasPospuestas(),
+      decisionesPendientes: listarDecisionesPendientes(),
+      incidenciasAbiertas: listarIncidenciasAbiertas(),
+      recursos: {
+        noDisponibles: listarRecursosNoDisponibles(),
+        sobreasignaciones: listarSobreasignaciones(),
+        tareasSinResponsable: listarTareasSinResponsable(),
+        capacidad: listarCapacidadRecursos()
+      },
+      excepciones: {
+        productosSinProyecto: listarProductosSinProyecto(),
+        procesosSinFechas: listarProcesosSinFechas(),
+        relacionesIncompletas: listarRelacionesIncompletas()
+      },
+      materiales: {
+        stockBajo: listarMaterialesStockBajo(),
+        agotados: listarMaterialesAgotados(),
+        reservasSuperanStock: listarReservasSuperanStock(),
+        necesidadesReposicion: listarNecesidadesReposicion(),
+        criticos: listarMaterialesCriticos(),
+        consumoDesperdicio: listarConsumoDesperdicioMaterial()
+      }
+    };
+
+    return serializarParaCliente_(panel);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
 }
 
 function abrirPanelOperativo() {

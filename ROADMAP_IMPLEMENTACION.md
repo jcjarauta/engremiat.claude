@@ -79,8 +79,17 @@ Alcance decidido y aplicado: **caché de lectura con alcance de una sola ejecuci
 
 **Regresión verificada sin fallos**: `ejecutarSuiteIntegridadCoberturaDirectaPendiente` (10 reglas), las 4 pruebas nuevas de Fase D (`FUNC-REC-002` a `FUNC-REC-005`) y `probarIntegridadProveedorCodigoDuplicado` (ruta de duplicados) — todas `result=OK` tras el cambio.
 
-## Paso 7 — Fase H: UI, panel e informes
-El bloque más débil y de mayor riesgo. Requiere verificación visual humana en cada iteración — no delegable.
+## Paso 7 — Fase H: UI, panel e informes — EN CURSO (bug crítico encontrado y corregido)
+Revisión de código previa a la verificación visual detectó y corrigió, con verificación humana real en Apps Script:
+
+- **`IntegridadReporte.html` sin `withFailureHandler`** — corregido, ahora muestra error en vez de colgarse.
+- **Bug crítico**: `obtenerPanelOperativo()` y `generarInforme()` devolvían objetos `Date` crudos anidados dentro de estructuras complejas vía `google.script.run`. Esto rompía la serialización de Apps Script silenciosamente (sin lanzar error visible), degradando la respuesta a texto tipo Java (`Wed Dec 31 15:00:00 PST 2025`, `[Ljava.lang.Object;@...]`) en vez de JSON — el cliente recibía una respuesta inutilizable y se quedaba colgado en "Cargando...". Diagnosticado leyendo directamente la pestaña Network → Response de la petición real (los mensajes de consola de una extensión de terceros fueron una pista falsa que llevó a descartar antivirus/extensiones antes de encontrar la causa real). Corregido con `src/SerializacionService.js` (serialización recursiva de fechas a ISO), aplicado en ambos puntos de entrada.
+- **`aplanarInformeParaExportar_`** (exportar CSV/PDF) solo aplanaba un nivel de anidación, dejando `[object Object]` y JSON crudo en las exportaciones. Reescrita para aplanar recursivamente cualquier profundidad.
+- `obtenerPanelOperativo()` y `generarInforme()` también conectados a la caché de lectura de Paso 6 (no la tenían).
+
+**Verificado visualmente por el usuario en Apps Script real**: Panel operativo, Informes (campaña y memoria de producción), exportación CSV y PDF — todos cargan y muestran datos reales correctamente tras el arreglo.
+
+**Pendiente de la checklist de Fase H**: formularios (modal 420×520, revisar si se cortan con esquemas largos), resto de tipos de informe (proyecto), y verificación general de estabilidad.
 **Estimación: 2-4 sesiones.**
 
 ## Paso 8 — Fase J: Cierre de seguridad y baseline final

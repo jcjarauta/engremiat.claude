@@ -15,7 +15,7 @@
   </head>
   <body>
     <h3>Integridad y mantenimiento</h3>
-    <div id="estado-carga">Cargando datos...</div>
+    <div id="estado-carga">Cargando datos... (puede tardar 15-30 segundos)</div>
     <div id="contenido" style="display:none;"></div>
 
     <script>
@@ -58,6 +58,12 @@
         return "<h4 class=\"" + claseFila + "\">" + titulo + "</h4><table><tr><th>Codigo</th><th>Entidad</th><th>Registro</th><th>Descripcion</th><th>Accion sugerida</th></tr>" + filas + "</table>";
       }
 
+      function mostrarErrorIntegridad(error) {
+        var estadoCarga = document.getElementById("estado-carga");
+        estadoCarga.className = "problema";
+        estadoCarga.textContent = "Error al cargar el reporte de integridad: " + (error && error.message ? error.message : error);
+      }
+
       google.script.run.withSuccessHandler(function (reporte) {
         document.getElementById("estado-carga").style.display = "none";
         var contenido = document.getElementById("contenido");
@@ -77,7 +83,7 @@
           html += renderTablaFuncional("Informacion", "", funcional.informacion);
         }
         contenido.innerHTML = html;
-      }).obtenerReporteIntegridad();
+      }).withFailureHandler(mostrarErrorIntegridad).obtenerReporteIntegridad();
     </script>
   </body>
 </html>

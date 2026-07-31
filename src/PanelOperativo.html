@@ -125,6 +125,11 @@
     }
 
     function renderPanel(panel) {
+      if (!panel) {
+        mostrarError({ message: 'El servidor no devolvio datos del panel (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
+        return;
+      }
+
       renderResumen(panel.resumen);
 
       renderLista('tareasRetrasadas', panel.tareasRetrasadas, function (t) {

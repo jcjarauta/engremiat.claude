@@ -107,6 +107,11 @@
       }
 
       function renderInforme(informe) {
+        if (!informe) {
+          mostrarError({ message: 'El servidor no devolvio datos de informe (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
+          return;
+        }
+
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
 

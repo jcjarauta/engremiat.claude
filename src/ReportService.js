@@ -213,12 +213,22 @@ function obtenerOpcionesInforme(tipo) {
 }
 
 function generarInforme(tipo, id) {
-  if (tipo === 'CAMPANA') return generarInformeCampania(id);
-  if (tipo === 'PROYECTO') return generarInformeProyecto(id);
-  if (tipo === 'MEMORIA') return generarMemoriaProduccion();
-  if (tipo === 'EXCEPCIONES') return generarInformeExcepciones();
-  if (tipo === 'CAMBIOS') return generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta);
-  throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
+  cacheLecturaIniciarContexto_();
+
+  try {
+    var informe;
+
+    if (tipo === 'CAMPANA') informe = generarInformeCampania(id);
+    else if (tipo === 'PROYECTO') informe = generarInformeProyecto(id);
+    else if (tipo === 'MEMORIA') informe = generarMemoriaProduccion();
+    else if (tipo === 'EXCEPCIONES') informe = generarInformeExcepciones();
+    else if (tipo === 'CAMBIOS') informe = generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta);
+    else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
+
+    return serializarParaCliente_(informe);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
 }
 
 
@@ -227,27 +237,54 @@ function nombreArchivoInforme_(tipo, extension) {
   return 'INFORME_' + tipo + '_' + fecha + '.' + extension;
 }
 
+function aplanarValorParaExportar_(prefijo, valor, filas) {
+  if (valor === null || valor === undefined) {
+    filas.push([prefijo, '']);
+    return;
+  }
+
+  if (Array.isArray(valor)) {
+    if (valor.length === 0) {
+      filas.push([prefijo, '']);
+      return;
+    }
+
+    valor.forEach(function (item, indice) {
+      aplanarValorParaExportar_(prefijo + '[' + indice + ']', item, filas);
+    });
+
+    return;
+  }
+
+  if (typeof valor === 'object') {
+    var claves = Object.keys(valor);
+
+    if (claves.length === 0) {
+      filas.push([prefijo, '']);
+      return;
+    }
+
+    claves.forEach(function (clave) {
+      aplanarValorParaExportar_(
+        prefijo ? prefijo + '.' + clave : clave,
+        valor[clave],
+        filas
+      );
+    });
+
+    return;
+  }
+
+  filas.push([prefijo, valor]);
+}
+
 function aplanarInformeParaExportar_(informe) {
   var filas = [];
+
   Object.keys(informe).forEach(function (clave) {
-    var valor = informe[clave];
-    if (Array.isArray(valor)) {
-      valor.forEach(function (item) {
-        if (item && typeof item === 'object') {
-          var resumenItem = item.ID || item.NOMBRE || item.TITULO || JSON.stringify(item);
-          filas.push([clave, resumenItem]);
-        } else {
-          filas.push([clave, item]);
-        }
-      });
-    } else if (valor && typeof valor === 'object') {
-      Object.keys(valor).forEach(function (subclave) {
-        filas.push([clave + '.' + subclave, valor[subclave]]);
-      });
-    } else {
-      filas.push([clave, valor]);
-    }
+    aplanarValorParaExportar_(clave, informe[clave], filas);
   });
+
   return filas;
 }
 
