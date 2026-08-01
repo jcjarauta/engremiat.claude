@@ -232,10 +232,18 @@ Construido con datos simulados (mismo criterio que RECURSO, sin esperar a un ped
 
 Verificado en real: instalador OK, catálogos OK, dryRun OK, `PED-0001`+`PPL-0001`+`RCP-0001` confirmada → generó `MOV-0002` (Entrada, 10 Unidad, MAT-0002); backfill corrigió `PED-0001` a "Recibido completo"; selectores ya no ofrecen pedidos cerrados; segunda recepción de prueba (`RCP-0003`, Pedido `PED-0002`) confirmó que el buscador de "Confirmar recepción" funciona.
 
-### L5.3 — Importación masiva de campaña completa
-Árbol `CAMPANA→PROYECTO→PRODUCTO→PROCESO→TAREA` de una vez, con plantilla+staging+dryRun+aprobación humana. Ya priorizado antes de la prueba operativa; ahora con más certeza de qué campos hacen falta en cada nivel gracias a las Fases L1-L4.
+### L5.3 — Importación masiva de campaña completa — CERRADA (2026-08-01), V1 mínima
+5 hojas de staging (`STG_CAMPANA/PROYECTO/PRODUCTO/PROCESO/TAREA`), una por nivel, con solo los campos realmente obligatorios de cada nivel (`CAMPOS_OBLIGATORIOS_MVP` + `CANTIDAD_PREVISTA` en `PRODUCTO`, que el formulario exige aunque el repositorio no) + enlace jerárquico vía `ID_TEMPORAL` (o directamente un ID real ya existente, para ampliar una campaña ya creada). Nada de los campos opcionales de criterios/OKR de L1-L3 en esta V1 — se rellenan después editando el registro creado.
 
-**Estimación restante: 3-4 sesiones (L5.3).**
+- `ORDEN_SECUENCIA` y `PROCESO_PREDECESOR_ID`/`TAREA_PREDECESORA_ID` se asignan automáticamente según el orden de las filas dentro del mismo padre (mismo criterio que la sugerencia de L4, aplicado aquí de una vez para todo el lote). `PORCENTAJE_AVANCE=0` por defecto.
+- `PRODUCTO` crea también su `PROYECTO_PRODUCTO` (reutiliza el patrón de F-015).
+- Flujo: dry-run completo (campos obligatorios, catálogos, referencias jerárquicas, `ID_TEMPORAL` duplicados) → resumen → confirmación humana explícita → creación real de arriba a abajo bajo un único `CORRELATION_ID` → cada fila de staging queda marcada `ESTADO_IMPORTACION="Importado"` + `ID_REAL` (trazabilidad, evita reimportar). Acción de menú (Administración), mismo patrón que "Recalcular avance"/"Confirmar recepción".
+
+Verificado en real: instalador OK (5 hojas), test de dryRun OK (caso válido + detección de un `TIPO_PROYECTO` inválido forzado), e importación real completa: `CAM-0011→PRO-0004→PRD-0006+PPR-0004→PCS-0005/PCS-0006` (orden 1/2, predecesor encadenado correctamente) `→TAR-0006/TAR-0007` (orden 1/2, predecesor encadenado correctamente), todo bajo un mismo `CORRELATION_ID`.
+
+**No construido** (V2 futura, si se demuestra necesidad real): importar también los campos opcionales de criterios/OKR, plantilla/CSV externo, reversión masiva de una importación completa.
+
+**Fase L5 cerrada por completo (L5.1 RECURSO, L5.2 pedidos/recepciones, L5.3 importación masiva).**
 
 ---
 
