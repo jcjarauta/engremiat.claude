@@ -1812,6 +1812,38 @@ function detectarProblemasMovimientoMaterial_(agregar) {
   });
 }
 
+function detectarProblemasEjecucionTarea_(agregar) {
+  listarRegistros(
+    'EJECUCION_TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (e) {
+    var fechaInicio =
+      e.FECHA_INICIO instanceof Date
+        ? e.FECHA_INICIO
+        : new Date(e.FECHA_INICIO);
+
+    var fechaFin =
+      e.FECHA_FIN instanceof Date
+        ? e.FECHA_FIN
+        : new Date(e.FECHA_FIN);
+
+    if (
+      !isNaN(fechaInicio.getTime()) &&
+      !isNaN(fechaFin.getTime()) &&
+      fechaFin.getTime() < fechaInicio.getTime()
+    ) {
+      agregar(
+        'FUNC-EJT-001',
+        'EJECUCION_TAREA',
+        e.ID,
+        'FECHA_FIN es anterior a FECHA_INICIO.',
+        'ERROR',
+        'Corregir la fecha de inicio o la fecha de fin de la ejecucion.'
+      );
+    }
+  });
+}
+
 function detectarPersonaInactivaConAsignacionActiva_(agregar) {
   var personasPorId_ = {};
 
@@ -2667,6 +2699,13 @@ detectarDuplicidadesRelacionesMaterial_(
    * indica la direccion, no un valor negativo.
    */
   detectarProblemasMovimientoMaterial_(agregar);
+
+  /*
+   * FUNC-EJT-001
+   * Definicion vs. ejecucion (EJECUCION_TAREA): la fecha de fin no puede
+   * ser anterior a la fecha de inicio de la misma ejecucion.
+   */
+  detectarProblemasEjecucionTarea_(agregar);
 
   /*
    * FUNC-REC-002

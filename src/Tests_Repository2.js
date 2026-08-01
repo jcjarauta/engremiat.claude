@@ -13660,6 +13660,152 @@ function probarIntegridadMovimientoMaterialCantidadNoPositiva() {
 }
 
 
+function probarIntegridadAltaEjecucionTareaDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_EJECUCION_TAREA_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tarea =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tarea) {
+    throw new Error(
+      'ALTA_EJECUCION_TAREA_DRYRUN_TEST_ERROR: no existe una TAREA activa utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'EJECUCION_TAREA',
+      {
+        TAREA_ID: tarea.ID,
+        FECHA_INICIO: new Date(2035, 0, 1),
+        FECHA_FIN: new Date(2035, 0, 3),
+        ESTADO: 'Activa',
+        RESULTADO: 'Exitosa'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_EJECUCION_TAREA_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  if (!/^EJT-\d{4}$/.test(resultado.id)) {
+    throw new Error(
+      'ALTA_EJECUCION_TAREA_DRYRUN_TEST_ERROR: ID generado con formato inesperado: ' +
+        resultado.id
+    );
+  }
+
+  console.log(
+    'OK dryRun_id_generado=' + resultado.id
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadEjecucionTareaFechaFinAnteriorInicio() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_EJT_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tarea =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tarea) {
+    throw new Error(
+      'FUNC-EJT-001_TEST_ERROR: no existe una TAREA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'EJECUCION_TAREA'
+    );
+
+  var idTemporal = 'EJT-AUD-001';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      {
+        ID: idTemporal,
+        TAREA_ID: tarea.ID,
+        FECHA_INICIO: new Date(2035, 0, 10),
+        FECHA_FIN: new Date(2035, 0, 5),
+        ESTADO: 'Activa',
+        ACTIVO: 'SÍ'
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-EJT-001',
+      'EJECUCION_TAREA',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK fecha_fin_anterior_a_inicio_detectada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-EJT-001',
+    'EJECUCION_TAREA',
+    idTemporal
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

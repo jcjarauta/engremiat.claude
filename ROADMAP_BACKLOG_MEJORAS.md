@@ -120,9 +120,13 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Alcance**: F-083 (TAREA_MATERIAL) queda con el mecanismo de movimientos disponible como registro paralelo, sin integrar todavía en el flujo de `TAREA_MATERIAL` (eso requeriría tocar su lógica de consumo, fuera de alcance de "cambios mínimos" en esta fase). Sienta la base para F-098 (pedidos/recepciones) y para la migración completa de MATERIAL en la Fase L5.
 
-### L3.4 — Definición vs. ejecución
-`EJECUCION_TAREA` como entidad separada de `TAREA`.
-Resuelve: necesidad anotada en `PROPUESTA_TAREA_ALTA.md`, F-086.
+### L3.4 — Definición vs. ejecución ✅ CERRADA (2026-08-01)
+
+**Construido**: entidad `EJECUCION_TAREA` (hoja `20_EJECUCION_TAREA`, prefijo `EJT`) — `TAREA_ID` (la definición, sin tocar `TAREA`), `RESPONSABLE_ID`, `FECHA_INICIO`/`FECHA_FIN`, `DURACION_REAL_DIAS`, `ESTADO` (reutiliza `CFG_ESTADO_RELACION`), `RESULTADO` (catálogo nuevo `CFG_RESULTADO_EJECUCION`: Exitosa/Con incidencias/Fallida). `TAREA` sigue siendo la definición reutilizable; cada ocurrencia real queda como registro propio, sin sobrescribir el histórico si la tarea se repite. Regla `FUNC-EJT-001`: `FECHA_FIN` no puede ser anterior a `FECHA_INICIO`. Instalador `instalarEntidadEjecucionTarea`.
+
+**Verificado**: instalador (`status=OK`, named range `CFG_RESULTADO_EJECUCION=199:201`), `probarIntegridadAltaEjecucionTareaDryRun` (`result=OK`, ID `EJT-0001`), `probarIntegridadEjecucionTareaFechaFinAnteriorInicio` (`result=OK`), y alta real en la UI (`EJT-0001` sobre `TAR-0004`, `HIS-1281`, `RESULTADO=OK`).
+
+**Alcance**: la necesidad anotada en `PROPUESTA_TAREA_ALTA.md` y F-086 quedan con el mecanismo disponible como registro paralelo — no se integró todavía con `TAREA_MATERIAL` (vincular el consumo de material a una ejecución concreta en vez de a la definición de la tarea), que sigue pendiente como trabajo futuro fuera de "cambios mínimos" de esta fase.
 
 ### L3.5 — Buscador/filtro en selectores FK
 Patrón de UI, no de datos — aplicable a todos los `<select>` del sistema.

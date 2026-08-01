@@ -144,6 +144,11 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'CANTIDAD',
     'UNIDAD',
     'FECHA_MOVIMIENTO'
+  ]),
+
+  EJECUCION_TAREA: Object.freeze([
+    'TAREA_ID',
+    'ESTADO'
   ])
 });
 

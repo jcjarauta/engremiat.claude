@@ -618,6 +618,24 @@ INCIDENCIA: [
     { campo: 'FECHA_MOVIMIENTO', etiqueta: 'Fecha del movimiento', tipo: 'fecha', requerido: true },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Definicion vs. ejecucion (Fase L3.4). TAREA sigue siendo la
+   * definicion reutilizable (nombre, proceso, duracion prevista,
+   * criterios de aceptacion...); EJECUCION_TAREA registra cada
+   * ocurrencia real (quien la ejecuto, cuando, con que resultado) sin
+   * sobrescribir el historico cuando una tarea reutilizable se repite.
+   */
+  EJECUCION_TAREA: [
+    { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
+    { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable de la ejecución', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'FECHA_INICIO', etiqueta: 'Fecha de inicio', tipo: 'fecha' },
+    { campo: 'FECHA_FIN', etiqueta: 'Fecha de fin', tipo: 'fecha' },
+    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'RESULTADO', etiqueta: 'Resultado', tipo: 'catalogo', catalogo: 'CFG_RESULTADO_EJECUCION' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
 });
 
@@ -1673,6 +1691,7 @@ function onOpen() {
         .addItem('Relación (grafo de dependencias)', 'abrirEditarRelacion')
         .addItem('Vínculo (genérico)', 'abrirEditarVinculo')
         .addItem('Movimiento de material', 'abrirEditarMovimientoMaterial')
+        .addItem('Ejecución de tarea', 'abrirEditarEjecucionTarea')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1684,6 +1703,7 @@ function onOpen() {
         .addItem('Relación / dependencia (grafo)', 'abrirFormularioCrearRelacion')
         .addItem('Vínculo genérico (cualquier entidad a cualquier entidad)', 'abrirFormularioCrearVinculo')
         .addItem('Movimiento de material', 'abrirFormularioCrearMovimientoMaterial')
+        .addItem('Ejecución de tarea', 'abrirFormularioCrearEjecucionTarea')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1773,6 +1793,7 @@ function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 
 function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Relación'); }
 function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínculo'); }
 function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIMIENTO_MATERIAL', 'Movimiento de material'); }
+function abrirEditarEjecucionTarea() { abrirEditarRegistroPorEntidad_('EJECUCION_TAREA', 'Ejecución de tarea'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1785,6 +1806,7 @@ function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 
 function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
 function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
 function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIMIENTO_MATERIAL', 'Nuevo movimiento de material'); }
+function abrirFormularioCrearEjecucionTarea() { abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.
