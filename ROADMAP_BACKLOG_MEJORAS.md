@@ -138,11 +138,25 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Hallazgo nuevo, fuera del alcance original de esta fase (no resuelto aquí)**: el flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`) sigue usando un `ui.prompt()` nativo que exige escribir el ID exacto a ciegas, sin buscador — mismo problema de fondo (F-021/F-050/F-062 eran sobre desplegables *dentro* de un formulario, este es sobre el *punto de entrada* antes de abrir el formulario). El usuario decidió explícitamente registrarlo y no abordarlo en esta fase; queda pendiente para una ronda futura, candidato natural a reutilizar el mismo patrón de `<datalist>`.
 
-### L3.6 — Avance derivado vs. manual
-`METODO_CALCULO_AVANCE` en PROCESO y TAREA.
-Resuelve: F-029, F-039.
+### L3.6 — Avance derivado vs. manual ✅ CERRADA (2026-08-01)
 
-**Estimación: 4-6 sesiones (uno por submódulo).**
+**Construido**: campo `METODO_CALCULO_AVANCE` (catálogo nuevo `CFG_METODO_CALCULO_AVANCE`: Manual/Por tareas/Por estado) en `PROCESO` y `TAREA` — descriptivo, sin recálculo automático (mismo criterio de toda la fase). `FUNC-PROCESO-004`: coherencia avance↔estado en PROCESO (Completado≠100 ERROR; Pendiente/Preparado con avance>0 ADVERTENCIA) — no existía ninguna regla de este tipo para PROCESO. `FUNC-PROCESO-005`: si `METODO_CALCULO_AVANCE=Por tareas`, avisa si el avance difiere >15 puntos del promedio de sus tareas. `FUNC-TAREA-014`: Pendiente/Preparada con avance>0.
+
+**Verificación previa que evitó un 4º falso hallazgo**: antes de escribir `FUNC-TAREA-014` confirmé que `FUNC-TAREA-001` ya cubre "Terminada con avance≠100" (ERROR) — no se duplicó, la nueva regla cubre solo el caso que faltaba.
+
+**Hueco de cobertura reconocido, no oculto**: `FUNC-PROCESO-005` no tiene prueba reactiva dedicada (requeriría un escenario controlado con tareas hijas reales); queda pendiente.
+
+Instalador `instalarMetodoCalculoAvance`, reutilizando `crearCatalogoNuevoL3_` y `agregarColumnasSiFaltan_`.
+
+**Verificado**: instalador (`status=OK`, named range `CFG_METODO_CALCULO_AVANCE=202:204`), `probarIntegridadMetodoCalculoAvanceDryRun` (`result=OK` para PROCESO y TAREA), `probarIntegridadProcesoAvanceIncoherenteConEstado` (`result=OK`), `probarIntegridadTareaAvanceIncoherenteConEstado` (`result=OK`), y alta real en la UI (`PCS-0003` con `METODO_CALCULO_AVANCE=Por tareas`, `HIS-1284`, `RESULTADO=OK`).
+
+**Estimación real: 1 sesión** para los 6 submódulos combinados (L3.1-L3.6), más rápido que la estimación original de 4-6 sesiones — el patrón de trabajo (esquema→código→instalador→pruebas→push→verificación real→commit) ya estaba consolidado desde la Fase L1.
+
+---
+
+## Fase L3 — CERRADA POR COMPLETO (2026-08-01)
+
+Los 6 submódulos (L3.1 VINCULO, L3.2 MODO_USO, L3.3 MOVIMIENTO_MATERIAL, L3.4 EJECUCION_TAREA, L3.5 buscador FK, L3.6 avance derivado) verificados end-to-end contra el sistema real. 4 entidades nuevas, 4 catálogos nuevos, 6 reglas de integridad nuevas, 1 bug de renderizado corregido (`textarea`), 1 corrección de categorización (F-049 no encajaba), 1 hallazgo nuevo registrado para el futuro (buscador en "Editar registro").
 
 ### Pendiente nuevo detectado durante L3.5 (sin número F-, fuera del backlog original)
 El flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`, usado por todas las entidades) sigue pidiendo el ID exacto mediante un `ui.prompt()` nativo, sin buscador — mismo problema de fondo que F-021/F-050/F-062, pero en el punto de entrada antes de abrir el formulario, no en un desplegable dentro de él. Detectado al verificar L3.5, registrado explícitamente para no abordarlo en esa fase. Candidato natural: reutilizar el mismo patrón de `<datalist>` ya construido, mostrando una lista buscable de registros activos antes de abrir el formulario de edición.

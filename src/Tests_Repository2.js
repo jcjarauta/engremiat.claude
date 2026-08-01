@@ -13806,6 +13806,279 @@ function probarIntegridadEjecucionTareaFechaFinAnteriorInicio() {
 }
 
 
+function probarIntegridadMetodoCalculoAvanceDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_METODO_CALCULO_AVANCE_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var procesoBase =
+    listarRegistros(
+      'PROCESO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!procesoBase) {
+    throw new Error(
+      'METODO_CALCULO_AVANCE_DRYRUN_TEST_ERROR: no existe un PROCESO activo utilizable'
+    );
+  }
+
+  var datosProceso = {};
+
+  (CAMPOS_OBLIGATORIOS_MVP.PROCESO || [])
+    .forEach(function (campo) {
+      datosProceso[campo] = procesoBase[campo];
+    });
+
+  datosProceso.ORDEN_SECUENCIA = 9000 + Math.floor(Math.random() * 999);
+  datosProceso.METODO_CALCULO_AVANCE = 'Manual';
+
+  var resultadoProceso =
+    insertarRegistroTransaccional(
+      'PROCESO',
+      datosProceso,
+      {dryRun: true}
+    );
+
+  if (
+    !resultadoProceso ||
+    resultadoProceso.ok !== true ||
+    resultadoProceso.dryRun !== true
+  ) {
+    throw new Error(
+      'METODO_CALCULO_AVANCE_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido para PROCESO'
+    );
+  }
+
+  console.log(
+    'OK PROCESO_dryRun_id=' + resultadoProceso.id
+  );
+
+  var tareaBase =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tareaBase) {
+    throw new Error(
+      'METODO_CALCULO_AVANCE_DRYRUN_TEST_ERROR: no existe una TAREA activa utilizable'
+    );
+  }
+
+  var datosTarea = {};
+
+  (CAMPOS_OBLIGATORIOS_MVP.TAREA || [])
+    .forEach(function (campo) {
+      datosTarea[campo] = tareaBase[campo];
+    });
+
+  datosTarea.ORDEN_SECUENCIA = 9000 + Math.floor(Math.random() * 999);
+  datosTarea.METODO_CALCULO_AVANCE = 'Por estado';
+
+  var resultadoTarea =
+    insertarRegistroTransaccional(
+      'TAREA',
+      datosTarea,
+      {dryRun: true}
+    );
+
+  if (
+    !resultadoTarea ||
+    resultadoTarea.ok !== true ||
+    resultadoTarea.dryRun !== true
+  ) {
+    throw new Error(
+      'METODO_CALCULO_AVANCE_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido para TAREA'
+    );
+  }
+
+  console.log(
+    'OK TAREA_dryRun_id=' + resultadoTarea.id
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadProcesoAvanceIncoherenteConEstado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_PROCESO_004';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proceso =
+    listarRegistros(
+      'PROCESO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proceso) {
+    throw new Error(
+      'FUNC-PROCESO-004_TEST_ERROR: no existe un PROCESO activo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'PROCESO'
+    );
+
+  var valoresOriginales = {
+    ESTADO: proceso.ESTADO || '',
+    PORCENTAJE_AVANCE: proceso.PORCENTAJE_AVANCE
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proceso.ID,
+      {
+        ESTADO: 'Completado',
+        PORCENTAJE_AVANCE: 40
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-PROCESO-004',
+      'PROCESO',
+      proceso.ID,
+      1
+    );
+
+    console.log(
+      'OK avance_incoherente_detectado=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      proceso.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-PROCESO-004',
+    'PROCESO',
+    proceso.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadTareaAvanceIncoherenteConEstado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_TAREA_014';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tarea =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tarea) {
+    throw new Error(
+      'FUNC-TAREA-014_TEST_ERROR: no existe una TAREA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'TAREA'
+    );
+
+  var valoresOriginales = {
+    ESTADO: tarea.ESTADO || '',
+    PORCENTAJE_AVANCE: tarea.PORCENTAJE_AVANCE
+  };
+
+  try {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      tarea.ID,
+      {
+        ESTADO: 'Pendiente',
+        PORCENTAJE_AVANCE: 30
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-TAREA-014',
+      'TAREA',
+      tarea.ID,
+      1
+    );
+
+    console.log(
+      'OK avance_incoherente_detectado=true'
+    );
+
+  } finally {
+    escribirCamposRegistroIntegridad_(
+      hoja,
+      tarea.ID,
+      valoresOriginales
+    );
+
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-TAREA-014',
+    'TAREA',
+    tarea.ID
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

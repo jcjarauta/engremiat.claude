@@ -1844,6 +1844,106 @@ function detectarProblemasEjecucionTarea_(agregar) {
   });
 }
 
+function detectarProblemasAvanceProceso_(agregar) {
+  var tareasPorProceso_ = {};
+
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (t) {
+    var procesoId = String(t.PROCESO_ID || '').trim();
+
+    if (!procesoId) {
+      return;
+    }
+
+    if (!tareasPorProceso_[procesoId]) {
+      tareasPorProceso_[procesoId] = [];
+    }
+
+    tareasPorProceso_[procesoId].push(t);
+  });
+
+  listarRegistros(
+    'PROCESO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (proceso) {
+    var avance = Number(proceso.PORCENTAJE_AVANCE);
+    var estado = proceso.ESTADO;
+
+    if (estado === 'Completado' && avance !== 100) {
+      agregar(
+        'FUNC-PROCESO-004',
+        'PROCESO',
+        proceso.ID,
+        'Proceso Completado con PORCENTAJE_AVANCE distinto de 100 (' + proceso.PORCENTAJE_AVANCE + ').',
+        'ERROR',
+        'Corregir el porcentaje de avance o el estado del proceso.'
+      );
+    } else if (
+      (estado === 'Pendiente' || estado === 'Preparado') &&
+      avance > 0
+    ) {
+      agregar(
+        'FUNC-PROCESO-004',
+        'PROCESO',
+        proceso.ID,
+        'Proceso ' + estado + ' con PORCENTAJE_AVANCE superior a 0 (' + proceso.PORCENTAJE_AVANCE + ').',
+        'ADVERTENCIA',
+        'Revisar si el avance es correcto para un proceso que todavia no ha comenzado.'
+      );
+    }
+
+    if (String(proceso.METODO_CALCULO_AVANCE || '').trim() === 'Por tareas') {
+      var tareas = (tareasPorProceso_[String(proceso.ID).trim()] || [])
+        .filter(function (t) { return t.ESTADO !== 'Cancelada'; });
+
+      if (tareas.length > 0) {
+        var promedio = tareas.reduce(function (total, t) {
+          return total + (Number(t.PORCENTAJE_AVANCE) || 0);
+        }, 0) / tareas.length;
+
+        if (Math.abs(promedio - avance) > 15) {
+          agregar(
+            'FUNC-PROCESO-005',
+            'PROCESO',
+            proceso.ID,
+            'Metodo de calculo "Por tareas" pero PORCENTAJE_AVANCE (' + avance + '%) difiere del promedio de sus tareas (' + Math.round(promedio) + '%).',
+            'ADVERTENCIA',
+            'Actualizar el porcentaje de avance del proceso para reflejar el de sus tareas, o cambiar el metodo de calculo a Manual.'
+          );
+        }
+      }
+    }
+  });
+}
+
+function detectarProblemasAvanceTarea_(agregar) {
+  listarRegistros(
+    'TAREA',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (t) {
+    var avance = Number(t.PORCENTAJE_AVANCE);
+    var estado = t.ESTADO;
+
+    // FUNC-TAREA-001 ya cubre Terminada con avance != 100 (ERROR);
+    // aqui solo se cubre el caso que faltaba, sin duplicarlo.
+    if (
+      (estado === 'Pendiente' || estado === 'Preparada') &&
+      avance > 0
+    ) {
+      agregar(
+        'FUNC-TAREA-014',
+        'TAREA',
+        t.ID,
+        'Tarea ' + estado + ' con PORCENTAJE_AVANCE superior a 0 (' + t.PORCENTAJE_AVANCE + ').',
+        'ADVERTENCIA',
+        'Revisar si el avance es correcto para una tarea que todavia no ha comenzado.'
+      );
+    }
+  });
+}
+
 function detectarPersonaInactivaConAsignacionActiva_(agregar) {
   var personasPorId_ = {};
 
@@ -2706,6 +2806,22 @@ detectarDuplicidadesRelacionesMaterial_(
    * ser anterior a la fecha de inicio de la misma ejecucion.
    */
   detectarProblemasEjecucionTarea_(agregar);
+
+  /*
+   * FUNC-PROCESO-004 / FUNC-PROCESO-005
+   * Avance derivado vs. manual (PROCESO): coherencia de
+   * PORCENTAJE_AVANCE con el ESTADO, y con el promedio de sus TAREA
+   * cuando METODO_CALCULO_AVANCE = "Por tareas".
+   */
+  detectarProblemasAvanceProceso_(agregar);
+
+  /*
+   * FUNC-TAREA-014
+   * Avance derivado vs. manual (TAREA): una tarea Pendiente/Preparada
+   * no deberia tener avance superior a 0. (Terminada != 100 ya lo
+   * cubre FUNC-TAREA-001, no se duplica aqui.)
+   */
+  detectarProblemasAvanceTarea_(agregar);
 
   /*
    * FUNC-REC-002
