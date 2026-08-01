@@ -158,8 +158,8 @@ Instalador `instalarMetodoCalculoAvance`, reutilizando `crearCatalogoNuevoL3_` y
 
 Los 6 submódulos (L3.1 VINCULO, L3.2 MODO_USO, L3.3 MOVIMIENTO_MATERIAL, L3.4 EJECUCION_TAREA, L3.5 buscador FK, L3.6 avance derivado) verificados end-to-end contra el sistema real. 4 entidades nuevas, 4 catálogos nuevos, 6 reglas de integridad nuevas, 1 bug de renderizado corregido (`textarea`), 1 corrección de categorización (F-049 no encajaba), 1 hallazgo nuevo registrado para el futuro (buscador en "Editar registro").
 
-### Pendiente nuevo detectado durante L3.5 (sin número F-, fuera del backlog original)
-El flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`, usado por todas las entidades) sigue pidiendo el ID exacto mediante un `ui.prompt()` nativo, sin buscador — mismo problema de fondo que F-021/F-050/F-062, pero en el punto de entrada antes de abrir el formulario, no en un desplegable dentro de él. Detectado al verificar L3.5, registrado explícitamente para no abordarlo en esa fase. Candidato natural: reutilizar el mismo patrón de `<datalist>` ya construido, mostrando una lista buscable de registros activos antes de abrir el formulario de edición.
+### Pendiente detectado durante L3.5 — CERRADO al verificar L5.1 (ver más abajo, "Arreglos transversales")
+El flujo **"Editar registro"** seguía pidiendo el ID exacto mediante un `ui.prompt()` nativo, sin buscador. Corregido con `SelectorRegistro.html`.
 
 ---
 
@@ -211,9 +211,16 @@ No construido ahora (documentado para cuando una fricción real lo demande): `GR
 ## Fase L5 — Bloques estructurales grandes (uno a la vez)
 Cada uno es del tamaño de una fase completa del roadmap original — no se abre el siguiente sin cerrar el anterior:
 
-### L5.1 — Abstracción RECURSO (fases R1-R4 de `PROPUESTA_RECURSO_MATERIAL.md`)
-R1 (abstracción sin romper MATERIAL/PERSONA_EQUIPO existentes) → R2 (nuevos tipos de recurso) → R3 (inventario unificado, migración de MATERIAL) → R4 (planificación de capacidad).
-**No empezar sin L1.1 y L3.3 ya cerrados** (reutiliza asignación N:M y libro de movimientos).
+### L5.1 — Abstracción RECURSO — CERRADA (2026-08-01), alcance mínimo (R1+parte de R2)
+Antes de construir se contrastó `PROPUESTA_RECURSO_MATERIAL.md` con la realidad: `MOVIMIENTO_MATERIAL` (L3.3) ya es el mismo concepto que `RECURSO_MOVIMIENTO` (R3), y `PROVEEDOR_MATERIAL` (F-093) ya resuelve el "proveedor único" que motivaba parte de R3 — ambos sin saber que apuntaban aquí. Se pidió evidencia real antes de construir (mismo criterio que con GRUPO/RED): el usuario confirmó inventario real de herramientas manuales/eléctricas, maquinaria fija, equipos auxiliares y espacios del taller.
+
+Construido: entidad `RECURSO` (`23_RECURSO`) — `CLASE_RECURSO` (catálogo nuevo `CFG_CLASE_RECURSO`: Herramienta/Maquinaria/Equipo_auxiliar/Espacio; "Equipo auxiliar" en vez de "Equipo" para no confundirse con `PERSONA_EQUIPO.TIPO=Equipo`), `CATEGORIA_RECURSO` (catálogo abierto, 11 valores), `UBICACION_ID` (fk a sí misma con `CLASE_RECURSO=Espacio`, sin tabla de ubicaciones aparte), `RESPONSABLE_ID`, `ESTADO` (catálogo nuevo `CFG_ESTADO_RECURSO_FISICO`, distinto de `CFG_ESTADO_RECURSO` que ya usa `PERSONA_EQUIPO`). Entidad `TAREA_RECURSO` (`24_TAREA_RECURSO`) con `TIPO_USO` (catálogo nuevo `CFG_TIPO_USO_RECURSO`). Sugerencia automática de `CODIGO` (mismo patrón que Producto/Material/Proveedor). `RECURSO` añadido como tipo de entidad válido para "Vínculo genérico" y `DOCUMENTO` (permite enlazar manuales/fichas técnicas reutilizando `VINCULO`, sin tabla nueva). `UBICACION_ID` filtra sus opciones a solo Espacios (nuevo mecanismo genérico `filtroValores` en `obtenerEsquemaFormulario`, reutilizable por cualquier FK futuro).
+
+Verificado en real: instalador OK, 4 catálogos OK, dryRun OK, `REC-0001` (Zona de maquinaria, Espacio), `REC-0002` (Sierra de mesa, Maquinaria), `REC-0003` (Taladro, código auto-sugerido `HER-TALA-002`), `TRC-0001` (TAR-0001 utiliza Sierra de mesa).
+
+**No construido** (documentado para cuando una fricción real lo demande): `RECURSO_INVENTARIO`/`RECURSO_ACTIVO`/`RECURSO_ESPACIO` (subtipos con campos de mantenimiento/aforo, resto de R2), migración de `MATERIAL` a `RECURSO` (R3), planificación de capacidad/reservas/solapamientos (R4).
+
+**Efecto colateral importante descubierto durante la verificación** (documentado abajo como arreglo transversal): bug real de validación de claves foráneas que afectaba a todo el sistema, y hueco de UX de L3.5 en "Editar registro" señalado de nuevo por el usuario.
 
 ### L5.2 — Pedidos y recepciones de proveedor
 `SOLICITUD_COMPRA → PEDIDO_PROVEEDOR → RECEPCION`, actualizando inventario vía L3.3.
@@ -222,7 +229,14 @@ R1 (abstracción sin romper MATERIAL/PERSONA_EQUIPO existentes) → R2 (nuevos t
 ### L5.3 — Importación masiva de campaña completa
 Árbol `CAMPANA→PROYECTO→PRODUCTO→PROCESO→TAREA` de una vez, con plantilla+staging+dryRun+aprobación humana. Ya priorizado antes de la prueba operativa; ahora con más certeza de qué campos hacen falta en cada nivel gracias a las Fases L1-L4.
 
-**Estimación: 3-4 sesiones por bloque (L5.1 es el mayor, probablemente 2-3 sesiones él solo).**
+**Estimación restante: 3-4 sesiones por bloque (L5.2, L5.3).**
+
+---
+
+### Arreglos transversales detectados verificando L5.1 — CERRADOS (2026-08-01)
+
+- **Bug real de integridad (todo el sistema)**: el buscador de FK (L3.5) extrae el ID del texto escrito sin comprobar que exista de verdad. Escribir texto y guardar sin elegir ninguna opción del desplegable guardaba ese texto tal cual como si fuera un ID válido — ocurrió en real con `VIN-0003` (`ENTIDAD_DESTINO_ID="D"`). `validarClavesForaneasFormulario_` (nueva, en `guardarFormulario`) rechaza cualquier valor de campo fk/fk_dependiente que no corresponda a un registro real, reutilizando el mismo resolver que ya usa el cliente para poblar las opciones. Al editar, no revalida los campos FK que no cambiaron (evita bloquear la edición de registros antiguos por referencias que se desactivaron después, ajenas a la edición actual). De paso, corregido que `'Documento'` faltaba en `ENTIDAD_DOCUMENTO_A_MVP` desde L3.1 (dejaba vacío el buscador de "Registro origen/destino" en cualquier `VINCULO` donde un lado fuera "Documento"). Verificado: rechazo de ID inventado, edición sin cambios de FK no se rompe, corrección real de `VIN-0003` → `DOC-0003`.
+- **Hueco de UX de L3.5, señalado de nuevo por el usuario**: "Editar registro" seguía pidiendo el ID exacto con un `ui.prompt()` nativo sin buscador, para las 21 entidades que comparten `abrirEditarRegistroPorEntidad_`. Sustituido por `SelectorRegistro.html`, mismo patrón de `<datalist>` que el resto de la app. Corrige de una vez las 21 entidades. Verificado en real: "Editar Campaña" muestra el buscador con campañas reales.
 
 ---
 
