@@ -1608,7 +1608,15 @@ function normalizarValorFormulario_(campo, valor) {
   return fecha;
 }
 
-function guardarFormulario(entidad, idRegistro, datosCrudos) {
+/*
+ * `correlationId` (opcional, Fase L4 F-015): permite encadenar varias
+ * llamadas a guardarFormulario bajo el mismo CORRELATION_ID de historial
+ * -- usado por el flujo "guardar y vincular" de PRODUCTO+PROYECTO_PRODUCTO
+ * (ver mostrarPasoVincularProyecto_ en FormularioGenerico.html). Si no se
+ * pasa, insertarRegistroTransaccional/actualizarRegistroTransaccional
+ * generan uno nuevo como siempre.
+ */
+function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
   var clave = String(entidad || '').trim().toUpperCase();
   var esquema = ESQUEMAS_FORMULARIO_MVP[clave];
 
@@ -1629,6 +1637,8 @@ function guardarFormulario(entidad, idRegistro, datosCrudos) {
     );
   });
 
+  var correlationIdFinal = correlationId || Utilities.getUuid();
+
   try {
     validarDuplicidadFormulario_(
       clave,
@@ -1648,18 +1658,30 @@ function guardarFormulario(entidad, idRegistro, datosCrudos) {
         idRegistro,
         datos,
         {
-          origen: 'UI'
+          origen: 'UI',
+          correlationId: correlationIdFinal
         }
       );
-    } else {
-      insertarRegistroTransaccional(
-        clave,
-        datos,
-        {
-          origen: 'UI'
-        }
-      );
+
+      return {
+        id: idRegistro,
+        correlationId: correlationIdFinal
+      };
     }
+
+    var resultadoInsercion = insertarRegistroTransaccional(
+      clave,
+      datos,
+      {
+        origen: 'UI',
+        correlationId: correlationIdFinal
+      }
+    );
+
+    return {
+      id: resultadoInsercion.id,
+      correlationId: correlationIdFinal
+    };
   } catch (errorRepositorio) {
     throw new Error(
       traducirErrorFuncional_(
@@ -1668,8 +1690,6 @@ function guardarFormulario(entidad, idRegistro, datosCrudos) {
       )
     );
   }
-
-  return true;
 }
 
 

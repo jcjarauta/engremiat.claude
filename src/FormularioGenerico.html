@@ -278,6 +278,70 @@
         .obtenerEsquemaFormulario(ENTIDAD, ID_REGISTRO);
     }
 
+    /*
+     * Fase L4 (F-015): tras crear un PRODUCTO nuevo (no al editar), ofrece
+     * vincularlo ya a un proyecto sin cerrar el dialogo, reutilizando el
+     * mismo formulario generico para PROYECTO_PRODUCTO (con PRODUCTO_ID
+     * ya resuelto) y el mismo CORRELATION_ID de historial que la creacion
+     * del producto, para que ambas escrituras queden trazadas juntas.
+     */
+    function mostrarPasoVincularProyecto_(productoId, correlationId) {
+      var elMensaje = document.getElementById("mensaje");
+      elMensaje.className = "ok";
+      elMensaje.textContent = "Producto " + productoId + " creado correctamente.";
+
+      google.script.run
+        .withSuccessHandler(function (esquemaVinculo) {
+          var camposRestantes = esquemaVinculo.filter(function (campo) {
+            return campo.campo !== "PRODUCTO_ID";
+          });
+          esquemaActual = camposRestantes;
+
+          document.getElementById("campos").innerHTML =
+            "<p><b>¿Vincular este producto a un proyecto ahora?</b></p>" +
+            camposRestantes.map(renderCampo).join("");
+
+          camposRestantes.forEach(function (campo) {
+            if (campo.valorActual === undefined || campo.valorActual === null) return;
+            var el = document.getElementById("campo_" + campo.campo);
+            if (el) el.value = campo.valorActual;
+          });
+
+          activarVisibilidadCondicional_();
+          activarBuscadoresFk_();
+
+          var acciones = document.querySelector(".acciones");
+          acciones.innerHTML =
+            '<button id="btnOmitir">Omitir</button> ' +
+            '<button id="btnVincular">Vincular</button>';
+
+          document.getElementById("btnOmitir").onclick = function () {
+            google.script.host.close();
+          };
+
+          document.getElementById("btnVincular").onclick = function () {
+            var datosVinculo = { PRODUCTO_ID: productoId };
+            camposRestantes.forEach(function (campo) {
+              var el = document.getElementById("campo_" + campo.campo);
+              datosVinculo[campo.campo] = el ? el.value : "";
+            });
+            document.getElementById("btnVincular").disabled = true;
+            google.script.run
+              .withSuccessHandler(function () {
+                elMensaje.textContent = "Producto vinculado al proyecto correctamente.";
+                setTimeout(function () { google.script.host.close(); }, 900);
+              })
+              .withFailureHandler(function (error) {
+                mostrarError(error);
+                document.getElementById("btnVincular").disabled = false;
+              })
+              .guardarFormulario("PROYECTO_PRODUCTO", "", datosVinculo, correlationId);
+          };
+        })
+        .withFailureHandler(mostrarError)
+        .obtenerEsquemaFormulario("PROYECTO_PRODUCTO", "");
+    }
+
     function guardar() {
       var datos = {};
       esquemaActual.forEach(function (campo) {
@@ -286,7 +350,11 @@
       });
       document.getElementById("btnGuardar").disabled = true;
       google.script.run
-        .withSuccessHandler(function () {
+        .withSuccessHandler(function (resultado) {
+          if (ENTIDAD === "PRODUCTO" && !ID_REGISTRO && resultado && resultado.id) {
+            mostrarPasoVincularProyecto_(resultado.id, resultado.correlationId);
+            return;
+          }
           var el = document.getElementById("mensaje");
           el.className = "ok";
           el.textContent = "Guardado correctamente.";
@@ -296,7 +364,7 @@
           mostrarError(error);
           document.getElementById("btnGuardar").disabled = false;
         })
-        .guardarFormulario(ENTIDAD, ID_REGISTRO, datos);
+        .guardarFormulario(ENTIDAD, ID_REGISTRO, datos, null);
     }
 
     cargarEsquema();
