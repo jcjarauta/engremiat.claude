@@ -2019,6 +2019,7 @@ function onOpen() {
         .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
         .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
         .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
+        .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
     )
     .addToUi();
 }

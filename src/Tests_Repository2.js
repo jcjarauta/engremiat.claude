@@ -15083,6 +15083,121 @@ function probarIntegridadAltaRecepcionLineaDryRun() {
 }
 
 
+function probarIntegridadImportacionMasivaDryRun() {
+  var packageName = 'PROBAR_INTEGRIDAD_IMPORTACION_MASIVA_DRYRUN';
+
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var ss = SpreadsheetApp.getActive();
+  var sufijo = '_TEST_' + new Date().getTime();
+
+  var hojaCampana = ss.getSheetByName('STG_CAMPANA');
+  var hojaProyecto = ss.getSheetByName('STG_PROYECTO');
+  var hojaProducto = ss.getSheetByName('STG_PRODUCTO');
+  var hojaProceso = ss.getSheetByName('STG_PROCESO');
+  var hojaTarea = ss.getSheetByName('STG_TAREA');
+
+  if (!hojaCampana || !hojaProyecto || !hojaProducto || !hojaProceso || !hojaTarea) {
+    throw new Error(
+      'IMPORTACION_MASIVA_DRYRUN_TEST_ERROR: faltan hojas STG_*; ejecuta instalarStagingImportacionMasiva primero'
+    );
+  }
+
+  var idCampana = 'C' + sufijo;
+  var idProyecto = 'P' + sufijo;
+  var idProducto = 'PR' + sufijo;
+  var idProceso1 = 'PC1' + sufijo;
+  var idProceso2 = 'PC2' + sufijo;
+  var idTarea1 = 'T1' + sufijo;
+  var idTarea2 = 'T2' + sufijo;
+
+  hojaCampana.appendRow([idCampana, 'Campaña prueba dryRun', new Date(), new Date(), 'Borrador']);
+  hojaProyecto.appendRow([idProyecto, idCampana, 'Proyecto prueba dryRun', 'Propuesta', 'Media', 'Borrador']);
+  hojaProducto.appendRow([idProducto, idProyecto, 'COD-TEST' + sufijo, 'Producto prueba dryRun', 'Producción propia', 'Unidad', 1, 'Media', 'Borrador']);
+  hojaProceso.appendRow([idProceso1, idProducto, 'Proceso 1 prueba', 1, 'Pendiente']);
+  hojaProceso.appendRow([idProceso2, idProducto, 'Proceso 2 prueba', 1, 'Pendiente']);
+  hojaTarea.appendRow([idTarea1, idProceso1, 'Tarea 1 prueba', 1, 'Pendiente']);
+  hojaTarea.appendRow([idTarea2, idProceso1, 'Tarea 2 prueba', 1, 'Pendiente']);
+
+  SpreadsheetApp.flush();
+
+  var errorFinal = null;
+
+  try {
+    var resultado = procesarImportacionMasiva_(false);
+
+    if (!resultado.ok) {
+      throw new Error(
+        'IMPORTACION_MASIVA_DRYRUN_TEST_ERROR: se esperaba ok=true, errores=' + JSON.stringify(resultado.errores)
+      );
+    }
+
+    if (
+      resultado.resumen.campanas < 1 ||
+      resultado.resumen.proyectos < 1 ||
+      resultado.resumen.productos < 1 ||
+      resultado.resumen.procesos < 2 ||
+      resultado.resumen.tareas < 2
+    ) {
+      throw new Error(
+        'IMPORTACION_MASIVA_DRYRUN_TEST_ERROR: el resumen no cuenta las filas de prueba: ' + JSON.stringify(resultado.resumen)
+      );
+    }
+
+    console.log('OK dryRun_valido=true resumen=' + JSON.stringify(resultado.resumen));
+
+    hojaProyecto.getRange(hojaProyecto.getLastRow(), 4).setValue('TIPO_INEXISTENTE');
+    SpreadsheetApp.flush();
+
+    var resultadoConError = procesarImportacionMasiva_(false);
+
+    if (resultadoConError.ok || resultadoConError.errores.length === 0) {
+      throw new Error(
+        'IMPORTACION_MASIVA_DRYRUN_TEST_ERROR: no detectó el TIPO_PROYECTO inválido'
+      );
+    }
+
+    console.log('OK error_catalogo_detectado=' + resultadoConError.errores[0]);
+  } catch (error) {
+    errorFinal = error;
+  } finally {
+    [
+      [hojaCampana, idCampana],
+      [hojaProyecto, idProyecto],
+      [hojaProducto, idProducto],
+      [hojaProceso, idProceso1],
+      [hojaProceso, idProceso2],
+      [hojaTarea, idTarea1],
+      [hojaTarea, idTarea2]
+    ].forEach(function (par) {
+      var hoja = par[0];
+      var idBuscado = par[1];
+      var datos = hoja.getDataRange().getValues();
+
+      for (var i = datos.length - 1; i >= 1; i--) {
+        if (String(datos[i][0]) === idBuscado) {
+          hoja.deleteRow(i + 1);
+          break;
+        }
+      }
+    });
+
+    SpreadsheetApp.flush();
+    console.log('OK filas_de_prueba_eliminadas=true');
+  }
+
+  if (errorFinal) throw errorFinal;
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' status=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
