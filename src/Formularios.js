@@ -88,7 +88,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO'],
   RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION'],
   VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO'],
-  PROVEEDOR_MATERIAL: ['PROVEEDOR_ID', 'MATERIAL_ID']
+  PROVEEDOR_MATERIAL: ['PROVEEDOR_ID', 'MATERIAL_ID'],
+  EQUIPO_MIEMBRO: ['EQUIPO_ID', 'MIEMBRO_ID']
 });
 
 
@@ -327,10 +328,23 @@ PROYECTO: [
   PERSONA_EQUIPO: [
     { campo: 'TIPO', etiqueta: 'Tipo', tipo: 'catalogo', catalogo: 'CFG_TIPO_RECURSO', requerido: true },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
-    { campo: 'ROL', etiqueta: 'Rol', tipo: 'texto', requerido: true },
+    { campo: 'ROL', etiqueta: 'Rol', tipo: 'catalogo', catalogo: 'CFG_ROL_PERSONA', requerido: true },
+    { campo: 'EMAIL', etiqueta: 'Email', tipo: 'texto' },
+    { campo: 'TELEFONO', etiqueta: 'Teléfono', tipo: 'texto' },
+    { campo: 'COORDINADOR_ID', etiqueta: 'Coordinador (si es Equipo)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'CAPACIDAD_SEMANAL_DIAS', etiqueta: 'Capacidad semanal (días)', tipo: 'numero', requerido: true },
     { campo: 'DISPONIBILIDAD', etiqueta: 'Disponibilidad', tipo: 'catalogo', catalogo: 'CFG_DISPONIBILIDAD', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  EQUIPO_MIEMBRO: [
+    { campo: 'EQUIPO_ID', etiqueta: 'Equipo', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true },
+    { campo: 'MIEMBRO_ID', etiqueta: 'Miembro (persona)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true },
+    { campo: 'ROL_EN_EQUIPO', etiqueta: 'Rol en el equipo', tipo: 'texto' },
+    { campo: 'FECHA_ALTA', etiqueta: 'Fecha de alta', tipo: 'fecha' },
+    { campo: 'FECHA_BAJA', etiqueta: 'Fecha de baja', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -765,16 +779,28 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
 
       copia.opciones = registros.map(
         function (registro) {
+          var etiqueta =
+            registro.ID +
+            ' - ' +
+            (
+              registro.NOMBRE ||
+              registro.TITULO ||
+              ''
+            );
+
+          /*
+           * F-046: el selector de PERSONA_EQUIPO no distinguía persona de
+           * equipo. Se añade el TIPO a la etiqueta (mismo texto "ID -
+           * nombre" que usa extraerIdDeEtiqueta_, solo se le añade un
+           * sufijo informativo que no afecta a la extracción del ID).
+           */
+          if (copia.entidadFk === 'PERSONA_EQUIPO' && registro.TIPO) {
+            etiqueta += ' (' + registro.TIPO + ')';
+          }
+
           return {
             id: registro.ID,
-            etiqueta:
-              registro.ID +
-              ' - ' +
-              (
-                registro.NOMBRE ||
-                registro.TITULO ||
-                ''
-              )
+            etiqueta: etiqueta
           };
         }
       );
@@ -1763,6 +1789,7 @@ function onOpen() {
         .addItem('Movimiento de material', 'abrirEditarMovimientoMaterial')
         .addItem('Ejecución de tarea', 'abrirEditarEjecucionTarea')
         .addItem('Proveedor-Material', 'abrirEditarProveedorMaterial')
+        .addItem('Equipo-Miembro', 'abrirEditarEquipoMiembro')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1776,6 +1803,7 @@ function onOpen() {
         .addItem('Movimiento de material', 'abrirFormularioCrearMovimientoMaterial')
         .addItem('Ejecución de tarea', 'abrirFormularioCrearEjecucionTarea')
         .addItem('Proveedor - Material', 'abrirFormularioCrearProveedorMaterial')
+        .addItem('Equipo - Miembro', 'abrirFormularioCrearEquipoMiembro')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1868,6 +1896,7 @@ function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínc
 function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIMIENTO_MATERIAL', 'Movimiento de material'); }
 function abrirEditarEjecucionTarea() { abrirEditarRegistroPorEntidad_('EJECUCION_TAREA', 'Ejecución de tarea'); }
 function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEEDOR_MATERIAL', 'Proveedor-Material'); }
+function abrirEditarEquipoMiembro() { abrirEditarRegistroPorEntidad_('EQUIPO_MIEMBRO', 'Equipo-Miembro'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1882,6 +1911,7 @@ function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo
 function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIMIENTO_MATERIAL', 'Nuevo movimiento de material'); }
 function abrirFormularioCrearEjecucionTarea() { abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea'); }
 function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEEDOR_MATERIAL', 'Nueva relación proveedor-material'); }
+function abrirFormularioCrearEquipoMiembro() { abrirFormularioCrear_('EQUIPO_MIEMBRO', 'Nueva relación equipo-miembro'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

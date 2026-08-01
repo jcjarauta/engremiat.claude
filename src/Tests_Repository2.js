@@ -14257,6 +14257,181 @@ function probarIntegridadProveedorMaterialDuplicadoRechazado() {
 }
 
 
+function probarIntegridadCatalogosRolPersonaYAsignacionAmpliados() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CATALOGOS_ROL_PERSONA_Y_ASIGNACION_AMPLIADOS';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var rolesPersona = obtenerCatalogo('CFG_ROL_PERSONA');
+
+  var esperadosRolPersona = [
+    'Coordinación', 'Producción', 'Diseño', 'Logística',
+    'Administración', 'Voluntariado', 'Otra'
+  ];
+
+  esperadosRolPersona.forEach(function (valor) {
+    if (rolesPersona.indexOf(valor) === -1) {
+      throw new Error(
+        'CATALOGO_ROL_PERSONA_TEST_ERROR: falta "' + valor + '" en CFG_ROL_PERSONA (valores actuales: ' + rolesPersona.join(', ') + ')'
+      );
+    }
+  });
+
+  console.log('OK CFG_ROL_PERSONA_completo=true valores=' + rolesPersona.length);
+
+  var rolesAsignacion = obtenerCatalogo('CFG_ROL_ASIGNACION');
+
+  var esperadosRolAsignacion = [
+    'Responsable', 'Colaborador', 'Supervisor', 'Apoyo',
+    'Ejecutor', 'Consultado', 'Informado', 'Coordinador', 'Validador'
+  ];
+
+  esperadosRolAsignacion.forEach(function (valor) {
+    if (rolesAsignacion.indexOf(valor) === -1) {
+      throw new Error(
+        'CATALOGO_ROL_ASIGNACION_TEST_ERROR: falta "' + valor + '" en CFG_ROL_ASIGNACION (valores actuales: ' + rolesAsignacion.join(', ') + ')'
+      );
+    }
+  });
+
+  console.log('OK CFG_ROL_ASIGNACION_completo=true valores=' + rolesAsignacion.length);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaEquipoMiembroDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_EQUIPO_MIEMBRO_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var personasActivas =
+    listarRegistros(
+      'PERSONA_EQUIPO',
+      {ACTIVO: 'SÍ'}
+    );
+
+  if (personasActivas.length === 0) {
+    throw new Error(
+      'ALTA_EQUIPO_MIEMBRO_DRYRUN_TEST_ERROR: no existe ningún PERSONA_EQUIPO activo utilizable'
+    );
+  }
+
+  var equipo = personasActivas[0];
+  var miembro = personasActivas[1] || personasActivas[0];
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'EQUIPO_MIEMBRO',
+      {
+        EQUIPO_ID: equipo.ID,
+        MIEMBRO_ID: miembro.ID,
+        ROL_EN_EQUIPO: 'Miembro',
+        FECHA_ALTA: new Date(),
+        ESTADO: 'Activa'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_EQUIPO_MIEMBRO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadEquipoMiembroDuplicadoRechazado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_EQUIPO_MIEMBRO_DUPLICADO_RECHAZADO';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var existente =
+    listarRegistros(
+      'EQUIPO_MIEMBRO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!existente) {
+    console.log(
+      'OK sin_registros_activos_para_probar_duplicado=true (se omite: requiere al menos un EQUIPO_MIEMBRO real dado de alta)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var lanzoError = false;
+
+  try {
+    guardarFormulario(
+      'EQUIPO_MIEMBRO',
+      '',
+      {
+        EQUIPO_ID: existente.EQUIPO_ID,
+        MIEMBRO_ID: existente.MIEMBRO_ID,
+        ROL_EN_EQUIPO: 'Duplicado de prueba',
+        ESTADO: existente.ESTADO
+      },
+      null
+    );
+  } catch (error) {
+    lanzoError = true;
+    console.log('OK duplicado_rechazado_mensaje=' + error.message);
+  }
+
+  if (!lanzoError) {
+    throw new Error(
+      'EQUIPO_MIEMBRO_DUPLICADO_TEST_ERROR: guardarFormulario no rechazó la combinación EQUIPO_ID/MIEMBRO_ID ya existente (' +
+        existente.EQUIPO_ID + '/' + existente.MIEMBRO_ID + ')'
+    );
+  }
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

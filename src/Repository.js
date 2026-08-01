@@ -158,6 +158,12 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'PLAZO_ENTREGA_DIAS',
     'ES_PREFERENTE',
     'ESTADO'
+  ]),
+
+  EQUIPO_MIEMBRO: Object.freeze([
+    'EQUIPO_ID',
+    'MIEMBRO_ID',
+    'ESTADO'
   ])
 });
 
