@@ -20,7 +20,9 @@ var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Proceso': 'PROCESO',
   'Tarea': 'TAREA',
   'Decisión': 'DECISION',
-  'Incidencia': 'INCIDENCIA'
+  'Incidencia': 'INCIDENCIA',
+  'Documento': 'DOCUMENTO',
+  'Recurso': 'RECURSO'
 });
 
 var MAPAS_DEPENDENCIA_MVP = Object.freeze({
@@ -89,7 +91,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION'],
   VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO'],
   PROVEEDOR_MATERIAL: ['PROVEEDOR_ID', 'MATERIAL_ID'],
-  EQUIPO_MIEMBRO: ['EQUIPO_ID', 'MIEMBRO_ID']
+  EQUIPO_MIEMBRO: ['EQUIPO_ID', 'MIEMBRO_ID'],
+  TAREA_RECURSO: ['TAREA_ID', 'RECURSO_ID']
 });
 
 
@@ -344,6 +347,48 @@ PROYECTO: [
     { campo: 'ROL_EN_EQUIPO', etiqueta: 'Rol en el equipo', tipo: 'texto' },
     { campo: 'FECHA_ALTA', etiqueta: 'Fecha de alta', tipo: 'fecha' },
     { campo: 'FECHA_BAJA', etiqueta: 'Fecha de baja', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Fase L5.1 (abstraccion RECURSO, alcance minimo confirmado tras
+   * evaluar PROPUESTA_RECURSO_MATERIAL.md): cubre herramienta/maquinaria/
+   * equipo auxiliar/espacio, tipos que hoy no tienen cabida ni en
+   * MATERIAL (consumibles) ni en PERSONA_EQUIPO. UBICACION_ID reutiliza
+   * la propia tabla RECURSO (un RECURSO con CLASE_RECURSO=Espacio) en vez
+   * de crear un catalogo/tabla de ubicaciones aparte.
+   *
+   * CLASE_RECURSO/ESTADO usan catalogos nuevos (CFG_CLASE_RECURSO,
+   * CFG_ESTADO_RECURSO_FISICO) para no colisionar con CFG_TIPO_RECURSO/
+   * CFG_ESTADO_RECURSO, que ya existen con otro significado (Persona/
+   * Equipo de PERSONA_EQUIPO). "Equipo" como clase de RECURSO se llama
+   * EQUIPO_AUXILIAR para no confundirse con un equipo de personas.
+   */
+  RECURSO: [
+    {
+      campo: 'CODIGO',
+      etiqueta: 'Código',
+      tipo: 'texto',
+      requerido: true,
+      sugerenciaCodigo: { camposContexto: ['CLASE_RECURSO', 'NOMBRE'] }
+    },
+    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
+    { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
+    { campo: 'CLASE_RECURSO', etiqueta: 'Clase de recurso', tipo: 'catalogo', catalogo: 'CFG_CLASE_RECURSO', requerido: true },
+    { campo: 'CATEGORIA_RECURSO', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_RECURSO' },
+    { campo: 'UBICACION_ID', etiqueta: 'Ubicación (espacio)', tipo: 'fk', entidadFk: 'RECURSO', filtroValores: { campo: 'CLASE_RECURSO', valores: ['Espacio'] } },
+    { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO_FISICO', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  TAREA_RECURSO: [
+    { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
+    { campo: 'RECURSO_ID', etiqueta: 'Recurso', tipo: 'fk', entidadFk: 'RECURSO', requerido: true },
+    { campo: 'TIPO_USO', etiqueta: 'Tipo de uso', tipo: 'catalogo', catalogo: 'CFG_TIPO_USO_RECURSO', requerido: true },
+    { campo: 'FECHA_INICIO', etiqueta: 'Fecha inicio', tipo: 'fecha' },
+    { campo: 'FECHA_FIN', etiqueta: 'Fecha fin', tipo: 'fecha' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -772,6 +817,33 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
               copia.excluirEstados.indexOf(
                 estadoRegistro
               ) === -1
+            );
+          }
+        );
+      }
+
+      /*
+       * Filtro por valor de un campo arbitrario (no solo ESTADO). Ej.
+       * RECURSO.UBICACION_ID solo debe ofrecer recursos con
+       * CLASE_RECURSO=Espacio, no cualquier recurso -- evita confundir
+       * una ubicacion con una herramienta o maquina.
+       */
+      if (
+        copia.filtroValores &&
+        Array.isArray(copia.filtroValores.valores) &&
+        copia.filtroValores.valores.length > 0
+      ) {
+        registros = registros.filter(
+          function (registro) {
+            var valorCampo =
+              String(
+                registro[copia.filtroValores.campo] || ''
+              ).trim();
+
+            return (
+              copia.filtroValores.valores.indexOf(
+                valorCampo
+              ) !== -1
             );
           }
         );
@@ -1672,6 +1744,72 @@ function normalizarValorFormulario_(campo, valor) {
  * pasa, insertarRegistroTransaccional/actualizarRegistroTransaccional
  * generan uno nuevo como siempre.
  */
+/*
+ * Bug real detectado al probar VINCULO Recurso->Documento: el buscador
+ * de FK (L3.5) solo extrae el ID del texto escrito (extraerIdDeEtiqueta_
+ * en el cliente), sin comprobar que sea uno de verdad -- si el usuario
+ * escribe algo y guarda sin elegir ninguna opcion del desplegable, ese
+ * texto se guarda tal cual como si fuera un ID valido (ocurrio con
+ * VIN-0003, ENTIDAD_DESTINO_ID="D"). Afecta a cualquier campo fk/
+ * fk_dependiente de cualquier entidad, no solo a VINCULO.
+ *
+ * Reutiliza el mismo resolver que ya usa el cliente para poblar las
+ * opciones (listarRegistros para fk directo, mapa.resolver(...) para
+ * fk_dependiente), asi la validacion nunca se desincroniza de lo que
+ * el usuario realmente puede elegir.
+ */
+function validarClavesForaneasFormulario_(clave, datos, idExcluir) {
+  var esquema = ESQUEMAS_FORMULARIO_MVP[clave];
+
+  /*
+   * Al editar, guardarFormulario reenvia TODOS los campos (no solo los
+   * cambiados). Si un valor de FK no cambio respecto al ya guardado, no
+   * se revalida -- evita bloquear la edicion de un registro antiguo
+   * solo porque una referencia suya se desactivo despues (ACTIVO=NO),
+   * algo ajeno a la edicion que se esta haciendo ahora.
+   */
+  var registroActual = idExcluir ? obtenerRegistroPorId(clave, idExcluir) : null;
+
+  esquema.forEach(function (campo) {
+    var valor = String(datos[campo.campo] || '').trim();
+
+    if (!valor) return;
+
+    if (
+      registroActual &&
+      String(registroActual[campo.campo] || '').trim() === valor
+    ) {
+      return;
+    }
+
+    var idsValidos;
+
+    if (campo.tipo === 'fk') {
+      idsValidos = listarRegistros(campo.entidadFk, { ACTIVO: 'SÍ' }).map(
+        function (registro) { return String(registro.ID); }
+      );
+    } else if (campo.tipo === 'fk_dependiente') {
+      var valorPadre = String(datos[campo.dependeDe] || '').trim();
+      var mapa = MAPAS_DEPENDENCIA_MVP[campo.mapaEntidad];
+
+      if (!mapa || !valorPadre) return;
+
+      idsValidos = mapa.resolver(valorPadre).map(
+        function (opcion) { return String(opcion.id); }
+      );
+    } else {
+      return;
+    }
+
+    if (idsValidos.indexOf(valor) === -1) {
+      throw new Error(
+        'ERROR_VALIDACION: el valor "' + valor + '" de "' + campo.etiqueta +
+          '" no corresponde a ningún registro válido.'
+      );
+    }
+  });
+}
+
 function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
   var clave = String(entidad || '').trim().toUpperCase();
   var esquema = ESQUEMAS_FORMULARIO_MVP[clave];
@@ -1696,6 +1834,12 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
   var correlationIdFinal = correlationId || Utilities.getUuid();
 
   try {
+    validarClavesForaneasFormulario_(
+      clave,
+      datos,
+      idRegistro
+    );
+
     validarDuplicidadFormulario_(
       clave,
       datos,
@@ -1760,6 +1904,7 @@ function onOpen() {
         .addItem('Proceso', 'abrirFormularioCrearProceso')
         .addItem('Tarea', 'abrirFormularioCrearTarea')
         .addItem('Material', 'abrirFormularioCrearMaterial')
+        .addItem('Recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
         .addItem('Persona/Equipo', 'abrirFormularioCrearPersonaEquipo')
         .addItem('Proveedor', 'abrirFormularioCrearProveedor')
         .addItem('Decisión', 'abrirFormularioCrearDecision')
@@ -1774,6 +1919,7 @@ function onOpen() {
         .addItem('Proceso', 'abrirEditarProceso')
         .addItem('Tarea', 'abrirEditarTarea')
         .addItem('Material', 'abrirEditarMaterial')
+        .addItem('Recurso', 'abrirEditarRecurso')
         .addItem('Persona/Equipo', 'abrirEditarPersonaEquipo')
         .addItem('Proveedor', 'abrirEditarProveedor')
         .addItem('Decisión', 'abrirEditarDecision')
@@ -1790,6 +1936,7 @@ function onOpen() {
         .addItem('Ejecución de tarea', 'abrirEditarEjecucionTarea')
         .addItem('Proveedor-Material', 'abrirEditarProveedorMaterial')
         .addItem('Equipo-Miembro', 'abrirEditarEquipoMiembro')
+        .addItem('Tarea-Recurso', 'abrirEditarTareaRecurso')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1804,6 +1951,7 @@ function onOpen() {
         .addItem('Ejecución de tarea', 'abrirFormularioCrearEjecucionTarea')
         .addItem('Proveedor - Material', 'abrirFormularioCrearProveedorMaterial')
         .addItem('Equipo - Miembro', 'abrirFormularioCrearEquipoMiembro')
+        .addItem('Tarea - Recurso', 'abrirFormularioCrearTareaRecurso')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1861,18 +2009,48 @@ function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'N
  * Punto de entrada generico "Editar registro" (Fase 1, BL-MVP-02).
  * Reconstruido tras deteccion de regresion via AUD-01.
  */
+/*
+ * Hueco detectado en L3.5 y registrado explicitamente para no abordarlo
+ * en esa fase ("Editar registro" seguia pidiendo el ID exacto con un
+ * ui.prompt() nativo, sin buscador, a diferencia de los desplegables de
+ * dentro de cada formulario). El usuario lo ha vuelto a señalar en la
+ * verificacion de L5.1 -- se corrige ahora para las 21 entidades que
+ * comparten esta funcion, reutilizando el mismo patron de <datalist>
+ * que FormularioGenerico.html.
+ */
 function abrirEditarRegistroPorEntidad_(entidad, etiqueta) {
-  var ui = SpreadsheetApp.getUi();
-  var resp = ui.prompt('Editar ' + etiqueta, 'ID del registro a editar:', ui.ButtonSet.OK_CANCEL);
-  if (resp.getSelectedButton() !== ui.Button.OK) return;
-  var id = resp.getResponseText().trim();
-  if (!id) return;
-  var registro = obtenerRegistroPorId(entidad, id);
-  if (!registro) {
-    ui.alert('No encontrado', 'No existe ningun registro de ' + etiqueta.toLowerCase() + ' con el ID "' + id + '".', ui.ButtonSet.OK);
-    return;
+  var template = HtmlService.createTemplateFromFile('SelectorRegistro');
+  template.entidad = entidad;
+  template.titulo = etiqueta;
+  var html = template.evaluate().setWidth(380).setHeight(220);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Editar ' + etiqueta);
+}
+
+function obtenerOpcionesEntidadParaSelector(entidad) {
+  var clave = String(entidad || '').trim().toUpperCase();
+
+  if (!ENTIDADES_MVP[clave]) {
+    throw new Error('Entidad no configurada: ' + entidad);
   }
-  abrirFormularioEditarPorId(entidad, id);
+
+  return listarRegistros(clave, { ACTIVO: 'SÍ' }).map(function (registro) {
+    return {
+      id: registro.ID,
+      etiqueta: registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '')
+    };
+  });
+}
+
+function seleccionarYAbrirEdicion(entidad, idRegistro) {
+  var registro = obtenerRegistroPorId(entidad, idRegistro);
+
+  if (!registro) {
+    throw new Error('No existe ningún registro con el ID "' + idRegistro + '".');
+  }
+
+  abrirFormularioEditarPorId(entidad, idRegistro);
+
+  return true;
 }
 
 function abrirEditarCampana() { abrirEditarRegistroPorEntidad_('CAMPANA', 'Campaña'); }
@@ -1897,6 +2075,8 @@ function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIM
 function abrirEditarEjecucionTarea() { abrirEditarRegistroPorEntidad_('EJECUCION_TAREA', 'Ejecución de tarea'); }
 function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEEDOR_MATERIAL', 'Proveedor-Material'); }
 function abrirEditarEquipoMiembro() { abrirEditarRegistroPorEntidad_('EQUIPO_MIEMBRO', 'Equipo-Miembro'); }
+function abrirEditarRecurso() { abrirEditarRegistroPorEntidad_('RECURSO', 'Recurso'); }
+function abrirEditarTareaRecurso() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO', 'Tarea-Recurso'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1912,6 +2092,8 @@ function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIM
 function abrirFormularioCrearEjecucionTarea() { abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea'); }
 function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEEDOR_MATERIAL', 'Nueva relación proveedor-material'); }
 function abrirFormularioCrearEquipoMiembro() { abrirFormularioCrear_('EQUIPO_MIEMBRO', 'Nueva relación equipo-miembro'); }
+function abrirFormularioCrearRecurso() { abrirFormularioCrear_('RECURSO', 'Nuevo recurso'); }
+function abrirFormularioCrearTareaRecurso() { abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

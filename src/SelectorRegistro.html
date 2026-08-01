@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; padding: 12px; }
+    h3 { margin-top: 0; }
+    label { display: block; margin-top: 6px; font-weight: bold; }
+    input { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; font-family: inherit; }
+    #mensaje { margin-top: 10px; font-weight: bold; min-height: 18px; color: #b00020; }
+    .acciones { margin-top: 14px; text-align: right; }
+    button { padding: 8px 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h3>Editar <?= titulo ?></h3>
+  <label for="buscador">Busca por ID o nombre:</label>
+  <input type="text" id="buscador" list="lista_registros" autocomplete="off" placeholder="Escribe para buscar...">
+  <datalist id="lista_registros"></datalist>
+  <input type="hidden" id="idSeleccionado" value="">
+  <div id="mensaje"></div>
+  <div class="acciones">
+    <button id="btnCancelar" onclick="google.script.host.close()">Cancelar</button>
+    <button id="btnAceptar" onclick="aceptar()" disabled>Aceptar</button>
+  </div>
+  <script>
+    var ENTIDAD = <?!= JSON.stringify(entidad) ?>;
+    var opciones = [];
+
+    function escaparAtributo_(texto) {
+      return String(texto == null ? "" : texto)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function extraerIdDeEtiqueta_(texto) {
+      if (!texto) return "";
+      var idx = texto.indexOf(" - ");
+      return idx === -1 ? texto : texto.substring(0, idx);
+    }
+
+    function cargarOpciones() {
+      google.script.run
+        .withSuccessHandler(function (lista) {
+          opciones = lista || [];
+          var datalist = document.getElementById("lista_registros");
+          datalist.innerHTML = "";
+          opciones.forEach(function (op) {
+            datalist.innerHTML += "<option value=\"" + escaparAtributo_(op.etiqueta) + "\">";
+          });
+        })
+        .withFailureHandler(function (error) {
+          document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
+        })
+        .obtenerOpcionesEntidadParaSelector(ENTIDAD);
+    }
+
+    document.getElementById("buscador").addEventListener("input", function () {
+      var id = extraerIdDeEtiqueta_(this.value);
+      var valido = opciones.some(function (op) { return String(op.id) === id; });
+      document.getElementById("idSeleccionado").value = valido ? id : "";
+      document.getElementById("btnAceptar").disabled = !valido;
+      document.getElementById("mensaje").textContent = "";
+    });
+
+    function aceptar() {
+      var id = document.getElementById("idSeleccionado").value;
+      if (!id) return;
+      document.getElementById("btnAceptar").disabled = true;
+      google.script.run
+        .withSuccessHandler(function () { google.script.host.close(); })
+        .withFailureHandler(function (error) {
+          document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
+          document.getElementById("btnAceptar").disabled = false;
+        })
+        .seleccionarYAbrirEdicion(ENTIDAD, id);
+    }
+
+    cargarOpciones();
+  </script>
+</body>
+</html>

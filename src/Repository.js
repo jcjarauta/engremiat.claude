@@ -164,6 +164,20 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'EQUIPO_ID',
     'MIEMBRO_ID',
     'ESTADO'
+  ]),
+
+  RECURSO: Object.freeze([
+    'CODIGO',
+    'NOMBRE',
+    'CLASE_RECURSO',
+    'ESTADO'
+  ]),
+
+  TAREA_RECURSO: Object.freeze([
+    'TAREA_ID',
+    'RECURSO_ID',
+    'TIPO_USO',
+    'ESTADO'
   ])
 });
 

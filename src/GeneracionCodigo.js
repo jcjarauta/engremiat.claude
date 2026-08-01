@@ -22,7 +22,8 @@
 var PALABRAS_GENERICAS_CODIGO_ = {
   PRODUCTO: ['PRODUCTO'],
   MATERIAL: ['MATERIAL'],
-  PROVEEDOR: ['PROVEEDOR']
+  PROVEEDOR: ['PROVEEDOR'],
+  RECURSO: ['RECURSO']
 };
 
 var PATRON_DIACRITICOS_ = new RegExp('[̀-ͯ]', 'g');
@@ -176,6 +177,16 @@ function obtenerSugerenciaCodigo(entidadClave, contexto) {
 
     segmentos = [
       siglasDeNombre_(nombreProveedor, PALABRAS_GENERICAS_CODIGO_.PROVEEDOR, 4)
+    ];
+  } else if (clave === 'RECURSO') {
+    var claseRecurso = String(contexto.CLASE_RECURSO || '').trim();
+    var nombreRecurso = String(contexto.NOMBRE || '').trim();
+
+    if (!claseRecurso || !nombreRecurso) return null;
+
+    segmentos = [
+      siglasDeCatalogo_(claseRecurso, 3),
+      siglasDeNombre_(nombreRecurso, PALABRAS_GENERICAS_CODIGO_.RECURSO, 4)
     ];
   } else {
     throw new Error('No hay sugerencia de código configurada para ' + entidadClave);

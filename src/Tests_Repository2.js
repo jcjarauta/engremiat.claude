@@ -14432,6 +14432,361 @@ function probarIntegridadEquipoMiembroDuplicadoRechazado() {
 }
 
 
+function probarIntegridadCatalogosRecursoAmpliados() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CATALOGOS_RECURSO_AMPLIADOS';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var comprobaciones = [
+    {
+      catalogo: 'CFG_CLASE_RECURSO',
+      esperados: ['Herramienta', 'Maquinaria', 'Equipo auxiliar', 'Espacio']
+    },
+    {
+      catalogo: 'CFG_CATEGORIA_RECURSO',
+      esperados: [
+        'Herramienta manual', 'Herramienta eléctrica', 'Útil o plantilla',
+        'Maquinaria fija', 'Equipo informático', 'Equipo de protección',
+        'Espacio productivo', 'Espacio de almacenamiento',
+        'Espacio formativo', 'Espacio polivalente', 'Otro'
+      ]
+    },
+    {
+      catalogo: 'CFG_ESTADO_RECURSO_FISICO',
+      esperados: ['Disponible', 'En uso', 'En mantenimiento', 'Averiado', 'De baja']
+    },
+    {
+      catalogo: 'CFG_TIPO_USO_RECURSO',
+      esperados: ['Utiliza', 'Reserva', 'Ocupa', 'Requiere']
+    }
+  ];
+
+  comprobaciones.forEach(function (comprobacion) {
+    var valores = obtenerCatalogo(comprobacion.catalogo);
+
+    comprobacion.esperados.forEach(function (valor) {
+      if (valores.indexOf(valor) === -1) {
+        throw new Error(
+          'CATALOGO_RECURSO_TEST_ERROR: falta "' + valor + '" en ' + comprobacion.catalogo +
+            ' (valores actuales: ' + valores.join(', ') + ')'
+        );
+      }
+    });
+
+    console.log('OK ' + comprobacion.catalogo + '_completo=true valores=' + valores.length);
+  });
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaRecursoDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_RECURSO_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'RECURSO',
+      {
+        CODIGO: 'REC-TEST-' + new Date().getTime(),
+        NOMBRE: 'Sierra de mesa de prueba',
+        CLASE_RECURSO: 'Maquinaria',
+        CATEGORIA_RECURSO: 'Maquinaria fija',
+        ESTADO: 'Disponible'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_RECURSO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaTareaRecursoDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_TAREA_RECURSO_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tarea =
+    listarRegistros(
+      'TAREA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var recurso =
+    listarRegistros(
+      'RECURSO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!tarea) {
+    throw new Error(
+      'ALTA_TAREA_RECURSO_DRYRUN_TEST_ERROR: no existe ninguna TAREA activa utilizable'
+    );
+  }
+
+  if (!recurso) {
+    console.log(
+      'OK sin_recurso_activo_para_probar=true (se omite: requiere al menos un RECURSO real dado de alta)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'TAREA_RECURSO',
+      {
+        TAREA_ID: tarea.ID,
+        RECURSO_ID: recurso.ID,
+        TIPO_USO: 'Utiliza',
+        ESTADO: 'Planificada'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_TAREA_RECURSO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadTareaRecursoDuplicadoRechazado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_TAREA_RECURSO_DUPLICADO_RECHAZADO';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var existente =
+    listarRegistros(
+      'TAREA_RECURSO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!existente) {
+    console.log(
+      'OK sin_registros_activos_para_probar_duplicado=true (se omite: requiere al menos un TAREA_RECURSO real dado de alta)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var lanzoError = false;
+
+  try {
+    guardarFormulario(
+      'TAREA_RECURSO',
+      '',
+      {
+        TAREA_ID: existente.TAREA_ID,
+        RECURSO_ID: existente.RECURSO_ID,
+        TIPO_USO: existente.TIPO_USO,
+        ESTADO: existente.ESTADO
+      },
+      null
+    );
+  } catch (error) {
+    lanzoError = true;
+    console.log('OK duplicado_rechazado_mensaje=' + error.message);
+  }
+
+  if (!lanzoError) {
+    throw new Error(
+      'TAREA_RECURSO_DUPLICADO_TEST_ERROR: guardarFormulario no rechazó la combinación TAREA_ID/RECURSO_ID ya existente (' +
+        existente.TAREA_ID + '/' + existente.RECURSO_ID + ')'
+    );
+  }
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+/*
+ * Bug real detectado al probar VINCULO Recurso->Documento (VIN-0003,
+ * ENTIDAD_DESTINO_ID="D"): el buscador de FK solo extrae el ID del
+ * texto escrito sin comprobar que exista de verdad. Estas dos pruebas
+ * cubren el arreglo (validarClavesForaneasFormulario_ en Formularios.js):
+ * 1) un ID inventado debe rechazarse al crear.
+ * 2) editar un registro existente SIN tocar sus FK no debe romperse
+ *    (evita bloquear ediciones por referencias antiguas ya desactivadas).
+ */
+function probarIntegridadRechazoClaveForaneaInexistente() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_RECHAZO_CLAVE_FORANEA_INEXISTENTE';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var recurso =
+    listarRegistros(
+      'RECURSO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!recurso) {
+    throw new Error(
+      'RECHAZO_CLAVE_FORANEA_TEST_ERROR: no existe ningún RECURSO activo utilizable'
+    );
+  }
+
+  var lanzoError = false;
+
+  try {
+    guardarFormulario(
+      'VINCULO',
+      '',
+      {
+        ENTIDAD_ORIGEN_TIPO: 'Recurso',
+        ENTIDAD_ORIGEN_ID: recurso.ID,
+        ENTIDAD_DESTINO_TIPO: 'Documento',
+        ENTIDAD_DESTINO_ID: 'DOC-9999-INEXISTENTE',
+        TIPO_VINCULO: 'Evidencia',
+        ESTADO: 'Planificada'
+      },
+      null
+    );
+  } catch (error) {
+    lanzoError = true;
+    console.log('OK clave_foranea_inexistente_rechazada_mensaje=' + error.message);
+  }
+
+  if (!lanzoError) {
+    throw new Error(
+      'RECHAZO_CLAVE_FORANEA_TEST_ERROR: guardarFormulario no rechazó un ENTIDAD_DESTINO_ID inexistente'
+    );
+  }
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadEdicionSinCambiarClaveForaneaNoSeRompe() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_EDICION_SIN_CAMBIAR_CLAVE_FORANEA_NO_SE_ROMPE';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var vinculo =
+    listarRegistros(
+      'VINCULO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (v) {
+      return v.ENTIDAD_ORIGEN_TIPO !== 'Recurso';
+    })[0];
+
+  if (!vinculo) {
+    throw new Error(
+      'EDICION_SIN_CAMBIAR_CLAVE_FORANEA_TEST_ERROR: no existe ningún VINCULO activo válido utilizable'
+    );
+  }
+
+  guardarFormulario(
+    'VINCULO',
+    vinculo.ID,
+    {
+      ENTIDAD_ORIGEN_TIPO: vinculo.ENTIDAD_ORIGEN_TIPO,
+      ENTIDAD_ORIGEN_ID: vinculo.ENTIDAD_ORIGEN_ID,
+      ENTIDAD_DESTINO_TIPO: vinculo.ENTIDAD_DESTINO_TIPO,
+      ENTIDAD_DESTINO_ID: vinculo.ENTIDAD_DESTINO_ID,
+      TIPO_VINCULO: vinculo.TIPO_VINCULO,
+      ESTADO: vinculo.ESTADO,
+      OBSERVACIONES: vinculo.OBSERVACIONES || ''
+    },
+    null
+  );
+
+  console.log('OK edicion_sin_cambios_de_fk_no_lanzo_error=true id=' + vinculo.ID);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
