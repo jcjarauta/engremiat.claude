@@ -222,14 +222,20 @@ Verificado en real: instalador OK, 4 catálogos OK, dryRun OK, `REC-0001` (Zona 
 
 **Efecto colateral importante descubierto durante la verificación** (documentado abajo como arreglo transversal): bug real de validación de claves foráneas que afectaba a todo el sistema, y hueco de UX de L3.5 en "Editar registro" señalado de nuevo por el usuario.
 
-### L5.2 — Pedidos y recepciones de proveedor
-`SOLICITUD_COMPRA → PEDIDO_PROVEEDOR → RECEPCION`, actualizando inventario vía L3.3.
-**Depende de L5.1.**
+### L5.2 — Pedidos y recepciones de proveedor — CERRADA (2026-08-01), alcance mínimo
+Construido con datos simulados (mismo criterio que RECURSO, sin esperar a un pedido real en producción). Alcance confirmado: solo `PEDIDO_PROVEEDOR`(+líneas) y `RECEPCION`(+líneas); sin `SOLICITUD_COMPRA` ni `DEVOLUCION_PROVEEDOR` todavía.
+
+- `PEDIDO_PROVEEDOR` (25) + `PEDIDO_PROVEEDOR_LINEA` (26), `RECEPCION` (27) + `RECEPCION_LINEA` (28). Catálogos nuevos `CFG_ESTADO_PEDIDO_PROVEEDOR`, `CFG_ESTADO_RECEPCION`.
+- `confirmarRecepcion_` (`PedidoRecepcion.js`): acción de menú humana (mismo patrón que "Recalcular avance de proceso"), vista previa + confirmación explícita, genera un `MOVIMIENTO_MATERIAL` tipo Entrada por línea (reutiliza L3.3, no escribe `STOCK_ACTUAL` directamente). Protegida contra doble confirmación.
+- **Bug real corregido durante la verificación**: confirmar una recepción no actualizaba `PEDIDO_PROVEEDOR.ESTADO`, así que un pedido ya recibido por completo seguía ofreciéndose como pendiente en "Nueva recepción"/"Nueva línea de pedido". `actualizarEstadoPedidoTrasRecepcion_` recalcula el estado del pedido (Recibido parcial/completo) comparando pedido vs. recibido por material; ambos selectores FK a `PEDIDO_PROVEEDOR` ahora excluyen `Recibido completo`/`Cancelado`. `corregirEstadoPedidosExistentes()` hizo el backfill de los pedidos dados de alta antes del fix.
+- `SelectorRegistro.html` (nacido en el fix de "Editar registro") generalizado a cualquier flujo "elige un registro y luego haz X" vía `abrirSelectorConAccion_`; "Confirmar recepción de pedido" lo reutiliza en vez de un `ui.prompt()`, filtrando a solo recepciones pendientes.
+
+Verificado en real: instalador OK, catálogos OK, dryRun OK, `PED-0001`+`PPL-0001`+`RCP-0001` confirmada → generó `MOV-0002` (Entrada, 10 Unidad, MAT-0002); backfill corrigió `PED-0001` a "Recibido completo"; selectores ya no ofrecen pedidos cerrados; segunda recepción de prueba (`RCP-0003`, Pedido `PED-0002`) confirmó que el buscador de "Confirmar recepción" funciona.
 
 ### L5.3 — Importación masiva de campaña completa
 Árbol `CAMPANA→PROYECTO→PRODUCTO→PROCESO→TAREA` de una vez, con plantilla+staging+dryRun+aprobación humana. Ya priorizado antes de la prueba operativa; ahora con más certeza de qué campos hacen falta en cada nivel gracias a las Fases L1-L4.
 
-**Estimación restante: 3-4 sesiones por bloque (L5.2, L5.3).**
+**Estimación restante: 3-4 sesiones (L5.3).**
 
 ---
 
