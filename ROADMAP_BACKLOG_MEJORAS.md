@@ -98,8 +98,15 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Alcance**: F-052 (DECISION limitada a un solo PROYECTO) y F-067 (DOCUMENTO limitado a una sola entidad) quedan con el mecanismo disponible como relación adicional — no se modificaron los formularios de DECISION/DOCUMENTO para integrarlo automáticamente, igual que con `ASIGNACION` en L1.1. La parte de F-079 relativa a `RECURSO_REFERENCIA` queda cubierta conceptualmente (mismo patrón), pero no se construye hasta la Fase L5 (RECURSO).
 
-### L3.2 — Recurso compartido reutilizado (`MODO_USO`)
-Resuelve: F-022, F-026, F-049.
+### L3.2 — Recurso compartido reutilizado (`MODO_USO`) ✅ CERRADA (2026-08-01)
+
+**Corrección de alcance (antes de construir)**: F-049 no encaja en este mecanismo — trata de desglose de equipo en `TAREA_RESPONSABLE` (capacidad individual dentro de una asignación a equipo), no de clasificación de reutilización de un recurso compartido. Se retira de esta fase, igual que F-052 en L1.2; queda pendiente de encaje futuro (probablemente junto a mejoras de `TAREA_RESPONSABLE`/`ASIGNACION`).
+
+**Construido**: catálogo nuevo `CFG_MODO_USO` (4 valores: Referencia compartida/Reutilización sin cambios/Adaptación específica/Clonación como nuevo), compartido entre `PROYECTO_PRODUCTO` (F-022) y `PROCESO` (F-026). `PROCESO` gana además `PROYECTO_PRODUCTO_ID` (FK opcional) para vincularse al contexto específico de un proyecto sin dejar de referenciar el `PRODUCTO_ID` maestro. Ambos campos opcionales, sin regla de integridad nueva (mismo criterio que L1.3). Instalador `instalarModoUso`, reutilizando `crearCatalogoNuevoL3_` (de L3.1) y un nuevo helper genérico `agregarColumnasSiFaltan_` (generaliza el patrón de `InstaladorCriteriosAceptacion.js` a una entidad por llamada).
+
+**Corrección durante la verificación**: la prueba `dryRun` inicial reutilizaba el par `PROYECTO_ID`/`PRODUCTO_ID` exacto de una relación real, chocando con una validación de unicidad de `PROYECTO_PRODUCTO` que no había detectado antes (no aparece con ese nombre exacto en el código, por eso el primer grep no la encontró). Corregido buscando dinámicamente un `PROYECTO` activo aún no vinculado al `PRODUCTO_ID` de la relación base.
+
+**Verificado**: `instalarModoUso` (`status=OK`, named range `CFG_MODO_USO=185:188`), `probarIntegridadModoUsoDryRun` (`result=OK` para `PROYECTO_PRODUCTO` y `PROCESO`), y dos actualizaciones reales en la UI (`PCS-0002` con `PROYECTO_PRODUCTO_ID=PPR-0001`/`MODO_USO=Reutilización sin cambios`, `HIS-1278`; `PPR-0002` con `MODO_USO=Referencia compartida`, `HIS-1279`, ambos `RESULTADO=OK`).
 
 ### L3.3 — Libro de movimientos
 `MOVIMIENTO_MATERIAL`/`RECURSO_MOVIMIENTO` unificado — precondición para Fase L5 (RECURSO).

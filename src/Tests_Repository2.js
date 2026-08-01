@@ -13371,6 +13371,148 @@ function probarIntegridadVinculoAutoreferenciaDetectada() {
 }
 
 
+function probarIntegridadModoUsoDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_MODO_USO_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proyectoProductoBase =
+    listarRegistros(
+      'PROYECTO_PRODUCTO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proyectoProductoBase) {
+    throw new Error(
+      'MODO_USO_DRYRUN_TEST_ERROR: no existe una PROYECTO_PRODUCTO activa utilizable'
+    );
+  }
+
+  // PROYECTO_PRODUCTO no permite duplicar el par PROYECTO_ID/PRODUCTO_ID
+  // incluso en dryRun: se busca un PROYECTO activo que todavía no esté
+  // vinculado al PRODUCTO_ID del registro base.
+  var proyectosYaVinculados_ = {};
+
+  listarRegistros(
+    'PROYECTO_PRODUCTO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (pp) {
+    if (
+      String(pp.PRODUCTO_ID || '').trim() ===
+        String(proyectoProductoBase.PRODUCTO_ID || '').trim()
+    ) {
+      proyectosYaVinculados_[
+        String(pp.PROYECTO_ID || '').trim()
+      ] = true;
+    }
+  });
+
+  var proyectoLibre =
+    listarRegistros(
+      'PROYECTO',
+      {ACTIVO: 'SÍ'}
+    ).filter(function (p) {
+      return !proyectosYaVinculados_[String(p.ID).trim()];
+    })[0];
+
+  if (!proyectoLibre) {
+    throw new Error(
+      'MODO_USO_DRYRUN_TEST_ERROR: no existe un PROYECTO activo sin vincular ya al PRODUCTO_ID de la relación base'
+    );
+  }
+
+  var datosProyectoProducto = {};
+
+  (CAMPOS_OBLIGATORIOS_MVP.PROYECTO_PRODUCTO || [])
+    .forEach(function (campo) {
+      datosProyectoProducto[campo] = proyectoProductoBase[campo];
+    });
+
+  datosProyectoProducto.PROYECTO_ID = proyectoLibre.ID;
+  datosProyectoProducto.MODO_USO = 'Reutilización sin cambios';
+
+  var resultadoProyectoProducto =
+    insertarRegistroTransaccional(
+      'PROYECTO_PRODUCTO',
+      datosProyectoProducto,
+      {dryRun: true}
+    );
+
+  if (
+    !resultadoProyectoProducto ||
+    resultadoProyectoProducto.ok !== true ||
+    resultadoProyectoProducto.dryRun !== true
+  ) {
+    throw new Error(
+      'MODO_USO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido para PROYECTO_PRODUCTO'
+    );
+  }
+
+  console.log(
+    'OK PROYECTO_PRODUCTO_dryRun_id=' + resultadoProyectoProducto.id
+  );
+
+  var procesoBase =
+    listarRegistros(
+      'PROCESO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!procesoBase) {
+    throw new Error(
+      'MODO_USO_DRYRUN_TEST_ERROR: no existe un PROCESO activo utilizable'
+    );
+  }
+
+  var datosProceso = {};
+
+  (CAMPOS_OBLIGATORIOS_MVP.PROCESO || [])
+    .forEach(function (campo) {
+      datosProceso[campo] = procesoBase[campo];
+    });
+
+  // PROCESO valida unicidad de ORDEN_SECUENCIA dentro de su PRODUCTO_ID
+  // incluso en dryRun (ver Fase L1.3) — usar un valor sintético.
+  datosProceso.ORDEN_SECUENCIA = 9000 + Math.floor(Math.random() * 999);
+
+  datosProceso.PROYECTO_PRODUCTO_ID = proyectoProductoBase.ID;
+  datosProceso.MODO_USO = 'Adaptación específica';
+
+  var resultadoProceso =
+    insertarRegistroTransaccional(
+      'PROCESO',
+      datosProceso,
+      {dryRun: true}
+    );
+
+  if (
+    !resultadoProceso ||
+    resultadoProceso.ok !== true ||
+    resultadoProceso.dryRun !== true
+  ) {
+    throw new Error(
+      'MODO_USO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido para PROCESO'
+    );
+  }
+
+  console.log(
+    'OK PROCESO_dryRun_id=' + resultadoProceso.id
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
