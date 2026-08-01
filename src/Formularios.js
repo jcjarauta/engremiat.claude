@@ -599,6 +599,25 @@ INCIDENCIA: [
     { campo: 'TIPO_VINCULO', etiqueta: 'Tipo de vínculo', tipo: 'catalogo', catalogo: 'CFG_TIPO_VINCULO', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Libro de movimientos de MATERIAL (Fase L3.3). Registro aditivo de
+   * eventos de stock (entrada/reserva/salida/consumo/merma/devolucion/
+   * traslado/ajuste). NO sustituye ni recalcula MATERIAL.STOCK_ACTUAL
+   * todavia -- esa migracion es explicitamente de la Fase L5 (RECURSO);
+   * aqui solo se construye el mecanismo para poder empezar a registrar
+   * movimientos de forma trazable.
+   */
+  MOVIMIENTO_MATERIAL: [
+    { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
+    { campo: 'TAREA_ID', etiqueta: 'Tarea relacionada', tipo: 'fk', entidadFk: 'TAREA' },
+    { campo: 'TIPO_MOVIMIENTO', etiqueta: 'Tipo de movimiento', tipo: 'catalogo', catalogo: 'CFG_TIPO_MOVIMIENTO', requerido: true },
+    { campo: 'CANTIDAD', etiqueta: 'Cantidad', tipo: 'numero', requerido: true },
+    { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
+    { campo: 'FECHA_MOVIMIENTO', etiqueta: 'Fecha del movimiento', tipo: 'fecha', requerido: true },
+    { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
 });
 
@@ -1653,6 +1672,7 @@ function onOpen() {
         .addItem('Asignación', 'abrirEditarAsignacion')
         .addItem('Relación (grafo de dependencias)', 'abrirEditarRelacion')
         .addItem('Vínculo (genérico)', 'abrirEditarVinculo')
+        .addItem('Movimiento de material', 'abrirEditarMovimientoMaterial')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1663,6 +1683,7 @@ function onOpen() {
         .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
         .addItem('Relación / dependencia (grafo)', 'abrirFormularioCrearRelacion')
         .addItem('Vínculo genérico (cualquier entidad a cualquier entidad)', 'abrirFormularioCrearVinculo')
+        .addItem('Movimiento de material', 'abrirFormularioCrearMovimientoMaterial')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1751,6 +1772,7 @@ function abrirEditarTareaMaterial() { abrirEditarRegistroPorEntidad_('TAREA_MATE
 function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 'Asignación'); }
 function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Relación'); }
 function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínculo'); }
+function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIMIENTO_MATERIAL', 'Movimiento de material'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1762,6 +1784,7 @@ function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATE
 function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
 function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
 function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
+function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIMIENTO_MATERIAL', 'Nuevo movimiento de material'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

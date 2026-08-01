@@ -108,9 +108,17 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Verificado**: `instalarModoUso` (`status=OK`, named range `CFG_MODO_USO=185:188`), `probarIntegridadModoUsoDryRun` (`result=OK` para `PROYECTO_PRODUCTO` y `PROCESO`), y dos actualizaciones reales en la UI (`PCS-0002` con `PROYECTO_PRODUCTO_ID=PPR-0001`/`MODO_USO=Reutilización sin cambios`, `HIS-1278`; `PPR-0002` con `MODO_USO=Referencia compartida`, `HIS-1279`, ambos `RESULTADO=OK`).
 
-### L3.3 — Libro de movimientos
-`MOVIMIENTO_MATERIAL`/`RECURSO_MOVIMIENTO` unificado — precondición para Fase L5 (RECURSO).
-Resuelve: F-083, base de F-098.
+### L3.3 — Libro de movimientos ✅ CERRADA (2026-08-01)
+
+**Construido**: entidad `MOVIMIENTO_MATERIAL` (hoja `19_MOVIMIENTO_MATERIAL`, prefijo `MOV`) — registro aditivo de eventos de stock (`MATERIAL_ID`, `TAREA_ID` opcional, `TIPO_MOVIMIENTO`, `CANTIDAD`, `UNIDAD`, `FECHA_MOVIMIENTO`, `RESPONSABLE_ID` opcional, `OBSERVACIONES`). Catálogo nuevo `CFG_TIPO_MOVIMIENTO` (10 valores: Entrada/Reserva/Liberación de reserva/Salida/Consumo/Merma/Devolución/Traslado/Ajuste positivo/Ajuste negativo). Regla `FUNC-MOV-001`: la cantidad de un movimiento siempre debe ser positiva (el tipo indica la dirección). Instalador `instalarEntidadMovimientoMaterial`, reutilizando `crearCatalogoNuevoL3_`.
+
+**Límite de alcance explícito, cumplido**: `MATERIAL.STOCK_ACTUAL` no se toca — sigue editándose directamente como hasta ahora. Esta fase solo construye el mecanismo para poder registrar movimientos de forma trazable; la migración real (derivar `STOCK_ACTUAL` de estos movimientos) queda para la Fase L5 (RECURSO), tal como estaba previsto.
+
+**Incidente durante la verificación (no relacionado con el código)**: la primera ejecución del instalador se colgó ~195s y acabó cancelada por la plataforma — coincidió con una sincronización de `clasp push` en curso en el editor de Apps Script (visible como "Finalizar actualización" en la UI). Verificado con `gsheets` que no quedó ningún resto a medio escribir (ni la hoja ni filas de catálogo) antes de reintentar. Lección operativa: no ejecutar funciones mientras el editor muestre una sincronización en curso.
+
+**Verificado**: `instalarEntidadMovimientoMaterial` (`status=OK`, named range `CFG_TIPO_MOVIMIENTO=189:198`), `probarIntegridadAltaMovimientoMaterialDryRun` (`result=OK`, ID `MOV-0001`), `probarIntegridadMovimientoMaterialCantidadNoPositiva` (`result=OK`), y alta real en la UI (`MOV-0001`, entrada de `MAT-0005` vinculada a `TAR-0004`, `HIS-1280`, `RESULTADO=OK`).
+
+**Alcance**: F-083 (TAREA_MATERIAL) queda con el mecanismo de movimientos disponible como registro paralelo, sin integrar todavía en el flujo de `TAREA_MATERIAL` (eso requeriría tocar su lógica de consumo, fuera de alcance de "cambios mínimos" en esta fase). Sienta la base para F-098 (pedidos/recepciones) y para la migración completa de MATERIAL en la Fase L5.
 
 ### L3.4 — Definición vs. ejecución
 `EJECUCION_TAREA` como entidad separada de `TAREA`.

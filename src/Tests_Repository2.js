@@ -13513,6 +13513,153 @@ function probarIntegridadModoUsoDryRun() {
 }
 
 
+function probarIntegridadAltaMovimientoMaterialDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_MOVIMIENTO_MATERIAL_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var material =
+    listarRegistros(
+      'MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!material) {
+    throw new Error(
+      'ALTA_MOVIMIENTO_MATERIAL_DRYRUN_TEST_ERROR: no existe un MATERIAL activo utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'MOVIMIENTO_MATERIAL',
+      {
+        MATERIAL_ID: material.ID,
+        TIPO_MOVIMIENTO: 'Entrada',
+        CANTIDAD: 5,
+        UNIDAD: material.UNIDAD,
+        FECHA_MOVIMIENTO: new Date()
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_MOVIMIENTO_MATERIAL_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  if (!/^MOV-\d{4}$/.test(resultado.id)) {
+    throw new Error(
+      'ALTA_MOVIMIENTO_MATERIAL_DRYRUN_TEST_ERROR: ID generado con formato inesperado: ' +
+        resultado.id
+    );
+  }
+
+  console.log(
+    'OK dryRun_id_generado=' + resultado.id
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadMovimientoMaterialCantidadNoPositiva() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_MOV_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var material =
+    listarRegistros(
+      'MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!material) {
+    throw new Error(
+      'FUNC-MOV-001_TEST_ERROR: no existe un MATERIAL activo utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'MOVIMIENTO_MATERIAL'
+    );
+
+  var idTemporal = 'MOV-AUD-001';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      {
+        ID: idTemporal,
+        MATERIAL_ID: material.ID,
+        TIPO_MOVIMIENTO: 'Entrada',
+        CANTIDAD: 0,
+        UNIDAD: material.UNIDAD,
+        FECHA_MOVIMIENTO: new Date(),
+        ACTIVO: 'SÍ'
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-MOV-001',
+      'MOVIMIENTO_MATERIAL',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK cantidad_no_positiva_detectada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-MOV-001',
+    'MOVIMIENTO_MATERIAL',
+    idTemporal
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

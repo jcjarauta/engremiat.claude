@@ -136,6 +136,14 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'ENTIDAD_DESTINO_ID',
     'TIPO_VINCULO',
     'ESTADO'
+  ]),
+
+  MOVIMIENTO_MATERIAL: Object.freeze([
+    'MATERIAL_ID',
+    'TIPO_MOVIMIENTO',
+    'CANTIDAD',
+    'UNIDAD',
+    'FECHA_MOVIMIENTO'
   ])
 });
 

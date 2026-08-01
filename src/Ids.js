@@ -70,6 +70,10 @@ const ENTIDADES_MVP = Object.freeze({
   VINCULO: Object.freeze({
     hoja: '18_VINCULO',
     prefijo: 'VIN'
+  }),
+  MOVIMIENTO_MATERIAL: Object.freeze({
+    hoja: '19_MOVIMIENTO_MATERIAL',
+    prefijo: 'MOV'
   })
 });
 

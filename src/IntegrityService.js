@@ -1792,6 +1792,26 @@ function detectarProblemasVinculo_(agregar) {
   });
 }
 
+function detectarProblemasMovimientoMaterial_(agregar) {
+  listarRegistros(
+    'MOVIMIENTO_MATERIAL',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (m) {
+    var cantidad = Number(m.CANTIDAD);
+
+    if (!(cantidad > 0)) {
+      agregar(
+        'FUNC-MOV-001',
+        'MOVIMIENTO_MATERIAL',
+        m.ID,
+        'Movimiento con CANTIDAD no positiva (' + m.CANTIDAD + ').',
+        'ERROR',
+        'La cantidad de un movimiento debe ser siempre positiva; el TIPO_MOVIMIENTO indica la direccion (entrada/salida/ajuste), no el signo de la cantidad.'
+      );
+    }
+  });
+}
+
 function detectarPersonaInactivaConAsignacionActiva_(agregar) {
   var personasPorId_ = {};
 
@@ -2639,6 +2659,14 @@ detectarDuplicidadesRelacionesMaterial_(
    * mismo registro (mismo tipo y mismo ID) como origen y destino.
    */
   detectarProblemasVinculo_(agregar);
+
+  /*
+   * FUNC-MOV-001
+   * Libro de movimientos de MATERIAL (MOVIMIENTO_MATERIAL): la cantidad
+   * de un movimiento siempre debe ser positiva; el TIPO_MOVIMIENTO
+   * indica la direccion, no un valor negativo.
+   */
+  detectarProblemasMovimientoMaterial_(agregar);
 
   /*
    * FUNC-REC-002
