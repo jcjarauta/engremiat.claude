@@ -166,11 +166,17 @@ El flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`, usad
 ## Fase L4 — Funcionalidades específicas de alto valor
 Se apoyan en los mecanismos de L1/L3 ya construidos:
 
-- **F-063 (crítica)** — `INCIDENCIA_TAREA` + botón "Crear tarea correctora". Usa L1.2 (grafo de relaciones) como base.
+- **F-063 (crítica) — CERRADA (2026-08-01)** — `INCIDENCIA_TAREA` + vínculo "Corrige". Opción A (recomendada, ampliar catálogo): en vez de un mecanismo nuevo, se amplió `CFG_TIPO_VINCULO` (DETECTADA_EN, CAUSADA_POR, CORRIGE, VERIFICA, PREVIENE) reutilizando VINCULO (L3.1), que ya soporta genéricamente INCIDENCIA→TAREA. Instalador `instalarTipoVinculoIncidencia`, test `probarIntegridadCatalogoTipoVinculoIncidenciaAmpliado` (OK, 15 valores), verificado en real con VIN-0002 (Proceso→Incidencia, Corrige, HIS-1285).
 - **F-015** — "Guardar y vincular" compuesto (PRODUCTO+PROYECTO_PRODUCTO), reutilizando `CORRELATION_ID`+reversión ya existente.
 - **F-093** — `PROVEEDOR_MATERIAL` N:M.
 
-**Estimación: 2-3 sesiones.**
+### Puntos 1 y 2 — CERRADOS (2026-08-01), fuera del backlog original
+Surgidos de una pregunta estratégica tras F-063: cómo automatizar orden de secuencia, predecesor y % de avance al crear la jerarquía de un proyecto. Se acordó construir ahora los puntos 1 y 2 y dejar el punto 3 (importación masiva de jerarquía completa) para la futura Fase L5.3, junto con la expansión del modelo de "personas/equipo" (pendiente de definir antes de esa fase).
+
+- **Punto 1 — "Recalcular avance de proceso"** (`AvanceYSecuencia.js`): acción de menú (Administración), disparada por un humano, no automática en el camino de escritura. Promedia `PORCENTAJE_AVANCE` de las TAREA activas no canceladas del proceso y solo escribe tras confirmación explícita. Verificado en real: PCS-0001 → 13%. Corregido en el camino un bug real: el `origen` pasado a `registrarHistorial` (`'MENU_RECALCULAR_AVANCE'`) no estaba en `ORIGENES_HISTORIAL_VALIDOS`; corregido a `'ADMIN'`.
+- **Punto 2 — Sugerencia de `ORDEN_SECUENCIA` y predecesor** al crear PROCESO/TAREA (`obtenerSugerenciaSecuencia` + `activarSugerenciasSecuencia_` en `FormularioGenerico.html`): precarga solo si el campo está vacío, nunca pisa un valor ya escrito. Alcance de agrupación confirmado: si el PROCESO tiene `PROYECTO_PRODUCTO_ID`, la secuencia se calcula solo entre los procesos de ese mismo contexto de proyecto, no entre todos los del producto maestro. **Verificación end-to-end aplazada**: al probarlo con PCS-0004 no quedó claro si el autorrelleno propuso el valor esperado (se registró orden=4 en vez del 2 esperado por el contexto PPR-0001, pero la prueba mezcló tecleo manual con el autorrelleno); pendiente de revisar con más cuidado en el repaso general de UX previo a L6, junto con la falta de visibilidad de "cuántas tareas tiene un proceso" / "cuántos productos tiene un proyecto" detectada en la misma prueba.
+
+**Estimación restante: 1-2 sesiones (F-015, F-093).**
 
 ---
 
