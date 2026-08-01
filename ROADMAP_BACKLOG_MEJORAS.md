@@ -191,6 +191,23 @@ Surgida al probar F-015: evitar tener que inventar y teclear a mano el `CODIGO` 
 
 ---
 
+### Expansión mínima de personas/equipos (F-046, F-049) — CERRADA (2026-08-01), prerrequisito de L5.3
+Antes de L5, se valoró una propuesta externa de jerarquía PERSONA→EQUIPO→GRUPO→RED. Se descartaron GRUPO/RED por ahora: ese principio (persona atómica, pertenencias como relaciones) ya está construido dos veces en el sistema (`ASIGNACION` polimórfico y `VINCULO` genérico), y ninguna fricción real (solo F-046/F-049, no F-052+) pide esos niveles — si algún día hace falta coordinar equipos o federar con entidades externas, `VINCULO` ya lo soporta sin tablas nuevas. Se confirmó explícitamente que esto no bloquea la carga masiva futura (L5.3): añadir GRUPO/RED después sería aditivo vía `VINCULO`, sin migrar los datos ya importados.
+
+Construido:
+- `PERSONA_EQUIPO.ROL` pasa de texto libre a catálogo `CFG_ROL_PERSONA` (7 valores + Otra); se añaden `EMAIL`, `TELEFONO`, `COORDINADOR_ID` (fk a sí misma).
+- `CFG_ROL_ASIGNACION` ampliado con matices RACI rescatados de la propuesta externa (Ejecutor, Consultado, Informado, Coordinador, Validador), reutilizando `ASIGNACION` tal cual.
+- Nueva entidad `EQUIPO_MIEMBRO` (`22_EQUIPO_MIEMBRO`, prefijo `EQM`): desglose de equipo (F-049) sin tocar `ASIGNACION`/`TAREA_RESPONSABLE`.
+- F-046 (selector no distinguía persona/equipo): la etiqueta de cualquier FK a `PERSONA_EQUIPO` ahora incluye el `TIPO`, ej. `"PER-0003 - Equipo de carpintería (Equipo)"`.
+
+Verificado en real: instalador OK, catálogos OK (7/9 valores), dryRun OK, alta real `PER-0003` (Equipo/Producción) + `EQM-0001` (PER-0003/PER-0001), etiqueta `(Equipo)`/`(Persona)` confirmada visualmente.
+
+Pendiente para una próxima iteración (nota del usuario): `ROL_EN_EQUIPO` debería normalizarse como catálogo — los equipos se configurarán según los roles necesarios para cumplir los objetivos de cada proyecto.
+
+No construido ahora (documentado para cuando una fricción real lo demande): `GRUPO`, `RED`, `COMPETENCIA`/`PERSONA_COMPETENCIA`, `PERSONA_DISPONIBILIDAD`, `PERSONA_PREFERENCIA`, `PERSONA_RESTRICCION` (esta última, si se aborda, requiere definir antes control de acceso y base legal — probablemente datos de categoría especial bajo RGPD en un contexto ocupacional).
+
+---
+
 ## Fase L5 — Bloques estructurales grandes (uno a la vez)
 Cada uno es del tamaño de una fase completa del roadmap original — no se abre el siguiente sin cerrar el anterior:
 
