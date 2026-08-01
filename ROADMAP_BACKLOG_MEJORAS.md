@@ -176,7 +176,18 @@ Surgidos de una pregunta estratégica tras F-063: cómo automatizar orden de sec
 - **Punto 1 — "Recalcular avance de proceso"** (`AvanceYSecuencia.js`): acción de menú (Administración), disparada por un humano, no automática en el camino de escritura. Promedia `PORCENTAJE_AVANCE` de las TAREA activas no canceladas del proceso y solo escribe tras confirmación explícita. Verificado en real: PCS-0001 → 13%. Corregido en el camino un bug real: el `origen` pasado a `registrarHistorial` (`'MENU_RECALCULAR_AVANCE'`) no estaba en `ORIGENES_HISTORIAL_VALIDOS`; corregido a `'ADMIN'`.
 - **Punto 2 — Sugerencia de `ORDEN_SECUENCIA` y predecesor** al crear PROCESO/TAREA (`obtenerSugerenciaSecuencia` + `activarSugerenciasSecuencia_` en `FormularioGenerico.html`): precarga solo si el campo está vacío, nunca pisa un valor ya escrito. Alcance de agrupación confirmado: si el PROCESO tiene `PROYECTO_PRODUCTO_ID`, la secuencia se calcula solo entre los procesos de ese mismo contexto de proyecto, no entre todos los del producto maestro. **Verificación end-to-end aplazada**: al probarlo con PCS-0004 no quedó claro si el autorrelleno propuso el valor esperado (se registró orden=4 en vez del 2 esperado por el contexto PPR-0001, pero la prueba mezcló tecleo manual con el autorrelleno); pendiente de revisar con más cuidado en el repaso general de UX previo a L6, junto con la falta de visibilidad de "cuántas tareas tiene un proceso" / "cuántos productos tiene un proyecto" detectada en la misma prueba.
 
-**Estimación restante: 1-2 sesiones (F-015, F-093).**
+### Sugerencia automática de CÓDIGO — CERRADA (2026-08-01), fuera del backlog original
+Surgida al probar F-015: evitar tener que inventar y teclear a mano el `CODIGO` de PRODUCTO/MATERIAL/PROVEEDOR, normalizándolo. `GeneracionCodigo.js` (`obtenerSugerenciaCodigo` + `activarSugerenciasCodigo_` en `FormularioGenerico.html`), mismo patrón que la sugerencia de orden/predecesor: precarga el campo (sigue siendo texto libre y editable) solo si está vacío.
+
+- **PRODUCTO**: `{3 letras ORIGEN}-{4 letras NOMBRE}-{inicial PRIORIDAD}-{correlativo}`.
+- **MATERIAL**: `{3 letras CATEGORIA}-{4 letras NOMBRE}-{correlativo}`.
+- **PROVEEDOR**: `{4 letras NOMBRE}-{correlativo}`.
+- Las siglas de NOMBRE ignoran la palabra genérica que repite el nombre de la entidad (ej. "PRODUCTO" en "PRODUCTO_PRUEBA"). Las siglas de un valor de catálogo (ORIGEN/CATEGORIA/PRIORIDAD) se toman de su **última palabra**, no de las primeras letras del texto completo — corrige una colisión real detectada en pruebas: "Pedido interno"/"Pedido externo" daban ambos "PED" con las 3 primeras letras; con la última palabra dan "INT"/"EXT".
+- Correlativo global por entidad (mayor sufijo numérico ya usado en `CODIGO` de esa entidad, +1).
+- Verificado en real: PRD-0003 (`PED-CALE-A-002`, antes del fix) y PRD-0005 (`EXT-CALE-B-002`, Pedido externo, tras el fix).
+- Nota del usuario tras la verificación: mejoras generales de UX/UI de los diálogos, sin alcance definido aún — se suma al repaso general de UX ya anotado más arriba (previo a L6).
+
+**Estimación restante: 0.5-1 sesión (F-093).**
 
 ---
 
