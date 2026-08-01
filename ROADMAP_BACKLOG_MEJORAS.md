@@ -163,12 +163,12 @@ El flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`, usad
 
 ---
 
-## Fase L4 — Funcionalidades específicas de alto valor
+## Fase L4 — Funcionalidades específicas de alto valor — CERRADA POR COMPLETO (2026-08-01)
 Se apoyan en los mecanismos de L1/L3 ya construidos:
 
 - **F-063 (crítica) — CERRADA (2026-08-01)** — `INCIDENCIA_TAREA` + vínculo "Corrige". Opción A (recomendada, ampliar catálogo): en vez de un mecanismo nuevo, se amplió `CFG_TIPO_VINCULO` (DETECTADA_EN, CAUSADA_POR, CORRIGE, VERIFICA, PREVIENE) reutilizando VINCULO (L3.1), que ya soporta genéricamente INCIDENCIA→TAREA. Instalador `instalarTipoVinculoIncidencia`, test `probarIntegridadCatalogoTipoVinculoIncidenciaAmpliado` (OK, 15 valores), verificado en real con VIN-0002 (Proceso→Incidencia, Corrige, HIS-1285).
 - **F-015 — CERRADA (2026-08-01)** — "Guardar y vincular" compuesto (PRODUCTO+PROYECTO_PRODUCTO). Tras crear un PRODUCTO nuevo, el mismo diálogo ofrece vincularlo ya a un proyecto sin cerrarse, reutilizando el formulario genérico de PROYECTO_PRODUCTO y compartiendo el mismo `CORRELATION_ID` de historial entre ambas escrituras (`guardarFormulario` ahora acepta un `correlationId` opcional). Verificado en real: PRD-0003+PPR-0003 (flujo "Vincular", mismo `CORRELATION_ID` en HIS-1287/HIS-1288) y PRD-0004 (flujo "Omitir", sin vínculo).
-- **F-093** — `PROVEEDOR_MATERIAL` N:M.
+- **F-093 — CERRADA (2026-08-01)** — `PROVEEDOR_MATERIAL` N:M, alcance mínimo confirmado (igual que PRODUCTO_MATERIAL/TAREA_MATERIAL): `PROVEEDOR_ID`, `MATERIAL_ID`, `PRECIO_UNITARIO`, `PLAZO_ENTREGA_DIAS`, `ES_PREFERENTE`, `ESTADO`, `OBSERVACIONES`. Sin las tarifas versionadas/moneda/homologación/vigencias de la propuesta completa (`PROPUESTA_PROVEEDOR_ALTA.md`), que quedan cubiertas por sus propias fricciones ya numeradas (F-092, F-094, F-096, F-097, F-098). Nueva hoja `21_PROVEEDOR_MATERIAL` (prefijo `PRM`), reutiliza `CFG_ESTADO_RELACION`. Verificado en real: instalador OK, dryRun OK (PRM-0001), alta real PRM-0001 (PRV-0005/MAT-0004, HIS-1291) y rechazo correcto del duplicado PROVEEDOR_ID+MATERIAL_ID.
 
 ### Puntos 1 y 2 — CERRADOS (2026-08-01), fuera del backlog original
 Surgidos de una pregunta estratégica tras F-063: cómo automatizar orden de secuencia, predecesor y % de avance al crear la jerarquía de un proyecto. Se acordó construir ahora los puntos 1 y 2 y dejar el punto 3 (importación masiva de jerarquía completa) para la futura Fase L5.3, junto con la expansión del modelo de "personas/equipo" (pendiente de definir antes de esa fase).
@@ -187,7 +187,7 @@ Surgida al probar F-015: evitar tener que inventar y teclear a mano el `CODIGO` 
 - Verificado en real: PRD-0003 (`PED-CALE-A-002`, antes del fix) y PRD-0005 (`EXT-CALE-B-002`, Pedido externo, tras el fix).
 - Nota del usuario tras la verificación: mejoras generales de UX/UI de los diálogos, sin alcance definido aún — se suma al repaso general de UX ya anotado más arriba (previo a L6).
 
-**Estimación restante: 0.5-1 sesión (F-093).**
+**Fase L4 cerrada por completo.** Siguiente: Fase L5 (bloques estructurales grandes, uno a la vez).
 
 ---
 
