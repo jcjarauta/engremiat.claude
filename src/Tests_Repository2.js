@@ -14787,6 +14787,302 @@ function probarIntegridadEdicionSinCambiarClaveForaneaNoSeRompe() {
 }
 
 
+function probarIntegridadCatalogosPedidoRecepcionAmpliados() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CATALOGOS_PEDIDO_RECEPCION_AMPLIADOS';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var comprobaciones = [
+    {
+      catalogo: 'CFG_ESTADO_PEDIDO_PROVEEDOR',
+      esperados: ['Borrador', 'Enviado', 'Confirmado', 'Recibido parcial', 'Recibido completo', 'Cancelado']
+    },
+    {
+      catalogo: 'CFG_ESTADO_RECEPCION',
+      esperados: ['Borrador', 'Confirmada', 'Cancelada']
+    }
+  ];
+
+  comprobaciones.forEach(function (comprobacion) {
+    var valores = obtenerCatalogo(comprobacion.catalogo);
+
+    comprobacion.esperados.forEach(function (valor) {
+      if (valores.indexOf(valor) === -1) {
+        throw new Error(
+          'CATALOGO_PEDIDO_RECEPCION_TEST_ERROR: falta "' + valor + '" en ' + comprobacion.catalogo +
+            ' (valores actuales: ' + valores.join(', ') + ')'
+        );
+      }
+    });
+
+    console.log('OK ' + comprobacion.catalogo + '_completo=true valores=' + valores.length);
+  });
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaPedidoProveedorDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_PEDIDO_PROVEEDOR_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proveedor =
+    listarRegistros(
+      'PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proveedor) {
+    throw new Error(
+      'ALTA_PEDIDO_PROVEEDOR_DRYRUN_TEST_ERROR: no existe ningún PROVEEDOR activo utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'PEDIDO_PROVEEDOR',
+      {
+        PROVEEDOR_ID: proveedor.ID,
+        FECHA_PEDIDO: new Date(),
+        ESTADO: 'Borrador'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_PEDIDO_PROVEEDOR_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaPedidoProveedorLineaDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_PEDIDO_PROVEEDOR_LINEA_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var pedido =
+    listarRegistros(
+      'PEDIDO_PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var material =
+    listarRegistros(
+      'MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!pedido || !material) {
+    console.log(
+      'OK sin_pedido_o_material_activo_para_probar=true (se omite: requiere al menos un PEDIDO_PROVEEDOR y un MATERIAL reales)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'PEDIDO_PROVEEDOR_LINEA',
+      {
+        PEDIDO_PROVEEDOR_ID: pedido.ID,
+        MATERIAL_ID: material.ID,
+        CANTIDAD_PEDIDA: 10,
+        PRECIO_UNITARIO: 2.5,
+        UNIDAD: material.UNIDAD,
+        ESTADO: 'Activa'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_PEDIDO_PROVEEDOR_LINEA_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaRecepcionDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_RECEPCION_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var pedido =
+    listarRegistros(
+      'PEDIDO_PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!pedido) {
+    console.log(
+      'OK sin_pedido_activo_para_probar=true (se omite: requiere al menos un PEDIDO_PROVEEDOR real)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'RECEPCION',
+      {
+        PEDIDO_PROVEEDOR_ID: pedido.ID,
+        FECHA_RECEPCION: new Date(),
+        ESTADO: 'Borrador'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_RECEPCION_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadAltaRecepcionLineaDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_RECEPCION_LINEA_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var recepcion =
+    listarRegistros(
+      'RECEPCION',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var material =
+    listarRegistros(
+      'MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!recepcion || !material) {
+    console.log(
+      'OK sin_recepcion_o_material_activo_para_probar=true (se omite: requiere al menos una RECEPCION y un MATERIAL reales)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'RECEPCION_LINEA',
+      {
+        RECEPCION_ID: recepcion.ID,
+        MATERIAL_ID: material.ID,
+        CANTIDAD_RECIBIDA: 10,
+        UNIDAD: material.UNIDAD,
+        ESTADO: 'Activa'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_RECEPCION_LINEA_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

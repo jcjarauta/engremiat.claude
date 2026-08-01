@@ -178,6 +178,35 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'RECURSO_ID',
     'TIPO_USO',
     'ESTADO'
+  ]),
+
+  PEDIDO_PROVEEDOR: Object.freeze([
+    'PROVEEDOR_ID',
+    'FECHA_PEDIDO',
+    'ESTADO'
+  ]),
+
+  PEDIDO_PROVEEDOR_LINEA: Object.freeze([
+    'PEDIDO_PROVEEDOR_ID',
+    'MATERIAL_ID',
+    'CANTIDAD_PEDIDA',
+    'PRECIO_UNITARIO',
+    'UNIDAD',
+    'ESTADO'
+  ]),
+
+  RECEPCION: Object.freeze([
+    'PEDIDO_PROVEEDOR_ID',
+    'FECHA_RECEPCION',
+    'ESTADO'
+  ]),
+
+  RECEPCION_LINEA: Object.freeze([
+    'RECEPCION_ID',
+    'MATERIAL_ID',
+    'CANTIDAD_RECIBIDA',
+    'UNIDAD',
+    'ESTADO'
   ])
 });
 

@@ -92,7 +92,9 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO'],
   PROVEEDOR_MATERIAL: ['PROVEEDOR_ID', 'MATERIAL_ID'],
   EQUIPO_MIEMBRO: ['EQUIPO_ID', 'MIEMBRO_ID'],
-  TAREA_RECURSO: ['TAREA_ID', 'RECURSO_ID']
+  TAREA_RECURSO: ['TAREA_ID', 'RECURSO_ID'],
+  PEDIDO_PROVEEDOR_LINEA: ['PEDIDO_PROVEEDOR_ID', 'MATERIAL_ID'],
+  RECEPCION_LINEA: ['RECEPCION_ID', 'MATERIAL_ID']
 });
 
 
@@ -389,6 +391,48 @@ PROYECTO: [
     { campo: 'TIPO_USO', etiqueta: 'Tipo de uso', tipo: 'catalogo', catalogo: 'CFG_TIPO_USO_RECURSO', requerido: true },
     { campo: 'FECHA_INICIO', etiqueta: 'Fecha inicio', tipo: 'fecha' },
     { campo: 'FECHA_FIN', etiqueta: 'Fecha fin', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Fase L5.2 -- alcance minimo confirmado: solo Pedido + Recepcion,
+   * sin SOLICITUD_COMPRA (peticion interna previa) ni DEVOLUCION_PROVEEDOR
+   * todavia. La recepcion actualiza inventario reutilizando MOVIMIENTO_MATERIAL
+   * (L3.3), no escribe MATERIAL.STOCK_ACTUAL directamente -- ver
+   * confirmarRecepcion_ en PedidoRecepcion.js (accion de menu, disparada
+   * por un humano, no automatica al guardar una linea de recepcion).
+   */
+  PEDIDO_PROVEEDOR: [
+    { campo: 'PROVEEDOR_ID', etiqueta: 'Proveedor', tipo: 'fk', entidadFk: 'PROVEEDOR', requerido: true, excluirEstados: ['Inactivo', 'Bloqueado'] },
+    { campo: 'FECHA_PEDIDO', etiqueta: 'Fecha del pedido', tipo: 'fecha', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PEDIDO_PROVEEDOR', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  PEDIDO_PROVEEDOR_LINEA: [
+    { campo: 'PEDIDO_PROVEEDOR_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_PROVEEDOR', requerido: true, excluirEstados: ['Recibido completo', 'Cancelado'] },
+    { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
+    { campo: 'CANTIDAD_PEDIDA', etiqueta: 'Cantidad pedida', tipo: 'numero', requerido: true },
+    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true },
+    { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  RECEPCION: [
+    { campo: 'PEDIDO_PROVEEDOR_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_PROVEEDOR', requerido: true, excluirEstados: ['Recibido completo', 'Cancelado'] },
+    { campo: 'FECHA_RECEPCION', etiqueta: 'Fecha de recepción', tipo: 'fecha', requerido: true },
+    { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECEPCION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  RECEPCION_LINEA: [
+    { campo: 'RECEPCION_ID', etiqueta: 'Recepción', tipo: 'fk', entidadFk: 'RECEPCION', requerido: true },
+    { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
+    { campo: 'CANTIDAD_RECIBIDA', etiqueta: 'Cantidad recibida', tipo: 'numero', requerido: true },
+    { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -1907,6 +1951,8 @@ function onOpen() {
         .addItem('Recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
         .addItem('Persona/Equipo', 'abrirFormularioCrearPersonaEquipo')
         .addItem('Proveedor', 'abrirFormularioCrearProveedor')
+        .addItem('Pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
+        .addItem('Recepción de pedido', 'abrirFormularioCrearRecepcion')
         .addItem('Decisión', 'abrirFormularioCrearDecision')
         .addItem('Incidencia', 'abrirFormularioCrearIncidencia')
         .addItem('Documento', 'abrirFormularioCrearDocumento')
@@ -1922,6 +1968,8 @@ function onOpen() {
         .addItem('Recurso', 'abrirEditarRecurso')
         .addItem('Persona/Equipo', 'abrirEditarPersonaEquipo')
         .addItem('Proveedor', 'abrirEditarProveedor')
+        .addItem('Pedido a proveedor', 'abrirEditarPedidoProveedor')
+        .addItem('Recepción de pedido', 'abrirEditarRecepcion')
         .addItem('Decisión', 'abrirEditarDecision')
         .addItem('Incidencia', 'abrirEditarIncidencia')
         .addItem('Documento', 'abrirEditarDocumento')
@@ -1937,6 +1985,8 @@ function onOpen() {
         .addItem('Proveedor-Material', 'abrirEditarProveedorMaterial')
         .addItem('Equipo-Miembro', 'abrirEditarEquipoMiembro')
         .addItem('Tarea-Recurso', 'abrirEditarTareaRecurso')
+        .addItem('Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
+        .addItem('Recepción-Línea', 'abrirEditarRecepcionLinea')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1952,6 +2002,8 @@ function onOpen() {
         .addItem('Proveedor - Material', 'abrirFormularioCrearProveedorMaterial')
         .addItem('Equipo - Miembro', 'abrirFormularioCrearEquipoMiembro')
         .addItem('Tarea - Recurso', 'abrirFormularioCrearTareaRecurso')
+        .addItem('Pedido - Línea', 'abrirFormularioCrearPedidoProveedorLinea')
+        .addItem('Recepción - Línea', 'abrirFormularioCrearRecepcionLinea')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1966,6 +2018,7 @@ function onOpen() {
         .addItem('Historial', 'abrirHistorialAdmin')
         .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
         .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
+        .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
     )
     .addToUi();
 }
@@ -2019,11 +2072,24 @@ function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'N
  * que FormularioGenerico.html.
  */
 function abrirEditarRegistroPorEntidad_(entidad, etiqueta) {
+  abrirSelectorConAccion_(entidad, 'Editar ' + etiqueta, 'seleccionarYAbrirEdicion', 'obtenerOpcionesEntidadParaSelector');
+}
+
+/*
+ * Generaliza el selector con buscador (nacido en "Editar registro",
+ * L3.5/L5.1) para cualquier flujo "elige un registro y luego haz X":
+ * abrirConfirmarRecepcion lo reutiliza para no volver a pedir el ID a
+ * memoria con un ui.prompt() (mismo hueco senalado por el usuario al
+ * verificar L5.2).
+ */
+function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn) {
   var template = HtmlService.createTemplateFromFile('SelectorRegistro');
   template.entidad = entidad;
-  template.titulo = etiqueta;
+  template.titulo = tituloVentana;
+  template.accionFn = accionFn;
+  template.opcionesFn = opcionesFn;
   var html = template.evaluate().setWidth(380).setHeight(220);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Editar ' + etiqueta);
+  SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
 
 function obtenerOpcionesEntidadParaSelector(entidad) {
@@ -2077,6 +2143,10 @@ function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEE
 function abrirEditarEquipoMiembro() { abrirEditarRegistroPorEntidad_('EQUIPO_MIEMBRO', 'Equipo-Miembro'); }
 function abrirEditarRecurso() { abrirEditarRegistroPorEntidad_('RECURSO', 'Recurso'); }
 function abrirEditarTareaRecurso() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO', 'Tarea-Recurso'); }
+function abrirEditarPedidoProveedor() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR', 'Pedido a proveedor'); }
+function abrirEditarPedidoProveedorLinea() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR_LINEA', 'Pedido-Línea'); }
+function abrirEditarRecepcion() { abrirEditarRegistroPorEntidad_('RECEPCION', 'Recepción de pedido'); }
+function abrirEditarRecepcionLinea() { abrirEditarRegistroPorEntidad_('RECEPCION_LINEA', 'Recepción-Línea'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -2094,6 +2164,10 @@ function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEE
 function abrirFormularioCrearEquipoMiembro() { abrirFormularioCrear_('EQUIPO_MIEMBRO', 'Nueva relación equipo-miembro'); }
 function abrirFormularioCrearRecurso() { abrirFormularioCrear_('RECURSO', 'Nuevo recurso'); }
 function abrirFormularioCrearTareaRecurso() { abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso'); }
+function abrirFormularioCrearPedidoProveedor() { abrirFormularioCrear_('PEDIDO_PROVEEDOR', 'Nuevo pedido a proveedor'); }
+function abrirFormularioCrearPedidoProveedorLinea() { abrirFormularioCrear_('PEDIDO_PROVEEDOR_LINEA', 'Nueva línea de pedido'); }
+function abrirFormularioCrearRecepcion() { abrirFormularioCrear_('RECEPCION', 'Nueva recepción de pedido'); }
+function abrirFormularioCrearRecepcionLinea() { abrirFormularioCrear_('RECEPCION_LINEA', 'Nueva línea de recepción'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

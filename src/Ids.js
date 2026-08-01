@@ -94,6 +94,22 @@ const ENTIDADES_MVP = Object.freeze({
   TAREA_RECURSO: Object.freeze({
     hoja: '24_TAREA_RECURSO',
     prefijo: 'TRC'
+  }),
+  PEDIDO_PROVEEDOR: Object.freeze({
+    hoja: '25_PEDIDO_PROVEEDOR',
+    prefijo: 'PED'
+  }),
+  PEDIDO_PROVEEDOR_LINEA: Object.freeze({
+    hoja: '26_PEDIDO_PROVEEDOR_LINEA',
+    prefijo: 'PPL'
+  }),
+  RECEPCION: Object.freeze({
+    hoja: '27_RECEPCION',
+    prefijo: 'RCP'
+  }),
+  RECEPCION_LINEA: Object.freeze({
+    hoja: '28_RECEPCION_LINEA',
+    prefijo: 'RCL'
   })
 });
 
