@@ -243,7 +243,16 @@ PROYECTO: [
     { campo: 'MODO_USO', etiqueta: 'Modo de uso', tipo: 'catalogo', catalogo: 'CFG_MODO_USO' },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
-    { campo: 'ORDEN_SECUENCIA', etiqueta: 'Orden de secuencia', tipo: 'numero', requerido: true },
+    {
+      campo: 'ORDEN_SECUENCIA',
+      etiqueta: 'Orden de secuencia',
+      tipo: 'numero',
+      requerido: true,
+      sugerenciaSecuencia: {
+        camposContexto: ['PROYECTO_PRODUCTO_ID', 'PRODUCTO_ID'],
+        campoPredecesor: 'PROCESO_PREDECESOR_ID'
+      }
+    },
     { campo: 'PROCESO_PREDECESOR_ID', etiqueta: 'Proceso predecesor', tipo: 'fk', entidadFk: 'PROCESO' },
     { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true },
     { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
@@ -266,7 +275,16 @@ PROYECTO: [
     { campo: 'PROCESO_ID', etiqueta: 'Proceso', tipo: 'fk', entidadFk: 'PROCESO', requerido: true },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
-    { campo: 'ORDEN_SECUENCIA', etiqueta: 'Orden de secuencia', tipo: 'numero', requerido: true },
+    {
+      campo: 'ORDEN_SECUENCIA',
+      etiqueta: 'Orden de secuencia',
+      tipo: 'numero',
+      requerido: true,
+      sugerenciaSecuencia: {
+        camposContexto: ['PROCESO_ID'],
+        campoPredecesor: 'TAREA_PREDECESORA_ID'
+      }
+    },
     { campo: 'TAREA_PREDECESORA_ID', etiqueta: 'Tarea predecesora', tipo: 'fk', entidadFk: 'TAREA' },
     { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true },
     { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
@@ -1719,6 +1737,7 @@ function onOpen() {
         .addItem('Integridad', 'abrirIntegridad')
         .addItem('Historial', 'abrirHistorialAdmin')
         .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
+        .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
     )
     .addToUi();
 }

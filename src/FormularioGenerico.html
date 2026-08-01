@@ -190,6 +190,55 @@
       });
     }
 
+    /*
+     * Fase L4: sugiere ORDEN_SECUENCIA y predecesor al crear un PROCESO
+     * o TAREA nuevos, cuando el usuario elige el campo de contexto
+     * (producto/proyecto-producto o proceso). Nunca pisa un valor que
+     * el usuario ya haya escrito.
+     */
+    function activarSugerenciasSecuencia_() {
+      esquemaActual.forEach(function (campo) {
+        if (!campo.sugerenciaSecuencia) return;
+        var elOrden = document.getElementById("campo_" + campo.campo);
+        var camposContexto = campo.sugerenciaSecuencia.camposContexto;
+        var campoPredecesor = campo.sugerenciaSecuencia.campoPredecesor;
+        if (!elOrden) return;
+
+        var actualizar = function () {
+          if (elOrden.value) return;
+          var contexto = {};
+          var hayContexto = false;
+          camposContexto.forEach(function (nombreCampo) {
+            var el = document.getElementById("campo_" + nombreCampo);
+            contexto[nombreCampo] = el ? el.value : "";
+            if (contexto[nombreCampo]) hayContexto = true;
+          });
+          if (!hayContexto) return;
+
+          google.script.run
+            .withSuccessHandler(function (sugerencia) {
+              if (!sugerencia || sugerencia.ordenSugerido === null || sugerencia.ordenSugerido === undefined) return;
+              if (!elOrden.value) elOrden.value = sugerencia.ordenSugerido;
+              if (campoPredecesor && sugerencia.predecesorId) {
+                var elPredOculto = document.getElementById("campo_" + campoPredecesor);
+                var elPredTexto = document.getElementById("campo_" + campoPredecesor + "_texto");
+                if (elPredOculto && !elPredOculto.value) {
+                  elPredOculto.value = sugerencia.predecesorId;
+                  if (elPredTexto) elPredTexto.value = sugerencia.predecesorEtiqueta;
+                }
+              }
+            })
+            .withFailureHandler(function () { /* sugerencia opcional: fallo silencioso */ })
+            .obtenerSugerenciaSecuencia(ENTIDAD, contexto);
+        };
+
+        camposContexto.forEach(function (nombreCampo) {
+          var el = document.getElementById("campo_" + nombreCampo);
+          if (el) el.addEventListener("change", actualizar);
+        });
+      });
+    }
+
     function cargarEsquema() {
       google.script.run
         .withSuccessHandler(function (esquema) {
@@ -216,6 +265,7 @@
           activarVisibilidadCondicional_();
           activarBuscadoresFk_();
           activarDependenciasFk_();
+          activarSugerenciasSecuencia_();
           esquema.forEach(function (campo) {
             if (campo.tipo === "fk_dependiente") {
               var elPadre = document.getElementById("campo_" + campo.dependeDe);
