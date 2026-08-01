@@ -218,7 +218,13 @@ PROYECTO: [
 ],
 
   PRODUCTO: [
-    { campo: 'CODIGO', etiqueta: 'Código', tipo: 'texto', requerido: true },
+    {
+      campo: 'CODIGO',
+      etiqueta: 'Código',
+      tipo: 'texto',
+      requerido: true,
+      sugerenciaCodigo: { camposContexto: ['ORIGEN', 'NOMBRE', 'PRIORIDAD'] }
+    },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
     { campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto' },
@@ -328,7 +334,13 @@ PROYECTO: [
   ],
 
   MATERIAL: [
-    { campo: 'CODIGO', etiqueta: 'Código', tipo: 'texto', requerido: true },
+    {
+      campo: 'CODIGO',
+      etiqueta: 'Código',
+      tipo: 'texto',
+      requerido: true,
+      sugerenciaCodigo: { camposContexto: ['CATEGORIA', 'NOMBRE'] }
+    },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'CATEGORIA', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_MATERIAL', requerido: true },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
@@ -372,7 +384,13 @@ PROYECTO: [
   ],
 
   PROVEEDOR: [
-    { campo: 'CODIGO', etiqueta: 'Código', tipo: 'texto', requerido: true },
+    {
+      campo: 'CODIGO',
+      etiqueta: 'Código',
+      tipo: 'texto',
+      requerido: true,
+      sugerenciaCodigo: { camposContexto: ['NOMBRE'] }
+    },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'NIF_CIF', etiqueta: 'NIF / CIF', tipo: 'texto' },
     { campo: 'PERSONA_CONTACTO', etiqueta: 'Persona de contacto', tipo: 'texto' },

@@ -239,6 +239,47 @@
       });
     }
 
+    /*
+     * Ampliacion tras F-015: sugiere el CODIGO de PRODUCTO/MATERIAL/
+     * PROVEEDOR a partir de siglas de campos ya elegidos (ver
+     * GeneracionCodigo.js), cuando cambian esos campos de contexto.
+     * Mismo patron que activarSugerenciasSecuencia_: nunca pisa un
+     * CODIGO que el usuario ya haya escrito.
+     */
+    function activarSugerenciasCodigo_() {
+      esquemaActual.forEach(function (campo) {
+        if (!campo.sugerenciaCodigo) return;
+        var elCodigo = document.getElementById("campo_" + campo.campo);
+        var camposContexto = campo.sugerenciaCodigo.camposContexto;
+        if (!elCodigo) return;
+
+        var actualizar = function () {
+          if (elCodigo.value) return;
+          var contexto = {};
+          var hayContexto = false;
+          camposContexto.forEach(function (nombreCampo) {
+            var el = document.getElementById("campo_" + nombreCampo);
+            contexto[nombreCampo] = el ? el.value : "";
+            if (contexto[nombreCampo]) hayContexto = true;
+          });
+          if (!hayContexto) return;
+
+          google.script.run
+            .withSuccessHandler(function (sugerencia) {
+              if (!sugerencia || !sugerencia.codigoSugerido) return;
+              if (!elCodigo.value) elCodigo.value = sugerencia.codigoSugerido;
+            })
+            .withFailureHandler(function () { /* sugerencia opcional: fallo silencioso */ })
+            .obtenerSugerenciaCodigo(ENTIDAD, contexto);
+        };
+
+        camposContexto.forEach(function (nombreCampo) {
+          var el = document.getElementById("campo_" + nombreCampo);
+          if (el) el.addEventListener("change", actualizar);
+        });
+      });
+    }
+
     function cargarEsquema() {
       google.script.run
         .withSuccessHandler(function (esquema) {
@@ -266,6 +307,7 @@
           activarBuscadoresFk_();
           activarDependenciasFk_();
           activarSugerenciasSecuencia_();
+          activarSugerenciasCodigo_();
           esquema.forEach(function (campo) {
             if (campo.tipo === "fk_dependiente") {
               var elPadre = document.getElementById("campo_" + campo.dependeDe);
