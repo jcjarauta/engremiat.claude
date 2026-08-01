@@ -128,15 +128,24 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Alcance**: la necesidad anotada en `PROPUESTA_TAREA_ALTA.md` y F-086 quedan con el mecanismo disponible como registro paralelo — no se integró todavía con `TAREA_MATERIAL` (vincular el consumo de material a una ejecución concreta en vez de a la definición de la tarea), que sigue pendiente como trabajo futuro fuera de "cambios mínimos" de esta fase.
 
-### L3.5 — Buscador/filtro en selectores FK
-Patrón de UI, no de datos — aplicable a todos los `<select>` del sistema.
-Resuelve: F-021, F-050, F-062, selector de PROVEEDOR.
+### L3.5 — Buscador/filtro en selectores FK ✅ CERRADA (2026-08-01)
+
+**Construido** (`FormularioGenerico.html`, solo cliente, sin tocar datos ni esquema): los campos `fk`/`fk_dependiente` pasan de `<select>` con todas las opciones a un `<input>` de texto con `<datalist>` nativo del navegador (sin librerías externas) que filtra mientras se escribe, más un `<input type="hidden">` con el ID real — el ID se extrae del texto mostrado ("ID - nombre") sin llamada adicional al servidor. `activarDependenciasFk_`/`aplicarVisibilidad_` siguen funcionando sin cambios porque el oculto conserva el mismo `id` que antes tenía el `<select>` y dispara `change`.
+
+**Bug corregido de paso**: `tipo: 'textarea'` nunca estaba implementado en `renderCampo` — caía al mismo `<input>` de una línea que `tipo: 'texto'`. Los campos añadidos como `textarea` en L1.3 (`CRITERIOS_ACEPTACION`, `DEFINITION_OF_DONE`, y los ya existentes de DECISION) no tenían ningún efecto visual real hasta esta fase.
+
+**Verificado en la UI real** (mayor radio de impacto que cualquier fase anterior — afecta a todos los formularios a la vez, por eso se pidió una verificación más amplia de lo habitual): alta real con FK simple (`TAR-0005`, buscador de Proceso filtrando, `HIS-1282`), alta real con FK dependiente (`DOC-0003`, Tipo de entidad→Registro, `HIS-1283`), edición de un registro existente con el buscador precargado correctamente con "ID - nombre" (no vacío), y confirmación visual de que los `textarea` ahora son cajas de varias líneas.
+
+**Hallazgo nuevo, fuera del alcance original de esta fase (no resuelto aquí)**: el flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`) sigue usando un `ui.prompt()` nativo que exige escribir el ID exacto a ciegas, sin buscador — mismo problema de fondo (F-021/F-050/F-062 eran sobre desplegables *dentro* de un formulario, este es sobre el *punto de entrada* antes de abrir el formulario). El usuario decidió explícitamente registrarlo y no abordarlo en esta fase; queda pendiente para una ronda futura, candidato natural a reutilizar el mismo patrón de `<datalist>`.
 
 ### L3.6 — Avance derivado vs. manual
 `METODO_CALCULO_AVANCE` en PROCESO y TAREA.
 Resuelve: F-029, F-039.
 
 **Estimación: 4-6 sesiones (uno por submódulo).**
+
+### Pendiente nuevo detectado durante L3.5 (sin número F-, fuera del backlog original)
+El flujo **"Editar registro"** del menú (`abrirEditarRegistroPorEntidad_`, usado por todas las entidades) sigue pidiendo el ID exacto mediante un `ui.prompt()` nativo, sin buscador — mismo problema de fondo que F-021/F-050/F-062, pero en el punto de entrada antes de abrir el formulario, no en un desplegable dentro de él. Detectado al verificar L3.5, registrado explícitamente para no abordarlo en esa fase. Candidato natural: reutilizar el mismo patrón de `<datalist>` ya construido, mostrando una lista buscable de registros activos antes de abrir el formulario de edición.
 
 ---
 

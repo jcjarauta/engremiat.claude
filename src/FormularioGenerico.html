@@ -6,7 +6,8 @@
     body { font-family: Arial, sans-serif; font-size: 13px; padding: 12px; }
     h3 { margin-top: 0; }
     label { display: block; margin-top: 10px; font-weight: bold; }
-    input, select { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; }
+    input, select, textarea { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; font-family: inherit; }
+    textarea { resize: vertical; }
     #mensaje { margin-top: 12px; font-weight: bold; min-height: 18px; }
     #mensaje.error { color: #b00020; }
     #mensaje.ok { color: #1a7f37; }
@@ -27,27 +28,57 @@
     var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
     var esquemaActual = [];
 
+    function escaparAtributo_(texto) {
+      return String(texto == null ? "" : texto)
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    /*
+     * Buscador de FK (Fase L3.5): en vez de un <select> con todas las
+     * opciones, un <input> de texto con <datalist> nativo del navegador
+     * (sin librerias externas) que filtra mientras se escribe, mas un
+     * <input type="hidden"> que guarda el ID real. La etiqueta siempre
+     * tiene el formato "ID - nombre", asi que el ID se puede extraer del
+     * texto escrito sin necesidad de una llamada adicional al servidor.
+     */
+    function renderBuscadorFk_(id, opciones, esDependiente) {
+      var datalistId = id + "_lista";
+      var placeholder = esDependiente ? "-- seleccione primero --" : "Escribe para buscar...";
+      var deshabilitado = esDependiente ? " disabled" : "";
+      var html = "<input type=\"text\" id=\"" + id + "_texto\" list=\"" + datalistId + "\" autocomplete=\"off\" placeholder=\"" + placeholder + "\"" + deshabilitado + ">";
+      html += "<datalist id=\"" + datalistId + "\">";
+      (opciones || []).forEach(function (op) {
+        html += "<option value=\"" + escaparAtributo_(op.etiqueta) + "\">";
+      });
+      html += "</datalist>";
+      html += "<input type=\"hidden\" id=\"" + id + "\" value=\"\">";
+      return html;
+    }
+
     function renderCampo(campo) {
       var id = "campo_" + campo.campo;
       var claseOculto = campo.visibleSi ? " campo-oculto" : "";
       var html = "<div class=\"campo-contenedor" + claseOculto + "\" id=\"contenedor_" + id + "\" data-campo=\"" + campo.campo + "\">";
       html += "<label for=\"" + id + "\">" + campo.etiqueta + (campo.requerido ? " *" : "") + "</label>";
-      if (campo.tipo === "catalogo" || campo.tipo === "fk") {
+      if (campo.tipo === "catalogo") {
         html += "<select id=\"" + id + "\"><option value=\"\">-- seleccionar --</option>";
         campo.opciones.forEach(function (op) {
-          if (campo.tipo === "fk") {
-            html += "<option value=\"" + op.id + "\">" + op.etiqueta + "</option>";
-          } else {
-            html += "<option value=\"" + op + "\">" + op + "</option>";
-          }
+          html += "<option value=\"" + escaparAtributo_(op) + "\">" + op + "</option>";
         });
         html += "</select>";
+      } else if (campo.tipo === "fk") {
+        html += renderBuscadorFk_(id, campo.opciones, false);
       } else if (campo.tipo === "fk_dependiente") {
-        html += "<select id=\"" + id + "\" disabled><option value=\"\">-- seleccione primero " + campo.dependeDe + " --</option></select>";
+        html += renderBuscadorFk_(id, [], true);
       } else if (campo.tipo === "fecha") {
         html += "<input type=\"date\" id=\"" + id + "\">";
       } else if (campo.tipo === "numero") {
         html += "<input type=\"number\" id=\"" + id + "\">";
+      } else if (campo.tipo === "textarea") {
+        html += "<textarea id=\"" + id + "\" rows=\"4\"></textarea>";
       } else {
         html += "<input type=\"text\" id=\"" + id + "\">";
       }
@@ -79,28 +110,69 @@
       });
     }
 
+    function extraerIdDeEtiqueta_(texto) {
+      if (!texto) return "";
+      var idx = texto.indexOf(" - ");
+      return idx === -1 ? texto : texto.substring(0, idx);
+    }
+
+    /*
+     * Sincroniza el input oculto (ID real) cuando el usuario escribe o
+     * elige una opcion del datalist en el buscador de FK, y dispara un
+     * evento "change" sobre el oculto para que activarDependenciasFk_ y
+     * aplicarVisibilidad_ (que escuchan sobre "campo_" + nombre) sigan
+     * funcionando sin cambios.
+     */
+    function activarBuscadoresFk_() {
+      esquemaActual.forEach(function (campo) {
+        if (campo.tipo !== "fk" && campo.tipo !== "fk_dependiente") return;
+        var elTexto = document.getElementById("campo_" + campo.campo + "_texto");
+        var elOculto = document.getElementById("campo_" + campo.campo);
+        if (!elTexto || !elOculto) return;
+        elTexto.addEventListener("input", function () {
+          var id = extraerIdDeEtiqueta_(elTexto.value);
+          if (elOculto.value !== id) {
+            elOculto.value = id;
+            elOculto.dispatchEvent(new Event("change"));
+          }
+        });
+      });
+    }
+
     function repoblarDependiente_(campo, valorPadre) {
-      var el = document.getElementById("campo_" + campo.campo);
-      if (!el) return;
-      el.disabled = true;
-      el.innerHTML = "<option value=\"\">Cargando...</option>";
+      var elTexto = document.getElementById("campo_" + campo.campo + "_texto");
+      var elOculto = document.getElementById("campo_" + campo.campo);
+      var datalist = document.getElementById("campo_" + campo.campo + "_lista");
+      if (!elTexto || !elOculto || !datalist) return;
+      elTexto.disabled = true;
+      elTexto.value = "";
+      elOculto.value = "";
+      datalist.innerHTML = "";
       if (!valorPadre) {
-        el.innerHTML = "<option value=\"\">-- seleccione primero " + campo.dependeDe + " --</option>";
+        elTexto.placeholder = "-- seleccione primero " + campo.dependeDe + " --";
         return;
       }
+      elTexto.placeholder = "Cargando...";
       google.script.run
         .withSuccessHandler(function (opciones) {
-          el.innerHTML = "<option value=\"\">-- seleccionar --</option>";
+          datalist.innerHTML = "";
           opciones.forEach(function (op) {
-            el.innerHTML += "<option value=\"" + op.id + "\">" + op.etiqueta + "</option>";
+            datalist.innerHTML += "<option value=\"" + escaparAtributo_(op.etiqueta) + "\">";
           });
-          el.disabled = false;
+          elTexto.placeholder = "Escribe para buscar...";
+          elTexto.disabled = false;
           if (campo.valorActual !== undefined && campo.valorActual !== null && campo.valorActual !== "") {
-            el.value = campo.valorActual;
+            var coincidente = opciones.filter(function (op) {
+              return String(op.id) === String(campo.valorActual);
+            })[0];
+            if (coincidente) {
+              elTexto.value = coincidente.etiqueta;
+              elOculto.value = coincidente.id;
+            }
             campo.valorActual = undefined;
           }
-          if (el.value) {
-            el.dispatchEvent(new Event("change"));
+          if (elOculto.value) {
+            elOculto.dispatchEvent(new Event("change"));
           }
         })
         .withFailureHandler(mostrarError)
@@ -125,10 +197,24 @@
           document.getElementById("campos").innerHTML = esquema.map(renderCampo).join("");
           esquema.forEach(function (campo) {
             if (campo.valorActual === undefined || campo.valorActual === null) return;
+            if (campo.tipo === "fk") {
+              var elOculto = document.getElementById("campo_" + campo.campo);
+              var elTexto = document.getElementById("campo_" + campo.campo + "_texto");
+              if (elOculto) elOculto.value = campo.valorActual;
+              if (elTexto) {
+                var coincidente = (campo.opciones || []).filter(function (op) {
+                  return String(op.id) === String(campo.valorActual);
+                })[0];
+                elTexto.value = coincidente ? coincidente.etiqueta : campo.valorActual;
+              }
+              return;
+            }
+            if (campo.tipo === "fk_dependiente") return; // se rellena en repoblarDependiente_
             var el = document.getElementById("campo_" + campo.campo);
             if (el) el.value = campo.valorActual;
           });
           activarVisibilidadCondicional_();
+          activarBuscadoresFk_();
           activarDependenciasFk_();
           esquema.forEach(function (campo) {
             if (campo.tipo === "fk_dependiente") {
