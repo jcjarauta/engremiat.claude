@@ -13205,6 +13205,172 @@ function probarIntegridadCatalogosAmpliadosL2() {
 }
 
 
+function probarIntegridadAltaVinculoDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_VINCULO_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var documento =
+    listarRegistros(
+      'DOCUMENTO',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var campana =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!documento) {
+    throw new Error(
+      'ALTA_VINCULO_DRYRUN_TEST_ERROR: no existe un DOCUMENTO activo utilizable'
+    );
+  }
+
+  if (!campana) {
+    throw new Error(
+      'ALTA_VINCULO_DRYRUN_TEST_ERROR: no existe una CAMPANA activa utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'VINCULO',
+      {
+        ENTIDAD_ORIGEN_TIPO: 'Documento',
+        ENTIDAD_ORIGEN_ID: documento.ID,
+        ENTIDAD_DESTINO_TIPO: 'Campaña',
+        ENTIDAD_DESTINO_ID: campana.ID,
+        TIPO_VINCULO: 'Contexto',
+        ESTADO: 'Planificada'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_VINCULO_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  if (!/^VIN-\d{4}$/.test(resultado.id)) {
+    throw new Error(
+      'ALTA_VINCULO_DRYRUN_TEST_ERROR: ID generado con formato inesperado: ' +
+        resultado.id
+    );
+  }
+
+  console.log(
+    'OK dryRun_id_generado=' + resultado.id
+  );
+
+  console.log(
+    'OK dryRun_origen=Documento:' + documento.ID +
+      ' destino=Campaña:' + campana.ID
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadVinculoAutoreferenciaDetectada() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_FUNC_VIN_001';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var campana =
+    listarRegistros(
+      'CAMPANA',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!campana) {
+    throw new Error(
+      'FUNC-VIN-001_TEST_ERROR: no existe una CAMPANA activa utilizable'
+    );
+  }
+
+  var hoja =
+    obtenerHojaEntidadPruebaIntegridad_(
+      'VINCULO'
+    );
+
+  var idTemporal = 'VIN-AUD-VIN-001';
+
+  try {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+
+    insertarFilaCrudaIntegridad_(
+      hoja,
+      {
+        ID: idTemporal,
+        ENTIDAD_ORIGEN_TIPO: 'Campaña',
+        ENTIDAD_ORIGEN_ID: campana.ID,
+        ENTIDAD_DESTINO_TIPO: 'Campaña',
+        ENTIDAD_DESTINO_ID: campana.ID,
+        TIPO_VINCULO: 'Relacionada',
+        ESTADO: 'Activa',
+        ACTIVO: 'SÍ'
+      }
+    );
+
+    SpreadsheetApp.flush();
+
+    assertHallazgoIntegridad_(
+      'FUNC-VIN-001',
+      'VINCULO',
+      idTemporal,
+      1
+    );
+
+    console.log(
+      'OK autoreferencia_detectada=true'
+    );
+
+  } finally {
+    eliminarFilaPorIdIntegridad_(hoja, idTemporal);
+    SpreadsheetApp.flush();
+  }
+
+  assertSinHallazgoIntegridad_(
+    'FUNC-VIN-001',
+    'VINCULO',
+    idTemporal
+  );
+
+  console.log(
+    'OK restauracion_completa=true'
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

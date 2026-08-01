@@ -86,7 +86,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   TAREA_MATERIAL: ['TAREA_ID', 'MATERIAL_ID'],
   DOCUMENTO: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'TIPO_DOCUMENTO', 'VERSION'],
   ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO'],
-  RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION']
+  RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION'],
+  VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO']
 });
 
 
@@ -573,6 +574,26 @@ INCIDENCIA: [
     { campo: 'ENTIDAD_DESTINO_ID', etiqueta: 'Registro destino', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
     { campo: 'TIPO_RELACION', etiqueta: 'Tipo de relación', tipo: 'catalogo', catalogo: 'CFG_TIPO_RELACION', requerido: true },
     { campo: 'DESFASE_DIAS', etiqueta: 'Desfase (días)', tipo: 'numero' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Vínculo polimórfico genérico entre dos registros de CUALQUIER tipo
+   * de entidad (a diferencia de RELACION, que exige el mismo tipo en
+   * ambos extremos). Sustituye el patrón repetido de tablas ad-hoc
+   * (DOCUMENTO_CONTEXTO, DECISION_CONTEXTO, INCIDENCIA_BLOQUEO) por una
+   * única relación reutilizable. DOCUMENTO conserva su propio
+   * ENTIDAD_TIPO/ENTIDAD_ID como vínculo principal; VINCULO cubre los
+   * vínculos adicionales (varios documentos/decisiones por registro,
+   * bloqueos entre entidades de tipo distinto, etc.).
+   */
+  VINCULO: [
+    { campo: 'ENTIDAD_ORIGEN_TIPO', etiqueta: 'Tipo de entidad origen', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_DOCUMENTO', requerido: true },
+    { campo: 'ENTIDAD_ORIGEN_ID', etiqueta: 'Registro origen', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_ORIGEN_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'ENTIDAD_DESTINO_TIPO', etiqueta: 'Tipo de entidad destino', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_DOCUMENTO', requerido: true },
+    { campo: 'ENTIDAD_DESTINO_ID', etiqueta: 'Registro destino', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_DESTINO_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'TIPO_VINCULO', etiqueta: 'Tipo de vínculo', tipo: 'catalogo', catalogo: 'CFG_TIPO_VINCULO', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
@@ -1628,6 +1649,7 @@ function onOpen() {
         .addItem('Tarea-Material', 'abrirEditarTareaMaterial')
         .addItem('Asignación', 'abrirEditarAsignacion')
         .addItem('Relación (grafo de dependencias)', 'abrirEditarRelacion')
+        .addItem('Vínculo (genérico)', 'abrirEditarVinculo')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1637,6 +1659,7 @@ function onOpen() {
         .addItem('Tarea - Material', 'abrirFormularioCrearTareaMaterial')
         .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
         .addItem('Relación / dependencia (grafo)', 'abrirFormularioCrearRelacion')
+        .addItem('Vínculo genérico (cualquier entidad a cualquier entidad)', 'abrirFormularioCrearVinculo')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1724,6 +1747,7 @@ function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCT
 function abrirEditarTareaMaterial() { abrirEditarRegistroPorEntidad_('TAREA_MATERIAL', 'Tarea-Material'); }
 function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 'Asignación'); }
 function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Relación'); }
+function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínculo'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1734,6 +1758,7 @@ function abrirFormularioCrearProductoMaterial() { abrirFormularioCrear_('PRODUCT
 function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material'); }
 function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
 function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
+function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

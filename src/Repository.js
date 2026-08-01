@@ -127,6 +127,15 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'ENTIDAD_DESTINO_ID',
     'TIPO_RELACION',
     'ESTADO'
+  ]),
+
+  VINCULO: Object.freeze([
+    'ENTIDAD_ORIGEN_TIPO',
+    'ENTIDAD_ORIGEN_ID',
+    'ENTIDAD_DESTINO_TIPO',
+    'ENTIDAD_DESTINO_ID',
+    'TIPO_VINCULO',
+    'ESTADO'
   ])
 });
 

@@ -117,7 +117,9 @@ function ampliarCatalogoL2_(ss, hojaConfig, categoria, claveInsertarAntesDe, nue
     );
   }
 
-  if (!filaAntesDe) {
+  // claveInsertarAntesDe = null significa "añadir al final del bloque"
+  // (categorías sin opción "Otra"/"Otro" que preservar al final).
+  if (claveInsertarAntesDe && !filaAntesDe) {
     throw new Error(
       'AMPLIAR_CATALOGO_L2_ERROR: no se encontró la clave ' +
         claveInsertarAntesDe +
@@ -125,6 +127,8 @@ function ampliarCatalogoL2_(ss, hojaConfig, categoria, claveInsertarAntesDe, nue
         categoria
     );
   }
+
+  var filaInsercion = claveInsertarAntesDe ? filaAntesDe : (filaMaxOriginal + 1);
 
   var pendientes = nuevosPares.filter(function (par) {
     return !clavesExistentes_[par[0]];
@@ -135,7 +139,7 @@ function ampliarCatalogoL2_(ss, hojaConfig, categoria, claveInsertarAntesDe, nue
     return;
   }
 
-  hojaConfig.insertRowsBefore(filaAntesDe, pendientes.length);
+  hojaConfig.insertRowsBefore(filaInsercion, pendientes.length);
 
   var filasNuevas = pendientes.map(function (par) {
     maxNumero += 1;
@@ -149,7 +153,7 @@ function ampliarCatalogoL2_(ss, hojaConfig, categoria, claveInsertarAntesDe, nue
   });
 
   hojaConfig
-    .getRange(filaAntesDe, 1, filasNuevas.length, 4)
+    .getRange(filaInsercion, 1, filasNuevas.length, 4)
     .setValues(filasNuevas);
 
   console.log(

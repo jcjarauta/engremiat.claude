@@ -88,9 +88,15 @@ Sin instalador — no se toca esquema ni catálogo, solo lógica de `IntegritySe
 ## Fase L3 — Mecanismos transversales secundarios
 Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
-### L3.1 — Vínculo polimórfico genérico
-`DOCUMENTO_CONTEXTO`/`DECISION_CONTEXTO`/`INCIDENCIA_BLOQUEO`/`RECURSO_REFERENCIA` como una única tabla `VINCULO(ENTIDAD_ORIGEN_TIPO, ENTIDAD_ORIGEN_ID, ENTIDAD_DESTINO_TIPO, ENTIDAD_DESTINO_ID, TIPO_VINCULO)`.
-Resuelve: F-052, F-067, parte de F-079.
+### L3.1 — Vínculo polimórfico genérico ✅ CERRADA (2026-08-01)
+
+**Construido**: entidad `VINCULO` (hoja `18_VINCULO`, prefijo `VIN`) — vínculo entre dos entidades de **tipo distinto** (a diferencia de `RELACION`/L1.2, que exige el mismo tipo en ambos extremos). Sustituye el patrón repetido de `DOCUMENTO_CONTEXTO`/`DECISION_CONTEXTO`/`INCIDENCIA_BLOQUEO`. Reutiliza el catálogo `CFG_ENTIDAD_DOCUMENTO` (ampliado con el valor `Documento`, ya que hasta ahora solo cubría las 7 entidades de la jerarquía, no a sí mismo) y el resolver `DOCUMENTO_ENTIDAD_ID` en ambos extremos. Catálogo nuevo `CFG_TIPO_VINCULO` (10 valores: Contexto/Evidencia/Resultado/Manual/Tutorial/Acta/Referencia/Aprobación/Bloquea/Relacionada). Regla `FUNC-VIN-001` (autorreferencia: mismo tipo y mismo ID en origen y destino). Instalador `instalarEntidadVinculo`, reutilizando el helper genérico `ampliarCatalogoL2_` de L2 (ahora generalizado para admitir "añadir al final del bloque" cuando la categoría no tiene una opción "Otro" de cierre) más uno nuevo (`crearCatalogoNuevoL3_`) para categorías de catálogo completamente nuevas.
+
+**Incidente durante la instalación (corregido en el momento)**: la primera ejecución del instalador falló a mitad de camino — `ampliarCatalogoL2_` insertaba la fila nueva en `90_CONFIGURACION` pero intentaba rellenarla usando una variable obsoleta (`filaAntesDe`, `null` en el caso "añadir al final"), dejando una fila en blanco real en producción tras el `insertRowsBefore` ya ejecutado. Diagnosticado con `gsheets` (fila 128, contigua al bloque `ENTIDAD_DOCUMENTO`, sin pérdida de datos), corregido en el código, y reparado pidiendo al usuario que borrara manualmente la fila en blanco antes de reintentar — coherente con el principio de que los escritos reales al Sheet los ejecuta el usuario, incluso para reparar un bug propio.
+
+**Verificado**: instalador `status=OK` tras la reparación (named ranges `CFG_ENTIDAD_DOCUMENTO=121:128`, `CFG_TIPO_VINCULO=175:184`), `probarIntegridadAltaVinculoDryRun` (`result=OK`, ID `VIN-0001`), `probarIntegridadVinculoAutoreferenciaDetectada` (`result=OK`), y alta real en la UI (`VIN-0001`, Proyecto `PRO-0003` → Proceso `PCS-0002`, tipo "Evidencia", `HIS-1277`, `RESULTADO=OK`).
+
+**Alcance**: F-052 (DECISION limitada a un solo PROYECTO) y F-067 (DOCUMENTO limitado a una sola entidad) quedan con el mecanismo disponible como relación adicional — no se modificaron los formularios de DECISION/DOCUMENTO para integrarlo automáticamente, igual que con `ASIGNACION` en L1.1. La parte de F-079 relativa a `RECURSO_REFERENCIA` queda cubierta conceptualmente (mismo patrón), pero no se construye hasta la Fase L5 (RECURSO).
 
 ### L3.2 — Recurso compartido reutilizado (`MODO_USO`)
 Resuelve: F-022, F-026, F-049.

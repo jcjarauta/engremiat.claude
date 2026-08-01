@@ -1763,6 +1763,35 @@ function detectarProblemasRelacion_(agregar) {
   });
 }
 
+function detectarProblemasVinculo_(agregar) {
+  listarRegistros(
+    'VINCULO',
+    {ACTIVO: 'SÍ'}
+  ).forEach(function (v) {
+    var origenTipo = String(v.ENTIDAD_ORIGEN_TIPO || '').trim();
+    var origenId = String(v.ENTIDAD_ORIGEN_ID || '').trim();
+    var destinoTipo = String(v.ENTIDAD_DESTINO_TIPO || '').trim();
+    var destinoId = String(v.ENTIDAD_DESTINO_ID || '').trim();
+
+    if (
+      origenTipo && origenId &&
+      origenTipo === destinoTipo &&
+      origenId === destinoId
+    ) {
+      agregar(
+        'FUNC-VIN-001',
+        'VINCULO',
+        v.ID,
+        'El vinculo referencia el mismo registro como origen y destino (' +
+          origenTipo + ' ' + origenId +
+          ').',
+        'ERROR',
+        'Corregir el registro destino o eliminar el vinculo.'
+      );
+    }
+  });
+}
+
 function detectarPersonaInactivaConAsignacionActiva_(agregar) {
   var personasPorId_ = {};
 
@@ -2603,6 +2632,13 @@ detectarDuplicidadesRelacionesMaterial_(
    * mas alla del par directo queda fuera por ahora.
    */
   detectarProblemasRelacion_(agregar);
+
+  /*
+   * FUNC-VIN-001
+   * Vinculo polimorfico generico (VINCULO): no puede referenciar el
+   * mismo registro (mismo tipo y mismo ID) como origen y destino.
+   */
+  detectarProblemasVinculo_(agregar);
 
   /*
    * FUNC-REC-002
