@@ -87,7 +87,8 @@ var CLAVES_DUPLICADO_MVP = Object.freeze({
   DOCUMENTO: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'TIPO_DOCUMENTO', 'VERSION'],
   ASIGNACION: ['ENTIDAD_TIPO', 'ENTIDAD_ID', 'PERSONA_EQUIPO_ID', 'ROL_ASIGNADO'],
   RELACION: ['ENTIDAD_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_ID', 'TIPO_RELACION'],
-  VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO']
+  VINCULO: ['ENTIDAD_ORIGEN_TIPO', 'ENTIDAD_ORIGEN_ID', 'ENTIDAD_DESTINO_TIPO', 'ENTIDAD_DESTINO_ID', 'TIPO_VINCULO'],
+  PROVEEDOR_MATERIAL: ['PROVEEDOR_ID', 'MATERIAL_ID']
 });
 
 
@@ -401,6 +402,17 @@ PROYECTO: [
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROVEEDOR', requerido: true },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
+
+  PROVEEDOR_MATERIAL: [
+    { campo: 'PROVEEDOR_ID', etiqueta: 'Proveedor', tipo: 'fk', entidadFk: 'PROVEEDOR', requerido: true, excluirEstados: ['Inactivo', 'Bloqueado'] },
+    { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
+    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true },
+    { campo: 'PLAZO_ENTREGA_DIAS', etiqueta: 'Plazo de entrega (días)', tipo: 'numero', requerido: true },
+    { campo: 'ES_PREFERENTE', etiqueta: 'Preferente', tipo: 'catalogo', opciones: ['SÍ', 'NO'], requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
   PROYECTO_PRODUCTO: [
     { campo: 'PROYECTO_ID', etiqueta: 'Proyecto', tipo: 'fk', entidadFk: 'PROYECTO', requerido: true },
     { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
@@ -1750,6 +1762,7 @@ function onOpen() {
         .addItem('Vínculo (genérico)', 'abrirEditarVinculo')
         .addItem('Movimiento de material', 'abrirEditarMovimientoMaterial')
         .addItem('Ejecución de tarea', 'abrirEditarEjecucionTarea')
+        .addItem('Proveedor-Material', 'abrirEditarProveedorMaterial')
     )
     .addSubMenu(
       ui.createMenu('Relaciones')
@@ -1762,6 +1775,7 @@ function onOpen() {
         .addItem('Vínculo genérico (cualquier entidad a cualquier entidad)', 'abrirFormularioCrearVinculo')
         .addItem('Movimiento de material', 'abrirFormularioCrearMovimientoMaterial')
         .addItem('Ejecución de tarea', 'abrirFormularioCrearEjecucionTarea')
+        .addItem('Proveedor - Material', 'abrirFormularioCrearProveedorMaterial')
     )
     .addItem('Panel operativo', 'abrirPanelOperativo')
     .addItem('Informes', 'abrirInformes')
@@ -1853,6 +1867,7 @@ function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Rel
 function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínculo'); }
 function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIMIENTO_MATERIAL', 'Movimiento de material'); }
 function abrirEditarEjecucionTarea() { abrirEditarRegistroPorEntidad_('EJECUCION_TAREA', 'Ejecución de tarea'); }
+function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEEDOR_MATERIAL', 'Proveedor-Material'); }
 
 /**
  * Menu "Relaciones" (Fase 1/2, BL-MVP-02): entradas de creacion para entidades de relacion.
@@ -1866,6 +1881,7 @@ function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nue
 function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
 function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIMIENTO_MATERIAL', 'Nuevo movimiento de material'); }
 function abrirFormularioCrearEjecucionTarea() { abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea'); }
+function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEEDOR_MATERIAL', 'Nueva relación proveedor-material'); }
 
 /**
  * Menu "Administración" (Fase 1, BL-MVP-02): accesos rapidos a hojas de soporte.

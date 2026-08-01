@@ -149,6 +149,15 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
   EJECUCION_TAREA: Object.freeze([
     'TAREA_ID',
     'ESTADO'
+  ]),
+
+  PROVEEDOR_MATERIAL: Object.freeze([
+    'PROVEEDOR_ID',
+    'MATERIAL_ID',
+    'PRECIO_UNITARIO',
+    'PLAZO_ENTREGA_DIAS',
+    'ES_PREFERENTE',
+    'ESTADO'
   ])
 });
 

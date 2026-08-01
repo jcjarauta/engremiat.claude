@@ -14123,6 +14123,140 @@ function probarIntegridadCatalogoTipoVinculoIncidenciaAmpliado() {
 }
 
 
+function probarIntegridadAltaProveedorMaterialDryRun() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_ALTA_PROVEEDOR_MATERIAL_DRYRUN';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var proveedor =
+    listarRegistros(
+      'PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  var material =
+    listarRegistros(
+      'MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!proveedor) {
+    throw new Error(
+      'ALTA_PROVEEDOR_MATERIAL_DRYRUN_TEST_ERROR: no existe un PROVEEDOR activo utilizable'
+    );
+  }
+
+  if (!material) {
+    throw new Error(
+      'ALTA_PROVEEDOR_MATERIAL_DRYRUN_TEST_ERROR: no existe un MATERIAL activo utilizable'
+    );
+  }
+
+  var resultado =
+    insertarRegistroTransaccional(
+      'PROVEEDOR_MATERIAL',
+      {
+        PROVEEDOR_ID: proveedor.ID,
+        MATERIAL_ID: material.ID,
+        PRECIO_UNITARIO: 9.5,
+        PLAZO_ENTREGA_DIAS: 3,
+        ES_PREFERENTE: 'NO',
+        ESTADO: 'Activa'
+      },
+      {dryRun: true}
+    );
+
+  if (
+    !resultado ||
+    resultado.ok !== true ||
+    resultado.dryRun !== true
+  ) {
+    throw new Error(
+      'ALTA_PROVEEDOR_MATERIAL_DRYRUN_TEST_ERROR: dryRun no devolvió un resultado válido'
+    );
+  }
+
+  console.log('OK dryRun_id=' + resultado.id);
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
+function probarIntegridadProveedorMaterialDuplicadoRechazado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_PROVEEDOR_MATERIAL_DUPLICADO_RECHAZADO';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var existente =
+    listarRegistros(
+      'PROVEEDOR_MATERIAL',
+      {ACTIVO: 'SÍ'}
+    )[0];
+
+  if (!existente) {
+    console.log(
+      'OK sin_registros_activos_para_probar_duplicado=true (se omite: requiere al menos un PROVEEDOR_MATERIAL real dado de alta)'
+    );
+    console.log(
+      'ENGREMIAT_PACKAGE_END package=' +
+        packageName +
+        ' result=OK'
+    );
+    return true;
+  }
+
+  var lanzoError = false;
+
+  try {
+    guardarFormulario(
+      'PROVEEDOR_MATERIAL',
+      '',
+      {
+        PROVEEDOR_ID: existente.PROVEEDOR_ID,
+        MATERIAL_ID: existente.MATERIAL_ID,
+        PRECIO_UNITARIO: 1,
+        PLAZO_ENTREGA_DIAS: 1,
+        ES_PREFERENTE: 'NO',
+        ESTADO: existente.ESTADO
+      },
+      null
+    );
+  } catch (error) {
+    lanzoError = true;
+    console.log('OK duplicado_rechazado_mensaje=' + error.message);
+  }
+
+  if (!lanzoError) {
+    throw new Error(
+      'PROVEEDOR_MATERIAL_DUPLICADO_TEST_ERROR: guardarFormulario no rechazó la combinación PROVEEDOR_ID/MATERIAL_ID ya existente (' +
+        existente.PROVEEDOR_ID + '/' + existente.MATERIAL_ID + ')'
+    );
+  }
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
