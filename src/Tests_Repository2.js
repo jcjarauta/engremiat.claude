@@ -14079,6 +14079,50 @@ function probarIntegridadTareaAvanceIncoherenteConEstado() {
 }
 
 
+function probarIntegridadCatalogoTipoVinculoIncidenciaAmpliado() {
+  var packageName =
+    'PROBAR_INTEGRIDAD_CATALOGO_TIPO_VINCULO_INCIDENCIA';
+
+  console.log(
+    'ENGREMIAT_PACKAGE_BEGIN package=' +
+      packageName
+  );
+
+  var tiposVinculo =
+    obtenerCatalogo('CFG_TIPO_VINCULO');
+
+  var esperados = [
+    'Contexto', 'Evidencia', 'Resultado', 'Manual', 'Tutorial',
+    'Acta', 'Referencia', 'Aprobación', 'Bloquea', 'Relacionada',
+    'Detectada en', 'Causada por', 'Corrige', 'Verifica', 'Previene'
+  ];
+
+  esperados.forEach(function (valor) {
+    if (tiposVinculo.indexOf(valor) === -1) {
+      throw new Error(
+        'CATALOGO_TIPO_VINCULO_INCIDENCIA_TEST_ERROR: falta "' +
+          valor +
+          '" en CFG_TIPO_VINCULO (valores actuales: ' +
+          tiposVinculo.join(', ') +
+          ')'
+      );
+    }
+  });
+
+  console.log(
+    'OK CFG_TIPO_VINCULO_completo=true valores=' + tiposVinculo.length
+  );
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' result=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {
