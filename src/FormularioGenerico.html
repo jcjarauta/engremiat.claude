@@ -2,34 +2,125 @@
 <html>
 <head>
   <base target="_top">
-  <style>
-    body { font-family: Arial, sans-serif; font-size: 13px; padding: 12px; }
-    h3 { margin-top: 0; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input, select, textarea { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; font-family: inherit; }
-    textarea { resize: vertical; }
-    #mensaje { margin-top: 12px; font-weight: bold; min-height: 18px; }
-    #mensaje.error { color: #b00020; }
-    #mensaje.ok { color: #1a7f37; }
-    .acciones { margin-top: 16px; text-align: right; }
-    button { padding: 8px 16px; cursor: pointer; }
-    .campo-oculto { display: none; }
-    .ayuda-campo { font-weight: normal; font-size: 11px; color: #666; margin-top: 2px; }
-    .campo-invalido input, .campo-invalido select, .campo-invalido textarea { border-color: #b00020; border-width: 2px; }
-  </style>
+  <?!= include('Estilos') ?>
 </head>
 <body>
   <h3><?= titulo ?></h3>
+  <?!= include('ModalConfirmar') ?>
   <div id="campos">Cargando formulario...</div>
   <div id="mensaje"></div>
+  <div id="dependenciasBloqueando" class="campo-oculto"></div>
   <div class="acciones">
+    <button id="btnDesactivar" class="boton-peligro campo-oculto" onclick="desactivar()">Desactivar</button>
     <button id="btnCancelar" onclick="cancelar()">Cancelar</button>
     <button id="btnGuardar" onclick="guardar()" disabled>Guardar</button>
   </div>
   <script>
     var ENTIDAD = <?!= JSON.stringify(entidad) ?>;
     var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+    var PREFILL = <?!= prefill ?>;
+    var RETORNO = <?!= retorno ?>;
     var esquemaActual = [];
+
+    var CADENA_HIJO_MVP = {
+      CAMPANA: {
+        pregunta: "Campaña creada. ¿Quieres crear ya el primer proyecto?",
+        funcion: "abrirFormularioCrearProyectoConCampana",
+        textoBoton: "Sí, crear proyecto"
+      },
+      PROYECTO: {
+        pregunta: "Proyecto creado. ¿Quieres crear ya el primer producto?",
+        funcion: "abrirFormularioCrearProductoConProyecto",
+        textoBoton: "Sí, crear producto"
+      }
+    };
+
+    // Desactivar solo tiene sentido editando un registro que ya existe.
+    document.getElementById("btnDesactivar").classList.toggle("campo-oculto", !ID_REGISTRO);
+
+    /*
+     * Hallazgo "me quedo bloqueado": cerrar este formulario (cancelar,
+     * guardar o desactivar) vuelve al formulario de origen si se llegó
+     * aquí editando un dependiente bloqueante (ver abrirDependiente_),
+     * en vez de dejar al usuario sin forma de retomar lo que estaba
+     * haciendo.
+     */
+    function cerrarOVolver_() {
+      if (RETORNO && RETORNO.entidad && RETORNO.id) {
+        google.script.run
+          .withSuccessHandler(function () { google.script.host.close(); })
+          .withFailureHandler(mostrarError)
+          .abrirFormularioEditarPorId(RETORNO.entidad, RETORNO.id);
+        return;
+      }
+      google.script.host.close();
+    }
+
+    function abrirDependiente_(entidad, id) {
+      google.script.run
+        .withSuccessHandler(function () { google.script.host.close(); })
+        .withFailureHandler(mostrarError)
+        .abrirDependienteConRetorno(entidad, id, ENTIDAD, ID_REGISTRO);
+    }
+
+    /*
+     * Antes solo se sabia "PROYECTO (2)" via el mensaje de error de
+     * desactivarRegistro; ahora se listan los registros concretos que
+     * bloquean, con un enlace directo para editarlos (y desde ahi,
+     * desactivarlos si procede) sin tener que ir a buscarlos a mano.
+     * Sigue siendo deliberado nivel a nivel -- no hay cascada
+     * automatica, cada bloqueante se revisa por separado.
+     */
+    function mostrarDependenciasBloqueando_(dependencias) {
+      var contenedor = document.getElementById("dependenciasBloqueando");
+      var html = "<p class=\"error\">No se puede desactivar: tiene dependientes activos.</p>";
+      dependencias.forEach(function (dep) {
+        html += "<p style=\"margin-bottom:4px;\"><strong>" + escaparAtributo_(dep.entidad) + "</strong> (" + dep.cantidad + ")</p>";
+        html += "<ul style=\"margin:0 0 10px 0;padding-left:18px;\">";
+        dep.registros.forEach(function (reg) {
+          html += "<li style=\"margin-bottom:4px;\">" + escaparAtributo_(reg.etiqueta) +
+            " <span class=\"boton\" style=\"padding:2px 8px;font-size:11px;\" onclick=\"abrirDependiente_('" +
+            escaparAtributo_(dep.entidad) + "','" + escaparAtributo_(reg.id) + "')\">Editar</span></li>";
+        });
+        html += "</ul>";
+      });
+      contenedor.innerHTML = html;
+      contenedor.classList.remove("campo-oculto");
+    }
+
+    function desactivar() {
+      confirmarAccion_(
+        "¿Seguro que quieres desactivar este registro? No se podrá deshacer desde aquí (haría falta reactivarlo a mano).",
+        function () {
+          document.getElementById("btnDesactivar").disabled = true;
+          document.getElementById("dependenciasBloqueando").classList.add("campo-oculto");
+          google.script.run
+            .withSuccessHandler(function (dependencias) {
+              if (dependencias && dependencias.length > 0) {
+                mostrarDependenciasBloqueando_(dependencias);
+                document.getElementById("btnDesactivar").disabled = false;
+                return;
+              }
+              document.getElementById("btnGuardar").disabled = true;
+              google.script.run
+                .withSuccessHandler(function () { cerrarOVolver_(); })
+                .withFailureHandler(function (error) {
+                  mostrarError(error);
+                  document.getElementById("btnDesactivar").disabled = false;
+                  document.getElementById("btnGuardar").disabled = false;
+                })
+                .desactivarRegistro(ENTIDAD, ID_REGISTRO);
+            })
+            .withFailureHandler(function (error) {
+              mostrarError(error);
+              document.getElementById("btnDesactivar").disabled = false;
+            })
+            .obtenerDependenciasActivasDetalle(ENTIDAD, ID_REGISTRO);
+        },
+        null,
+        "Desactivar"
+      );
+    }
 
     function escaparAtributo_(texto) {
       return String(texto == null ? "" : texto)
@@ -503,16 +594,33 @@
     };
 
     function cancelar() {
-      if (formularioSucio_ && !confirm("Tienes cambios sin guardar. ¿Seguro que quieres cerrar?")) {
+      if (!formularioSucio_) {
+        cerrarOVolver_();
         return;
       }
-      google.script.host.close();
+      confirmarAccion_(
+        "Tienes cambios sin guardar. ¿Seguro que quieres cerrar?",
+        function () { cerrarOVolver_(); },
+        null,
+        "Cerrar sin guardar"
+      );
     }
 
     function cargarEsquema() {
       google.script.run
         .withSuccessHandler(function (esquema) {
           esquemaActual = esquema;
+          /*
+           * Encadenado Campaña->Proyecto (y futuros): valores iniciales
+           * pasados por el servidor para modo creación, sin pisar nada
+           * (PREFILL solo aplica cuando el campo no trae ya un
+           * valorActual, que en creación normal nunca lo trae).
+           */
+          esquemaActual.forEach(function (campo) {
+            if (PREFILL[campo.campo] !== undefined && (campo.valorActual === undefined || campo.valorActual === null || campo.valorActual === "")) {
+              campo.valorActual = PREFILL[campo.campo];
+            }
+          });
           document.getElementById("campos").innerHTML = esquema.map(renderCampo).join("");
           esquema.forEach(function (campo) {
             if (campo.valorActual === undefined || campo.valorActual === null) return;
@@ -579,12 +687,39 @@
       });
       document.getElementById("btnGuardar").disabled = true;
       google.script.run
-        .withSuccessHandler(function () {
+        .withSuccessHandler(function (resultado) {
           formularioSucio_ = false;
           var el = document.getElementById("mensaje");
           el.className = "ok";
           el.textContent = "Guardado correctamente.";
-          setTimeout(function () { google.script.host.close(); }, 900);
+
+          /*
+           * Flujo encadenado (Campaña->Proyecto->Producto, ver
+           * conversación): al crear un registro nuevo, ofrece abrir ya
+           * el "hijo" natural con el padre precargado, en vez de
+           * obligar a volver al menú y buscarlo en el desplegable.
+           * Solo en creación (no edición) y solo si el guardado
+           * realmente devolvió un ID. CADENA_HIJO_MVP concentra los
+           * dos niveles encadenados hoy; añadir uno nuevo es una
+           * entrada mas, no tocar esta lógica.
+           */
+          var cadena = CADENA_HIJO_MVP[ENTIDAD];
+          if (cadena && !ID_REGISTRO && resultado && resultado.id) {
+            confirmarAccion_(
+              cadena.pregunta,
+              function () {
+                google.script.run
+                  .withSuccessHandler(function () { google.script.host.close(); })
+                  .withFailureHandler(mostrarError)
+                  [cadena.funcion](resultado.id);
+              },
+              function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
+              cadena.textoBoton
+            );
+            return;
+          }
+
+          setTimeout(function () { cerrarOVolver_(); }, 900);
         })
         .withFailureHandler(function (error) {
           mostrarError(error);

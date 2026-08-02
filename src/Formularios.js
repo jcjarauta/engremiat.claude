@@ -2263,16 +2263,31 @@ function onOpen() {
     .addToUi();
 }
 
-function abrirFormularioCrear_(entidad, tituloVentana) {
+/*
+ * prefill (opcional): valores iniciales para campos del formulario en
+ * modo creacion -- hoy solo lo usa el encadenado Campaña->Proyecto
+ * (abrirFormularioCrearProyectoConCampana), para no obligar a buscar de
+ * nuevo la campaña que se acaba de crear en el buscador de CAMPANA_ID.
+ */
+function abrirFormularioCrear_(entidad, tituloVentana, prefill) {
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = entidad;
   template.idRegistro = '';
   template.titulo = tituloVentana;
+  template.prefill = JSON.stringify(prefill || {});
+  template.retorno = JSON.stringify(null);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
 
-function abrirFormularioEditarPorId(entidad, idRegistro) {
+/*
+ * retorno (opcional, {entidad, id}): a que formulario volver al cerrar
+ * este (cancelar, guardar o desactivar) -- resuelve el hallazgo "me
+ * quedo bloqueado" al editar un dependiente desde la lista de bloqueo
+ * de Desactivar (ver abrirDependienteConRetorno_). Sin retorno, cerrar
+ * se comporta igual que siempre.
+ */
+function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   var clave = String(entidad || '').trim().toUpperCase();
   if (!ESQUEMAS_FORMULARIO_MVP[clave]) {
     throw new Error('No hay formulario disponible para la entidad ' + entidad);
@@ -2283,8 +2298,42 @@ function abrirFormularioEditarPorId(entidad, idRegistro) {
   template.entidad = clave;
   template.idRegistro = idRegistro;
   template.titulo = tituloVentana;
+  template.prefill = JSON.stringify({});
+  template.retorno = JSON.stringify(retorno || null);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
+}
+
+/*
+ * Llamada desde el listado de dependientes bloqueantes de "Desactivar"
+ * (FormularioGenerico.html): abre el dependiente con retorno al
+ * formulario que se estaba intentando desactivar, para no dejar al
+ * usuario sin forma de volver tras editarlo.
+ */
+function abrirDependienteConRetorno(entidadHijo, idHijo, entidadOrigen, idOrigen) {
+  abrirFormularioEditarPorId(entidadHijo, idHijo, { entidad: entidadOrigen, id: idOrigen });
+}
+
+/*
+ * Flujo encadenado Campaña->Proyecto: al guardar una campaña nueva,
+ * FormularioGenerico.html ofrece crear ya el primer proyecto; si se
+ * acepta, llama aqui con el ID recien creado para abrir "Nuevo
+ * proyecto" con CAMPANA_ID precargado (mismo buscador de FK de
+ * siempre, solo que ya viene relleno).
+ */
+function abrirFormularioCrearProyectoConCampana(campanaId) {
+  abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto', { CAMPANA_ID: campanaId });
+}
+
+/*
+ * Mismo flujo encadenado, un nivel mas abajo: Proyecto->Producto. El
+ * campo real de PRODUCTO no es PROYECTO_ID (no existe) sino el campo
+ * virtual PROYECTO_VINCULAR_ID (hallazgo #13 de la auditoria piloto),
+ * que guardarFormulario resuelve creando el PROYECTO_PRODUCTO en el
+ * mismo guardado.
+ */
+function abrirFormularioCrearProductoConProyecto(proyectoId) {
+  abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId });
 }
 
 function abrirFormularioCrearCampana() { abrirFormularioCrear_('CAMPANA', 'Nueva campaña'); }

@@ -2,20 +2,15 @@
 <html>
 <head>
   <base target="_top">
+  <?!= include('Estilos') ?>
   <style>
-    body { font-family: Arial, sans-serif; font-size: 12px; padding: 10px; }
-    h3 { margin-top: 0; }
-    h4 { margin-bottom: 4px; margin-top: 18px; border-bottom: 1px solid #ccc; padding-bottom: 2px; }
-    .resumen-linea { display: flex; justify-content: space-between; padding: 2px 0; }
-    .badge { display: inline-block; min-width: 18px; text-align: center; background: #eee; border-radius: 10px; padding: 1px 6px; font-weight: bold; }
-    .item { border-left: 3px solid #ccc; padding: 4px 8px; margin-bottom: 6px; background: #fafafa; }
-    .item.alerta { border-left-color: #b00020; }
+    h4 { margin-bottom: 4px; margin-top: 18px; border-bottom: 1px solid var(--color-borde); padding-bottom: 2px; }
+    .item { border-left: 3px solid var(--color-borde); padding: 4px 8px; margin-bottom: 6px; background: #fafafa; }
+    .item.alerta { border-left-color: var(--color-peligro); }
     .item .titulo { font-weight: bold; }
-    .item .detalle { color: #555; font-size: 11px; }
-    .vacio { color: #888; font-style: italic; }
-    #estado-carga { color: #888; }
+    .item .detalle { color: var(--color-texto-secundario); font-size: 11px; }
     .btn-abrir { margin-top: 4px; font-size: 10px; padding: 2px 8px; cursor: pointer; border: 1px solid #999; background: #fff; border-radius: 3px; }
-    .btn-abrir:hover { background: #eee; }
+    .btn-abrir:hover { background: var(--color-fondo-suave); }
   </style>
 </head>
 <body>

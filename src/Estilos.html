@@ -1,0 +1,79 @@
+<style>
+  /*
+   * Estilo compartido de todos los formularios y modales del sistema.
+   * Se incluye con <?!= include('Estilos') ?> en el <head> de cada
+   * dialogo -- variables + clases comunes en un unico sitio para que
+   * colores y componentes (botones, inputs, tablas, modal de
+   * confirmacion) no diverjan entre archivos como ocurria antes
+   * (habia dos rojos distintos y dos verdes distintos para lo mismo).
+   */
+  :root {
+    --color-primario: #1a73e8;
+    --color-primario-oscuro: #1558b0;
+    --color-peligro: #b00020;
+    --color-peligro-fondo: #fdecea;
+    --color-exito: #1a7f37;
+    --color-texto: #202124;
+    --color-texto-secundario: #5f6368;
+    --color-borde: #dadce0;
+    --color-fondo-suave: #f5f5f5;
+    --color-fondo-cabecera: #f1f3f4;
+    --radio-borde: 4px;
+  }
+
+  body { font-family: Arial, sans-serif; font-size: 13px; color: var(--color-texto); margin: 10px; padding: 0; }
+  h3 { margin-top: 0; margin-bottom: 4px; font-size: 16px; }
+  h4 { margin-top: 18px; margin-bottom: 4px; font-size: 13px; border-bottom: 1px solid var(--color-borde); padding-bottom: 3px; }
+  label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; }
+  .ayuda-campo { font-weight: normal; font-size: 11px; color: var(--color-texto-secundario); margin-top: 2px; }
+
+  input, select, textarea {
+    width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box;
+    font-family: inherit; font-size: 13px; border: 1px solid var(--color-borde); border-radius: var(--radio-borde);
+  }
+  textarea { resize: vertical; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--color-primario); }
+
+  .campo-oculto { display: none; }
+  .campo-invalido input, .campo-invalido select, .campo-invalido textarea { border-color: var(--color-peligro); border-width: 2px; }
+
+  #mensaje { margin-top: 12px; font-weight: bold; min-height: 18px; font-size: 12px; }
+  #mensaje.error, .error { color: var(--color-peligro); }
+  #mensaje.ok, .ok { color: var(--color-exito); }
+  #estado-carga { color: var(--color-texto-secundario); }
+  .vacio { color: #888; font-style: italic; }
+
+  .acciones { margin-top: 16px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  button, .boton {
+    padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: inherit;
+    border-radius: var(--radio-borde); border: 1px solid var(--color-borde); background: #fff; color: var(--color-texto);
+  }
+  button:hover, .boton:hover { background: var(--color-fondo-suave); }
+  button:disabled, .boton:disabled { opacity: .5; cursor: default; }
+
+  #btnGuardar, #btnAceptar, .boton-primario { background: var(--color-primario); border-color: var(--color-primario); color: #fff; }
+  #btnGuardar:hover, #btnAceptar:hover, .boton-primario:hover { background: var(--color-primario-oscuro); }
+
+  .boton-peligro { background: #fff; border-color: var(--color-peligro); color: var(--color-peligro); margin-right: auto; }
+  .boton-peligro:hover { background: var(--color-peligro-fondo); }
+
+  .badge { display: inline-block; min-width: 18px; text-align: center; background: var(--color-fondo-suave); border-radius: 10px; padding: 1px 8px; font-weight: bold; font-size: 12px; }
+  .resumen-linea { display: flex; justify-content: space-between; padding: 2px 0; }
+
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid var(--color-borde); padding: 4px 6px; text-align: left; font-size: 12px; }
+  th { background: var(--color-fondo-cabecera); }
+
+  /* Modal de confirmacion propio (sustituye a confirm()/alert() nativos
+     del navegador, que no se pueden maquillar). Ver ModalConfirmar.html. */
+  .overlay-fondo {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .overlay-caja {
+    background: #fff; border-radius: 8px; padding: 20px; max-width: 320px; width: 90%;
+    box-shadow: 0 4px 24px rgba(0,0,0,.25); font-size: 13px;
+  }
+  .overlay-caja p { margin: 0 0 16px 0; line-height: 1.4; }
+  .overlay-acciones { display: flex; justify-content: flex-end; gap: 8px; }
+</style>

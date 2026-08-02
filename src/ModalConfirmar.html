@@ -1,0 +1,40 @@
+<div id="overlayConfirmacion" class="campo-oculto">
+  <div class="overlay-fondo">
+    <div class="overlay-caja">
+      <p id="overlayMensaje"></p>
+      <div class="overlay-acciones">
+        <button id="overlayBtnCancelar" class="boton">Cancelar</button>
+        <button id="overlayBtnAceptar" class="boton boton-primario">Aceptar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  /*
+   * Sustituye a confirm() nativo (sin estilo posible, cabecera del
+   * navegador con el dominio del sandbox de Apps Script) por un modal
+   * propio, con la misma apariencia que el resto del formulario.
+   * alCancelar es opcional -- si no se pasa, cancelar simplemente
+   * cierra el modal sin hacer nada mas.
+   */
+  function confirmarAccion_(mensaje, alAceptar, alCancelar, textoBotonAceptar) {
+    var overlay = document.getElementById("overlayConfirmacion");
+    var btnAceptar = document.getElementById("overlayBtnAceptar");
+    var btnCancelar = document.getElementById("overlayBtnCancelar");
+
+    document.getElementById("overlayMensaje").textContent = mensaje;
+    btnAceptar.textContent = textoBotonAceptar || "Aceptar";
+    overlay.classList.remove("campo-oculto");
+
+    function cerrar() {
+      overlay.classList.add("campo-oculto");
+      btnAceptar.removeEventListener("click", onAceptar);
+      btnCancelar.removeEventListener("click", onCancelar);
+    }
+    function onAceptar() { cerrar(); alAceptar(); }
+    function onCancelar() { cerrar(); if (alCancelar) alCancelar(); }
+
+    btnAceptar.addEventListener("click", onAceptar);
+    btnCancelar.addEventListener("click", onCancelar);
+  }
+</script>

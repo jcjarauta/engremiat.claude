@@ -2,19 +2,13 @@
 <html>
   <head>
     <base target="_top">
+    <?!= include('Estilos') ?>
     <style>
-      body { font-family: Arial, sans-serif; font-size: 13px; margin: 10px; }
-      h3 { margin-bottom: 4px; }
-      label { display: block; margin-top: 10px; font-weight: bold; }
       select, button { width: 100%; margin-top: 4px; padding: 5px; box-sizing: border-box; }
       button { margin-top: 12px; cursor: pointer; }
-      .seccion { margin-top: 16px; border-top: 1px solid #ddd; padding-top: 10px; }
-      .resumen-linea { display: flex; justify-content: space-between; padding: 2px 0; }
-      .badge { background: #eee; border-radius: 8px; padding: 1px 8px; font-size: 12px; }
+      .seccion { margin-top: 16px; border-top: 1px solid var(--color-borde); padding-top: 10px; }
       .item { padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
-      .item.alerta { color: #b00020; }
-      .vacio { color: #888; font-style: italic; }
-      #estado-carga { color: #888; }
+      .item.alerta { color: var(--color-peligro); }
       #resultado { display: none; }
     </style>
   </head>

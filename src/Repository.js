@@ -8976,6 +8976,35 @@ function obtenerDependenciasActivas_(entidad, id) {
   return encontradas;
 }
 
+/*
+ * Version "con detalle" de obtenerDependenciasActivas_, para la UI: en
+ * vez de solo el conteo, tambien los IDs+etiqueta de los registros que
+ * bloquean la baja, para poder listarlos y ofrecer editarlos desde el
+ * mismo formulario. Separada de obtenerDependenciasActivas_ (usada por
+ * desactivarRegistro, la logica de seguridad real) para no arriesgar
+ * esa ruta ya probada -- esta es de solo lectura, para mostrar.
+ */
+function obtenerDependenciasActivasDetalle(entidad, id) {
+  var clave = String(entidad || '').trim().toUpperCase();
+  var reglas = DEPENDENCIAS_ACTIVAS_MVP[clave] || [];
+
+  var detalle = [];
+  reglas.forEach(function (regla) {
+    var activos = listarPorRelacion(regla.entidad, regla.campo, id).filter(function (fila) {
+      return fila.ACTIVO === 'SÍ';
+    });
+    if (activos.length === 0) return;
+    detalle.push({
+      entidad: regla.entidad,
+      cantidad: activos.length,
+      registros: activos.map(function (fila) {
+        return { id: fila.ID, etiqueta: fila.ID + ' - ' + (fila.NOMBRE || fila.TITULO || '') };
+      })
+    });
+  });
+  return detalle;
+}
+
 function desactivarRegistro(entidad, id) {
   var registroActual = obtenerRegistroPorId(entidad, id);
   if (!registroActual) {
