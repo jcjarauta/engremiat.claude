@@ -1,3 +1,61 @@
+function validarEquipoMiembro_(datos, idExcluir, contextoOpcional) {
+  datos = datos || {};
+  var equipoId = String(datos.EQUIPO_ID || '').trim();
+  var miembroId = String(datos.MIEMBRO_ID || '').trim();
+  var contexto = contextoOpcional || {};
+  var personasEquipos = Array.isArray(contexto.personasEquipos)
+    ? contexto.personasEquipos
+    : listarRegistros('PERSONA_EQUIPO', {});
+  var relaciones = Array.isArray(contexto.relaciones)
+    ? contexto.relaciones
+    : listarRegistros('EQUIPO_MIEMBRO', {});
+  var porId = {};
+
+  personasEquipos.forEach(function (registro) {
+    porId[String(registro.ID || '').trim()] = registro;
+  });
+
+  if (!equipoId) {
+    throw new Error('ERROR_EQUIPO_INVALIDO: El equipo seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Equipo.');
+  }
+  if (!miembroId) {
+    throw new Error('ERROR_MIEMBRO_INVALIDO: El miembro seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Persona.');
+  }
+
+  var equipo = porId[equipoId];
+  var miembro = porId[miembroId];
+
+  if (!equipo || String(equipo.ACTIVO || '').trim() !== 'SÍ' || String(equipo.ESTADO || '').trim() === 'Inactivo') {
+    throw new Error('ERROR_EQUIPO_INVALIDO: El equipo seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Equipo.');
+  }
+  if (!miembro || String(miembro.ACTIVO || '').trim() !== 'SÍ' || String(miembro.ESTADO || '').trim() === 'Inactivo') {
+    throw new Error('ERROR_MIEMBRO_INVALIDO: El miembro seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Persona.');
+  }
+  if (equipoId === miembroId) {
+    throw new Error('ERROR_AUTORRELACION_EQUIPO_MIEMBRO: Un registro no puede ser simultáneamente equipo y miembro de la misma relación.');
+  }
+  if (String(equipo.TIPO || '').trim() !== 'Equipo') {
+    throw new Error('ERROR_EQUIPO_INVALIDO: El equipo seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Equipo.');
+  }
+  if (String(miembro.TIPO || '').trim() !== 'Persona') {
+    throw new Error('ERROR_MIEMBRO_INVALIDO: El miembro seleccionado debe existir, estar activo, no estar Inactivo y tener TIPO=Persona.');
+  }
+
+  var duplicada = relaciones.some(function (relacion) {
+    if (idExcluir && String(relacion.ID || '').trim() === String(idExcluir).trim()) return false;
+    return String(relacion.EQUIPO_ID || '').trim() === equipoId &&
+      String(relacion.MIEMBRO_ID || '').trim() === miembroId &&
+      String(relacion.ACTIVO || '').trim() === 'SÍ' &&
+      String(relacion.ESTADO || '').trim() === 'Activa';
+  });
+
+  if (duplicada) {
+    throw new Error('ERROR_DUPLICIDAD_EQUIPO_MIEMBRO: Ya existe una relación activa entre este equipo y esta persona.');
+  }
+
+  return {equipo: equipo, miembro: miembro};
+}
+
 function insertarRegistroTransaccional(claveEntidad, datos, opciones) {
   const clave = String(claveEntidad || '')
     .trim()
@@ -136,6 +194,10 @@ function insertarRegistroTransaccional(claveEntidad, datos, opciones) {
         'Campos obligatorios ausentes o vacíos: ' +
         camposObligatoriosVacios.join(', ')
       );
+    }
+
+    if (clave === 'EQUIPO_MIEMBRO') {
+      validarEquipoMiembro_(datos, configuracion.idExcluir);
     }
 
     /*

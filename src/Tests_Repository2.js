@@ -23089,3 +23089,206 @@ function probarIntegridadCalculoDesviacion() {
   console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
   return true;
 }
+
+function obtenerConteosM1Per003_() {
+  function capturarEstado_(hoja) {
+    var valores = hoja.getDataRange().getValues().map(function (fila) {
+      return fila.map(function (valor) {
+        if (valor instanceof Date) return {tipo: 'Date', valor: valor.toISOString()};
+        if (typeof valor === 'number' && isNaN(valor)) return {tipo: 'NaN'};
+        return valor;
+      });
+    });
+    return {
+      filas: hoja.getLastRow(),
+      huella: JSON.stringify(valores)
+    };
+  }
+  var spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  return {
+    equipoMiembro: capturarEstado_(obtenerHojaEntidad_('EQUIPO_MIEMBRO')),
+    historial: capturarEstado_(spreadsheet.getSheetByName('91_HISTORIAL'))
+  };
+}
+
+function registrarSkipM1Per003_(resumen, nombre, motivo) {
+  resumen.skips++;
+  console.log('WARN caso=' + nombre + ' SKIP_CONTROLADO_FIXTURE motivo=' + motivo);
+}
+
+function ejecutarCasoProductivoM1Per003_(resumen, nombre, operacion, fragmentoError) {
+  var antes = obtenerConteosM1Per003_();
+  var error = null;
+  var resultado = null;
+  try {
+    resultado = operacion();
+  } catch (e) {
+    error = e;
+  }
+  var despues = obtenerConteosM1Per003_();
+  var filasIguales = antes.equipoMiembro.filas === despues.equipoMiembro.filas && antes.historial.filas === despues.historial.filas;
+  var contenidoIgual = antes.equipoMiembro.huella === despues.equipoMiembro.huella && antes.historial.huella === despues.historial.huella;
+  var paso = fragmentoError
+    ? !!error && String(error.message).indexOf(fragmentoError) !== -1
+    : !error && !!resultado;
+  if (!filasIguales || !contenidoIgual || !paso) {
+    resumen.fallidos++;
+    console.log('ERR caso=' + nombre + ' filas_antes=' + JSON.stringify({equipoMiembro: antes.equipoMiembro.filas, historial: antes.historial.filas}) + ' filas_despues=' + JSON.stringify({equipoMiembro: despues.equipoMiembro.filas, historial: despues.historial.filas}) + ' contenido_igual=' + contenidoIgual + ' mensaje=' + (error ? error.message : 'SIN_ERROR'));
+    return false;
+  }
+  resumen.ejecutados++;
+  console.log('OK caso=' + nombre + ' filas_antes=' + JSON.stringify({equipoMiembro: antes.equipoMiembro.filas, historial: antes.historial.filas}) + ' filas_despues=' + JSON.stringify({equipoMiembro: despues.equipoMiembro.filas, historial: despues.historial.filas}) + ' contenido_igual=true escrituras_reales=0 mensaje=' + (error ? error.message : 'ACEPTADO_DRYRUN'));
+  return true;
+}
+
+function generarIdInexistenteM1Per003_(prefijo) {
+  var candidato;
+  do {
+    candidato = prefijo + '-' + Utilities.getUuid();
+  } while (obtenerRegistroPorId('PERSONA_EQUIPO', candidato));
+  if (obtenerRegistroPorId('PERSONA_EQUIPO', candidato)) {
+    throw new Error('M1_PER_003_FIXTURE_ERROR: el ID generado no es inexistente: ' + candidato);
+  }
+  return candidato;
+}
+
+function ejecutarSuiteM1Per003DryRun() {
+  var paquete = 'M1-PER-003-DRYRUN';
+  var resumen = {ejecutados: 0, skips: 0, fallidos: 0};
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + paquete);
+  try {
+    var registros = listarRegistros('PERSONA_EQUIPO', {});
+    var relaciones = listarRegistros('EQUIPO_MIEMBRO', {});
+    var equiposValidos = registros.filter(function (r) { return String(r.TIPO) === 'Equipo' && String(r.ACTIVO) === 'SÍ' && String(r.ESTADO) !== 'Inactivo'; });
+    var personasValidas = registros.filter(function (r) { return String(r.TIPO) === 'Persona' && String(r.ACTIVO) === 'SÍ' && String(r.ESTADO) !== 'Inactivo'; });
+    var equiposInactivos = registros.filter(function (r) { return String(r.TIPO) === 'Equipo' && String(r.ACTIVO) !== 'SÍ'; });
+    var personasInactivas = registros.filter(function (r) { return String(r.TIPO) === 'Persona' && String(r.ACTIVO) !== 'SÍ'; });
+    var equiposEstadoInactivo = registros.filter(function (r) { return String(r.TIPO) === 'Equipo' && String(r.ACTIVO) === 'SÍ' && String(r.ESTADO) === 'Inactivo'; });
+    var personasEstadoInactivo = registros.filter(function (r) { return String(r.TIPO) === 'Persona' && String(r.ACTIVO) === 'SÍ' && String(r.ESTADO) === 'Inactivo'; });
+    var equipo = equiposValidos[0];
+    var persona = personasValidas[0];
+    var altaDryRun = function (equipoId, miembroId) {
+      return insertarRegistroTransaccional('EQUIPO_MIEMBRO', {EQUIPO_ID: equipoId, MIEMBRO_ID: miembroId, ESTADO: 'Activa'}, {dryRun: true, origen: 'TEST'});
+    };
+    var parejaLibre = null;
+    equiposValidos.some(function (e) {
+      return personasValidas.some(function (p) {
+        var bloqueada = relaciones.some(function (r) { return String(r.EQUIPO_ID) === String(e.ID) && String(r.MIEMBRO_ID) === String(p.ID) && String(r.ACTIVO) === 'SÍ' && String(r.ESTADO) === 'Activa'; });
+        if (!bloqueada) parejaLibre = {equipo: e, persona: p};
+        return !bloqueada;
+      });
+    });
+
+    if (parejaLibre) ejecutarCasoProductivoM1Per003_(resumen, '01_equipo_persona_validos', function () { return altaDryRun(parejaLibre.equipo.ID, parejaLibre.persona.ID); }, null);
+    else registrarSkipM1Per003_(resumen, '01_equipo_persona_validos', 'sin_pareja_libre');
+
+    var historica = relaciones.filter(function (r) { return String(r.ACTIVO) !== 'SÍ' || String(r.ESTADO) !== 'Activa'; }).filter(function (r) {
+      var extremosValidos = equiposValidos.some(function (e) { return String(e.ID) === String(r.EQUIPO_ID); }) && personasValidas.some(function (p) { return String(p.ID) === String(r.MIEMBRO_ID); });
+      var existeActiva = relaciones.some(function (otra) {
+        return String(otra.EQUIPO_ID) === String(r.EQUIPO_ID) && String(otra.MIEMBRO_ID) === String(r.MIEMBRO_ID) && String(otra.ACTIVO) === 'SÍ' && String(otra.ESTADO) === 'Activa';
+      });
+      return extremosValidos && !existeActiva;
+    })[0];
+    if (historica) ejecutarCasoProductivoM1Per003_(resumen, '02_historica_inactiva_no_bloquea', function () { return altaDryRun(historica.EQUIPO_ID, historica.MIEMBRO_ID); }, null);
+    else registrarSkipM1Per003_(resumen, '02_historica_inactiva_no_bloquea', 'sin_relacion_historica_valida');
+
+    var relacionValida = relaciones.filter(function (r) {
+      try { validarEquipoMiembro_(r, r.ID, {personasEquipos: registros, relaciones: relaciones}); return true; } catch (e) { return false; }
+    })[0];
+    if (relacionValida) ejecutarCasoProductivoM1Per003_(resumen, '03_actualizacion_sin_cambiar_extremos', function () {
+      return actualizarRegistroTransaccional('EQUIPO_MIEMBRO', relacionValida.ID, {EQUIPO_ID: relacionValida.EQUIPO_ID, MIEMBRO_ID: relacionValida.MIEMBRO_ID, ESTADO: relacionValida.ESTADO}, {dryRun: true, origen: 'TEST'});
+    }, null);
+    else registrarSkipM1Per003_(resumen, '03_actualizacion_sin_cambiar_extremos', 'sin_relacion_valida');
+
+    if (personasValidas.length >= 2) ejecutarCasoProductivoM1Per003_(resumen, '04_persona_como_equipo', function () { return altaDryRun(personasValidas[0].ID, personasValidas[1].ID); }, 'TIPO=Equipo');
+    else registrarSkipM1Per003_(resumen, '04_persona_como_equipo', 'faltan_dos_personas_activas');
+    if (equiposValidos.length >= 2) ejecutarCasoProductivoM1Per003_(resumen, '05_equipo_como_miembro', function () { return altaDryRun(equiposValidos[0].ID, equiposValidos[1].ID); }, 'TIPO=Persona');
+    else registrarSkipM1Per003_(resumen, '05_equipo_como_miembro', 'falta_segundo_equipo_activo');
+    if (persona) ejecutarCasoProductivoM1Per003_(resumen, '06_equipo_inexistente', function () { return altaDryRun(generarIdInexistenteM1Per003_('EQ-AUSENTE'), persona.ID); }, 'equipo seleccionado');
+    else registrarSkipM1Per003_(resumen, '06_equipo_inexistente', 'sin_persona_valida');
+    if (equipo) ejecutarCasoProductivoM1Per003_(resumen, '07_miembro_inexistente', function () { return altaDryRun(equipo.ID, generarIdInexistenteM1Per003_('MI-AUSENTE')); }, 'miembro seleccionado');
+    else registrarSkipM1Per003_(resumen, '07_miembro_inexistente', 'sin_equipo_valido');
+    if (equiposInactivos[0] && persona) ejecutarCasoProductivoM1Per003_(resumen, '08_equipo_inactivo', function () { return altaDryRun(equiposInactivos[0].ID, persona.ID); }, 'equipo seleccionado');
+    else registrarSkipM1Per003_(resumen, '08_equipo_inactivo', 'sin_equipo_inactivo');
+    if (equipo && personasInactivas[0]) ejecutarCasoProductivoM1Per003_(resumen, '09_miembro_inactivo', function () { return altaDryRun(equipo.ID, personasInactivas[0].ID); }, 'miembro seleccionado');
+    else registrarSkipM1Per003_(resumen, '09_miembro_inactivo', 'sin_miembro_inactivo');
+    if (equiposEstadoInactivo[0] && persona) ejecutarCasoProductivoM1Per003_(resumen, '10_equipo_estado_inactivo', function () { return altaDryRun(equiposEstadoInactivo[0].ID, persona.ID); }, 'equipo seleccionado');
+    else registrarSkipM1Per003_(resumen, '10_equipo_estado_inactivo', 'sin_equipo_estado_inactivo');
+    if (equipo && personasEstadoInactivo[0]) ejecutarCasoProductivoM1Per003_(resumen, '11_miembro_estado_inactivo', function () { return altaDryRun(equipo.ID, personasEstadoInactivo[0].ID); }, 'miembro seleccionado');
+    else registrarSkipM1Per003_(resumen, '11_miembro_estado_inactivo', 'sin_miembro_estado_inactivo');
+    if (equipo) ejecutarCasoProductivoM1Per003_(resumen, '12_autorrelacion', function () { return altaDryRun(equipo.ID, equipo.ID); }, 'simultáneamente equipo y miembro');
+    else registrarSkipM1Per003_(resumen, '12_autorrelacion', 'sin_equipo_valido');
+    if (relacionValida) ejecutarCasoProductivoM1Per003_(resumen, '13_duplicidad_activa', function () { return altaDryRun(relacionValida.EQUIPO_ID, relacionValida.MIEMBRO_ID); }, 'Ya existe una relación activa');
+    else registrarSkipM1Per003_(resumen, '13_duplicidad_activa', 'sin_relacion_activa_valida');
+    var personaInvalidaEdicion = relacionValida ? personasValidas.filter(function (p) { return String(p.ID) !== String(relacionValida.MIEMBRO_ID); })[0] : null;
+    if (relacionValida && personaInvalidaEdicion) ejecutarCasoProductivoM1Per003_(resumen, '14_edicion_hacia_extremo_invalido', function () {
+      return actualizarRegistroTransaccional('EQUIPO_MIEMBRO', relacionValida.ID, {EQUIPO_ID: personaInvalidaEdicion.ID, MIEMBRO_ID: relacionValida.MIEMBRO_ID, ESTADO: relacionValida.ESTADO}, {dryRun: true, origen: 'TEST'});
+    }, 'TIPO=Equipo');
+    else registrarSkipM1Per003_(resumen, '14_edicion_hacia_extremo_invalido', 'sin_relacion_o_persona_valida');
+  } catch (e) {
+    resumen.fallidos++;
+    console.log('ERR diagnostico=' + e.message);
+  } finally {
+    console.log('OK resumen CASOS_EJECUTADOS=' + resumen.ejecutados + ' CASOS_SKIP_FIXTURE=' + resumen.skips + ' CASOS_FALLIDOS=' + resumen.fallidos);
+    console.log('ENGREMIAT_PACKAGE_END package=' + paquete + ' result=' + (resumen.fallidos > 0 ? 'ERROR' : 'OK'));
+  }
+  return resumen.fallidos === 0;
+}
+
+function codigosIntegridadM1Per003_(relaciones, personas) {
+  var codigos = [];
+  detectarProblemasEquipoMiembroEnRegistros_(relaciones, personas, function (codigo) { codigos.push(codigo); });
+  return codigos.sort();
+}
+
+function assertCodigosM1Per003_(nombre, relaciones, personas, esperados) {
+  var obtenidos = codigosIntegridadM1Per003_(relaciones, personas);
+  var esperadoOrdenado = esperados.slice().sort();
+  if (JSON.stringify(obtenidos) !== JSON.stringify(esperadoOrdenado)) {
+    throw new Error('M1_PER_003_INTEGRIDAD_ERROR caso=' + nombre + ' esperados=' + JSON.stringify(esperadoOrdenado) + ' obtenidos=' + JSON.stringify(obtenidos));
+  }
+  console.log('OK caso_integridad=' + nombre + ' codigos=' + obtenidos.join(','));
+}
+
+function assertAutorrelacionM1Per003_(relacion, personas) {
+  var obtenidos = codigosIntegridadM1Per003_([relacion], personas);
+  var adicionalesEsperados = ['FUNC-EQM-001', 'FUNC-EQM-002'];
+  var noPrevistos = obtenidos.filter(function (codigo) {
+    return codigo !== 'FUNC-EQM-003' && adicionalesEsperados.indexOf(codigo) === -1;
+  });
+  if (obtenidos.indexOf('FUNC-EQM-003') === -1 || noPrevistos.length > 0) {
+    throw new Error('M1_PER_003_INTEGRIDAD_ERROR caso=autorrelacion obtenidos=' + JSON.stringify(obtenidos) + ' no_previstos=' + JSON.stringify(noPrevistos));
+  }
+  console.log('OK caso_integridad=FUNC_EQM_003 codigo_presente=true codigos_adicionales_esperables=FUNC-EQM-001,FUNC-EQM-002 obtenidos=' + obtenidos.join(','));
+}
+
+function ejecutarSuiteM1Per003IntegridadMemoria() {
+  var paquete = 'M1-PER-003-INTEGRIDAD-MEMORIA';
+  var errorFinal = null;
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + paquete);
+  try {
+    var sufijo = Utilities.getUuid();
+    var equipo = {ID: 'EQ-' + sufijo, TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible'};
+    var equipo2 = {ID: 'EQ2-' + sufijo, TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible'};
+    var persona = {ID: 'MI-' + sufijo, TIPO: 'Persona', ACTIVO: 'SÍ', ESTADO: 'Disponible'};
+    var persona2 = {ID: 'MI2-' + sufijo, TIPO: 'Persona', ACTIVO: 'SÍ', ESTADO: 'Disponible'};
+    var base = {ID: 'R-' + sufijo, EQUIPO_ID: equipo.ID, MIEMBRO_ID: persona.ID, ACTIVO: 'SÍ', ESTADO: 'Activa'};
+    assertCodigosM1Per003_('valido', [base], [equipo, persona], []);
+    assertCodigosM1Per003_('FUNC_EQM_001', [Object.assign({}, base, {EQUIPO_ID: persona2.ID})], [equipo, persona, persona2], ['FUNC-EQM-001']);
+    assertCodigosM1Per003_('FUNC_EQM_002', [Object.assign({}, base, {MIEMBRO_ID: equipo2.ID})], [equipo, equipo2, persona], ['FUNC-EQM-002']);
+    assertAutorrelacionM1Per003_(Object.assign({}, base, {MIEMBRO_ID: equipo.ID}), [equipo, persona]);
+    assertCodigosM1Per003_('FUNC_EQM_004', [Object.assign({}, base, {EQUIPO_ID: 'AUSENTE-' + sufijo})], [equipo, persona], ['FUNC-EQM-004']);
+    assertCodigosM1Per003_('FUNC_EQM_005', [base], [Object.assign({}, equipo, {ACTIVO: 'NO'}), persona], ['FUNC-EQM-005']);
+    assertCodigosM1Per003_('FUNC_EQM_006', [base], [equipo, Object.assign({}, persona, {ESTADO: 'Inactivo'})], ['FUNC-EQM-006']);
+    assertCodigosM1Per003_('FUNC_EQM_007', [base, Object.assign({}, base, {ID: 'R2-' + sufijo})], [equipo, persona], ['FUNC-EQM-007']);
+    assertCodigosM1Per003_('FUNC_EQM_008', [Object.assign({}, base, {FECHA_BAJA: new Date(2000, 0, 1)})], [equipo, persona], ['FUNC-EQM-008']);
+    assertCodigosM1Per003_('historica_repetida', [base, Object.assign({}, base, {ID: 'R3-' + sufijo, ACTIVO: 'NO'})], [equipo, persona], []);
+    console.log('OK casos_integridad=10 codigos_controlados=8 ERR=0');
+  } catch (e) {
+    errorFinal = e;
+    console.log('ERR diagnostico=' + e.message);
+  } finally {
+    console.log('ENGREMIAT_PACKAGE_END package=' + paquete + ' result=' + (errorFinal ? 'ERROR' : 'OK'));
+  }
+  return !errorFinal;
+}

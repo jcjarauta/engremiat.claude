@@ -421,8 +421,8 @@ PROYECTO: [
   ],
 
   EQUIPO_MIEMBRO: [
-    { campo: 'EQUIPO_ID', etiqueta: 'Equipo', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true },
-    { campo: 'MIEMBRO_ID', etiqueta: 'Miembro (persona)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true },
+    { campo: 'EQUIPO_ID', etiqueta: 'Equipo', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true, excluirEstados: ['Inactivo'], filtroValores: { campo: 'TIPO', valores: ['Equipo'] } },
+    { campo: 'MIEMBRO_ID', etiqueta: 'Miembro (persona)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true, excluirEstados: ['Inactivo'], filtroValores: { campo: 'TIPO', valores: ['Persona'] } },
     { campo: 'ROL_EN_EQUIPO', etiqueta: 'Rol en el equipo', tipo: 'texto' },
     { campo: 'FECHA_ALTA', etiqueta: 'Fecha de alta', tipo: 'fecha' },
     { campo: 'FECHA_BAJA', etiqueta: 'Fecha de baja', tipo: 'fecha' },
@@ -1098,6 +1098,11 @@ function validarDuplicidadFormulario_(clave, datos, idExcluir) {
   var camposClave = CLAVES_DUPLICADO_MVP[clave];
   if (!camposClave) return;
   var registros = listarRegistros(clave, { ACTIVO: 'SÍ' });
+  if (clave === 'EQUIPO_MIEMBRO') {
+    registros = registros.filter(function (registro) {
+      return String(registro.ESTADO || '').trim() === 'Activa';
+    });
+  }
   var duplicado = registros.some(function (r) {
     if (idExcluir && r.ID === idExcluir) return false;
     return camposClave.every(function (c) { return String(r[c]) === String(datos[c]); });
@@ -1116,6 +1121,7 @@ function traducirErrorFuncional_(mensaje, clave) {
 }
 function validarReglasNegocioFormulario_(clave, datos, idExcluir) {
   if (clave === 'PERSONA_EQUIPO') return validarReglasNegocioPersonaEquipo_(datos);
+  if (clave === 'EQUIPO_MIEMBRO') return validarReglasNegocioEquipoMiembro_(datos, idExcluir);
   if (clave === 'TAREA') return validarReglasNegocioTarea_(datos);
   if (clave === 'TAREA_RESPONSABLE') return validarReglasNegocioTareaResponsable_(datos, idExcluir);
   if (clave === 'MATERIAL') return validarReglasNegocioMaterial_(datos);
@@ -1123,6 +1129,10 @@ function validarReglasNegocioFormulario_(clave, datos, idExcluir) {
   if (clave === 'DECISION') return validarReglasNegocioDecision_(datos, idExcluir);
   if (clave === 'INCIDENCIA') return validarReglasNegocioIncidencia_(datos);
   if (clave === 'DOCUMENTO') return validarReglasNegocioDocumento_(datos, idExcluir);
+}
+
+function validarReglasNegocioEquipoMiembro_(datos, idExcluir) {
+  return validarEquipoMiembro_(datos, idExcluir);
 }
 
 function validarReglasNegocioPersonaEquipo_(datos) {

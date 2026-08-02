@@ -2776,6 +2776,98 @@ function detectarProblemasCoordinadorPersonaEquipo_(agregar) {
   detectarProblemasCoordinadorPersonaEquipoEnRegistros_(registros, agregar);
 }
 
+function detectarProblemasEquipoMiembroEnRegistros_(relaciones, personasEquipos, agregar) {
+  relaciones = relaciones || [];
+  personasEquipos = personasEquipos || [];
+  var personasPorId = {};
+  var relacionesValidasParaDuplicidad = [];
+
+  personasEquipos.forEach(function (registro) {
+    personasPorId[String(registro.ID || '').trim()] = registro;
+  });
+
+  relaciones.forEach(function (relacion) {
+    var relacionId = String(relacion.ID || '').trim();
+    var equipoId = String(relacion.EQUIPO_ID || '').trim();
+    var miembroId = String(relacion.MIEMBRO_ID || '').trim();
+    var equipo = personasPorId[equipoId];
+    var miembro = personasPorId[miembroId];
+    var invalida = false;
+
+    if (!equipo || !miembro) {
+      agregar('FUNC-EQM-004', 'EQUIPO_MIEMBRO', relacionId,
+        'La relación referencia un extremo inexistente: EQUIPO_ID=' + equipoId + ', MIEMBRO_ID=' + miembroId + '.',
+        'ERROR', 'Seleccionar extremos existentes o cerrar la relación.');
+      return;
+    }
+    if (String(equipo.ACTIVO || '').trim() !== 'SÍ' || String(miembro.ACTIVO || '').trim() !== 'SÍ') {
+      agregar('FUNC-EQM-005', 'EQUIPO_MIEMBRO', relacionId,
+        'La relación referencia un extremo inactivo.', 'ERROR',
+        'Reactivar el extremo o cerrar la relación.');
+      return;
+    }
+    if (String(equipo.ESTADO || '').trim() === 'Inactivo' || String(miembro.ESTADO || '').trim() === 'Inactivo') {
+      agregar('FUNC-EQM-006', 'EQUIPO_MIEMBRO', relacionId,
+        'La relación referencia un extremo con ESTADO Inactivo.', 'ERROR',
+        'Seleccionar extremos no inactivos o cerrar la relación.');
+      return;
+    }
+    if (String(equipo.TIPO || '').trim() !== 'Equipo') {
+      agregar('FUNC-EQM-001', 'EQUIPO_MIEMBRO', relacionId,
+        'EQUIPO_ID no referencia un registro con TIPO=Equipo: ' + equipoId + '.',
+        'ERROR', 'Seleccionar un Equipo válido.');
+      invalida = true;
+    }
+    if (String(miembro.TIPO || '').trim() !== 'Persona') {
+      agregar('FUNC-EQM-002', 'EQUIPO_MIEMBRO', relacionId,
+        'MIEMBRO_ID no referencia un registro con TIPO=Persona: ' + miembroId + '.',
+        'ERROR', 'Seleccionar una Persona válida.');
+      invalida = true;
+    }
+    if (equipoId === miembroId) {
+      agregar('FUNC-EQM-003', 'EQUIPO_MIEMBRO', relacionId,
+        'EQUIPO_ID y MIEMBRO_ID no pueden identificar el mismo registro.',
+        'ERROR', 'Seleccionar extremos distintos.');
+      invalida = true;
+    }
+
+    if (!invalida && String(relacion.ACTIVO || '').trim() === 'SÍ' && String(relacion.ESTADO || '').trim() === 'Activa') {
+      relacionesValidasParaDuplicidad.push(relacion);
+    }
+
+    if (String(relacion.ACTIVO || '').trim() === 'SÍ' && String(relacion.ESTADO || '').trim() === 'Activa' && relacion.FECHA_BAJA) {
+      var fechaBaja = relacion.FECHA_BAJA instanceof Date
+        ? new Date(relacion.FECHA_BAJA.getTime())
+        : new Date(relacion.FECHA_BAJA);
+      var hoy = new Date();
+      hoy.setHours(0, 0, 0, 0);
+      if (!isNaN(fechaBaja.getTime()) && fechaBaja.getTime() < hoy.getTime()) {
+        agregar('FUNC-EQM-008', 'EQUIPO_MIEMBRO', relacionId,
+          'La relación continúa Activa/SÍ aunque FECHA_BAJA ya ha finalizado.',
+          'WARN', 'Revisar y cerrar explícitamente la relación si corresponde.');
+      }
+    }
+  });
+
+  var primeraPorPareja = {};
+  relacionesValidasParaDuplicidad.forEach(function (relacion) {
+    var clave = String(relacion.EQUIPO_ID || '').trim() + '|' + String(relacion.MIEMBRO_ID || '').trim();
+    if (!primeraPorPareja[clave]) {
+      primeraPorPareja[clave] = relacion;
+      return;
+    }
+    agregar('FUNC-EQM-007', 'EQUIPO_MIEMBRO', String(relacion.ID || '').trim(),
+      'Existe más de una relación activa para la misma pareja EQUIPO_ID/MIEMBRO_ID. Primera relación: ' + primeraPorPareja[clave].ID + '.',
+      'ERROR', 'Conservar una única relación Activa/SÍ para la pareja.');
+  });
+}
+
+function detectarProblemasEquipoMiembro_(agregar) {
+  var relaciones = listarRegistros('EQUIPO_MIEMBRO', {});
+  var personasEquipos = listarRegistros('PERSONA_EQUIPO', {});
+  detectarProblemasEquipoMiembroEnRegistros_(relaciones, personasEquipos, agregar);
+}
+
 function detectarProblemasFuncionales_() {
   var hallazgos = [];
 
@@ -2923,6 +3015,9 @@ detectarDuplicidadesRelacionesMaterial_(
    * Coherencia del coordinador de PERSONA_EQUIPO.
    */
   detectarProblemasCoordinadorPersonaEquipo_(agregar);
+
+  /* FUNC-EQM-001 a FUNC-EQM-008: coherencia de EQUIPO_MIEMBRO. */
+  detectarProblemasEquipoMiembro_(agregar);
 
   /*
    * DECISION
