@@ -72,6 +72,33 @@ var MAPAS_DEPENDENCIA_MVP = Object.freeze({
         return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || '') };
       });
     }
+  }),
+
+  /*
+   * Hallazgo #20 (auditoría piloto): "Proceso predecesor"/"Tarea
+   * predecesora" mostraban todos los procesos/tareas del sistema, no
+   * solo los del mismo Producto/Proceso ya elegido. Se acota por
+   * Producto (no por Relación proyecto-producto, que es opcional) --
+   * simplificación consciente frente al alcance más fino de
+   * obtenerSugerenciaSecuencia (L4), que sí distingue por Relación
+   * proyecto-producto cuando existe.
+   */
+  PROCESO_PREDECESOR_POR_PRODUCTO: Object.freeze({
+    campoPadre: 'PRODUCTO_ID',
+    resolver: function (valorPadre) {
+      return listarRegistros('PROCESO', { ACTIVO: 'SÍ', PRODUCTO_ID: valorPadre }).map(function (r) {
+        return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || '') };
+      });
+    }
+  }),
+
+  TAREA_PREDECESORA_POR_PROCESO: Object.freeze({
+    campoPadre: 'PROCESO_ID',
+    resolver: function (valorPadre) {
+      return listarRegistros('TAREA', { ACTIVO: 'SÍ', PROCESO_ID: valorPadre }).map(function (r) {
+        return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || '') };
+      });
+    }
   })
 });
 
@@ -79,6 +106,27 @@ function obtenerOpcionesDependientes(mapaEntidad, valorPadre) {
   var mapa = MAPAS_DEPENDENCIA_MVP[mapaEntidad];
   if (!mapa) throw new Error('No existe el mapa de dependencia ' + mapaEntidad);
   return mapa.resolver(valorPadre);
+}
+
+/*
+ * Hallazgo #16 (auditoría piloto): PRODUCTO_ID y PROYECTO_PRODUCTO_ID
+ * eran campos independientes en PROCESO, sin ninguna relación entre
+ * ambos -- se podía elegir una combinación inconsistente. Al elegir la
+ * Relación proyecto-producto, se deriva su Producto automáticamente
+ * (solo si el campo Producto aún está vacío, nunca pisa una elección
+ * manual ya hecha).
+ */
+function obtenerProductoDesdeProyectoProducto(proyectoProductoId) {
+  var relacion = obtenerRegistroPorId('PROYECTO_PRODUCTO', proyectoProductoId);
+
+  if (!relacion) return null;
+
+  var producto = obtenerRegistroPorId('PRODUCTO', relacion.PRODUCTO_ID);
+
+  return {
+    id: relacion.PRODUCTO_ID,
+    etiqueta: relacion.PRODUCTO_ID + ' - ' + (producto ? producto.NOMBRE : '')
+  };
 }
 
 var CLAVES_DUPLICADO_MVP = Object.freeze({
@@ -105,7 +153,9 @@ CAMPANA: [
   { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
   { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha', requerido: true },
   { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha', requerido: true },
-  { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CAMPANA', requerido: true },
+  { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CAMPANA', requerido: true, valorPorDefecto: 'Borrador' },
+  { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
+  { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
   { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
 ],
 
@@ -140,7 +190,8 @@ PROYECTO: [
     etiqueta: 'Prioridad',
     tipo: 'catalogo',
     catalogo: 'CFG_PRIORIDAD',
-    requerido: true
+    requerido: true,
+    valorPorDefecto: 'Media'
   },
   {
     campo: 'RESPONSABLE_ID',
@@ -164,31 +215,28 @@ PROYECTO: [
   {
     campo: 'FECHA_INICIO_REAL',
     etiqueta: 'Fecha inicio real',
-    tipo: 'fecha'
+    tipo: 'fecha',
+    visibleSi: { campo: 'ESTADO', valores: ['En proceso', 'Completado', 'Cancelado'] }
   },
   {
     campo: 'FECHA_FIN_REAL',
     etiqueta: 'Fecha fin real',
-    tipo: 'fecha'
+    tipo: 'fecha',
+    visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] }
   },
   {
     campo: 'ESTADO',
     etiqueta: 'Estado',
     tipo: 'catalogo',
     catalogo: 'CFG_ESTADO_PROYECTO',
-    requerido: true
+    requerido: true,
+    valorPorDefecto: 'Borrador'
   },
   {
     campo: 'MOTIVO_REPLANIFICACION',
     etiqueta: 'Motivo de replanificación',
-    tipo: 'texto'
-  },
-  {
-    campo: 'ACTIVO',
-    etiqueta: 'Activo',
-    tipo: 'catalogo',
-    opciones: ['SÍ', 'NO'],
-    requerido: true
+    tipo: 'texto',
+    visibleSi: { campo: 'ESTADO', valores: ['Pospuesto'] }
   },
   {
     campo: 'OBJETIVO',
@@ -199,16 +247,6 @@ PROYECTO: [
     campo: 'RESULTADO_ESPERADO',
     etiqueta: 'Resultado esperado',
     tipo: 'texto'
-  },
-  {
-    campo: 'CRITERIOS_ACEPTACION',
-    etiqueta: 'Criterios de aceptación',
-    tipo: 'textarea'
-  },
-  {
-    campo: 'DEFINITION_OF_DONE',
-    etiqueta: 'Definition of Done',
-    tipo: 'textarea'
   },
   {
     campo: 'VALIDADOR_ID',
@@ -226,34 +264,48 @@ PROYECTO: [
 
   PRODUCTO: [
     {
+      campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true
+    },
+    { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
+    { campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto' },
+    { campo: 'ORIGEN', etiqueta: 'Origen', tipo: 'catalogo', catalogo: 'CFG_ORIGEN_PRODUCTO', requerido: true },
+    { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
+    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'FECHA_REQUERIDA', etiqueta: 'Fecha requerida', tipo: 'fecha' },
+    { campo: 'PRIORIDAD', etiqueta: 'Prioridad', tipo: 'catalogo', catalogo: 'CFG_PRIORIDAD', requerido: true, valorPorDefecto: 'Media' },
+    {
       campo: 'CODIGO',
       etiqueta: 'Código',
       tipo: 'texto',
       requerido: true,
       sugerenciaCodigo: { camposContexto: ['ORIGEN', 'NOMBRE', 'PRIORIDAD'] }
     },
-    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
-    { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
-    { campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto' },
-    { campo: 'ORIGEN', etiqueta: 'Origen', tipo: 'catalogo', catalogo: 'CFG_ORIGEN_PRODUCTO', requerido: true },
-    { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true },
-    { campo: 'FECHA_REQUERIDA', etiqueta: 'Fecha requerida', tipo: 'fecha' },
-    { campo: 'PRIORIDAD', etiqueta: 'Prioridad', tipo: 'catalogo', catalogo: 'CFG_PRIORIDAD', requerido: true },
+    {
+      campo: 'PROYECTO_VINCULAR_ID',
+      etiqueta: 'Proyecto (opcional, para vincular ahora)',
+      tipo: 'fk',
+      entidadFk: 'PROYECTO',
+      ayuda: 'Solo si ya sabes a qué proyecto pertenece este producto. Déjalo vacío para crear un producto de catálogo reutilizable en cualquier proyecto.'
+    },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PRODUCTO', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PRODUCTO', requerido: true, valorPorDefecto: 'Borrador' },
     { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
-    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
     { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
-    { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
     { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   PROCESO: [
-    { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
+    {
+      campo: 'PRODUCTO_ID',
+      etiqueta: 'Producto',
+      tipo: 'fk',
+      entidadFk: 'PRODUCTO',
+      requerido: true,
+      derivarDeRelacion: 'PROYECTO_PRODUCTO_ID'
+    },
     { campo: 'PROYECTO_PRODUCTO_ID', etiqueta: 'Relación proyecto-producto (opcional)', tipo: 'fk', entidadFk: 'PROYECTO_PRODUCTO' },
-    { campo: 'MODO_USO', etiqueta: 'Modo de uso', tipo: 'catalogo', catalogo: 'CFG_MODO_USO' },
+    { campo: 'MODO_USO', etiqueta: 'Modo de uso', tipo: 'catalogo', catalogo: 'CFG_MODO_USO', ayuda: 'Solo si este producto se reutiliza de otro proyecto. Déjalo vacío si es nuevo y no se reutiliza de nada.' },
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
     {
@@ -261,25 +313,38 @@ PROYECTO: [
       etiqueta: 'Orden de secuencia',
       tipo: 'numero',
       requerido: true,
+      min: 1,
       sugerenciaSecuencia: {
         camposContexto: ['PROYECTO_PRODUCTO_ID', 'PRODUCTO_ID'],
         campoPredecesor: 'PROCESO_PREDECESOR_ID'
       }
     },
-    { campo: 'PROCESO_PREDECESOR_ID', etiqueta: 'Proceso predecesor', tipo: 'fk', entidadFk: 'PROCESO' },
-    { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true },
-    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
+    {
+      campo: 'PROCESO_PREDECESOR_ID',
+      etiqueta: 'Proceso predecesor',
+      tipo: 'fk_dependiente',
+      dependeDe: 'PRODUCTO_ID',
+      mapaEntidad: 'PROCESO_PREDECESOR_POR_PRODUCTO'
+    },
+    { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', min: 0, visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO' },
     { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha' },
     { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha' },
     { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En proceso', 'Completado', 'Cancelado'] } },
     { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Completado', 'Cancelado'] } },
-    { campo: 'PORCENTAJE_AVANCE', etiqueta: 'Porcentaje de avance', tipo: 'numero', requerido: true },
+    {
+      campo: 'PORCENTAJE_AVANCE',
+      etiqueta: 'Porcentaje de avance',
+      tipo: 'numero',
+      ocultarAlCrear: true,
+      valorPorDefectoAlCrear: 0,
+      min: 0,
+      max: 100
+    },
     { campo: 'METODO_CALCULO_AVANCE', etiqueta: 'Método de cálculo del avance', tipo: 'catalogo', catalogo: 'CFG_METODO_CALCULO_AVANCE' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROCESO', requerido: true },
-    { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
-    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
-    { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROCESO', requerido: true, valorPorDefecto: 'Pendiente' },
+    { campo: 'FASE_PRODUCCION', etiqueta: 'Fase de producción', tipo: 'catalogo', catalogo: 'CFG_FASE_PRODUCCION' },
     { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
     { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
@@ -293,27 +358,39 @@ PROYECTO: [
       etiqueta: 'Orden de secuencia',
       tipo: 'numero',
       requerido: true,
+      min: 1,
       sugerenciaSecuencia: {
         camposContexto: ['PROCESO_ID'],
         campoPredecesor: 'TAREA_PREDECESORA_ID'
       }
     },
-    { campo: 'TAREA_PREDECESORA_ID', etiqueta: 'Tarea predecesora', tipo: 'fk', entidadFk: 'TAREA' },
-    { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true },
-    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
+    {
+      campo: 'TAREA_PREDECESORA_ID',
+      etiqueta: 'Tarea predecesora',
+      tipo: 'fk_dependiente',
+      dependeDe: 'PROCESO_ID',
+      mapaEntidad: 'TAREA_PREDECESORA_POR_PROCESO'
+    },
+    { campo: 'DURACION_PREVISTA_DIAS', etiqueta: 'Duración prevista (días)', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', min: 0, visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
     { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha' },
     { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha' },
     { campo: 'FECHA_INICIO_REAL', etiqueta: 'Fecha inicio real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['En proceso', 'Terminada', 'Cancelada'] } },
     { campo: 'FECHA_FIN_REAL', etiqueta: 'Fecha fin real', tipo: 'fecha', visibleSi: { campo: 'ESTADO', valores: ['Terminada', 'Cancelada'] } },
-    { campo: 'PORCENTAJE_AVANCE', etiqueta: 'Porcentaje de avance', tipo: 'numero', requerido: true },
+    {
+      campo: 'PORCENTAJE_AVANCE',
+      etiqueta: 'Porcentaje de avance',
+      tipo: 'numero',
+      ocultarAlCrear: true,
+      valorPorDefectoAlCrear: 0,
+      min: 0,
+      max: 100
+    },
     { campo: 'METODO_CALCULO_AVANCE', etiqueta: 'Método de cálculo del avance', tipo: 'catalogo', catalogo: 'CFG_METODO_CALCULO_AVANCE' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_TAREA', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_TAREA', requerido: true, valorPorDefecto: 'Pendiente' },
     { campo: 'MOTIVO_BLOQUEO', etiqueta: 'Motivo de bloqueo', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Bloqueada'] } },
     { campo: 'MOTIVO_POSPOSICION', etiqueta: 'Motivo de posposición', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Pospuesta'] } },
     { campo: 'MOTIVO_CANCELACION', etiqueta: 'Motivo de cancelación', tipo: 'texto', visibleSi: { campo: 'ESTADO', valores: ['Cancelada'] } },
-    { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
-    { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
-    { campo: 'CRITERIOS_ACEPTACION', etiqueta: 'Criterios de aceptación', tipo: 'textarea' },
     { campo: 'DEFINITION_OF_DONE', etiqueta: 'Definition of Done', tipo: 'textarea' },
     { campo: 'VALIDADOR_ID', etiqueta: 'Validador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
@@ -325,8 +402,8 @@ PROYECTO: [
     { campo: 'ROL_ASIGNADO', etiqueta: 'Rol asignado', tipo: 'catalogo', catalogo: 'CFG_ROL_ASIGNACION', requerido: true },
     { campo: 'FECHA_INICIO_ASIGNACION', etiqueta: 'Fecha inicio asignación', tipo: 'fecha' },
     { campo: 'FECHA_FIN_ASIGNACION', etiqueta: 'Fecha fin asignación', tipo: 'fecha' },
-    { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true },
+    { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true, min: 0, max: 100 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true, valorPorDefecto: 'Planificada' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -337,9 +414,9 @@ PROYECTO: [
     { campo: 'EMAIL', etiqueta: 'Email', tipo: 'texto' },
     { campo: 'TELEFONO', etiqueta: 'Teléfono', tipo: 'texto' },
     { campo: 'COORDINADOR_ID', etiqueta: 'Coordinador (si es Equipo)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
-    { campo: 'CAPACIDAD_SEMANAL_DIAS', etiqueta: 'Capacidad semanal (días)', tipo: 'numero', requerido: true },
+    { campo: 'CAPACIDAD_SEMANAL_DIAS', etiqueta: 'Capacidad semanal (días)', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'DISPONIBILIDAD', etiqueta: 'Disponibilidad', tipo: 'catalogo', catalogo: 'CFG_DISPONIBILIDAD', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO', requerido: true, valorPorDefecto: 'Disponible' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -349,7 +426,7 @@ PROYECTO: [
     { campo: 'ROL_EN_EQUIPO', etiqueta: 'Rol en el equipo', tipo: 'texto' },
     { campo: 'FECHA_ALTA', etiqueta: 'Fecha de alta', tipo: 'fecha' },
     { campo: 'FECHA_BAJA', etiqueta: 'Fecha de baja', tipo: 'fecha' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -381,7 +458,7 @@ PROYECTO: [
     { campo: 'CATEGORIA_RECURSO', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_RECURSO' },
     { campo: 'UBICACION_ID', etiqueta: 'Ubicación (espacio)', tipo: 'fk', entidadFk: 'RECURSO', filtroValores: { campo: 'CLASE_RECURSO', valores: ['Espacio'] } },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO_FISICO', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO_FISICO', requerido: true, valorPorDefecto: 'Disponible' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -391,7 +468,7 @@ PROYECTO: [
     { campo: 'TIPO_USO', etiqueta: 'Tipo de uso', tipo: 'catalogo', catalogo: 'CFG_TIPO_USO_RECURSO', requerido: true },
     { campo: 'FECHA_INICIO', etiqueta: 'Fecha inicio', tipo: 'fecha' },
     { campo: 'FECHA_FIN', etiqueta: 'Fecha fin', tipo: 'fecha' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -406,17 +483,17 @@ PROYECTO: [
   PEDIDO_PROVEEDOR: [
     { campo: 'PROVEEDOR_ID', etiqueta: 'Proveedor', tipo: 'fk', entidadFk: 'PROVEEDOR', requerido: true, excluirEstados: ['Inactivo', 'Bloqueado'] },
     { campo: 'FECHA_PEDIDO', etiqueta: 'Fecha del pedido', tipo: 'fecha', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PEDIDO_PROVEEDOR', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PEDIDO_PROVEEDOR', requerido: true, valorPorDefecto: 'Borrador' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   PEDIDO_PROVEEDOR_LINEA: [
     { campo: 'PEDIDO_PROVEEDOR_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_PROVEEDOR', requerido: true, excluirEstados: ['Recibido completo', 'Cancelado'] },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
-    { campo: 'CANTIDAD_PEDIDA', etiqueta: 'Cantidad pedida', tipo: 'numero', requerido: true },
-    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true },
+    { campo: 'CANTIDAD_PEDIDA', etiqueta: 'Cantidad pedida', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -424,16 +501,16 @@ PROYECTO: [
     { campo: 'PEDIDO_PROVEEDOR_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_PROVEEDOR', requerido: true, excluirEstados: ['Recibido completo', 'Cancelado'] },
     { campo: 'FECHA_RECEPCION', etiqueta: 'Fecha de recepción', tipo: 'fecha', requerido: true },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECEPCION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECEPCION', requerido: true, valorPorDefecto: 'Borrador' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   RECEPCION_LINEA: [
     { campo: 'RECEPCION_ID', etiqueta: 'Recepción', tipo: 'fk', entidadFk: 'RECEPCION', requerido: true },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
-    { campo: 'CANTIDAD_RECIBIDA', etiqueta: 'Cantidad recibida', tipo: 'numero', requerido: true },
+    { campo: 'CANTIDAD_RECIBIDA', etiqueta: 'Cantidad recibida', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -448,8 +525,8 @@ PROYECTO: [
     { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
     { campo: 'CATEGORIA', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_MATERIAL', requerido: true },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'STOCK_ACTUAL', etiqueta: 'Stock actual', tipo: 'numero', requerido: true },
-    { campo: 'STOCK_MINIMO', etiqueta: 'Stock mínimo', tipo: 'numero', requerido: true },
+    { campo: 'STOCK_ACTUAL', etiqueta: 'Stock actual', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'STOCK_MINIMO', etiqueta: 'Stock mínimo', tipo: 'numero', requerido: true, min: 0 },
     {
   campo: 'PROVEEDOR_ID',
   etiqueta: 'Proveedor',
@@ -460,29 +537,35 @@ PROYECTO: [
     'Bloqueado'
   ]
 },
-    { campo: 'PLAZO_REPOSICION_DIAS', etiqueta: 'Plazo de reposición (días)', tipo: 'numero' },
-    { campo: 'UBICACION', etiqueta: 'Ubicación', tipo: 'texto' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_MATERIAL', requerido: true },
+    { campo: 'PLAZO_REPOSICION_DIAS', etiqueta: 'Plazo de reposición (días)', tipo: 'numero', min: 0 },
+    {
+      campo: 'UBICACION',
+      etiqueta: 'Ubicación',
+      tipo: 'fk',
+      entidadFk: 'RECURSO',
+      filtroValores: { campo: 'CLASE_RECURSO', valores: ['Espacio'] }
+    },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_MATERIAL', requerido: true, valorPorDefecto: 'Disponible' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   PRODUCTO_MATERIAL: [
     { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
-    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true },
+    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   TAREA_MATERIAL: [
     { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
-    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true },
-    { campo: 'CANTIDAD_CONSUMIDA', etiqueta: 'Cantidad consumida', tipo: 'numero' },
-    { campo: 'CANTIDAD_DESPERDICIADA', etiqueta: 'Cantidad desperdiciada', tipo: 'numero' },
+    { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'CANTIDAD_CONSUMIDA', etiqueta: 'Cantidad consumida', tipo: 'numero', min: 0 },
+    { campo: 'CANTIDAD_DESPERDICIADA', etiqueta: 'Cantidad desperdiciada', tipo: 'numero', min: 0 },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'MOTIVO_DESVIACION', etiqueta: 'Motivo de desviación', tipo: 'texto' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -501,28 +584,28 @@ PROYECTO: [
     { campo: 'EMAIL', etiqueta: 'Email', tipo: 'texto' },
     { campo: 'TELEFONO', etiqueta: 'Teléfono', tipo: 'texto' },
     { campo: 'DIRECCION', etiqueta: 'Dirección', tipo: 'texto' },
-    { campo: 'PLAZO_ENTREGA_DIAS', etiqueta: 'Plazo de entrega (días)', tipo: 'numero' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROVEEDOR', requerido: true },
+    { campo: 'PLAZO_ENTREGA_DIAS', etiqueta: 'Plazo de entrega (días)', tipo: 'numero', min: 0 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PROVEEDOR', requerido: true, valorPorDefecto: 'Activo' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   PROVEEDOR_MATERIAL: [
     { campo: 'PROVEEDOR_ID', etiqueta: 'Proveedor', tipo: 'fk', entidadFk: 'PROVEEDOR', requerido: true, excluirEstados: ['Inactivo', 'Bloqueado'] },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
-    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true },
-    { campo: 'PLAZO_ENTREGA_DIAS', etiqueta: 'Plazo de entrega (días)', tipo: 'numero', requerido: true },
+    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'PLAZO_ENTREGA_DIAS', etiqueta: 'Plazo de entrega (días)', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'ES_PREFERENTE', etiqueta: 'Preferente', tipo: 'catalogo', opciones: ['SÍ', 'NO'], requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
   PROYECTO_PRODUCTO: [
     { campo: 'PROYECTO_ID', etiqueta: 'Proyecto', tipo: 'fk', entidadFk: 'PROYECTO', requerido: true },
     { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
-    { campo: 'CANTIDAD_ASIGNADA', etiqueta: 'Cantidad asignada', tipo: 'numero' },
+    { campo: 'CANTIDAD_ASIGNADA', etiqueta: 'Cantidad asignada', tipo: 'numero', min: 0 },
     { campo: 'PRIORIDAD', etiqueta: 'Prioridad', tipo: 'catalogo', catalogo: 'CFG_PRIORIDAD' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
-    { campo: 'MODO_USO', etiqueta: 'Modo de uso', tipo: 'catalogo', catalogo: 'CFG_MODO_USO' }
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'MODO_USO', etiqueta: 'Modo de uso', tipo: 'catalogo', catalogo: 'CFG_MODO_USO', ayuda: 'Solo si este producto se reutiliza de otro proyecto. Déjalo vacío si es nuevo y no se reutiliza de nada.' }
   ],
 
 DECISION: [
@@ -540,7 +623,7 @@ DECISION: [
   },
 
   { campo: 'FECHA_LIMITE', etiqueta: 'Fecha límite', tipo: 'fecha' },
-  { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_DECISION', requerido: true },
+  { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_DECISION', requerido: true, valorPorDefecto: 'Pendiente de información' },
   { campo: 'IMPACTO', etiqueta: 'Impacto', tipo: 'catalogo', catalogo: 'CFG_IMPACTO' },
   { campo: 'RESOLUCION', etiqueta: 'Resolución', tipo: 'textarea' },
   { campo: 'FECHA_RESOLUCION', etiqueta: 'Fecha de resolución', tipo: 'fecha' },
@@ -623,7 +706,8 @@ INCIDENCIA: [
     etiqueta: 'Prioridad',
     tipo: 'catalogo',
     catalogo: 'CFG_PRIORIDAD',
-    requerido: true
+    requerido: true,
+    valorPorDefecto: 'Media'
   },
   {
     campo: 'RESPONSABLE_ID',
@@ -647,7 +731,8 @@ INCIDENCIA: [
     etiqueta: 'Estado',
     tipo: 'catalogo',
     catalogo: 'CFG_ESTADO_INCIDENCIA',
-    requerido: true
+    requerido: true,
+    valorPorDefecto: 'Abierta'
   },
   {
     campo: 'IMPACTO',
@@ -688,7 +773,7 @@ INCIDENCIA: [
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
     { campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto' },
     { campo: 'URL', etiqueta: 'URL', tipo: 'texto', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_DOCUMENTO', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_DOCUMENTO', requerido: true, valorPorDefecto: 'Borrador' },
     { campo: 'FECHA_DOCUMENTO', etiqueta: 'Fecha del documento', tipo: 'fecha' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -709,8 +794,8 @@ INCIDENCIA: [
     { campo: 'ROL_ASIGNADO', etiqueta: 'Rol asignado', tipo: 'catalogo', catalogo: 'CFG_ROL_ASIGNACION', requerido: true },
     { campo: 'FECHA_INICIO_ASIGNACION', etiqueta: 'Fecha inicio asignación', tipo: 'fecha' },
     { campo: 'FECHA_FIN_ASIGNACION', etiqueta: 'Fecha fin asignación', tipo: 'fecha' },
-    { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true },
+    { campo: 'PORCENTAJE_DEDICACION', etiqueta: 'Porcentaje de dedicación', tipo: 'numero', requerido: true, min: 0, max: 100 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ASIGNACION', requerido: true, valorPorDefecto: 'Planificada' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -730,7 +815,7 @@ INCIDENCIA: [
     { campo: 'ENTIDAD_DESTINO_ID', etiqueta: 'Registro destino', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
     { campo: 'TIPO_RELACION', etiqueta: 'Tipo de relación', tipo: 'catalogo', catalogo: 'CFG_TIPO_RELACION', requerido: true },
     { campo: 'DESFASE_DIAS', etiqueta: 'Desfase (días)', tipo: 'numero' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -750,7 +835,7 @@ INCIDENCIA: [
     { campo: 'ENTIDAD_DESTINO_TIPO', etiqueta: 'Tipo de entidad destino', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_DOCUMENTO', requerido: true },
     { campo: 'ENTIDAD_DESTINO_ID', etiqueta: 'Registro destino', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_DESTINO_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
     { campo: 'TIPO_VINCULO', etiqueta: 'Tipo de vínculo', tipo: 'catalogo', catalogo: 'CFG_TIPO_VINCULO', requerido: true },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -766,7 +851,7 @@ INCIDENCIA: [
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
     { campo: 'TAREA_ID', etiqueta: 'Tarea relacionada', tipo: 'fk', entidadFk: 'TAREA' },
     { campo: 'TIPO_MOVIMIENTO', etiqueta: 'Tipo de movimiento', tipo: 'catalogo', catalogo: 'CFG_TIPO_MOVIMIENTO', requerido: true },
-    { campo: 'CANTIDAD', etiqueta: 'Cantidad', tipo: 'numero', requerido: true },
+    { campo: 'CANTIDAD', etiqueta: 'Cantidad', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
     { campo: 'FECHA_MOVIMIENTO', etiqueta: 'Fecha del movimiento', tipo: 'fecha', requerido: true },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
@@ -785,8 +870,8 @@ INCIDENCIA: [
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable de la ejecución', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'FECHA_INICIO', etiqueta: 'Fecha de inicio', tipo: 'fecha' },
     { campo: 'FECHA_FIN', etiqueta: 'Fecha de fin', tipo: 'fecha' },
-    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero' },
-    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true },
+    { campo: 'DURACION_REAL_DIAS', etiqueta: 'Duración real (días)', tipo: 'numero', min: 0 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'RESULTADO', etiqueta: 'Resultado', tipo: 'catalogo', catalogo: 'CFG_RESULTADO_EJECUCION' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ]
@@ -893,16 +978,49 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
         );
       }
 
+      /*
+       * Bug real detectado en la auditoria piloto: PROYECTO_PRODUCTO no
+       * tiene NOMBRE/TITULO propio, asi que el buscador (ej. PROCESO.
+       * PROYECTO_PRODUCTO_ID) mostraba etiquetas vacias ("PPR-0001 - ").
+       * Se construye una etiqueta compuesta a partir del proyecto y el
+       * producto de cada relacion. Prefetch unico (no por fila) para no
+       * repetir listarRegistros dentro del map.
+       */
+      var nombresProyectoPorId_ = null;
+      var nombresProductoPorId_ = null;
+
+      if (copia.entidadFk === 'PROYECTO_PRODUCTO') {
+        nombresProyectoPorId_ = {};
+        listarRegistros('PROYECTO', { ACTIVO: 'SÍ' }).forEach(function (p) {
+          nombresProyectoPorId_[p.ID] = p.NOMBRE;
+        });
+
+        nombresProductoPorId_ = {};
+        listarRegistros('PRODUCTO', { ACTIVO: 'SÍ' }).forEach(function (p) {
+          nombresProductoPorId_[p.ID] = p.NOMBRE;
+        });
+      }
+
       copia.opciones = registros.map(
         function (registro) {
-          var etiqueta =
-            registro.ID +
-            ' - ' +
-            (
-              registro.NOMBRE ||
-              registro.TITULO ||
-              ''
-            );
+          var etiqueta;
+
+          if (copia.entidadFk === 'PROYECTO_PRODUCTO') {
+            etiqueta =
+              registro.ID + ' - ' +
+              (nombresProyectoPorId_[registro.PROYECTO_ID] || registro.PROYECTO_ID) +
+              ' / ' +
+              (nombresProductoPorId_[registro.PRODUCTO_ID] || registro.PRODUCTO_ID);
+          } else {
+            etiqueta =
+              registro.ID +
+              ' - ' +
+              (
+                registro.NOMBRE ||
+                registro.TITULO ||
+                ''
+              );
+          }
 
           /*
            * F-046: el selector de PERSONA_EQUIPO no distinguía persona de
@@ -1875,6 +1993,25 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
     );
   });
 
+  /*
+   * Hallazgo #18 (auditoría piloto): campos como PORCENTAJE_AVANCE no
+   * tienen sentido pedirlos al crear (un registro nuevo siempre empieza
+   * en 0) -- se ocultan en el formulario (ocultarAlCrear, ver
+   * FormularioGenerico.html) y aquí se completan con su valor por
+   * defecto si llegan vacíos al crear.
+   */
+  if (!idRegistro) {
+    esquema.forEach(function (campo) {
+      if (
+        campo.ocultarAlCrear &&
+        campo.valorPorDefectoAlCrear !== undefined &&
+        (datos[campo.campo] === '' || datos[campo.campo] === undefined)
+      ) {
+        datos[campo.campo] = campo.valorPorDefectoAlCrear;
+      }
+    });
+  }
+
   var correlationIdFinal = correlationId || Utilities.getUuid();
 
   try {
@@ -1896,6 +2033,23 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
       idRegistro
     );
 
+    /*
+     * PROYECTO_VINCULAR_ID (auditoría piloto, hallazgo #13): campo
+     * virtual del formulario de PRODUCTO, no es una columna real de la
+     * hoja -- se valida como FK arriba (validarClavesForaneasFormulario_)
+     * pero se extrae antes de insertar/actualizar. Si tiene valor, crea
+     * además el PROYECTO_PRODUCTO en el mismo guardado, sustituyendo el
+     * paso posterior "¿Vincular ahora?" de F-015 por un campo normal.
+     */
+    var proyectoVincularId = null;
+
+    if (clave === 'PRODUCTO') {
+      proyectoVincularId = datos.PROYECTO_VINCULAR_ID || null;
+      delete datos.PROYECTO_VINCULAR_ID;
+    }
+
+    var idFinal = idRegistro;
+
     if (idRegistro) {
       actualizarRegistroTransaccional(
         clave,
@@ -1906,24 +2060,38 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
           correlationId: correlationIdFinal
         }
       );
+    } else {
+      var resultadoInsercion = insertarRegistroTransaccional(
+        clave,
+        datos,
+        {
+          origen: 'UI',
+          correlationId: correlationIdFinal
+        }
+      );
 
-      return {
-        id: idRegistro,
-        correlationId: correlationIdFinal
-      };
+      idFinal = resultadoInsercion.id;
     }
 
-    var resultadoInsercion = insertarRegistroTransaccional(
-      clave,
-      datos,
-      {
-        origen: 'UI',
-        correlationId: correlationIdFinal
-      }
-    );
+    if (clave === 'PRODUCTO' && proyectoVincularId) {
+      insertarRegistroTransaccional(
+        'PROYECTO_PRODUCTO',
+        {
+          PROYECTO_ID: proyectoVincularId,
+          PRODUCTO_ID: idFinal,
+          CANTIDAD_ASIGNADA: Number(datos.CANTIDAD_PREVISTA) || 1,
+          PRIORIDAD: datos.PRIORIDAD,
+          ESTADO: 'Activa'
+        },
+        {
+          origen: 'UI',
+          correlationId: correlationIdFinal
+        }
+      );
+    }
 
     return {
-      id: resultadoInsercion.id,
+      id: idFinal,
       correlationId: correlationIdFinal
     };
   } catch (errorRepositorio) {
@@ -1937,89 +2105,103 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
 }
 
 
+/*
+ * Hallazgo #23 (auditoría piloto): el menú había crecido por orden de
+ * aparición de cada fase (L1-L5), agrupado por tipo de entidad en dos
+ * submenús separados ("Nuevo registro"/"Relaciones") que no reflejaban
+ * como se usa el sistema de verdad. Reorganizado por contexto de uso;
+ * "Nuevo X"/"Editar X" de la misma entidad quedan juntos en el mismo
+ * grupo. Cambio puramente de organización del menú -- no toca lógica
+ * de servidor ni datos.
+ */
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
     .addSubMenu(
-      ui.createMenu('Nuevo registro')
-        .addItem('Campaña', 'abrirFormularioCrearCampana')
-        .addItem('Proyecto', 'abrirFormularioCrearProyecto')
-        .addItem('Producto', 'abrirFormularioCrearProducto')
-        .addItem('Proceso', 'abrirFormularioCrearProceso')
-        .addItem('Tarea', 'abrirFormularioCrearTarea')
-        .addItem('Material', 'abrirFormularioCrearMaterial')
-        .addItem('Recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
-        .addItem('Persona/Equipo', 'abrirFormularioCrearPersonaEquipo')
-        .addItem('Proveedor', 'abrirFormularioCrearProveedor')
-        .addItem('Pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
-        .addItem('Recepción de pedido', 'abrirFormularioCrearRecepcion')
-        .addItem('Decisión', 'abrirFormularioCrearDecision')
-        .addItem('Incidencia', 'abrirFormularioCrearIncidencia')
-        .addItem('Documento', 'abrirFormularioCrearDocumento')
+      ui.createMenu('🏗️ Jerarquía de producción')
+        .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
+        .addItem('Editar campaña', 'abrirEditarCampana')
+        .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
+        .addItem('Editar proyecto', 'abrirEditarProyecto')
+        .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
+        .addItem('Editar producto', 'abrirEditarProducto')
+        .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
+        .addItem('Editar Proyecto-Producto', 'abrirEditarProyectoProducto')
+        .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
+        .addItem('Editar proceso', 'abrirEditarProceso')
+        .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
+        .addItem('Editar tarea', 'abrirEditarTarea')
     )
     .addSubMenu(
-      ui.createMenu('Editar registro')
-        .addItem('Campaña', 'abrirEditarCampana')
-        .addItem('Proyecto', 'abrirEditarProyecto')
-        .addItem('Producto', 'abrirEditarProducto')
-        .addItem('Proceso', 'abrirEditarProceso')
-        .addItem('Tarea', 'abrirEditarTarea')
-        .addItem('Material', 'abrirEditarMaterial')
-        .addItem('Recurso', 'abrirEditarRecurso')
-        .addItem('Persona/Equipo', 'abrirEditarPersonaEquipo')
-        .addItem('Proveedor', 'abrirEditarProveedor')
-        .addItem('Pedido a proveedor', 'abrirEditarPedidoProveedor')
-        .addItem('Recepción de pedido', 'abrirEditarRecepcion')
-        .addItem('Decisión', 'abrirEditarDecision')
-        .addItem('Incidencia', 'abrirEditarIncidencia')
-        .addItem('Documento', 'abrirEditarDocumento')
-        .addItem('Proyecto-Producto', 'abrirEditarProyectoProducto')
-        .addItem('Tarea-Responsable', 'abrirEditarTareaResponsable')
-        .addItem('Producto-Material', 'abrirEditarProductoMaterial')
-        .addItem('Tarea-Material', 'abrirEditarTareaMaterial')
-        .addItem('Asignación', 'abrirEditarAsignacion')
-        .addItem('Relación (grafo de dependencias)', 'abrirEditarRelacion')
-        .addItem('Vínculo (genérico)', 'abrirEditarVinculo')
-        .addItem('Movimiento de material', 'abrirEditarMovimientoMaterial')
-        .addItem('Ejecución de tarea', 'abrirEditarEjecucionTarea')
-        .addItem('Proveedor-Material', 'abrirEditarProveedorMaterial')
-        .addItem('Equipo-Miembro', 'abrirEditarEquipoMiembro')
-        .addItem('Tarea-Recurso', 'abrirEditarTareaRecurso')
-        .addItem('Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
-        .addItem('Recepción-Línea', 'abrirEditarRecepcionLinea')
-    )
-    .addSubMenu(
-      ui.createMenu('Relaciones')
-        .addItem('Proyecto - Producto', 'abrirFormularioCrearProyectoProducto')
-        .addItem('Tarea - Responsable', 'abrirFormularioCrearTareaResponsable')
-        .addItem('Producto - Material', 'abrirFormularioCrearProductoMaterial')
-        .addItem('Tarea - Material', 'abrirFormularioCrearTareaMaterial')
+      ui.createMenu('👥 Personas y recursos')
+        .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
+        .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
+        .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
+        .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
+        .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
+        .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
+        .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
+        .addItem('Editar recurso', 'abrirEditarRecurso')
+        .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
+        .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
         .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
-        .addItem('Relación / dependencia (grafo)', 'abrirFormularioCrearRelacion')
-        .addItem('Vínculo genérico (cualquier entidad a cualquier entidad)', 'abrirFormularioCrearVinculo')
-        .addItem('Movimiento de material', 'abrirFormularioCrearMovimientoMaterial')
-        .addItem('Ejecución de tarea', 'abrirFormularioCrearEjecucionTarea')
-        .addItem('Proveedor - Material', 'abrirFormularioCrearProveedorMaterial')
-        .addItem('Equipo - Miembro', 'abrirFormularioCrearEquipoMiembro')
-        .addItem('Tarea - Recurso', 'abrirFormularioCrearTareaRecurso')
-        .addItem('Pedido - Línea', 'abrirFormularioCrearPedidoProveedorLinea')
-        .addItem('Recepción - Línea', 'abrirFormularioCrearRecepcionLinea')
+        .addItem('Editar Asignación', 'abrirEditarAsignacion')
     )
-    .addItem('Panel operativo', 'abrirPanelOperativo')
-    .addItem('Informes', 'abrirInformes')
-    .addItem('Verificar integridad', 'abrirIntegridad')
     .addSubMenu(
-      ui.createMenu('Administración')
-        .addItem('Catálogos', 'abrirCatalogosAdmin')
-        .addItem('Personas y equipos', 'abrirPersonasEquiposAdmin')
-        .addItem('Proveedores', 'abrirProveedoresAdmin')
-        .addItem('Protección de hojas', 'abrirProteccionHojas')
-        .addItem('Integridad', 'abrirIntegridad')
-        .addItem('Historial', 'abrirHistorialAdmin')
-        .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
-        .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
+      ui.createMenu('📦 Materiales y compras')
+        .addItem('Nuevo material', 'abrirFormularioCrearMaterial')
+        .addItem('Editar material', 'abrirEditarMaterial')
+        .addItem('Producto - Material (nueva relación)', 'abrirFormularioCrearProductoMaterial')
+        .addItem('Editar Producto-Material', 'abrirEditarProductoMaterial')
+        .addItem('Tarea - Material (nueva relación)', 'abrirFormularioCrearTareaMaterial')
+        .addItem('Editar Tarea-Material', 'abrirEditarTareaMaterial')
+        .addItem('Nuevo proveedor', 'abrirFormularioCrearProveedor')
+        .addItem('Editar proveedor', 'abrirEditarProveedor')
+        .addItem('Proveedor - Material (nueva relación)', 'abrirFormularioCrearProveedorMaterial')
+        .addItem('Editar Proveedor-Material', 'abrirEditarProveedorMaterial')
+        .addItem('Nuevo pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
+        .addItem('Editar pedido a proveedor', 'abrirEditarPedidoProveedor')
+        .addItem('Pedido - Línea (nueva)', 'abrirFormularioCrearPedidoProveedorLinea')
+        .addItem('Editar Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
+        .addItem('Nueva recepción de pedido', 'abrirFormularioCrearRecepcion')
+        .addItem('Editar recepción de pedido', 'abrirEditarRecepcion')
+        .addItem('Recepción - Línea (nueva)', 'abrirFormularioCrearRecepcionLinea')
+        .addItem('Editar Recepción-Línea', 'abrirEditarRecepcionLinea')
         .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
+        .addItem('Movimiento de material (nuevo)', 'abrirFormularioCrearMovimientoMaterial')
+        .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial')
+    )
+    .addSubMenu(
+      ui.createMenu('📋 Seguimiento y decisiones')
+        .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
+        .addItem('Editar incidencia', 'abrirEditarIncidencia')
+        .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
+        .addItem('Editar decisión', 'abrirEditarDecision')
+        .addItem('Nuevo documento', 'abrirFormularioCrearDocumento')
+        .addItem('Editar documento', 'abrirEditarDocumento')
+        .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
+        .addItem('Editar Relación', 'abrirEditarRelacion')
+        .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
+        .addItem('Editar Vínculo', 'abrirEditarVinculo')
+        .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
+        .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
+        .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
+    )
+    .addSubMenu(
+      ui.createMenu('📊 Consulta y análisis')
+        .addItem('Panel operativo', 'abrirPanelOperativo')
+        .addItem('Informes', 'abrirInformes')
+        .addItem('Verificar integridad', 'abrirIntegridad')
+        .addItem('Historial', 'abrirHistorialAdmin')
+    )
+    .addSubMenu(
+      ui.createMenu('⚙️ Administración')
+        .addItem('Catálogos', 'abrirCatalogosAdmin')
+        .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
+        .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
+        .addItem('Protección de hojas', 'abrirProteccionHojas')
         .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
+        .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
     )
     .addToUi();
 }
@@ -2182,7 +2364,8 @@ function abrirHojaAdmin_(nombreHoja) {
   }
   ss.setActiveSheet(hoja);
 }
-function abrirCatalogosAdmin() { abrirHojaAdmin_('90_CONFIGURACION'); }
+// abrirCatalogosAdmin ahora vive en GestionCatalogos.js (hallazgo #21:
+// interfaz real en vez de abrir la hoja cruda 90_CONFIGURACION).
 function abrirPersonasEquiposAdmin() { abrirHojaAdmin_('11_PERSONAS_EQUIPOS'); }
 function abrirProveedoresAdmin() { abrirHojaAdmin_('15_PROVEEDORES'); }
 function abrirHistorialAdmin() { abrirHojaAdmin_('91_HISTORIAL'); }

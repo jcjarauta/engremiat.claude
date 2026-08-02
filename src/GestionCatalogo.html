@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 13px; padding: 12px; }
+    h3 { margin-top: 0; }
+    ul { padding-left: 18px; margin-top: 6px; max-height: 220px; overflow-y: auto; }
+    li { margin-bottom: 2px; }
+    label { display: block; margin-top: 14px; font-weight: bold; }
+    input { width: 100%; padding: 6px; margin-top: 4px; box-sizing: border-box; font-family: inherit; }
+    .ayuda-campo { font-weight: normal; font-size: 11px; color: #666; margin-top: 2px; }
+    #mensaje { margin-top: 10px; font-weight: bold; min-height: 18px; }
+    #mensaje.error { color: #b00020; }
+    #mensaje.ok { color: #1a7f37; }
+    .acciones { margin-top: 14px; text-align: right; }
+    button { padding: 8px 16px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h3>Catálogo: <?= categoria ?></h3>
+  <div><b>Valores actuales:</b></div>
+  <ul id="lista"><li>Cargando...</li></ul>
+
+  <label for="nuevoValor">Añadir un valor nuevo</label>
+  <div class="ayuda-campo">Solo letras, números, espacios y guiones (2-60 caracteres). Si ya existe algo muy parecido, se reutilizará en vez de crear un duplicado.</div>
+  <input type="text" id="nuevoValor" placeholder="Escribe el valor nuevo...">
+
+  <div id="mensaje"></div>
+
+  <div class="acciones">
+    <button id="btnCerrar" onclick="google.script.host.close()">Cerrar</button>
+    <button id="btnAnadir" onclick="anadir()">Añadir</button>
+  </div>
+
+  <script>
+    var CATEGORIA = <?!= JSON.stringify(categoria) ?>;
+
+    function cargarValores() {
+      google.script.run
+        .withSuccessHandler(function (valores) {
+          var lista = document.getElementById("lista");
+          lista.innerHTML = "";
+          (valores || []).forEach(function (v) {
+            var li = document.createElement("li");
+            li.textContent = v;
+            lista.appendChild(li);
+          });
+          if (!valores || valores.length === 0) {
+            lista.innerHTML = "<li>(sin valores)</li>";
+          }
+        })
+        .withFailureHandler(function (error) {
+          document.getElementById("mensaje").className = "error";
+          document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
+        })
+        .obtenerValoresCatalogoParaGestion(CATEGORIA);
+    }
+
+    function anadir() {
+      var texto = document.getElementById("nuevoValor").value.trim();
+      if (!texto) return;
+      document.getElementById("btnAnadir").disabled = true;
+      google.script.run
+        .withSuccessHandler(function (resultado) {
+          document.getElementById("btnAnadir").disabled = false;
+          document.getElementById("nuevoValor").value = "";
+          var el = document.getElementById("mensaje");
+          el.className = "ok";
+          el.textContent = resultado.creado
+            ? "Añadido: " + resultado.valor
+            : "Ya existía un valor muy parecido, se usará: " + resultado.valor;
+          cargarValores();
+        })
+        .withFailureHandler(function (error) {
+          document.getElementById("btnAnadir").disabled = false;
+          document.getElementById("mensaje").className = "error";
+          document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
+        })
+        .agregarValorCatalogoSiNuevo("CFG_" + CATEGORIA, texto);
+    }
+
+    cargarValores();
+  </script>
+</body>
+</html>

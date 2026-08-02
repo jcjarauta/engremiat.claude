@@ -15198,6 +15198,89 @@ function probarIntegridadImportacionMasivaDryRun() {
 }
 
 
+function probarIntegridadAltaRapidaCatalogo() {
+  var packageName = 'PROBAR_INTEGRIDAD_ALTA_RAPIDA_CATALOGO';
+
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var ss = SpreadsheetApp.getActive();
+  var hojaConfig = ss.getSheetByName('90_CONFIGURACION');
+  var sufijo = new Date().getTime();
+  var textoPrueba = 'Textil de prueba ' + sufijo;
+  var errorFinal = null;
+
+  try {
+    var resultado1 = agregarValorCatalogoSiNuevo('CFG_CATEGORIA_MATERIAL', textoPrueba);
+
+    if (!resultado1.creado || resultado1.valor !== textoPrueba) {
+      throw new Error(
+        'ALTA_RAPIDA_CATALOGO_TEST_ERROR: se esperaba creado=true valor="' + textoPrueba + '", obtenido ' + JSON.stringify(resultado1)
+      );
+    }
+
+    var valoresTrasAlta = obtenerCatalogo('CFG_CATEGORIA_MATERIAL');
+
+    if (valoresTrasAlta.indexOf(textoPrueba) === -1) {
+      throw new Error('ALTA_RAPIDA_CATALOGO_TEST_ERROR: el catálogo no contiene el valor recién creado');
+    }
+
+    if (valoresTrasAlta.indexOf('Otro') === -1) {
+      throw new Error('ALTA_RAPIDA_CATALOGO_TEST_ERROR: "Otro" desapareció del catálogo tras la alta (debería seguir al final)');
+    }
+
+    console.log('OK alta_creada=true valor=' + resultado1.valor);
+
+    var resultado2 = agregarValorCatalogoSiNuevo('CFG_CATEGORIA_MATERIAL', '  textil DE PRUEBA ' + sufijo + '  ');
+
+    if (resultado2.creado || resultado2.valor !== textoPrueba) {
+      throw new Error(
+        'ALTA_RAPIDA_CATALOGO_TEST_ERROR: se esperaba reutilizar el valor existente (creado=false), obtenido ' + JSON.stringify(resultado2)
+      );
+    }
+
+    console.log('OK deduplicacion_funciona=true');
+
+    var lanzoErrorSintaxis = false;
+    try {
+      agregarValorCatalogoSiNuevo('CFG_CATEGORIA_MATERIAL', 'Valor con símbolo #inválido');
+    } catch (e) {
+      lanzoErrorSintaxis = true;
+    }
+
+    if (!lanzoErrorSintaxis) {
+      throw new Error('ALTA_RAPIDA_CATALOGO_TEST_ERROR: no rechazó un valor con caracteres no permitidos');
+    }
+
+    console.log('OK validacion_sintaxis_funciona=true');
+  } catch (error) {
+    errorFinal = error;
+  } finally {
+    var clave = generarClaveCatalogo_(textoPrueba);
+    var datos = hojaConfig.getDataRange().getValues();
+
+    for (var i = datos.length - 1; i >= 1; i--) {
+      if (String(datos[i][1]).trim() === 'CATEGORIA_MATERIAL' && String(datos[i][2]).trim() === clave) {
+        hojaConfig.deleteRow(i + 1);
+        break;
+      }
+    }
+
+    SpreadsheetApp.flush();
+    console.log('OK fila_de_prueba_eliminada=true');
+  }
+
+  if (errorFinal) throw errorFinal;
+
+  console.log(
+    'ENGREMIAT_PACKAGE_END package=' +
+      packageName +
+      ' status=OK'
+  );
+
+  return true;
+}
+
+
 function parseFechaIntegridad_(
   valor
 ) {

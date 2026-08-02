@@ -14,6 +14,8 @@
     .acciones { margin-top: 16px; text-align: right; }
     button { padding: 8px 16px; cursor: pointer; }
     .campo-oculto { display: none; }
+    .ayuda-campo { font-weight: normal; font-size: 11px; color: #666; margin-top: 2px; }
+    .campo-invalido input, .campo-invalido select, .campo-invalido textarea { border-color: #b00020; border-width: 2px; }
   </style>
 </head>
 <body>
@@ -21,6 +23,7 @@
   <div id="campos">Cargando formulario...</div>
   <div id="mensaje"></div>
   <div class="acciones">
+    <button id="btnCancelar" onclick="cancelar()">Cancelar</button>
     <button id="btnGuardar" onclick="guardar()" disabled>Guardar</button>
   </div>
   <script>
@@ -60,9 +63,13 @@
 
     function renderCampo(campo) {
       var id = "campo_" + campo.campo;
-      var claseOculto = campo.visibleSi ? " campo-oculto" : "";
+      var ocultoAlCrear = campo.ocultarAlCrear && !ID_REGISTRO;
+      var claseOculto = (campo.visibleSi || ocultoAlCrear) ? " campo-oculto" : "";
       var html = "<div class=\"campo-contenedor" + claseOculto + "\" id=\"contenedor_" + id + "\" data-campo=\"" + campo.campo + "\">";
       html += "<label for=\"" + id + "\">" + campo.etiqueta + (campo.requerido ? " *" : "") + "</label>";
+      if (campo.ayuda) {
+        html += "<div class=\"ayuda-campo\">" + escaparAtributo_(campo.ayuda) + "</div>";
+      }
       if (campo.tipo === "catalogo") {
         html += "<select id=\"" + id + "\"><option value=\"\">-- seleccionar --</option>";
         campo.opciones.forEach(function (op) {
@@ -76,7 +83,9 @@
       } else if (campo.tipo === "fecha") {
         html += "<input type=\"date\" id=\"" + id + "\">";
       } else if (campo.tipo === "numero") {
-        html += "<input type=\"number\" id=\"" + id + "\">";
+        var atrMin = campo.min !== undefined ? " min=\"" + campo.min + "\"" : "";
+        var atrMax = campo.max !== undefined ? " max=\"" + campo.max + "\"" : "";
+        html += "<input type=\"number\" id=\"" + id + "\"" + atrMin + atrMax + ">";
       } else if (campo.tipo === "textarea") {
         html += "<textarea id=\"" + id + "\" rows=\"4\"></textarea>";
       } else {
@@ -240,6 +249,107 @@
     }
 
     /*
+     * Hallazgo #16 (auditoria piloto): al elegir la Relacion proyecto-
+     * producto en Nuevo proceso, deriva el Producto automaticamente
+     * (solo si el campo Producto aun esta vacio) para evitar elegir una
+     * combinacion inconsistente entre ambos campos.
+     */
+    function activarDerivacionDeRelacion_() {
+      esquemaActual.forEach(function (campo) {
+        if (!campo.derivarDeRelacion) return;
+        var elDestinoOculto = document.getElementById("campo_" + campo.campo);
+        var elDestinoTexto = document.getElementById("campo_" + campo.campo + "_texto");
+        var elOrigen = document.getElementById("campo_" + campo.derivarDeRelacion);
+        if (!elDestinoOculto || !elOrigen) return;
+
+        elOrigen.addEventListener("change", function () {
+          if (elDestinoOculto.value) return;
+          var valorOrigen = elOrigen.value;
+          if (!valorOrigen) return;
+
+          google.script.run
+            .withSuccessHandler(function (resultado) {
+              if (!resultado || elDestinoOculto.value) return;
+              elDestinoOculto.value = resultado.id;
+              if (elDestinoTexto) elDestinoTexto.value = resultado.etiqueta;
+            })
+            .withFailureHandler(function () { /* derivacion opcional: fallo silencioso */ })
+            .obtenerProductoDesdeProyectoProducto(valorOrigen);
+        });
+      });
+    }
+
+    /*
+     * Hallazgo #21 (auditoria piloto): "Otro" en cualquier desplegable
+     * de catalogo era una etiqueta muerta. Al elegirlo, revela una caja
+     * de texto; al salir de ella con algo escrito, lo normaliza y lo
+     * da de alta en el catalogo real (agregarValorCatalogoSiNuevo,
+     * GestionCatalogos.js -- reutiliza el valor existente si ya hay
+     * algo muy parecido), y deja el <select> con esa opcion elegida.
+     */
+    function activarAltaRapidaCatalogo_() {
+      esquemaActual.forEach(function (campo) {
+        if (campo.tipo !== "catalogo" || !campo.catalogo) return;
+
+        var valorOtro = (campo.opciones || []).filter(function (op) {
+          return op === "Otro" || op === "Otra";
+        })[0];
+
+        if (!valorOtro) return;
+
+        var select = document.getElementById("campo_" + campo.campo);
+        if (!select) return;
+
+        var inputNuevo = document.createElement("input");
+        inputNuevo.type = "text";
+        inputNuevo.placeholder = "Escribe el valor nuevo y sal del campo";
+        inputNuevo.style.display = "none";
+        select.parentNode.insertBefore(inputNuevo, select.nextSibling);
+
+        select.addEventListener("change", function () {
+          if (select.value === valorOtro) {
+            inputNuevo.style.display = "block";
+            inputNuevo.focus();
+          } else {
+            inputNuevo.style.display = "none";
+          }
+        });
+
+        inputNuevo.addEventListener("blur", function () {
+          var texto = inputNuevo.value.trim();
+          if (!texto) return;
+          inputNuevo.disabled = true;
+
+          google.script.run
+            .withSuccessHandler(function (resultado) {
+              inputNuevo.disabled = false;
+              if (!resultado) return;
+
+              var yaExiste = Array.prototype.some.call(select.options, function (op) {
+                return op.value === resultado.valor;
+              });
+
+              if (!yaExiste) {
+                var nuevaOpcion = document.createElement("option");
+                nuevaOpcion.value = resultado.valor;
+                nuevaOpcion.textContent = resultado.valor;
+                select.insertBefore(nuevaOpcion, select.options[select.options.length - 1]);
+              }
+
+              select.value = resultado.valor;
+              inputNuevo.style.display = "none";
+              inputNuevo.value = "";
+            })
+            .withFailureHandler(function (error) {
+              inputNuevo.disabled = false;
+              mostrarError(error);
+            })
+            .agregarValorCatalogoSiNuevo(campo.catalogo, texto);
+        });
+      });
+    }
+
+    /*
      * Ampliacion tras F-015: sugiere el CODIGO de PRODUCTO/MATERIAL/
      * PROVEEDOR a partir de siglas de campos ya elegidos (ver
      * GeneracionCodigo.js), cuando cambian esos campos de contexto.
@@ -280,6 +390,96 @@
       });
     }
 
+    /*
+     * Hallazgo #5 (repaso de UX): los catalogos siempre empezaban en
+     * "-- seleccionar --" aunque hubiera un valor inicial obvio (ej.
+     * Estado=Borrador). Se preselecciona (solo al crear, nunca al
+     * editar, y solo si el campo no trae ya un valorActual) pero sigue
+     * siendo editable como cualquier otro valor.
+     */
+    function aplicarValoresPorDefecto_() {
+      if (ID_REGISTRO) return;
+      esquemaActual.forEach(function (campo) {
+        if (campo.tipo !== "catalogo" || !campo.valorPorDefecto) return;
+        if (campo.valorActual !== undefined && campo.valorActual !== null && campo.valorActual !== "") return;
+        var el = document.getElementById("campo_" + campo.campo);
+        if (el && !el.value) el.value = campo.valorPorDefecto;
+      });
+    }
+
+    /*
+     * Hallazgo #2 (repaso de UX): antes, si dejabas varios campos
+     * obligatorios vacios, el servidor solo avisaba de uno cada vez.
+     * Ahora se valida en el cliente antes de enviar, marcando TODOS los
+     * campos obligatorios visibles que falten de una vez.
+     */
+    function campoVisible_(campo) {
+      var contenedor = document.getElementById("contenedor_campo_" + campo.campo);
+      return !contenedor || !contenedor.classList.contains("campo-oculto");
+    }
+
+    function valorCampo_(campo) {
+      var el = document.getElementById("campo_" + campo.campo);
+      return el ? el.value : "";
+    }
+
+    function revisarCampoObligatorio_(campo) {
+      var contenedor = document.getElementById("contenedor_campo_" + campo.campo);
+      if (!contenedor) return true;
+      var vacio = campoVisible_(campo) && !valorCampo_(campo);
+      contenedor.classList.toggle("campo-invalido", vacio);
+      return !vacio;
+    }
+
+    function activarValidacionEnVivo_() {
+      esquemaActual.forEach(function (campo) {
+        if (!campo.requerido) return;
+        var el = document.getElementById("campo_" + campo.campo);
+        if (!el) return;
+        var revisar = function () { revisarCampoObligatorio_(campo); };
+        el.addEventListener("input", revisar);
+        el.addEventListener("change", revisar);
+      });
+    }
+
+    function validarObligatoriosAntesDeGuardar_() {
+      var faltantes = [];
+      esquemaActual.forEach(function (campo) {
+        if (!campo.requerido) return;
+        if (!revisarCampoObligatorio_(campo)) faltantes.push(campo.etiqueta);
+      });
+      return faltantes;
+    }
+
+    /*
+     * Hallazgo #3 (repaso de UX): cerrar el dialogo sin guardar perdia
+     * los datos escritos sin avisar. Se marca "sucio" en cuanto cambia
+     * algo dentro de #campos, y se limpia justo antes de un guardado
+     * con exito (para no interceptar nuestro propio cierre programado).
+     */
+    var formularioSucio_ = false;
+
+    /*
+     * onbeforeunload queda como red de seguridad adicional, pero el
+     * boton X nativo del dialogo de Apps Script lo dibuja Sheets fuera
+     * de esta pagina y no siempre dispara un evento de navegador real
+     * -- por eso el mecanismo fiable es este boton "Cancelar" propio,
+     * con confirm() nativo (eso si es un dialogo que controlamos).
+     */
+    window.onbeforeunload = function (evento) {
+      if (!formularioSucio_) return;
+      evento.preventDefault();
+      evento.returnValue = "Tienes cambios sin guardar. ¿Seguro que quieres cerrar?";
+      return evento.returnValue;
+    };
+
+    function cancelar() {
+      if (formularioSucio_ && !confirm("Tienes cambios sin guardar. ¿Seguro que quieres cerrar?")) {
+        return;
+      }
+      google.script.host.close();
+    }
+
     function cargarEsquema() {
       google.script.run
         .withSuccessHandler(function (esquema) {
@@ -303,11 +503,15 @@
             var el = document.getElementById("campo_" + campo.campo);
             if (el) el.value = campo.valorActual;
           });
+          aplicarValoresPorDefecto_();
           activarVisibilidadCondicional_();
           activarBuscadoresFk_();
           activarDependenciasFk_();
           activarSugerenciasSecuencia_();
           activarSugerenciasCodigo_();
+          activarDerivacionDeRelacion_();
+          activarAltaRapidaCatalogo_();
+          activarValidacionEnVivo_();
           esquema.forEach(function (campo) {
             if (campo.tipo === "fk_dependiente") {
               var elPadre = document.getElementById("campo_" + campo.dependeDe);
@@ -315,76 +519,30 @@
             }
           });
           document.getElementById("btnGuardar").disabled = false;
+          document.getElementById("campos").addEventListener("input", function () { formularioSucio_ = true; });
+          document.getElementById("campos").addEventListener("change", function () { formularioSucio_ = true; });
         })
         .withFailureHandler(mostrarError)
         .obtenerEsquemaFormulario(ENTIDAD, ID_REGISTRO);
     }
 
     /*
-     * Fase L4 (F-015): tras crear un PRODUCTO nuevo (no al editar), ofrece
-     * vincularlo ya a un proyecto sin cerrar el dialogo, reutilizando el
-     * mismo formulario generico para PROYECTO_PRODUCTO (con PRODUCTO_ID
-     * ya resuelto) y el mismo CORRELATION_ID de historial que la creacion
-     * del producto, para que ambas escrituras queden trazadas juntas.
+     * Auditoria piloto (#13): el paso posterior "¿Vincular a un proyecto
+     * ahora?" (F-015) se sustituyo por un campo normal del formulario
+     * (PROYECTO_VINCULAR_ID en el esquema de PRODUCTO) que guardarFormulario
+     * resuelve en el mismo guardado -- ya no hace falta un segundo paso
+     * ni una segunda pantalla aqui.
      */
-    function mostrarPasoVincularProyecto_(productoId, correlationId) {
-      var elMensaje = document.getElementById("mensaje");
-      elMensaje.className = "ok";
-      elMensaje.textContent = "Producto " + productoId + " creado correctamente.";
-
-      google.script.run
-        .withSuccessHandler(function (esquemaVinculo) {
-          var camposRestantes = esquemaVinculo.filter(function (campo) {
-            return campo.campo !== "PRODUCTO_ID";
-          });
-          esquemaActual = camposRestantes;
-
-          document.getElementById("campos").innerHTML =
-            "<p><b>¿Vincular este producto a un proyecto ahora?</b></p>" +
-            camposRestantes.map(renderCampo).join("");
-
-          camposRestantes.forEach(function (campo) {
-            if (campo.valorActual === undefined || campo.valorActual === null) return;
-            var el = document.getElementById("campo_" + campo.campo);
-            if (el) el.value = campo.valorActual;
-          });
-
-          activarVisibilidadCondicional_();
-          activarBuscadoresFk_();
-
-          var acciones = document.querySelector(".acciones");
-          acciones.innerHTML =
-            '<button id="btnOmitir">Omitir</button> ' +
-            '<button id="btnVincular">Vincular</button>';
-
-          document.getElementById("btnOmitir").onclick = function () {
-            google.script.host.close();
-          };
-
-          document.getElementById("btnVincular").onclick = function () {
-            var datosVinculo = { PRODUCTO_ID: productoId };
-            camposRestantes.forEach(function (campo) {
-              var el = document.getElementById("campo_" + campo.campo);
-              datosVinculo[campo.campo] = el ? el.value : "";
-            });
-            document.getElementById("btnVincular").disabled = true;
-            google.script.run
-              .withSuccessHandler(function () {
-                elMensaje.textContent = "Producto vinculado al proyecto correctamente.";
-                setTimeout(function () { google.script.host.close(); }, 900);
-              })
-              .withFailureHandler(function (error) {
-                mostrarError(error);
-                document.getElementById("btnVincular").disabled = false;
-              })
-              .guardarFormulario("PROYECTO_PRODUCTO", "", datosVinculo, correlationId);
-          };
-        })
-        .withFailureHandler(mostrarError)
-        .obtenerEsquemaFormulario("PROYECTO_PRODUCTO", "");
-    }
-
     function guardar() {
+      var faltantes = validarObligatoriosAntesDeGuardar_();
+
+      if (faltantes.length > 0) {
+        var elError = document.getElementById("mensaje");
+        elError.className = "error";
+        elError.textContent = "Faltan campos obligatorios: " + faltantes.join(", ");
+        return;
+      }
+
       var datos = {};
       esquemaActual.forEach(function (campo) {
         var el = document.getElementById("campo_" + campo.campo);
@@ -392,11 +550,8 @@
       });
       document.getElementById("btnGuardar").disabled = true;
       google.script.run
-        .withSuccessHandler(function (resultado) {
-          if (ENTIDAD === "PRODUCTO" && !ID_REGISTRO && resultado && resultado.id) {
-            mostrarPasoVincularProyecto_(resultado.id, resultado.correlationId);
-            return;
-          }
+        .withSuccessHandler(function () {
+          formularioSucio_ = false;
           var el = document.getElementById("mensaje");
           el.className = "ok";
           el.textContent = "Guardado correctamente.";
