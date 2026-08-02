@@ -22,7 +22,8 @@ var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Decisión': 'DECISION',
   'Incidencia': 'INCIDENCIA',
   'Documento': 'DOCUMENTO',
-  'Recurso': 'RECURSO'
+  'Recurso': 'RECURSO',
+  'Persona/Equipo': 'PERSONA_EQUIPO'
 });
 
 /*
@@ -2257,6 +2258,7 @@ function onOpen() {
     .addSubMenu(
       ui.createMenu('👥 Personas y recursos')
         .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
+        .addItem('Ficha de persona/equipo (buscar)', 'abrirFichaPersonaEquipoBuscar')
         .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
         .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
         .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')

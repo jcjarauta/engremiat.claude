@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera-ficha { margin-bottom: 14px; }
+      .cabecera-ficha h2 { margin: 0 0 4px 0; font-size: 18px; }
+      .cabecera-ficha .detalle { color: var(--color-texto-secundario); font-size: 13px; }
+      .cabecera-ficha .acciones { margin-top: 8px; display: flex; gap: 6px; }
+      section.bloque { margin-bottom: 16px; }
+      section.bloque h3 { font-size: 14px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+      .fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--color-borde); }
+      .fila:last-child { border-bottom: none; }
+      .fila .info { font-size: 13px; }
+      .fila .info .detalle-secundario { color: var(--color-texto-secundario); }
+      .btn-mini { font-size: 13px; padding: 5px 9px; }
+      .badge { font-size: 12px; padding: 2px 9px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-bloque { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; padding: 4px; }
+      #estadoCarga { padding: 12px 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="contenido" style="display:none;">
+      <div class="cabecera-ficha">
+        <h2 id="nombrePersona"></h2>
+        <div class="detalle" id="detallePersona"></div>
+        <div class="acciones">
+          <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
+          <button id="btnNuevoHorario" class="boton btn-mini">+ Horario</button>
+        </div>
+      </div>
+
+      <section class="bloque" id="bloqueMiembros"><h3></h3><div class="lista"></div></section>
+      <section class="bloque" id="bloqueCoordinacion"><h3></h3><div class="lista"></div></section>
+      <section class="bloque"><h3>Horario</h3><div class="lista" id="listaHorarios"></div></section>
+      <section class="bloque"><h3>Tareas donde es responsable</h3><div class="lista" id="listaTareas"></div></section>
+      <section class="bloque"><h3>Asignaciones</h3><div class="lista" id="listaAsignaciones"></div></section>
+      <section class="bloque"><h3>Documentos</h3><div class="lista" id="listaDocumentos"></div></section>
+      <section class="bloque"><h3>Vínculos</h3><div class="lista" id="listaVinculos"></div></section>
+    </div>
+
+    <script>
+      var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("inactiv") !== -1 || texto.indexOf("no dispon") !== -1 || texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("disponible") !== -1 && texto.indexOf("no ") === -1) return "badge-completado";
+        if (texto.indexOf("activ") !== -1) return "badge-completado";
+        if (texto.indexOf("complet") !== -1 || texto.indexOf("aprob") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        if (!estado) return "";
+        return ' <span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function editar(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+        document.getElementById("contenido").style.display = "none";
+      }
+
+      function filaHtml_(infoHtml, entidadEditar, idEditar) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
+      }
+
+      function render(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        document.getElementById("contenido").style.display = "block";
+
+        var p = datos.persona;
+        document.getElementById("nombrePersona").innerHTML = escapeHtml(p.NOMBRE) + renderBadge_(p.ESTADO);
+        document.getElementById("detallePersona").textContent =
+          p.ID + " · " + (p.TIPO || "") + (p.ROL ? " · " + p.ROL : "") +
+          (p.DISPONIBILIDAD ? " · " + p.DISPONIBILIDAD : "") +
+          (p.CAPACIDAD_SEMANAL_DIAS ? " · " + p.CAPACIDAD_SEMANAL_DIAS + " días/semana" : "");
+
+        // Miembros (si es Equipo) / Equipos de los que es miembro (si es Persona).
+        var bloqueMiembros = document.getElementById("bloqueMiembros");
+        if (datos.esEquipo) {
+          bloqueMiembros.querySelector("h3").textContent = "Miembros del equipo";
+          bloqueMiembros.querySelector(".lista").innerHTML = datos.miembros.length
+            ? datos.miembros.map(function (m) {
+                return filaHtml_(escapeHtml(m.miembroNombre) + (m.rol ? ' <span class="detalle-secundario">— ' + escapeHtml(m.rol) + '</span>' : '') + renderBadge_(m.estado), 'PERSONA_EQUIPO', m.miembroId);
+              }).join("")
+            : '<div class="vacio-bloque">Sin miembros dados de alta.</div>';
+        } else {
+          bloqueMiembros.querySelector("h3").textContent = "Equipos de los que es miembro";
+          bloqueMiembros.querySelector(".lista").innerHTML = datos.equiposDondeEsMiembro.length
+            ? datos.equiposDondeEsMiembro.map(function (e) {
+                return filaHtml_(escapeHtml(e.equipoNombre) + (e.rol ? ' <span class="detalle-secundario">— ' + escapeHtml(e.rol) + '</span>' : '') + renderBadge_(e.estado), 'PERSONA_EQUIPO', e.equipoId);
+              }).join("")
+            : '<div class="vacio-bloque">No es miembro de ningún equipo.</div>';
+        }
+
+        // Coordinador (si es Equipo) / Equipos que coordina (si es Persona).
+        var bloqueCoordinacion = document.getElementById("bloqueCoordinacion");
+        if (datos.esEquipo) {
+          bloqueCoordinacion.querySelector("h3").textContent = "Coordinador";
+          bloqueCoordinacion.querySelector(".lista").innerHTML = datos.coordinador
+            ? filaHtml_(escapeHtml(datos.coordinador.nombre), 'PERSONA_EQUIPO', datos.coordinador.id)
+            : '<div class="vacio-bloque">Sin coordinador asignado.</div>';
+        } else {
+          bloqueCoordinacion.querySelector("h3").textContent = "Equipos que coordina";
+          bloqueCoordinacion.querySelector(".lista").innerHTML = datos.equiposQueCoordina.length
+            ? datos.equiposQueCoordina.map(function (e) {
+                return filaHtml_(escapeHtml(e.nombre) + renderBadge_(e.estado), 'PERSONA_EQUIPO', e.id);
+              }).join("")
+            : '<div class="vacio-bloque">No coordina ningún equipo.</div>';
+        }
+
+        document.getElementById("listaHorarios").innerHTML = datos.horarios.length
+          ? datos.horarios.map(function (h) {
+              return filaHtml_(escapeHtml(h.dia) + ' <span class="detalle-secundario">' + escapeHtml(h.inicio) + '–' + escapeHtml(h.fin) + '</span>' + renderBadge_(h.estado), 'HORARIO', h.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin franjas horarias registradas.</div>';
+
+        document.getElementById("listaTareas").innerHTML = datos.tareasResponsable.length
+          ? datos.tareasResponsable.map(function (t) {
+              return filaHtml_(escapeHtml(t.tareaNombre) + (t.rol ? ' <span class="detalle-secundario">— ' + escapeHtml(t.rol) + '</span>' : '') + renderBadge_(t.estado), 'TAREA', t.tareaId);
+            }).join("")
+          : '<div class="vacio-bloque">No es responsable de ninguna tarea.</div>';
+
+        document.getElementById("listaAsignaciones").innerHTML = datos.asignaciones.length
+          ? datos.asignaciones.map(function (a) {
+              return filaHtml_(escapeHtml(a.entidad) + (a.rol ? ' <span class="detalle-secundario">— ' + escapeHtml(a.rol) + '</span>' : '') + renderBadge_(a.estado), 'ASIGNACION', a.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin asignaciones registradas.</div>';
+
+        document.getElementById("listaDocumentos").innerHTML = datos.documentos.length
+          ? datos.documentos.map(function (d) {
+              return filaHtml_(escapeHtml(d.titulo) + (d.tipo ? ' <span class="detalle-secundario">— ' + escapeHtml(d.tipo) + '</span>' : '') + renderBadge_(d.estado), 'DOCUMENTO', d.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin documentos adjuntos.</div>';
+
+        document.getElementById("listaVinculos").innerHTML = datos.vinculos.length
+          ? datos.vinculos.map(function (v) {
+              return filaHtml_(escapeHtml(v.tipoVinculo) + ' <span class="detalle-secundario">' + escapeHtml(v.direccion) + ' ' + escapeHtml(v.otro) + '</span>', 'VINCULO', v.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin vínculos genéricos.</div>';
+
+        document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("PERSONA_EQUIPO", p.ID); });
+        document.getElementById("btnNuevoHorario").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearHorarioParaPersonaEquipo(p.ID);
+        });
+      }
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaPersonaEquipo(ID_REGISTRO);
+    </script>
+  </body>
+</html>

@@ -74,18 +74,29 @@
         google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion("PERSONA_EQUIPO", id);
       }
 
+      function verFicha(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaPersonaEquipo(id);
+      }
+
+      function accionesNodo_(id) {
+        return '<span class="acciones-nodo">' +
+          '<button class="boton btn-mini" onclick="verFicha(\'' + escapeAttr(id) + '\')">Ficha</button>' +
+          '<button class="boton btn-mini" onclick="editar(\'' + escapeAttr(id) + '\')">Editar</button>' +
+        '</span>';
+      }
+
       function renderNodo_(nodo) {
         if (nodo.hijos.length === 0) {
           return '<div class="fila-hoja">' +
             '<span>' + escapeHtml(nodo.nombre) + ' ' + renderBadge_(nodo.estado) + renderDetalle_(nodo) + '</span>' +
-            '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'' + escapeAttr(nodo.id) + '\')">Editar</button></span>' +
+            accionesNodo_(nodo.id) +
           '</div>';
         }
         var hijosHtml = nodo.hijos.map(renderNodo_).join("");
         return '<details open>' +
           '<summary>' +
             '<span class="nombre-nodo">' + escapeHtml(nodo.nombre) + ' ' + renderBadge_(nodo.estado) + renderDetalle_(nodo) + '</span>' +
-            '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'' + escapeAttr(nodo.id) + '\')">Editar</button></span>' +
+            accionesNodo_(nodo.id) +
           '</summary>' +
           '<div>' + hijosHtml + '</div>' +
         '</details>';
