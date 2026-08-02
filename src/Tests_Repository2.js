@@ -22699,3 +22699,73 @@ function ejecutarFaseC07_RegresionFinalProcesoTarea() {
   console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
   return true;
 }
+
+/**
+ * Prueba reactiva de DesviacionService.js (auditoria piloto, hallazgo
+ * "calculo de desviacion agregable"). Puramente funcional sobre datos
+ * sinteticos -- no escribe nada en el spreadsheet, no requiere limpieza.
+ */
+function probarIntegridadCalculoDesviacion() {
+  var packageName = 'PROBAR_INTEGRIDAD_CALCULO_DESVIACION';
+
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var registroATiempo = {
+    FECHA_INICIO_PLAN: '2026-01-01', FECHA_FIN_PLAN: '2026-01-10',
+    FECHA_INICIO_REAL: '2026-01-01', FECHA_FIN_REAL: '2026-01-10'
+  };
+  var desviacionATiempo = calcularDesviacionRegistro_(registroATiempo);
+  if (desviacionATiempo.DIAS_DESVIACION_INICIO !== 0 || desviacionATiempo.DIAS_DESVIACION_FIN !== 0) {
+    throw new Error(
+      'DESVIACION_TEST_ERROR: se esperaba desviacion 0/0 para fechas identicas, obtenido ' + JSON.stringify(desviacionATiempo)
+    );
+  }
+  console.log('OK desviacion_cero_cuando_coincide=true');
+
+  var registroConRetraso = {
+    FECHA_INICIO_PLAN: '2026-01-01', FECHA_FIN_PLAN: '2026-01-10',
+    FECHA_INICIO_REAL: '2026-01-03', FECHA_FIN_REAL: '2026-01-15'
+  };
+  var desviacionRetraso = calcularDesviacionRegistro_(registroConRetraso);
+  if (desviacionRetraso.DIAS_DESVIACION_INICIO !== 2 || desviacionRetraso.DIAS_DESVIACION_FIN !== 5) {
+    throw new Error(
+      'DESVIACION_TEST_ERROR: se esperaba desviacion 2/5, obtenido ' + JSON.stringify(desviacionRetraso)
+    );
+  }
+  console.log('OK desviacion_positiva_cuando_hay_retraso=true');
+
+  var registroSinFechaReal = { FECHA_INICIO_PLAN: '2026-01-01', FECHA_FIN_PLAN: '2026-01-10' };
+  var desviacionSinReal = calcularDesviacionRegistro_(registroSinFechaReal);
+  if (desviacionSinReal.DIAS_DESVIACION_INICIO !== null || desviacionSinReal.DIAS_DESVIACION_FIN !== null) {
+    throw new Error(
+      'DESVIACION_TEST_ERROR: se esperaba null/null sin fechas reales, obtenido ' + JSON.stringify(desviacionSinReal)
+    );
+  }
+  console.log('OK desviacion_nula_sin_fecha_real=true');
+
+  var enriquecidos = enriquecerConDesviacion_([registroATiempo, registroConRetraso, registroSinFechaReal]);
+  if (enriquecidos.length !== 2) {
+    throw new Error(
+      'DESVIACION_TEST_ERROR: enriquecerConDesviacion_ deberia excluir registros sin FECHA_FIN_REAL, obtenidos ' + enriquecidos.length
+    );
+  }
+  console.log('OK enriquecer_excluye_sin_fecha_fin_real=true');
+
+  var listaAgrupable = [
+    Object.assign({ FASE_PRODUCCION: 'Produccion' }, calcularDesviacionRegistro_(registroATiempo)),
+    Object.assign({ FASE_PRODUCCION: 'Produccion' }, calcularDesviacionRegistro_(registroConRetraso)),
+    Object.assign({ FASE_PRODUCCION: 'Preproduccion' }, calcularDesviacionRegistro_(registroATiempo))
+  ];
+  var agregado = calcularDesviacionAgregada_(listaAgrupable, 'FASE_PRODUCCION');
+  var grupoProduccion = agregado.filter(function (g) { return g.grupo === 'Produccion'; })[0];
+
+  if (!grupoProduccion || grupoProduccion.casos !== 2 || grupoProduccion.diasDesviacionMedia !== 2.5 || grupoProduccion.casosConRetraso !== 1) {
+    throw new Error(
+      'DESVIACION_TEST_ERROR: agregacion por FASE_PRODUCCION incorrecta, obtenido ' + JSON.stringify(grupoProduccion)
+    );
+  }
+  console.log('OK agregacion_por_grupo_correcta=true');
+
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}

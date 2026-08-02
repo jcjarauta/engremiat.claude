@@ -26,6 +26,7 @@
       <option value="CAMPANA">Informe de campaña</option>
       <option value="PROYECTO">Informe de proyecto</option>
       <option value="MEMORIA">Memoria de producción</option>
+      <option value="DESVIACION">Desviación de planificación</option>
     </select>
 
     <div id="contenedor-registro">
@@ -55,6 +56,10 @@
       <div class="seccion">
         <h4>Incidencias abiertas</h4>
         <div id="incidencias-abiertas"></div>
+      </div>
+      <div class="seccion" id="seccion-desviacion">
+        <h4>Desviación de planificación (real vs. plan)</h4>
+        <div id="desviacion-planificacion"></div>
       </div>
     </div>
 
@@ -90,7 +95,7 @@
         var contenedorRegistro = document.getElementById('contenedor-registro');
         var select = document.getElementById('registro');
 
-        if (tipo === 'MEMORIA') {
+        if (tipo === 'MEMORIA' || tipo === 'DESVIACION') {
           contenedorRegistro.style.display = 'none';
           return;
         }
@@ -106,6 +111,32 @@
           .obtenerOpcionesInforme(tipo);
       }
 
+      function renderDesviacionAgregada_(lista) {
+        if (!lista || lista.length === 0) return '<div class="vacio">Sin datos.</div>';
+        return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Grupo</th><th>Casos</th><th>Media (días)</th><th>Máxima (días)</th><th>Con retraso</th></tr>' +
+          lista.map(function (g) {
+            return '<tr><td>' + escapeHtml(g.grupo) + '</td><td style="text-align:center;">' + g.casos + '</td>' +
+              '<td style="text-align:center;">' + g.diasDesviacionMedia + '</td>' +
+              '<td style="text-align:center;">' + g.diasDesviacionMaxima + '</td>' +
+              '<td style="text-align:center;">' + g.casosConRetraso + '</td></tr>';
+          }).join('') + '</table>';
+      }
+
+      function renderDesviacion(bloque) {
+        var contenedor = document.getElementById('desviacion-planificacion');
+        if (!bloque) { contenedor.innerHTML = '<div class="vacio">Sin datos.</div>'; return; }
+        contenedor.innerHTML =
+          '<div class="resumen-linea"><span>Procesos medidos</span><span class="badge">' + bloque.procesosMedidos + '</span></div>' +
+          '<div class="resumen-linea"><span>Tareas medidas</span><span class="badge">' + bloque.tareasMedidas + '</span></div>' +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por fase de producción</strong></p>' +
+          renderDesviacionAgregada_(bloque.procesosPorFase) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por responsable</strong></p>' +
+          renderDesviacionAgregada_(bloque.procesosPorResponsable) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Tareas por responsable</strong></p>' +
+          renderDesviacionAgregada_(bloque.tareasPorResponsable);
+      }
+
       function renderInforme(informe) {
         if (!informe) {
           mostrarError({ message: 'El servidor no devolvio datos de informe (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
@@ -114,6 +145,14 @@
 
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
+
+        var esDesviacion = informe.tipo === 'DESVIACION';
+        ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
+          document.getElementById(id).closest('.seccion').style.display = esDesviacion ? 'none' : '';
+        });
+        renderDesviacion(esDesviacion ? informe : informe.desviacionPlanificacion);
+
+        if (esDesviacion) return;
 
         var conteoTareas = informe.tipo === 'MEMORIA'
           ? (informe.resumenGlobal ? informe.resumenGlobal.TAREA : {})
@@ -157,7 +196,7 @@
         var tipo = document.getElementById('tipo').value;
         var registro = document.getElementById('registro').value;
         tipoActual = tipo;
-        filtroActual = (tipo === 'MEMORIA') ? null : registro;
+        filtroActual = (tipo === 'MEMORIA' || tipo === 'DESVIACION') ? null : registro;
         document.getElementById('btn-exportar-csv').disabled = true;
         document.getElementById('btn-exportar-pdf').disabled = true;
         document.getElementById('resultado').style.display = 'none';
@@ -165,7 +204,7 @@
         google.script.run
           .withSuccessHandler(function (informe) { renderInforme(informe); document.getElementById('btn-exportar-csv').disabled = false; document.getElementById('btn-exportar-pdf').disabled = false; })
           .withFailureHandler(mostrarError)
-          .generarInforme(tipo, tipo === 'MEMORIA' ? null : registro);
+          .generarInforme(tipo, filtroActual);
       }
 
       document.getElementById('btn-exportar-csv').addEventListener('click', function () {

@@ -78,6 +78,9 @@ function generarInformeCampania(campanaId) {
     return idsTareas.indexOf(tarea.ID) !== -1;
   });
 
+  var procesosConDesviacion = enriquecerConDesviacion_(procesos);
+  var tareasConDesviacion = enriquecerConDesviacion_(tareas);
+
   return {
     tipo: 'CAMPANA',
     campana: campana,
@@ -92,7 +95,8 @@ function generarInformeCampania(campanaId) {
     tareasPorEstado: contarPorEstadoLista_(tareas),
     tareasRetrasadas: tareasRetrasadas,
     decisionesPendientes: decisionesPendientes,
-    incidenciasAbiertas: incidenciasAbiertas
+    incidenciasAbiertas: incidenciasAbiertas,
+    desviacionPlanificacion: construirBloqueDesviacion_(procesosConDesviacion, tareasConDesviacion)
   };
 }
 
@@ -117,6 +121,9 @@ function generarInformeProyecto(proyectoId) {
     return idsTareas.indexOf(tarea.ID) !== -1;
   });
 
+  var procesosConDesviacion = enriquecerConDesviacion_(procesos);
+  var tareasConDesviacion = enriquecerConDesviacion_(tareas);
+
   return {
     tipo: 'PROYECTO',
     proyecto: proyecto,
@@ -129,7 +136,8 @@ function generarInformeProyecto(proyectoId) {
     tareasPorEstado: contarPorEstadoLista_(tareas),
     tareasRetrasadas: tareasRetrasadas,
     decisionesPendientes: decisionesPendientes,
-    incidenciasAbiertas: incidenciasAbiertas
+    incidenciasAbiertas: incidenciasAbiertas,
+    desviacionPlanificacion: construirBloqueDesviacion_(procesosConDesviacion, tareasConDesviacion)
   };
 }
 
@@ -150,7 +158,8 @@ function generarMemoriaProduccion() {
     campanas: resumenCampanas,
     tareasRetrasadas: listarTareasRetrasadas(),
     decisionesPendientes: listarDecisionesPendientes(),
-    incidenciasAbiertas: listarIncidenciasAbiertas()
+    incidenciasAbiertas: listarIncidenciasAbiertas(),
+    desviacionPlanificacion: generarInformeDesviacion()
   };
 }
 
@@ -223,6 +232,7 @@ function generarInforme(tipo, id) {
     else if (tipo === 'MEMORIA') informe = generarMemoriaProduccion();
     else if (tipo === 'EXCEPCIONES') informe = generarInformeExcepciones();
     else if (tipo === 'CAMBIOS') informe = generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta);
+    else if (tipo === 'DESVIACION') informe = generarInformeDesviacion();
     else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
 
     return serializarParaCliente_(informe);

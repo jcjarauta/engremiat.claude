@@ -2191,6 +2191,7 @@ function onOpen() {
       ui.createMenu('📊 Consulta y análisis')
         .addItem('Panel operativo', 'abrirPanelOperativo')
         .addItem('Informes', 'abrirInformes')
+        .addItem('Gantt: plan vs. real', 'abrirGanttPlanReal')
         .addItem('Verificar integridad', 'abrirIntegridad')
         .addItem('Historial', 'abrirHistorialAdmin')
     )
