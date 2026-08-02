@@ -332,6 +332,22 @@ function instalarAsignacionesMercatsTardor() {
     return resultado.id;
   }
 
+  /*
+   * Idempotencia (ver conversacion: TRE-0029/0030 ya se crearon antes de
+   * que la 3ra fila reventara la regla de dedicacion total <=100% --
+   * sin esto, volver a ejecutar duplicaria esas dos).
+   */
+  function crearTareaResponsableSiFalta_(datos) {
+    var yaExiste = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).some(function (tr) {
+      return tr.TAREA_ID === datos.TAREA_ID && tr.PERSONA_EQUIPO_ID === datos.PERSONA_EQUIPO_ID;
+    });
+    if (yaExiste) {
+      console.log('OK ya_existe=true tarea=' + datos.TAREA_ID + ' persona=' + datos.PERSONA_EQUIPO_ID);
+      return;
+    }
+    crear_('TAREA_RESPONSABLE', datos);
+  }
+
   var idResponsableCeramica = buscarPersonaEquipoPorNombre_('Responsable de Cerámica').ID;
   var idVoluntariado = buscarPersonaEquipoPorNombre_('Voluntariado de Apoyo').ID;
   var idResponsableTienda = buscarPersonaEquipoPorNombre_('Responsable de Tienda').ID;
@@ -345,23 +361,26 @@ function instalarAsignacionesMercatsTardor() {
    * 2026-08-02..04) y "Preparar mercadillo local" (Manipulados/Tienda,
    * 2026-08-01..03) -- fechas solapadas, dos espacios distintos, para
    * volver a probar el aviso de sobreasignación del Panel de Campaña.
+   * 50%+50% (no 50%+100%): la regla de negocio real limita la
+   * dedicacion ACTIVA TOTAL de una persona a 100% sumando TODAS sus
+   * tareas, sin mirar fechas -- un primer intento con 150% lo confirmó.
    */
-  crear_('TAREA_RESPONSABLE', {
+  crearTareaResponsableSiFalta_({
     TAREA_ID: idTareaCoccion, PERSONA_EQUIPO_ID: idResponsableCeramica,
     ROL_ASIGNADO: 'Responsable', FECHA_INICIO_ASIGNACION: '2026-08-02', FECHA_FIN_ASIGNACION: '2026-08-04',
     PORCENTAJE_DEDICACION: 100, ESTADO: 'Activa'
   });
-  crear_('TAREA_RESPONSABLE', {
+  crearTareaResponsableSiFalta_({
     TAREA_ID: idTareaCoccion, PERSONA_EQUIPO_ID: idVoluntariado,
     ROL_ASIGNADO: 'Colaborador', FECHA_INICIO_ASIGNACION: '2026-08-02', FECHA_FIN_ASIGNACION: '2026-08-04',
     PORCENTAJE_DEDICACION: 50, ESTADO: 'Activa'
   });
-  crear_('TAREA_RESPONSABLE', {
+  crearTareaResponsableSiFalta_({
     TAREA_ID: idTareaMercadillo, PERSONA_EQUIPO_ID: idVoluntariado,
-    ROL_ASIGNADO: 'Responsable', FECHA_INICIO_ASIGNACION: '2026-08-01', FECHA_FIN_ASIGNACION: '2026-08-03',
-    PORCENTAJE_DEDICACION: 100, ESTADO: 'Activa'
+    ROL_ASIGNADO: 'Colaborador', FECHA_INICIO_ASIGNACION: '2026-08-01', FECHA_FIN_ASIGNACION: '2026-08-03',
+    PORCENTAJE_DEDICACION: 50, ESTADO: 'Activa'
   });
-  crear_('TAREA_RESPONSABLE', {
+  crearTareaResponsableSiFalta_({
     TAREA_ID: idTareaMercadillo, PERSONA_EQUIPO_ID: idResponsableTienda,
     ROL_ASIGNADO: 'Supervisor', FECHA_INICIO_ASIGNACION: '2026-08-01', FECHA_FIN_ASIGNACION: '2026-08-03',
     PORCENTAJE_DEDICACION: 50, ESTADO: 'Activa'
@@ -372,18 +391,29 @@ function instalarAsignacionesMercatsTardor() {
   var RECURSO_MANIPULADOS = 'REC-0004';
   var RECURSO_TIENDA = 'REC-0011';
 
-  crear_('TAREA_RECURSO', {
+  function crearTareaRecursoSiFalta_(datos) {
+    var yaExiste = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).some(function (tr) {
+      return tr.TAREA_ID === datos.TAREA_ID && tr.RECURSO_ID === datos.RECURSO_ID;
+    });
+    if (yaExiste) {
+      console.log('OK ya_existe=true tarea=' + datos.TAREA_ID + ' recurso=' + datos.RECURSO_ID);
+      return;
+    }
+    crear_('TAREA_RECURSO', datos);
+  }
+
+  crearTareaRecursoSiFalta_({
     TAREA_ID: idTareaCoccion, RECURSO_ID: RECURSO_CERAMICA, TIPO_USO: 'Utiliza',
     FECHA_INICIO: '2026-08-02', FECHA_FIN: '2026-08-04', ESTADO: 'Activa'
   });
-  crear_('TAREA_RECURSO', {
+  crearTareaRecursoSiFalta_({
     TAREA_ID: idTareaMercadillo, RECURSO_ID: RECURSO_MANIPULADOS, TIPO_USO: 'Utiliza',
     FECHA_INICIO: '2026-08-01', FECHA_FIN: '2026-08-03', ESTADO: 'Activa'
   });
 
   var idTareaVentaTienda = listarRegistros('TAREA', { ACTIVO: 'SÍ', NOMBRE: 'Venta en Tienda' })[0];
   if (idTareaVentaTienda) {
-    crear_('TAREA_RECURSO', {
+    crearTareaRecursoSiFalta_({
       TAREA_ID: idTareaVentaTienda.ID, RECURSO_ID: RECURSO_TIENDA, TIPO_USO: 'Utiliza',
       FECHA_INICIO: '2026-09-05', FECHA_FIN: '2026-11-27', ESTADO: 'Activa'
     });
