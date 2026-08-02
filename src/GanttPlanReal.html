@@ -78,7 +78,7 @@
             <th>Plan</th>
             <th>Real</th>
             <th>Desviación</th>
-            <th class="col-track">Gráfico</th>
+            <th class="col-track"><div id="eje-fechas" style="position:relative; height:16px;"></div></th>
             <th></th>
           </tr>
         </thead>
@@ -104,6 +104,32 @@
       function formatearRangoFechas_(inicio, fin) {
         if (!inicio || !fin) return '—';
         return formatearFecha_(inicio) + '–' + formatearFecha_(fin);
+      }
+
+      function formatearFechaCorta_(fecha) {
+        var d = new Date(fecha);
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm;
+      }
+
+      /*
+       * Paso adaptativo segun el rango total, para que el eje no se
+       * sature de marcas en campanas largas ni quede vacio en cortas.
+       */
+      function calcularTicks_(minFecha, maxFecha) {
+        var dia = 24 * 60 * 60 * 1000;
+        var spanDias = (maxFecha - minFecha) / dia;
+        var pasoDias = spanDias <= 21 ? 2 : spanDias <= 60 ? 7 : spanDias <= 180 ? 14 : 30;
+
+        var ticks = [];
+        var actual = new Date(minFecha);
+        actual.setHours(0, 0, 0, 0);
+        while (actual.getTime() <= maxFecha) {
+          ticks.push(actual.getTime());
+          actual = new Date(actual.getTime() + pasoDias * dia);
+        }
+        return ticks;
       }
 
       function formatearDesviacion_(dias, diasRiesgo) {
@@ -202,6 +228,17 @@
           ? '<div class="linea-hoy" style="left:' + posicionHoy + '%;" title="Hoy: ' + formatearFecha_(hoy) + '"></div>'
           : '';
 
+        // Eje de fechas (cabecera) + cuadricula repetida en cada fila -- mismo
+        // mecanismo de posicion() ya usado para la linea de "hoy".
+        var ticks = calcularTicks_(minFecha, maxFecha);
+        document.getElementById('eje-fechas').innerHTML = ticks.map(function (t) {
+          return '<span style="position:absolute;left:' + posicion(t) + '%;top:0;font-size:9px;font-weight:normal;color:var(--color-texto-secundario);white-space:nowrap;transform:translateX(-50%);">' +
+            escapeHtml(formatearFechaCorta_(t)) + '</span>';
+        }).join('');
+        var lineasCuadricula = ticks.map(function (t) {
+          return '<div style="position:absolute;left:' + posicion(t) + '%;top:0;bottom:0;width:1px;background:#eee;"></div>';
+        }).join('');
+
         document.getElementById('filas-gantt').innerHTML = filas.map(function (fila) {
           var izqPlan = posicion(fila.fechaInicioPlan);
           var anchoPlan = Math.max(posicion(fila.fechaFinPlan) - izqPlan, 0.5);
@@ -225,6 +262,7 @@
             '<td class="col-fechas">' + formatearRangoFechas_(fila.fechaInicioReal, fila.fechaFinReal) + '</td>' +
             '<td class="col-desviacion ' + desv.clase + '">' + desv.texto + '</td>' +
             '<td class="col-track"><div class="track">' +
+              lineasCuadricula +
               '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
               barraReal + lineaHoy +
             '</div></td>' +
