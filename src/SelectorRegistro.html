@@ -5,13 +5,19 @@
   <?!= include('Estilos') ?>
   <style>
     #mensaje { color: var(--color-peligro); }
+    #resultados { max-height: 220px; overflow-y: auto; border: 1px solid var(--color-borde); border-radius: 6px; margin-top: 4px; display: none; }
+    #resultados.visible { display: block; }
+    .resultado-fila { padding: 7px 10px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--color-borde); }
+    .resultado-fila:last-child { border-bottom: none; }
+    .resultado-fila:hover, .resultado-fila.activa { background: var(--color-fondo-suave); }
+    .resultado-vacio { padding: 7px 10px; font-size: 13px; color: var(--color-texto-secundario); font-style: italic; }
   </style>
 </head>
 <body>
   <h3><?= titulo ?></h3>
-  <label for="buscador">Busca por ID o nombre:</label>
-  <input type="text" id="buscador" list="lista_registros" autocomplete="off" placeholder="Escribe para buscar...">
-  <datalist id="lista_registros"></datalist>
+  <label for="buscador">Busca (ID, nombre, rol, tipo...):</label>
+  <input type="text" id="buscador" autocomplete="off" placeholder="Escribe para buscar...">
+  <div id="resultados"></div>
   <input type="hidden" id="idSeleccionado" value="">
   <div id="mensaje"></div>
   <div class="acciones">
@@ -23,30 +29,22 @@
     var ACCION_FN = <?!= JSON.stringify(accionFn) ?>;
     var OPCIONES_FN = <?!= JSON.stringify(opcionesFn) ?>;
     var opciones = [];
+    var elBuscador = document.getElementById("buscador");
+    var elResultados = document.getElementById("resultados");
+    var elIdSeleccionado = document.getElementById("idSeleccionado");
+    var elBtnAceptar = document.getElementById("btnAceptar");
 
-    function escaparAtributo_(texto) {
+    function escapeHtml_(texto) {
       return String(texto == null ? "" : texto)
         .replace(/&/g, "&amp;")
-        .replace(/"/g, "&quot;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
-    }
-
-    function extraerIdDeEtiqueta_(texto) {
-      if (!texto) return "";
-      var idx = texto.indexOf(" - ");
-      return idx === -1 ? texto : texto.substring(0, idx);
     }
 
     function cargarOpciones() {
       google.script.run
         .withSuccessHandler(function (lista) {
           opciones = lista || [];
-          var datalist = document.getElementById("lista_registros");
-          datalist.innerHTML = "";
-          opciones.forEach(function (op) {
-            datalist.innerHTML += "<option value=\"" + escaparAtributo_(op.etiqueta) + "\">";
-          });
         })
         .withFailureHandler(function (error) {
           document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
@@ -54,23 +52,61 @@
         [OPCIONES_FN](ENTIDAD);
     }
 
-    document.getElementById("buscador").addEventListener("input", function () {
-      var id = extraerIdDeEtiqueta_(this.value);
-      var valido = opciones.some(function (op) { return String(op.id) === id; });
-      document.getElementById("idSeleccionado").value = valido ? id : "";
-      document.getElementById("btnAceptar").disabled = !valido;
+    /*
+     * Sustituye el <datalist> nativo (filtrado por prefijo, distinto
+     * segun navegador) por una busqueda de subcadena en toda la
+     * etiqueta -- ya incluye ID, nombre y (para Persona/Equipo) tipo/rol,
+     * asi que "voluntari" o "manipulados" encuentran algo aunque no
+     * empiece por ahi.
+     */
+    function filtrarYRenderizar_() {
+      var texto = elBuscador.value.trim().toLowerCase();
+      elIdSeleccionado.value = "";
+      elBtnAceptar.disabled = true;
       document.getElementById("mensaje").textContent = "";
+
+      if (!texto) {
+        elResultados.classList.remove("visible");
+        elResultados.innerHTML = "";
+        return;
+      }
+
+      var coincidencias = opciones.filter(function (op) {
+        return op.etiqueta.toLowerCase().indexOf(texto) !== -1;
+      }).slice(0, 30);
+
+      elResultados.classList.add("visible");
+      elResultados.innerHTML = coincidencias.length
+        ? coincidencias.map(function (op) {
+            return '<div class="resultado-fila" data-id="' + escapeHtml_(op.id) + '" data-etiqueta="' + escapeHtml_(op.etiqueta) + '">' + escapeHtml_(op.etiqueta) + '</div>';
+          }).join("")
+        : '<div class="resultado-vacio">Sin coincidencias.</div>';
+    }
+
+    function seleccionar_(id, etiqueta) {
+      elBuscador.value = etiqueta;
+      elIdSeleccionado.value = id;
+      elBtnAceptar.disabled = false;
+      elResultados.classList.remove("visible");
+      elResultados.innerHTML = "";
+    }
+
+    elBuscador.addEventListener("input", filtrarYRenderizar_);
+    elResultados.addEventListener("click", function (evento) {
+      var fila = evento.target.closest(".resultado-fila");
+      if (!fila || !fila.dataset.id) return;
+      seleccionar_(fila.dataset.id, fila.dataset.etiqueta);
     });
 
     function aceptar() {
-      var id = document.getElementById("idSeleccionado").value;
+      var id = elIdSeleccionado.value;
       if (!id) return;
-      document.getElementById("btnAceptar").disabled = true;
+      elBtnAceptar.disabled = true;
       google.script.run
         .withSuccessHandler(function () { google.script.host.close(); })
         .withFailureHandler(function (error) {
           document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
-          document.getElementById("btnAceptar").disabled = false;
+          elBtnAceptar.disabled = false;
         })
         [ACCION_FN](ENTIDAD, id);
     }

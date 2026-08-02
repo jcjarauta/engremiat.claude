@@ -2484,6 +2484,19 @@ function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn) {
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
 
+/*
+ * Texto adicional buscable por entidad, mas alla de ID/NOMBRE (ver
+ * conversacion: "buscador mas profundo" -- en Persona/Equipo, buscar
+ * solo por nombre no encontraba a alguien por su rol o tipo).
+ */
+function etiquetaExtraSelector_(clave, registro) {
+  if (clave === 'PERSONA_EQUIPO') {
+    var partes = [registro.TIPO, registro.ROL].filter(function (v) { return v; });
+    return partes.length ? ' (' + partes.join(' · ') + ')' : '';
+  }
+  return '';
+}
+
 function obtenerOpcionesEntidadParaSelector(entidad) {
   var clave = String(entidad || '').trim().toUpperCase();
 
@@ -2494,7 +2507,7 @@ function obtenerOpcionesEntidadParaSelector(entidad) {
   return listarRegistros(clave, { ACTIVO: 'SÍ' }).map(function (registro) {
     return {
       id: registro.ID,
-      etiqueta: registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '')
+      etiqueta: registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '') + etiquetaExtraSelector_(clave, registro)
     };
   });
 }
