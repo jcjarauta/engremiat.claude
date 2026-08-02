@@ -211,16 +211,23 @@ function instalarCampanaTallersEstiu2026() {
   return true;
 }
 
-/* Paso 2: amplía la campaña Navidad 2026 ya existente con un tercer producto, incidencia y documentos. */
+/*
+ * Paso 2: amplía la campaña Navidad 2026 ya existente con un tercer
+ * producto, incidencia y documentos.
+ *
+ * Idempotente PASO A PASO (no con un único guard al principio): un
+ * primer intento reventó a mitad -- PRODUCTO/PROCESO/TAREA ya se habían
+ * creado cuando la asignación de "Corte y estampado" (Postal de
+ * Navidad) falló porque esa persona YA estaba asignada a esa tarea
+ * desde un lote de siembra anterior (misma combinación TAREA_ID+
+ * PERSONA_EQUIPO_ID, no permitida). Un guard único al principio (tipo
+ * "si ya existe el producto, salir") habría dejado la incidencia y los
+ * documentos sin crear en el reintento -- por eso cada bloque busca
+ * antes de crear.
+ */
 function instalarAmpliacionNavidad2026() {
   var packageName = 'INSTALAR_AMPLIACION_NAVIDAD_2026';
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
-
-  if (listarRegistros('PRODUCTO', { ACTIVO: 'SÍ', CODIGO: 'PRD-NAD-ESTRELLA' }).length > 0) {
-    console.log('OK ya_instalado=true (producto ya existe)');
-    console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
-    return true;
-  }
 
   var campanaNavidad = listarRegistros('CAMPANA', { ACTIVO: 'SÍ', NOMBRE: 'Navidad 2026' })[0];
   if (!campanaNavidad) {
@@ -237,57 +244,76 @@ function instalarAmpliacionNavidad2026() {
     console.log('OK creado entidad=' + entidad + ' id=' + resultado.id + ' nombre=' + (datos.NOMBRE || ''));
     return resultado.id;
   }
+  function buscarOCrear_(entidad, filtro, datos) {
+    var filtroCompleto = Object.assign({ ACTIVO: 'SÍ' }, filtro);
+    var existente = listarRegistros(entidad, filtroCompleto)[0];
+    if (existente) {
+      console.log('OK ya_existe=true entidad=' + entidad + ' id=' + existente.ID);
+      return existente.ID;
+    }
+    return crear_(entidad, datos);
+  }
+  function crearTareaResponsableSiFalta_(datos) {
+    var yaExiste = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).some(function (tr) {
+      return tr.TAREA_ID === datos.TAREA_ID && tr.PERSONA_EQUIPO_ID === datos.PERSONA_EQUIPO_ID;
+    });
+    if (yaExiste) {
+      console.log('OK ya_existe=true tarea=' + datos.TAREA_ID + ' persona=' + datos.PERSONA_EQUIPO_ID);
+      return;
+    }
+    crear_('TAREA_RESPONSABLE', datos);
+  }
 
   var idResponsableManipulados = buscarPersonaEquipoPorNombre_('Responsable de Manipulados').ID;
   var idDisenadora = buscarPersonaEquipoPorNombre_('Diseñador/a de Producto').ID;
   var idCoordinadora = buscarPersonaEquipoPorNombre_('Coordinadora de Taller').ID;
 
   /* --- Tercer producto: Estrella de cartón navideña (grounded en el documento real, producto recurrente de temporada). --- */
-  var idProductoEstrella = crear_('PRODUCTO', {
+  var idProductoEstrella = buscarOCrear_('PRODUCTO', { CODIGO: 'PRD-NAD-ESTRELLA' }, {
     NOMBRE: 'Estrella de cartón navideña', ORIGEN: 'Producción propia', UNIDAD: 'Unidad',
     CANTIDAD_PREVISTA: 300, FECHA_REQUERIDA: '2026-12-05', PRIORIDAD: 'Alta',
     CODIGO: 'PRD-NAD-ESTRELLA', PROYECTO_VINCULAR_ID: proyectoNavidad.ID,
     RESPONSABLE_ID: idResponsableManipulados, ESTADO: 'Planificado'
   });
-  var idEstrellaPreprod = crear_('PROCESO', {
+  var idEstrellaPreprod = buscarOCrear_('PROCESO', { NOMBRE: 'Preproducción estrella de cartón', PRODUCTO_ID: idProductoEstrella }, {
     PRODUCTO_ID: idProductoEstrella, NOMBRE: 'Preproducción estrella de cartón', ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 4, RESPONSABLE_ID: idDisenadora,
     FECHA_INICIO_PLAN: '2026-11-13', FECHA_FIN_PLAN: '2026-11-18',
     METODO_CALCULO_AVANCE: 'Manual', ESTADO: 'Pendiente', FASE_PRODUCCION: 'Preproducción'
   });
-  var idEstrellaProd = crear_('PROCESO', {
+  var idEstrellaProd = buscarOCrear_('PROCESO', { NOMBRE: 'Producción estrella de cartón', PRODUCTO_ID: idProductoEstrella }, {
     PRODUCTO_ID: idProductoEstrella, NOMBRE: 'Producción estrella de cartón', ORDEN_SECUENCIA: 2,
     PROCESO_PREDECESOR_ID: idEstrellaPreprod, DURACION_PREVISTA_DIAS: 12, RESPONSABLE_ID: idResponsableManipulados,
     FECHA_INICIO_PLAN: '2026-11-19', FECHA_FIN_PLAN: '2026-12-02',
     METODO_CALCULO_AVANCE: 'Manual', ESTADO: 'Pendiente', FASE_PRODUCCION: 'Producción'
   });
-  var idEstrellaPostprod = crear_('PROCESO', {
+  var idEstrellaPostprod = buscarOCrear_('PROCESO', { NOMBRE: 'Postproducción estrella de cartón', PRODUCTO_ID: idProductoEstrella }, {
     PRODUCTO_ID: idProductoEstrella, NOMBRE: 'Postproducción estrella de cartón', ORDEN_SECUENCIA: 3,
     PROCESO_PREDECESOR_ID: idEstrellaProd, DURACION_PREVISTA_DIAS: 3, RESPONSABLE_ID: idResponsableManipulados,
     FECHA_INICIO_PLAN: '2026-12-03', FECHA_FIN_PLAN: '2026-12-05',
     METODO_CALCULO_AVANCE: 'Manual', ESTADO: 'Pendiente', FASE_PRODUCCION: 'Postproducción'
   });
 
-  crear_('TAREA', {
+  buscarOCrear_('TAREA', { NOMBRE: 'Diseño de plantilla y troquel', PROCESO_ID: idEstrellaPreprod }, {
     PROCESO_ID: idEstrellaPreprod, NOMBRE: 'Diseño de plantilla y troquel', ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 4, FECHA_INICIO_PLAN: '2026-11-13', FECHA_FIN_PLAN: '2026-11-18', ESTADO: 'Pendiente'
   });
-  var idTareaCorteEstrella = crear_('TAREA', {
+  var idTareaCorteEstrella = buscarOCrear_('TAREA', { NOMBRE: 'Corte y montaje', PROCESO_ID: idEstrellaProd }, {
     PROCESO_ID: idEstrellaProd, NOMBRE: 'Corte y montaje', ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 12, FECHA_INICIO_PLAN: '2026-11-19', FECHA_FIN_PLAN: '2026-12-02', ESTADO: 'Pendiente'
   });
-  crear_('TAREA', {
+  buscarOCrear_('TAREA', { NOMBRE: 'Control de calidad y embalaje', PROCESO_ID: idEstrellaPostprod }, {
     PROCESO_ID: idEstrellaPostprod, NOMBRE: 'Control de calidad y embalaje', ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 3, FECHA_INICIO_PLAN: '2026-12-03', FECHA_FIN_PLAN: '2026-12-05', ESTADO: 'Pendiente'
   });
 
   /*
-   * Solapamiento deliberado de temporada alta: el Responsable de
-   * Manipulados queda repartido entre la Postal de Navidad (ya
-   * planificada, 2026-10-29..11-10) y la nueva Estrella de cartón
-   * (2026-11-19..12-02) -- no coinciden en fecha exacta, así que en vez
-   * de forzar un choque de fechas se refleja el pico real con dedicación
-   * repartida al 50% en ambas, dejando margen para otras tareas.
+   * Solapamiento de temporada alta: el Responsable de Manipulados
+   * queda repartido entre la Postal de Navidad y la nueva Estrella de
+   * cartón. La asignación a la Postal YA EXISTÍA desde un lote de
+   * siembra anterior (de ahí el error real del primer intento) --
+   * crearTareaResponsableSiFalta_ la respeta tal cual en vez de
+   * duplicarla o reventar, y solo añade la de la Estrella.
    */
   var procesoPostal = listarRegistros('PROCESO', { ACTIVO: 'SÍ', NOMBRE: 'Producción postal navidad' })[0];
   var tareaCortePostal = procesoPostal
@@ -295,26 +321,25 @@ function instalarAmpliacionNavidad2026() {
     : null;
 
   if (tareaCortePostal) {
-    var capManipuladosPostal = Math.min(50, capacidadDisponible_(idResponsableManipulados));
-    if (capManipuladosPostal > 0) {
-      crear_('TAREA_RESPONSABLE', {
-        TAREA_ID: tareaCortePostal.ID, PERSONA_EQUIPO_ID: idResponsableManipulados,
-        ROL_ASIGNADO: 'Responsable', FECHA_INICIO_ASIGNACION: '2026-10-29', FECHA_FIN_ASIGNACION: '2026-11-10',
-        PORCENTAJE_DEDICACION: capManipuladosPostal, ESTADO: 'Activa'
-      });
-    }
+    crearTareaResponsableSiFalta_({
+      TAREA_ID: tareaCortePostal.ID, PERSONA_EQUIPO_ID: idResponsableManipulados,
+      ROL_ASIGNADO: 'Responsable', FECHA_INICIO_ASIGNACION: '2026-10-29', FECHA_FIN_ASIGNACION: '2026-11-10',
+      PORCENTAJE_DEDICACION: Math.min(50, capacidadDisponible_(idResponsableManipulados)) || 1, ESTADO: 'Activa'
+    });
   }
   var capManipuladosEstrella = Math.min(50, capacidadDisponible_(idResponsableManipulados));
   if (capManipuladosEstrella > 0) {
-    crear_('TAREA_RESPONSABLE', {
+    crearTareaResponsableSiFalta_({
       TAREA_ID: idTareaCorteEstrella, PERSONA_EQUIPO_ID: idResponsableManipulados,
       ROL_ASIGNADO: 'Responsable', FECHA_INICIO_ASIGNACION: '2026-11-19', FECHA_FIN_ASIGNACION: '2026-12-02',
       PORCENTAJE_DEDICACION: capManipuladosEstrella, ESTADO: 'Activa'
     });
+  } else {
+    console.log('AVISO: sin dedicación disponible para asignar a Responsable de Manipulados en la Estrella de cartón (ya está al 100% en otras tareas activas).');
   }
 
   /* --- Incidencia real de pico de temporada (riesgo, aún no ocurrido a la fecha de siembra). --- */
-  crear_('INCIDENCIA', {
+  buscarOCrear_('INCIDENCIA', { TITULO: 'Riesgo de sobrecarga en Manipulados por pico de diciembre' }, {
     NIVEL_INCIDENCIA: 'Proyecto', CAMPANA_ID: campanaNavidad.ID, PROYECTO_ID: proyectoNavidad.ID,
     TITULO: 'Riesgo de sobrecarga en Manipulados por pico de diciembre',
     DESCRIPCION: 'La producción de la Postal de Navidad y de la Estrella de cartón coinciden en el mismo responsable en noviembre-diciembre; riesgo de retraso si se suma algún imprevisto.',
@@ -323,14 +348,14 @@ function instalarAmpliacionNavidad2026() {
   });
 
   /* --- Documentos: ficha técnica del nuevo producto + protocolo de embalaje navideño. --- */
-  crear_('DOCUMENTO', {
+  buscarOCrear_('DOCUMENTO', { TITULO: 'Ficha técnica: Estrella de cartón navideña' }, {
     ENTIDAD_TIPO: 'Producto', ENTIDAD_ID: idProductoEstrella,
     TIPO_DOCUMENTO: 'Ficha técnica', TITULO: 'Ficha técnica: Estrella de cartón navideña',
     DESCRIPCION: 'Plantilla, troquel y proceso de montaje de la estrella de cartón.',
     VERSION: '1.0', URL: 'https://intranet.latroballa.local/fichas/estrella-carton-navidad-2026',
     ESTADO: 'Vigente', FECHA_DOCUMENTO: '2026-08-01'
   });
-  crear_('DOCUMENTO', {
+  buscarOCrear_('DOCUMENTO', { TITULO: 'Protocolo de embalaje navideño' }, {
     ENTIDAD_TIPO: 'Proyecto', ENTIDAD_ID: proyectoNavidad.ID,
     TIPO_DOCUMENTO: 'Protocolo', TITULO: 'Protocolo de embalaje navideño',
     DESCRIPCION: 'Procedimiento común de embalaje para calendario, postal y estrella de cartón.',
