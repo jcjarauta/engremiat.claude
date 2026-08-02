@@ -55,15 +55,22 @@ function obtenerArbolCampana(campanaId) {
    * como FUNC-REC-001/ASG-001 en IntegrityService.js) -- responde
    * directamente a "¿puede esta persona estar en dos sitios a la vez?",
    * que es la pregunta que se hace al construir el calendario aqui.
+   *
+   * Importante: la comparacion es SOLO dentro del mismo nivel (proceso
+   * contra proceso, tarea contra tarea) -- un proceso y su propia tarea
+   * comparten fechas por diseño (la tarea ES el trabajo del proceso),
+   * compararlos entre niveles daba un falso positivo permanente en
+   * cualquier tarea con el mismo responsable que su proceso padre.
    */
-  var asignacionesPorPersona = {};
-  function registrarAsignacion_(personaId, nodo, fechaInicio, fechaFin) {
+  var asignacionesProcesoPorPersona = {};
+  var asignacionesTareaPorPersona = {};
+  function registrarAsignacion_(mapa, personaId, nodo, fechaInicio, fechaFin) {
     if (!personaId || !fechaInicio || !fechaFin) return;
     var inicio = new Date(fechaInicio).getTime();
     var fin = new Date(fechaFin).getTime();
     if (isNaN(inicio) || isNaN(fin)) return;
-    if (!asignacionesPorPersona[personaId]) asignacionesPorPersona[personaId] = [];
-    asignacionesPorPersona[personaId].push({ nodo: nodo, inicio: inicio, fin: fin });
+    if (!mapa[personaId]) mapa[personaId] = [];
+    mapa[personaId].push({ nodo: nodo, inicio: inicio, fin: fin });
   }
 
   var proyectos = listarProyectosDeCampana(campanaId).map(function (proyecto) {
@@ -84,7 +91,7 @@ function obtenerArbolCampana(campanaId) {
             sobreasignado: false
           };
           responsablesTarea.forEach(function (r) {
-            registrarAsignacion_(r.id, nodoTarea, tarea.FECHA_INICIO_PLAN, tarea.FECHA_FIN_PLAN);
+            registrarAsignacion_(asignacionesTareaPorPersona, r.id, nodoTarea, tarea.FECHA_INICIO_PLAN, tarea.FECHA_FIN_PLAN);
           });
           return nodoTarea;
         });
@@ -97,7 +104,7 @@ function obtenerArbolCampana(campanaId) {
           sobreasignado: false,
           tareas: tareas
         };
-        registrarAsignacion_(proceso.RESPONSABLE_ID, nodoProceso, proceso.FECHA_INICIO_PLAN, proceso.FECHA_FIN_PLAN);
+        registrarAsignacion_(asignacionesProcesoPorPersona, proceso.RESPONSABLE_ID, nodoProceso, proceso.FECHA_INICIO_PLAN, proceso.FECHA_FIN_PLAN);
         return nodoProceso;
       });
       return {
@@ -117,17 +124,21 @@ function obtenerArbolCampana(campanaId) {
     };
   });
 
-  Object.keys(asignacionesPorPersona).forEach(function (personaId) {
-    var lista = asignacionesPorPersona[personaId];
-    for (var i = 0; i < lista.length; i++) {
-      for (var j = i + 1; j < lista.length; j++) {
-        if (lista[i].inicio <= lista[j].fin && lista[j].inicio <= lista[i].fin) {
-          lista[i].nodo.sobreasignado = true;
-          lista[j].nodo.sobreasignado = true;
+  function marcarSolapamientos_(mapa) {
+    Object.keys(mapa).forEach(function (personaId) {
+      var lista = mapa[personaId];
+      for (var i = 0; i < lista.length; i++) {
+        for (var j = i + 1; j < lista.length; j++) {
+          if (lista[i].inicio <= lista[j].fin && lista[j].inicio <= lista[i].fin) {
+            lista[i].nodo.sobreasignado = true;
+            lista[j].nodo.sobreasignado = true;
+          }
         }
       }
-    }
-  });
+    });
+  }
+  marcarSolapamientos_(asignacionesProcesoPorPersona);
+  marcarSolapamientos_(asignacionesTareaPorPersona);
 
   return serializarParaCliente_({
     campana: {
