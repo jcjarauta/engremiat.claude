@@ -36,23 +36,36 @@ function instalarRolPersonaAtendida() {
 }
 
 /**
- * Ejemplo minimo del arbol de personas con el rol "Persona atendida",
- * confirmado explicitamente: SOLO estructura/rol, sin nombres reales
- * -- etiquetas pseudonimas (rol + numero), nunca un nombre real de
- * participante. Ejecutar despues de instalarRolPersonaAtendida().
+ * Ejemplo minimo de persona atendida, confirmado explicitamente: SOLO
+ * estructura/rol, sin nombres reales -- etiqueta pseudonima (rol +
+ * numero), nunca un nombre real de participante. Ejecutar despues de
+ * instalarRolPersonaAtendida().
+ *
+ * COORDINADOR_ID es invalido para TIPO: 'Persona' (regla de negocio
+ * real, ver Formularios.js validarReglasNegocioPersonaEquipo_ --
+ * solo un Equipo puede tener coordinador). La pertenencia real de una
+ * persona a un equipo se modela via EQUIPO_MIEMBRO (relacion, no
+ * jerarquia), asi que aqui se da de alta como miembro de "Equipo de
+ * Manipulados" (PER-0014) en vez de asignarle un coordinador directo.
  */
 function instalarEjemploPersonaAtendida() {
   var packageName = 'INSTALAR_EJEMPLO_PERSONA_ATENDIDA';
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
 
   var correlationId = Utilities.getUuid();
-  var idCoordinadora = 'PER-0006';
+  var idEquipoManipulados = 'PER-0014';
 
-  var resultado = guardarFormulario('PERSONA_EQUIPO', null, {
+  var resultadoPersona = guardarFormulario('PERSONA_EQUIPO', null, {
     TIPO: 'Persona', NOMBRE: 'Participante Manipulados 1', ROL: 'Persona atendida',
-    COORDINADOR_ID: idCoordinadora, CAPACIDAD_SEMANAL_DIAS: 3, DISPONIBILIDAD: 'Parcial', ESTADO: 'Disponible'
+    CAPACIDAD_SEMANAL_DIAS: 3, DISPONIBILIDAD: 'Parcial', ESTADO: 'Disponible'
   }, correlationId);
-  console.log('OK creado entidad=PERSONA_EQUIPO id=' + resultado.id);
+  console.log('OK creado entidad=PERSONA_EQUIPO id=' + resultadoPersona.id);
+
+  var resultadoMiembro = guardarFormulario('EQUIPO_MIEMBRO', null, {
+    EQUIPO_ID: idEquipoManipulados, MIEMBRO_ID: resultadoPersona.id,
+    ROL_EN_EQUIPO: 'Persona atendida', FECHA_ALTA: new Date(), ESTADO: 'Activa'
+  }, correlationId);
+  console.log('OK creado entidad=EQUIPO_MIEMBRO id=' + resultadoMiembro.id);
 
   console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
   return true;
