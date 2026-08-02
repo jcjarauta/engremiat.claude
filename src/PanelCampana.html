@@ -4,22 +4,23 @@
     <base target="_top">
     <?!= include('Estilos') ?>
     <style>
-      body { font-size: 12px; }
-      .cabecera { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
-      .cabecera select { flex: 1; }
+      body { font-size: 14px; }
+      .cabecera { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+      .cabecera select { flex: 1; font-size: 14px; padding: 8px; }
       .cabecera button { flex-shrink: 0; }
-      .resumen-campana { color: var(--color-texto-secundario); font-size: 11px; margin-bottom: 10px; }
-      details { margin-bottom: 4px; }
-      details > div { margin-left: 16px; border-left: 2px solid var(--color-borde); padding-left: 10px; }
-      summary { cursor: pointer; padding: 4px 2px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+      .resumen-campana { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 12px; }
+      details { margin-bottom: 6px; }
+      details > div { margin-left: 18px; border-left: 2px solid var(--color-borde); padding-left: 12px; }
+      summary { cursor: pointer; padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
       summary::-webkit-details-marker { color: var(--color-texto-secundario); }
-      .nombre-nodo { font-weight: bold; }
-      .detalle-nodo { font-weight: normal; color: var(--color-texto-secundario); font-size: 11px; }
-      .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 2px 3px 18px; }
-      .acciones-nodo { display: flex; gap: 4px; flex-shrink: 0; }
-      .btn-mini { font-size: 11px; padding: 2px 6px; }
-      .btn-anadir { font-size: 11px; padding: 4px 8px; margin: 4px 0 8px 16px; }
-      .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 11px; margin: 2px 0 8px 18px; }
+      .nombre-nodo { font-weight: bold; font-size: 14px; }
+      .detalle-nodo { font-weight: normal; color: var(--color-texto-secundario); font-size: 13px; }
+      .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px 6px 20px; }
+      .acciones-nodo { display: flex; gap: 6px; flex-shrink: 0; }
+      .btn-mini { font-size: 13px; padding: 6px 10px; }
+      .btn-anadir { font-size: 13px; padding: 8px 12px; margin: 6px 0 10px 18px; }
+      .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 4px 0 10px 20px; }
+      .badge { font-size: 13px; padding: 2px 10px; }
       .badge-completado { background: #e6f4ea; color: var(--color-exito); }
       .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
       .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
@@ -27,12 +28,12 @@
     </style>
   </head>
   <body>
-    <h3>Gestión de campaña</h3>
     <div class="cabecera">
       <select id="selectCampana"><option value="">-- elige una campaña --</option></select>
       <button id="btnNuevaCampana" class="btn-mini boton-primario" title="Nueva campaña">+</button>
       <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
       <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇️</button>
+      <button id="btnVerGantt" class="btn-mini" title="Ver Gantt de esta campaña">📊</button>
     </div>
     <div id="resumenCampana" class="resumen-campana"></div>
 
@@ -77,6 +78,9 @@
         if (nodo.responsable) partes.push(escapeHtml(nodo.responsable));
         if (nodo.diasDesviacion !== null && nodo.diasDesviacion !== undefined && nodo.diasDesviacion > 0) {
           partes.push('<span class="alerta-desviacion">⚠ +' + nodo.diasDesviacion + 'd</span>');
+        }
+        if (nodo.sobreasignado) {
+          partes.push('<span class="alerta-desviacion" title="El responsable tiene otro proceso/tarea con fechas solapadas en esta campaña">🔁 solapado</span>');
         }
         return partes.length ? ' <span class="detalle-nodo">— ' + partes.join(' · ') + '</span>' : '';
       }
@@ -218,6 +222,11 @@
         var campanaId = campanaSeleccionada_();
         if (!campanaId) { mostrarError({ message: "Elige una campaña antes de exportar." }); return; }
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarArbolCampanaCSV(campanaId);
+      });
+      document.getElementById("btnVerGantt").addEventListener("click", function () {
+        var campanaId = campanaSeleccionada_();
+        if (!campanaId) { mostrarError({ message: "Elige una campaña antes de ver el Gantt." }); return; }
+        google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(campanaId);
       });
 
       // Recuerda la última campaña elegida (por usuario) al reabrir el panel.

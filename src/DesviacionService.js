@@ -358,10 +358,13 @@ function abrirDialogoExportarGanttCSV(filtro) {
   SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
 }
 
-function abrirGanttPlanReal() {
-  var html = HtmlService.createTemplateFromFile('GanttPlanReal')
-    .evaluate()
-    .setWidth(920)
-    .setHeight(600);
+/*
+ * campanaId (opcional): al llegar desde el boton "Ver Gantt" del panel
+ * de campana, preselecciona ese filtro en vez de abrir sin filtrar.
+ */
+function abrirGanttPlanReal(campanaId) {
+  var template = HtmlService.createTemplateFromFile('GanttPlanReal');
+  template.preseleccionCampana = campanaId || '';
+  var html = template.evaluate().setWidth(920).setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(html, 'Gantt: plan vs. real');
 }

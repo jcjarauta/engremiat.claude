@@ -35,7 +35,7 @@ function obtenerArbolCampana(campanaId) {
   listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (asignacion) {
     var nombre = nombresPersona[asignacion.PERSONA_EQUIPO_ID] || asignacion.PERSONA_EQUIPO_ID;
     if (!responsablesPorTarea[asignacion.TAREA_ID]) responsablesPorTarea[asignacion.TAREA_ID] = [];
-    responsablesPorTarea[asignacion.TAREA_ID].push(nombre);
+    responsablesPorTarea[asignacion.TAREA_ID].push({ id: asignacion.PERSONA_EQUIPO_ID, nombre: nombre });
   });
 
   var contadores = { proyectos: 0, productos: 0, procesos: 0, tareas: 0 };
@@ -46,6 +46,26 @@ function obtenerArbolCampana(campanaId) {
     return dias;
   }
 
+  /*
+   * Aviso de sobreasignacion (hallazgo "evitar solapamientos"): se
+   * registra, por persona, cada proceso/tarea con sus fechas de plan
+   * dentro de esta campaña, y al final se marcan como "sobreasignado"
+   * los nodos cuyo rango se solapa con otro de la misma persona.
+   * Deliberadamente simple (solapamiento de fechas, no % de dedicacion
+   * como FUNC-REC-001/ASG-001 en IntegrityService.js) -- responde
+   * directamente a "¿puede esta persona estar en dos sitios a la vez?",
+   * que es la pregunta que se hace al construir el calendario aqui.
+   */
+  var asignacionesPorPersona = {};
+  function registrarAsignacion_(personaId, nodo, fechaInicio, fechaFin) {
+    if (!personaId || !fechaInicio || !fechaFin) return;
+    var inicio = new Date(fechaInicio).getTime();
+    var fin = new Date(fechaFin).getTime();
+    if (isNaN(inicio) || isNaN(fin)) return;
+    if (!asignacionesPorPersona[personaId]) asignacionesPorPersona[personaId] = [];
+    asignacionesPorPersona[personaId].push({ nodo: nodo, inicio: inicio, fin: fin });
+  }
+
   var proyectos = listarProyectosDeCampana(campanaId).map(function (proyecto) {
     contadores.proyectos++;
     var productos = listarProductosDeProyecto(proyecto.ID).map(function (producto) {
@@ -54,22 +74,31 @@ function obtenerArbolCampana(campanaId) {
         contadores.procesos++;
         var tareas = listarTareasDeProceso(proceso.ID).map(function (tarea) {
           contadores.tareas++;
-          return {
+          var responsablesTarea = responsablesPorTarea[tarea.ID] || [];
+          var nodoTarea = {
             id: tarea.ID,
             nombre: tarea.NOMBRE,
             estado: tarea.ESTADO,
-            responsable: (responsablesPorTarea[tarea.ID] || []).join(', '),
-            diasDesviacion: desviacionDe_(tarea)
+            responsable: responsablesTarea.map(function (r) { return r.nombre; }).join(', '),
+            diasDesviacion: desviacionDe_(tarea),
+            sobreasignado: false
           };
+          responsablesTarea.forEach(function (r) {
+            registrarAsignacion_(r.id, nodoTarea, tarea.FECHA_INICIO_PLAN, tarea.FECHA_FIN_PLAN);
+          });
+          return nodoTarea;
         });
-        return {
+        var nodoProceso = {
           id: proceso.ID,
           nombre: proceso.NOMBRE,
           estado: proceso.ESTADO,
           responsable: nombresPersona[proceso.RESPONSABLE_ID] || '',
           diasDesviacion: desviacionDe_(proceso),
+          sobreasignado: false,
           tareas: tareas
         };
+        registrarAsignacion_(proceso.RESPONSABLE_ID, nodoProceso, proceso.FECHA_INICIO_PLAN, proceso.FECHA_FIN_PLAN);
+        return nodoProceso;
       });
       return {
         id: producto.ID,
@@ -86,6 +115,18 @@ function obtenerArbolCampana(campanaId) {
       responsable: nombresPersona[proyecto.RESPONSABLE_ID] || '',
       productos: productos
     };
+  });
+
+  Object.keys(asignacionesPorPersona).forEach(function (personaId) {
+    var lista = asignacionesPorPersona[personaId];
+    for (var i = 0; i < lista.length; i++) {
+      for (var j = i + 1; j < lista.length; j++) {
+        if (lista[i].inicio <= lista[j].fin && lista[j].inicio <= lista[i].fin) {
+          lista[i].nodo.sobreasignado = true;
+          lista[j].nodo.sobreasignado = true;
+        }
+      }
+    }
   });
 
   return serializarParaCliente_({

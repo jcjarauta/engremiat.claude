@@ -87,6 +87,8 @@
     </div>
 
     <script>
+      var PRESELECCION_CAMPANA = <?!= JSON.stringify(preseleccionCampana) ?>;
+
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
         return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -138,6 +140,11 @@
           opciones.personas.forEach(function (persona) {
             selectResponsable.innerHTML += '<option value="' + escapeHtml(persona.id) + '">' + escapeHtml(persona.etiqueta) + '</option>';
           });
+          // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
+          if (PRESELECCION_CAMPANA) {
+            selectCampana.value = PRESELECCION_CAMPANA;
+            cargarGantt();
+          }
         }).obtenerOpcionesFiltroGantt();
       }
 
@@ -231,7 +238,7 @@
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });
       cargarOpcionesFiltro();
-      cargarGantt();
+      if (!PRESELECCION_CAMPANA) cargarGantt();
     </script>
   </body>
 </html>
