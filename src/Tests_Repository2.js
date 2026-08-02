@@ -22701,6 +22701,62 @@ function ejecutarFaseC07_RegresionFinalProcesoTarea() {
 }
 
 /**
+ * Prueba reactiva de construirMapaCampanaPorProducto_ (DesviacionService.js,
+ * hallazgo "vision global entre campañas"). No usa datos hardcodeados:
+ * toma cualquier relacion PROYECTO_PRODUCTO activa que ya exista en el
+ * sistema real y verifica que el mapa resuelve la misma campaña que se
+ * obtiene navegando la cadena a mano (PROYECTO_PRODUCTO -> PROYECTO ->
+ * CAMPANA). Si no hay ninguna relacion activa, se salta sin fallar (no
+ * hay nada que verificar en un sistema vacio).
+ */
+function probarIntegridadMapaCampanaPorProducto() {
+  var packageName = 'PROBAR_INTEGRIDAD_MAPA_CAMPANA_POR_PRODUCTO';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var relacion = listarRegistros('PROYECTO_PRODUCTO', { ACTIVO: 'SÍ' })[0];
+
+  if (!relacion) {
+    console.log('OK sin_relaciones_proyecto_producto_activas=true (nada que verificar)');
+    console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+    return true;
+  }
+
+  var proyecto = obtenerRegistroPorId('PROYECTO', relacion.PROYECTO_ID);
+
+  if (!proyecto || !proyecto.CAMPANA_ID) {
+    console.log('OK relacion_sin_campana_resoluble=true (nada que verificar)');
+    console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+    return true;
+  }
+
+  var campana = obtenerRegistroPorId('CAMPANA', proyecto.CAMPANA_ID);
+  var mapa = construirMapaCampanaPorProducto_();
+  var entrada = mapa[relacion.PRODUCTO_ID];
+
+  if (!entrada) {
+    throw new Error(
+      'MAPA_CAMPANA_TEST_ERROR: no se resolvió ninguna campaña para el producto ' + relacion.PRODUCTO_ID
+    );
+  }
+
+  if (entrada.id !== proyecto.CAMPANA_ID) {
+    throw new Error(
+      'MAPA_CAMPANA_TEST_ERROR: campaña resuelta (' + entrada.id + ') no coincide con la esperada (' + proyecto.CAMPANA_ID + ')'
+    );
+  }
+
+  if (entrada.nombre !== (campana ? campana.NOMBRE : proyecto.CAMPANA_ID)) {
+    throw new Error(
+      'MAPA_CAMPANA_TEST_ERROR: nombre de campaña resuelto ("' + entrada.nombre + '") no coincide con el esperado'
+    );
+  }
+
+  console.log('OK campana_resuelta_correctamente producto=' + relacion.PRODUCTO_ID + ' campana=' + entrada.nombre);
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}
+
+/**
  * Prueba reactiva de DesviacionService.js (auditoria piloto, hallazgo
  * "calculo de desviacion agregable"). Puramente funcional sobre datos
  * sinteticos -- no escribe nada en el spreadsheet, no requiere limpieza.

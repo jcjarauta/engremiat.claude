@@ -5,21 +5,33 @@
     <style>
       body { font-family: Arial, sans-serif; font-size: 12px; margin: 10px; }
       h3 { margin-bottom: 4px; }
-      .filtros { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 10px; }
+      .filtros { display: flex; gap: 12px; align-items: flex-end; margin-bottom: 10px; flex-wrap: wrap; }
       .filtros label { display: block; font-weight: bold; font-size: 11px; margin-bottom: 2px; }
       select, button { padding: 4px; }
       .leyenda { margin: 8px 0; color: #555; }
       .leyenda span { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: middle; }
+      .rango-fechas { color: #555; margin-bottom: 8px; }
+      .contenedor-tabla { overflow-x: auto; max-height: 480px; overflow-y: auto; border: 1px solid #eee; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { text-align: left; padding: 4px; border-bottom: 1px solid #eee; vertical-align: middle; }
-      th { position: sticky; top: 0; background: #fff; }
-      .col-nombre { width: 220px; }
-      .col-track { width: 400px; }
+      th, td { text-align: left; padding: 4px 6px; border-bottom: 1px solid #eee; vertical-align: middle; height: 30px; white-space: nowrap; }
+      th { position: sticky; top: 0; background: #fff; z-index: 2; }
+      td.col-nombre, th.col-nombre { position: sticky; left: 0; background: #fff; z-index: 1; white-space: normal; }
+      .col-nombre { width: 170px; min-width: 170px; }
+      .col-responsable { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+      .col-track { width: 220px; min-width: 220px; }
+      .col-fechas { white-space: nowrap; color: #333; }
+      .col-desviacion { text-align: center; font-weight: bold; }
+      .col-desviacion.retraso { color: #b00020; }
+      .col-desviacion.a-tiempo { color: #2e7d32; }
       .track { position: relative; height: 26px; background: #f5f5f5; border-radius: 3px; }
       .barra { position: absolute; height: 8px; border-radius: 3px; }
       .barra-plan { top: 3px; background: #9e9e9e; }
       .barra-real-ok { top: 15px; background: #2e7d32; }
       .barra-real-tarde { top: 15px; background: #b00020; }
+      .linea-hoy { position: absolute; top: 0; bottom: 0; width: 2px; background: #1a73e8; z-index: 1; }
+      .btn-editar { cursor: pointer; border: 1px solid #ccc; background: #fafafa; border-radius: 3px; padding: 2px 6px; }
+      .btn-editar:hover { background: #eee; }
+      tr:hover td { background: #f7f9fc; }
       .vacio { color: #888; font-style: italic; padding: 12px 0; }
       #estado-carga { color: #888; }
     </style>
@@ -30,9 +42,18 @@
       <span style="background:#9e9e9e;"></span>Plan
       <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
       <span style="background:#b00020;margin-left:10px;"></span>Real (con retraso)
+      <span style="background:#1a73e8;margin-left:10px;"></span>Hoy
     </div>
 
     <div class="filtros">
+      <div>
+        <label for="filtro-campana">Campaña</label>
+        <select id="filtro-campana"><option value="">(todas)</option></select>
+      </div>
+      <div>
+        <label for="filtro-proyecto">Proyecto</label>
+        <select id="filtro-proyecto"><option value="">(todos)</option></select>
+      </div>
       <div>
         <label for="filtro-fase">Fase de producción</label>
         <select id="filtro-fase"><option value="">(todas)</option></select>
@@ -42,15 +63,30 @@
         <select id="filtro-responsable"><option value="">(todos)</option></select>
       </div>
       <button id="btn-filtrar">Aplicar filtro</button>
+      <button id="btn-exportar-csv">Exportar CSV (detalle)</button>
     </div>
 
+    <div id="rango-fechas" class="rango-fechas"></div>
+
     <div id="estado-carga">Cargando...</div>
-    <table id="tabla-gantt" style="display:none;">
-      <thead>
-        <tr><th class="col-nombre">Proceso</th><th>Fase</th><th>Responsable</th><th class="col-track">Plan / Real</th></tr>
-      </thead>
-      <tbody id="filas-gantt"></tbody>
-    </table>
+    <div class="contenedor-tabla">
+      <table id="tabla-gantt" style="display:none;">
+        <thead>
+          <tr>
+            <th class="col-nombre">Proceso</th>
+            <th>Producto</th>
+            <th>Fase</th>
+            <th class="col-responsable">Responsable</th>
+            <th>Plan</th>
+            <th>Real</th>
+            <th>Desviación</th>
+            <th class="col-track">Gráfico</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="filas-gantt"></tbody>
+      </table>
+    </div>
 
     <script>
       function escapeHtml(texto) {
@@ -58,13 +94,44 @@
         return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
 
+      function formatearFecha_(fecha) {
+        var d = new Date(fecha);
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm + '/' + d.getFullYear();
+      }
+
+      function formatearRangoFechas_(inicio, fin) {
+        if (!inicio || !fin) return '—';
+        return formatearFecha_(inicio) + '–' + formatearFecha_(fin);
+      }
+
+      function formatearDesviacion_(dias) {
+        if (dias === null || dias === undefined) return { texto: '—', clase: '' };
+        if (dias === 0) return { texto: 'A tiempo', clase: 'a-tiempo' };
+        if (dias > 0) return { texto: '+' + dias + 'd', clase: 'retraso' };
+        return { texto: dias + 'd', clase: 'a-tiempo' };
+      }
+
       function mostrarError(error) {
         document.getElementById('estado-carga').textContent = 'Error: ' + (error && error.message ? error.message : error);
         document.getElementById('estado-carga').style.display = 'block';
       }
 
+      function abrirEdicionProceso(id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion('PROCESO', id);
+      }
+
       function cargarOpcionesFiltro() {
         google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
+          var selectCampana = document.getElementById('filtro-campana');
+          opciones.campanas.forEach(function (campana) {
+            selectCampana.innerHTML += '<option value="' + escapeHtml(campana.id) + '">' + escapeHtml(campana.etiqueta) + '</option>';
+          });
+          var selectProyecto = document.getElementById('filtro-proyecto');
+          opciones.proyectos.forEach(function (proyecto) {
+            selectProyecto.innerHTML += '<option value="' + escapeHtml(proyecto.id) + '">' + escapeHtml(proyecto.etiqueta) + '</option>';
+          });
           var selectFase = document.getElementById('filtro-fase');
           opciones.fases.forEach(function (fase) {
             selectFase.innerHTML += '<option value="' + escapeHtml(fase) + '">' + escapeHtml(fase) + '</option>';
@@ -80,9 +147,11 @@
         document.getElementById('estado-carga').style.display = 'none';
         var filas = datos.filas || [];
         var tabla = document.getElementById('tabla-gantt');
+        var rangoFechasEl = document.getElementById('rango-fechas');
 
         if (filas.length === 0) {
           tabla.style.display = 'none';
+          rangoFechasEl.textContent = '';
           document.getElementById('estado-carga').textContent = 'No hay procesos con fechas de plan para este filtro.';
           document.getElementById('estado-carga').style.display = 'block';
           return;
@@ -94,51 +163,75 @@
             if (f) fechas.push(new Date(f).getTime());
           });
         });
-        var minFecha = Math.min.apply(null, fechas);
-        var maxFecha = Math.max.apply(null, fechas);
+        var hoy = new Date().getTime();
+        var minFecha = Math.min.apply(null, fechas.concat([hoy]));
+        var maxFecha = Math.max.apply(null, fechas.concat([hoy]));
         var rango = Math.max(maxFecha - minFecha, 24 * 60 * 60 * 1000);
+
+        rangoFechasEl.textContent = 'Mostrando: ' + formatearFecha_(minFecha) + ' – ' + formatearFecha_(maxFecha);
 
         function posicion(fecha) {
           return ((new Date(fecha).getTime() - minFecha) / rango) * 100;
         }
 
+        var posicionHoy = posicion(hoy);
+        var lineaHoy = (posicionHoy >= 0 && posicionHoy <= 100)
+          ? '<div class="linea-hoy" style="left:' + posicionHoy + '%;" title="Hoy: ' + formatearFecha_(hoy) + '"></div>'
+          : '';
+
         document.getElementById('filas-gantt').innerHTML = filas.map(function (fila) {
           var izqPlan = posicion(fila.fechaInicioPlan);
           var anchoPlan = Math.max(posicion(fila.fechaFinPlan) - izqPlan, 0.5);
+          var tituloPlan = 'Plan: ' + formatearFecha_(fila.fechaInicioPlan) + ' – ' + formatearFecha_(fila.fechaFinPlan);
           var barraReal = '';
           if (fila.fechaInicioReal && fila.fechaFinReal) {
             var izqReal = posicion(fila.fechaInicioReal);
             var anchoReal = Math.max(posicion(fila.fechaFinReal) - izqReal, 0.5);
             var tarde = new Date(fila.fechaFinReal) > new Date(fila.fechaFinPlan);
+            var tituloReal = 'Real: ' + formatearFecha_(fila.fechaInicioReal) + ' – ' + formatearFecha_(fila.fechaFinReal);
             barraReal = '<div class="barra ' + (tarde ? 'barra-real-tarde' : 'barra-real-ok') +
-              '" style="left:' + izqReal + '%;width:' + anchoReal + '%;"></div>';
+              '" style="left:' + izqReal + '%;width:' + anchoReal + '%;" title="' + escapeHtml(tituloReal) + '"></div>';
           }
+          var desv = formatearDesviacion_(fila.diasDesviacionFin);
           return '<tr>' +
             '<td class="col-nombre">' + escapeHtml(fila.nombre) + '</td>' +
+            '<td>' + escapeHtml(fila.productoNombre) + '</td>' +
             '<td>' + escapeHtml(fila.fase) + '</td>' +
-            '<td>' + escapeHtml(fila.responsable) + '</td>' +
+            '<td class="col-responsable" title="' + escapeHtml(fila.responsable) + '">' + escapeHtml(fila.responsable) + '</td>' +
+            '<td class="col-fechas">' + formatearRangoFechas_(fila.fechaInicioPlan, fila.fechaFinPlan) + '</td>' +
+            '<td class="col-fechas">' + formatearRangoFechas_(fila.fechaInicioReal, fila.fechaFinReal) + '</td>' +
+            '<td class="col-desviacion ' + desv.clase + '">' + desv.texto + '</td>' +
             '<td class="col-track"><div class="track">' +
-              '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;"></div>' +
-              barraReal +
+              '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
+              barraReal + lineaHoy +
             '</div></td>' +
+            '<td><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span></td>' +
           '</tr>';
         }).join('');
 
         tabla.style.display = 'table';
       }
 
+      function filtroActual_() {
+        return {
+          campanaId: document.getElementById('filtro-campana').value || null,
+          proyectoId: document.getElementById('filtro-proyecto').value || null,
+          faseProduccion: document.getElementById('filtro-fase').value || null,
+          responsableId: document.getElementById('filtro-responsable').value || null
+        };
+      }
+
       function cargarGantt() {
         document.getElementById('estado-carga').style.display = 'block';
         document.getElementById('estado-carga').textContent = 'Cargando...';
         document.getElementById('tabla-gantt').style.display = 'none';
-        var filtro = {
-          faseProduccion: document.getElementById('filtro-fase').value || null,
-          responsableId: document.getElementById('filtro-responsable').value || null
-        };
-        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderGantt).obtenerDatosGanttPlanReal(filtro);
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderGantt).obtenerDatosGanttPlanReal(filtroActual_());
       }
 
       document.getElementById('btn-filtrar').addEventListener('click', cargarGantt);
+      document.getElementById('btn-exportar-csv').addEventListener('click', function () {
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
+      });
       cargarOpcionesFiltro();
       cargarGantt();
     </script>

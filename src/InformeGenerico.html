@@ -111,13 +111,17 @@
           .obtenerOpcionesInforme(tipo);
       }
 
+      var UMBRAL_ALERTA_DESVIACION_DIAS = 2;
+
       function renderDesviacionAgregada_(lista) {
         if (!lista || lista.length === 0) return '<div class="vacio">Sin datos.</div>';
         return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
           '<tr><th style="text-align:left;">Grupo</th><th>Casos</th><th>Media (días)</th><th>Máxima (días)</th><th>Con retraso</th></tr>' +
           lista.map(function (g) {
-            return '<tr><td>' + escapeHtml(g.grupo) + '</td><td style="text-align:center;">' + g.casos + '</td>' +
-              '<td style="text-align:center;">' + g.diasDesviacionMedia + '</td>' +
+            var alerta = g.diasDesviacionMedia > UMBRAL_ALERTA_DESVIACION_DIAS;
+            var estiloFila = alerta ? ' style="background:#fdecea;color:#b00020;"' : '';
+            return '<tr' + estiloFila + '><td>' + escapeHtml(g.grupo) + '</td><td style="text-align:center;">' + g.casos + '</td>' +
+              '<td style="text-align:center;">' + g.diasDesviacionMedia + (alerta ? ' ⚠' : '') + '</td>' +
               '<td style="text-align:center;">' + g.diasDesviacionMaxima + '</td>' +
               '<td style="text-align:center;">' + g.casosConRetraso + '</td></tr>';
           }).join('') + '</table>';
@@ -126,9 +130,14 @@
       function renderDesviacion(bloque) {
         var contenedor = document.getElementById('desviacion-planificacion');
         if (!bloque) { contenedor.innerHTML = '<div class="vacio">Sin datos.</div>'; return; }
+        var bloqueCampana = bloque.procesosPorCampana
+          ? '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por campaña</strong></p>' +
+            renderDesviacionAgregada_(bloque.procesosPorCampana)
+          : '';
         contenedor.innerHTML =
           '<div class="resumen-linea"><span>Procesos medidos</span><span class="badge">' + bloque.procesosMedidos + '</span></div>' +
           '<div class="resumen-linea"><span>Tareas medidas</span><span class="badge">' + bloque.tareasMedidas + '</span></div>' +
+          bloqueCampana +
           '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por fase de producción</strong></p>' +
           renderDesviacionAgregada_(bloque.procesosPorFase) +
           '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por responsable</strong></p>' +

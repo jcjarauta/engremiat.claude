@@ -68,13 +68,64 @@ function calcularDesviacionAgregada_(listaConDesviacion, agruparPorCampo) {
   }).sort(function (a, b) { return b.diasDesviacionMedia - a.diasDesviacionMedia; });
 }
 
+/**
+ * PROCESO/TAREA no tienen CAMPANA_ID propio -- solo llegan a una campaña
+ * atravesando PRODUCTO_ID -> PROYECTO_PRODUCTO (activa) -> PROYECTO_ID ->
+ * PROYECTO.CAMPANA_ID. Un producto reutilizado podria pertenecer a mas
+ * de un proyecto/campaña; por simplicidad (igual que otras resoluciones
+ * de contexto ya existentes en el sistema, ver PROCESO_PREDECESOR) se
+ * toma la primera relacion activa encontrada. Prefetch en 3 pasadas
+ * para evitar N+1 al recorrer todos los procesos/tareas.
+ */
+function construirMapaCampanaPorProducto_() {
+  var proyectoPorProducto = {};
+  listarRegistros('PROYECTO_PRODUCTO', { ACTIVO: 'SÍ' }).forEach(function (rel) {
+    if (!proyectoPorProducto[rel.PRODUCTO_ID]) proyectoPorProducto[rel.PRODUCTO_ID] = rel.PROYECTO_ID;
+  });
+
+  var campanaPorProyecto = {};
+  var nombreCampanaPorId = {};
+  listarRegistros('PROYECTO', {}).forEach(function (proyecto) {
+    campanaPorProyecto[proyecto.ID] = proyecto.CAMPANA_ID;
+  });
+  listarRegistros('CAMPANA', {}).forEach(function (campana) {
+    nombreCampanaPorId[campana.ID] = campana.NOMBRE;
+  });
+
+  var campanaPorProducto = {};
+  Object.keys(proyectoPorProducto).forEach(function (productoId) {
+    var proyectoId = proyectoPorProducto[productoId];
+    var campanaId = campanaPorProyecto[proyectoId];
+    if (campanaId) {
+      campanaPorProducto[productoId] = { id: campanaId, nombre: nombreCampanaPorId[campanaId] || campanaId };
+    }
+  });
+
+  return campanaPorProducto;
+}
+
+function enriquecerConCampana_(lista, campanaPorProducto) {
+  return lista.map(function (registro) {
+    var campana = campanaPorProducto[registro.PRODUCTO_ID];
+    return Object.assign({}, registro, {
+      CAMPANA_ID: campana ? campana.id : '',
+      CAMPANA_NOMBRE: campana ? campana.nombre : '(sin campaña)'
+    });
+  });
+}
+
 function listarDesviacionesProcesos_(filtro) {
   filtro = filtro || {};
   var procesos = enriquecerConDesviacion_(listarRegistros('PROCESO', { ACTIVO: 'SÍ' }));
 
+  if (filtro.campanaId) {
+    procesos = enriquecerConCampana_(procesos, construirMapaCampanaPorProducto_());
+  }
+
   return procesos.filter(function (proceso) {
     if (filtro.faseProduccion && proceso.FASE_PRODUCCION !== filtro.faseProduccion) return false;
     if (filtro.responsableId && proceso.RESPONSABLE_ID !== filtro.responsableId) return false;
+    if (filtro.campanaId && proceso.CAMPANA_ID !== filtro.campanaId) return false;
     return true;
   });
 }
@@ -83,8 +134,21 @@ function listarDesviacionesTareas_(filtro) {
   filtro = filtro || {};
   var tareas = enriquecerConDesviacion_(listarRegistros('TAREA', { ACTIVO: 'SÍ' }));
 
+  if (filtro.campanaId) {
+    var productoPorProceso = {};
+    listarRegistros('PROCESO', {}).forEach(function (proceso) {
+      productoPorProceso[proceso.ID] = proceso.PRODUCTO_ID;
+    });
+    var campanaPorProducto = construirMapaCampanaPorProducto_();
+    tareas = tareas.map(function (tarea) {
+      return Object.assign({}, tarea, { PRODUCTO_ID: productoPorProceso[tarea.PROCESO_ID] });
+    });
+    tareas = enriquecerConCampana_(tareas, campanaPorProducto);
+  }
+
   return tareas.filter(function (tarea) {
     if (filtro.responsableId && tarea.RESPONSABLE_ID !== filtro.responsableId) return false;
+    if (filtro.campanaId && tarea.CAMPANA_ID !== filtro.campanaId) return false;
     return true;
   });
 }
@@ -103,7 +167,13 @@ function generarInformeDesviacion(filtro) {
   var procesos = listarDesviacionesProcesos_(filtro);
   var tareas = listarDesviacionesTareas_(filtro);
 
-  return Object.assign({ tipo: 'DESVIACION' }, construirBloqueDesviacion_(procesos, tareas));
+  var procesosConCampana = enriquecerConCampana_(procesos, construirMapaCampanaPorProducto_());
+
+  return Object.assign(
+    { tipo: 'DESVIACION' },
+    construirBloqueDesviacion_(procesos, tareas),
+    { procesosPorCampana: calcularDesviacionAgregada_(procesosConCampana, 'CAMPANA_NOMBRE') }
+  );
 }
 
 /**
@@ -117,16 +187,68 @@ function obtenerOpcionesFiltroGantt() {
   var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (persona) {
     return { id: persona.ID, etiqueta: persona.NOMBRE };
   });
-  return { fases: fases, personas: personas };
+  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
+    return { id: campana.ID, etiqueta: campana.NOMBRE };
+  });
+  var proyectos = listarRegistros('PROYECTO', { ACTIVO: 'SÍ' }).map(function (proyecto) {
+    return { id: proyecto.ID, etiqueta: proyecto.NOMBRE };
+  });
+  return { fases: fases, personas: personas, campanas: campanas, proyectos: proyectos };
 }
 
-function obtenerDatosGanttPlanReal(filtro) {
+/**
+ * Contexto jerarquico de un producto (proyecto+campaña a los que
+ * pertenece), para el Gantt y su exportacion -- mismo tipo de
+ * resolucion que construirMapaCampanaPorProducto_ pero con el proyecto
+ * tambien resuelto, ya que aqui hace falta mostrar/filtrar por ambos
+ * niveles. Se mantiene separada de construirMapaCampanaPorProducto_
+ * (usada por el informe de Desviacion, ya verificado) para no tocar esa
+ * logica ya probada.
+ */
+function construirMapaContextoPorProducto_() {
+  var proyectoPorProducto = {};
+  listarRegistros('PROYECTO_PRODUCTO', { ACTIVO: 'SÍ' }).forEach(function (rel) {
+    if (!proyectoPorProducto[rel.PRODUCTO_ID]) proyectoPorProducto[rel.PRODUCTO_ID] = rel.PROYECTO_ID;
+  });
+
+  var proyectos = {};
+  listarRegistros('PROYECTO', {}).forEach(function (proyecto) { proyectos[proyecto.ID] = proyecto; });
+  var campanas = {};
+  listarRegistros('CAMPANA', {}).forEach(function (campana) { campanas[campana.ID] = campana; });
+
+  var contexto = {};
+  Object.keys(proyectoPorProducto).forEach(function (productoId) {
+    var proyecto = proyectos[proyectoPorProducto[productoId]];
+    if (!proyecto) return;
+    var campana = campanas[proyecto.CAMPANA_ID];
+    contexto[productoId] = {
+      proyectoId: proyecto.ID,
+      proyectoNombre: proyecto.NOMBRE,
+      campanaId: proyecto.CAMPANA_ID,
+      campanaNombre: campana ? campana.NOMBRE : proyecto.CAMPANA_ID
+    };
+  });
+
+  return contexto;
+}
+
+/**
+ * Fuente unica de filas para el Gantt (vista) y su exportacion CSV --
+ * misma logica de filtrado y de detalle en ambos casos, para que lo que
+ * se ve y lo que se exporta no puedan divergir.
+ */
+function obtenerFilasGanttDetalladas_(filtro) {
   filtro = filtro || {};
+
+  var contextoPorProducto = construirMapaContextoPorProducto_();
 
   var procesos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' }).filter(function (proceso) {
     if (!proceso.FECHA_INICIO_PLAN || !proceso.FECHA_FIN_PLAN) return false;
     if (filtro.faseProduccion && proceso.FASE_PRODUCCION !== filtro.faseProduccion) return false;
     if (filtro.responsableId && proceso.RESPONSABLE_ID !== filtro.responsableId) return false;
+    var contexto = contextoPorProducto[proceso.PRODUCTO_ID];
+    if (filtro.campanaId && (!contexto || contexto.campanaId !== filtro.campanaId)) return false;
+    if (filtro.proyectoId && (!contexto || contexto.proyectoId !== filtro.proyectoId)) return false;
     return true;
   });
 
@@ -134,21 +256,106 @@ function obtenerDatosGanttPlanReal(filtro) {
   listarRegistros('PERSONA_EQUIPO', {}).forEach(function (persona) {
     nombresPersona[persona.ID] = persona.NOMBRE;
   });
+  var nombresProducto = {};
+  listarRegistros('PRODUCTO', {}).forEach(function (producto) {
+    nombresProducto[producto.ID] = producto.NOMBRE;
+  });
 
-  var filas = procesos.map(function (proceso) {
+  return procesos.map(function (proceso) {
+    var contexto = contextoPorProducto[proceso.PRODUCTO_ID] || {};
+    var desviacion = calcularDesviacionRegistro_(proceso);
     return {
       id: proceso.ID,
       nombre: proceso.NOMBRE,
       fase: proceso.FASE_PRODUCCION || '',
+      estado: proceso.ESTADO || '',
       responsable: nombresPersona[proceso.RESPONSABLE_ID] || '',
+      productoNombre: nombresProducto[proceso.PRODUCTO_ID] || '',
+      proyectoNombre: contexto.proyectoNombre || '',
+      campanaNombre: contexto.campanaNombre || '',
       fechaInicioPlan: proceso.FECHA_INICIO_PLAN,
       fechaFinPlan: proceso.FECHA_FIN_PLAN,
       fechaInicioReal: proceso.FECHA_INICIO_REAL || null,
-      fechaFinReal: proceso.FECHA_FIN_REAL || null
+      fechaFinReal: proceso.FECHA_FIN_REAL || null,
+      duracionPrevistaDias: proceso.DURACION_PREVISTA_DIAS === '' || proceso.DURACION_PREVISTA_DIAS === undefined ? null : Number(proceso.DURACION_PREVISTA_DIAS),
+      duracionRealDias: proceso.DURACION_REAL_DIAS === '' || proceso.DURACION_REAL_DIAS === undefined ? null : Number(proceso.DURACION_REAL_DIAS),
+      diasDesviacionInicio: desviacion.DIAS_DESVIACION_INICIO,
+      diasDesviacionFin: desviacion.DIAS_DESVIACION_FIN
     };
   }).sort(function (a, b) { return new Date(a.fechaInicioPlan) - new Date(b.fechaInicioPlan); });
+}
 
-  return serializarParaCliente_({ filas: filas });
+function obtenerDatosGanttPlanReal(filtro) {
+  return serializarParaCliente_({ filas: obtenerFilasGanttDetalladas_(filtro) });
+}
+
+/**
+ * Formatea una fecha con la zona horaria del script (no toISOString(),
+ * que convierte a UTC y desplaza un dia hacia atras en cualquier huso
+ * horario positivo -- bug real detectado al revisar la primera
+ * exportacion: FECHA_INICIO_PLAN=2026-10-01 salia como "2026-09-30").
+ */
+function formatearFechaCsv_(fecha) {
+  if (!fecha) return '';
+  return Utilities.formatDate(new Date(fecha), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd');
+}
+
+/**
+ * Celda de CSV: los valores numericos van SIN comillas (para que Excel/
+ * Sheets los reconozca como numero y se puedan sumar/promediar
+ * directamente en una tabla dinamica); el texto va entre comillas,
+ * escapando comillas internas.
+ */
+function celdaCsv_(valor) {
+  if (valor === null || valor === undefined || valor === '') return '';
+  if (typeof valor === 'number') return String(valor);
+  return '"' + String(valor).replace(/"/g, '""') + '"';
+}
+
+function exportarGanttCSV(filtro) {
+  var filas = obtenerFilasGanttDetalladas_(filtro);
+  var encabezados = [
+    'ID', 'Campaña', 'Proyecto', 'Producto', 'Proceso', 'Fase', 'Responsable', 'Estado',
+    'Fecha inicio plan', 'Fecha fin plan', 'Fecha inicio real', 'Fecha fin real',
+    'Duración prevista (días)', 'Duración real (días)',
+    'Desviación inicio (días)', 'Desviación fin (días)'
+  ];
+  var filasCsv = filas.map(function (f) {
+    return [
+      f.id, f.campanaNombre, f.proyectoNombre, f.productoNombre, f.nombre, f.fase, f.responsable, f.estado,
+      formatearFechaCsv_(f.fechaInicioPlan), formatearFechaCsv_(f.fechaFinPlan),
+      formatearFechaCsv_(f.fechaInicioReal), formatearFechaCsv_(f.fechaFinReal),
+      f.duracionPrevistaDias, f.duracionRealDias,
+      f.diasDesviacionInicio, f.diasDesviacionFin
+    ];
+  });
+  var csv = [encabezados.map(function (e) { return celdaCsv_(e); }).join(',')]
+    .concat(filasCsv.map(function (fila) { return fila.map(celdaCsv_).join(','); }))
+    .join('\n');
+
+  /*
+   * BOM UTF-8: sin el, Excel abre el CSV interpretando los acentos
+   * (Campaña, Producción...) con la codificacion regional en vez de
+   * UTF-8, mostrando caracteres corruptos.
+   */
+  var BOM_UTF8 = String.fromCharCode(0xFEFF);
+  var csvConBom = BOM_UTF8 + csv;
+
+  var nombre = 'GANTT_PLAN_REAL_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
+  registrarHistorial('INFORME', nombre, 'EXPORTAR_GANTT', [], { origen: 'UI', formato: 'CSV' });
+  return { nombreArchivo: nombre, contenidoCsv: csvConBom };
+}
+
+function abrirDialogoExportarGanttCSV(filtro) {
+  var resultado = exportarGanttCSV(filtro);
+  var b64 = Utilities.base64Encode(resultado.contenidoCsv, Utilities.Charset.UTF_8);
+  var html = '<html><body style="font-family:Arial,sans-serif;padding:16px;">' +
+    '<p>Generando descarga de <strong>' + escaparHtmlServer_(resultado.nombreArchivo) + '</strong>...</p>' +
+    '<a id="dl" download="' + escaparHtmlServer_(resultado.nombreArchivo) + '" href="data:text/csv;charset=utf-8;base64,' + b64 + '">Si la descarga no comienza, haz clic aqui</a>' +
+    '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
+    '</body></html>';
+  var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
+  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
 }
 
 function abrirGanttPlanReal() {
