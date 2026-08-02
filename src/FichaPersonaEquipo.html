@@ -39,7 +39,11 @@
       <section class="bloque" id="bloqueMiembros"><h3></h3><div class="lista"></div></section>
       <section class="bloque" id="bloqueCoordinacion"><h3></h3><div class="lista"></div></section>
       <section class="bloque"><h3>Horario</h3><div class="lista" id="listaHorarios"></div></section>
-      <section class="bloque"><h3>Tareas donde es responsable</h3><div class="lista" id="listaTareas"></div></section>
+      <section class="bloque"><h3>Proyectos involucrados</h3><div class="lista" id="listaProyectos"></div></section>
+      <section class="bloque"><h3>Tareas de hoy</h3><div class="lista" id="listaTareasHoy"></div></section>
+      <section class="bloque"><h3>Próximas tareas</h3><div class="lista" id="listaTareasProximas"></div></section>
+      <section class="bloque"><h3>Tareas terminadas</h3><div class="lista" id="listaTareasTerminadas"></div></section>
+      <section class="bloque"><h3>Otras tareas (sin fecha o vencidas)</h3><div class="lista" id="listaTareasOtras"></div></section>
       <section class="bloque"><h3>Asignaciones</h3><div class="lista" id="listaAsignaciones"></div></section>
       <section class="bloque"><h3>Documentos</h3><div class="lista" id="listaDocumentos"></div></section>
       <section class="bloque"><h3>Vínculos</h3><div class="lista" id="listaVinculos"></div></section>
@@ -133,11 +137,33 @@
             }).join("")
           : '<div class="vacio-bloque">Sin franjas horarias registradas.</div>';
 
-        document.getElementById("listaTareas").innerHTML = datos.tareasResponsable.length
-          ? datos.tareasResponsable.map(function (t) {
-              return filaHtml_(escapeHtml(t.tareaNombre) + (t.rol ? ' <span class="detalle-secundario">— ' + escapeHtml(t.rol) + '</span>' : '') + renderBadge_(t.estado), 'TAREA', t.tareaId);
+        document.getElementById("listaProyectos").innerHTML = datos.proyectosInvolucrado.length
+          ? datos.proyectosInvolucrado.map(function (p2) {
+              return filaHtml_(
+                escapeHtml(p2.nombre) + (p2.campana ? ' <span class="detalle-secundario">— ' + escapeHtml(p2.campana) + '</span>' : '') +
+                ' <span class="detalle-secundario">(' + p2.tareasAbiertas + ' de ' + p2.tareasTotal + ' tareas abiertas)</span>',
+                'PROYECTO', p2.id
+              );
             }).join("")
-          : '<div class="vacio-bloque">No es responsable de ninguna tarea.</div>';
+          : '<div class="vacio-bloque">No participa en ningún proyecto todavía.</div>';
+
+        function renderFilaTarea_(t) {
+          var fechas = (t.fechaInicioPlan || t.fechaFinPlan)
+            ? ' <span class="detalle-secundario">' + (t.fechaInicioPlan ? new Date(t.fechaInicioPlan).toLocaleDateString() : '?') + '–' + (t.fechaFinPlan ? new Date(t.fechaFinPlan).toLocaleDateString() : '?') + '</span>'
+            : '';
+          var proyecto = t.proyectoNombre ? ' <span class="detalle-secundario">· ' + escapeHtml(t.proyectoNombre) + '</span>' : '';
+          return filaHtml_(escapeHtml(t.tareaNombre) + fechas + proyecto + renderBadge_(t.estado), 'TAREA', t.tareaId);
+        }
+
+        var gruposTarea = [
+          ['listaTareasHoy', datos.tareasPorFecha.hoy, 'Ninguna tarea prevista para hoy.'],
+          ['listaTareasProximas', datos.tareasPorFecha.proximas, 'Sin tareas próximas.'],
+          ['listaTareasTerminadas', datos.tareasPorFecha.terminadas, 'Sin tareas terminadas.'],
+          ['listaTareasOtras', datos.tareasPorFecha.otras, 'Sin otras tareas.']
+        ];
+        gruposTarea.forEach(function (g) {
+          document.getElementById(g[0]).innerHTML = g[1].length ? g[1].map(renderFilaTarea_).join("") : '<div class="vacio-bloque">' + g[2] + '</div>';
+        });
 
         document.getElementById("listaAsignaciones").innerHTML = datos.asignaciones.length
           ? datos.asignaciones.map(function (a) {

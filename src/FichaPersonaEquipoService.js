@@ -23,6 +23,28 @@ function etiquetaEntidadGenerica_(entidadTipoLabel, entidadId) {
   return entidadTipoLabel + ': ' + (registro.NOMBRE || registro.TITULO || registro.ID);
 }
 
+/*
+ * Clasifica una tarea por fecha (ver conversacion: "tareas del dia,
+ * proximas o terminadas"). Basado en fechas de PLAN, no de REAL --
+ * igual criterio que calcularRiesgoRegistro_ en DesviacionService.js.
+ * "Cerrada" por coincidencia de texto (mismo patron que claseBadgeEstado_
+ * en los paneles), para no depender de listar los estados exactos del
+ * catalogo CFG_ESTADO_TAREA.
+ */
+function clasificarTareaPorFecha_(tarea) {
+  var estado = String(tarea.ESTADO || '').toLowerCase();
+  if (estado.indexOf('complet') !== -1 || estado.indexOf('cancel') !== -1) return 'terminadas';
+  if (!tarea.FECHA_INICIO_PLAN || !tarea.FECHA_FIN_PLAN) return 'otras';
+
+  var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  var inicio = new Date(tarea.FECHA_INICIO_PLAN); inicio.setHours(0, 0, 0, 0);
+  var fin = new Date(tarea.FECHA_FIN_PLAN); fin.setHours(0, 0, 0, 0);
+
+  if (hoy >= inicio && hoy <= fin) return 'hoy';
+  if (inicio > hoy) return 'proximas';
+  return 'otras'; // vencida sin cerrar -- misma senal que "en riesgo" del Gantt
+}
+
 function obtenerFichaPersonaEquipo(id) {
   var persona = obtenerRegistroPorId('PERSONA_EQUIPO', id);
   if (!persona) {
@@ -68,23 +90,65 @@ function obtenerFichaPersonaEquipo(id) {
     .filter(function (h) { return h.ENTIDAD_TIPO === 'Persona/Equipo' && h.ENTIDAD_ID === id; })
     .map(function (h) { return { id: h.ID, dia: h.DIA_SEMANA, inicio: h.HORA_INICIO, fin: h.HORA_FIN, estado: h.ESTADO }; });
 
+  var contextoPorProducto = construirMapaContextoPorProducto_();
+  var procesosPorId = {};
+  listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
+
   var tareasResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tr.PERSONA_EQUIPO_ID === id; })
     .map(function (tr) {
       var tarea = obtenerRegistroPorId('TAREA', tr.TAREA_ID);
+      var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
+      var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
       return {
         id: tr.ID, tareaId: tr.TAREA_ID, tareaNombre: tarea ? tarea.NOMBRE : tr.TAREA_ID,
-        rol: tr.ROL_ASIGNADO, estado: tr.ESTADO,
+        rol: tr.ROL_ASIGNADO, estado: tarea ? tarea.ESTADO : '',
         fechaInicioPlan: tarea ? tarea.FECHA_INICIO_PLAN : null,
-        fechaFinPlan: tarea ? tarea.FECHA_FIN_PLAN : null
+        fechaFinPlan: tarea ? tarea.FECHA_FIN_PLAN : null,
+        proyectoId: contexto ? contexto.proyectoId : null,
+        proyectoNombre: contexto ? contexto.proyectoNombre : null,
+        campanaNombre: contexto ? contexto.campanaNombre : null,
+        grupoFecha: tarea ? clasificarTareaPorFecha_(tarea) : 'otras'
       };
-    });
+    })
+    .sort(function (a, b) { return new Date(a.fechaInicioPlan || 0) - new Date(b.fechaInicioPlan || 0); });
 
-  var asignaciones = listarRegistros('ASIGNACION', { ACTIVO: 'SÍ' })
-    .filter(function (a) { return a.PERSONA_EQUIPO_ID === id; })
-    .map(function (a) {
-      return { id: a.ID, entidad: etiquetaEntidadGenerica_(a.ENTIDAD_TIPO, a.ENTIDAD_ID), rol: a.ROL_ASIGNADO, estado: a.ESTADO };
-    });
+  var tareasPorFecha = { hoy: [], proximas: [], terminadas: [], otras: [] };
+  tareasResponsable.forEach(function (t) { tareasPorFecha[t.grupoFecha].push(t); });
+
+  var asignacionesCrudas = listarRegistros('ASIGNACION', { ACTIVO: 'SÍ' })
+    .filter(function (a) { return a.PERSONA_EQUIPO_ID === id; });
+
+  var asignaciones = asignacionesCrudas.map(function (a) {
+    return { id: a.ID, entidad: etiquetaEntidadGenerica_(a.ENTIDAD_TIPO, a.ENTIDAD_ID), rol: a.ROL_ASIGNADO, estado: a.ESTADO };
+  });
+
+  /*
+   * Proyectos involucrados (ver conversacion): no es una relacion nueva,
+   * se deriva de las tareas de las que es responsable (via PROCESO->
+   * PRODUCTO->PROYECTO_PRODUCTO, el mismo mapa que usa el Gantt) y de
+   * las asignaciones genericas que apunten directamente a un Proyecto.
+   */
+  var proyectosMapa = {};
+  tareasResponsable.forEach(function (t) {
+    if (!t.proyectoId) return;
+    if (!proyectosMapa[t.proyectoId]) {
+      proyectosMapa[t.proyectoId] = { id: t.proyectoId, nombre: t.proyectoNombre, campana: t.campanaNombre, tareasTotal: 0, tareasAbiertas: 0 };
+    }
+    proyectosMapa[t.proyectoId].tareasTotal += 1;
+    if (t.grupoFecha !== 'terminadas') proyectosMapa[t.proyectoId].tareasAbiertas += 1;
+  });
+  asignacionesCrudas.filter(function (a) { return a.ENTIDAD_TIPO === 'Proyecto'; }).forEach(function (a) {
+    if (!proyectosMapa[a.ENTIDAD_ID]) {
+      var proyecto = obtenerRegistroPorId('PROYECTO', a.ENTIDAD_ID);
+      var campana = proyecto ? obtenerRegistroPorId('CAMPANA', proyecto.CAMPANA_ID) : null;
+      proyectosMapa[a.ENTIDAD_ID] = {
+        id: a.ENTIDAD_ID, nombre: proyecto ? proyecto.NOMBRE : a.ENTIDAD_ID,
+        campana: campana ? campana.NOMBRE : '', tareasTotal: 0, tareasAbiertas: 0
+      };
+    }
+  });
+  var proyectosInvolucrado = Object.keys(proyectosMapa).map(function (k) { return proyectosMapa[k]; });
 
   var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Persona/Equipo' && d.ENTIDAD_ID === id; })
@@ -114,7 +178,8 @@ function obtenerFichaPersonaEquipo(id) {
     coordinador: coordinador,
     equiposQueCoordina: equiposQueCoordina,
     horarios: horarios,
-    tareasResponsable: tareasResponsable,
+    proyectosInvolucrado: proyectosInvolucrado,
+    tareasPorFecha: tareasPorFecha,
     asignaciones: asignaciones,
     documentos: documentos,
     vinculos: vinculos
