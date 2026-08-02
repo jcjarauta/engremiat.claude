@@ -2175,6 +2175,7 @@ function onOpen() {
   ui.createMenu('Taller de Producción')
     .addSubMenu(
       ui.createMenu('🏗️ Jerarquía de producción')
+        .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
         .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
         .addItem('Editar campaña', 'abrirEditarCampana')
         .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 12px; }
+      .cabecera { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+      .cabecera select { flex: 1; }
+      .cabecera button { flex-shrink: 0; }
+      details { margin-bottom: 4px; }
+      details > div { margin-left: 16px; border-left: 2px solid var(--color-borde); padding-left: 10px; }
+      summary { cursor: pointer; padding: 4px 2px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+      summary::-webkit-details-marker { color: var(--color-texto-secundario); }
+      .nombre-nodo { font-weight: bold; }
+      .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 2px 3px 18px; }
+      .acciones-nodo { display: flex; gap: 4px; flex-shrink: 0; }
+      .btn-mini { font-size: 11px; padding: 2px 6px; }
+      .btn-anadir { font-size: 11px; padding: 2px 6px; margin: 4px 0 8px 16px; }
+      .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 11px; margin: 2px 0 8px 18px; }
+    </style>
+  </head>
+  <body>
+    <h3>Gestión de campaña</h3>
+    <div class="cabecera">
+      <select id="selectCampana"><option value="">-- elige una campaña --</option></select>
+      <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
+    </div>
+
+    <div id="estadoCarga" class="vacio">Elige una campaña para ver su estructura.</div>
+    <div id="arbol"></div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      function escapeAttr(texto) {
+        return escapeHtml(texto).replace(/"/g, "&quot;");
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+      }
+
+      function editar(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+      }
+
+      function crearHijo(funcion, idPadre) {
+        google.script.run.withFailureHandler(mostrarError)[funcion](idPadre);
+      }
+
+      function renderTarea(tarea) {
+        return '<div class="fila-hoja">' +
+          '<span>' + escapeHtml(tarea.nombre) + ' <span class="badge">' + escapeHtml(tarea.estado) + '</span></span>' +
+          '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></span>' +
+        '</div>';
+      }
+
+      function renderProceso(proceso) {
+        var tareas = proceso.tareas.length
+          ? proceso.tareas.map(renderTarea).join("")
+          : '<div class="vacio-nivel">Sin tareas todavía.</div>';
+        return '<details>' +
+          '<summary>' +
+            '<span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' <span class="badge">' + escapeHtml(proceso.estado) + '</span></span>' +
+            '<span class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
+              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
+            '</span>' +
+          '</summary>' +
+          '<div>' + tareas + '</div>' +
+        '</details>';
+      }
+
+      function renderProducto(producto) {
+        var procesos = producto.procesos.length
+          ? producto.procesos.map(renderProceso).join("")
+          : '<div class="vacio-nivel">Sin procesos todavía.</div>';
+        return '<details open>' +
+          '<summary>' +
+            '<span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' <span class="badge">' + escapeHtml(producto.estado) + '</span></span>' +
+            '<span class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
+              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
+            '</span>' +
+          '</summary>' +
+          '<div>' + procesos + '</div>' +
+        '</details>';
+      }
+
+      function renderProyecto(proyecto) {
+        var productos = proyecto.productos.length
+          ? proyecto.productos.map(renderProducto).join("")
+          : '<div class="vacio-nivel">Sin productos todavía.</div>';
+        return '<details open>' +
+          '<summary>' +
+            '<span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' <span class="badge">' + escapeHtml(proyecto.estado) + '</span></span>' +
+            '<span class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
+              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
+            '</span>' +
+          '</summary>' +
+          '<div>' + productos + '</div>' +
+        '</details>';
+      }
+
+      function renderArbol(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        var contenedorProyectos = datos.proyectos.length
+          ? datos.proyectos.map(renderProyecto).join("")
+          : '<div class="vacio-nivel">Esta campaña todavía no tiene proyectos.</div>';
+
+        document.getElementById("arbol").innerHTML =
+          '<div class="fila-hoja" style="padding-left:2px;">' +
+            '<span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' <span class="badge">' + escapeHtml(datos.campana.estado) + '</span></span>' +
+            '<button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button>' +
+          '</div>' +
+          contenedorProyectos +
+          '<button class="boton btn-anadir" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
+      }
+
+      function cargarArbol() {
+        var campanaId = document.getElementById("selectCampana").value;
+        if (!campanaId) {
+          document.getElementById("arbol").innerHTML = "";
+          document.getElementById("estadoCarga").textContent = "Elige una campaña para ver su estructura.";
+          document.getElementById("estadoCarga").style.display = "block";
+          return;
+        }
+        document.getElementById("estadoCarga").textContent = "Cargando...";
+        document.getElementById("estadoCarga").style.display = "block";
+        google.script.run
+          .withSuccessHandler(renderArbol)
+          .withFailureHandler(mostrarError)
+          .obtenerArbolCampana(campanaId);
+      }
+
+      function cargarOpcionesCampana() {
+        google.script.run
+          .withSuccessHandler(function (opciones) {
+            var select = document.getElementById("selectCampana");
+            opciones.forEach(function (campana) {
+              select.innerHTML += '<option value="' + escapeAttr(campana.id) + '">' + escapeHtml(campana.etiqueta) + '</option>';
+            });
+          })
+          .withFailureHandler(mostrarError)
+          .obtenerOpcionesCampanasActivas();
+      }
+
+      document.getElementById("selectCampana").addEventListener("change", cargarArbol);
+      document.getElementById("btnActualizar").addEventListener("click", cargarArbol);
+      cargarOpcionesCampana();
+    </script>
+  </body>
+</html>
