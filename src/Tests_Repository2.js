@@ -21220,6 +21220,270 @@ function repararFaseC01_Tarea0001() {
   console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
   return true;
 }
+
+function buscarFixtureM1Per001_(predicado) {
+  return listarRegistros('PERSONA_EQUIPO', {}).filter(predicado)[0] || null;
+}
+
+function buscarPersonaValidaM1Per001_() {
+  return buscarFixtureM1Per001_(function (registro) {
+    return String(registro.TIPO || '').trim() === 'Persona' &&
+      String(registro.ACTIVO || '').trim() === 'SÍ' &&
+      String(registro.ESTADO || '').trim() !== 'Inactivo';
+  });
+}
+
+function buscarEquipoValidoM1Per001_() {
+  return buscarFixtureM1Per001_(function (registro) {
+    return String(registro.TIPO || '').trim() === 'Equipo' &&
+      String(registro.ACTIVO || '').trim() === 'SÍ';
+  });
+}
+
+function buscarDesactivadoM1Per001_() {
+  return buscarFixtureM1Per001_(function (registro) {
+    return String(registro.ACTIVO || '').trim() !== 'SÍ';
+  });
+}
+
+function buscarEstadoInactivoM1Per001_() {
+  return buscarFixtureM1Per001_(function (registro) {
+    return String(registro.ESTADO || '').trim() === 'Inactivo';
+  });
+}
+
+function generarIdInexistenteM1Per001_(registros) {
+  var ids = {};
+  (registros || []).forEach(function (registro) {
+    ids[String(registro.ID || '').trim()] = true;
+  });
+  var numero = 1;
+  var candidato;
+  do {
+    candidato = 'M1-PER-INEXISTENTE-' + numero;
+    numero += 1;
+  } while (ids[candidato]);
+  return candidato;
+}
+
+function datosPersonaEquipoM1Per001_(tipo, coordinadorId, base) {
+  base = base || {};
+  return {
+    TIPO: tipo,
+    NOMBRE: 'Prueba M1-PER-001 ' + Utilities.getUuid(),
+    ROL: base.ROL || 'Producción',
+    CAPACIDAD_SEMANAL_DIAS: Number(base.CAPACIDAD_SEMANAL_DIAS) || 5,
+    DISPONIBILIDAD: base.DISPONIBILIDAD || 'Completa',
+    ESTADO: 'Disponible',
+    COORDINADOR_ID: coordinadorId || ''
+  };
+}
+
+function assertRechazoM1Per001_(etiqueta, datos, fragmentoEsperado) {
+  var error = '';
+  try {
+    insertarRegistroTransaccional('PERSONA_EQUIPO', datos, {dryRun: true});
+  } catch (e) {
+    error = String(e && e.message ? e.message : e);
+  }
+  if (error.indexOf(fragmentoEsperado) === -1) {
+    throw new Error(
+      etiqueta + ': se esperaba rechazo con "' + fragmentoEsperado + '", obtenido: ' + error
+    );
+  }
+}
+
+function ejecutarSuiteM1Per001DryRun() {
+  var paquete = 'M1_PER_001_DRY_RUN';
+  var estadoFinal = 'OK';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + paquete);
+  try {
+    var registros = listarRegistros('PERSONA_EQUIPO', {});
+    var persona = buscarPersonaValidaM1Per001_();
+    var equipo = buscarEquipoValidoM1Per001_();
+    var desactivado = buscarDesactivadoM1Per001_();
+    var estadoInactivo = buscarEstadoInactivoM1Per001_();
+    var idInexistente = generarIdInexistenteM1Per001_(registros);
+
+    insertarRegistroTransaccional(
+      'PERSONA_EQUIPO',
+      datosPersonaEquipoM1Per001_('Equipo', '', equipo || persona),
+      {dryRun: true}
+    );
+    console.log('OK caso=equipo_sin_coordinador');
+
+    if (persona) {
+      insertarRegistroTransaccional(
+        'PERSONA_EQUIPO',
+        datosPersonaEquipoM1Per001_('Equipo', persona.ID, equipo || persona),
+        {dryRun: true}
+      );
+      assertRechazoM1Per001_(
+        'Persona con coordinador',
+        datosPersonaEquipoM1Per001_('Persona', persona.ID, persona),
+        'Una Persona no puede tener COORDINADOR_ID'
+      );
+      console.log('OK casos=coordinador_persona_valido,persona_con_coordinador');
+    } else {
+      estadoFinal = 'WARN';
+      console.log('WARN SKIP_CONTROLADO requisito=persona_activa_no_inactiva');
+    }
+
+    if (equipo) {
+      assertRechazoM1Per001_(
+        'Equipo con coordinador Equipo',
+        datosPersonaEquipoM1Per001_('Equipo', equipo.ID, equipo),
+        'TIPO=Persona'
+      );
+      actualizarRegistroTransaccional(
+        'PERSONA_EQUIPO',
+        equipo.ID,
+        {TIPO: 'Persona', COORDINADOR_ID: ''},
+        {dryRun: true}
+      );
+      console.log('OK casos=coordinador_tipo_equipo,edicion_equipo_a_persona');
+    } else {
+      estadoFinal = 'WARN';
+      console.log('WARN SKIP_CONTROLADO requisito=equipo_activo');
+    }
+
+    assertRechazoM1Per001_(
+      'Coordinador inexistente',
+      datosPersonaEquipoM1Per001_('Equipo', idInexistente, equipo || persona),
+      'no existe'
+    );
+    console.log('OK caso=coordinador_inexistente id_comprobado=' + idInexistente);
+
+    if (desactivado) {
+      assertRechazoM1Per001_(
+        'Coordinador ACTIVO distinto de SÍ',
+        datosPersonaEquipoM1Per001_('Equipo', desactivado.ID, equipo || persona),
+        'ACTIVO=SÍ'
+      );
+      console.log('OK caso=coordinador_desactivado');
+    } else {
+      estadoFinal = 'WARN';
+      console.log('WARN SKIP_CONTROLADO requisito=persona_equipo_desactivado');
+    }
+
+    if (estadoInactivo) {
+      assertRechazoM1Per001_(
+        'Coordinador con ESTADO Inactivo',
+        datosPersonaEquipoM1Per001_('Equipo', estadoInactivo.ID, equipo || persona),
+        'ESTADO=Inactivo'
+      );
+      console.log('OK caso=coordinador_estado_inactivo');
+    } else {
+      estadoFinal = 'WARN';
+      console.log('WARN SKIP_CONTROLADO requisito=persona_equipo_estado_inactivo');
+    }
+
+    return true;
+  } catch (e) {
+    estadoFinal = 'ERR';
+    console.log('ERR package=' + paquete + ' mensaje=' + String(e && e.message ? e.message : e));
+    throw e;
+  } finally {
+    console.log('ENGREMIAT_PACKAGE_END package=' + paquete + ' status=' + estadoFinal);
+  }
+}
+
+function evaluarIntegridadM1Per001EnMemoria_(registros) {
+  var hallazgos = [];
+  detectarProblemasCoordinadorPersonaEquipoEnRegistros_(
+    registros,
+    function (codigo, entidad, registroId, descripcion, gravedad, accionSugerida) {
+      hallazgos.push({
+        codigo: codigo,
+        entidad: entidad,
+        registroId: registroId,
+        descripcion: descripcion,
+        gravedad: gravedad,
+        accionSugerida: accionSugerida
+      });
+    }
+  );
+  return hallazgos;
+}
+
+function assertCasoIntegridadM1Per001_(nombre, registros, codigoEsperado, registroEsperado) {
+  var hallazgos = evaluarIntegridadM1Per001EnMemoria_(registros);
+  var codigos = hallazgos.map(function (hallazgo) { return hallazgo.codigo; });
+  if (!codigoEsperado) {
+    if (hallazgos.length !== 0) {
+      throw new Error(nombre + ': se esperaban 0 hallazgos, obtenidos ' + codigos.join(','));
+    }
+    return;
+  }
+  if (
+    hallazgos.length !== 1 ||
+    hallazgos[0].codigo !== codigoEsperado ||
+    hallazgos[0].registroId !== registroEsperado
+  ) {
+    throw new Error(
+      nombre + ': hallazgos inesperados ' + JSON.stringify(hallazgos)
+    );
+  }
+}
+
+function ejecutarSuiteM1Per001IntegridadMemoria() {
+  var paquete = 'M1_PER_001_INTEGRIDAD_MEMORIA';
+  var estadoFinal = 'OK';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + paquete);
+  try {
+    var personaValida = {
+      ID: 'M1-PERSONA-VALIDA', TIPO: 'Persona', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: ''
+    };
+    var equipoBase = {
+      ID: 'M1-EQUIPO-BASE', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: ''
+    };
+
+    assertCasoIntegridadM1Per001_(
+      'Persona con coordinador',
+      [personaValida, {ID: 'M1-PERSONA-CASO', TIPO: 'Persona', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: personaValida.ID}],
+      'FUNC-PER-001',
+      'M1-PERSONA-CASO'
+    );
+    assertCasoIntegridadM1Per001_(
+      'Coordinador inexistente',
+      [personaValida, {ID: 'M1-EQUIPO-CASO', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: 'M1-AUSENTE'}],
+      'FUNC-PER-002',
+      'M1-EQUIPO-CASO'
+    );
+    assertCasoIntegridadM1Per001_(
+      'Coordinador desactivado',
+      [{ID: 'M1-COORDINADOR', TIPO: 'Persona', ACTIVO: 'NO', ESTADO: 'Disponible'}, {ID: 'M1-EQUIPO-CASO', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: 'M1-COORDINADOR'}],
+      'FUNC-PER-003',
+      'M1-EQUIPO-CASO'
+    );
+    assertCasoIntegridadM1Per001_(
+      'Coordinador con estado Inactivo',
+      [{ID: 'M1-COORDINADOR', TIPO: 'Persona', ACTIVO: 'SÍ', ESTADO: 'Inactivo'}, {ID: 'M1-EQUIPO-CASO', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: 'M1-COORDINADOR'}],
+      'FUNC-PER-003',
+      'M1-EQUIPO-CASO'
+    );
+    assertCasoIntegridadM1Per001_(
+      'Coordinador de tipo Equipo',
+      [equipoBase, {ID: 'M1-EQUIPO-CASO', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: equipoBase.ID}],
+      'FUNC-PER-004',
+      'M1-EQUIPO-CASO'
+    );
+    assertCasoIntegridadM1Per001_(
+      'Caso válido',
+      [personaValida, {ID: 'M1-EQUIPO-CASO', TIPO: 'Equipo', ACTIVO: 'SÍ', ESTADO: 'Disponible', COORDINADOR_ID: personaValida.ID}],
+      '',
+      ''
+    );
+    console.log('OK casos_integridad_memoria=6');
+    return true;
+  } catch (e) {
+    estadoFinal = 'ERR';
+    console.log('ERR package=' + paquete + ' mensaje=' + String(e && e.message ? e.message : e));
+    throw e;
+  } finally {
+    console.log('ENGREMIAT_PACKAGE_END package=' + paquete + ' status=' + estadoFinal);
+  }
+}
 function auditarFaseC02_FechaFinPlanAnteriorInicioPlan() {
   var packageName = 'F03_C02_FECHA_FIN_PLAN_ANTERIOR_INICIO_PLAN';
   var hoja = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('06_TAREAS');

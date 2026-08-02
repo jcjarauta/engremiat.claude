@@ -2202,6 +2202,49 @@ if (clave === 'PERSONA_EQUIPO') {
       'DISPONIBILIDAD No disponible no es compatible con ESTADO Disponible'
     );
   }
+
+  var tipoPersonaEquipo = String(datos.TIPO || '').trim();
+  var coordinadorPersonaEquipoId = String(
+    datos.COORDINADOR_ID || ''
+  ).trim();
+
+  if (tipoPersonaEquipo === 'Persona' && coordinadorPersonaEquipoId) {
+    throw new Error(
+      'ERROR_INSERCION_PERSONA_EQUIPO: Una Persona no puede tener COORDINADOR_ID.'
+    );
+  }
+
+  if (tipoPersonaEquipo === 'Equipo' && coordinadorPersonaEquipoId) {
+    var coordinadorPersonaEquipo = obtenerRegistroPorId(
+      'PERSONA_EQUIPO',
+      coordinadorPersonaEquipoId
+    );
+
+    if (!coordinadorPersonaEquipo) {
+      throw new Error(
+        'ERROR_INSERCION_PERSONA_EQUIPO: El COORDINADOR_ID no existe: ' +
+        coordinadorPersonaEquipoId
+      );
+    }
+    if (String(coordinadorPersonaEquipo.ACTIVO || '').trim() !== 'SÍ') {
+      throw new Error(
+        'ERROR_INSERCION_PERSONA_EQUIPO: El coordinador debe estar ACTIVO=SÍ: ' +
+        coordinadorPersonaEquipoId
+      );
+    }
+    if (String(coordinadorPersonaEquipo.ESTADO || '').trim() === 'Inactivo') {
+      throw new Error(
+        'ERROR_INSERCION_PERSONA_EQUIPO: El coordinador no puede tener ESTADO=Inactivo: ' +
+        coordinadorPersonaEquipoId
+      );
+    }
+    if (String(coordinadorPersonaEquipo.TIPO || '').trim() !== 'Persona') {
+      throw new Error(
+        'ERROR_INSERCION_PERSONA_EQUIPO: El coordinador debe tener TIPO=Persona: ' +
+        coordinadorPersonaEquipoId
+      );
+    }
+  }
 }
 
 

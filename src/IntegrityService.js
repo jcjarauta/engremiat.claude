@@ -2705,6 +2705,77 @@ function detectarProblemasDocumento_(agregar) {
     });
 }
 
+function detectarProblemasCoordinadorPersonaEquipoEnRegistros_(registros, agregar) {
+  registros = registros || [];
+  var registrosPorId = {};
+
+  registros.forEach(function (registro) {
+    registrosPorId[String(registro.ID || '').trim()] = registro;
+  });
+
+  registros.forEach(function (registro) {
+    var tipo = String(registro.TIPO || '').trim();
+    var coordinadorId = String(registro.COORDINADOR_ID || '').trim();
+
+    if (tipo === 'Persona' && coordinadorId) {
+      agregar(
+        'FUNC-PER-001',
+        'PERSONA_EQUIPO',
+        registro.ID,
+        'La Persona tiene COORDINADOR_ID informado: ' + coordinadorId + '.',
+        'ERROR',
+        'Vaciar COORDINADOR_ID en el registro Persona.'
+      );
+      return;
+    }
+
+    if (tipo !== 'Equipo' || !coordinadorId) return;
+
+    var coordinador = registrosPorId[coordinadorId];
+    if (!coordinador) {
+      agregar(
+        'FUNC-PER-002',
+        'PERSONA_EQUIPO',
+        registro.ID,
+        'El Equipo referencia un coordinador inexistente: ' + coordinadorId + '.',
+        'ERROR',
+        'Seleccionar una Persona existente o vaciar COORDINADOR_ID.'
+      );
+      return;
+    }
+
+    if (
+      String(coordinador.ACTIVO || '').trim() !== 'SÍ' ||
+      String(coordinador.ESTADO || '').trim() === 'Inactivo'
+    ) {
+      agregar(
+        'FUNC-PER-003',
+        'PERSONA_EQUIPO',
+        registro.ID,
+        'El coordinador ' + coordinadorId + ' está inactivo.',
+        'ERROR',
+        'Seleccionar una Persona activa y con estado distinto de Inactivo.'
+      );
+    }
+
+    if (String(coordinador.TIPO || '').trim() !== 'Persona') {
+      agregar(
+        'FUNC-PER-004',
+        'PERSONA_EQUIPO',
+        registro.ID,
+        'El coordinador ' + coordinadorId + ' no tiene TIPO=Persona.',
+        'ERROR',
+        'Seleccionar como coordinador un registro de TIPO=Persona.'
+      );
+    }
+  });
+}
+
+function detectarProblemasCoordinadorPersonaEquipo_(agregar) {
+  var registros = listarRegistros('PERSONA_EQUIPO', {});
+  detectarProblemasCoordinadorPersonaEquipoEnRegistros_(registros, agregar);
+}
+
 function detectarProblemasFuncionales_() {
   var hallazgos = [];
 
@@ -2846,6 +2917,12 @@ detectarDuplicidadesRelacionesMaterial_(
    * Suma de dedicacion en periodos solapados de una misma persona por encima del 100%.
    */
   detectarSobrecargaPorPeriodo_(agregar);
+
+  /*
+   * FUNC-PER-001 a FUNC-PER-004
+   * Coherencia del coordinador de PERSONA_EQUIPO.
+   */
+  detectarProblemasCoordinadorPersonaEquipo_(agregar);
 
   /*
    * DECISION

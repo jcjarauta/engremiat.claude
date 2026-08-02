@@ -413,7 +413,7 @@ PROYECTO: [
     { campo: 'ROL', etiqueta: 'Rol', tipo: 'catalogo', catalogo: 'CFG_ROL_PERSONA', requerido: true },
     { campo: 'EMAIL', etiqueta: 'Email', tipo: 'texto' },
     { campo: 'TELEFONO', etiqueta: 'Teléfono', tipo: 'texto' },
-    { campo: 'COORDINADOR_ID', etiqueta: 'Coordinador (si es Equipo)', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'COORDINADOR_ID', etiqueta: 'Coordinador', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'], filtroValores: { campo: 'TIPO', valores: ['Persona'] }, visibleSi: { campo: 'TIPO', valores: ['Equipo'] }, limpiarAlOcultar: true },
     { campo: 'CAPACIDAD_SEMANAL_DIAS', etiqueta: 'Capacidad semanal (días)', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'DISPONIBILIDAD', etiqueta: 'Disponibilidad', tipo: 'catalogo', catalogo: 'CFG_DISPONIBILIDAD', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO', requerido: true, valorPorDefecto: 'Disponible' },
@@ -1115,6 +1115,7 @@ function traducirErrorFuncional_(mensaje, clave) {
   return 'No se pudo guardar el registro: ' + texto.replace(/^ERROR_[A-Z_]+:\s*/, '');
 }
 function validarReglasNegocioFormulario_(clave, datos, idExcluir) {
+  if (clave === 'PERSONA_EQUIPO') return validarReglasNegocioPersonaEquipo_(datos);
   if (clave === 'TAREA') return validarReglasNegocioTarea_(datos);
   if (clave === 'TAREA_RESPONSABLE') return validarReglasNegocioTareaResponsable_(datos, idExcluir);
   if (clave === 'MATERIAL') return validarReglasNegocioMaterial_(datos);
@@ -1122,6 +1123,41 @@ function validarReglasNegocioFormulario_(clave, datos, idExcluir) {
   if (clave === 'DECISION') return validarReglasNegocioDecision_(datos, idExcluir);
   if (clave === 'INCIDENCIA') return validarReglasNegocioIncidencia_(datos);
   if (clave === 'DOCUMENTO') return validarReglasNegocioDocumento_(datos, idExcluir);
+}
+
+function validarReglasNegocioPersonaEquipo_(datos) {
+  var tipo = String(datos.TIPO || '').trim();
+  var coordinadorId = String(datos.COORDINADOR_ID || '').trim();
+
+  if (tipo === 'Persona' && coordinadorId) {
+    throw new Error(
+      'ERROR_COORDINADOR_PERSONA: Una Persona no puede tener coordinador.'
+    );
+  }
+
+  if (tipo !== 'Equipo' || !coordinadorId) return;
+
+  var coordinador = obtenerRegistroPorId('PERSONA_EQUIPO', coordinadorId);
+  if (!coordinador) {
+    throw new Error(
+      'ERROR_COORDINADOR_INEXISTENTE: El coordinador seleccionado no existe.'
+    );
+  }
+  if (String(coordinador.ACTIVO || '').trim() !== 'SÍ') {
+    throw new Error(
+      'ERROR_COORDINADOR_INACTIVO: El coordinador seleccionado no está activo.'
+    );
+  }
+  if (String(coordinador.ESTADO || '').trim() === 'Inactivo') {
+    throw new Error(
+      'ERROR_COORDINADOR_INACTIVO: El coordinador seleccionado tiene estado Inactivo.'
+    );
+  }
+  if (String(coordinador.TIPO || '').trim() !== 'Persona') {
+    throw new Error(
+      'ERROR_COORDINADOR_TIPO: El coordinador seleccionado debe ser una Persona.'
+    );
+  }
 }
 
 var ESTADOS_DECISION_CIERRE_ = ['Aprobada', 'Rechazada', 'Sustituida'];
@@ -2015,6 +2051,14 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
   var correlationIdFinal = correlationId || Utilities.getUuid();
 
   try {
+    if (clave === 'PERSONA_EQUIPO') {
+      validarReglasNegocioFormulario_(
+        clave,
+        datos,
+        idRegistro
+      );
+    }
+
     validarClavesForaneasFormulario_(
       clave,
       datos,
@@ -2027,11 +2071,13 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
       idRegistro
     );
 
-    validarReglasNegocioFormulario_(
-      clave,
-      datos,
-      idRegistro
-    );
+    if (clave !== 'PERSONA_EQUIPO') {
+      validarReglasNegocioFormulario_(
+        clave,
+        datos,
+        idRegistro
+      );
+    }
 
     /*
      * PROYECTO_VINCULAR_ID (auditoría piloto, hallazgo #13): campo
@@ -2373,5 +2419,3 @@ function abrirHistorialAdmin() { abrirHojaAdmin_('91_HISTORIAL'); }
 
 function abrirFormularioCrearMaterial() { abrirFormularioCrear_('MATERIAL', 'Nuevo material'); }
 function abrirFormularioCrearPersonaEquipo() { abrirFormularioCrear_('PERSONA_EQUIPO', 'Nueva persona/equipo'); }
-
-

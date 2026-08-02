@@ -100,14 +100,43 @@
       el.className = "error";
       el.textContent = (error && error.message) ? error.message : String(error);
     }
+    function esTransicionEquipoAPersona_(valorAnterior, valorNuevo) {
+      return valorAnterior === "Equipo" && valorNuevo === "Persona";
+    }
+
+    function comprobarContratoTransicionEquipoPersona_() {
+      return (
+        esTransicionEquipoAPersona_("Equipo", "Persona") &&
+        !esTransicionEquipoAPersona_(undefined, "Persona") &&
+        !esTransicionEquipoAPersona_("Equipo", "") &&
+        !esTransicionEquipoAPersona_("Persona", "Equipo") &&
+        !esTransicionEquipoAPersona_("Persona", "Persona")
+      );
+    }
+
     function aplicarVisibilidad_(campo) {
       if (!campo.visibleSi) return;
       var elControl = document.getElementById("campo_" + campo.visibleSi.campo);
       var contenedor = document.getElementById("contenedor_campo_" + campo.campo);
       if (!elControl || !contenedor) return;
-      var actualizar = function () {
-        var visible = campo.visibleSi.valores.indexOf(elControl.value) !== -1;
+      // Se registra después de cargar valorActual; una renderización no es una transición.
+      var valorAnterior = elControl.value;
+      var actualizar = function (evento) {
+        var valorNuevo = elControl.value;
+        var visible = campo.visibleSi.valores.indexOf(valorNuevo) !== -1;
         contenedor.classList.toggle("campo-oculto", !visible);
+        if (
+          evento &&
+          campo.limpiarAlOcultar &&
+          esTransicionEquipoAPersona_(valorAnterior, valorNuevo)
+        ) {
+          var elCampo = document.getElementById("campo_" + campo.campo);
+          var elTexto = document.getElementById("campo_" + campo.campo + "_texto");
+          if (elCampo) elCampo.value = "";
+          if (elTexto) elTexto.value = "";
+          if (elCampo) elCampo.dispatchEvent(new Event("change"));
+        }
+        valorAnterior = valorNuevo;
       };
       elControl.addEventListener("change", actualizar);
       actualizar();
