@@ -110,6 +110,10 @@ const ENTIDADES_MVP = Object.freeze({
   RECEPCION_LINEA: Object.freeze({
     hoja: '28_RECEPCION_LINEA',
     prefijo: 'RCL'
+  }),
+  HORARIO: Object.freeze({
+    hoja: '29_HORARIO',
+    prefijo: 'HOR'
   })
 });
 

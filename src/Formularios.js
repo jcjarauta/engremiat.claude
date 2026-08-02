@@ -25,6 +25,17 @@ var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Recurso': 'RECURSO'
 });
 
+/*
+ * Igual que ENTIDAD_DOCUMENTO_A_MVP pero para HORARIO (ver conversacion:
+ * franjas semanales). Catalogo propio y mas acotado (CFG_ENTIDAD_HORARIO)
+ * en vez de reutilizar CFG_ENTIDAD_DOCUMENTO -- ese arrastraria opciones
+ * sin sentido para un horario (Decisión, Incidencia...).
+ */
+var ENTIDAD_HORARIO_A_MVP = Object.freeze({
+  'Recurso': 'RECURSO',
+  'Persona/Equipo': 'PERSONA_EQUIPO'
+});
+
 var MAPAS_DEPENDENCIA_MVP = Object.freeze({
   DOCUMENTO_ENTIDAD_ID: Object.freeze({
     campoPadre: 'ENTIDAD_TIPO',
@@ -33,6 +44,17 @@ var MAPAS_DEPENDENCIA_MVP = Object.freeze({
       if (!entidad) return [];
       return listarRegistros(entidad, { ACTIVO: 'SÍ' }).map(function (r) {
         return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || r.TITULO || '') };
+      });
+    }
+  }),
+
+  HORARIO_ENTIDAD_ID: Object.freeze({
+    campoPadre: 'ENTIDAD_TIPO',
+    resolver: function (valorPadre) {
+      var entidad = ENTIDAD_HORARIO_A_MVP[valorPadre];
+      if (!entidad) return [];
+      return listarRegistros(entidad, { ACTIVO: 'SÍ' }).map(function (r) {
+        return { id: r.ID, etiqueta: r.ID + ' - ' + (r.NOMBRE || '') };
       });
     }
   }),
@@ -840,6 +862,26 @@ INCIDENCIA: [
   ],
 
   /*
+   * Franja horaria semanal recurrente (ver conversacion: horario de
+   * apertura del taller/espacio, horario de un profesional, franja de
+   * un voluntario). Patron polimorfico ENTIDAD_TIPO/ENTIDAD_ID igual
+   * que DOCUMENTO/VINCULO, pero con catalogo propio y mas acotado
+   * (CFG_ENTIDAD_HORARIO: solo Recurso y Persona/Equipo). Varias filas
+   * por entidad (una por dia, o varias el mismo dia para mañana/tarde).
+   * HORA_INICIO/HORA_FIN como texto "HH:MM" -- sin tipo de campo "hora"
+   * en el motor de formularios; validado en validarReglasNegocioHorario_.
+   */
+  HORARIO: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Tipo de entidad', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_HORARIO', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'HORARIO_ENTIDAD_ID', requerido: true },
+    { campo: 'DIA_SEMANA', etiqueta: 'Día de la semana', tipo: 'catalogo', catalogo: 'CFG_DIA_SEMANA', requerido: true },
+    { campo: 'HORA_INICIO', etiqueta: 'Hora inicio (HH:MM)', tipo: 'texto', requerido: true },
+    { campo: 'HORA_FIN', etiqueta: 'Hora fin (HH:MM)', tipo: 'texto', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
    * Libro de movimientos de MATERIAL (Fase L3.3). Registro aditivo de
    * eventos de stock (entrada/reserva/salida/consumo/merma/devolucion/
    * traslado/ajuste). NO sustituye ni recalcula MATERIAL.STOCK_ACTUAL
@@ -1129,6 +1171,29 @@ function validarReglasNegocioFormulario_(clave, datos, idExcluir) {
   if (clave === 'DECISION') return validarReglasNegocioDecision_(datos, idExcluir);
   if (clave === 'INCIDENCIA') return validarReglasNegocioIncidencia_(datos);
   if (clave === 'DOCUMENTO') return validarReglasNegocioDocumento_(datos, idExcluir);
+  if (clave === 'HORARIO') return validarReglasNegocioHorario_(datos);
+}
+
+/*
+ * Sin tipo de campo "hora" en el motor de formularios -- HORA_INICIO/
+ * HORA_FIN se guardan como texto "HH:MM" y se validan aqui: formato
+ * correcto y fin posterior a inicio (comparacion de string funciona
+ * porque el formato va siempre con cero a la izquierda).
+ */
+function validarReglasNegocioHorario_(datos) {
+  var formatoHora = /^([01]\d|2[0-3]):[0-5]\d$/;
+  var horaInicio = String(datos.HORA_INICIO || '').trim();
+  var horaFin = String(datos.HORA_FIN || '').trim();
+
+  if (!formatoHora.test(horaInicio)) {
+    throw new Error('ERROR_HORARIO_FORMATO: la hora de inicio debe tener el formato HH:MM (ej. 09:00).');
+  }
+  if (!formatoHora.test(horaFin)) {
+    throw new Error('ERROR_HORARIO_FORMATO: la hora de fin debe tener el formato HH:MM (ej. 17:30).');
+  }
+  if (horaFin <= horaInicio) {
+    throw new Error('ERROR_HORARIO_RANGO: la hora de fin debe ser posterior a la hora de inicio.');
+  }
 }
 
 function validarReglasNegocioEquipoMiembro_(datos, idExcluir) {
@@ -2198,11 +2263,16 @@ function onOpen() {
         .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
         .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
         .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
+        .addSeparator()
         .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
         .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
         .addItem('Editar recurso', 'abrirEditarRecurso')
         .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
         .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
+        .addSeparator()
+        .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
+        .addItem('Editar horario', 'abrirEditarHorario')
+        .addSeparator()
         .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
         .addItem('Editar Asignación', 'abrirEditarAsignacion')
     )
@@ -2457,6 +2527,7 @@ function abrirEditarTareaMaterial() { abrirEditarRegistroPorEntidad_('TAREA_MATE
 function abrirEditarAsignacion() { abrirEditarRegistroPorEntidad_('ASIGNACION', 'Asignación'); }
 function abrirEditarRelacion() { abrirEditarRegistroPorEntidad_('RELACION', 'Relación'); }
 function abrirEditarVinculo() { abrirEditarRegistroPorEntidad_('VINCULO', 'Vínculo'); }
+function abrirEditarHorario() { abrirEditarRegistroPorEntidad_('HORARIO', 'Horario'); }
 function abrirEditarMovimientoMaterial() { abrirEditarRegistroPorEntidad_('MOVIMIENTO_MATERIAL', 'Movimiento de material'); }
 function abrirEditarEjecucionTarea() { abrirEditarRegistroPorEntidad_('EJECUCION_TAREA', 'Ejecución de tarea'); }
 function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEEDOR_MATERIAL', 'Proveedor-Material'); }
@@ -2478,6 +2549,7 @@ function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATE
 function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
 function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
 function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
+function abrirFormularioCrearHorario() { abrirFormularioCrear_('HORARIO', 'Nuevo horario (franja semanal)'); }
 function abrirFormularioCrearMovimientoMaterial() { abrirFormularioCrear_('MOVIMIENTO_MATERIAL', 'Nuevo movimiento de material'); }
 function abrirFormularioCrearEjecucionTarea() { abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea'); }
 function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEEDOR_MATERIAL', 'Nueva relación proveedor-material'); }
