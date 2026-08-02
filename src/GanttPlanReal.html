@@ -27,6 +27,7 @@
       .barra-plan { top: 3px; background: #9e9e9e; }
       .barra-real-ok { top: 15px; background: #2e7d32; }
       .barra-real-tarde { top: 15px; background: var(--color-peligro); }
+      .banda-fuera-horario { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, rgba(176,0,32,0.12), rgba(176,0,32,0.12) 3px, transparent 3px, transparent 6px); }
       .linea-hoy { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--color-primario); z-index: 1; }
       .btn-editar { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 2px 6px; }
       .btn-editar:hover { background: var(--color-fondo-suave); }
@@ -41,6 +42,7 @@
       <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
       <span style="background:#b00020;margin-left:10px;"></span>Real (con retraso)
       <span style="background:#1a73e8;margin-left:10px;"></span>Hoy
+      <span style="background:repeating-linear-gradient(45deg, rgba(176,0,32,0.35), rgba(176,0,32,0.35) 2px, transparent 2px, transparent 4px);margin-left:10px;"></span>Fuera del horario declarado del responsable
     </div>
 
     <div class="filtros">
@@ -211,7 +213,7 @@
 
         rangoFechasEl.textContent = 'Mostrando: ' + formatearFecha_(minFecha) + ' – ' + formatearFecha_(maxFecha);
 
-        var enPlazo = 0, retrasados = 0, enRiesgo = 0, sumaDesviacion = 0, conDesviacion = 0;
+        var enPlazo = 0, retrasados = 0, enRiesgo = 0, sumaDesviacion = 0, conDesviacion = 0, fueraDeHorario = 0;
         filas.forEach(function (fila) {
           if (fila.diasDesviacionFin !== null && fila.diasDesviacionFin !== undefined) {
             conDesviacion++;
@@ -220,11 +222,13 @@
           } else if (fila.diasRiesgo !== null && fila.diasRiesgo !== undefined) {
             enRiesgo++;
           }
+          if (fila.diasFueraDeHorario && fila.diasFueraDeHorario.length > 0) fueraDeHorario++;
         });
         var mediaTexto = conDesviacion > 0 ? (Math.round((sumaDesviacion / conDesviacion) * 10) / 10) + 'd' : '—';
         document.getElementById('resumen-gantt').textContent =
           filas.length + ' procesos · ' + enPlazo + ' en plazo · ' + retrasados + ' retrasados · ' +
-          enRiesgo + ' en riesgo (sin terminar, plazo vencido) · desviación media: ' + mediaTexto;
+          enRiesgo + ' en riesgo (sin terminar, plazo vencido) · desviación media: ' + mediaTexto +
+          ' · ' + fueraDeHorario + ' con planificación fuera del horario declarado del responsable';
 
         function posicion(fecha) {
           return ((new Date(fecha).getTime() - minFecha) / rango) * 100;
@@ -245,6 +249,26 @@
         var lineasCuadricula = ticks.map(function (t) {
           return '<div style="position:absolute;left:' + posicion(t) + '%;top:0;bottom:0;width:1px;background:#eee;"></div>';
         }).join('');
+
+        var anchoDia = ((24 * 60 * 60 * 1000) / rango) * 100;
+
+        /*
+         * Bandas de "fuera de horario declarado" (N3.2 -- el puente
+         * entre HORARIO y planificacion): un div rayado por cada dia
+         * dentro del rango de la barra en que el responsable no tiene
+         * ningun HORARIO activo que lo cubra. fila.diasFueraDeHorario
+         * es null cuando el responsable no tiene ningun HORARIO cargado
+         * (sin datos para evaluar, no se pinta nada -- distinto de
+         * "cero dias fuera de horario").
+         */
+        function bandasFueraDeHorario_(fila) {
+          if (!fila.diasFueraDeHorario || fila.diasFueraDeHorario.length === 0) return '';
+          return fila.diasFueraDeHorario.map(function (fechaStr) {
+            var izq = posicion(fechaStr + 'T00:00:00');
+            if (izq < -anchoDia || izq > 100) return '';
+            return '<div class="banda-fuera-horario" style="left:' + izq + '%;width:' + anchoDia + '%;" title="Fuera del horario declarado del responsable: ' + escapeHtml(fechaStr) + '"></div>';
+          }).join('');
+        }
 
         document.getElementById('filas-gantt').innerHTML = filas.map(function (fila) {
           var izqPlan = posicion(fila.fechaInicioPlan);
@@ -269,6 +293,7 @@
             '<td class="col-fechas">' + formatearRangoFechas_(fila.fechaInicioReal, fila.fechaFinReal) + '</td>' +
             '<td class="col-desviacion ' + desv.clase + '">' + desv.texto + '</td>' +
             '<td class="col-track"><div class="track">' +
+              bandasFueraDeHorario_(fila) +
               lineasCuadricula +
               '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
               barraReal + lineaHoy +

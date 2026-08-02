@@ -261,6 +261,51 @@ function calcularRiesgoRegistro_(registro) {
   return dias > 0 ? dias : null;
 }
 
+/*
+ * N3.2: overlay de capacidad real sobre el Gantt (ver conversacion --
+ * "el puente que faltaba" entre HORARIO y planificacion). getDay() de
+ * JS: 0=Domingo..6=Sabado; mapeado a las etiquetas reales del catalogo
+ * CFG_DIA_SEMANA (ver InstaladorHorario.js).
+ */
+var DIA_SEMANA_POR_INDICE_JS_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+/*
+ * Devuelve los dias (yyyy-MM-dd) del rango [fechaInicio, fechaFin] en
+ * que el responsable NO tiene ningun HORARIO activo que lo cubra
+ * (dia de semana + vigencia si esta informada). Si el responsable no
+ * tiene NINGUNA fila de HORARIO, devuelve null (sin datos para
+ * evaluar -- no se interpreta como "no disponible ningun dia", seria
+ * ruido para la mayoria de responsables que aun no tienen horario
+ * cargado). Acotado a 120 dias para no iterar rangos patologicos.
+ */
+function calcularDiasFueraDeHorario_(horariosPersona, fechaInicio, fechaFin) {
+  if (!horariosPersona || horariosPersona.length === 0) return null;
+
+  var dia = 24 * 60 * 60 * 1000;
+  var actual = new Date(fechaInicio);
+  actual.setHours(0, 0, 0, 0);
+  var fin = new Date(fechaFin);
+  fin.setHours(0, 0, 0, 0);
+  var limite = new Date(actual.getTime() + 120 * dia);
+  if (fin.getTime() > limite.getTime()) fin = limite;
+
+  var diasFuera = [];
+  while (actual.getTime() <= fin.getTime()) {
+    var nombreDia = DIA_SEMANA_POR_INDICE_JS_[actual.getDay()];
+    var cubierto = horariosPersona.some(function (h) {
+      if (h.DIA_SEMANA !== nombreDia) return false;
+      if (h.FECHA_INICIO_VIGENCIA && actual < new Date(h.FECHA_INICIO_VIGENCIA)) return false;
+      if (h.FECHA_FIN_VIGENCIA && actual > new Date(h.FECHA_FIN_VIGENCIA)) return false;
+      return true;
+    });
+    if (!cubierto) {
+      diasFuera.push(Utilities.formatDate(actual, Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'));
+    }
+    actual = new Date(actual.getTime() + dia);
+  }
+  return diasFuera;
+}
+
 function obtenerFilasGanttDetalladas_(filtro) {
   filtro = filtro || {};
 
@@ -284,10 +329,19 @@ function obtenerFilasGanttDetalladas_(filtro) {
   listarRegistros('PRODUCTO', {}).forEach(function (producto) {
     nombresProducto[producto.ID] = producto.NOMBRE;
   });
+  var horariosPorPersona = {};
+  listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
+    if (h.ENTIDAD_TIPO !== 'Persona/Equipo') return;
+    if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
+    horariosPorPersona[h.ENTIDAD_ID].push(h);
+  });
 
   return procesos.map(function (proceso) {
     var contexto = contextoPorProducto[proceso.PRODUCTO_ID] || {};
     var desviacion = calcularDesviacionRegistro_(proceso);
+    var fechaFinTramo = proceso.FECHA_FIN_REAL && new Date(proceso.FECHA_FIN_REAL) > new Date(proceso.FECHA_FIN_PLAN)
+      ? proceso.FECHA_FIN_REAL
+      : proceso.FECHA_FIN_PLAN;
     return {
       id: proceso.ID,
       nombre: proceso.NOMBRE,
@@ -305,7 +359,8 @@ function obtenerFilasGanttDetalladas_(filtro) {
       duracionRealDias: proceso.DURACION_REAL_DIAS === '' || proceso.DURACION_REAL_DIAS === undefined ? null : Number(proceso.DURACION_REAL_DIAS),
       diasDesviacionInicio: desviacion.DIAS_DESVIACION_INICIO,
       diasDesviacionFin: desviacion.DIAS_DESVIACION_FIN,
-      diasRiesgo: calcularRiesgoRegistro_(proceso)
+      diasRiesgo: calcularRiesgoRegistro_(proceso),
+      diasFueraDeHorario: calcularDiasFueraDeHorario_(horariosPorPersona[proceso.RESPONSABLE_ID], proceso.FECHA_INICIO_PLAN, fechaFinTramo)
     };
   }).sort(function (a, b) { return new Date(a.fechaInicioPlan) - new Date(b.fechaInicioPlan); });
 }
@@ -371,7 +426,8 @@ function exportarGanttCSV(filtro) {
     'ID', 'Campaña', 'Proyecto', 'Producto', 'Proceso', 'Fase', 'Responsable', 'Estado',
     'Fecha inicio plan', 'Fecha fin plan', 'Fecha inicio real', 'Fecha fin real',
     'Duración prevista (días)', 'Duración real (días)',
-    'Desviación inicio (días)', 'Desviación fin (días)', 'Riesgo (días vencidos sin terminar)'
+    'Desviación inicio (días)', 'Desviación fin (días)', 'Riesgo (días vencidos sin terminar)',
+    'Días planificados fuera del horario declarado'
   ];
   var filasCsv = filas.map(function (f) {
     return [
@@ -379,7 +435,8 @@ function exportarGanttCSV(filtro) {
       formatearFechaCsv_(f.fechaInicioPlan), formatearFechaCsv_(f.fechaFinPlan),
       formatearFechaCsv_(f.fechaInicioReal), formatearFechaCsv_(f.fechaFinReal),
       f.duracionPrevistaDias, f.duracionRealDias,
-      f.diasDesviacionInicio, f.diasDesviacionFin, f.diasRiesgo
+      f.diasDesviacionInicio, f.diasDesviacionFin, f.diasRiesgo,
+      f.diasFueraDeHorario === null ? '' : f.diasFueraDeHorario.length
     ];
   });
 
