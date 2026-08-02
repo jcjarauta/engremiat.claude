@@ -32,7 +32,33 @@
         pregunta: "Proyecto creado. ¿Quieres crear ya el primer producto?",
         funcion: "abrirFormularioCrearProductoConProyecto",
         textoBoton: "Sí, crear producto"
+      },
+      PRODUCTO: {
+        pregunta: "Producto creado. ¿Quieres crear ya el primer proceso?",
+        funcion: "abrirFormularioCrearProcesoConProducto",
+        textoBoton: "Sí, crear proceso"
+      },
+      PROCESO: {
+        pregunta: "Proceso creado. ¿Quieres crear ya la primera tarea?",
+        funcion: "abrirFormularioCrearTareaConProceso",
+        textoBoton: "Sí, crear tarea"
       }
+    };
+
+    /*
+     * Cadena "hermano" (ver conversación): crear otro registro del
+     * mismo tipo para el mismo padre (otro proyecto en la misma
+     * campaña, otro producto en el mismo proyecto...), para poder
+     * construir varias piezas seguidas sin volver al menú a rebuscar
+     * el padre. Se ofrece cuando se declina bajar al hijo (o cuando no
+     * hay hijo posible, como en TAREA) -- nunca a la vez que el
+     * prompt de hijo, para no encadenar dos confirmaciones de golpe.
+     */
+    var CADENA_HERMANO_MVP = {
+      PROYECTO: { campoPadre: "CAMPANA_ID", pregunta: "¿Añadir otro proyecto a esta misma campaña?" },
+      PRODUCTO: { campoPadre: "PROYECTO_VINCULAR_ID", pregunta: "¿Añadir otro producto a este mismo proyecto?" },
+      PROCESO: { campoPadre: "PRODUCTO_ID", pregunta: "¿Añadir otro proceso a este mismo producto?" },
+      TAREA: { campoPadre: "PROCESO_ID", pregunta: "¿Añadir otra tarea a este mismo proceso?" }
     };
 
     // Desactivar solo tiene sentido editando un registro que ya existe.
@@ -694,32 +720,54 @@
           el.textContent = "Guardado correctamente.";
 
           /*
-           * Flujo encadenado (Campaña->Proyecto->Producto, ver
-           * conversación): al crear un registro nuevo, ofrece abrir ya
-           * el "hijo" natural con el padre precargado, en vez de
-           * obligar a volver al menú y buscarlo en el desplegable.
-           * Solo en creación (no edición) y solo si el guardado
-           * realmente devolvió un ID. CADENA_HIJO_MVP concentra los
-           * dos niveles encadenados hoy; añadir uno nuevo es una
-           * entrada mas, no tocar esta lógica.
+           * Flujo encadenado (Campaña->Proyecto->Producto->Proceso->
+           * Tarea, ver conversación): al crear un registro nuevo,
+           * ofrece primero bajar al "hijo" natural (CADENA_HIJO_MVP);
+           * si se declina (o no aplica, como en TAREA que no tiene
+           * hijo), ofrece repetir al mismo nivel para el mismo padre
+           * (CADENA_HERMANO_MVP), para poder construir varias piezas
+           * seguidas sin volver al menú. Solo en creación, y solo si
+           * el guardado devolvió un ID.
            */
-          var cadena = CADENA_HIJO_MVP[ENTIDAD];
-          if (cadena && !ID_REGISTRO && resultado && resultado.id) {
+          var esCreacionConId = !ID_REGISTRO && resultado && resultado.id;
+          var cadenaHijo = CADENA_HIJO_MVP[ENTIDAD];
+          var cadenaHermano = CADENA_HERMANO_MVP[ENTIDAD];
+          var valorPadreHermano = cadenaHermano ? datos[cadenaHermano.campoPadre] : null;
+
+          function ofrecerHermanoOFinal_() {
+            if (esCreacionConId && cadenaHermano && valorPadreHermano) {
+              confirmarAccion_(
+                cadenaHermano.pregunta,
+                function () {
+                  google.script.run
+                    .withSuccessHandler(function () { google.script.host.close(); })
+                    .withFailureHandler(mostrarError)
+                    .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano);
+                },
+                function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
+                "Sí, añadir otro"
+              );
+              return;
+            }
+            setTimeout(function () { cerrarOVolver_(); }, 900);
+          }
+
+          if (esCreacionConId && cadenaHijo) {
             confirmarAccion_(
-              cadena.pregunta,
+              cadenaHijo.pregunta,
               function () {
                 google.script.run
                   .withSuccessHandler(function () { google.script.host.close(); })
                   .withFailureHandler(mostrarError)
-                  [cadena.funcion](resultado.id);
+                  [cadenaHijo.funcion](resultado.id);
               },
-              function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
-              cadena.textoBoton
+              function () { ofrecerHermanoOFinal_(); },
+              cadenaHijo.textoBoton
             );
             return;
           }
 
-          setTimeout(function () { cerrarOVolver_(); }, 900);
+          ofrecerHermanoOFinal_();
         })
         .withFailureHandler(function (error) {
           mostrarError(error);

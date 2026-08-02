@@ -2336,6 +2336,34 @@ function abrirFormularioCrearProductoConProyecto(proyectoId) {
   abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId });
 }
 
+/*
+ * Resto de la cadena hacia abajo: Producto->Proceso->Tarea. Aqui
+ * PRODUCTO_ID/PROCESO_ID si son campos reales de PROCESO/TAREA (no
+ * virtuales como PROYECTO_VINCULAR_ID), asi que el prefill es directo.
+ */
+function abrirFormularioCrearProcesoConProducto(productoId) {
+  abrirFormularioCrear_('PROCESO', 'Nuevo proceso', { PRODUCTO_ID: productoId });
+}
+
+function abrirFormularioCrearTareaConProceso(procesoId) {
+  abrirFormularioCrear_('TAREA', 'Nueva tarea', { PROCESO_ID: procesoId });
+}
+
+/*
+ * Cadena "hermano": crear otro registro del mismo tipo para el mismo
+ * padre (otro proyecto en la misma campaña, otro producto en el mismo
+ * proyecto...), sin tener que volver al menu y rebuscar el padre en el
+ * desplegable. Generico para toda la jerarquia -- un unico punto de
+ * entrada en vez de una funcion "ConMismoPadre" por entidad.
+ */
+function abrirFormularioCrearHermano(entidad, campoPadre, valorPadre) {
+  var clave = String(entidad || '').trim().toUpperCase();
+  var etiquetas = { CAMPANA: 'campaña', PROYECTO: 'proyecto', PRODUCTO: 'producto', PROCESO: 'proceso', TAREA: 'tarea' };
+  var prefill = {};
+  prefill[campoPadre] = valorPadre;
+  abrirFormularioCrear_(clave, 'Nuevo ' + (etiquetas[clave] || clave.toLowerCase()), prefill);
+}
+
 function abrirFormularioCrearCampana() { abrirFormularioCrear_('CAMPANA', 'Nueva campaña'); }
 function abrirFormularioCrearProyecto() { abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto'); }
 function abrirFormularioCrearProducto() { abrirFormularioCrear_('PRODUCTO', 'Nuevo producto'); }
