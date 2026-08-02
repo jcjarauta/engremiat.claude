@@ -15,6 +15,39 @@ function instalarJerarquiaFisicaLaTroballa() {
 
   var correlationId = Utilities.getUuid();
 
+  var idRaiz = guardarFormulario('RECURSO', null, {
+    CODIGO: 'ESP-RAIZ', NOMBRE: 'La Troballa',
+    DESCRIPCION: 'Taller ocupacional de Arrels Fundació.',
+    CLASE_RECURSO: 'Espacio', CATEGORIA_RECURSO: 'Espacio polivalente', ESTADO: 'Disponible'
+  }, correlationId).id;
+  console.log('OK creado entidad=RECURSO id=' + idRaiz + ' nombre=La Troballa');
+
+  sembrarRestoJerarquiaFisicaLaTroballa_(idRaiz, correlationId);
+
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}
+
+/**
+ * Continuacion para cuando instalarJerarquiaFisicaLaTroballa() fallo a
+ * mitad (p.ej. el bug real de CODIGO-vs-ID en reparentar_, ya corregido):
+ * "La Troballa" ya existe como REC-0008, asi que NO se vuelve a crear,
+ * solo se completa el resto de pasos.
+ */
+function continuarJerarquiaFisicaLaTroballa() {
+  var packageName = 'CONTINUAR_JERARQUIA_FISICA_LA_TROBALLA';
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
+
+  var correlationId = Utilities.getUuid();
+  var idRaiz = 'REC-0008'; // La Troballa, ya creado en el intento anterior.
+
+  sembrarRestoJerarquiaFisicaLaTroballa_(idRaiz, correlationId);
+
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  return true;
+}
+
+function sembrarRestoJerarquiaFisicaLaTroballa_(idRaiz, correlationId) {
   function crear_(entidad, datos) {
     var resultado = guardarFormulario(entidad, null, datos, correlationId);
     console.log('OK creado entidad=' + entidad + ' id=' + resultado.id + ' nombre=' + datos.NOMBRE);
@@ -26,16 +59,11 @@ function instalarJerarquiaFisicaLaTroballa() {
     console.log('OK reparentado id=' + recursoId + ' ubicacion=' + ubicacionId);
   }
 
-  var idRaiz = crear_('RECURSO', {
-    CODIGO: 'ESP-RAIZ', NOMBRE: 'La Troballa',
-    DESCRIPCION: 'Taller ocupacional de Arrels Fundació.',
-    CLASE_RECURSO: 'Espacio', CATEGORIA_RECURSO: 'Espacio polivalente', ESTADO: 'Disponible'
-  });
-
   // Re-parentar los espacios ya existentes bajo la nueva raiz.
-  reparentar_('ESP-01', idRaiz); // Taller de Manipulados
-  reparentar_('ESP-02', idRaiz); // Taller de Carpintería
-  reparentar_('ESP-03', idRaiz); // Almacén de Materiales
+  // OJO: UBICACION_ID/RECURSO usa el ID real (REC-000x), no el CODIGO (ESP-0x).
+  reparentar_('REC-0004', idRaiz); // Taller de Manipulados (CODIGO ESP-01)
+  reparentar_('REC-0005', idRaiz); // Taller de Carpintería (CODIGO ESP-02)
+  reparentar_('REC-0006', idRaiz); // Almacén de Materiales (CODIGO ESP-03)
 
   // Espacios nuevos.
   crear_('RECURSO', {
@@ -58,17 +86,14 @@ function instalarJerarquiaFisicaLaTroballa() {
   // Nivel atomico: un par de ejemplos, no exhaustivo en todas las ramas.
   crear_('RECURSO', {
     CODIGO: 'ALM-EST-CARP-01', NOMBRE: 'Estantería de herramientas', CLASE_RECURSO: 'Espacio',
-    CATEGORIA_RECURSO: 'Espacio de almacenamiento', UBICACION_ID: 'ESP-02', ESTADO: 'Disponible'
+    CATEGORIA_RECURSO: 'Espacio de almacenamiento', UBICACION_ID: 'REC-0005', ESTADO: 'Disponible'
   });
   crear_('RECURSO', {
     CODIGO: 'ALM-CAJ-MAN-01', NOMBRE: 'Cajón de consumibles', CLASE_RECURSO: 'Espacio',
-    CATEGORIA_RECURSO: 'Espacio de almacenamiento', UBICACION_ID: 'ESP-01', ESTADO: 'Disponible'
+    CATEGORIA_RECURSO: 'Espacio de almacenamiento', UBICACION_ID: 'REC-0004', ESTADO: 'Disponible'
   });
   crear_('RECURSO', {
     CODIGO: 'ALM-ARCH-OFI-01', NOMBRE: 'Archivador de documentación', CLASE_RECURSO: 'Espacio',
     CATEGORIA_RECURSO: 'Espacio de almacenamiento', UBICACION_ID: idOficina, ESTADO: 'Disponible'
   });
-
-  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
-  return true;
 }
