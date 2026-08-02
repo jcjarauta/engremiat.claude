@@ -60,11 +60,11 @@
         <label for="filtro-responsable">Responsable</label>
         <select id="filtro-responsable"><option value="">(todos)</option></select>
       </div>
-      <button id="btn-filtrar">Aplicar filtro</button>
       <button id="btn-exportar-csv">Exportar CSV (detalle)</button>
     </div>
 
     <div id="rango-fechas" class="rango-fechas"></div>
+    <div id="resumen-gantt" class="rango-fechas"></div>
 
     <div id="estado-carga">Cargando...</div>
     <div class="contenedor-tabla">
@@ -106,8 +106,11 @@
         return formatearFecha_(inicio) + '–' + formatearFecha_(fin);
       }
 
-      function formatearDesviacion_(dias) {
-        if (dias === null || dias === undefined) return { texto: '—', clase: '' };
+      function formatearDesviacion_(dias, diasRiesgo) {
+        if (dias === null || dias === undefined) {
+          if (diasRiesgo !== null && diasRiesgo !== undefined) return { texto: 'Riesgo +' + diasRiesgo + 'd', clase: 'retraso' };
+          return { texto: '—', clase: '' };
+        }
         if (dias === 0) return { texto: 'A tiempo', clase: 'a-tiempo' };
         if (dias > 0) return { texto: '+' + dias + 'd', clase: 'retraso' };
         return { texto: dias + 'd', clase: 'a-tiempo' };
@@ -175,6 +178,21 @@
 
         rangoFechasEl.textContent = 'Mostrando: ' + formatearFecha_(minFecha) + ' – ' + formatearFecha_(maxFecha);
 
+        var enPlazo = 0, retrasados = 0, enRiesgo = 0, sumaDesviacion = 0, conDesviacion = 0;
+        filas.forEach(function (fila) {
+          if (fila.diasDesviacionFin !== null && fila.diasDesviacionFin !== undefined) {
+            conDesviacion++;
+            sumaDesviacion += fila.diasDesviacionFin;
+            if (fila.diasDesviacionFin > 0) retrasados++; else enPlazo++;
+          } else if (fila.diasRiesgo !== null && fila.diasRiesgo !== undefined) {
+            enRiesgo++;
+          }
+        });
+        var mediaTexto = conDesviacion > 0 ? (Math.round((sumaDesviacion / conDesviacion) * 10) / 10) + 'd' : '—';
+        document.getElementById('resumen-gantt').textContent =
+          filas.length + ' procesos · ' + enPlazo + ' en plazo · ' + retrasados + ' retrasados · ' +
+          enRiesgo + ' en riesgo (sin terminar, plazo vencido) · desviación media: ' + mediaTexto;
+
         function posicion(fecha) {
           return ((new Date(fecha).getTime() - minFecha) / rango) * 100;
         }
@@ -197,7 +215,7 @@
             barraReal = '<div class="barra ' + (tarde ? 'barra-real-tarde' : 'barra-real-ok') +
               '" style="left:' + izqReal + '%;width:' + anchoReal + '%;" title="' + escapeHtml(tituloReal) + '"></div>';
           }
-          var desv = formatearDesviacion_(fila.diasDesviacionFin);
+          var desv = formatearDesviacion_(fila.diasDesviacionFin, fila.diasRiesgo);
           return '<tr>' +
             '<td class="col-nombre">' + escapeHtml(fila.nombre) + '</td>' +
             '<td>' + escapeHtml(fila.productoNombre) + '</td>' +
@@ -233,7 +251,9 @@
         google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderGantt).obtenerDatosGanttPlanReal(filtroActual_());
       }
 
-      document.getElementById('btn-filtrar').addEventListener('click', cargarGantt);
+      ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', cargarGantt);
+      });
       document.getElementById('btn-exportar-csv').addEventListener('click', function () {
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });

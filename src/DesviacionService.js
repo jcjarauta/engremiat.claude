@@ -237,6 +237,30 @@ function construirMapaContextoPorProducto_() {
  * misma logica de filtrado y de detalle en ambos casos, para que lo que
  * se ve y lo que se exporta no puedan divergir.
  */
+/*
+ * "En riesgo" (hallazgo de la revision del Gantt): un proceso que sigue
+ * abierto y ya paso su FECHA_FIN_PLAN no aparecia con ninguna senal --
+ * calcularDesviacionRegistro_ solo mide lo ya terminado (FECHA_FIN_REAL
+ * presente). Esto es un calculo distinto y complementario: dias desde
+ * que vencio el plazo sin haber terminado, solo si no esta ya en un
+ * estado cerrado.
+ */
+var ESTADOS_CERRADOS_PROCESO_MVP = ['Completado', 'Cancelado'];
+
+function calcularRiesgoRegistro_(registro) {
+  if (registro.FECHA_FIN_REAL) return null;
+  if (ESTADOS_CERRADOS_PROCESO_MVP.indexOf(registro.ESTADO) !== -1) return null;
+  if (!registro.FECHA_FIN_PLAN) return null;
+
+  var hoy = new Date();
+  var plan = new Date(registro.FECHA_FIN_PLAN);
+  hoy.setHours(0, 0, 0, 0);
+  plan.setHours(0, 0, 0, 0);
+
+  var dias = Math.round((hoy - plan) / (24 * 60 * 60 * 1000));
+  return dias > 0 ? dias : null;
+}
+
 function obtenerFilasGanttDetalladas_(filtro) {
   filtro = filtro || {};
 
@@ -280,7 +304,8 @@ function obtenerFilasGanttDetalladas_(filtro) {
       duracionPrevistaDias: proceso.DURACION_PREVISTA_DIAS === '' || proceso.DURACION_PREVISTA_DIAS === undefined ? null : Number(proceso.DURACION_PREVISTA_DIAS),
       duracionRealDias: proceso.DURACION_REAL_DIAS === '' || proceso.DURACION_REAL_DIAS === undefined ? null : Number(proceso.DURACION_REAL_DIAS),
       diasDesviacionInicio: desviacion.DIAS_DESVIACION_INICIO,
-      diasDesviacionFin: desviacion.DIAS_DESVIACION_FIN
+      diasDesviacionFin: desviacion.DIAS_DESVIACION_FIN,
+      diasRiesgo: calcularRiesgoRegistro_(proceso)
     };
   }).sort(function (a, b) { return new Date(a.fechaInicioPlan) - new Date(b.fechaInicioPlan); });
 }
@@ -318,7 +343,7 @@ function exportarGanttCSV(filtro) {
     'ID', 'Campaña', 'Proyecto', 'Producto', 'Proceso', 'Fase', 'Responsable', 'Estado',
     'Fecha inicio plan', 'Fecha fin plan', 'Fecha inicio real', 'Fecha fin real',
     'Duración prevista (días)', 'Duración real (días)',
-    'Desviación inicio (días)', 'Desviación fin (días)'
+    'Desviación inicio (días)', 'Desviación fin (días)', 'Riesgo (días vencidos sin terminar)'
   ];
   var filasCsv = filas.map(function (f) {
     return [
@@ -326,7 +351,7 @@ function exportarGanttCSV(filtro) {
       formatearFechaCsv_(f.fechaInicioPlan), formatearFechaCsv_(f.fechaFinPlan),
       formatearFechaCsv_(f.fechaInicioReal), formatearFechaCsv_(f.fechaFinReal),
       f.duracionPrevistaDias, f.duracionRealDias,
-      f.diasDesviacionInicio, f.diasDesviacionFin
+      f.diasDesviacionInicio, f.diasDesviacionFin, f.diasRiesgo
     ];
   });
   var csv = [encabezados.map(function (e) { return celdaCsv_(e); }).join(',')]
