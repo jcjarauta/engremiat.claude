@@ -114,13 +114,20 @@
       }
 
       /*
-       * Paso adaptativo segun el rango total, para que el eje no se
-       * sature de marcas en campanas largas ni quede vacio en cortas.
+       * Paso adaptativo segun el rango total: se busca el primer paso
+       * "redondo" (de una lista de pasos habituales) que deje como
+       * maximo ~7 marcas, para que quepan sin solaparse en el ancho
+       * disponible de la columna del grafico, sea cual sea el rango
+       * (una campana de 12 dias o el sistema entero durante meses).
        */
       function calcularTicks_(minFecha, maxFecha) {
         var dia = 24 * 60 * 60 * 1000;
         var spanDias = (maxFecha - minFecha) / dia;
-        var pasoDias = spanDias <= 21 ? 2 : spanDias <= 60 ? 7 : spanDias <= 180 ? 14 : 30;
+        var pasosRedondos = [1, 2, 3, 5, 7, 10, 14, 21, 30, 45, 60, 90, 120, 180, 365];
+        var pasoDias = pasosRedondos[pasosRedondos.length - 1];
+        for (var i = 0; i < pasosRedondos.length; i++) {
+          if (spanDias / pasosRedondos[i] <= 7) { pasoDias = pasosRedondos[i]; break; }
+        }
 
         var ticks = [];
         var actual = new Date(minFecha);
