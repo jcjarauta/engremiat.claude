@@ -88,7 +88,12 @@ function obtenerFichaPersonaEquipo(id) {
 
   var horarios = listarRegistros('HORARIO', { ACTIVO: 'SÍ' })
     .filter(function (h) { return h.ENTIDAD_TIPO === 'Persona/Equipo' && h.ENTIDAD_ID === id; })
-    .map(function (h) { return { id: h.ID, dia: h.DIA_SEMANA, inicio: h.HORA_INICIO, fin: h.HORA_FIN, estado: h.ESTADO }; });
+    .map(function (h) {
+      return {
+        id: h.ID, dia: h.DIA_SEMANA, inicio: h.HORA_INICIO, fin: h.HORA_FIN, estado: h.ESTADO,
+        vigenciaInicio: h.FECHA_INICIO_VIGENCIA || null, vigenciaFin: h.FECHA_FIN_VIGENCIA || null
+      };
+    });
 
   var contextoPorProducto = construirMapaContextoPorProducto_();
   var procesosPorId = {};

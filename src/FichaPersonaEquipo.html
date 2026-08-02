@@ -131,9 +131,15 @@
             : '<div class="vacio-bloque">No coordina ningún equipo.</div>';
         }
 
+        function renderVigencia_(h) {
+          if (!h.vigenciaInicio && !h.vigenciaFin) return '';
+          var fmt = function (v) { return v ? new Date(v).toLocaleDateString() : '?'; };
+          return ' <span class="detalle-secundario">(vigente ' + fmt(h.vigenciaInicio) + '–' + fmt(h.vigenciaFin) + ')</span>';
+        }
+
         document.getElementById("listaHorarios").innerHTML = datos.horarios.length
           ? datos.horarios.map(function (h) {
-              return filaHtml_(escapeHtml(h.dia) + ' <span class="detalle-secundario">' + escapeHtml(h.inicio) + '–' + escapeHtml(h.fin) + '</span>' + renderBadge_(h.estado), 'HORARIO', h.id);
+              return filaHtml_(escapeHtml(h.dia) + ' <span class="detalle-secundario">' + escapeHtml(h.inicio) + '–' + escapeHtml(h.fin) + '</span>' + renderVigencia_(h) + renderBadge_(h.estado), 'HORARIO', h.id);
             }).join("")
           : '<div class="vacio-bloque">Sin franjas horarias registradas.</div>';
 

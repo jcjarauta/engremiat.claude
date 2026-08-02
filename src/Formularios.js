@@ -878,6 +878,11 @@ INCIDENCIA: [
     { campo: 'DIA_SEMANA', etiqueta: 'Día de la semana', tipo: 'catalogo', catalogo: 'CFG_DIA_SEMANA', requerido: true },
     { campo: 'HORA_INICIO', etiqueta: 'Hora inicio (HH:MM)', tipo: 'texto', requerido: true },
     { campo: 'HORA_FIN', etiqueta: 'Hora fin (HH:MM)', tipo: 'texto', requerido: true },
+    {
+      campo: 'FECHA_INICIO_VIGENCIA', etiqueta: 'Vigente desde (opcional)', tipo: 'fecha',
+      ayuda: 'Déjalo vacío si el horario es permanente. Rellénalo solo para un horario que aplica en una franja de fechas concreta (ej. temporada alta).'
+    },
+    { campo: 'FECHA_FIN_VIGENCIA', etiqueta: 'Vigente hasta (opcional)', tipo: 'fecha' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -1194,6 +1199,14 @@ function validarReglasNegocioHorario_(datos) {
   }
   if (horaFin <= horaInicio) {
     throw new Error('ERROR_HORARIO_RANGO: la hora de fin debe ser posterior a la hora de inicio.');
+  }
+
+  if (datos.FECHA_INICIO_VIGENCIA && datos.FECHA_FIN_VIGENCIA) {
+    var inicioVigencia = new Date(datos.FECHA_INICIO_VIGENCIA);
+    var finVigencia = new Date(datos.FECHA_FIN_VIGENCIA);
+    if (finVigencia.getTime() < inicioVigencia.getTime()) {
+      throw new Error('ERROR_HORARIO_VIGENCIA: la fecha de fin de vigencia no puede ser anterior a la de inicio.');
+    }
   }
 }
 
