@@ -337,6 +337,34 @@ function celdaCsv_(valor) {
   return '"' + String(valor).replace(/"/g, '""') + '"';
 }
 
+/*
+ * Exportador CSV compartido (antes duplicado entre el Gantt y el arbol
+ * de campaña): construye el texto CSV con BOM UTF-8 (sin el, Excel
+ * interpreta los acentos con la codificacion regional en vez de UTF-8,
+ * mostrando caracteres corruptos) y el dialogo de descarga base64.
+ * Reutilizado tambien por ReportService.js para el disparo de descarga
+ * (su construccion de contenido es distinta -- clave/valor plano, no
+ * tabular -- asi que solo comparte el dialogo, no construirCsvConBom_).
+ */
+function construirCsvConBom_(encabezados, filas) {
+  var csv = [encabezados.map(celdaCsv_).join(',')]
+    .concat(filas.map(function (fila) { return fila.map(celdaCsv_).join(','); }))
+    .join('\n');
+  var BOM_UTF8 = String.fromCharCode(0xFEFF);
+  return BOM_UTF8 + csv;
+}
+
+function abrirDialogoDescargaCSV_(nombreArchivo, contenidoCsv) {
+  var b64 = Utilities.base64Encode(contenidoCsv, Utilities.Charset.UTF_8);
+  var html = '<html><body style="font-family:Arial,sans-serif;padding:16px;">' +
+    '<p>Generando descarga de <strong>' + escaparHtmlServer_(nombreArchivo) + '</strong>...</p>' +
+    '<a id="dl" download="' + escaparHtmlServer_(nombreArchivo) + '" href="data:text/csv;charset=utf-8;base64,' + b64 + '">Si la descarga no comienza, haz clic aqui</a>' +
+    '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
+    '</body></html>';
+  var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
+  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
+}
+
 function exportarGanttCSV(filtro) {
   var filas = obtenerFilasGanttDetalladas_(filtro);
   var encabezados = [
@@ -354,33 +382,15 @@ function exportarGanttCSV(filtro) {
       f.diasDesviacionInicio, f.diasDesviacionFin, f.diasRiesgo
     ];
   });
-  var csv = [encabezados.map(function (e) { return celdaCsv_(e); }).join(',')]
-    .concat(filasCsv.map(function (fila) { return fila.map(celdaCsv_).join(','); }))
-    .join('\n');
-
-  /*
-   * BOM UTF-8: sin el, Excel abre el CSV interpretando los acentos
-   * (Campaña, Producción...) con la codificacion regional en vez de
-   * UTF-8, mostrando caracteres corruptos.
-   */
-  var BOM_UTF8 = String.fromCharCode(0xFEFF);
-  var csvConBom = BOM_UTF8 + csv;
 
   var nombre = 'GANTT_PLAN_REAL_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
   registrarHistorial('INFORME', nombre, 'EXPORTAR_GANTT', [], { origen: 'UI', formato: 'CSV' });
-  return { nombreArchivo: nombre, contenidoCsv: csvConBom };
+  return { nombreArchivo: nombre, contenidoCsv: construirCsvConBom_(encabezados, filasCsv) };
 }
 
 function abrirDialogoExportarGanttCSV(filtro) {
   var resultado = exportarGanttCSV(filtro);
-  var b64 = Utilities.base64Encode(resultado.contenidoCsv, Utilities.Charset.UTF_8);
-  var html = '<html><body style="font-family:Arial,sans-serif;padding:16px;">' +
-    '<p>Generando descarga de <strong>' + escaparHtmlServer_(resultado.nombreArchivo) + '</strong>...</p>' +
-    '<a id="dl" download="' + escaparHtmlServer_(resultado.nombreArchivo) + '" href="data:text/csv;charset=utf-8;base64,' + b64 + '">Si la descarga no comienza, haz clic aqui</a>' +
-    '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
-    '</body></html>';
-  var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
-  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
 /*

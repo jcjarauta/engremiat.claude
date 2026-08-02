@@ -166,10 +166,10 @@ function obtenerUltimaCampanaPanel() {
 }
 
 /*
- * Export CSV del arbol completo -- mismo patron que exportarGanttCSV
- * (DesviacionService.js): fechas con formatearFechaCsv_ (zona horaria
- * del script, no toISOString()), celdaCsv_ para que los numeros no
- * vayan entre comillas, BOM UTF-8 para que Excel lea bien los acentos.
+ * Export CSV del arbol completo, reutilizando construirCsvConBom_ /
+ * abrirDialogoDescargaCSV_ (DesviacionService.js) -- mismo exportador
+ * compartido que usa el Gantt, en vez de duplicar la logica de BOM/
+ * base64/dialogo por tercera vez.
  */
 function exportarArbolCampanaCSV(campanaId) {
   var arbol = obtenerArbolCampana(campanaId);
@@ -200,27 +200,15 @@ function exportarArbolCampanaCSV(campanaId) {
     });
   });
 
-  var csv = [encabezados.map(celdaCsv_).join(',')]
-    .concat(filas.map(function (fila) { return fila.map(celdaCsv_).join(','); }))
-    .join('\n');
-
-  var BOM_UTF8 = String.fromCharCode(0xFEFF);
   var nombre = 'CAMPANA_' + arbol.campana.nombre.replace(/[^a-zA-Z0-9]+/g, '_') + '_' +
     Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
   registrarHistorial('INFORME', nombre, 'EXPORTAR_ARBOL_CAMPANA', [], { origen: 'UI', formato: 'CSV' });
-  return { nombreArchivo: nombre, contenidoCsv: BOM_UTF8 + csv };
+  return { nombreArchivo: nombre, contenidoCsv: construirCsvConBom_(encabezados, filas) };
 }
 
 function abrirDialogoExportarArbolCampanaCSV(campanaId) {
   var resultado = exportarArbolCampanaCSV(campanaId);
-  var b64 = Utilities.base64Encode(resultado.contenidoCsv, Utilities.Charset.UTF_8);
-  var html = '<html><body style="font-family:Arial,sans-serif;padding:16px;">' +
-    '<p>Generando descarga de <strong>' + escaparHtmlServer_(resultado.nombreArchivo) + '</strong>...</p>' +
-    '<a id="dl" download="' + escaparHtmlServer_(resultado.nombreArchivo) + '" href="data:text/csv;charset=utf-8;base64,' + b64 + '">Si la descarga no comienza, haz clic aqui</a>' +
-    '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
-    '</body></html>';
-  var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
-  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
 function abrirPanelCampana() {

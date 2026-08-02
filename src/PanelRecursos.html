@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+      .cabecera button { flex-shrink: 0; }
+      .resumen-arbol { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 12px; }
+      details { margin-bottom: 6px; }
+      details > div { margin-left: 18px; border-left: 2px solid var(--color-borde); padding-left: 12px; }
+      summary { cursor: pointer; padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      summary::-webkit-details-marker { color: var(--color-texto-secundario); }
+      .nombre-nodo { font-weight: bold; font-size: 14px; }
+      .detalle-nodo { font-weight: normal; color: var(--color-texto-secundario); font-size: 13px; }
+      .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px 6px 20px; }
+      .acciones-nodo { display: flex; gap: 6px; flex-shrink: 0; }
+      .btn-mini { font-size: 13px; padding: 6px 10px; }
+      .badge { font-size: 13px; padding: 2px 10px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 4px 0 10px 20px; }
+    </style>
+  </head>
+  <body>
+    <div class="cabecera">
+      <button id="btnNuevoRecurso" class="btn-mini boton-primario" title="Nuevo recurso">+ Nuevo recurso</button>
+      <button id="btnActualizar" class="btn-mini" title="Volver a cargar">🔄</button>
+    </div>
+    <div id="resumenArbol" class="resumen-arbol"></div>
+
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="arbol"></div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      function escapeAttr(texto) {
+        return escapeHtml(texto).replace(/"/g, "&quot;");
+      }
+
+      /*
+       * Palabras clave repetidas en los catalogos de estado de RECURSO
+       * (CFG_ESTADO_RECURSO_FISICO: Disponible/En uso/En mantenimiento/
+       * Averiado/De baja) -- mismo criterio que el panel de campaña,
+       * ampliado con "aver"/"baja"/"no dispon" para este catalogo.
+       */
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1 || texto.indexOf("rechaz") !== -1 ||
+            texto.indexOf("aver") !== -1 || texto.indexOf("baja") !== -1 || texto.indexOf("no dispon") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("complet") !== -1 || texto.indexOf("termin") !== -1 || texto.indexOf("confirm") !== -1 ||
+            texto.indexOf("aprob") !== -1 || texto.indexOf("dispon") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        return '<span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function renderDetalle_(nodo) {
+        var partes = [];
+        if (nodo.clase) partes.push(escapeHtml(nodo.clase));
+        if (nodo.categoria) partes.push(escapeHtml(nodo.categoria));
+        if (nodo.responsable) partes.push(escapeHtml(nodo.responsable));
+        return partes.length ? ' <span class="detalle-nodo">— ' + partes.join(' · ') + '</span>' : '';
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+      }
+
+      function editar(id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion("RECURSO", id);
+      }
+
+      // Descenso recursivo generico (a diferencia del panel de campaña,
+      // aqui la profundidad del arbol no es fija).
+      function renderNodo_(nodo) {
+        var codigo = nodo.codigo ? ' (' + escapeHtml(nodo.codigo) + ')' : '';
+        if (nodo.hijos.length === 0) {
+          return '<div class="fila-hoja">' +
+            '<span>' + escapeHtml(nodo.nombre) + codigo + ' ' + renderBadge_(nodo.estado) + renderDetalle_(nodo) + '</span>' +
+            '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'' + escapeAttr(nodo.id) + '\')">Editar</button></span>' +
+          '</div>';
+        }
+        var hijosHtml = nodo.hijos.map(renderNodo_).join("");
+        return '<details open>' +
+          '<summary>' +
+            '<span class="nombre-nodo">' + escapeHtml(nodo.nombre) + codigo + ' ' + renderBadge_(nodo.estado) + renderDetalle_(nodo) + '</span>' +
+            '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'' + escapeAttr(nodo.id) + '\')">Editar</button></span>' +
+          '</summary>' +
+          '<div>' + hijosHtml + '</div>' +
+        '</details>';
+      }
+
+      function contarNodos_(nodos) {
+        var total = 0;
+        nodos.forEach(function (n) { total += 1 + contarNodos_(n.hijos); });
+        return total;
+      }
+
+      function renderArbol(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        if (!datos.raiz.length) {
+          document.getElementById("arbol").innerHTML = '<div class="vacio-nivel">No hay ningún espacio de nivel superior todavía — crea uno desde "Nuevo recurso" (clase Espacio).</div>';
+          document.getElementById("resumenArbol").textContent = "";
+          return;
+        }
+        document.getElementById("resumenArbol").textContent = datos.total + " recursos en total";
+        document.getElementById("arbol").innerHTML = datos.raiz.map(renderNodo_).join("");
+      }
+
+      function cargarArbol() {
+        document.getElementById("estadoCarga").textContent = "Cargando...";
+        document.getElementById("estadoCarga").style.display = "block";
+        document.getElementById("arbol").innerHTML = "";
+        google.script.run.withSuccessHandler(renderArbol).withFailureHandler(mostrarError).obtenerArbolRecursos();
+      }
+
+      document.getElementById("btnActualizar").addEventListener("click", cargarArbol);
+      document.getElementById("btnNuevoRecurso").addEventListener("click", function () {
+        google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearRecurso();
+      });
+
+      cargarArbol();
+    </script>
+  </body>
+</html>

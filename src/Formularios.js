@@ -2197,6 +2197,7 @@ function onOpen() {
         .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
         .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
         .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
+        .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
         .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
         .addItem('Editar recurso', 'abrirEditarRecurso')
         .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')

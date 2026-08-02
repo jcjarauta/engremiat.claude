@@ -309,21 +309,23 @@ function exportarInformeCSV(tipo, idOFiltro, opcionesPrueba) {
   var csv = 'campo,valor\n' + filas.map(function (f) {
     return f.map(function (v) { return '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"'; }).join(',');
   }).join('\n');
+  // BOM UTF-8 (ver construirCsvConBom_ en DesviacionService.js): sin
+  // el, Excel interpreta los acentos con la codificacion regional.
+  var csvConBom = String.fromCharCode(0xFEFF) + csv;
   var nombre = nombreArchivoInforme_(tipo, 'csv');
   registrarHistorial('INFORME', nombre, 'EXPORTAR_INFORME', [], Object.assign({ origen: (opcionesPrueba && opcionesPrueba.origen) || 'UI', formato: 'CSV' }, opcionesPrueba || {}));
-  return { nombreArchivo: nombre, contenidoCsv: csv };
+  return { nombreArchivo: nombre, contenidoCsv: csvConBom };
 }
 
+/*
+ * abrirDialogoDescargaCSV_ (DesviacionService.js) es el mismo dialogo
+ * de descarga que usan el Gantt y el arbol de campaña -- se comparte
+ * aqui tambien, aunque la construccion del contenido siga siendo
+ * propia (clave/valor plano, no tabular).
+ */
 function abrirDialogoExportarCSV(tipo, idOFiltro) {
   var resultado = exportarInformeCSV(tipo, idOFiltro, {});
-  var b64 = Utilities.base64Encode(resultado.contenidoCsv, Utilities.Charset.UTF_8);
-  var html = '<html><body style="font-family:Arial,sans-serif;padding:16px;">' +
-    '<p>Generando descarga de <strong>' + escaparHtmlServer_(resultado.nombreArchivo) + '</strong>...</p>' +
-    '<a id="dl" download="' + escaparHtmlServer_(resultado.nombreArchivo) + '" href="data:text/csv;charset=utf-8;base64,' + b64 + '">Si la descarga no comienza, haz clic aqui</a>' +
-    '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
-    '</body></html>';
-  var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
-  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
 function generarHtmlParaImprimir_(informe) {
