@@ -254,6 +254,98 @@ Verificado en real: instalador OK (5 hojas), test de dryRun OK (caso válido + d
 
 ---
 
+## Fase M — Modelo operativo real (personas, espacios, tiempo) — CERRADA (2026-08-03)
+
+Construida a partir de una campaña de prueba piloto simulada con datos reales anonimizados (misma política que el resto del roadmap), extendida hasta cubrir el año completo para poder valorar el sistema en escenarios variados. Cada bloque se propuso, se confirmó y se construyó por separado — no como un cambio monolítico.
+
+### M1 — Jerarquía física real de La Troballa
+`RECURSO` pasa de inventario plano a árbol real: "La Troballa" como espacio raíz (Arrels Fundació queda solo como texto de contexto en `DESCRIPCION`, no como nodo — este sistema gestiona este taller, no el resto de programas de la fundación), con Manipulados/Carpintería/Almacén/Cerámica/Cocina/Tienda/Oficina como hijos y ejemplos de nivel atómico (estantería/cajón/archivador). Árbol de consulta `PanelRecursos.html` (descenso recursivo genérico, profundidad variable, con protección de ciclos).
+
+**Bug real corregido en el propio instalador**: `reparentar_()` usaba el `CODIGO` (`ESP-01`) en vez del `ID` real (`REC-0004`) del recurso — `actualizarRegistroTransaccional` lo rechazó de inmediato (`no existe un registro de RECURSO con id ESP-01`). Corregido con los IDs reales y una función de continuación que no duplica la raíz ya creada por el intento fallido.
+
+### M2 — Árbol de Personas y rol "Persona atendida"
+`PanelPersonas.html`, mismo patrón recursivo sobre `PERSONA_EQUIPO.COORDINADOR_ID`. Catálogo `CFG_ROL_PERSONA` ampliado con "Persona atendida" (`ampliarCatalogoL2_`, no `crearCatalogoNuevoL3_` — categoría ya existente).
+
+**Decisión de privacidad explícita**: ante la pregunta de cómo modelar participantes reales de un programa social, se preguntó directamente al usuario (`AskUserQuestion`) en vez de asumir. Respuesta: solo estructura/rol, sin nombres reales — etiquetas pseudónimas (rol + número).
+
+**Hallazgo de diseño real**: `COORDINADOR_ID` solo es válido en registros `TIPO=Equipo` (un equipo tiene coordinador, nunca al revés — regla de negocio ya existente, no nueva). El árbol de Personas por tanto solo puede mostrar *Persona-coordinadora → Equipos que coordina* (2 niveles), no un organigrama completo — la pertenencia real a un equipo vive en `EQUIPO_MIEMBRO` (relación N:M), que no encaja en árbol. Corregido el ejemplo de persona atendida para darla de alta como miembro de equipo en vez de asignarle un coordinador inválido.
+
+### M3 — Entidad `HORARIO` (franjas semanales recurrentes)
+`29_HORARIO`, patrón polimórfico `ENTIDAD_TIPO`/`ENTIDAD_ID` igual que `DOCUMENTO`/`ASIGNACION`/`VINCULO`, pero con catálogo propio y más acotado (`CFG_ENTIDAD_HORARIO`: solo Recurso y Persona/Equipo) en vez de reutilizar `CFG_ENTIDAD_DOCUMENTO`. `DIA_SEMANA` (catálogo nuevo `CFG_DIA_SEMANA`), `HORA_INICIO`/`HORA_FIN` como texto `HH:MM` (sin tipo de campo "hora" en el motor de formularios), validado por regla de negocio (formato + fin > inicio).
+
+**Limitación real encontrada, no resuelta en esta fase**: `HORARIO` no tiene rango de vigencia temporal (`FECHA_INICIO_VIGENCIA`/`FECHA_FIN_VIGENCIA`) — no hay forma de expresar "este horario solo aplica en diciembre" o "horario reducido solo en verano" sin crear filas contradictorias para el mismo día de la semana. Al sembrar Tallers d'Estiu/Navidad, la diferencia de temporada alta/baja se representó con retrasos, incidencias y dedicación real en vez de horario estacional. **Bloquea directamente el punto N3.2 de la Fase N** (overlay de capacidad en el Gantt) si se quiere modelar estacionalidad de verdad.
+
+**Bug real pendiente, sin cerrar**: la ficha de Persona/Equipo muestra el horario como `1899-12-30T16:14:44.044Z` en vez de `16:00` — Google Sheets autoconvierte el texto `"16:00"` a un valor interno de hora al escribirlo en la celda, y se lee de vuelta como objeto `Date` con la fecha ficticia de 1899. Pasa a **N1.1** (arreglo inmediato).
+
+### M4 — Ficha de registro de Persona/Equipo
+`FichaPersonaEquipoService.js`/`FichaPersonaEquipo.html`: agregador de solo lectura que reúne lo que ya está enlazado a una `PERSONA_EQUIPO` — `EQUIPO_MIEMBRO` (ambas direcciones), `COORDINADOR_ID` (ambas direcciones), `HORARIO`, `TAREA_RESPONSABLE`, `ASIGNACION`, `DOCUMENTO`, `VINCULO` — sin inventar relaciones nuevas. Extendida con **proyectos involucrados** (derivado de Tarea→Proceso→Producto→Proyecto, mismo mapa que usa el Gantt) y **tareas agrupadas por fecha** (Hoy/Próximas/Terminadas/Otras).
+
+**Hueco cerrado como prerrequisito**: `CFG_ENTIDAD_DOCUMENTO` no incluía "Persona/Equipo" — así que `DOCUMENTO`/`RELACION`/`VINCULO` no podían apuntar nunca a una persona. Ampliado (`instalarEntidadPersonaEquipoEnCatalogoDocumento`), mismo patrón que cuando se añadió "Documento" en L3.1.
+
+### M5 — Buscador profundo (`SelectorRegistro.html`)
+El `<datalist>` nativo del navegador filtraba solo por prefijo (inconsistente entre navegadores) y solo por ID/nombre. Sustituido por una lista filtrada en vivo (subcadena en toda la etiqueta), componente compartido por **todos** los selectores del sistema, no solo el de personas. Para `PERSONA_EQUIPO`, la etiqueta ahora incluye tipo y rol (`etiquetaExtraSelector_`), así que buscar por "voluntari" o "coordina" también encuentra resultados.
+
+### M6 — Año completo de campañas de prueba piloto
+Cierra el calendario simulado sin huecos: Carnestoltes (ene-feb) → Sant Jordi (mar-abr) → **Tallers d'Estiu** (abr-jul, nueva, llena un hueco real de 3 meses) → **Mercats de Tardor** (jul-nov, nueva) → **Navidad** (oct-dic, ampliada con un tercer producto). Estructura y categorías (Preproducción/Producción/Postproducción, incidencias de mantenimiento, manuales/protocolos) contrastadas contra el documento real de tareas diarias del taller — anonimizado, solo estructura.
+
+Casos de prueba deliberados: retraso real con causa documentada (vacaciones de verano, pico de diciembre), solapamiento de una misma persona en dos tareas de espacios distintos, documentos/incidencias enganchados a Persona y a Recurso (usa M4 y el hueco cerrado en M4).
+
+**Dos bugs de negocio reales encontrados sembrando datos, no en código nuevo de esta fase — reglas ya existentes que el propio seed no respetó al principio**:
+- `TAREA_RESPONSABLE` limita la dedicación **activa total** de una persona a 100%, sumando **todas** sus tareas activas sin mirar fechas (no es un solapamiento por fecha, es un tope global). Un primer intento de solapamiento deliberado a 50%+100% lo confirmó. Corregido a 50%+50%.
+- Reintentar un instalador parcialmente fallido con un único guard al principio (`si ya existe X, salir`) deja sin crear lo que iba después del punto de fallo. Corregido a idempotencia paso a paso (`buscarOCrear_` por cada entidad) en vez de un guard único — patrón a repetir en cualquier instalador futuro de varios pasos.
+
+---
+
+## Fase N — Siguiente iteración: operabilidad intuitiva y preguntas fundamentales
+
+El sistema se ha ido guiando por un marco de preguntas fundamentales (Qué/Quién/Dónde/Con qué/Cuándo — ya resueltas; Cómo/Cuánto/Por qué — pendientes) para no perder de vista qué falta de verdad. Esta fase organiza el trabajo pendiente contra ese marco, no por entidad técnica. **No se abre un bloque sin cerrar el anterior**, mismo principio que el resto del roadmap.
+
+### N1 — Arreglos inmediatos (deuda de la Fase M, van primero)
+- **N1.1** — Bug de visualización de `HORARIO` en la ficha (fecha 1899 en vez de `HH:MM`).
+- **N1.2** — `HORARIO` con rango de vigencia temporal (`FECHA_INICIO_VIGENCIA`/`FECHA_FIN_VIGENCIA`) — prerrequisito real de N3.2, no opcional si se quiere modelar temporada alta/baja de verdad.
+
+### N2 — Completar el patrón "ficha de registro"
+Ya validado 3 veces (Persona/Equipo, y el mismo molde sirve para lo que falta):
+- **N2.1** — Ficha de Producto: proyectos vinculados (`PROYECTO_PRODUCTO` es N:M real — un producto puede reutilizarse en varios proyectos, hoy invisible), procesos/tareas, materiales (`PRODUCTO_MATERIAL`), documentos, avance/desviación agregado. La más valiosa de las dos — es donde nacen las tareas y se forman los proyectos.
+- **N2.2** — Ficha de Espacio/Recurso: tareas que lo usan (`TAREA_RECURSO`), horario, incidencias/documentos vinculados. Menor esfuerzo, las relaciones ya existen.
+
+### N3 — El Gantt como espacio operativo (orden obligatorio, cada uno depende del anterior)
+1. Vista de fases agrupada por producto, con totales Preproducción/Producción/Postproducción (previsto vs. real) y ciclo completo — responde directamente a "cuánto duró cada fase".
+2. **Overlay de capacidad real** (`HORARIO`) sobre las barras del Gantt — el puente entre disponibilidad declarada y planificación real; el corazón de convertir el Gantt en modelo operativo en vez de visualización. Depende de **N1.2**.
+3. Indicador de cuello de botella (qué fase acumula más desviación de media) + hitos (`FECHA_REQUERIDA`) en el eje.
+4. Informe de calidad de planificación (% de tareas a tiempo, desviación media por fase/responsable/recurso/campaña, utilización de capacidad) — usa los tres anteriores, cierra el círculo hacia "análisis de datos de calidad".
+
+### N4 — Formatos operativos baratos (independiente, se puede intercalar en cualquier momento)
+Reutilizan componentes ya compartidos (`Estilos.html`, patrón fila+badge+Editar, catálogos de `ESTADO` ya existentes) — coste bajo, valor inmediato:
+- **N4.1** — Kanban por estado (columnas = catálogo `ESTADO`, tarjetas = registros) para Tarea/Proceso/Incidencia — el más barato, responde "qué está pendiente" sin abrir formularios. Recomendado primero de este bloque.
+- **N4.2** — Listado filtrable plano para entidades sin árbol (Incidencias abiertas, Documentos vigentes, Decisiones pendientes) — hoy solo se buscan una a una.
+- **N4.3** — Vista "Hoy": agenda del taller completo (tareas + horario + incidencias abiertas del día), mismo cálculo que ya usa la ficha de Persona pero a nivel de todo el sistema.
+- **N4.4** — Calendario semanal (rejilla Lunes-Domingo × horas) para `HORARIO`.
+
+### N5 — Eje "Cuánto" (cantidad/capacidad/coste)
+- **N5.1** — Agregación del coste de materiales ya capturado (`PEDIDO_PROVEEDOR_LINEA.PRECIO_UNITARIO × CANTIDAD_PEDIDA`, existe desde L5.2 sin usar) a nivel de Producto/Proyecto/Campaña. Barato, sin decisiones pendientes.
+- **N5.2** — Coste de mano de obra (tiempo × persona) — **aparcado explícitamente**: exige decidir antes si se pone un coste/hora a cada persona, dato sensible en un programa social. No se diseña hasta que haya esa conversación.
+
+### N6 — Eje "Por qué" (impacto social/ecológico/económico)
+Consultado el Balanç Social de la XES (Xarxa d'Economia Solidària de Catalunya) como referencia externa: es una auditoría **anual y a nivel de organización completa**, no por proyecto, con 6 bloques basados en indicadores GRI. Decisión de alcance: no replicar el cuestionario completo dentro del sistema (mitad de sus preguntas —género, gobernanza, finanzas— no son datos operativos). En su lugar:
+- **N6.1** — Etiquetas de impacto (categoría social/ecológico/económico + nota) en Proyecto/Producto, mismo patrón polimórfico ya establecido.
+- **N6.2** — Informe de evidencia (horas de voluntariado, personas atendidas, materiales reutilizados) que alimente el Balanç Social anual con datos reales en vez de reconstruirlos a mano cada año.
+
+### N7 — Materiales-Proveedores (bloque grande, aparcado hasta cerrar N1-N4)
+Último dominio grande sin vista de consulta — solo formularios sueltos:
+- **N7.1** — Ficha de registro de Producto-Material-Proveedor (patrón "ficha de registro" para la relación N:M que no encaja en árbol, diferida varias veces).
+- **N7.2** — Recalculo automático de `MATERIAL.STOCK_ACTUAL` desde `MOVIMIENTO_MATERIAL` — hoy el libro de movimientos existe pero no actualiza el stock, marcado como pendiente desde L3.3.
+
+### N8 — Import masivo escalado (aparcado hasta cerrar N2)
+Extender el patrón `STG_*` (L5.3, hoy solo Campaña→Tarea) a Recursos (jerarquía de profundidad variable) y Personas+`EQUIPO_MIEMBRO`. Materiales/Proveedores y las relaciones N:M quedan fuera hasta que N7.1 exista.
+
+### N9 — Explícitamente diferido (sin fecha, no tocar hasta que N1-N8 cierren)
+- Roles de usuario / permisos — decisión de gobernanza, no una feature de código; requiere conversación previa sobre quién puede editar qué.
+- Cuestionario completo del Balanç Social — vive en la herramienta de XES, no en este sistema (ver N6).
+- Todo lo ya diferido en **Fase L6** (motor de eventos, simulación de escenarios, entrada conversacional, Google Calendar, tutoriales/gamificación) — sigue sin evidencia de que haga falta con esa forma.
+
+---
+
 ## Fase L6 — Explícitamente diferido (sin fecha, revisar solo si cambia el contexto)
 - Motor por eventos y sistema de recomendaciones.
 - Espacio de simulación de escenarios.
@@ -275,9 +367,21 @@ No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evi
 | L3 | 6 mecanismos transversales secundarios | 4-6 sesiones | L1 |
 | L4 | 3 funcionalidades específicas | 2-3 sesiones | L1, L3 |
 | L5 | 3 bloques estructurales grandes | 8-10 sesiones | L1, L3, L4 |
+| M | Modelo operativo real (personas, espacios, tiempo, año completo de campañas) | ~6 sesiones | L1, L3, L4, L5 |
+| N1 | Arreglos inmediatos (bug horario + vigencia) | 1 sesión | M |
+| N2 | Ficha de Producto y de Espacio/Recurso | 2-3 sesiones | M |
+| N3 | Gantt como espacio operativo (4 pasos en orden) | 3-5 sesiones | N1.2 |
+| N4 | Formatos operativos baratos (kanban, listado, hoy, calendario) | 2-3 sesiones | — (paralelo a N2/N3) |
+| N5 | Eje "Cuánto" (coste de materiales; mano de obra aparcado) | 1 sesión (solo N5.1) | — |
+| N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | 1-2 sesiones | — |
+| N7 | Materiales-Proveedores (ficha + stock automático) | 3-4 sesiones | N2 |
+| N8 | Import masivo escalado (Recursos, Personas) | 1-2 sesiones | N2 |
+| N9 | Diferido (roles de usuario, cuestionario Balanç Social, todo L6) | — | revisión de contexto |
 | L6 | Diferido | — | revisión de contexto |
 
 **Total estimado L0-L5: ~19-26 sesiones**, con gate humano en cada submódulo — no es una cifra para comprometerse como plazo, es una referencia de esfuerzo relativo entre fases, igual que las estimaciones del roadmap original.
+
+**Total estimado N1-N8: ~14-21 sesiones adicionales.**
 
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
