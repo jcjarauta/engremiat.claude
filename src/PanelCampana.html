@@ -5,27 +5,36 @@
     <?!= include('Estilos') ?>
     <style>
       body { font-size: 12px; }
-      .cabecera { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+      .cabecera { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
       .cabecera select { flex: 1; }
       .cabecera button { flex-shrink: 0; }
+      .resumen-campana { color: var(--color-texto-secundario); font-size: 11px; margin-bottom: 10px; }
       details { margin-bottom: 4px; }
       details > div { margin-left: 16px; border-left: 2px solid var(--color-borde); padding-left: 10px; }
       summary { cursor: pointer; padding: 4px 2px; display: flex; align-items: center; justify-content: space-between; gap: 6px; }
       summary::-webkit-details-marker { color: var(--color-texto-secundario); }
       .nombre-nodo { font-weight: bold; }
+      .detalle-nodo { font-weight: normal; color: var(--color-texto-secundario); font-size: 11px; }
       .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 3px 2px 3px 18px; }
       .acciones-nodo { display: flex; gap: 4px; flex-shrink: 0; }
       .btn-mini { font-size: 11px; padding: 2px 6px; }
-      .btn-anadir { font-size: 11px; padding: 2px 6px; margin: 4px 0 8px 16px; }
+      .btn-anadir { font-size: 11px; padding: 4px 8px; margin: 4px 0 8px 16px; }
       .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 11px; margin: 2px 0 8px 18px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .alerta-desviacion { color: var(--color-peligro); font-weight: bold; }
     </style>
   </head>
   <body>
     <h3>Gestión de campaña</h3>
     <div class="cabecera">
       <select id="selectCampana"><option value="">-- elige una campaña --</option></select>
+      <button id="btnNuevaCampana" class="btn-mini boton-primario" title="Nueva campaña">+</button>
       <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
+      <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇️</button>
     </div>
+    <div id="resumenCampana" class="resumen-campana"></div>
 
     <div id="estadoCarga" class="vacio">Elige una campaña para ver su estructura.</div>
     <div id="arbol"></div>
@@ -37,6 +46,39 @@
       }
       function escapeAttr(texto) {
         return escapeHtml(texto).replace(/"/g, "&quot;");
+      }
+      function formatearFecha_(fecha) {
+        if (!fecha) return "";
+        var d = new Date(fecha);
+        var dd = String(d.getDate()).padStart(2, "0");
+        var mm = String(d.getMonth() + 1).padStart(2, "0");
+        return dd + "/" + mm + "/" + d.getFullYear();
+      }
+
+      /*
+       * Clasificacion de estado por palabras clave -- los estados
+       * varian por entidad (Completado/Terminada/Confirmada,
+       * Bloqueado/Cancelada/Rechazada...) asi que no hay un mapa 1:1,
+       * pero las palabras clave se repiten en todo el sistema.
+       */
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1 || texto.indexOf("rechaz") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("complet") !== -1 || texto.indexOf("termin") !== -1 || texto.indexOf("confirm") !== -1 || texto.indexOf("aprob") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        return '<span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function renderDetalle_(nodo) {
+        var partes = [];
+        if (nodo.responsable) partes.push(escapeHtml(nodo.responsable));
+        if (nodo.diasDesviacion !== null && nodo.diasDesviacion !== undefined && nodo.diasDesviacion > 0) {
+          partes.push('<span class="alerta-desviacion">⚠ +' + nodo.diasDesviacion + 'd</span>');
+        }
+        return partes.length ? ' <span class="detalle-nodo">— ' + partes.join(' · ') + '</span>' : '';
       }
 
       function mostrarError(error) {
@@ -54,7 +96,7 @@
 
       function renderTarea(tarea) {
         return '<div class="fila-hoja">' +
-          '<span>' + escapeHtml(tarea.nombre) + ' <span class="badge">' + escapeHtml(tarea.estado) + '</span></span>' +
+          '<span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span>' +
           '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></span>' +
         '</div>';
       }
@@ -65,10 +107,10 @@
           : '<div class="vacio-nivel">Sin tareas todavía.</div>';
         return '<details>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' <span class="badge">' + escapeHtml(proceso.estado) + '</span></span>' +
+            '<span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span>' +
             '<span class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
-              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
+              '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
             '</span>' +
           '</summary>' +
           '<div>' + tareas + '</div>' +
@@ -81,10 +123,10 @@
           : '<div class="vacio-nivel">Sin procesos todavía.</div>';
         return '<details open>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' <span class="badge">' + escapeHtml(producto.estado) + '</span></span>' +
+            '<span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' ' + renderBadge_(producto.estado) + renderDetalle_(producto) + '</span>' +
             '<span class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
-              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
+              '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
             '</span>' +
           '</summary>' +
           '<div>' + procesos + '</div>' +
@@ -97,10 +139,10 @@
           : '<div class="vacio-nivel">Sin productos todavía.</div>';
         return '<details open>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' <span class="badge">' + escapeHtml(proyecto.estado) + '</span></span>' +
+            '<span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span>' +
             '<span class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
-              '<button class="boton btn-mini" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
+              '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
             '</span>' +
           '</summary>' +
           '<div>' + productos + '</div>' +
@@ -113,17 +155,30 @@
           ? datos.proyectos.map(renderProyecto).join("")
           : '<div class="vacio-nivel">Esta campaña todavía no tiene proyectos.</div>';
 
+        document.getElementById("resumenCampana").textContent =
+          formatearFecha_(datos.campana.fechaInicioPlan) + " – " + formatearFecha_(datos.campana.fechaFinPlan) +
+          "  ·  " + datos.contadores.proyectos + " proyectos, " +
+          datos.contadores.productos + " productos, " +
+          datos.contadores.procesos + " procesos, " +
+          datos.contadores.tareas + " tareas";
+
         document.getElementById("arbol").innerHTML =
           '<div class="fila-hoja" style="padding-left:2px;">' +
-            '<span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' <span class="badge">' + escapeHtml(datos.campana.estado) + '</span></span>' +
+            '<span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' ' + renderBadge_(datos.campana.estado) + '</span>' +
             '<button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button>' +
           '</div>' +
           contenedorProyectos +
-          '<button class="boton btn-anadir" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
+          '<button class="boton btn-anadir boton-primario" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
+      }
+
+      function campanaSeleccionada_() {
+        return document.getElementById("selectCampana").value;
       }
 
       function cargarArbol() {
-        var campanaId = document.getElementById("selectCampana").value;
+        var campanaId = campanaSeleccionada_();
+        google.script.run.withFailureHandler(function () {}).guardarUltimaCampanaPanel(campanaId);
+        document.getElementById("resumenCampana").textContent = "";
         if (!campanaId) {
           document.getElementById("arbol").innerHTML = "";
           document.getElementById("estadoCarga").textContent = "Elige una campaña para ver su estructura.";
@@ -138,21 +193,38 @@
           .obtenerArbolCampana(campanaId);
       }
 
-      function cargarOpcionesCampana() {
+      function cargarOpcionesCampana(seleccionDeseada) {
+        var seleccionAnterior = seleccionDeseada || campanaSeleccionada_();
         google.script.run
           .withSuccessHandler(function (opciones) {
             var select = document.getElementById("selectCampana");
+            select.innerHTML = '<option value="">-- elige una campaña --</option>';
             opciones.forEach(function (campana) {
               select.innerHTML += '<option value="' + escapeAttr(campana.id) + '">' + escapeHtml(campana.etiqueta) + '</option>';
             });
+            if (seleccionAnterior) select.value = seleccionAnterior;
+            cargarArbol();
           })
           .withFailureHandler(mostrarError)
           .obtenerOpcionesCampanasActivas();
       }
 
       document.getElementById("selectCampana").addEventListener("change", cargarArbol);
-      document.getElementById("btnActualizar").addEventListener("click", cargarArbol);
-      cargarOpcionesCampana();
+      document.getElementById("btnActualizar").addEventListener("click", function () { cargarOpcionesCampana(); });
+      document.getElementById("btnNuevaCampana").addEventListener("click", function () {
+        google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearCampana();
+      });
+      document.getElementById("btnExportar").addEventListener("click", function () {
+        var campanaId = campanaSeleccionada_();
+        if (!campanaId) { mostrarError({ message: "Elige una campaña antes de exportar." }); return; }
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarArbolCampanaCSV(campanaId);
+      });
+
+      // Recuerda la última campaña elegida (por usuario) al reabrir el panel.
+      google.script.run
+        .withSuccessHandler(function (ultimaCampanaId) { cargarOpcionesCampana(ultimaCampanaId); })
+        .withFailureHandler(function () { cargarOpcionesCampana(); })
+        .obtenerUltimaCampanaPanel();
     </script>
   </body>
 </html>
