@@ -2191,6 +2191,7 @@ function onOpen() {
     )
     .addSubMenu(
       ui.createMenu('👥 Personas y recursos')
+        .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
         .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
         .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
         .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
