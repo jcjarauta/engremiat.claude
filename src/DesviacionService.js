@@ -184,8 +184,14 @@ function generarInformeDesviacion(filtro) {
  */
 function obtenerOpcionesFiltroGantt() {
   var fases = obtenerCatalogo('CFG_FASE_PRODUCCION');
+  /*
+   * grupo (ver conversacion: "desplegables segmentados por categorias
+   * o tipos"): ROL para personas, CLASE_RECURSO para recursos -- ya
+   * existian como campos, solo faltaba exponerlos para poder agrupar
+   * las opciones en <optgroup> en vez de una lista plana larga.
+   */
   var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (persona) {
-    return { id: persona.ID, etiqueta: persona.NOMBRE };
+    return { id: persona.ID, etiqueta: persona.NOMBRE, grupo: persona.ROL || 'Sin rol' };
   });
   var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
     return { id: campana.ID, etiqueta: campana.NOMBRE };
@@ -194,7 +200,7 @@ function obtenerOpcionesFiltroGantt() {
     return { id: proyecto.ID, etiqueta: proyecto.NOMBRE };
   });
   var recursos = listarRegistros('RECURSO', { ACTIVO: 'SÍ' }).map(function (recurso) {
-    return { id: recurso.ID, etiqueta: recurso.NOMBRE };
+    return { id: recurso.ID, etiqueta: recurso.NOMBRE, grupo: recurso.CLASE_RECURSO || 'Sin clase' };
   });
   return { fases: fases, personas: personas, campanas: campanas, proyectos: proyectos, recursos: recursos };
 }

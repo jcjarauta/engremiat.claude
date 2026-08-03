@@ -43,16 +43,21 @@
       .btn-modo { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 4px 10px; font-size: 12px; }
       .btn-modo.activo { background: var(--color-primario); color: #fff; border-color: var(--color-primario); }
       /*
-       * Listado simple, un elemento por linea (no flex-wrap): un
-       * primer intento con flex-wrap + gap producia solapamiento real
-       * entre filas en el visor de dialogos de Sheets (ver
-       * conversacion, captura con checkboxes superpuestos a mitad de
-       * palabra) -- probablemente soporte incompleto de "row-gap" en
-       * ese motor. Column-layout evita esa ambiguedad por completo.
+       * Selectores segmentados por categoria/tipo + chips (ver
+       * conversacion: sustituye las listas largas de checkboxes, que
+       * quedaban dificiles de escanear y con solapamiento real de
+       * renderizado). Un <select> por tipo de entidad, agrupado por
+       * ROL/CLASE_RECURSO via <optgroup> -- misma familia visual que
+       * los filtros de Responsable/Recurso del Gantt principal.
        */
-      .lista-entidades { column-width: 180px; column-gap: 16px; max-height: 110px; overflow-y: auto; border: 1px solid var(--color-borde); padding: 6px; margin-bottom: 10px; }
-      .lista-entidades .fila-chk { display: block; font-size: 11px; white-space: normal; overflow-wrap: break-word; break-inside: avoid; margin-bottom: 4px; padding-right: 4px; }
-      .lista-entidades label { font-weight: normal; cursor: pointer; }
+      .selectores-entidad { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+      .selectores-entidad label { display: block; font-size: 11px; margin-bottom: 2px; }
+      .selectores-entidad select { min-width: 200px; }
+      .chips-entidades { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; margin-bottom: 6px; }
+      .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-fondo-suave); border: 1px solid var(--color-borde); border-radius: 12px; padding: 3px 8px; font-size: 11px; }
+      .chip .chip-editar { cursor: pointer; color: var(--color-primario); }
+      .chip .chip-quitar { cursor: pointer; color: var(--color-texto-secundario); font-weight: bold; }
+      .chip .chip-quitar:hover { color: var(--color-peligro); }
       .rejilla-disponibilidad { display: grid; grid-template-columns: 140px repeat(7, 1fr); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); }
       .rejilla-disponibilidad > div { background: #fff; padding: 4px 6px; font-size: 11px; min-height: 24px; }
       .rejilla-disponibilidad .cab { font-weight: bold; background: var(--color-fondo-suave); text-align: center; }
@@ -138,20 +143,22 @@
     </div>
 
     <div id="vista-disponibilidad" style="display:none;">
-      <p class="rango-fechas">
-        Elige personas/equipos y recursos/espacios para ver cuándo coinciden libres a la vez (según el horario semanal declarado, vigente hoy).
-        Ejemplo: un voluntariado + un espacio + una persona atendida, para planificar una actividad conjunta.
-      </p>
-      <label style="font-size:12px;font-weight:bold;">Personas / equipos</label>
-      <div class="lista-entidades" id="lista-personas-disponibilidad"></div>
-      <label style="font-size:12px;font-weight:bold;">Recursos / espacios</label>
-      <div class="lista-entidades" id="lista-recursos-disponibilidad"></div>
-      <div id="resultado-disponibilidad"></div>
+      <div class="selectores-entidad">
+        <div>
+          <label for="add-persona">+ Añadir persona / equipo</label>
+          <select id="add-persona"><option value="">-- elige --</option></select>
+        </div>
+        <div>
+          <label for="add-recurso">+ Añadir espacio / recurso</label>
+          <select id="add-recurso"><option value="">-- elige --</option></select>
+        </div>
+      </div>
+      <div class="chips-entidades" id="chips-entidades"></div>
 
-      <h4 style="margin:16px 0 4px;">Ocupación real: quién usa qué y cuándo</h4>
+      <h4 style="margin:14px 0 2px;">Ocupación: quién usa qué y cuándo</h4>
       <p class="rango-fechas">Reservas ya planificadas (tareas asignadas) de las entidades elegidas arriba, mismo estilo que el Gantt principal.</p>
       <div id="rango-fechas-ocupacion" class="rango-fechas"></div>
-      <div class="contenedor-tabla" style="max-height:300px;">
+      <div class="contenedor-tabla" style="max-height:260px;">
         <table id="tabla-ocupacion" style="display:none;">
           <thead>
             <tr>
@@ -166,6 +173,14 @@
         </table>
         <div id="vacio-ocupacion" class="vacio"></div>
       </div>
+
+      <details style="margin-top:14px;">
+        <summary style="cursor:pointer;font-weight:bold;font-size:12px;">Ver coincidencia semanal (huecos libres para planificar algo nuevo) ▾</summary>
+        <p class="rango-fechas" style="margin-top:6px;">
+          Según el horario semanal declarado (vigente hoy). Ejemplo: un voluntariado + un espacio + una persona atendida, para ver cuándo coinciden libres los tres.
+        </p>
+        <div id="resultado-disponibilidad"></div>
+      </details>
     </div>
 
     <script>
@@ -275,25 +290,37 @@
           });
 
           /*
-           * Icono de editar junto a cada checkbox (ver conversacion:
-           * poder editar personas/equipos/recursos directamente desde
-           * aqui, no solo consultarlos). event.stopPropagation() evita
-           * que el clic en el icono, al estar dentro del <label>,
-           * tambien marque/desmarque el checkbox.
+           * Selectores segmentados por optgroup (ver conversacion):
+           * agrupa por ROL (personas) / CLASE_RECURSO (recursos), en
+           * vez de una lista plana larga. Elegir una opcion añade un
+           * chip y resetea el select a "-- elige --" (se puede volver
+           * a abrir para añadir otra).
            */
-          var listaPersonas = document.getElementById('lista-personas-disponibilidad');
-          opciones.personas.forEach(function (persona) {
-            listaPersonas.innerHTML += '<span class="fila-chk"><label><input type="checkbox" class="chk-disponibilidad" data-tipo="Persona/Equipo" value="' + escapeHtml(persona.id) + '"> ' + escapeHtml(persona.etiqueta) + '</label>' +
-              '<span class="enlace-mini" title="Editar" onclick="event.stopPropagation();abrirEdicionEntidad(\'PERSONA_EQUIPO\',\'' + escapeHtml(persona.id) + '\')"> ✎</span></span>';
-          });
-          var listaRecursos = document.getElementById('lista-recursos-disponibilidad');
-          (opciones.recursos || []).forEach(function (recurso) {
-            listaRecursos.innerHTML += '<span class="fila-chk"><label><input type="checkbox" class="chk-disponibilidad" data-tipo="Recurso" value="' + escapeHtml(recurso.id) + '"> ' + escapeHtml(recurso.etiqueta) + '</label>' +
-              '<span class="enlace-mini" title="Editar" onclick="event.stopPropagation();abrirEdicionEntidad(\'RECURSO\',\'' + escapeHtml(recurso.id) + '\')"> ✎</span></span>';
-          });
-          document.querySelectorAll('.chk-disponibilidad').forEach(function (chk) {
-            chk.addEventListener('change', recalcularDisponibilidad_);
-          });
+          function agruparPorGrupo_(opcionesLista) {
+            var grupos = {};
+            var orden = [];
+            opcionesLista.forEach(function (op) {
+              var g = op.grupo || 'Otros';
+              if (!grupos[g]) { grupos[g] = []; orden.push(g); }
+              grupos[g].push(op);
+            });
+            return orden.map(function (g) { return { grupo: g, opciones: grupos[g] }; });
+          }
+          function poblarSelectSegmentado_(select, opcionesLista) {
+            agruparPorGrupo_(opcionesLista).forEach(function (bloque) {
+              var optgroup = document.createElement('optgroup');
+              optgroup.label = bloque.grupo;
+              bloque.opciones.forEach(function (op) {
+                var option = document.createElement('option');
+                option.value = op.id;
+                option.textContent = op.etiqueta;
+                optgroup.appendChild(option);
+              });
+              select.appendChild(optgroup);
+            });
+          }
+          poblarSelectSegmentado_(document.getElementById('add-persona'), opciones.personas);
+          poblarSelectSegmentado_(document.getElementById('add-recurso'), opciones.recursos || []);
 
           // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
           if (PRESELECCION_CAMPANA) {
@@ -553,11 +580,49 @@
        * donde planificar algo nuevo (ej. voluntariado + espacio +
        * persona atendida, los tres libres a la vez).
        */
+      var chipsSeleccionados_ = [];
+
       function entidadesSeleccionadasDisponibilidad_() {
-        return Array.prototype.slice.call(document.querySelectorAll('.chk-disponibilidad:checked')).map(function (chk) {
-          return { tipo: chk.dataset.tipo, id: chk.value };
-        });
+        return chipsSeleccionados_.map(function (c) { return { tipo: c.tipo, id: c.id }; });
       }
+
+      function renderChips_() {
+        document.getElementById('chips-entidades').innerHTML = chipsSeleccionados_.map(function (c) {
+          var entidadClave = c.tipo === 'Persona/Equipo' ? 'PERSONA_EQUIPO' : 'RECURSO';
+          return '<span class="chip">' + escapeHtml(c.nombre) +
+            '<span class="chip-editar" title="Editar" onclick="abrirEdicionEntidad(\'' + entidadClave + '\',\'' + escapeHtml(c.id) + '\')">✎</span>' +
+            '<span class="chip-quitar" title="Quitar" onclick="quitarChip_(\'' + c.tipo + '\',\'' + escapeHtml(c.id) + '\')">×</span>' +
+          '</span>';
+        }).join('') || '<span class="rango-fechas" style="margin:0;">Sin nada elegido todavía.</span>';
+      }
+
+      function anadirChip_(tipo, id, nombre) {
+        if (!id) return;
+        if (chipsSeleccionados_.some(function (c) { return c.tipo === tipo && c.id === id; })) return;
+        chipsSeleccionados_.push({ tipo: tipo, id: id, nombre: nombre });
+        renderChips_();
+        recalcularDisponibilidad_();
+      }
+
+      function quitarChip_(tipo, id) {
+        chipsSeleccionados_ = chipsSeleccionados_.filter(function (c) { return !(c.tipo === tipo && c.id === id); });
+        renderChips_();
+        recalcularDisponibilidad_();
+      }
+
+      document.getElementById('add-persona').addEventListener('change', function () {
+        var sel = this;
+        var opcion = sel.options[sel.selectedIndex];
+        if (sel.value) anadirChip_('Persona/Equipo', sel.value, opcion.textContent);
+        sel.value = '';
+      });
+      document.getElementById('add-recurso').addEventListener('change', function () {
+        var sel = this;
+        var opcion = sel.options[sel.selectedIndex];
+        if (sel.value) anadirChip_('Recurso', sel.value, opcion.textContent);
+        sel.value = '';
+      });
+      renderChips_();
 
       function renderDisponibilidad_(datos) {
         var contenedor = document.getElementById('resultado-disponibilidad');
