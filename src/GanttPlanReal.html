@@ -398,33 +398,25 @@
       }
 
       /*
-       * Carga inicial del dialogo (ver conversacion -- revision de
-       * DesviacionService.js): antes disparaba obtenerOpcionesFiltroGantt
-       * y obtenerDatosGanttPlanReal como dos llamadas independientes,
-       * que releian PERSONA_EQUIPO/PROYECTO/CAMPANA por duplicado (cada
-       * llamada a google.script.run es una ejecucion de Apps Script
-       * distinta, sin cache compartida entre ellas) y pagaban dos veces
-       * el coste fijo de arranque. Una unica llamada combinada evita
-       * ambos costes.
+       * Carga inicial del dialogo: dos llamadas independientes a
+       * proposito (ver conversacion -- revision de DesviacionService.js).
+       * Se probo fusionarlas en una sola (obtenerDatosInicialesGantt)
+       * para deduplicar 3 hojas leidas por ambas, pero la medicion real
+       * salio PEOR (7.9s fusionada vs 6.3s por separado): Apps Script
+       * SI ejecuta llamadas google.script.run concurrentes en paralelo
+       * de verdad, y perder ese paralelismo costo mas que lo que se
+       * ahorro deduplicando. Revertido a dos llamadas en paralelo.
        */
-      function cargarGanttInicial_() {
-        document.getElementById('estado-carga').style.display = 'block';
-        document.getElementById('estado-carga').textContent = 'Cargando...';
-        document.getElementById('tabla-gantt').style.display = 'none';
-
-        var filtroInicial = filtroActual_();
-        if (PRESELECCION_CAMPANA) filtroInicial.campanaId = PRESELECCION_CAMPANA;
-
-        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
-          poblarOpcionesFiltro_(datos.opciones);
+      function cargarOpcionesFiltro_() {
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
+          poblarOpcionesFiltro_(opciones);
           // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
           if (PRESELECCION_CAMPANA) {
             document.getElementById('filtro-campana').value = PRESELECCION_CAMPANA;
             actualizarIconoEditarFiltro_('filtro-campana', 'editar-filtro-campana', 'CAMPANA');
+            cargarGantt();
           }
-          filasCompletas_ = datos.filas || [];
-          aplicarFiltrosClienteYRenderizar();
-        }).obtenerDatosInicialesGantt(filtroInicial);
+        }).obtenerOpcionesFiltroGantt();
       }
 
       function renderGantt(filas) {
@@ -1047,7 +1039,8 @@
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });
       document.getElementById('btn-actualizar-gantt').addEventListener('click', cargarGantt);
-      cargarGanttInicial_();
+      cargarOpcionesFiltro_();
+      if (!PRESELECCION_CAMPANA) cargarGantt();
     </script>
   </body>
 </html>
