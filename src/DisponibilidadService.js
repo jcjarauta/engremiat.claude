@@ -215,29 +215,40 @@ function obtenerVistaDelDia(fechaISO) {
     horariosPorPersona[h.ENTIDAD_ID].push({ inicio: h.HORA_INICIO, fin: h.HORA_FIN });
   });
 
-  var tareasPorId = {};
-  listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
-  var procesosPorId = {};
-  listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
-  var contextoPorProducto = construirMapaContextoPorProducto_();
-
-  var tareasPorPersona = {};
-  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (tr) {
-    if (!tr.FECHA_INICIO_ASIGNACION || !tr.FECHA_FIN_ASIGNACION) return;
+  /*
+   * TAREA/PROCESO/contextoPorProducto (PROYECTO_PRODUCTO+PROYECTO+CAMPANA)
+   * solo se leen si hay alguna asignacion real ese dia -- en un dia sin
+   * tareas asignadas esto ahorra 5 lecturas de hoja completas (de 8 a 3),
+   * que es donde se va la mayor parte del tiempo en Apps Script (cada
+   * lectura de hoja tiene coste fijo, no por cuantas filas tenga).
+   */
+  var asignacionesHoy = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (tr) {
+    if (!tr.FECHA_INICIO_ASIGNACION || !tr.FECHA_FIN_ASIGNACION) return false;
     var ini = new Date(tr.FECHA_INICIO_ASIGNACION); ini.setHours(0, 0, 0, 0);
     var fin = new Date(tr.FECHA_FIN_ASIGNACION); fin.setHours(0, 0, 0, 0);
-    if (fecha < ini || fecha > fin) return;
-
-    var tarea = tareasPorId[tr.TAREA_ID];
-    var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
-    var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
-
-    if (!tareasPorPersona[tr.PERSONA_EQUIPO_ID]) tareasPorPersona[tr.PERSONA_EQUIPO_ID] = [];
-    tareasPorPersona[tr.PERSONA_EQUIPO_ID].push({
-      tareaId: tr.TAREA_ID, nombre: tarea ? tarea.NOMBRE : tr.TAREA_ID, rol: tr.ROL_ASIGNADO,
-      proyectoNombre: contexto ? contexto.proyectoNombre : '', campanaNombre: contexto ? contexto.campanaNombre : ''
-    });
+    return fecha >= ini && fecha <= fin;
   });
+
+  var tareasPorPersona = {};
+  if (asignacionesHoy.length > 0) {
+    var tareasPorId = {};
+    listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
+    var procesosPorId = {};
+    listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
+    var contextoPorProducto = construirMapaContextoPorProducto_();
+
+    asignacionesHoy.forEach(function (tr) {
+      var tarea = tareasPorId[tr.TAREA_ID];
+      var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
+      var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
+
+      if (!tareasPorPersona[tr.PERSONA_EQUIPO_ID]) tareasPorPersona[tr.PERSONA_EQUIPO_ID] = [];
+      tareasPorPersona[tr.PERSONA_EQUIPO_ID].push({
+        tareaId: tr.TAREA_ID, nombre: tarea ? tarea.NOMBRE : tr.TAREA_ID, rol: tr.ROL_ASIGNADO,
+        proyectoNombre: contexto ? contexto.proyectoNombre : '', campanaNombre: contexto ? contexto.campanaNombre : ''
+      });
+    });
+  }
 
   var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (p) {
     var horarios = horariosPorPersona[p.ID] || [];
