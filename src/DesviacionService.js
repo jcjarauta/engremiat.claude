@@ -193,7 +193,10 @@ function obtenerOpcionesFiltroGantt() {
   var proyectos = listarRegistros('PROYECTO', { ACTIVO: 'SÍ' }).map(function (proyecto) {
     return { id: proyecto.ID, etiqueta: proyecto.NOMBRE };
   });
-  return { fases: fases, personas: personas, campanas: campanas, proyectos: proyectos };
+  var recursos = listarRegistros('RECURSO', { ACTIVO: 'SÍ' }).map(function (recurso) {
+    return { id: recurso.ID, etiqueta: recurso.NOMBRE };
+  });
+  return { fases: fases, personas: personas, campanas: campanas, proyectos: proyectos, recursos: recursos };
 }
 
 /**
@@ -269,17 +272,33 @@ function calcularRiesgoRegistro_(registro) {
  */
 var DIA_SEMANA_POR_INDICE_JS_ = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
+function diaCubiertoPorHorarios_(horariosEntidad, fecha, nombreDia) {
+  return horariosEntidad.some(function (h) {
+    if (h.DIA_SEMANA !== nombreDia) return false;
+    if (h.FECHA_INICIO_VIGENCIA && fecha < new Date(h.FECHA_INICIO_VIGENCIA)) return false;
+    if (h.FECHA_FIN_VIGENCIA && fecha > new Date(h.FECHA_FIN_VIGENCIA)) return false;
+    return true;
+  });
+}
+
 /*
  * Devuelve los dias (yyyy-MM-dd) del rango [fechaInicio, fechaFin] en
- * que el responsable NO tiene ningun HORARIO activo que lo cubra
- * (dia de semana + vigencia si esta informada). Si el responsable no
- * tiene NINGUNA fila de HORARIO, devuelve null (sin datos para
- * evaluar -- no se interpreta como "no disponible ningun dia", seria
- * ruido para la mayoria de responsables que aun no tienen horario
- * cargado). Acotado a 120 dias para no iterar rangos patologicos.
+ * que alguna de las entidades relevantes (responsable y/o recursos
+ * usados por las tareas del proceso) NO tiene ese dia cubierto por su
+ * propio HORARIO -- ver conversacion: el caso real de Cerámica tiene
+ * el horario en el ESPACIO, no en la persona, así que hace falta
+ * comprobar ambos por separado (un dia solo cuenta como "en horario"
+ * si TODAS las entidades con datos lo cubren).
+ *
+ * gruposHorario: array de arrays de filas HORARIO, uno por entidad
+ * relevante -- ya filtrado antes de llamar para incluir solo entidades
+ * que SI tienen datos (una entidad sin HORARIO cargado no debe forzar
+ * "fuera de horario todos los dias", seria ruido). Si ninguna entidad
+ * tiene datos, devuelve null (sin datos para evaluar).
+ * Acotado a 120 dias para no iterar rangos patologicos.
  */
-function calcularDiasFueraDeHorario_(horariosPersona, fechaInicio, fechaFin) {
-  if (!horariosPersona || horariosPersona.length === 0) return null;
+function calcularDiasFueraDeHorario_(gruposHorario, fechaInicio, fechaFin) {
+  if (!gruposHorario || gruposHorario.length === 0) return null;
 
   var dia = 24 * 60 * 60 * 1000;
   var actual = new Date(fechaInicio);
@@ -292,13 +311,10 @@ function calcularDiasFueraDeHorario_(horariosPersona, fechaInicio, fechaFin) {
   var diasFuera = [];
   while (actual.getTime() <= fin.getTime()) {
     var nombreDia = DIA_SEMANA_POR_INDICE_JS_[actual.getDay()];
-    var cubierto = horariosPersona.some(function (h) {
-      if (h.DIA_SEMANA !== nombreDia) return false;
-      if (h.FECHA_INICIO_VIGENCIA && actual < new Date(h.FECHA_INICIO_VIGENCIA)) return false;
-      if (h.FECHA_FIN_VIGENCIA && actual > new Date(h.FECHA_FIN_VIGENCIA)) return false;
-      return true;
+    var fueraDeAlguna = gruposHorario.some(function (horariosEntidad) {
+      return !diaCubiertoPorHorarios_(horariosEntidad, actual, nombreDia);
     });
-    if (!cubierto) {
+    if (fueraDeAlguna) {
       diasFuera.push(Utilities.formatDate(actual, Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'));
     }
     actual = new Date(actual.getTime() + dia);
@@ -311,10 +327,36 @@ function obtenerFilasGanttDetalladas_(filtro) {
 
   var contextoPorProducto = construirMapaContextoPorProducto_();
 
+  /*
+   * Recursos usados por cada proceso (via sus tareas -> TAREA_RECURSO),
+   * necesario tanto para el filtro por recurso como para el overlay de
+   * horario por recurso (ver conversacion: el caso real de Cerámica
+   * tiene el horario en el espacio, no en la persona).
+   */
+  var tareasPorProceso_ = {};
+  listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) {
+    if (!tareasPorProceso_[t.PROCESO_ID]) tareasPorProceso_[t.PROCESO_ID] = [];
+    tareasPorProceso_[t.PROCESO_ID].push(t.ID);
+  });
+  var recursosPorTarea_ = {};
+  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+    if (!recursosPorTarea_[tr.TAREA_ID]) recursosPorTarea_[tr.TAREA_ID] = [];
+    recursosPorTarea_[tr.TAREA_ID].push(tr.RECURSO_ID);
+  });
+  function recursosDelProceso_(procesoId) {
+    var idsTarea = tareasPorProceso_[procesoId] || [];
+    var recursos = {};
+    idsTarea.forEach(function (tareaId) {
+      (recursosPorTarea_[tareaId] || []).forEach(function (recursoId) { recursos[recursoId] = true; });
+    });
+    return Object.keys(recursos);
+  }
+
   var procesos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' }).filter(function (proceso) {
     if (!proceso.FECHA_INICIO_PLAN || !proceso.FECHA_FIN_PLAN) return false;
     if (filtro.faseProduccion && proceso.FASE_PRODUCCION !== filtro.faseProduccion) return false;
     if (filtro.responsableId && proceso.RESPONSABLE_ID !== filtro.responsableId) return false;
+    if (filtro.recursoId && recursosDelProceso_(proceso.ID).indexOf(filtro.recursoId) === -1) return false;
     var contexto = contextoPorProducto[proceso.PRODUCTO_ID];
     if (filtro.campanaId && (!contexto || contexto.campanaId !== filtro.campanaId)) return false;
     if (filtro.proyectoId && (!contexto || contexto.proyectoId !== filtro.proyectoId)) return false;
@@ -330,10 +372,15 @@ function obtenerFilasGanttDetalladas_(filtro) {
     nombresProducto[producto.ID] = producto.NOMBRE;
   });
   var horariosPorPersona = {};
+  var horariosPorRecurso = {};
   listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
-    if (h.ENTIDAD_TIPO !== 'Persona/Equipo') return;
-    if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
-    horariosPorPersona[h.ENTIDAD_ID].push(h);
+    if (h.ENTIDAD_TIPO === 'Persona/Equipo') {
+      if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
+      horariosPorPersona[h.ENTIDAD_ID].push(h);
+    } else if (h.ENTIDAD_TIPO === 'Recurso') {
+      if (!horariosPorRecurso[h.ENTIDAD_ID]) horariosPorRecurso[h.ENTIDAD_ID] = [];
+      horariosPorRecurso[h.ENTIDAD_ID].push(h);
+    }
   });
 
   return procesos.map(function (proceso) {
@@ -342,6 +389,13 @@ function obtenerFilasGanttDetalladas_(filtro) {
     var fechaFinTramo = proceso.FECHA_FIN_REAL && new Date(proceso.FECHA_FIN_REAL) > new Date(proceso.FECHA_FIN_PLAN)
       ? proceso.FECHA_FIN_REAL
       : proceso.FECHA_FIN_PLAN;
+
+    var gruposHorario = [];
+    if (horariosPorPersona[proceso.RESPONSABLE_ID]) gruposHorario.push(horariosPorPersona[proceso.RESPONSABLE_ID]);
+    recursosDelProceso_(proceso.ID).forEach(function (recursoId) {
+      if (horariosPorRecurso[recursoId]) gruposHorario.push(horariosPorRecurso[recursoId]);
+    });
+
     return {
       id: proceso.ID,
       nombre: proceso.NOMBRE,
@@ -360,7 +414,7 @@ function obtenerFilasGanttDetalladas_(filtro) {
       diasDesviacionInicio: desviacion.DIAS_DESVIACION_INICIO,
       diasDesviacionFin: desviacion.DIAS_DESVIACION_FIN,
       diasRiesgo: calcularRiesgoRegistro_(proceso),
-      diasFueraDeHorario: calcularDiasFueraDeHorario_(horariosPorPersona[proceso.RESPONSABLE_ID], proceso.FECHA_INICIO_PLAN, fechaFinTramo)
+      diasFueraDeHorario: calcularDiasFueraDeHorario_(gruposHorario, proceso.FECHA_INICIO_PLAN, fechaFinTramo)
     };
   }).sort(function (a, b) { return new Date(a.fechaInicioPlan) - new Date(b.fechaInicioPlan); });
 }

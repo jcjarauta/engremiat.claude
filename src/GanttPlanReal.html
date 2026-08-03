@@ -62,7 +62,16 @@
         <label for="filtro-responsable">Responsable</label>
         <select id="filtro-responsable"><option value="">(todos)</option></select>
       </div>
+      <div>
+        <label for="filtro-recurso">Recurso / espacio</label>
+        <select id="filtro-recurso"><option value="">(todos)</option></select>
+      </div>
       <button id="btn-exportar-csv">Exportar CSV (detalle)</button>
+    </div>
+
+    <div class="filtros">
+      <label><input type="checkbox" id="filtro-solo-problemas"> Solo con desviación o riesgo</label>
+      <label><input type="checkbox" id="filtro-solo-fuera-horario"> Solo fuera del horario declarado</label>
     </div>
 
     <div id="rango-fechas" class="rango-fechas"></div>
@@ -178,6 +187,10 @@
           opciones.personas.forEach(function (persona) {
             selectResponsable.innerHTML += '<option value="' + escapeHtml(persona.id) + '">' + escapeHtml(persona.etiqueta) + '</option>';
           });
+          var selectRecurso = document.getElementById('filtro-recurso');
+          (opciones.recursos || []).forEach(function (recurso) {
+            selectRecurso.innerHTML += '<option value="' + escapeHtml(recurso.id) + '">' + escapeHtml(recurso.etiqueta) + '</option>';
+          });
           // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
           if (PRESELECCION_CAMPANA) {
             selectCampana.value = PRESELECCION_CAMPANA;
@@ -186,9 +199,9 @@
         }).obtenerOpcionesFiltroGantt();
       }
 
-      function renderGantt(datos) {
+      function renderGantt(filas) {
         document.getElementById('estado-carga').style.display = 'none';
-        var filas = datos.filas || [];
+        filas = filas || [];
         var tabla = document.getElementById('tabla-gantt');
         var rangoFechasEl = document.getElementById('rango-fechas');
 
@@ -254,19 +267,38 @@
 
         /*
          * Bandas de "fuera de horario declarado" (N3.2 -- el puente
-         * entre HORARIO y planificacion): un div rayado por cada dia
-         * dentro del rango de la barra en que el responsable no tiene
-         * ningun HORARIO activo que lo cubra. fila.diasFueraDeHorario
-         * es null cuando el responsable no tiene ningun HORARIO cargado
-         * (sin datos para evaluar, no se pinta nada -- distinto de
-         * "cero dias fuera de horario").
+         * entre HORARIO y planificacion). fila.diasFueraDeHorario es
+         * null cuando ninguna entidad relevante (responsable/recurso)
+         * tiene HORARIO cargado (sin datos para evaluar, no se pinta
+         * nada -- distinto de "cero dias fuera de horario").
+         *
+         * Dias consecutivos se fusionan en una unica banda (en vez de
+         * un div por dia) -- ver conversacion: con un horario tipico
+         * (p.ej. solo martes/jueves) esto reduce el ruido visual y
+         * sigue viendose bien aunque el rango visible sea largo.
          */
+        function fusionarDiasConsecutivos_(dias) {
+          var tramos = [];
+          dias.forEach(function (fechaStr) {
+            var t = new Date(fechaStr + 'T00:00:00').getTime();
+            var ultimo = tramos[tramos.length - 1];
+            if (ultimo && t - ultimo.fin === 24 * 60 * 60 * 1000) {
+              ultimo.fin = t;
+            } else {
+              tramos.push({ inicio: t, fin: t });
+            }
+          });
+          return tramos;
+        }
+
         function bandasFueraDeHorario_(fila) {
           if (!fila.diasFueraDeHorario || fila.diasFueraDeHorario.length === 0) return '';
-          return fila.diasFueraDeHorario.map(function (fechaStr) {
-            var izq = posicion(fechaStr + 'T00:00:00');
-            if (izq < -anchoDia || izq > 100) return '';
-            return '<div class="banda-fuera-horario" style="left:' + izq + '%;width:' + anchoDia + '%;" title="Fuera del horario declarado del responsable: ' + escapeHtml(fechaStr) + '"></div>';
+          return fusionarDiasConsecutivos_(fila.diasFueraDeHorario).map(function (tramo) {
+            var izq = posicion(tramo.inicio);
+            var ancho = posicion(tramo.fin) - izq + anchoDia;
+            if (izq + ancho < 0 || izq > 100) return '';
+            var titulo = 'Fuera de horario: ' + formatearFecha_(tramo.inicio) + (tramo.fin !== tramo.inicio ? ' – ' + formatearFecha_(tramo.fin) : '');
+            return '<div class="banda-fuera-horario" style="left:' + izq + '%;width:' + ancho + '%;" title="' + escapeHtml(titulo) + '"></div>';
           }).join('');
         }
 
@@ -310,19 +342,52 @@
           campanaId: document.getElementById('filtro-campana').value || null,
           proyectoId: document.getElementById('filtro-proyecto').value || null,
           faseProduccion: document.getElementById('filtro-fase').value || null,
-          responsableId: document.getElementById('filtro-responsable').value || null
+          responsableId: document.getElementById('filtro-responsable').value || null,
+          recursoId: document.getElementById('filtro-recurso').value || null
         };
+      }
+
+      /*
+       * Checkboxes de diagnostico (ver conversacion): se aplican en el
+       * cliente sobre las filas ya traidas del servidor, sin volver a
+       * pedirlas -- son un afinado rapido de lo que ya esta cargado con
+       * los filtros de servidor (campaña/proyecto/fase/responsable/
+       * recurso), no un filtro nuevo de servidor.
+       */
+      var filasCompletas_ = [];
+
+      function aplicarFiltrosClienteYRenderizar() {
+        var soloProblemas = document.getElementById('filtro-solo-problemas').checked;
+        var soloFueraHorario = document.getElementById('filtro-solo-fuera-horario').checked;
+
+        var filas = filasCompletas_.filter(function (fila) {
+          if (soloProblemas) {
+            var tieneDesviacion = fila.diasDesviacionFin !== null && fila.diasDesviacionFin !== undefined && fila.diasDesviacionFin > 0;
+            var tieneRiesgo = fila.diasRiesgo !== null && fila.diasRiesgo !== undefined;
+            if (!tieneDesviacion && !tieneRiesgo) return false;
+          }
+          if (soloFueraHorario && !(fila.diasFueraDeHorario && fila.diasFueraDeHorario.length > 0)) return false;
+          return true;
+        });
+
+        renderGantt(filas);
       }
 
       function cargarGantt() {
         document.getElementById('estado-carga').style.display = 'block';
         document.getElementById('estado-carga').textContent = 'Cargando...';
         document.getElementById('tabla-gantt').style.display = 'none';
-        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderGantt).obtenerDatosGanttPlanReal(filtroActual_());
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          filasCompletas_ = datos.filas || [];
+          aplicarFiltrosClienteYRenderizar();
+        }).obtenerDatosGanttPlanReal(filtroActual_());
       }
 
-      ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable'].forEach(function (id) {
+      ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable', 'filtro-recurso'].forEach(function (id) {
         document.getElementById(id).addEventListener('change', cargarGantt);
+      });
+      ['filtro-solo-problemas', 'filtro-solo-fuera-horario'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', aplicarFiltrosClienteYRenderizar);
       });
       document.getElementById('btn-exportar-csv').addEventListener('click', function () {
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
