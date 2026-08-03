@@ -242,3 +242,85 @@ function obtenerVistaDelDia(fechaISO) {
     personas: personas
   };
 }
+
+/*
+ * Vista de rango: registro de quien ha estado, donde y con que, en
+ * un periodo cualquiera (ver conversacion: "seleccionar varios dias
+ * del calendario y saber quien ha estado en el taller... quien ha
+ * estado en que sitio y quien ha usado tal cosa"). Misma fuente que
+ * obtenerOcupacionEntidades (TAREA_RESPONSABLE/TAREA_RECURSO, ya
+ * planificadas), pero sin necesidad de elegir entidades de antemano
+ * -- recorre TODAS y solo devuelve las que tuvieron alguna reserva
+ * solapada con el rango (silencio = no aparece, evita listar entidades
+ * inactivas en ese periodo cuando el rango es amplio).
+ *
+ * agrupacion='persona' responde "quien ha estado" (filas=personas,
+ * contexto=recurso usado en cada reserva). agrupacion='recurso'
+ * responde "quien ha estado en que sitio / que ha usado" (filas=
+ * recursos/espacios, contexto=persona responsable de cada reserva).
+ * Mismo componente visual que obtenerOcupacionEntidades en el cliente
+ * (linea de tiempo con barras), solo cambia el agrupador.
+ */
+function rangosSeSolapan_(inicioA, finA, inicioB, finB) {
+  return new Date(inicioA) <= new Date(finB) && new Date(inicioB) <= new Date(finA);
+}
+
+function obtenerOcupacionRango(fechaInicioISO, fechaFinISO, agrupacion) {
+  var hoyISO = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd');
+  var fechaInicio = fechaInicioISO || hoyISO;
+  var fechaFin = fechaFinISO || fechaInicio;
+  agrupacion = agrupacion === 'recurso' ? 'recurso' : 'persona';
+
+  var nombresTarea = {};
+  listarRegistros('TAREA', {}).forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
+  var nombresPersona = {};
+  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  var nombresRecurso = {};
+  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+
+  var tareaResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var tareaRecurso = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+
+  var personasPorTarea = {};
+  tareaResponsable.forEach(function (tr) {
+    if (!personasPorTarea[tr.TAREA_ID]) personasPorTarea[tr.TAREA_ID] = [];
+    personasPorTarea[tr.TAREA_ID].push(nombresPersona[tr.PERSONA_EQUIPO_ID] || tr.PERSONA_EQUIPO_ID);
+  });
+  var recursosPorTarea = {};
+  tareaRecurso.forEach(function (tr) {
+    if (!recursosPorTarea[tr.TAREA_ID]) recursosPorTarea[tr.TAREA_ID] = [];
+    recursosPorTarea[tr.TAREA_ID].push(nombresRecurso[tr.RECURSO_ID] || tr.RECURSO_ID);
+  });
+
+  var filasBase = agrupacion === 'recurso' ? tareaRecurso : tareaResponsable;
+  var entidadesMapa = {};
+
+  filasBase.forEach(function (fila) {
+    var fInicio = agrupacion === 'recurso' ? fila.FECHA_INICIO : fila.FECHA_INICIO_ASIGNACION;
+    var fFin = agrupacion === 'recurso' ? fila.FECHA_FIN : fila.FECHA_FIN_ASIGNACION;
+    if (!fInicio || !fFin) return;
+    if (!rangosSeSolapan_(fInicio, fFin, fechaInicio, fechaFin)) return;
+
+    var entidadId = agrupacion === 'recurso' ? fila.RECURSO_ID : fila.PERSONA_EQUIPO_ID;
+    var entidadNombre = agrupacion === 'recurso' ? (nombresRecurso[entidadId] || entidadId) : (nombresPersona[entidadId] || entidadId);
+    if (!entidadesMapa[entidadId]) entidadesMapa[entidadId] = { id: entidadId, nombre: entidadNombre, reservas: [] };
+
+    var contexto = agrupacion === 'recurso'
+      ? (personasPorTarea[fila.TAREA_ID] || []).join(', ')
+      : (recursosPorTarea[fila.TAREA_ID] || []).join(', ');
+
+    entidadesMapa[entidadId].reservas.push({
+      id: fila.ID, tareaId: fila.TAREA_ID, nombre: nombresTarea[fila.TAREA_ID] || fila.TAREA_ID,
+      detalle: agrupacion === 'recurso' ? fila.TIPO_USO : fila.ROL_ASIGNADO,
+      contexto: contexto, fechaInicio: fInicio, fechaFin: fFin
+    });
+  });
+
+  var entidades = Object.keys(entidadesMapa).map(function (id) { return entidadesMapa[id]; });
+  entidades.forEach(function (e) {
+    e.reservas.sort(function (a, b) { return new Date(a.fechaInicio) - new Date(b.fechaInicio); });
+  });
+  entidades.sort(function (a, b) { return b.reservas.length - a.reservas.length || a.nombre.localeCompare(b.nombre); });
+
+  return { fechaInicio: fechaInicio, fechaFin: fechaFin, agrupacion: agrupacion, entidades: entidades };
+}
