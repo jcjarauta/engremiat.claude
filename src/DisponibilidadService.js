@@ -61,16 +61,18 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
   var hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
 
-  var horarios = listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (h) {
+  var datos = leerVariasEntidadesBatch_(['HORARIO', 'PERSONA_EQUIPO', 'RECURSO']);
+
+  var horarios = loteFiltrarPorIgualdad_(datos.HORARIO, { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (h) {
     if (h.FECHA_INICIO_VIGENCIA && hoy < new Date(h.FECHA_INICIO_VIGENCIA)) return false;
     if (h.FECHA_FIN_VIGENCIA && hoy > new Date(h.FECHA_FIN_VIGENCIA)) return false;
     return true;
   });
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  datos.PERSONA_EQUIPO.forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
   var nombresRecurso = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+  datos.RECURSO.forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
 
   var entidades = entidadesSeleccionadas.map(function (sel) {
     var filas = horarios.filter(function (h) { return h.ENTIDAD_TIPO === sel.tipo && h.ENTIDAD_ID === sel.id; });
@@ -132,15 +134,17 @@ function obtenerOcupacionEntidades(entidadesSeleccionadas) {
   cacheLecturaIniciarContexto_();
   try {
 
-  var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
-  var nombresRecurso = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
-  var nombresTarea = {};
-  listarRegistros('TAREA', {}).forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
+  var datos = leerVariasEntidadesBatch_(['PERSONA_EQUIPO', 'RECURSO', 'TAREA', 'TAREA_RESPONSABLE', 'TAREA_RECURSO']);
 
-  var tareaResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
-  var tareaRecurso = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var nombresPersona = {};
+  datos.PERSONA_EQUIPO.forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  var nombresRecurso = {};
+  datos.RECURSO.forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+  var nombresTarea = {};
+  datos.TAREA.forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
+
+  var tareaResponsable = loteFiltrarPorIgualdad_(datos.TAREA_RESPONSABLE, { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var tareaRecurso = loteFiltrarPorIgualdad_(datos.TAREA_RECURSO, { ACTIVO: 'SÍ', ESTADO: 'Activa' });
 
   function marcarSolapamientos_(reservas) {
     reservas.forEach(function (r, i) {
@@ -206,8 +210,22 @@ function obtenerVistaDelDia(fechaISO) {
   fecha.setHours(0, 0, 0, 0);
   var nombreDia = DIA_SEMANA_POR_INDICE_JS_[fecha.getDay()];
 
+  /*
+   * Lectura por lotes (ver conversacion -- exploracion de rendimiento):
+   * las 8 hojas de esta vista se traen en una sola llamada HTTP en vez
+   * de 8 llamadas SpreadsheetApp independientes. Con eso el ahorro de
+   * "solo leer TAREA/PROCESO/contexto si hay asignacion ese dia" (fix
+   * anterior) deja de importar -- una llamada con 8 rangos cuesta casi
+   * lo mismo que una con 3 -- asi que se simplifica leyendolo todo
+   * siempre. Verificado con Tests_LecturaBatch.js antes de conectarlo.
+   */
+  var datos = leerVariasEntidadesBatch_([
+    'HORARIO', 'TAREA_RESPONSABLE', 'TAREA', 'PROCESO',
+    'PROYECTO_PRODUCTO', 'PROYECTO', 'CAMPANA', 'PERSONA_EQUIPO'
+  ]);
+
   var horariosPorPersona = {};
-  listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
+  loteFiltrarPorIgualdad_(datos.HORARIO, { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
     if (h.ENTIDAD_TIPO !== 'Persona/Equipo' || h.DIA_SEMANA !== nombreDia) return;
     if (h.FECHA_INICIO_VIGENCIA && fecha < new Date(h.FECHA_INICIO_VIGENCIA)) return;
     if (h.FECHA_FIN_VIGENCIA && fecha > new Date(h.FECHA_FIN_VIGENCIA)) return;
@@ -215,42 +233,33 @@ function obtenerVistaDelDia(fechaISO) {
     horariosPorPersona[h.ENTIDAD_ID].push({ inicio: h.HORA_INICIO, fin: h.HORA_FIN });
   });
 
-  /*
-   * TAREA/PROCESO/contextoPorProducto (PROYECTO_PRODUCTO+PROYECTO+CAMPANA)
-   * solo se leen si hay alguna asignacion real ese dia -- en un dia sin
-   * tareas asignadas esto ahorra 5 lecturas de hoja completas (de 8 a 3),
-   * que es donde se va la mayor parte del tiempo en Apps Script (cada
-   * lectura de hoja tiene coste fijo, no por cuantas filas tenga).
-   */
-  var asignacionesHoy = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (tr) {
+  var asignacionesHoy = loteFiltrarPorIgualdad_(datos.TAREA_RESPONSABLE, { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (tr) {
     if (!tr.FECHA_INICIO_ASIGNACION || !tr.FECHA_FIN_ASIGNACION) return false;
     var ini = new Date(tr.FECHA_INICIO_ASIGNACION); ini.setHours(0, 0, 0, 0);
     var fin = new Date(tr.FECHA_FIN_ASIGNACION); fin.setHours(0, 0, 0, 0);
     return fecha >= ini && fecha <= fin;
   });
 
+  var tareasPorId = {};
+  datos.TAREA.forEach(function (t) { tareasPorId[t.ID] = t; });
+  var procesosPorId = {};
+  datos.PROCESO.forEach(function (p) { procesosPorId[p.ID] = p; });
+  var contextoPorProducto = construirMapaContextoPorProductoDesdeFilas_(datos.PROYECTO_PRODUCTO, datos.PROYECTO, datos.CAMPANA);
+
   var tareasPorPersona = {};
-  if (asignacionesHoy.length > 0) {
-    var tareasPorId = {};
-    listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
-    var procesosPorId = {};
-    listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
-    var contextoPorProducto = construirMapaContextoPorProducto_();
+  asignacionesHoy.forEach(function (tr) {
+    var tarea = tareasPorId[tr.TAREA_ID];
+    var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
+    var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
 
-    asignacionesHoy.forEach(function (tr) {
-      var tarea = tareasPorId[tr.TAREA_ID];
-      var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
-      var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
-
-      if (!tareasPorPersona[tr.PERSONA_EQUIPO_ID]) tareasPorPersona[tr.PERSONA_EQUIPO_ID] = [];
-      tareasPorPersona[tr.PERSONA_EQUIPO_ID].push({
-        tareaId: tr.TAREA_ID, nombre: tarea ? tarea.NOMBRE : tr.TAREA_ID, rol: tr.ROL_ASIGNADO,
-        proyectoNombre: contexto ? contexto.proyectoNombre : '', campanaNombre: contexto ? contexto.campanaNombre : ''
-      });
+    if (!tareasPorPersona[tr.PERSONA_EQUIPO_ID]) tareasPorPersona[tr.PERSONA_EQUIPO_ID] = [];
+    tareasPorPersona[tr.PERSONA_EQUIPO_ID].push({
+      tareaId: tr.TAREA_ID, nombre: tarea ? tarea.NOMBRE : tr.TAREA_ID, rol: tr.ROL_ASIGNADO,
+      proyectoNombre: contexto ? contexto.proyectoNombre : '', campanaNombre: contexto ? contexto.campanaNombre : ''
     });
-  }
+  });
 
-  var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (p) {
+  var personas = loteFiltrarPorIgualdad_(datos.PERSONA_EQUIPO, { ACTIVO: 'SÍ' }).map(function (p) {
     var horarios = horariosPorPersona[p.ID] || [];
     var tareas = tareasPorPersona[p.ID] || [];
     var estado = tareas.length > 0
@@ -306,15 +315,17 @@ function obtenerOcupacionRango(fechaInicioISO, fechaFinISO, agrupacion) {
   var fechaFin = fechaFinISO || fechaInicio;
   agrupacion = agrupacion === 'recurso' ? 'recurso' : 'persona';
 
-  var nombresTarea = {};
-  listarRegistros('TAREA', {}).forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
-  var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
-  var nombresRecurso = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+  var datos = leerVariasEntidadesBatch_(['TAREA', 'PERSONA_EQUIPO', 'RECURSO', 'TAREA_RESPONSABLE', 'TAREA_RECURSO']);
 
-  var tareaResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
-  var tareaRecurso = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var nombresTarea = {};
+  datos.TAREA.forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
+  var nombresPersona = {};
+  datos.PERSONA_EQUIPO.forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  var nombresRecurso = {};
+  datos.RECURSO.forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+
+  var tareaResponsable = loteFiltrarPorIgualdad_(datos.TAREA_RESPONSABLE, { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var tareaRecurso = loteFiltrarPorIgualdad_(datos.TAREA_RECURSO, { ACTIVO: 'SÍ', ESTADO: 'Activa' });
 
   var personasPorTarea = {};
   tareaResponsable.forEach(function (tr) {

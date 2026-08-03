@@ -184,22 +184,23 @@ function generarInformeDesviacion(filtro) {
  */
 function obtenerOpcionesFiltroGantt() {
   var fases = obtenerCatalogo('CFG_FASE_PRODUCCION');
+  var datos = leerVariasEntidadesBatch_(['PERSONA_EQUIPO', 'CAMPANA', 'PROYECTO', 'RECURSO']);
   /*
    * grupo (ver conversacion: "desplegables segmentados por categorias
    * o tipos"): ROL para personas, CLASE_RECURSO para recursos -- ya
    * existian como campos, solo faltaba exponerlos para poder agrupar
    * las opciones en <optgroup> en vez de una lista plana larga.
    */
-  var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (persona) {
+  var personas = loteFiltrarPorIgualdad_(datos.PERSONA_EQUIPO, { ACTIVO: 'SÍ' }).map(function (persona) {
     return { id: persona.ID, etiqueta: persona.NOMBRE, grupo: persona.ROL || 'Sin rol' };
   });
-  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
+  var campanas = loteFiltrarPorIgualdad_(datos.CAMPANA, { ACTIVO: 'SÍ' }).map(function (campana) {
     return { id: campana.ID, etiqueta: campana.NOMBRE };
   });
-  var proyectos = listarRegistros('PROYECTO', { ACTIVO: 'SÍ' }).map(function (proyecto) {
+  var proyectos = loteFiltrarPorIgualdad_(datos.PROYECTO, { ACTIVO: 'SÍ' }).map(function (proyecto) {
     return { id: proyecto.ID, etiqueta: proyecto.NOMBRE };
   });
-  var recursos = listarRegistros('RECURSO', { ACTIVO: 'SÍ' }).map(function (recurso) {
+  var recursos = loteFiltrarPorIgualdad_(datos.RECURSO, { ACTIVO: 'SÍ' }).map(function (recurso) {
     return { id: recurso.ID, etiqueta: recurso.NOMBRE, grupo: recurso.CLASE_RECURSO || 'Sin clase' };
   });
   return { fases: fases, personas: personas, campanas: campanas, proyectos: proyectos, recursos: recursos };
@@ -213,17 +214,22 @@ function obtenerOpcionesFiltroGantt() {
  * niveles. Se mantiene separada de construirMapaCampanaPorProducto_
  * (usada por el informe de Desviacion, ya verificado) para no tocar esa
  * logica ya probada.
+ *
+ * Separada en una version "desde filas" (nucleo reutilizable, recibe
+ * las 3 hojas ya leidas) y una version normal que las lee una a una --
+ * asi los sitios que ya traen las filas por lote (leerVariasEntidadesBatch_)
+ * no tienen que releerlas.
  */
-function construirMapaContextoPorProducto_() {
+function construirMapaContextoPorProductoDesdeFilas_(proyectoProductoFilas, proyectoFilas, campanaFilas) {
   var proyectoPorProducto = {};
-  listarRegistros('PROYECTO_PRODUCTO', { ACTIVO: 'SÍ' }).forEach(function (rel) {
+  loteFiltrarPorIgualdad_(proyectoProductoFilas, { ACTIVO: 'SÍ' }).forEach(function (rel) {
     if (!proyectoPorProducto[rel.PRODUCTO_ID]) proyectoPorProducto[rel.PRODUCTO_ID] = rel.PROYECTO_ID;
   });
 
   var proyectos = {};
-  listarRegistros('PROYECTO', {}).forEach(function (proyecto) { proyectos[proyecto.ID] = proyecto; });
+  proyectoFilas.forEach(function (proyecto) { proyectos[proyecto.ID] = proyecto; });
   var campanas = {};
-  listarRegistros('CAMPANA', {}).forEach(function (campana) { campanas[campana.ID] = campana; });
+  campanaFilas.forEach(function (campana) { campanas[campana.ID] = campana; });
 
   var contexto = {};
   Object.keys(proyectoPorProducto).forEach(function (productoId) {
@@ -239,6 +245,14 @@ function construirMapaContextoPorProducto_() {
   });
 
   return contexto;
+}
+
+function construirMapaContextoPorProducto_() {
+  return construirMapaContextoPorProductoDesdeFilas_(
+    listarRegistros('PROYECTO_PRODUCTO', null),
+    listarRegistros('PROYECTO', null),
+    listarRegistros('CAMPANA', null)
+  );
 }
 
 /**
@@ -331,7 +345,19 @@ function calcularDiasFueraDeHorario_(gruposHorario, fechaInicio, fechaFin) {
 function obtenerFilasGanttDetalladas_(filtro) {
   filtro = filtro || {};
 
-  var contextoPorProducto = construirMapaContextoPorProducto_();
+  /*
+   * Lectura por lotes (ver conversacion -- exploracion de rendimiento):
+   * las 9 hojas que necesita este Gantt se traen en una sola llamada
+   * HTTP (Sheets Advanced Service) en vez de 9 llamadas SpreadsheetApp
+   * independientes, cada una con coste fijo de ~0.7-1s. Verificado con
+   * Tests_LecturaBatch.js contra listarRegistros antes de conectarlo.
+   */
+  var datos = leerVariasEntidadesBatch_([
+    'PROYECTO_PRODUCTO', 'PROYECTO', 'CAMPANA',
+    'TAREA', 'TAREA_RECURSO', 'PROCESO', 'PERSONA_EQUIPO', 'PRODUCTO', 'HORARIO'
+  ]);
+
+  var contextoPorProducto = construirMapaContextoPorProductoDesdeFilas_(datos.PROYECTO_PRODUCTO, datos.PROYECTO, datos.CAMPANA);
 
   /*
    * Recursos usados por cada proceso (via sus tareas -> TAREA_RECURSO),
@@ -340,12 +366,12 @@ function obtenerFilasGanttDetalladas_(filtro) {
    * tiene el horario en el espacio, no en la persona).
    */
   var tareasPorProceso_ = {};
-  listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) {
+  loteFiltrarPorIgualdad_(datos.TAREA, { ACTIVO: 'SÍ' }).forEach(function (t) {
     if (!tareasPorProceso_[t.PROCESO_ID]) tareasPorProceso_[t.PROCESO_ID] = [];
     tareasPorProceso_[t.PROCESO_ID].push({ id: t.ID, nombre: t.NOMBRE });
   });
   var recursosPorTarea_ = {};
-  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+  loteFiltrarPorIgualdad_(datos.TAREA_RECURSO, { ACTIVO: 'SÍ' }).forEach(function (tr) {
     if (!recursosPorTarea_[tr.TAREA_ID]) recursosPorTarea_[tr.TAREA_ID] = [];
     recursosPorTarea_[tr.TAREA_ID].push(tr.RECURSO_ID);
   });
@@ -358,7 +384,7 @@ function obtenerFilasGanttDetalladas_(filtro) {
     return Object.keys(recursos);
   }
 
-  var procesos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' }).filter(function (proceso) {
+  var procesos = loteFiltrarPorIgualdad_(datos.PROCESO, { ACTIVO: 'SÍ' }).filter(function (proceso) {
     if (!proceso.FECHA_INICIO_PLAN || !proceso.FECHA_FIN_PLAN) return false;
     if (filtro.faseProduccion && proceso.FASE_PRODUCCION !== filtro.faseProduccion) return false;
     if (filtro.responsableId && proceso.RESPONSABLE_ID !== filtro.responsableId) return false;
@@ -370,16 +396,16 @@ function obtenerFilasGanttDetalladas_(filtro) {
   });
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (persona) {
+  datos.PERSONA_EQUIPO.forEach(function (persona) {
     nombresPersona[persona.ID] = persona.NOMBRE;
   });
   var nombresProducto = {};
-  listarRegistros('PRODUCTO', {}).forEach(function (producto) {
+  datos.PRODUCTO.forEach(function (producto) {
     nombresProducto[producto.ID] = producto.NOMBRE;
   });
   var horariosPorPersona = {};
   var horariosPorRecurso = {};
-  listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
+  loteFiltrarPorIgualdad_(datos.HORARIO, { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
     if (h.ENTIDAD_TIPO === 'Persona/Equipo') {
       if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
       horariosPorPersona[h.ENTIDAD_ID].push(h);
