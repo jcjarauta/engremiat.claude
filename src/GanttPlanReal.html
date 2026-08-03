@@ -51,7 +51,8 @@
        * ese motor. Column-layout evita esa ambiguedad por completo.
        */
       .lista-entidades { column-width: 180px; column-gap: 16px; max-height: 110px; overflow-y: auto; border: 1px solid var(--color-borde); padding: 6px; margin-bottom: 10px; }
-      .lista-entidades label { display: block; font-size: 11px; font-weight: normal; white-space: normal; overflow-wrap: break-word; break-inside: avoid; margin-bottom: 4px; padding-right: 4px; }
+      .lista-entidades .fila-chk { display: block; font-size: 11px; white-space: normal; overflow-wrap: break-word; break-inside: avoid; margin-bottom: 4px; padding-right: 4px; }
+      .lista-entidades label { font-weight: normal; cursor: pointer; }
       .rejilla-disponibilidad { display: grid; grid-template-columns: 140px repeat(7, 1fr); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); }
       .rejilla-disponibilidad > div { background: #fff; padding: 4px 6px; font-size: 11px; min-height: 24px; }
       .rejilla-disponibilidad .cab { font-weight: bold; background: var(--color-fondo-suave); text-align: center; }
@@ -273,13 +274,22 @@
             selectRecurso.innerHTML += '<option value="' + escapeHtml(recurso.id) + '">' + escapeHtml(recurso.etiqueta) + '</option>';
           });
 
+          /*
+           * Icono de editar junto a cada checkbox (ver conversacion:
+           * poder editar personas/equipos/recursos directamente desde
+           * aqui, no solo consultarlos). event.stopPropagation() evita
+           * que el clic en el icono, al estar dentro del <label>,
+           * tambien marque/desmarque el checkbox.
+           */
           var listaPersonas = document.getElementById('lista-personas-disponibilidad');
           opciones.personas.forEach(function (persona) {
-            listaPersonas.innerHTML += '<label><input type="checkbox" class="chk-disponibilidad" data-tipo="Persona/Equipo" value="' + escapeHtml(persona.id) + '"> ' + escapeHtml(persona.etiqueta) + '</label>';
+            listaPersonas.innerHTML += '<span class="fila-chk"><label><input type="checkbox" class="chk-disponibilidad" data-tipo="Persona/Equipo" value="' + escapeHtml(persona.id) + '"> ' + escapeHtml(persona.etiqueta) + '</label>' +
+              '<span class="enlace-mini" title="Editar" onclick="event.stopPropagation();abrirEdicionEntidad(\'PERSONA_EQUIPO\',\'' + escapeHtml(persona.id) + '\')"> ✎</span></span>';
           });
           var listaRecursos = document.getElementById('lista-recursos-disponibilidad');
           (opciones.recursos || []).forEach(function (recurso) {
-            listaRecursos.innerHTML += '<label><input type="checkbox" class="chk-disponibilidad" data-tipo="Recurso" value="' + escapeHtml(recurso.id) + '"> ' + escapeHtml(recurso.etiqueta) + '</label>';
+            listaRecursos.innerHTML += '<span class="fila-chk"><label><input type="checkbox" class="chk-disponibilidad" data-tipo="Recurso" value="' + escapeHtml(recurso.id) + '"> ' + escapeHtml(recurso.etiqueta) + '</label>' +
+              '<span class="enlace-mini" title="Editar" onclick="event.stopPropagation();abrirEdicionEntidad(\'RECURSO\',\'' + escapeHtml(recurso.id) + '\')"> ✎</span></span>';
           });
           document.querySelectorAll('.chk-disponibilidad').forEach(function (chk) {
             chk.addEventListener('change', recalcularDisponibilidad_);
@@ -607,7 +617,10 @@
         var entidades = datos.entidades || [];
         var reservas = [];
         entidades.forEach(function (e) {
-          e.reservas.forEach(function (r) { reservas.push(Object.assign({ entidadNombre: e.nombre }, r)); });
+          var entidadClave = e.tipo === 'Persona/Equipo' ? 'PERSONA_EQUIPO' : 'RECURSO';
+          e.reservas.forEach(function (r) {
+            reservas.push(Object.assign({ entidadNombre: e.nombre, entidadClave: entidadClave, entidadId: e.id }, r));
+          });
         });
         var conFechas = reservas.filter(function (r) { return r.fechaInicio && r.fechaFin; });
 
@@ -644,8 +657,8 @@
           var ancho = Math.max(posicion(r.fechaFin) - izq, 0.5);
           var titulo = (r.solapada ? 'CONFLICTO — ' : '') + formatearRangoFechas_(r.fechaInicio, r.fechaFin);
           return '<tr>' +
-            '<td class="col-nombre">' + escapeHtml(r.entidadNombre) + '</td>' +
-            '<td>' + escapeHtml(r.nombre) + '</td>' +
+            '<td class="col-nombre"><span class="enlace-mini" onclick="abrirEdicionEntidad(\'' + r.entidadClave + '\',\'' + escapeHtml(r.entidadId) + '\')">' + escapeHtml(r.entidadNombre) + '</span></td>' +
+            '<td><span class="enlace-mini" onclick="abrirEdicionEntidad(\'TAREA\',\'' + escapeHtml(r.tareaId) + '\')">' + escapeHtml(r.nombre) + '</span></td>' +
             '<td>' + escapeHtml(r.detalle || '') + '</td>' +
             '<td class="col-fechas">' + formatearRangoFechas_(r.fechaInicio, r.fechaFin) + '</td>' +
             '<td class="col-track"><div class="track">' + lineasCuadricula +
