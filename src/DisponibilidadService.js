@@ -54,6 +54,9 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
   if (entidadesSeleccionadas.length === 0) {
     return { entidades: [], coincidencias: null };
   }
+  var inicioMs = Date.now();
+  cacheLecturaIniciarContexto_();
+  try {
 
   var hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
@@ -105,6 +108,10 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
   }
 
   return { entidades: entidades, coincidencias: coincidencias };
+  } finally {
+    console.log('OK obtenerDisponibilidadEntidades_ms=' + (Date.now() - inicioMs));
+    cacheLecturaFinalizarContexto_();
+  }
 }
 
 /*
@@ -121,6 +128,9 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
 function obtenerOcupacionEntidades(entidadesSeleccionadas) {
   entidadesSeleccionadas = entidadesSeleccionadas || [];
   if (entidadesSeleccionadas.length === 0) return { entidades: [] };
+  var inicioMs = Date.now();
+  cacheLecturaIniciarContexto_();
+  try {
 
   var nombresPersona = {};
   listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
@@ -166,6 +176,10 @@ function obtenerOcupacionEntidades(entidadesSeleccionadas) {
   });
 
   return { entidades: entidades };
+  } finally {
+    console.log('OK obtenerOcupacionEntidades_ms=' + (Date.now() - inicioMs));
+    cacheLecturaFinalizarContexto_();
+  }
 }
 
 /*
@@ -185,6 +199,9 @@ function obtenerOcupacionEntidades(entidadesSeleccionadas) {
  *   sin_horario       -- ni horario declarado ni tarea asignada ese dia
  */
 function obtenerVistaDelDia(fechaISO) {
+  var inicioMs = Date.now();
+  cacheLecturaIniciarContexto_();
+  try {
   var fecha = fechaISO ? new Date(fechaISO + 'T00:00:00') : new Date();
   fecha.setHours(0, 0, 0, 0);
   var nombreDia = DIA_SEMANA_POR_INDICE_JS_[fecha.getDay()];
@@ -241,6 +258,10 @@ function obtenerVistaDelDia(fechaISO) {
     diaSemana: nombreDia,
     personas: personas
   };
+  } finally {
+    console.log('OK obtenerVistaDelDia_ms=' + (Date.now() - inicioMs));
+    cacheLecturaFinalizarContexto_();
+  }
 }
 
 /*
@@ -266,6 +287,9 @@ function rangosSeSolapan_(inicioA, finA, inicioB, finB) {
 }
 
 function obtenerOcupacionRango(fechaInicioISO, fechaFinISO, agrupacion) {
+  var inicioMs = Date.now();
+  cacheLecturaIniciarContexto_();
+  try {
   var hoyISO = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd');
   var fechaInicio = fechaInicioISO || hoyISO;
   var fechaFin = fechaFinISO || fechaInicio;
@@ -323,4 +347,8 @@ function obtenerOcupacionRango(fechaInicioISO, fechaFinISO, agrupacion) {
   entidades.sort(function (a, b) { return b.reservas.length - a.reservas.length || a.nombre.localeCompare(b.nombre); });
 
   return { fechaInicio: fechaInicio, fechaFin: fechaFin, agrupacion: agrupacion, entidades: entidades };
+  } finally {
+    console.log('OK obtenerOcupacionRango_ms=' + (Date.now() - inicioMs));
+    cacheLecturaFinalizarContexto_();
+  }
 }

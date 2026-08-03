@@ -50,8 +50,10 @@
        * ROL/CLASE_RECURSO via <optgroup> -- misma familia visual que
        * los filtros de Responsable/Recurso del Gantt principal.
        */
-      .selectores-entidad { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
-      .selectores-entidad label { display: block; font-size: 11px; margin-bottom: 2px; }
+      .selectores-entidad { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 8px; }
+      .selectores-entidad label { display: block; font-size: 11px; margin-bottom: 3px; height: 13px; }
+      .selectores-entidad select, .selectores-entidad input, .selectores-entidad button { height: 30px; box-sizing: border-box; }
+      .selectores-entidad .btn-modo { height: 30px; box-sizing: border-box; display: inline-flex; align-items: center; }
       .selectores-entidad select { min-width: 200px; }
       .chips-entidades { display: flex; flex-wrap: wrap; gap: 6px; min-height: 26px; margin-bottom: 6px; }
       .chip { display: inline-flex; align-items: center; gap: 4px; background: var(--color-fondo-suave); border: 1px solid var(--color-borde); border-radius: 12px; padding: 3px 8px; font-size: 11px; }
