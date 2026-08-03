@@ -118,6 +118,7 @@
         <select id="filtro-recurso"><option value="">(todos)</option></select>
       </div>
       <button id="btn-exportar-csv">Exportar CSV (detalle)</button>
+      <button id="btn-actualizar-gantt" title="Recargar los datos del gantt">🔄 Actualizar</button>
     </div>
 
     <div class="filtros">
@@ -615,36 +616,17 @@
       }
 
       /*
-       * Refresco en vivo (ver conversacion -- version minima y honesta
-       * de "motor por eventos": Apps Script no permite que el servidor
-       * avise al cliente, asi que se sondea cada pocos segundos si
-       * 91_HISTORIAL ha crecido desde la ultima vez. Sin distinguir que
-       * cambio exactamente -- cualquier escritura en el sistema
-       * dispara un refresco silencioso del Gantt (ya barato, solo
-       * repinta el filtro actual). Asi, al editar un proceso/tarea/
-       * proyecto/campaña desde el formulario que se abre encima, el
-       * Gantt de debajo se actualiza solo al cerrar, sin recargar la
-       * pagina ni perder filtros.
+       * Refresco manual (ver conversacion -- corrige el intento
+       * anterior de refresco en vivo por sondeo cada 5s: la medicion
+       * real en Apps Script mostro obtenerNumeroFilasHistorial tardando
+       * 2-3s POR LLAMADA, no "una lectura barata" como se asumio --
+       * cualquier llamada a google.script.run tiene un coste fijo de
+       * segundos en Apps Script, haga lo que haga por dentro. Sondear
+       * cada 5s competia por recursos con el resto de acciones del
+       * dialogo. Sustituido por el mismo patron ya usado en el resto
+       * del sistema (Panel de Campaña/Recursos/Personas): boton
+       * "🔄 Actualizar" explicito, sin coste en segundo plano.
        */
-      var ultimoNumeroFilasHistorial_ = null;
-
-      function cargarGanttSilencioso_() {
-        google.script.run.withFailureHandler(function () {}).withSuccessHandler(function (datos) {
-          filasCompletas_ = datos.filas || [];
-          aplicarFiltrosClienteYRenderizar();
-        }).obtenerDatosGanttPlanReal(filtroActual_());
-      }
-
-      function comprobarCambiosYRefrescar_() {
-        google.script.run.withFailureHandler(function () {}).withSuccessHandler(function (numFilas) {
-          if (ultimoNumeroFilasHistorial_ !== null && numFilas !== ultimoNumeroFilasHistorial_) {
-            cargarGanttSilencioso_();
-          }
-          ultimoNumeroFilasHistorial_ = numFilas;
-        }).obtenerNumeroFilasHistorial();
-      }
-
-      setInterval(comprobarCambiosYRefrescar_, 5000);
 
       /*
        * Vista de coincidencia de disponibilidad (ver conversacion):
@@ -1043,6 +1025,7 @@
       document.getElementById('btn-exportar-csv').addEventListener('click', function () {
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });
+      document.getElementById('btn-actualizar-gantt').addEventListener('click', cargarGantt);
       cargarOpcionesFiltro();
       if (!PRESELECCION_CAMPANA) cargarGantt();
     </script>
