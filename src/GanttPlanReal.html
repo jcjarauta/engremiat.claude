@@ -66,6 +66,11 @@
       .fila-coincidencia { background: #fff8e1 !important; font-weight: bold; }
       .franja-coincidencia { display: block; background: #fbc02d; color: #5d4400; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; }
       .sin-horario { color: var(--color-peligro); font-size: 11px; }
+      .badge-dia { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
+      .badge-ocupado { background: #e3f2fd; color: #1565c0; }
+      .badge-fuera-horario { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-disponible { background: #e6f4ea; color: #2e7d32; }
+      .badge-sin-horario { background: var(--color-fondo-suave); color: var(--color-texto-secundario); }
     </style>
   </head>
   <body>
@@ -143,6 +148,33 @@
     </div>
 
     <div id="vista-disponibilidad" style="display:none;">
+      <h4 style="margin:0 0 2px;">📅 Vista del día — gestión de personas</h4>
+      <p class="rango-fechas">Todas las personas/equipos activos, cruzando su horario declarado ese día con lo que tienen asignado (para prever su participación en los proyectos).</p>
+      <div class="selectores-entidad">
+        <div>
+          <label for="fecha-vista-dia">Día</label>
+          <input type="date" id="fecha-vista-dia">
+        </div>
+      </div>
+      <div id="rango-fechas-dia" class="rango-fechas"></div>
+      <div class="contenedor-tabla" style="max-height:220px;">
+        <table id="tabla-dia" style="display:none;">
+          <thead>
+            <tr>
+              <th class="col-nombre">Persona / equipo</th>
+              <th>Rol</th>
+              <th>Horario ese día</th>
+              <th>Asignado ese día</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="filas-dia"></tbody>
+        </table>
+        <div id="vacio-dia" class="vacio"></div>
+      </div>
+
+      <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">Comparar entidades concretas</h4>
       <div class="selectores-entidad">
         <div>
           <label for="add-persona">+ Añadir persona / equipo</label>
@@ -748,13 +780,72 @@
         google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderOcupacion_).obtenerOcupacionEntidades(seleccion);
       }
 
+      /*
+       * Vista del dia (ver conversacion: "prevista su participacion en
+       * los proyectos", gestion de RRHH). No depende de los chips --
+       * es la vista global de TODAS las personas para una fecha
+       * buscable, no solo hoy.
+       */
+      var ETIQUETA_ESTADO_DIA_ = {
+        ocupado: 'Ocupado', fuera_de_horario: 'Fuera de horario', disponible: 'Disponible', sin_horario: 'Sin horario declarado'
+      };
+
+      function renderVistaDia_(datos) {
+        var tabla = document.getElementById('tabla-dia');
+        var vacio = document.getElementById('vacio-dia');
+        var personas = datos.personas || [];
+        document.getElementById('rango-fechas-dia').textContent = datos.diaSemana + ' ' + formatearFecha_(datos.fecha + 'T00:00:00');
+
+        if (personas.length === 0) {
+          tabla.style.display = 'none';
+          vacio.textContent = 'Sin personas/equipos activos.';
+          return;
+        }
+
+        document.getElementById('filas-dia').innerHTML = personas.map(function (p) {
+          var horarioTexto = p.horarios.length
+            ? p.horarios.map(function (h) { return h.inicio + '–' + h.fin; }).join(', ')
+            : '—';
+          var tareaTexto = p.tareas.length
+            ? p.tareas.map(function (t) {
+                return escapeHtml(t.nombre) + (t.proyectoNombre ? ' <span class="rango-fechas" style="display:inline;margin:0;">(' + escapeHtml(t.proyectoNombre) + ')</span>' : '');
+              }).join('<br>')
+            : '—';
+          return '<tr>' +
+            '<td class="col-nombre">' + escapeHtml(p.nombre) + '<div class="rango-fechas" style="margin:0;">' + escapeHtml(p.tipo) + '</div></td>' +
+            '<td>' + escapeHtml(p.rol || '') + '</td>' +
+            '<td>' + escapeHtml(horarioTexto) + '</td>' +
+            '<td>' + tareaTexto + '</td>' +
+            '<td><span class="badge-dia badge-' + p.estado.replace(/_/g, '-') + '">' + ETIQUETA_ESTADO_DIA_[p.estado] + '</span></td>' +
+            '<td><span class="enlace-mini" onclick="abrirEdicionEntidad(\'PERSONA_EQUIPO\',\'' + escapeHtml(p.id) + '\')">✎ Editar</span></td>' +
+          '</tr>';
+        }).join('');
+
+        vacio.textContent = '';
+        tabla.style.display = 'table';
+      }
+
+      function cargarVistaDia_() {
+        var fecha = document.getElementById('fecha-vista-dia').value || null;
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderVistaDia_).obtenerVistaDelDia(fecha);
+      }
+
+      (function inicializarFechaVistaDia_() {
+        var hoyISO = new Date().toISOString().slice(0, 10);
+        document.getElementById('fecha-vista-dia').value = hoyISO;
+      })();
+      document.getElementById('fecha-vista-dia').addEventListener('change', cargarVistaDia_);
+
       function cambiarModo_(modo) {
         var esDisponibilidad = modo === 'disponibilidad';
         document.getElementById('vista-plan-real').style.display = esDisponibilidad ? 'none' : '';
         document.getElementById('vista-disponibilidad').style.display = esDisponibilidad ? '' : 'none';
         document.getElementById('modo-plan-real').classList.toggle('activo', !esDisponibilidad);
         document.getElementById('modo-disponibilidad').classList.toggle('activo', esDisponibilidad);
-        if (esDisponibilidad) recalcularDisponibilidad_();
+        if (esDisponibilidad) {
+          recalcularDisponibilidad_();
+          cargarVistaDia_();
+        }
       }
       document.getElementById('modo-plan-real').addEventListener('click', function () { cambiarModo_('plan-real'); });
       document.getElementById('modo-disponibilidad').addEventListener('click', function () { cambiarModo_('disponibilidad'); });

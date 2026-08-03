@@ -167,3 +167,78 @@ function obtenerOcupacionEntidades(entidadesSeleccionadas) {
 
   return { entidades: entidades };
 }
+
+/*
+ * Vista del dia: gestion de recursos humanos (ver conversacion --
+ * "prevista su participacion en los proyectos"). Para una fecha
+ * concreta (buscable, no solo hoy), cruza TODAS las personas/equipos
+ * activos con su HORARIO declarado ese dia de la semana (vigente en
+ * esa fecha) y sus reservas reales ese dia (TAREA_RESPONSABLE). No
+ * requiere elegir entidades de antemano -- es la vista global de "quien
+ * esta previsto/asignado hoy", complementaria a la comparacion manual
+ * de obtenerDisponibilidadEntidades/obtenerOcupacionEntidades.
+ *
+ * Estados por persona (para ordenar y colorear en el cliente):
+ *   ocupado           -- tiene tarea asignada ese dia (con o sin horario declarado)
+ *   fuera_de_horario  -- tiene tarea asignada ese dia pero NO le cubre ningun horario declarado
+ *   disponible        -- tiene horario declarado ese dia y ninguna tarea asignada
+ *   sin_horario       -- ni horario declarado ni tarea asignada ese dia
+ */
+function obtenerVistaDelDia(fechaISO) {
+  var fecha = fechaISO ? new Date(fechaISO + 'T00:00:00') : new Date();
+  fecha.setHours(0, 0, 0, 0);
+  var nombreDia = DIA_SEMANA_POR_INDICE_JS_[fecha.getDay()];
+
+  var horariosPorPersona = {};
+  listarRegistros('HORARIO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (h) {
+    if (h.ENTIDAD_TIPO !== 'Persona/Equipo' || h.DIA_SEMANA !== nombreDia) return;
+    if (h.FECHA_INICIO_VIGENCIA && fecha < new Date(h.FECHA_INICIO_VIGENCIA)) return;
+    if (h.FECHA_FIN_VIGENCIA && fecha > new Date(h.FECHA_FIN_VIGENCIA)) return;
+    if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
+    horariosPorPersona[h.ENTIDAD_ID].push({ inicio: h.HORA_INICIO, fin: h.HORA_FIN });
+  });
+
+  var tareasPorId = {};
+  listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
+  var procesosPorId = {};
+  listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
+  var contextoPorProducto = construirMapaContextoPorProducto_();
+
+  var tareasPorPersona = {};
+  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (tr) {
+    if (!tr.FECHA_INICIO_ASIGNACION || !tr.FECHA_FIN_ASIGNACION) return;
+    var ini = new Date(tr.FECHA_INICIO_ASIGNACION); ini.setHours(0, 0, 0, 0);
+    var fin = new Date(tr.FECHA_FIN_ASIGNACION); fin.setHours(0, 0, 0, 0);
+    if (fecha < ini || fecha > fin) return;
+
+    var tarea = tareasPorId[tr.TAREA_ID];
+    var proceso = tarea ? procesosPorId[tarea.PROCESO_ID] : null;
+    var contexto = proceso ? contextoPorProducto[proceso.PRODUCTO_ID] : null;
+
+    if (!tareasPorPersona[tr.PERSONA_EQUIPO_ID]) tareasPorPersona[tr.PERSONA_EQUIPO_ID] = [];
+    tareasPorPersona[tr.PERSONA_EQUIPO_ID].push({
+      tareaId: tr.TAREA_ID, nombre: tarea ? tarea.NOMBRE : tr.TAREA_ID, rol: tr.ROL_ASIGNADO,
+      proyectoNombre: contexto ? contexto.proyectoNombre : '', campanaNombre: contexto ? contexto.campanaNombre : ''
+    });
+  });
+
+  var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).map(function (p) {
+    var horarios = horariosPorPersona[p.ID] || [];
+    var tareas = tareasPorPersona[p.ID] || [];
+    var estado = tareas.length > 0
+      ? (horarios.length > 0 ? 'ocupado' : 'fuera_de_horario')
+      : (horarios.length > 0 ? 'disponible' : 'sin_horario');
+    return { id: p.ID, nombre: p.NOMBRE, tipo: p.TIPO, rol: p.ROL, horarios: horarios, tareas: tareas, estado: estado };
+  });
+
+  var ordenEstado = { ocupado: 0, fuera_de_horario: 1, disponible: 2, sin_horario: 3 };
+  personas.sort(function (a, b) {
+    return ordenEstado[a.estado] - ordenEstado[b.estado] || a.nombre.localeCompare(b.nombre);
+  });
+
+  return {
+    fecha: Utilities.formatDate(fecha, Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'),
+    diaSemana: nombreDia,
+    personas: personas
+  };
+}
