@@ -33,14 +33,34 @@
       .btn-editar:hover { background: var(--color-fondo-suave); }
       .enlace-mini { color: var(--color-primario); cursor: pointer; }
       .enlace-mini:hover { text-decoration: underline; }
-      .detalle-fila { font-size: 10px; color: var(--color-texto-secundario); white-space: normal; margin-top: 2px; }
-      .select-tareas { font-size: 10px; max-width: 90px; margin-left: 4px; }
+      .select-tareas { font-size: 10px; max-width: 90px; }
+      .celda-acciones { display: flex; align-items: center; gap: 4px; }
+      .icono-editar-filtro { cursor: pointer; margin-left: 4px; }
+      .icono-editar-filtro[disabled] { opacity: 0.3; cursor: default; pointer-events: none; }
       tr:hover td { background: #f7f9fc; }
       .vacio { padding: 12px 0; }
+      .cabecera-modos { display: flex; align-items: center; gap: 10px; }
+      .btn-modo { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 4px 10px; font-size: 12px; }
+      .btn-modo.activo { background: var(--color-primario); color: #fff; border-color: var(--color-primario); }
+      .lista-entidades { display: flex; flex-wrap: wrap; gap: 4px 16px; max-height: 90px; overflow-y: auto; border: 1px solid var(--color-borde); padding: 6px; margin-bottom: 10px; }
+      .lista-entidades label { font-size: 11px; font-weight: normal; white-space: nowrap; }
+      .rejilla-disponibilidad { display: grid; grid-template-columns: 140px repeat(7, 1fr); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); }
+      .rejilla-disponibilidad > div { background: #fff; padding: 4px 6px; font-size: 11px; min-height: 24px; }
+      .rejilla-disponibilidad .cab { font-weight: bold; background: var(--color-fondo-suave); text-align: center; }
+      .rejilla-disponibilidad .fila-entidad { font-weight: bold; }
+      .franja { display: block; background: #e6f4ea; color: #2e7d32; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; }
+      .fila-coincidencia { background: #fff8e1 !important; font-weight: bold; }
+      .franja-coincidencia { display: block; background: #fbc02d; color: #5d4400; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; }
+      .sin-horario { color: var(--color-peligro); font-size: 11px; }
     </style>
   </head>
   <body>
-    <h3>Gantt: plan vs. real</h3>
+    <div class="cabecera-modos">
+      <h3 style="margin:0;">Gantt: plan vs. real</h3>
+      <span class="btn-modo activo" id="modo-plan-real">Plan vs. real</span>
+      <span class="btn-modo" id="modo-disponibilidad">🗓️ Disponibilidad (espacio-persona)</span>
+    </div>
+    <div id="vista-plan-real">
     <div class="leyenda">
       <span style="background:#9e9e9e;"></span>Plan
       <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
@@ -52,11 +72,17 @@
     <div class="filtros">
       <div>
         <label for="filtro-campana">Campaña</label>
-        <select id="filtro-campana"><option value="">(todas)</option></select>
+        <span style="display:flex;align-items:center;">
+          <select id="filtro-campana"><option value="">(todas)</option></select>
+          <span class="icono-editar-filtro" id="editar-filtro-campana" title="Editar esta campaña" disabled>✎</span>
+        </span>
       </div>
       <div>
         <label for="filtro-proyecto">Proyecto</label>
-        <select id="filtro-proyecto"><option value="">(todos)</option></select>
+        <span style="display:flex;align-items:center;">
+          <select id="filtro-proyecto"><option value="">(todos)</option></select>
+          <span class="icono-editar-filtro" id="editar-filtro-proyecto" title="Editar este proyecto" disabled>✎</span>
+        </span>
       </div>
       <div>
         <label for="filtro-fase">Fase de producción</label>
@@ -99,6 +125,19 @@
         </thead>
         <tbody id="filas-gantt"></tbody>
       </table>
+    </div>
+    </div>
+
+    <div id="vista-disponibilidad" style="display:none;">
+      <p class="rango-fechas">
+        Elige personas/equipos y recursos/espacios para ver cuándo coinciden libres a la vez (según el horario semanal declarado, vigente hoy).
+        Ejemplo: un voluntariado + un espacio + una persona atendida, para planificar una actividad conjunta.
+      </p>
+      <label style="font-size:12px;font-weight:bold;">Personas / equipos</label>
+      <div class="lista-entidades" id="lista-personas-disponibilidad"></div>
+      <label style="font-size:12px;font-weight:bold;">Recursos / espacios</label>
+      <div class="lista-entidades" id="lista-recursos-disponibilidad"></div>
+      <div id="resultado-disponibilidad"></div>
     </div>
 
     <script>
@@ -206,9 +245,23 @@
           (opciones.recursos || []).forEach(function (recurso) {
             selectRecurso.innerHTML += '<option value="' + escapeHtml(recurso.id) + '">' + escapeHtml(recurso.etiqueta) + '</option>';
           });
+
+          var listaPersonas = document.getElementById('lista-personas-disponibilidad');
+          opciones.personas.forEach(function (persona) {
+            listaPersonas.innerHTML += '<label><input type="checkbox" class="chk-disponibilidad" data-tipo="Persona/Equipo" value="' + escapeHtml(persona.id) + '"> ' + escapeHtml(persona.etiqueta) + '</label>';
+          });
+          var listaRecursos = document.getElementById('lista-recursos-disponibilidad');
+          (opciones.recursos || []).forEach(function (recurso) {
+            listaRecursos.innerHTML += '<label><input type="checkbox" class="chk-disponibilidad" data-tipo="Recurso" value="' + escapeHtml(recurso.id) + '"> ' + escapeHtml(recurso.etiqueta) + '</label>';
+          });
+          document.querySelectorAll('.chk-disponibilidad').forEach(function (chk) {
+            chk.addEventListener('change', recalcularDisponibilidad_);
+          });
+
           // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
           if (PRESELECCION_CAMPANA) {
             selectCampana.value = PRESELECCION_CAMPANA;
+            actualizarIconoEditarFiltro_('filtro-campana', 'editar-filtro-campana', 'CAMPANA');
             cargarGantt();
           }
         }).obtenerOpcionesFiltroGantt();
@@ -332,18 +385,17 @@
           }
           var desv = formatearDesviacion_(fila.diasDesviacionFin, fila.diasRiesgo);
 
-          // Enlaces rapidos a Campaña/Proyecto (jerarquia hacia arriba del proceso).
-          var enlaceCampana = fila.campanaId
-            ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'CAMPANA\',\'' + escapeHtml(fila.campanaId) + '\')">' + escapeHtml(fila.campanaNombre) + '</span>'
-            : escapeHtml(fila.campanaNombre);
-          var enlaceProyecto = fila.proyectoId
-            ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'PROYECTO\',\'' + escapeHtml(fila.proyectoId) + '\')">' + escapeHtml(fila.proyectoNombre) + '</span>'
-            : escapeHtml(fila.proyectoNombre);
-          var detalleJerarquia = (fila.campanaNombre || fila.proyectoNombre)
-            ? '<div class="detalle-fila">' + enlaceCampana + (fila.campanaNombre && fila.proyectoNombre ? ' · ' : '') + enlaceProyecto + '</div>'
-            : '';
+          /*
+           * Estilo (ver conversacion): la miga de pan Campaña/Proyecto
+           * en la propia celda del proceso quedaba apretada y se partia
+           * en varias lineas -- se mueve a un tooltip (igual que las
+           * barras) y su edicion pasa al icono junto al filtro
+           * correspondiente (una sola vez arriba, no repetida en cada
+           * fila). Producto si se mantiene clicable en su columna, es
+           * el nivel inmediatamente superior al proceso.
+           */
+          var tituloJerarquia = [fila.campanaNombre, fila.proyectoNombre].filter(Boolean).join(' · ');
 
-          // Producto: nombre clicable directamente (jerarquia hacia arriba del proceso, un nivel).
           var celdaProducto = fila.productoId
             ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'PRODUCTO\',\'' + escapeHtml(fila.productoId) + '\')">' + escapeHtml(fila.productoNombre) + '</span>'
             : escapeHtml(fila.productoNombre);
@@ -358,7 +410,7 @@
           }
 
           return '<tr>' +
-            '<td class="col-nombre">' + escapeHtml(fila.nombre) + detalleJerarquia + '</td>' +
+            '<td class="col-nombre" title="' + escapeHtml(tituloJerarquia) + '">' + escapeHtml(fila.nombre) + '</td>' +
             '<td>' + celdaProducto + '</td>' +
             '<td>' + escapeHtml(fila.fase) + '</td>' +
             '<td class="col-responsable" title="' + escapeHtml(fila.responsable) + '">' + escapeHtml(fila.responsable) + '</td>' +
@@ -371,7 +423,7 @@
               '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
               barraReal + lineaHoy +
             '</div></td>' +
-            '<td><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span>' + selectTareas + '</td>' +
+            '<td><div class="celda-acciones"><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span>' + selectTareas + '</div></td>' +
           '</tr>';
         }).join('');
 
@@ -456,8 +508,109 @@
 
       setInterval(comprobarCambiosYRefrescar_, 5000);
 
+      /*
+       * Vista de coincidencia de disponibilidad (ver conversacion):
+       * distinta del overlay del Gantt -- ahi se compara HORARIO contra
+       * tareas YA planificadas; aqui se comparan los HORARIO de varias
+       * entidades cualesquiera entre si, para encontrar huecos libres
+       * donde planificar algo nuevo (ej. voluntariado + espacio +
+       * persona atendida, los tres libres a la vez).
+       */
+      function entidadesSeleccionadasDisponibilidad_() {
+        return Array.prototype.slice.call(document.querySelectorAll('.chk-disponibilidad:checked')).map(function (chk) {
+          return { tipo: chk.dataset.tipo, id: chk.value };
+        });
+      }
+
+      function renderDisponibilidad_(datos) {
+        var contenedor = document.getElementById('resultado-disponibilidad');
+        var entidades = datos.entidades || [];
+
+        if (entidades.length === 0) {
+          contenedor.innerHTML = '<div class="rango-fechas">Elige al menos una persona/equipo o recurso/espacio arriba.</div>';
+          return;
+        }
+
+        var sinHorario = entidades.filter(function (e) { return !e.tieneHorario; });
+        var avisoSinHorario = sinHorario.length > 0
+          ? '<div class="sin-horario">Sin coincidencia calculable: ' + sinHorario.map(function (e) { return escapeHtml(e.nombre); }).join(', ') +
+            ' no tiene ningún horario cargado todavía. Añádelo (menú Horario) para poder incluirla en el cálculo.</div>'
+          : '';
+
+        var celdas = '<div class="cab"></div>' + DIAS_SEMANA_ORDEN_JS_.map(function (d) { return '<div class="cab">' + d + '</div>'; }).join('');
+
+        entidades.forEach(function (entidad) {
+          celdas += '<div class="fila-entidad">' + escapeHtml(entidad.nombre) + '<div class="detalle-fila-tipo" style="font-weight:normal;color:var(--color-texto-secundario);">' + escapeHtml(entidad.tipo) + '</div></div>';
+          DIAS_SEMANA_ORDEN_JS_.forEach(function (dia) {
+            var franjas = entidad.porDia[dia] || [];
+            celdas += '<div>' + (franjas.length
+              ? franjas.map(function (f) { return '<span class="franja">' + escapeHtml(f.inicio) + '–' + escapeHtml(f.fin) + '</span>'; }).join('')
+              : '') + '</div>';
+          });
+        });
+
+        if (datos.coincidencias) {
+          celdas += '<div class="fila-coincidencia">Coinciden todas</div>';
+          DIAS_SEMANA_ORDEN_JS_.forEach(function (dia) {
+            var franjas = datos.coincidencias[dia] || [];
+            celdas += '<div class="fila-coincidencia">' + (franjas.length
+              ? franjas.map(function (f) { return '<span class="franja-coincidencia">' + escapeHtml(f) + '</span>'; }).join('')
+              : '—') + '</div>';
+          });
+        }
+
+        contenedor.innerHTML = avisoSinHorario + '<div class="rejilla-disponibilidad">' + celdas + '</div>';
+      }
+
+      var DIAS_SEMANA_ORDEN_JS_ = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+      function recalcularDisponibilidad_() {
+        var seleccion = entidadesSeleccionadasDisponibilidad_();
+        if (seleccion.length === 0) {
+          renderDisponibilidad_({ entidades: [] });
+          return;
+        }
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderDisponibilidad_).obtenerDisponibilidadEntidades(seleccion);
+      }
+
+      function cambiarModo_(modo) {
+        var esDisponibilidad = modo === 'disponibilidad';
+        document.getElementById('vista-plan-real').style.display = esDisponibilidad ? 'none' : '';
+        document.getElementById('vista-disponibilidad').style.display = esDisponibilidad ? '' : 'none';
+        document.getElementById('modo-plan-real').classList.toggle('activo', !esDisponibilidad);
+        document.getElementById('modo-disponibilidad').classList.toggle('activo', esDisponibilidad);
+        if (esDisponibilidad) recalcularDisponibilidad_();
+      }
+      document.getElementById('modo-plan-real').addEventListener('click', function () { cambiarModo_('plan-real'); });
+      document.getElementById('modo-disponibilidad').addEventListener('click', function () { cambiarModo_('disponibilidad'); });
+
+      /*
+       * Icono de editar junto al filtro (ver conversacion): en vez de
+       * repetir el enlace de Campaña/Proyecto en cada fila del Gantt
+       * (desordenado), se edita la que este elegida en el propio
+       * filtro -- un solo sitio, siempre visible, se activa/desactiva
+       * segun haya o no una seleccion concreta.
+       */
+      function actualizarIconoEditarFiltro_(idSelect, idIcono, entidad) {
+        var valor = document.getElementById(idSelect).value;
+        var icono = document.getElementById(idIcono);
+        if (valor) {
+          icono.removeAttribute('disabled');
+          icono.onclick = function () { abrirEdicionEntidad(entidad, valor); };
+        } else {
+          icono.setAttribute('disabled', 'disabled');
+          icono.onclick = null;
+        }
+      }
+
       ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable', 'filtro-recurso'].forEach(function (id) {
         document.getElementById(id).addEventListener('change', cargarGantt);
+      });
+      document.getElementById('filtro-campana').addEventListener('change', function () {
+        actualizarIconoEditarFiltro_('filtro-campana', 'editar-filtro-campana', 'CAMPANA');
+      });
+      document.getElementById('filtro-proyecto').addEventListener('change', function () {
+        actualizarIconoEditarFiltro_('filtro-proyecto', 'editar-filtro-proyecto', 'PROYECTO');
       });
       ['filtro-solo-problemas', 'filtro-solo-fuera-horario'].forEach(function (id) {
         document.getElementById(id).addEventListener('change', aplicarFiltrosClienteYRenderizar);
