@@ -106,3 +106,64 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
 
   return { entidades: entidades, coincidencias: coincidencias };
 }
+
+/*
+ * Ocupacion real de las entidades seleccionadas (ver conversacion:
+ * "misma vista que el Gantt principal, añadiendo quien esta usando
+ * que y cuando"). Complementa la interseccion de HORARIO (patron
+ * semanal, para hueco NUEVO) con las reservas YA existentes sobre
+ * fechas reales: TAREA_RESPONSABLE para Persona/Equipo, TAREA_RECURSO
+ * para Recurso -- ambas ya tienen sus propias fechas de asignacion,
+ * no hace falta pasar por TAREA/PROCESO. Marca solapamientos reales
+ * (dos reservas de la misma entidad con fechas cruzadas) para que se
+ * pueda ver de un vistazo si hay doble reserva.
+ */
+function obtenerOcupacionEntidades(entidadesSeleccionadas) {
+  entidadesSeleccionadas = entidadesSeleccionadas || [];
+  if (entidadesSeleccionadas.length === 0) return { entidades: [] };
+
+  var nombresPersona = {};
+  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  var nombresRecurso = {};
+  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+  var nombresTarea = {};
+  listarRegistros('TAREA', {}).forEach(function (t) { nombresTarea[t.ID] = t.NOMBRE; });
+
+  var tareaResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var tareaRecurso = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+
+  function marcarSolapamientos_(reservas) {
+    reservas.forEach(function (r, i) {
+      r.solapada = reservas.some(function (otra, j) {
+        if (i === j || !r.fechaInicio || !r.fechaFin || !otra.fechaInicio || !otra.fechaFin) return false;
+        return new Date(r.fechaInicio) <= new Date(otra.fechaFin) && new Date(otra.fechaInicio) <= new Date(r.fechaFin);
+      });
+    });
+  }
+
+  var entidades = entidadesSeleccionadas.map(function (sel) {
+    var reservas;
+    if (sel.tipo === 'Persona/Equipo') {
+      reservas = tareaResponsable.filter(function (tr) { return tr.PERSONA_EQUIPO_ID === sel.id; }).map(function (tr) {
+        return {
+          id: tr.ID, tareaId: tr.TAREA_ID, nombre: nombresTarea[tr.TAREA_ID] || tr.TAREA_ID, detalle: tr.ROL_ASIGNADO,
+          fechaInicio: tr.FECHA_INICIO_ASIGNACION || null, fechaFin: tr.FECHA_FIN_ASIGNACION || null
+        };
+      });
+    } else {
+      reservas = tareaRecurso.filter(function (tr) { return tr.RECURSO_ID === sel.id; }).map(function (tr) {
+        return {
+          id: tr.ID, tareaId: tr.TAREA_ID, nombre: nombresTarea[tr.TAREA_ID] || tr.TAREA_ID, detalle: tr.TIPO_USO,
+          fechaInicio: tr.FECHA_INICIO || null, fechaFin: tr.FECHA_FIN || null
+        };
+      });
+    }
+    marcarSolapamientos_(reservas);
+    reservas.sort(function (a, b) { return new Date(a.fechaInicio || 0) - new Date(b.fechaInicio || 0); });
+
+    var nombre = sel.tipo === 'Persona/Equipo' ? (nombresPersona[sel.id] || sel.id) : (nombresRecurso[sel.id] || sel.id);
+    return { tipo: sel.tipo, id: sel.id, nombre: nombre, reservas: reservas };
+  });
+
+  return { entidades: entidades };
+}

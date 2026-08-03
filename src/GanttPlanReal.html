@@ -51,7 +51,7 @@
        * ese motor. Column-layout evita esa ambiguedad por completo.
        */
       .lista-entidades { column-width: 180px; column-gap: 16px; max-height: 110px; overflow-y: auto; border: 1px solid var(--color-borde); padding: 6px; margin-bottom: 10px; }
-      .lista-entidades label { display: block; font-size: 11px; font-weight: normal; white-space: nowrap; break-inside: avoid; margin-bottom: 4px; }
+      .lista-entidades label { display: block; font-size: 11px; font-weight: normal; white-space: normal; overflow-wrap: break-word; break-inside: avoid; margin-bottom: 4px; padding-right: 4px; }
       .rejilla-disponibilidad { display: grid; grid-template-columns: 140px repeat(7, 1fr); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); }
       .rejilla-disponibilidad > div { background: #fff; padding: 4px 6px; font-size: 11px; min-height: 24px; }
       .rejilla-disponibilidad .cab { font-weight: bold; background: var(--color-fondo-suave); text-align: center; }
@@ -146,6 +146,25 @@
       <label style="font-size:12px;font-weight:bold;">Recursos / espacios</label>
       <div class="lista-entidades" id="lista-recursos-disponibilidad"></div>
       <div id="resultado-disponibilidad"></div>
+
+      <h4 style="margin:16px 0 4px;">Ocupación real: quién usa qué y cuándo</h4>
+      <p class="rango-fechas">Reservas ya planificadas (tareas asignadas) de las entidades elegidas arriba, mismo estilo que el Gantt principal.</p>
+      <div id="rango-fechas-ocupacion" class="rango-fechas"></div>
+      <div class="contenedor-tabla" style="max-height:300px;">
+        <table id="tabla-ocupacion" style="display:none;">
+          <thead>
+            <tr>
+              <th class="col-nombre">Entidad</th>
+              <th>Reserva</th>
+              <th>Detalle</th>
+              <th>Fechas</th>
+              <th class="col-track"><div id="eje-fechas-ocupacion" style="position:relative; height:16px;"></div></th>
+            </tr>
+          </thead>
+          <tbody id="filas-ocupacion"></tbody>
+        </table>
+        <div id="vacio-ocupacion" class="vacio"></div>
+      </div>
     </div>
 
     <script>
@@ -572,13 +591,83 @@
 
       var DIAS_SEMANA_ORDEN_JS_ = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+      /*
+       * Ocupacion real (ver conversacion: "misma vista que el Gantt
+       * principal, quien usa que y cuando"). Reutiliza el mismo estilo
+       * de barra/eje/ticks que renderGantt, pero con filas = reservas
+       * de las entidades elegidas (no procesos), agrupadas visualmente
+       * por entidad. Las reservas solapadas de una misma entidad se
+       * pintan en rojo -- doble reserva real, no una desviacion de
+       * fecha como en el Gantt principal.
+       */
+      function renderOcupacion_(datos) {
+        var tabla = document.getElementById('tabla-ocupacion');
+        var vacio = document.getElementById('vacio-ocupacion');
+        var rangoEl = document.getElementById('rango-fechas-ocupacion');
+        var entidades = datos.entidades || [];
+        var reservas = [];
+        entidades.forEach(function (e) {
+          e.reservas.forEach(function (r) { reservas.push(Object.assign({ entidadNombre: e.nombre }, r)); });
+        });
+        var conFechas = reservas.filter(function (r) { return r.fechaInicio && r.fechaFin; });
+
+        if (conFechas.length === 0) {
+          tabla.style.display = 'none';
+          rangoEl.textContent = '';
+          vacio.textContent = entidades.length === 0 ? '' : 'Sin reservas con fechas para las entidades elegidas.';
+          return;
+        }
+
+        var fechas = [];
+        conFechas.forEach(function (r) { fechas.push(new Date(r.fechaInicio).getTime(), new Date(r.fechaFin).getTime()); });
+        var hoy = new Date().getTime();
+        var minFecha = Math.min.apply(null, fechas.concat([hoy]));
+        var maxFecha = Math.max.apply(null, fechas.concat([hoy]));
+        var rango = Math.max(maxFecha - minFecha, 24 * 60 * 60 * 1000);
+        function posicion(fecha) { return ((new Date(fecha).getTime() - minFecha) / rango) * 100; }
+
+        rangoEl.textContent = 'Mostrando: ' + formatearFecha_(minFecha) + ' – ' + formatearFecha_(maxFecha);
+
+        var ticks = calcularTicks_(minFecha, maxFecha);
+        document.getElementById('eje-fechas-ocupacion').innerHTML = ticks.map(function (t) {
+          return '<span style="position:absolute;left:' + posicion(t) + '%;top:0;font-size:9px;color:var(--color-texto-secundario);white-space:nowrap;transform:translateX(-50%);">' + escapeHtml(formatearFechaCorta_(t)) + '</span>';
+        }).join('');
+        var lineasCuadricula = ticks.map(function (t) {
+          return '<div style="position:absolute;left:' + posicion(t) + '%;top:0;bottom:0;width:1px;background:#eee;"></div>';
+        }).join('');
+        var posicionHoy = posicion(hoy);
+        var lineaHoy = (posicionHoy >= 0 && posicionHoy <= 100)
+          ? '<div class="linea-hoy" style="left:' + posicionHoy + '%;" title="Hoy"></div>' : '';
+
+        document.getElementById('filas-ocupacion').innerHTML = conFechas.map(function (r) {
+          var izq = posicion(r.fechaInicio);
+          var ancho = Math.max(posicion(r.fechaFin) - izq, 0.5);
+          var titulo = (r.solapada ? 'CONFLICTO — ' : '') + formatearRangoFechas_(r.fechaInicio, r.fechaFin);
+          return '<tr>' +
+            '<td class="col-nombre">' + escapeHtml(r.entidadNombre) + '</td>' +
+            '<td>' + escapeHtml(r.nombre) + '</td>' +
+            '<td>' + escapeHtml(r.detalle || '') + '</td>' +
+            '<td class="col-fechas">' + formatearRangoFechas_(r.fechaInicio, r.fechaFin) + '</td>' +
+            '<td class="col-track"><div class="track">' + lineasCuadricula +
+              '<div class="barra ' + (r.solapada ? 'barra-real-tarde' : 'barra-real-ok') + '" style="left:' + izq + '%;width:' + ancho + '%;top:8px;" title="' + escapeHtml(titulo) + '"></div>' +
+              lineaHoy +
+            '</div></td>' +
+          '</tr>';
+        }).join('');
+
+        vacio.textContent = '';
+        tabla.style.display = 'table';
+      }
+
       function recalcularDisponibilidad_() {
         var seleccion = entidadesSeleccionadasDisponibilidad_();
         if (seleccion.length === 0) {
           renderDisponibilidad_({ entidades: [] });
+          renderOcupacion_({ entidades: [] });
           return;
         }
         google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderDisponibilidad_).obtenerDisponibilidadEntidades(seleccion);
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderOcupacion_).obtenerOcupacionEntidades(seleccion);
       }
 
       function cambiarModo_(modo) {
