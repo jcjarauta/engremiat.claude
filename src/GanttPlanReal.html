@@ -79,7 +79,7 @@
     <div class="cabecera-modos">
       <h3 style="margin:0;">Gantt: plan vs. real</h3>
       <span class="btn-modo activo" id="modo-plan-real">Plan vs. real</span>
-      <span class="btn-modo" id="modo-disponibilidad">🗓️ Disponibilidad (espacio-persona)</span>
+      <span class="btn-modo" id="modo-disponibilidad">Disponibilidad</span>
     </div>
     <div id="vista-plan-real">
     <div class="leyenda">
@@ -87,7 +87,7 @@
       <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
       <span style="background:#b00020;margin-left:10px;"></span>Real (con retraso)
       <span style="background:#1a73e8;margin-left:10px;"></span>Hoy
-      <span style="background:repeating-linear-gradient(45deg, rgba(176,0,32,0.35), rgba(176,0,32,0.35) 2px, transparent 2px, transparent 4px);margin-left:10px;"></span>Fuera del horario declarado del responsable
+      <span style="background:repeating-linear-gradient(45deg, rgba(176,0,32,0.35), rgba(176,0,32,0.35) 2px, transparent 2px, transparent 4px);margin-left:10px;"></span>Fuera de horario declarado
     </div>
 
     <div class="filtros">
@@ -150,8 +150,8 @@
     </div>
 
     <div id="vista-disponibilidad" style="display:none;">
-      <h4 style="margin:0 0 2px;">📅 Vista del día — gestión de personas</h4>
-      <p class="rango-fechas">Todas las personas/equipos activos, cruzando su horario declarado ese día con lo que tienen asignado (para prever su participación en los proyectos).</p>
+      <h4 style="margin:0 0 2px;">Vista del día</h4>
+      <p class="rango-fechas">Horario previsto y tareas asignadas de todo el personal, para la fecha seleccionada.</p>
       <div class="selectores-entidad">
         <div>
           <label for="fecha-vista-dia">Día</label>
@@ -176,8 +176,8 @@
         <div id="vacio-dia" class="vacio"></div>
       </div>
 
-      <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">🗓️ Vista de rango — quién ha estado, dónde y con qué</h4>
-      <p class="rango-fechas">Elige un periodo (varios días). "Por persona" responde quién ha estado; "Por recurso" responde en qué sitio o con qué herramienta/máquina.</p>
+      <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">Vista de rango</h4>
+      <p class="rango-fechas">Actividad registrada en un periodo, agrupada por persona o por recurso.</p>
       <div class="selectores-entidad">
         <div>
           <label for="rango-desde">Desde</label>
@@ -216,7 +216,7 @@
         <div id="vacio-rango" class="vacio"></div>
       </div>
 
-      <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">Comparar entidades concretas</h4>
+      <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">Comparar disponibilidad</h4>
       <div class="selectores-entidad">
         <div>
           <label for="add-persona">+ Añadir persona / equipo</label>
@@ -229,8 +229,8 @@
       </div>
       <div class="chips-entidades" id="chips-entidades"></div>
 
-      <h4 style="margin:14px 0 2px;">Ocupación: quién usa qué y cuándo</h4>
-      <p class="rango-fechas">Reservas ya planificadas (tareas asignadas) de las entidades elegidas arriba, mismo estilo que el Gantt principal.</p>
+      <h4 style="margin:14px 0 2px;">Ocupación</h4>
+      <p class="rango-fechas">Tareas asignadas a las entidades seleccionadas.</p>
       <div id="rango-fechas-ocupacion" class="rango-fechas"></div>
       <div class="contenedor-tabla" style="max-height:260px;">
         <table id="tabla-ocupacion" style="display:none;">
@@ -249,9 +249,9 @@
       </div>
 
       <details style="margin-top:14px;">
-        <summary style="cursor:pointer;font-weight:bold;font-size:12px;">Ver coincidencia semanal (huecos libres para planificar algo nuevo) ▾</summary>
+        <summary style="cursor:pointer;font-weight:bold;font-size:12px;">Coincidencia semanal ▾</summary>
         <p class="rango-fechas" style="margin-top:6px;">
-          Según el horario semanal declarado (vigente hoy). Ejemplo: un voluntariado + un espacio + una persona atendida, para ver cuándo coinciden libres los tres.
+          Franjas en las que coinciden libres todas las entidades seleccionadas, según su horario declarado (vigente hoy). Útil para planificar una actividad conjunta nueva.
         </p>
         <div id="resultado-disponibilidad"></div>
       </details>
