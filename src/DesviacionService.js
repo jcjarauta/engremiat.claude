@@ -433,6 +433,30 @@ function obtenerDatosGanttPlanReal(filtro) {
   return serializarParaCliente_({ filas: obtenerFilasGanttDetalladas_(filtro) });
 }
 
+/*
+ * Combina obtenerOpcionesFiltroGantt + obtenerDatosGanttPlanReal en una
+ * sola llamada (ver conversacion: al abrir el dialogo el cliente
+ * disparaba ambas por separado, duplicando la lectura de PERSONA_EQUIPO/
+ * PROYECTO/CAMPANA -- se leian dos veces, una por cada ejecucion de
+ * Apps Script, porque la cache de CacheLecturaService.js es solo por
+ * ejecucion, no se comparte entre llamadas). Solo para la carga inicial
+ * del dialogo; los filtros posteriores siguen usando
+ * obtenerDatosGanttPlanReal solo (las opciones no cambian).
+ */
+function obtenerDatosInicialesGantt(filtro) {
+  var inicioMs = Date.now();
+  cacheLecturaIniciarContexto_();
+  try {
+    return serializarParaCliente_({
+      opciones: obtenerOpcionesFiltroGantt(),
+      filas: obtenerFilasGanttDetalladas_(filtro)
+    });
+  } finally {
+    console.log('OK obtenerDatosInicialesGantt_ms=' + (Date.now() - inicioMs));
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
 /**
  * Formatea una fecha con la zona horaria del script (no toISOString(),
  * que convierte a UTC y desplaza un dia hacia atras en cualquier huso

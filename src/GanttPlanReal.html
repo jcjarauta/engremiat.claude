@@ -341,69 +341,90 @@
       }
       function abrirEdicionProceso(id) { abrirEdicionEntidad('PROCESO', id); }
 
-      function cargarOpcionesFiltro() {
-        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
-          var selectCampana = document.getElementById('filtro-campana');
-          opciones.campanas.forEach(function (campana) {
-            selectCampana.innerHTML += '<option value="' + escapeHtml(campana.id) + '">' + escapeHtml(campana.etiqueta) + '</option>';
+      /*
+       * Selectores segmentados por optgroup (ver conversacion): agrupa
+       * por ROL (personas) / CLASE_RECURSO (recursos), en vez de una
+       * lista plana larga. Elegir una opcion añade un chip y resetea el
+       * select a "-- elige --" (se puede volver a abrir para añadir otra).
+       */
+      function agruparPorGrupo_(opcionesLista) {
+        var grupos = {};
+        var orden = [];
+        opcionesLista.forEach(function (op) {
+          var g = op.grupo || 'Otros';
+          if (!grupos[g]) { grupos[g] = []; orden.push(g); }
+          grupos[g].push(op);
+        });
+        return orden.map(function (g) { return { grupo: g, opciones: grupos[g] }; });
+      }
+      function poblarSelectSegmentado_(select, opcionesLista) {
+        agruparPorGrupo_(opcionesLista).forEach(function (bloque) {
+          var optgroup = document.createElement('optgroup');
+          optgroup.label = bloque.grupo;
+          bloque.opciones.forEach(function (op) {
+            var option = document.createElement('option');
+            option.value = op.id;
+            option.textContent = op.etiqueta;
+            optgroup.appendChild(option);
           });
-          var selectProyecto = document.getElementById('filtro-proyecto');
-          opciones.proyectos.forEach(function (proyecto) {
-            selectProyecto.innerHTML += '<option value="' + escapeHtml(proyecto.id) + '">' + escapeHtml(proyecto.etiqueta) + '</option>';
-          });
-          var selectFase = document.getElementById('filtro-fase');
-          opciones.fases.forEach(function (fase) {
-            selectFase.innerHTML += '<option value="' + escapeHtml(fase) + '">' + escapeHtml(fase) + '</option>';
-          });
-          var selectResponsable = document.getElementById('filtro-responsable');
-          opciones.personas.forEach(function (persona) {
-            selectResponsable.innerHTML += '<option value="' + escapeHtml(persona.id) + '">' + escapeHtml(persona.etiqueta) + '</option>';
-          });
-          var selectRecurso = document.getElementById('filtro-recurso');
-          (opciones.recursos || []).forEach(function (recurso) {
-            selectRecurso.innerHTML += '<option value="' + escapeHtml(recurso.id) + '">' + escapeHtml(recurso.etiqueta) + '</option>';
-          });
+          select.appendChild(optgroup);
+        });
+      }
 
-          /*
-           * Selectores segmentados por optgroup (ver conversacion):
-           * agrupa por ROL (personas) / CLASE_RECURSO (recursos), en
-           * vez de una lista plana larga. Elegir una opcion añade un
-           * chip y resetea el select a "-- elige --" (se puede volver
-           * a abrir para añadir otra).
-           */
-          function agruparPorGrupo_(opcionesLista) {
-            var grupos = {};
-            var orden = [];
-            opcionesLista.forEach(function (op) {
-              var g = op.grupo || 'Otros';
-              if (!grupos[g]) { grupos[g] = []; orden.push(g); }
-              grupos[g].push(op);
-            });
-            return orden.map(function (g) { return { grupo: g, opciones: grupos[g] }; });
-          }
-          function poblarSelectSegmentado_(select, opcionesLista) {
-            agruparPorGrupo_(opcionesLista).forEach(function (bloque) {
-              var optgroup = document.createElement('optgroup');
-              optgroup.label = bloque.grupo;
-              bloque.opciones.forEach(function (op) {
-                var option = document.createElement('option');
-                option.value = op.id;
-                option.textContent = op.etiqueta;
-                optgroup.appendChild(option);
-              });
-              select.appendChild(optgroup);
-            });
-          }
-          poblarSelectSegmentado_(document.getElementById('add-persona'), opciones.personas);
-          poblarSelectSegmentado_(document.getElementById('add-recurso'), opciones.recursos || []);
+      function poblarOpcionesFiltro_(opciones) {
+        var selectCampana = document.getElementById('filtro-campana');
+        opciones.campanas.forEach(function (campana) {
+          selectCampana.innerHTML += '<option value="' + escapeHtml(campana.id) + '">' + escapeHtml(campana.etiqueta) + '</option>';
+        });
+        var selectProyecto = document.getElementById('filtro-proyecto');
+        opciones.proyectos.forEach(function (proyecto) {
+          selectProyecto.innerHTML += '<option value="' + escapeHtml(proyecto.id) + '">' + escapeHtml(proyecto.etiqueta) + '</option>';
+        });
+        var selectFase = document.getElementById('filtro-fase');
+        opciones.fases.forEach(function (fase) {
+          selectFase.innerHTML += '<option value="' + escapeHtml(fase) + '">' + escapeHtml(fase) + '</option>';
+        });
+        var selectResponsable = document.getElementById('filtro-responsable');
+        opciones.personas.forEach(function (persona) {
+          selectResponsable.innerHTML += '<option value="' + escapeHtml(persona.id) + '">' + escapeHtml(persona.etiqueta) + '</option>';
+        });
+        var selectRecurso = document.getElementById('filtro-recurso');
+        (opciones.recursos || []).forEach(function (recurso) {
+          selectRecurso.innerHTML += '<option value="' + escapeHtml(recurso.id) + '">' + escapeHtml(recurso.etiqueta) + '</option>';
+        });
 
+        poblarSelectSegmentado_(document.getElementById('add-persona'), opciones.personas);
+        poblarSelectSegmentado_(document.getElementById('add-recurso'), opciones.recursos || []);
+      }
+
+      /*
+       * Carga inicial del dialogo (ver conversacion -- revision de
+       * DesviacionService.js): antes disparaba obtenerOpcionesFiltroGantt
+       * y obtenerDatosGanttPlanReal como dos llamadas independientes,
+       * que releian PERSONA_EQUIPO/PROYECTO/CAMPANA por duplicado (cada
+       * llamada a google.script.run es una ejecucion de Apps Script
+       * distinta, sin cache compartida entre ellas) y pagaban dos veces
+       * el coste fijo de arranque. Una unica llamada combinada evita
+       * ambos costes.
+       */
+      function cargarGanttInicial_() {
+        document.getElementById('estado-carga').style.display = 'block';
+        document.getElementById('estado-carga').textContent = 'Cargando...';
+        document.getElementById('tabla-gantt').style.display = 'none';
+
+        var filtroInicial = filtroActual_();
+        if (PRESELECCION_CAMPANA) filtroInicial.campanaId = PRESELECCION_CAMPANA;
+
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          poblarOpcionesFiltro_(datos.opciones);
           // Al llegar desde "Ver Gantt" del panel de campaña, viene con la campaña ya elegida.
           if (PRESELECCION_CAMPANA) {
-            selectCampana.value = PRESELECCION_CAMPANA;
+            document.getElementById('filtro-campana').value = PRESELECCION_CAMPANA;
             actualizarIconoEditarFiltro_('filtro-campana', 'editar-filtro-campana', 'CAMPANA');
-            cargarGantt();
           }
-        }).obtenerOpcionesFiltroGantt();
+          filasCompletas_ = datos.filas || [];
+          aplicarFiltrosClienteYRenderizar();
+        }).obtenerDatosInicialesGantt(filtroInicial);
       }
 
       function renderGantt(filas) {
@@ -1026,8 +1047,7 @@
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });
       document.getElementById('btn-actualizar-gantt').addEventListener('click', cargarGantt);
-      cargarOpcionesFiltro();
-      if (!PRESELECCION_CAMPANA) cargarGantt();
+      cargarGanttInicial_();
     </script>
   </body>
 </html>
