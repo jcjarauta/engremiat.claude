@@ -192,6 +192,10 @@
             <span class="btn-modo" id="rango-modo-recurso">Recurso / espacio</span>
           </span>
         </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="btn-buscar-rango">Buscar</button>
+        </div>
       </div>
       <div class="contenedor-tabla" style="max-height:280px;">
         <table id="tabla-rango" style="display:none;">
@@ -887,9 +891,17 @@
         var hoyISO = new Date().toISOString().slice(0, 10);
         document.getElementById('rango-desde').value = hoyISO;
         document.getElementById('rango-hasta').value = hoyISO;
+        document.getElementById('vacio-rango').textContent = 'Elige un periodo y pulsa "Buscar".';
       })();
-      document.getElementById('rango-desde').addEventListener('change', cargarRango_);
-      document.getElementById('rango-hasta').addEventListener('change', cargarRango_);
+      /*
+       * Bajo demanda, no automatico (ver conversacion: "tarda mucho en
+       * cargar"): al abrir el modo Disponibilidad se disparaban a la
+       * vez Vista del dia Y Vista de rango, cada una con varias
+       * lecturas de hoja -- se acumulaban. La Vista de rango ahora solo
+       * se carga al pulsar "Buscar" o al cambiar la agrupacion (un
+       * clic explicito, no automatico al abrir ni al tocar las fechas).
+       */
+      document.getElementById('btn-buscar-rango').addEventListener('click', cargarRango_);
       document.getElementById('rango-modo-persona').addEventListener('click', function () {
         agrupacionRango_ = 'persona';
         this.classList.add('activo');
@@ -990,7 +1002,6 @@
         if (esDisponibilidad) {
           recalcularDisponibilidad_();
           cargarVistaDia_();
-          cargarRango_();
         }
       }
       document.getElementById('modo-plan-real').addEventListener('click', function () { cambiarModo_('plan-real'); });
