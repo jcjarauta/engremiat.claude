@@ -31,6 +31,10 @@
       .linea-hoy { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--color-primario); z-index: 1; }
       .btn-editar { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 2px 6px; }
       .btn-editar:hover { background: var(--color-fondo-suave); }
+      .enlace-mini { color: var(--color-primario); cursor: pointer; }
+      .enlace-mini:hover { text-decoration: underline; }
+      .detalle-fila { font-size: 10px; color: var(--color-texto-secundario); white-space: normal; margin-top: 2px; }
+      .select-tareas { font-size: 10px; max-width: 90px; margin-left: 4px; }
       tr:hover td { background: #f7f9fc; }
       .vacio { padding: 12px 0; }
     </style>
@@ -165,9 +169,20 @@
         document.getElementById('estado-carga').style.display = 'block';
       }
 
-      function abrirEdicionProceso(id) {
-        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion('PROCESO', id);
+      /*
+       * Edicion de toda la jerarquia desde el propio Gantt (ver
+       * conversacion): en vez de un Gantt "dinamico" con arrastre, se
+       * reutiliza el calendario que ya tiene cada formulario (input
+       * type=date) -- aqui solo se necesita el atajo directo a cada
+       * nivel, y el refresco en vivo (mas abajo) se encarga de mostrar
+       * el resultado y los posibles conflictos (desviacion, horario)
+       * en cuanto se guarda.
+       */
+      function abrirEdicionEntidad(entidad, id) {
+        if (!id) return;
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
       }
+      function abrirEdicionProceso(id) { abrirEdicionEntidad('PROCESO', id); }
 
       function cargarOpcionesFiltro() {
         google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
@@ -316,9 +331,35 @@
               '" style="left:' + izqReal + '%;width:' + anchoReal + '%;" title="' + escapeHtml(tituloReal) + '"></div>';
           }
           var desv = formatearDesviacion_(fila.diasDesviacionFin, fila.diasRiesgo);
+
+          // Enlaces rapidos a Campaña/Proyecto (jerarquia hacia arriba del proceso).
+          var enlaceCampana = fila.campanaId
+            ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'CAMPANA\',\'' + escapeHtml(fila.campanaId) + '\')">' + escapeHtml(fila.campanaNombre) + '</span>'
+            : escapeHtml(fila.campanaNombre);
+          var enlaceProyecto = fila.proyectoId
+            ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'PROYECTO\',\'' + escapeHtml(fila.proyectoId) + '\')">' + escapeHtml(fila.proyectoNombre) + '</span>'
+            : escapeHtml(fila.proyectoNombre);
+          var detalleJerarquia = (fila.campanaNombre || fila.proyectoNombre)
+            ? '<div class="detalle-fila">' + enlaceCampana + (fila.campanaNombre && fila.proyectoNombre ? ' · ' : '') + enlaceProyecto + '</div>'
+            : '';
+
+          // Producto: nombre clicable directamente (jerarquia hacia arriba del proceso, un nivel).
+          var celdaProducto = fila.productoId
+            ? '<span class="enlace-mini" onclick="abrirEdicionEntidad(\'PRODUCTO\',\'' + escapeHtml(fila.productoId) + '\')">' + escapeHtml(fila.productoNombre) + '</span>'
+            : escapeHtml(fila.productoNombre);
+
+          // Tareas del proceso (jerarquia hacia abajo): mini-select, no una columna nueva.
+          var selectTareas = '';
+          if (fila.tareas && fila.tareas.length > 0) {
+            selectTareas = '<select class="select-tareas" onchange="if(this.value){abrirEdicionEntidad(\'TAREA\',this.value);this.value=\'\';}">' +
+              '<option value="">Tareas (' + fila.tareas.length + ')</option>' +
+              fila.tareas.map(function (t) { return '<option value="' + escapeHtml(t.id) + '">' + escapeHtml(t.nombre) + '</option>'; }).join('') +
+              '</select>';
+          }
+
           return '<tr>' +
-            '<td class="col-nombre">' + escapeHtml(fila.nombre) + '</td>' +
-            '<td>' + escapeHtml(fila.productoNombre) + '</td>' +
+            '<td class="col-nombre">' + escapeHtml(fila.nombre) + detalleJerarquia + '</td>' +
+            '<td>' + celdaProducto + '</td>' +
             '<td>' + escapeHtml(fila.fase) + '</td>' +
             '<td class="col-responsable" title="' + escapeHtml(fila.responsable) + '">' + escapeHtml(fila.responsable) + '</td>' +
             '<td class="col-fechas">' + formatearRangoFechas_(fila.fechaInicioPlan, fila.fechaFinPlan) + '</td>' +
@@ -330,7 +371,7 @@
               '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
               barraReal + lineaHoy +
             '</div></td>' +
-            '<td><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span></td>' +
+            '<td><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span>' + selectTareas + '</td>' +
           '</tr>';
         }).join('');
 
@@ -382,6 +423,38 @@
           aplicarFiltrosClienteYRenderizar();
         }).obtenerDatosGanttPlanReal(filtroActual_());
       }
+
+      /*
+       * Refresco en vivo (ver conversacion -- version minima y honesta
+       * de "motor por eventos": Apps Script no permite que el servidor
+       * avise al cliente, asi que se sondea cada pocos segundos si
+       * 91_HISTORIAL ha crecido desde la ultima vez. Sin distinguir que
+       * cambio exactamente -- cualquier escritura en el sistema
+       * dispara un refresco silencioso del Gantt (ya barato, solo
+       * repinta el filtro actual). Asi, al editar un proceso/tarea/
+       * proyecto/campaña desde el formulario que se abre encima, el
+       * Gantt de debajo se actualiza solo al cerrar, sin recargar la
+       * pagina ni perder filtros.
+       */
+      var ultimoNumeroFilasHistorial_ = null;
+
+      function cargarGanttSilencioso_() {
+        google.script.run.withFailureHandler(function () {}).withSuccessHandler(function (datos) {
+          filasCompletas_ = datos.filas || [];
+          aplicarFiltrosClienteYRenderizar();
+        }).obtenerDatosGanttPlanReal(filtroActual_());
+      }
+
+      function comprobarCambiosYRefrescar_() {
+        google.script.run.withFailureHandler(function () {}).withSuccessHandler(function (numFilas) {
+          if (ultimoNumeroFilasHistorial_ !== null && numFilas !== ultimoNumeroFilasHistorial_) {
+            cargarGanttSilencioso_();
+          }
+          ultimoNumeroFilasHistorial_ = numFilas;
+        }).obtenerNumeroFilasHistorial();
+      }
+
+      setInterval(comprobarCambiosYRefrescar_, 5000);
 
       ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable', 'filtro-recurso'].forEach(function (id) {
         document.getElementById(id).addEventListener('change', cargarGantt);

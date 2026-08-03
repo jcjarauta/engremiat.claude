@@ -93,6 +93,25 @@ function listarHistorialDeRegistro(entidad, registroId) {
     });
 }
 
+/*
+ * Sondeo barato para refresco en vivo del Gantt (ver conversacion --
+ * version minima y honesta de "motor por eventos": Apps Script no
+ * permite que el servidor empuje avisos al cliente, asi que el Gantt,
+ * mientras esta abierto, pregunta cada pocos segundos "¿ha crecido
+ * 91_HISTORIAL desde la ultima vez?" en vez de releer y comparar filas
+ * enteras. getLastRow() es una unica lectura barata (no getDataRange),
+ * sin filtrar por entidad a proposito -- cualquier escritura en
+ * cualquier parte del sistema dispara un refresco del Gantt, que ya es
+ * barato de por si (solo repinta su propio filtro actual).
+ */
+function obtenerNumeroFilasHistorial() {
+  var hoja = SpreadsheetApp.getActive().getSheetByName('91_HISTORIAL');
+  if (!hoja) {
+    throw new Error('ERROR_HISTORIAL: no existe la hoja 91_HISTORIAL.');
+  }
+  return hoja.getLastRow();
+}
+
 function listarHistorialPorOrigen(origen, incluirPruebas) {
   var hoja = SpreadsheetApp.getActive().getSheetByName('91_HISTORIAL');
   if (!hoja) {

@@ -336,7 +336,7 @@ function obtenerFilasGanttDetalladas_(filtro) {
   var tareasPorProceso_ = {};
   listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) {
     if (!tareasPorProceso_[t.PROCESO_ID]) tareasPorProceso_[t.PROCESO_ID] = [];
-    tareasPorProceso_[t.PROCESO_ID].push(t.ID);
+    tareasPorProceso_[t.PROCESO_ID].push({ id: t.ID, nombre: t.NOMBRE });
   });
   var recursosPorTarea_ = {};
   listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
@@ -344,10 +344,10 @@ function obtenerFilasGanttDetalladas_(filtro) {
     recursosPorTarea_[tr.TAREA_ID].push(tr.RECURSO_ID);
   });
   function recursosDelProceso_(procesoId) {
-    var idsTarea = tareasPorProceso_[procesoId] || [];
+    var tareas = tareasPorProceso_[procesoId] || [];
     var recursos = {};
-    idsTarea.forEach(function (tareaId) {
-      (recursosPorTarea_[tareaId] || []).forEach(function (recursoId) { recursos[recursoId] = true; });
+    tareas.forEach(function (tarea) {
+      (recursosPorTarea_[tarea.id] || []).forEach(function (recursoId) { recursos[recursoId] = true; });
     });
     return Object.keys(recursos);
   }
@@ -402,9 +402,13 @@ function obtenerFilasGanttDetalladas_(filtro) {
       fase: proceso.FASE_PRODUCCION || '',
       estado: proceso.ESTADO || '',
       responsable: nombresPersona[proceso.RESPONSABLE_ID] || '',
+      productoId: proceso.PRODUCTO_ID || '',
       productoNombre: nombresProducto[proceso.PRODUCTO_ID] || '',
+      proyectoId: contexto.proyectoId || '',
       proyectoNombre: contexto.proyectoNombre || '',
+      campanaId: contexto.campanaId || '',
       campanaNombre: contexto.campanaNombre || '',
+      tareas: tareasPorProceso_[proceso.ID] || [],
       fechaInicioPlan: proceso.FECHA_INICIO_PLAN,
       fechaFinPlan: proceso.FECHA_FIN_PLAN,
       fechaInicioReal: proceso.FECHA_INICIO_REAL || null,
