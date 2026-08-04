@@ -12,9 +12,10 @@
  * igual para los informes).
  */
 
-function obtenerOpcionesCampanasActivas() {
-  return listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
-    return { id: campana.ID, etiqueta: campana.NOMBRE };
+function obtenerOpcionesCampanasActivas(incluirPruebas) {
+  var campanas = filtrarPorNivelDato_('CAMPANA', listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }), incluirPruebas);
+  return campanas.map(function (campana) {
+    return { id: campana.ID, etiqueta: aplicarSufijoNivelDato_('CAMPANA', campana, campana.NOMBRE) };
   });
 }
 

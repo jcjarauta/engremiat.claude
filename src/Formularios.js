@@ -268,6 +268,10 @@ CAMPANA: [
   { campo: 'FECHA_INICIO_PLAN', etiqueta: 'Fecha inicio plan', tipo: 'fecha', requerido: true },
   { campo: 'FECHA_FIN_PLAN', etiqueta: 'Fecha fin plan', tipo: 'fecha', requerido: true },
   { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CAMPANA', requerido: true, valorPorDefecto: 'Borrador' },
+  {
+    campo: 'NIVEL_DATO', etiqueta: 'Nivel de dato', tipo: 'catalogo', catalogo: 'CFG_NIVEL_DATO', valorPorDefecto: 'Operativo',
+    ayuda: 'Operativo = campaña real del taller. Piloto = campaña de demostración con estructura realista, no oculta datos pero se distingue. Auditoría = artefacto de verificación del propio sistema, oculto por defecto en selectores y paneles.'
+  },
   { campo: 'OBJETIVO', etiqueta: 'Objetivo', tipo: 'texto' },
   { campo: 'RESULTADO_ESPERADO', etiqueta: 'Resultado esperado', tipo: 'texto' },
   { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
@@ -2870,17 +2874,21 @@ function etiquetaExtraSelector_(clave, registro) {
   return '';
 }
 
-function obtenerOpcionesEntidadParaSelector(entidad) {
+function obtenerOpcionesEntidadParaSelector(entidad, incluirPruebas) {
   var clave = String(entidad || '').trim().toUpperCase();
 
   if (!ENTIDADES_MVP[clave]) {
     throw new Error('Entidad no configurada: ' + entidad);
   }
 
-  return listarRegistros(clave, { ACTIVO: 'SÍ' }).map(function (registro) {
+  var registros = listarRegistros(clave, { ACTIVO: 'SÍ' });
+  registros = filtrarPorNivelDato_(clave, registros, incluirPruebas);
+
+  return registros.map(function (registro) {
+    var etiqueta = registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '') + etiquetaExtraSelector_(clave, registro);
     return {
       id: registro.ID,
-      etiqueta: registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '') + etiquetaExtraSelector_(clave, registro)
+      etiqueta: aplicarSufijoNivelDato_(clave, registro, etiqueta)
     };
   });
 }

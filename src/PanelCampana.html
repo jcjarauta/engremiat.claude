@@ -34,6 +34,9 @@
       <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
       <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇️</button>
       <button id="btnVerGantt" class="btn-mini" title="Ver Gantt de esta campaña">📊</button>
+      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;font-size:12px;">
+        <input type="checkbox" id="incluirPruebas"> Piloto/auditoría
+      </label>
     </div>
     <div id="resumenCampana" class="resumen-campana"></div>
 
@@ -216,11 +219,12 @@
             cargarArbol();
           })
           .withFailureHandler(mostrarError)
-          .obtenerOpcionesCampanasActivas();
+          .obtenerOpcionesCampanasActivas(document.getElementById("incluirPruebas").checked);
       }
 
       document.getElementById("selectCampana").addEventListener("change", cargarArbol);
       document.getElementById("btnActualizar").addEventListener("click", function () { cargarOpcionesCampana(); });
+      document.getElementById("incluirPruebas").addEventListener("change", function () { cargarOpcionesCampana(); });
       document.getElementById("btnNuevaCampana").addEventListener("click", function () {
         google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearCampana();
       });

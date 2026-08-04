@@ -17,6 +17,9 @@
   <h3><?= titulo ?></h3>
   <label for="buscador">Busca (ID, nombre, rol, tipo...):</label>
   <input type="text" id="buscador" autocomplete="off" placeholder="Escribe para buscar...">
+  <label style="display:flex;align-items:center;gap:6px;font-weight:normal;margin-top:6px;font-size:13px;">
+    <input type="checkbox" id="incluirPruebas"> Incluir campañas/proyectos de piloto y auditoría
+  </label>
   <div id="resultados"></div>
   <input type="hidden" id="idSeleccionado" value="">
   <div id="mensaje"></div>
@@ -45,12 +48,15 @@
       google.script.run
         .withSuccessHandler(function (lista) {
           opciones = lista || [];
+          filtrarYRenderizar_();
         })
         .withFailureHandler(function (error) {
           document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
         })
-        [OPCIONES_FN](ENTIDAD);
+        [OPCIONES_FN](ENTIDAD, document.getElementById("incluirPruebas").checked);
     }
+
+    document.getElementById("incluirPruebas").addEventListener("change", cargarOpciones);
 
     /*
      * Sustituye el <datalist> nativo (filtrado por prefijo, distinto
