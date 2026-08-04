@@ -2388,6 +2388,15 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
       );
 
       idFinal = resultadoInsercion.id;
+
+      /*
+       * N7.2 -- alta manual de un movimiento de material (menú "Nuevo
+       * movimiento de material"): ajusta stock/reserva tras el insert,
+       * nunca dentro (StockMaterialService.js explica por qué).
+       */
+      if (clave === 'MOVIMIENTO_MATERIAL') {
+        aplicarMovimientoAStock_(datos.MATERIAL_ID, datos.TIPO_MOVIMIENTO, datos.CANTIDAD);
+      }
     }
 
     if (clave === 'PRODUCTO' && proyectoVincularId) {

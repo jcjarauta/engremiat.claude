@@ -51,6 +51,8 @@ function confirmarRecepcion_(recepcionId, confirmar) {
         },
         {origen: 'ADMIN'}
       );
+      // N7.2 -- ahora sí actualiza MATERIAL.STOCK_ACTUAL (StockMaterialService.js).
+      aplicarMovimientoAStock_(linea.MATERIAL_ID, 'Entrada', linea.CANTIDAD_RECIBIDA);
     });
 
     actualizarRegistroTransaccional(
