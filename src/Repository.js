@@ -257,6 +257,13 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'TIPO',
     'FECHA_LIMITE',
     'ESTADO'
+  ]),
+
+  ETIQUETA_IMPACTO: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ID',
+    'CATEGORIA_IMPACTO',
+    'DESCRIPCION'
   ])
 });
 

@@ -57,7 +57,8 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   COMPETENCIA: 'competencia',
   PERSONA_COMPETENCIA: 'persona - competencia',
   RECURSO_COMPETENCIA: 'recurso - competencia',
-  CONVOCATORIA: 'convocatoria'
+  CONVOCATORIA: 'convocatoria',
+  ETIQUETA_IMPACTO: 'etiqueta de impacto'
 });
 
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
@@ -1051,6 +1052,19 @@ INCIDENCIA: [
     { campo: 'REQUISITOS', etiqueta: 'Requisitos', tipo: 'textarea' },
     { campo: 'URL_BASES', etiqueta: 'Enlace a las bases', tipo: 'texto' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CONVOCATORIA', requerido: true, valorPorDefecto: 'Abierta' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Fase N6.1 (ver conversación -- eje "Por qué"): etiquetas de impacto
+   * social/ecológico/económico, mismo catálogo de nivel que el eje
+   * económico (CFG_ENTIDAD_PRESUPUESTO -- Campaña/Proyecto/Producto).
+   */
+  ETIQUETA_IMPACTO: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Nivel', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_PRESUPUESTO', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'CATEGORIA_IMPACTO', etiqueta: 'Categoría de impacto', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_IMPACTO', requerido: true },
+    { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'textarea', requerido: true, ayuda: 'Ej. "Reduce residuos reutilizando madera de palets", "Genera 3 puestos de voluntariado estable".' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -2621,6 +2635,11 @@ function onOpen() {
             .addItem('Editar convocatoria', 'abrirEditarConvocatoria')
         )
         .addSubMenu(
+          ui.createMenu('Impacto')
+            .addItem('Nueva etiqueta de impacto', 'abrirFormularioCrearEtiquetaImpacto')
+            .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto')
+        )
+        .addSubMenu(
           ui.createMenu('Catálogos y administración')
             .addItem('Catálogos', 'abrirCatalogosAdmin')
             .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
@@ -2800,6 +2819,7 @@ function abrirFormularioCrearCompetencia() { abrirFormularioCrear_('COMPETENCIA'
 function abrirFormularioCrearPersonaCompetencia() { abrirFormularioCrear_('PERSONA_COMPETENCIA', 'Persona - Competencia (nueva)'); }
 function abrirFormularioCrearRecursoCompetencia() { abrirFormularioCrear_('RECURSO_COMPETENCIA', 'Recurso - Competencia requerida (nueva)'); }
 function abrirFormularioCrearConvocatoria() { abrirFormularioCrear_('CONVOCATORIA', 'Nueva convocatoria'); }
+function abrirFormularioCrearEtiquetaImpacto() { abrirFormularioCrear_('ETIQUETA_IMPACTO', 'Nueva etiqueta de impacto'); }
 
 
 /**
@@ -2894,6 +2914,7 @@ function abrirEditarCompetencia() { abrirEditarRegistroPorEntidad_('COMPETENCIA'
 function abrirEditarPersonaCompetencia() { abrirEditarRegistroPorEntidad_('PERSONA_COMPETENCIA', 'persona - competencia'); }
 function abrirEditarRecursoCompetencia() { abrirEditarRegistroPorEntidad_('RECURSO_COMPETENCIA', 'recurso - competencia'); }
 function abrirEditarConvocatoria() { abrirEditarRegistroPorEntidad_('CONVOCATORIA', 'convocatoria'); }
+function abrirEditarEtiquetaImpacto() { abrirEditarRegistroPorEntidad_('ETIQUETA_IMPACTO', 'etiqueta de impacto'); }
 function abrirEditarProyectoProducto() { abrirEditarRegistroPorEntidad_('PROYECTO_PRODUCTO', 'Proyecto-Producto'); }
 function abrirEditarTareaResponsable() { abrirEditarRegistroPorEntidad_('TAREA_RESPONSABLE', 'Tarea-Responsable'); }
 function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCTO_MATERIAL', 'Producto-Material'); }

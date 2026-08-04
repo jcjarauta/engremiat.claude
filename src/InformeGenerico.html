@@ -23,6 +23,7 @@
       <option value="DESVIACION">Desviación de planificación</option>
       <option value="CALIDAD_PLANIFICACION">Calidad de planificación</option>
       <option value="JUSTIFICACION_ECONOMICA">Justificación económica</option>
+      <option value="EVIDENCIA_SOCIAL">Evidencia de impacto (Por qué)</option>
     </select>
 
     <div id="contenedor-nivel" style="display:none;">
@@ -73,6 +74,10 @@
       <div class="seccion" id="seccion-justificacion" style="display:none;">
         <h4>Justificación económica</h4>
         <div id="justificacion-economica"></div>
+      </div>
+      <div class="seccion" id="seccion-evidencia" style="display:none;">
+        <h4>Evidencia de impacto</h4>
+        <div id="evidencia-social"></div>
       </div>
     </div>
 
@@ -137,7 +142,7 @@
           return;
         }
 
-        if (tipo === 'JUSTIFICACION_ECONOMICA') {
+        if (tipo === 'JUSTIFICACION_ECONOMICA' || tipo === 'EVIDENCIA_SOCIAL') {
           contenedorNivel.style.display = 'block';
           contenedorRegistro.style.display = 'block';
           cargarOpcionesRegistroPorNivel_();
@@ -297,6 +302,58 @@
           renderComparativaCampanas_(informe.comparativaCampanas);
       }
 
+      /*
+       * N6 (ver conversación -- eje "Por qué"): a diferencia de
+       * justificación económica, aquí no hay comparativa entre
+       * campañas ni desglose por categoría económica -- son 3 bloques
+       * independientes: impacto social (mismo dato ya usado en el
+       * informe económico, aquí como pieza propia), reutilización de
+       * producto/proceso (proxy determinista vía MODO_USO, no
+       * inventario de materiales físicos) y etiquetas de impacto
+       * cualitativas (N6.1) agrupadas por categoría.
+       */
+      function renderEtiquetasImpacto_(etiquetas, porCategoria) {
+        var resumenCategorias = Object.keys(porCategoria || {}).map(function (cat) {
+          return '<div class="resumen-linea"><span>' + escapeHtml(cat) + '</span><span class="badge">' + porCategoria[cat] + '</span></div>';
+        }).join('');
+        if (!etiquetas || etiquetas.length === 0) {
+          return resumenCategorias + '<div class="vacio">Sin etiquetas de impacto registradas todavía.</div>';
+        }
+        var lista = '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Categoría</th><th style="text-align:left;">Registro</th><th style="text-align:left;">Descripción</th></tr>' +
+          etiquetas.map(function (e) {
+            return '<tr><td>' + escapeHtml(e.categoria) + '</td><td>' + escapeHtml(e.entidadTipo) + ': ' + escapeHtml(e.entidadNombre) + '</td>' +
+              '<td>' + escapeHtml(e.descripcion) + '</td></tr>';
+          }).join('') + '</table>';
+        return resumenCategorias + lista;
+      }
+
+      function renderReutilizacion_(reutilizacion) {
+        var r = reutilizacion || { relacionesReutilizadas: [], procesosReutilizados: [], totalReutilizaciones: 0 };
+        if (r.totalReutilizaciones === 0) return '<div class="vacio">Ninguna reutilización registrada (vía campo "Modo de uso").</div>';
+        var filas = r.relacionesReutilizadas.map(function (rel) {
+          return '<div class="item">Producto "' + escapeHtml(rel.productoNombre) + '" en proyecto "' + escapeHtml(rel.proyectoNombre) + '" — ' + escapeHtml(rel.modoUso) + '</div>';
+        }).join('') + r.procesosReutilizados.map(function (p) {
+          return '<div class="item">Proceso "' + escapeHtml(p.nombre) + '" (producto "' + escapeHtml(p.productoNombre) + '") — ' + escapeHtml(p.modoUso) + '</div>';
+        }).join('');
+        return filas;
+      }
+
+      function renderEvidenciaSocial_(informe) {
+        var contenedor = document.getElementById('evidencia-social');
+        var impacto = informe.impactoSocial || { personasVoluntariado: 0, diasVoluntariado: 0, personasAtendidas: 0, diasPersonasAtendidas: 0 };
+
+        contenedor.innerHTML =
+          '<h4 style="margin-top:0;">' + escapeHtml(informe.entidadTipo) + ': ' + escapeHtml(informe.entidadNombre) + '</h4>' +
+          '<p style="margin-bottom:2px;"><strong>Impacto social (personas)</strong></p>' +
+          '<div class="resumen-linea"><span>Personas voluntarias</span><span class="badge">' + impacto.personasVoluntariado + ' (' + impacto.diasVoluntariado + ' días)</span></div>' +
+          '<div class="resumen-linea"><span>Personas atendidas</span><span class="badge">' + impacto.personasAtendidas + ' (' + impacto.diasPersonasAtendidas + ' días)</span></div>' +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Reutilización de producto/proceso</strong> <span style="font-weight:normal;color:var(--color-texto-secundario);">(proxy vía "Modo de uso", no inventario de materiales)</span></p>' +
+          renderReutilizacion_(informe.reutilizacion) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Etiquetas de impacto</strong></p>' +
+          renderEtiquetasImpacto_(informe.etiquetasImpacto, informe.etiquetasPorCategoria);
+      }
+
       function renderInforme(informe) {
         if (!informe) {
           mostrarError({ message: 'El servidor no devolvio datos de informe (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
@@ -306,18 +363,21 @@
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
 
-        var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || informe.tipo === 'JUSTIFICACION_ECONOMICA';
+        var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || informe.tipo === 'JUSTIFICACION_ECONOMICA' || informe.tipo === 'EVIDENCIA_SOCIAL';
         ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
           document.getElementById(id).closest('.seccion').style.display = esInformeSinJerarquia ? 'none' : '';
         });
-        document.getElementById('seccion-desviacion').style.display = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? 'none' : '';
-        if (informe.tipo !== 'JUSTIFICACION_ECONOMICA') renderDesviacion(esInformeSinJerarquia ? informe : informe.desviacionPlanificacion);
+        document.getElementById('seccion-desviacion').style.display = (informe.tipo === 'JUSTIFICACION_ECONOMICA' || informe.tipo === 'EVIDENCIA_SOCIAL') ? 'none' : '';
+        if (informe.tipo !== 'JUSTIFICACION_ECONOMICA' && informe.tipo !== 'EVIDENCIA_SOCIAL') renderDesviacion(esInformeSinJerarquia ? informe : informe.desviacionPlanificacion);
 
         document.getElementById('seccion-calidad').style.display = informe.tipo === 'CALIDAD_PLANIFICACION' ? '' : 'none';
         if (informe.tipo === 'CALIDAD_PLANIFICACION') renderCalidadPlanificacion_(informe);
 
         document.getElementById('seccion-justificacion').style.display = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? '' : 'none';
         if (informe.tipo === 'JUSTIFICACION_ECONOMICA') renderJustificacionEconomica_(informe);
+
+        document.getElementById('seccion-evidencia').style.display = informe.tipo === 'EVIDENCIA_SOCIAL' ? '' : 'none';
+        if (informe.tipo === 'EVIDENCIA_SOCIAL') renderEvidenciaSocial_(informe);
 
         if (esInformeSinJerarquia) return;
 
@@ -365,7 +425,7 @@
         tipoActual = tipo;
         if (tipo === 'MEMORIA' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
           filtroActual = null;
-        } else if (tipo === 'JUSTIFICACION_ECONOMICA') {
+        } else if (tipo === 'JUSTIFICACION_ECONOMICA' || tipo === 'EVIDENCIA_SOCIAL') {
           filtroActual = { entidadTipo: document.getElementById('nivel-economico').value, entidadId: registro };
         } else {
           filtroActual = registro;

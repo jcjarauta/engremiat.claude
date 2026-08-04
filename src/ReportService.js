@@ -235,6 +235,7 @@ function generarInforme(tipo, id) {
     else if (tipo === 'DESVIACION') informe = generarInformeDesviacion();
     else if (tipo === 'CALIDAD_PLANIFICACION') informe = generarInformeCalidadPlanificacion();
     else if (tipo === 'JUSTIFICACION_ECONOMICA') informe = generarInformeJustificacionEconomica(id && id.entidadTipo, id && id.entidadId);
+    else if (tipo === 'EVIDENCIA_SOCIAL') informe = generarInformeEvidenciaSocial(id && id.entidadTipo, id && id.entidadId);
     else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
 
     return serializarParaCliente_(informe);

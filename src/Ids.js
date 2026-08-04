@@ -142,6 +142,10 @@ const ENTIDADES_MVP = Object.freeze({
   CONVOCATORIA: Object.freeze({
     hoja: '36_CONVOCATORIA',
     prefijo: 'CNV'
+  }),
+  ETIQUETA_IMPACTO: Object.freeze({
+    hoja: '37_ETIQUETA_IMPACTO',
+    prefijo: 'IMP'
   })
 });
 
