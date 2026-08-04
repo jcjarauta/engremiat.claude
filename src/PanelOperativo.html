@@ -53,6 +53,9 @@
     <h4>Relaciones incompletas</h4>
     <div id="relacionesIncompletas"></div>
 
+    <h4>Recursos sin técnico disponible</h4>
+    <div id="recursosSinCompetenciaDisponible"></div>
+
     <h4>Capacidad de recursos</h4>
     <div id="capacidadRecursos"></div>
 
@@ -177,6 +180,12 @@
 
       renderLista('relacionesIncompletas', panel.excepciones.relacionesIncompletas, function (r) {
         return '<div class="item alerta"><div class="titulo">' + escaparHtml(r.PROYECTO_ID) + ' -- ' + escaparHtml(r.PRODUCTO_ID) + '</div></div>';
+      });
+
+      renderLista('recursosSinCompetenciaDisponible', panel.excepciones.recursosSinCompetenciaDisponible, function (r) {
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(r.NOMBRE) + '</div>' +
+          '<div class="detalle">Requiere: ' + escaparHtml(r.COMPETENCIA_NOMBRE) + ' -- nadie disponible con esa competencia</div>' +
+          botonAbrir_('RECURSO', r.RECURSO_ID) + '</div>';
       });
 
       renderLista('capacidadRecursos', panel.recursos.capacidad, function (r) {

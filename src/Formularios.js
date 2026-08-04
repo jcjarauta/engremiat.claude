@@ -13,6 +13,52 @@
  * no la clave interna en mayusculas). Valores = nombre de entidad interno
  * que espera listarRegistros/ENTIDADES_MVP.
  */
+/*
+ * Nombre legible en español por entidad (ver conversacion -- "que
+ * normalicemos el estilo"): antes solo 3 entidades tenian etiqueta
+ * propia y el resto caia a clave.toLowerCase() en crudo ("Editar
+ * proveedor_material" en vez de "Editar proveedor - material"). Unico
+ * punto de mantenimiento para el titulo de "Editar X" en todo el
+ * sistema (abrirFormularioEditarPorId).
+ */
+var ETIQUETA_ENTIDAD_MVP = Object.freeze({
+  CAMPANA: 'campaña',
+  PROYECTO: 'proyecto',
+  PRODUCTO: 'producto',
+  PROYECTO_PRODUCTO: 'proyecto - producto',
+  PROCESO: 'proceso',
+  TAREA: 'tarea',
+  TAREA_RESPONSABLE: 'tarea - responsable',
+  MATERIAL: 'material',
+  PRODUCTO_MATERIAL: 'producto - material',
+  TAREA_MATERIAL: 'tarea - material',
+  PERSONA_EQUIPO: 'persona/equipo',
+  DECISION: 'decisión',
+  INCIDENCIA: 'incidencia',
+  DOCUMENTO: 'documento',
+  PROVEEDOR: 'proveedor',
+  ASIGNACION: 'asignación',
+  RELACION: 'relación',
+  VINCULO: 'vínculo',
+  MOVIMIENTO_MATERIAL: 'movimiento de material',
+  EJECUCION_TAREA: 'ejecución de tarea',
+  PROVEEDOR_MATERIAL: 'proveedor - material',
+  EQUIPO_MIEMBRO: 'equipo - miembro',
+  RECURSO: 'recurso',
+  TAREA_RECURSO: 'tarea - recurso',
+  PEDIDO_PROVEEDOR: 'pedido a proveedor',
+  PEDIDO_PROVEEDOR_LINEA: 'línea de pedido a proveedor',
+  RECEPCION: 'recepción',
+  RECEPCION_LINEA: 'línea de recepción',
+  HORARIO: 'horario',
+  PRESUPUESTO: 'presupuesto',
+  FUENTE_FINANCIACION: 'fuente de financiación',
+  COSTE: 'coste',
+  COMPETENCIA: 'competencia',
+  PERSONA_COMPETENCIA: 'persona - competencia',
+  RECURSO_COMPETENCIA: 'recurso - competencia'
+});
+
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Campaña': 'CAMPANA',
   'Proyecto': 'PROYECTO',
@@ -36,6 +82,48 @@ var ENTIDAD_HORARIO_A_MVP = Object.freeze({
   'Recurso': 'RECURSO',
   'Persona/Equipo': 'PERSONA_EQUIPO'
 });
+
+var MVP_A_ENTIDAD_DOCUMENTO_ = Object.freeze(Object.keys(ENTIDAD_DOCUMENTO_A_MVP).reduce(function (acc, etiqueta) {
+  acc[ENTIDAD_DOCUMENTO_A_MVP[etiqueta]] = etiqueta;
+  return acc;
+}, {}));
+
+/*
+ * Vinculos relacionados de CUALQUIER entidad (ver conversacion --
+ * "relación incidencia-decisión-tarea, cómo lo mejoramos"): en vez de
+ * inventar un campo nuevo para cada par de entidades (Decision no
+ * tiene INCIDENCIA_ID, ni falta que hace), se reutiliza VINCULO
+ * (generico, ya usado igual en Ficha de Recurso para sus incidencias)
+ * en cualquier direccion. Generico a proposito -- funciona para
+ * cualquiera de las 10 entidades de CFG_ENTIDAD_DOCUMENTO, no solo
+ * Incidencia/Decision, sin codigo especifico por par.
+ */
+function obtenerVinculosDeEntidad(entidad, id) {
+  var etiqueta = MVP_A_ENTIDAD_DOCUMENTO_[entidad];
+  if (!etiqueta || !id) return [];
+
+  return listarRegistros('VINCULO', { ACTIVO: 'SÍ' })
+    .filter(function (v) {
+      return (v.ENTIDAD_ORIGEN_TIPO === etiqueta && v.ENTIDAD_ORIGEN_ID === id) ||
+             (v.ENTIDAD_DESTINO_TIPO === etiqueta && v.ENTIDAD_DESTINO_ID === id);
+    })
+    .map(function (v) {
+      var esOrigen = v.ENTIDAD_ORIGEN_TIPO === etiqueta && v.ENTIDAD_ORIGEN_ID === id;
+      var otraEtiqueta = esOrigen ? v.ENTIDAD_DESTINO_TIPO : v.ENTIDAD_ORIGEN_TIPO;
+      var otroId = esOrigen ? v.ENTIDAD_DESTINO_ID : v.ENTIDAD_ORIGEN_ID;
+      var otraEntidad = ENTIDAD_DOCUMENTO_A_MVP[otraEtiqueta];
+      var registro = otraEntidad ? obtenerRegistroPorId(otraEntidad, otroId) : null;
+      return {
+        vinculoId: v.ID,
+        tipoVinculo: v.TIPO_VINCULO || '',
+        entidad: otraEntidad,
+        entidadEtiqueta: otraEtiqueta,
+        id: otroId,
+        nombre: registro ? (registro.TITULO || registro.NOMBRE || otroId) : otroId,
+        estado: registro ? (registro.ESTADO || '') : ''
+      };
+    });
+}
 
 var MAPAS_DEPENDENCIA_MVP = Object.freeze({
   DOCUMENTO_ENTIDAD_ID: Object.freeze({
@@ -482,6 +570,18 @@ PROYECTO: [
     { campo: 'UBICACION_ID', etiqueta: 'Ubicación (espacio)', tipo: 'fk', entidadFk: 'RECURSO', filtroValores: { campo: 'CLASE_RECURSO', valores: ['Espacio'] } },
     { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO_FISICO', requerido: true, valorPorDefecto: 'Disponible' },
+    /*
+     * Eje económico, Fase 2 (ver conversación -- "espacios y maquinaria:
+     * ambos, según el recurso"). MODO_COSTE decide cuáles de los otros
+     * 4 campos aplican; ninguno es obligatorio (un recurso "Sin coste"
+     * no necesita rellenarlos, y sigue funcionando igual que hasta
+     * ahora para el resto del sistema -- esto es aditivo puro).
+     */
+    { campo: 'MODO_COSTE', etiqueta: 'Modo de coste', tipo: 'catalogo', catalogo: 'CFG_MODO_COSTE_RECURSO', valorPorDefecto: 'Sin coste' },
+    { campo: 'COSTE_ADQUISICION', etiqueta: 'Coste de adquisición (€)', tipo: 'numero', min: 0, visibleSi: { campo: 'MODO_COSTE', valores: ['Amortización'] } },
+    { campo: 'VIDA_UTIL_ANOS', etiqueta: 'Vida útil (años)', tipo: 'numero', min: 1, visibleSi: { campo: 'MODO_COSTE', valores: ['Amortización'] } },
+    { campo: 'COSTE_PERIODICO', etiqueta: 'Coste periódico (€)', tipo: 'numero', min: 0, visibleSi: { campo: 'MODO_COSTE', valores: ['Periódico'] } },
+    { campo: 'PERIODICIDAD_COSTE', etiqueta: 'Periodicidad', tipo: 'catalogo', catalogo: 'CFG_PERIODICIDAD_COSTE', visibleSi: { campo: 'MODO_COSTE', valores: ['Periódico'] } },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -883,6 +983,88 @@ INCIDENCIA: [
       ayuda: 'Déjalo vacío si el horario es permanente. Rellénalo solo para un horario que aplica en una franja de fechas concreta (ej. temporada alta).'
     },
     { campo: 'FECHA_FIN_VIGENCIA', etiqueta: 'Vigente hasta (opcional)', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Eje económico, Fase 1 (ver conversación -- "presupuesto y fuentes
+   * de financiación, para justificar los proyectos ante subvenciones/
+   * departamentos/clientes"). Dato base sin cálculo todavía: el coste
+   * real por categoría se construye en la Fase 2. Patrón polimórfico
+   * ENTIDAD_TIPO/ENTIDAD_ID igual que DOCUMENTO/VINCULO/HORARIO, pero
+   * con catálogo propio y acotado a los 3 niveles decididos (Campaña/
+   * Proyecto/Producto) en vez del genérico CFG_ENTIDAD_DOCUMENTO (10
+   * valores, arrastraría "Tarea"/"Recurso" sin sentido aquí). El
+   * resolver de ENTIDAD_ID sí reutiliza el mapa genérico
+   * DOCUMENTO_ENTIDAD_ID -- ya resuelve cualquier etiqueta válida de
+   * ENTIDAD_DOCUMENTO_A_MVP, y estos 3 niveles son un subconjunto.
+   */
+  PRESUPUESTO: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Nivel', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_PRESUPUESTO', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'CATEGORIA', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_PRESUPUESTO', requerido: true },
+    { campo: 'IMPORTE_PREVISTO', etiqueta: 'Importe previsto (€)', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  FUENTE_FINANCIACION: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Nivel', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_PRESUPUESTO', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'NOMBRE', etiqueta: 'Nombre de la fuente', tipo: 'texto', requerido: true, ayuda: 'Ej. "Subvención Ajuntament 2026", "Departament de Benestar Social".' },
+    { campo: 'TIPO', etiqueta: 'Tipo', tipo: 'catalogo', catalogo: 'CFG_TIPO_FUENTE_FINANCIACION', requerido: true },
+    { campo: 'IMPORTE', etiqueta: 'Importe (€)', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_FUENTE_FINANCIACION', requerido: true, valorPorDefecto: 'Solicitada' },
+    { campo: 'FECHA_SOLICITUD', etiqueta: 'Fecha de solicitud', tipo: 'fecha' },
+    { campo: 'FECHA_RESOLUCION', etiqueta: 'Fecha de resolución', tipo: 'fecha' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Costes de actividad sueltos (ver conversación -- "entidad Coste
+   * genérica y flexible"): transporte, seguros, marketing, licencias,
+   * honorarios de participantes externos... todo lo que no encaja en
+   * materiales (PEDIDO_PROVEEDOR_LINEA) ni en recursos (RECURSO). Mismo
+   * patrón polimórfico, catálogo propio CFG_ENTIDAD_COSTE (Campaña/
+   * Proyecto/Producto/Recurso -- incluye Recurso porque un coste suelto
+   * puede ser específico de una máquina, ej. una reparación puntual).
+   */
+  COSTE: [
+    { campo: 'ENTIDAD_TIPO', etiqueta: 'Nivel', tipo: 'catalogo', catalogo: 'CFG_ENTIDAD_COSTE', requerido: true },
+    { campo: 'ENTIDAD_ID', etiqueta: 'Registro', tipo: 'fk_dependiente', dependeDe: 'ENTIDAD_TIPO', mapaEntidad: 'DOCUMENTO_ENTIDAD_ID', requerido: true },
+    { campo: 'CATEGORIA', etiqueta: 'Categoría', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_PRESUPUESTO', requerido: true, ayuda: 'La misma categoría que usa el Presupuesto -- así este coste se compara contra la partida prevista correcta.' },
+    { campo: 'CONCEPTO', etiqueta: 'Concepto', tipo: 'texto', requerido: true, ayuda: 'Ej. "Transporte", "Seguro de responsabilidad civil", "Honorarios: Juan Pérez".' },
+    { campo: 'IMPORTE', etiqueta: 'Importe (€)', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'FECHA', etiqueta: 'Fecha', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_COSTE', requerido: true, valorPorDefecto: 'Previsto' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Base de competencias (ver conversación -- "rellenar los huecos del
+   * sistema para dejarlo preparado para L6"). COMPETENCIA es una
+   * entidad ligera propia, no un catálogo de texto -- referenciable por
+   * ID desde Persona y Recurso en relación N:M real (PERSONA_COMPETENCIA/
+   * RECURSO_COMPETENCIA), mismo patrón que EQUIPO_MIEMBRO/TAREA_RECURSO.
+   */
+  COMPETENCIA: [
+    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true, ayuda: 'Ej. "Soldadura", "Manejo de troqueladora", "Catalán hablado".' },
+    { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_COMPETENCIA', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  PERSONA_COMPETENCIA: [
+    { campo: 'PERSONA_EQUIPO_ID', etiqueta: 'Persona / equipo', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', requerido: true, excluirEstados: ['Inactivo'] },
+    { campo: 'COMPETENCIA_ID', etiqueta: 'Competencia', tipo: 'fk', entidadFk: 'COMPETENCIA', requerido: true },
+    { campo: 'NIVEL', etiqueta: 'Nivel', tipo: 'catalogo', catalogo: 'CFG_NIVEL_COMPETENCIA' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  RECURSO_COMPETENCIA: [
+    { campo: 'RECURSO_ID', etiqueta: 'Recurso', tipo: 'fk', entidadFk: 'RECURSO', requerido: true, ayuda: 'La competencia requerida para usar este recurso.' },
+    { campo: 'COMPETENCIA_ID', etiqueta: 'Competencia requerida', tipo: 'fk', entidadFk: 'COMPETENCIA', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
@@ -2249,104 +2431,155 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
  * grupo. Cambio puramente de organización del menú -- no toca lógica
  * de servidor ni datos.
  */
+/*
+ * Menu organizado en 3 polos (ver conversacion -- "gantt responde
+ * preguntas, arboles/fichas son el espacio de edicion, el resto es
+ * administracion de datos"), no por entidad suelta como antes:
+ *   📊 Analizar   -- vistas de consulta, sin edicion profunda.
+ *   🌳 Navegar y editar -- arboles de jerarquia + fichas de registro,
+ *      con sus "Editar X" asociados (el atajo directo a cada nivel).
+ *   ➕ Crear y gestionar datos -- alta de registros/relaciones nuevas
+ *      y administracion (catalogos, importacion, mantenimiento).
+ * Ningun nombre de funcion cambia, solo se reagrupan los accesos.
+ */
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
     .addSubMenu(
-      ui.createMenu('🏗️ Jerarquía de producción')
-        .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
-        .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
-        .addItem('Editar campaña', 'abrirEditarCampana')
-        .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
-        .addItem('Editar proyecto', 'abrirEditarProyecto')
-        .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
-        .addItem('Editar producto', 'abrirEditarProducto')
-        .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
-        .addItem('Editar Proyecto-Producto', 'abrirEditarProyectoProducto')
-        .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
-        .addItem('Editar proceso', 'abrirEditarProceso')
-        .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
-        .addItem('Editar tarea', 'abrirEditarTarea')
-    )
-    .addSubMenu(
-      ui.createMenu('👥 Personas y recursos')
-        .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
-        .addItem('Ficha de persona/equipo (buscar)', 'abrirFichaPersonaEquipoBuscar')
-        .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
-        .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
-        .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
-        .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
-        .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
-        .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
-        .addSeparator()
-        .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
-        .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
-        .addItem('Editar recurso', 'abrirEditarRecurso')
-        .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
-        .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
-        .addSeparator()
-        .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
-        .addItem('Editar horario', 'abrirEditarHorario')
-        .addSeparator()
-        .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
-        .addItem('Editar Asignación', 'abrirEditarAsignacion')
-    )
-    .addSubMenu(
-      ui.createMenu('📦 Materiales y compras')
-        .addItem('Nuevo material', 'abrirFormularioCrearMaterial')
-        .addItem('Editar material', 'abrirEditarMaterial')
-        .addItem('Producto - Material (nueva relación)', 'abrirFormularioCrearProductoMaterial')
-        .addItem('Editar Producto-Material', 'abrirEditarProductoMaterial')
-        .addItem('Tarea - Material (nueva relación)', 'abrirFormularioCrearTareaMaterial')
-        .addItem('Editar Tarea-Material', 'abrirEditarTareaMaterial')
-        .addItem('Nuevo proveedor', 'abrirFormularioCrearProveedor')
-        .addItem('Editar proveedor', 'abrirEditarProveedor')
-        .addItem('Proveedor - Material (nueva relación)', 'abrirFormularioCrearProveedorMaterial')
-        .addItem('Editar Proveedor-Material', 'abrirEditarProveedorMaterial')
-        .addItem('Nuevo pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
-        .addItem('Editar pedido a proveedor', 'abrirEditarPedidoProveedor')
-        .addItem('Pedido - Línea (nueva)', 'abrirFormularioCrearPedidoProveedorLinea')
-        .addItem('Editar Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
-        .addItem('Nueva recepción de pedido', 'abrirFormularioCrearRecepcion')
-        .addItem('Editar recepción de pedido', 'abrirEditarRecepcion')
-        .addItem('Recepción - Línea (nueva)', 'abrirFormularioCrearRecepcionLinea')
-        .addItem('Editar Recepción-Línea', 'abrirEditarRecepcionLinea')
-        .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
-        .addItem('Movimiento de material (nuevo)', 'abrirFormularioCrearMovimientoMaterial')
-        .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial')
-    )
-    .addSubMenu(
-      ui.createMenu('📋 Seguimiento y decisiones')
-        .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
-        .addItem('Editar incidencia', 'abrirEditarIncidencia')
-        .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
-        .addItem('Editar decisión', 'abrirEditarDecision')
-        .addItem('Nuevo documento', 'abrirFormularioCrearDocumento')
-        .addItem('Editar documento', 'abrirEditarDocumento')
-        .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
-        .addItem('Editar Relación', 'abrirEditarRelacion')
-        .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
-        .addItem('Editar Vínculo', 'abrirEditarVinculo')
-        .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
-        .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
-        .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
-    )
-    .addSubMenu(
-      ui.createMenu('📊 Consulta y análisis')
+      ui.createMenu('📊 Analizar')
         .addItem('Panel operativo', 'abrirPanelOperativo')
         .addItem('Informes', 'abrirInformes')
         .addItem('Gantt: plan vs. real', 'abrirGanttPlanReal')
+        .addItem('Kanban operativo (Tarea/Proceso/Incidencia)', 'abrirKanban')
+        .addItem('Listado filtrable (Incidencias/Decisiones/Documentos)', 'abrirListadoFiltrable')
         .addItem('Verificar integridad', 'abrirIntegridad')
         .addItem('Historial', 'abrirHistorialAdmin')
     )
     .addSubMenu(
-      ui.createMenu('⚙️ Administración')
-        .addItem('Catálogos', 'abrirCatalogosAdmin')
-        .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
-        .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
-        .addItem('Protección de hojas', 'abrirProteccionHojas')
-        .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
-        .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
+      ui.createMenu('🌳 Navegar y editar')
+        .addSubMenu(
+          ui.createMenu('Campaña → Proyecto → Producto → Proceso → Tarea')
+            .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
+            .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
+            .addItem('Editar campaña', 'abrirEditarCampana')
+            .addItem('Editar proyecto', 'abrirEditarProyecto')
+            .addItem('Editar producto', 'abrirEditarProducto')
+            .addItem('Editar Proyecto-Producto', 'abrirEditarProyectoProducto')
+            .addItem('Editar proceso', 'abrirEditarProceso')
+            .addItem('Editar tarea', 'abrirEditarTarea')
+        )
+        .addSubMenu(
+          ui.createMenu('Personas y equipos')
+            .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
+            .addItem('Ficha de persona/equipo (buscar)', 'abrirFichaPersonaEquipoBuscar')
+            .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
+            .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
+            .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
+        )
+        .addSubMenu(
+          ui.createMenu('Espacios y recursos')
+            .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
+            .addItem('Ficha de espacio/recurso (buscar)', 'abrirFichaRecursoBuscar')
+            .addItem('Editar recurso', 'abrirEditarRecurso')
+            .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
+            .addItem('Editar horario', 'abrirEditarHorario')
+        )
+        .addSubMenu(
+          ui.createMenu('Materiales y proveedores')
+            .addItem('Ficha de material (buscar)', 'abrirFichaMaterialBuscar')
+            .addItem('Editar material', 'abrirEditarMaterial')
+            .addItem('Editar Producto-Material', 'abrirEditarProductoMaterial')
+            .addItem('Editar Tarea-Material', 'abrirEditarTareaMaterial')
+            .addItem('Ficha de proveedor (buscar)', 'abrirFichaProveedorBuscar')
+            .addItem('Editar proveedor', 'abrirEditarProveedor')
+            .addItem('Editar Proveedor-Material', 'abrirEditarProveedorMaterial')
+            .addItem('Editar pedido a proveedor', 'abrirEditarPedidoProveedor')
+            .addItem('Editar Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
+            .addItem('Editar recepción de pedido', 'abrirEditarRecepcion')
+            .addItem('Editar Recepción-Línea', 'abrirEditarRecepcionLinea')
+            .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial')
+        )
+        .addSubMenu(
+          ui.createMenu('Seguimiento y decisiones')
+            .addItem('Ficha de incidencia (buscar)', 'abrirFichaIncidenciaBuscar')
+            .addItem('Editar incidencia', 'abrirEditarIncidencia')
+            .addItem('Editar decisión', 'abrirEditarDecision')
+            .addItem('Editar documento', 'abrirEditarDocumento')
+            .addItem('Editar Relación', 'abrirEditarRelacion')
+            .addItem('Editar Vínculo', 'abrirEditarVinculo')
+            .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
+            .addItem('Editar Asignación', 'abrirEditarAsignacion')
+        )
+    )
+    .addSubMenu(
+      ui.createMenu('➕ Crear y gestionar datos')
+        .addSubMenu(
+          ui.createMenu('Nuevo registro')
+            .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
+            .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
+            .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
+            .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
+            .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
+            .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
+            .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
+            .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
+            .addItem('Nuevo material', 'abrirFormularioCrearMaterial')
+            .addItem('Nuevo proveedor', 'abrirFormularioCrearProveedor')
+            .addItem('Nuevo pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
+            .addItem('Nueva recepción de pedido', 'abrirFormularioCrearRecepcion')
+            .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
+            .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
+            .addItem('Nuevo documento', 'abrirFormularioCrearDocumento')
+        )
+        .addSubMenu(
+          ui.createMenu('Nueva relación / vínculo')
+            .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
+            .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
+            .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
+            .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
+            .addItem('Producto - Material (nueva relación)', 'abrirFormularioCrearProductoMaterial')
+            .addItem('Tarea - Material (nueva relación)', 'abrirFormularioCrearTareaMaterial')
+            .addItem('Proveedor - Material (nueva relación)', 'abrirFormularioCrearProveedorMaterial')
+            .addItem('Pedido - Línea (nueva)', 'abrirFormularioCrearPedidoProveedorLinea')
+            .addItem('Recepción - Línea (nueva)', 'abrirFormularioCrearRecepcionLinea')
+            .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
+            .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
+            .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
+            .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
+        )
+        .addSubMenu(
+          ui.createMenu('Movimientos y confirmaciones')
+            .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
+            .addItem('Movimiento de material (nuevo)', 'abrirFormularioCrearMovimientoMaterial')
+            .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
+        )
+        .addSubMenu(
+          ui.createMenu('Presupuesto y financiación')
+            .addItem('Nueva línea de presupuesto', 'abrirFormularioCrearPresupuesto')
+            .addItem('Editar línea de presupuesto', 'abrirEditarPresupuesto')
+            .addItem('Nueva fuente de financiación', 'abrirFormularioCrearFuenteFinanciacion')
+            .addItem('Editar fuente de financiación', 'abrirEditarFuenteFinanciacion')
+            .addItem('Nuevo coste (materiales/recursos/actividad)', 'abrirFormularioCrearCoste')
+            .addItem('Editar coste', 'abrirEditarCoste')
+        )
+        .addSubMenu(
+          ui.createMenu('Competencias')
+            .addItem('Nueva competencia', 'abrirFormularioCrearCompetencia')
+            .addItem('Editar competencia', 'abrirEditarCompetencia')
+            .addItem('Persona - Competencia (asignar)', 'abrirFormularioCrearPersonaCompetencia')
+            .addItem('Editar Persona-Competencia', 'abrirEditarPersonaCompetencia')
+            .addItem('Recurso - Competencia requerida (asignar)', 'abrirFormularioCrearRecursoCompetencia')
+            .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia')
+        )
+        .addSubMenu(
+          ui.createMenu('Catálogos y administración')
+            .addItem('Catálogos', 'abrirCatalogosAdmin')
+            .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
+            .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
+            .addItem('Protección de hojas', 'abrirProteccionHojas')
+            .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
+            .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
+        )
     )
     .addToUi();
 }
@@ -2357,13 +2590,13 @@ function onOpen() {
  * (abrirFormularioCrearProyectoConCampana), para no obligar a buscar de
  * nuevo la campaña que se acaba de crear en el buscador de CAMPANA_ID.
  */
-function abrirFormularioCrear_(entidad, tituloVentana, prefill) {
+function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno) {
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = entidad;
   template.idRegistro = '';
   template.titulo = tituloVentana;
   template.prefill = JSON.stringify(prefill || {});
-  template.retorno = JSON.stringify(null);
+  template.retorno = JSON.stringify(retorno || null);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
@@ -2380,8 +2613,7 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   if (!ESQUEMAS_FORMULARIO_MVP[clave]) {
     throw new Error('No hay formulario disponible para la entidad ' + entidad);
   }
-  var etiquetasEntidad = { DECISION: 'decisión', INCIDENCIA: 'incidencia', DOCUMENTO: 'documento' };
-  var tituloVentana = 'Editar ' + (etiquetasEntidad[clave] || clave.toLowerCase());
+  var tituloVentana = 'Editar ' + (ETIQUETA_ENTIDAD_MVP[clave] || clave.toLowerCase());
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = clave;
   template.idRegistro = idRegistro;
@@ -2400,6 +2632,56 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
  */
 function abrirDependienteConRetorno(entidadHijo, idHijo, entidadOrigen, idOrigen) {
   abrirFormularioEditarPorId(entidadHijo, idHijo, { entidad: entidadOrigen, id: idOrigen });
+}
+
+/*
+ * Despacha una entidad a su ficha de registro correspondiente (ver
+ * conversacion -- generalizacion del mecanismo de retorno para que
+ * tambien pueda volver a una ficha, no solo a otro formulario). Unico
+ * punto que conoce la lista de fichas existentes; añadir aqui cuando
+ * se cree una ficha nueva (Espacio/Recurso, etc.).
+ */
+function abrirFichaPorEntidad_(entidad, id) {
+  var clave = String(entidad || '').trim().toUpperCase();
+  if (clave === 'PERSONA_EQUIPO') { abrirFichaPersonaEquipo(id); return; }
+  if (clave === 'PRODUCTO') { abrirFichaProducto(id); return; }
+  if (clave === 'RECURSO') { abrirFichaRecurso(id); return; }
+  if (clave === 'PROVEEDOR') { abrirFichaProveedor(id); return; }
+  if (clave === 'MATERIAL') { abrirFichaMaterial(id); return; }
+  if (clave === 'INCIDENCIA') { abrirFichaIncidencia(id); return; }
+  throw new Error('No hay ficha disponible para la entidad ' + entidad);
+}
+
+/*
+ * Punto unico de despacho de "retorno" (ver conversacion -- "no tener
+ * que salir de la ficha por sus partes"): antes RETORNO solo volvia a
+ * otro formulario de edicion (abrirFormularioEditarPorId); ahora tambien
+ * puede volver a una ficha de registro con retorno.tipo='ficha'. Sin
+ * tipo (el caso ya existente de "dependiente bloqueante"), se comporta
+ * exactamente igual que antes.
+ */
+function abrirRetorno(retorno) {
+  if (!retorno || !retorno.entidad || !retorno.id) return;
+  if (retorno.tipo === 'ficha') {
+    abrirFichaPorEntidad_(retorno.entidad, retorno.id);
+    return;
+  }
+  abrirFormularioEditarPorId(retorno.entidad, retorno.id);
+}
+
+/*
+ * accionFn usado por los botones "Editar" dentro de una ficha de
+ * registro (FichaProducto.html/FichaPersonaEquipo.html): igual que
+ * seleccionarYAbrirEdicion, pero con retorno a la propia ficha para no
+ * dejar al usuario "fuera" tras cerrar el formulario de edicion.
+ */
+function abrirEdicionConRetornoAFicha(entidad, idRegistro, fichaEntidad, fichaId) {
+  var registro = obtenerRegistroPorId(entidad, idRegistro);
+  if (!registro) {
+    throw new Error('No existe ningún registro con el ID "' + idRegistro + '".');
+  }
+  abrirFormularioEditarPorId(entidad, idRegistro, { tipo: 'ficha', entidad: fichaEntidad, id: fichaId });
+  return true;
 }
 
 /*
@@ -2461,6 +2743,12 @@ function abrirFormularioCrearProveedor() { abrirFormularioCrear_('PROVEEDOR', 'N
 function abrirFormularioCrearDecision() { abrirFormularioCrear_('DECISION', 'Nueva decisión'); }
 function abrirFormularioCrearIncidencia() { abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia'); }
 function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'Nuevo documento'); }
+function abrirFormularioCrearPresupuesto() { abrirFormularioCrear_('PRESUPUESTO', 'Nueva línea de presupuesto'); }
+function abrirFormularioCrearFuenteFinanciacion() { abrirFormularioCrear_('FUENTE_FINANCIACION', 'Nueva fuente de financiación'); }
+function abrirFormularioCrearCoste() { abrirFormularioCrear_('COSTE', 'Nuevo coste'); }
+function abrirFormularioCrearCompetencia() { abrirFormularioCrear_('COMPETENCIA', 'Nueva competencia'); }
+function abrirFormularioCrearPersonaCompetencia() { abrirFormularioCrear_('PERSONA_COMPETENCIA', 'Persona - Competencia (nueva)'); }
+function abrirFormularioCrearRecursoCompetencia() { abrirFormularioCrear_('RECURSO_COMPETENCIA', 'Recurso - Competencia requerida (nueva)'); }
 
 
 /**
@@ -2548,6 +2836,12 @@ function abrirEditarProveedor() { abrirEditarRegistroPorEntidad_('PROVEEDOR', 'P
 function abrirEditarDecision() { abrirEditarRegistroPorEntidad_('DECISION', 'Decisión'); }
 function abrirEditarIncidencia() { abrirEditarRegistroPorEntidad_('INCIDENCIA', 'Incidencia'); }
 function abrirEditarDocumento() { abrirEditarRegistroPorEntidad_('DOCUMENTO', 'Documento'); }
+function abrirEditarPresupuesto() { abrirEditarRegistroPorEntidad_('PRESUPUESTO', 'línea de presupuesto'); }
+function abrirEditarFuenteFinanciacion() { abrirEditarRegistroPorEntidad_('FUENTE_FINANCIACION', 'fuente de financiación'); }
+function abrirEditarCoste() { abrirEditarRegistroPorEntidad_('COSTE', 'coste'); }
+function abrirEditarCompetencia() { abrirEditarRegistroPorEntidad_('COMPETENCIA', 'competencia'); }
+function abrirEditarPersonaCompetencia() { abrirEditarRegistroPorEntidad_('PERSONA_COMPETENCIA', 'persona - competencia'); }
+function abrirEditarRecursoCompetencia() { abrirEditarRegistroPorEntidad_('RECURSO_COMPETENCIA', 'recurso - competencia'); }
 function abrirEditarProyectoProducto() { abrirEditarRegistroPorEntidad_('PROYECTO_PRODUCTO', 'Proyecto-Producto'); }
 function abrirEditarTareaResponsable() { abrirEditarRegistroPorEntidad_('TAREA_RESPONSABLE', 'Tarea-Responsable'); }
 function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCTO_MATERIAL', 'Producto-Material'); }

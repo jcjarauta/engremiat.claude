@@ -207,6 +207,48 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'CANTIDAD_RECIBIDA',
     'UNIDAD',
     'ESTADO'
+  ]),
+
+  PRESUPUESTO: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ID',
+    'CATEGORIA',
+    'IMPORTE_PREVISTO'
+  ]),
+
+  FUENTE_FINANCIACION: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ID',
+    'NOMBRE',
+    'TIPO',
+    'IMPORTE',
+    'ESTADO'
+  ]),
+
+  COSTE: Object.freeze([
+    'ENTIDAD_TIPO',
+    'ENTIDAD_ID',
+    'CATEGORIA',
+    'CONCEPTO',
+    'IMPORTE',
+    'ESTADO'
+  ]),
+
+  COMPETENCIA: Object.freeze([
+    'NOMBRE',
+    'ESTADO'
+  ]),
+
+  PERSONA_COMPETENCIA: Object.freeze([
+    'PERSONA_EQUIPO_ID',
+    'COMPETENCIA_ID',
+    'ESTADO'
+  ]),
+
+  RECURSO_COMPETENCIA: Object.freeze([
+    'RECURSO_ID',
+    'COMPETENCIA_ID',
+    'ESTADO'
   ])
 });
 

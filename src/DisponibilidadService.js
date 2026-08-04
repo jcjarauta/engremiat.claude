@@ -16,6 +16,25 @@
 
 var DIAS_SEMANA_ORDEN_ = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
+/*
+ * HORA_INICIO/HORA_FIN se diseñaron para guardarse como texto "HH:MM"
+ * (ver InstaladorHorario.js), pero Sheets puede auto-detectar "09:00"
+ * como celda de hora real al escribirla si no se reaplica el formato de
+ * texto en cada escritura -- bug real confirmado en las filas creadas
+ * por InstaladorHorarioEquipoProduccion.js (HOR-0014 en adelante):
+ * getValues() las devuelve como Date (fecha base 1899-12-30), no texto,
+ * lo que rompia tanto la visualizacion (ficha de persona) como el
+ * calculo de coincidencia semanal (minutosDesdeHHMM_ recibia un Date en
+ * vez de "HH:MM"). Normaliza ambos casos a "HH:MM" en el origen, para
+ * que el resto del codigo no tenga que saber cual de los dos es.
+ */
+function normalizarHoraHHMM_(valor) {
+  if (valor instanceof Date) {
+    return Utilities.formatDate(valor, Session.getScriptTimeZone() || 'Europe/Madrid', 'HH:mm');
+  }
+  return valor || '';
+}
+
 function minutosDesdeHHMM_(hhmm) {
   var partes = String(hhmm || '').split(':');
   return (Number(partes[0]) || 0) * 60 + (Number(partes[1]) || 0);
@@ -81,7 +100,7 @@ function obtenerDisponibilidadEntidades(entidadesSeleccionadas) {
     DIAS_SEMANA_ORDEN_.forEach(function (dia) { porDia[dia] = []; });
     filas.forEach(function (h) {
       if (!porDia[h.DIA_SEMANA]) return;
-      porDia[h.DIA_SEMANA].push({ inicio: h.HORA_INICIO, fin: h.HORA_FIN });
+      porDia[h.DIA_SEMANA].push({ inicio: normalizarHoraHHMM_(h.HORA_INICIO), fin: normalizarHoraHHMM_(h.HORA_FIN) });
     });
 
     var nombre = sel.tipo === 'Persona/Equipo' ? (nombresPersona[sel.id] || sel.id) : (nombresRecurso[sel.id] || sel.id);
@@ -230,7 +249,7 @@ function obtenerVistaDelDia(fechaISO) {
     if (h.FECHA_INICIO_VIGENCIA && fecha < new Date(h.FECHA_INICIO_VIGENCIA)) return;
     if (h.FECHA_FIN_VIGENCIA && fecha > new Date(h.FECHA_FIN_VIGENCIA)) return;
     if (!horariosPorPersona[h.ENTIDAD_ID]) horariosPorPersona[h.ENTIDAD_ID] = [];
-    horariosPorPersona[h.ENTIDAD_ID].push({ inicio: h.HORA_INICIO, fin: h.HORA_FIN });
+    horariosPorPersona[h.ENTIDAD_ID].push({ inicio: normalizarHoraHHMM_(h.HORA_INICIO), fin: normalizarHoraHHMM_(h.HORA_FIN) });
   });
 
   var asignacionesHoy = loteFiltrarPorIgualdad_(datos.TAREA_RESPONSABLE, { ACTIVO: 'SÍ', ESTADO: 'Activa' }).filter(function (tr) {
@@ -273,15 +292,73 @@ function obtenerVistaDelDia(fechaISO) {
     return ordenEstado[a.estado] - ordenEstado[b.estado] || a.nombre.localeCompare(b.nombre);
   });
 
+  /*
+   * N4.3 (roadmap -- "agenda del taller completo": tareas + horario +
+   * incidencias abiertas). INCIDENCIA no tiene un "dia en que ocurre"
+   * (no es como una tarea con fechas de plan), asi que se muestran
+   * TODAS las abiertas ahora mismo como contexto del dia -- no
+   * filtradas a la fecha elegida, igual que un panel de "qué está
+   * pendiente" real. Reutiliza listarIncidenciasAbiertas
+   * (DashboardService.js) y el mismo resolutor de contexto ya usado en
+   * el Listado filtrable (ListadoFiltrableService.js).
+   */
+  var nombresIncidencia = { CAMPANA: {}, PROYECTO: {}, PRODUCTO: {}, PROCESO: {}, TAREA: {} };
+  datos.CAMPANA.forEach(function (c) { nombresIncidencia.CAMPANA[c.ID] = c.NOMBRE; });
+  datos.PROYECTO.forEach(function (p) { nombresIncidencia.PROYECTO[p.ID] = p.NOMBRE; });
+  datos.PROCESO.forEach(function (p) { nombresIncidencia.PROCESO[p.ID] = p.NOMBRE; });
+  datos.TAREA.forEach(function (t) { nombresIncidencia.TAREA[t.ID] = t.NOMBRE; });
+  listarRegistros('PRODUCTO', {}).forEach(function (p) { nombresIncidencia.PRODUCTO[p.ID] = p.NOMBRE; });
+
+  var incidenciasAbiertas = listarIncidenciasAbiertas().map(function (inc) {
+    return {
+      id: inc.ID,
+      titulo: inc.TITULO,
+      subtitulo: [inc.TIPO, inc.PRIORIDAD].filter(Boolean).join(' · '),
+      contexto: contextoIncidenciaListado_(inc, nombresIncidencia),
+      estado: inc.ESTADO
+    };
+  });
+
   return {
     fecha: Utilities.formatDate(fecha, Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'),
     diaSemana: nombreDia,
-    personas: personas
+    personas: personas,
+    incidenciasAbiertas: incidenciasAbiertas
   };
   } finally {
     console.log('OK obtenerVistaDelDia_ms=' + (Date.now() - inicioMs));
     cacheLecturaFinalizarContexto_();
   }
+}
+
+/*
+ * Exportar CSV de la Vista del dia (ver conversacion -- "opcion de
+ * generar informe"). Mismo exportador compartido que el resto del
+ * sistema (construirCsvConBom_/abrirDialogoDescargaCSV_,
+ * DesviacionService.js). Fila plana por persona/equipo.
+ */
+function exportarVistaDelDiaCSV(fechaISO) {
+  var datos = obtenerVistaDelDia(fechaISO);
+  var encabezados = ['Persona/Equipo', 'Tipo', 'Rol', 'Horario ese día', 'Tareas asignadas', 'Estado'];
+
+  var filas = datos.personas.map(function (p) {
+    var horario = p.horarios.length ? p.horarios.map(function (h) { return h.inicio + '–' + h.fin; }).join(', ') : '';
+    var tareas = p.tareas.length ? p.tareas.map(function (t) { return t.nombre + (t.proyectoNombre ? ' (' + t.proyectoNombre + ')' : ''); }).join(' · ') : '';
+    return [p.nombre, p.tipo, p.rol, horario, tareas, ETIQUETA_ESTADO_DIA_CSV_[p.estado] || p.estado];
+  });
+
+  var nombreArchivo = 'VISTA_DEL_DIA_' + datos.fecha + '_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'HHmmss') + '.csv';
+  registrarHistorial('INFORME', nombreArchivo, 'EXPORTAR_VISTA_DIA', [], { origen: 'UI', formato: 'CSV' });
+  return { nombreArchivo: nombreArchivo, contenidoCsv: construirCsvConBom_(encabezados, filas) };
+}
+
+var ETIQUETA_ESTADO_DIA_CSV_ = {
+  ocupado: 'Ocupado', fuera_de_horario: 'Fuera de horario', disponible: 'Disponible', sin_horario: 'Sin horario declarado'
+};
+
+function abrirDialogoExportarVistaDelDiaCSV(fechaISO) {
+  var resultado = exportarVistaDelDiaCSV(fechaISO);
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
 /*

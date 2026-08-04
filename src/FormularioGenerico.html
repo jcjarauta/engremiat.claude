@@ -10,6 +10,7 @@
   <div id="campos">Cargando formulario...</div>
   <div id="mensaje"></div>
   <div id="dependenciasBloqueando" class="campo-oculto"></div>
+  <div id="vinculosRelacionados" class="campo-oculto"></div>
   <div class="acciones">
     <button id="btnDesactivar" class="boton-peligro campo-oculto" onclick="desactivar()">Desactivar</button>
     <button id="btnCancelar" onclick="cancelar()">Cancelar</button>
@@ -65,6 +66,16 @@
     document.getElementById("btnDesactivar").classList.toggle("campo-oculto", !ID_REGISTRO);
 
     /*
+     * Deja explicito que "Cancelar" no cierra sin mas si hay retorno --
+     * ver conversacion: sin esta pista, no habia forma de saber desde
+     * el propio boton que cerrar aqui te devuelve a la ficha/formulario
+     * de origen en vez de simplemente cerrar el dialogo.
+     */
+    if (RETORNO && RETORNO.entidad && RETORNO.id) {
+      document.getElementById("btnCancelar").textContent = "Cancelar y volver";
+    }
+
+    /*
      * Hallazgo "me quedo bloqueado": cerrar este formulario (cancelar,
      * guardar o desactivar) vuelve al formulario de origen si se llegó
      * aquí editando un dependiente bloqueante (ver abrirDependiente_),
@@ -76,7 +87,7 @@
         google.script.run
           .withSuccessHandler(function () { google.script.host.close(); })
           .withFailureHandler(mostrarError)
-          .abrirFormularioEditarPorId(RETORNO.entidad, RETORNO.id);
+          .abrirRetorno(RETORNO);
         return;
       }
       google.script.host.close();
@@ -216,6 +227,48 @@
       var el = document.getElementById("mensaje");
       el.className = "error";
       el.textContent = (error && error.message) ? error.message : String(error);
+    }
+
+    function escapeHtml_(texto) {
+      if (texto === null || texto === undefined) return "";
+      return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+    }
+
+    /*
+     * Vinculos relacionados (ver conversacion -- "relación incidencia-
+     * decisión-tarea, cómo lo mejoramos"): bloque generico de solo
+     * lectura, no especifico de Decision/Incidencia -- funciona para
+     * cualquier entidad que aparezca en VINCULO (via
+     * obtenerVinculosDeEntidad en Formularios.js), asi que tambien
+     * sirve reciprocamente (editar una Decision muestra sus
+     * incidencias vinculadas, sin codigo especifico por par). Solo se
+     * pide en modo edicion (ID_REGISTRO presente) -- un registro nuevo
+     * no puede tener vinculos todavia.
+     */
+    function claseBadgeVinculo_(estado) {
+      var texto = String(estado || "").toLowerCase();
+      if (texto.indexOf("cerrada") !== -1 || texto.indexOf("cancel") !== -1 || texto.indexOf("bloque") !== -1 || texto.indexOf("inactiv") !== -1) return "badge-bloqueado";
+      if (texto.indexOf("resuelta") !== -1 || texto.indexOf("activ") !== -1) return "badge-completado";
+      return "badge-neutro";
+    }
+
+    function cargarVinculosRelacionados_() {
+      if (!ID_REGISTRO) return;
+      google.script.run
+        .withSuccessHandler(function (vinculos) {
+          var el = document.getElementById("vinculosRelacionados");
+          if (!vinculos || vinculos.length === 0) { el.className = "campo-oculto"; return; }
+          el.className = "";
+          el.innerHTML = "<h4>Vínculos relacionados</h4>" + vinculos.map(function (v) {
+            var titulo = v.entidad
+              ? "<span style=\"color:var(--color-primario);cursor:pointer;\" onclick=\"google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion('" + v.entidad + "','" + v.id + "')\">" + escapeHtml_(v.nombre) + "</span>"
+              : escapeHtml_(v.nombre);
+            return "<div class=\"resumen-linea\"><span>" + escapeHtml_(v.entidadEtiqueta) + ": " + titulo + "</span>" +
+              (v.estado ? "<span class=\"badge " + claseBadgeVinculo_(v.estado) + "\">" + escapeHtml_(v.estado) + "</span>" : "") + "</div>";
+          }).join("");
+        })
+        .withFailureHandler(function () {})
+        .obtenerVinculosDeEntidad(ENTIDAD, ID_REGISTRO);
     }
     function esTransicionEquipoAPersona_(valorAnterior, valorNuevo) {
       return valorAnterior === "Equipo" && valorNuevo === "Persona";
@@ -684,6 +737,7 @@
           document.getElementById("btnGuardar").disabled = false;
           document.getElementById("campos").addEventListener("input", function () { formularioSucio_ = true; });
           document.getElementById("campos").addEventListener("change", function () { formularioSucio_ = true; });
+          cargarVinculosRelacionados_();
         })
         .withFailureHandler(mostrarError)
         .obtenerEsquemaFormulario(ENTIDAD, ID_REGISTRO);

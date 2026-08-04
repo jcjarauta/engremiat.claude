@@ -90,7 +90,7 @@ function obtenerFichaPersonaEquipo(id) {
     .filter(function (h) { return h.ENTIDAD_TIPO === 'Persona/Equipo' && h.ENTIDAD_ID === id; })
     .map(function (h) {
       return {
-        id: h.ID, dia: h.DIA_SEMANA, inicio: h.HORA_INICIO, fin: h.HORA_FIN, estado: h.ESTADO,
+        id: h.ID, dia: h.DIA_SEMANA, inicio: normalizarHoraHHMM_(h.HORA_INICIO), fin: normalizarHoraHHMM_(h.HORA_FIN), estado: h.ESTADO,
         vigenciaInicio: h.FECHA_INICIO_VIGENCIA || null, vigenciaFin: h.FECHA_FIN_VIGENCIA || null
       };
     });
@@ -212,9 +212,13 @@ function abrirFichaPersonaEquipoBuscar() {
   abrirSelectorConAccion_('PERSONA_EQUIPO', 'Ver ficha de persona/equipo', 'seleccionarYAbrirFicha', 'obtenerOpcionesEntidadParaSelector');
 }
 
-/* Prefija ENTIDAD_TIPO/ENTIDAD_ID -- mismo mecanismo PREFILL que la cadena Campaña->Proyecto. */
+/*
+ * Prefija ENTIDAD_TIPO/ENTIDAD_ID -- mismo mecanismo PREFILL que la
+ * cadena Campaña->Proyecto -- y retorna a esta misma ficha al cerrar
+ * el formulario (ver conversacion: "no tener que salir de la ficha").
+ */
 function abrirFormularioCrearHorarioParaPersonaEquipo(entidadId) {
   abrirFormularioCrear_('HORARIO', 'Nuevo horario (franja semanal)', {
     ENTIDAD_TIPO: 'Persona/Equipo', ENTIDAD_ID: entidadId
-  });
+  }, { tipo: 'ficha', entidad: 'PERSONA_EQUIPO', id: entidadId });
 }

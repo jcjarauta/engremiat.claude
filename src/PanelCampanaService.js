@@ -218,3 +218,15 @@ function abrirPanelCampana() {
     .setWidth(440);
   SpreadsheetApp.getUi().showSidebar(html);
 }
+
+/*
+ * Abre el Panel de Campaña ya preseleccionado en una campaña concreta
+ * (ver conversacion -- "link para entrar en el árbol del producto",
+ * desde la vista de Fases por producto del Gantt). Reutiliza el mismo
+ * mecanismo de "recordar última campaña elegida" en vez de inventar un
+ * parametro nuevo -- el panel ya lo lee al abrir.
+ */
+function abrirPanelCampanaEnCampana(campanaId) {
+  if (campanaId) guardarUltimaCampanaPanel(campanaId);
+  abrirPanelCampana();
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera-ficha { margin-bottom: 14px; }
+      .cabecera-ficha h2 { margin: 0 0 4px 0; font-size: 18px; }
+      .cabecera-ficha .detalle { color: var(--color-texto-secundario); font-size: 13px; }
+      .cabecera-ficha .acciones { margin-top: 8px; display: flex; gap: 6px; }
+      section.bloque { margin-bottom: 16px; }
+      section.bloque h3 { font-size: 14px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+      .fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--color-borde); }
+      .fila:last-child { border-bottom: none; }
+      .fila .info { font-size: 13px; }
+      .fila .info .detalle-secundario { color: var(--color-texto-secundario); }
+      .btn-mini { font-size: 13px; padding: 5px 9px; }
+      .badge { font-size: 12px; padding: 2px 9px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-bloque { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; padding: 4px; }
+      #estadoCarga { padding: 12px 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="contenido" style="display:none;">
+      <div class="cabecera-ficha">
+        <h2 id="nombreRecurso"></h2>
+        <div class="detalle" id="detalleRecurso"></div>
+        <div class="acciones">
+          <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
+          <button id="btnVerOcupacion" class="boton btn-mini">Ver ocupación</button>
+          <button id="btnNuevoHorario" class="boton btn-mini">+ Horario</button>
+          <button id="btnNuevoDocumento" class="boton btn-mini">+ Documento</button>
+        </div>
+      </div>
+
+      <section class="bloque"><h3>Contenido de este espacio</h3><div class="lista" id="listaContenidos"></div></section>
+      <section class="bloque"><h3>Tareas / usos</h3><div class="lista" id="listaUsos"></div></section>
+      <section class="bloque"><h3>Horario</h3><div class="lista" id="listaHorarios"></div></section>
+      <section class="bloque"><h3>Documentos</h3><div class="lista" id="listaDocumentos"></div></section>
+      <section class="bloque"><h3>Incidencias vinculadas</h3><div class="lista" id="listaIncidencias"></div></section>
+    </div>
+
+    <script>
+      var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("inactiv") !== -1 || texto.indexOf("no dispon") !== -1 || texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1 || texto.indexOf("averi") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("activ") !== -1 || texto.indexOf("disponible") !== -1 || texto.indexOf("vigente") !== -1 || texto.indexOf("complet") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        if (!estado) return "";
+        return ' <span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function editar(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirEdicionConRetornoAFicha(entidad, id, 'RECURSO', ID_REGISTRO);
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+        document.getElementById("contenido").style.display = "none";
+      }
+
+      function filaHtml_(infoHtml, entidadEditar, idEditar) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
+      }
+
+      function fechaCorta_(v) {
+        return v ? new Date(v).toLocaleDateString() : '?';
+      }
+
+      function render(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        document.getElementById("contenido").style.display = "block";
+
+        var r = datos.recurso;
+        document.getElementById("nombreRecurso").innerHTML = escapeHtml(r.NOMBRE) + renderBadge_(r.ESTADO);
+        document.getElementById("detalleRecurso").textContent =
+          r.ID + (r.CODIGO ? " · " + r.CODIGO : "") +
+          (r.CLASE_RECURSO ? " · " + r.CLASE_RECURSO : "") +
+          (r.CATEGORIA_RECURSO ? " · " + r.CATEGORIA_RECURSO : "") +
+          (datos.ubicacion ? " · en " + datos.ubicacion.nombre : "") +
+          (datos.responsableNombre ? " · " + datos.responsableNombre : "");
+
+        document.getElementById("listaContenidos").innerHTML = datos.contenidos.length
+          ? datos.contenidos.map(function (c) {
+              return filaHtml_(escapeHtml(c.nombre) + ' <span class="detalle-secundario">— ' + escapeHtml(c.clase) + '</span>' + renderBadge_(c.estado), 'RECURSO', c.id);
+            }).join("")
+          : '<div class="vacio-bloque">No contiene otros recursos.</div>';
+
+        document.getElementById("listaUsos").innerHTML = datos.usos.length
+          ? datos.usos.map(function (u) {
+              var fechas = (u.fechaInicio || u.fechaFin)
+                ? ' <span class="detalle-secundario">' + fechaCorta_(u.fechaInicio) + '–' + fechaCorta_(u.fechaFin) + '</span>'
+                : '';
+              var proyecto = u.proyectoNombre ? ' <span class="detalle-secundario">· ' + escapeHtml(u.proyectoNombre) + '</span>' : '';
+              return filaHtml_(escapeHtml(u.tareaNombre) + ' <span class="detalle-secundario">(' + escapeHtml(u.tipoUso) + ')</span>' + fechas + proyecto + renderBadge_(u.estado), 'TAREA', u.tareaId);
+            }).join("")
+          : '<div class="vacio-bloque">Sin tareas que lo usen todavía.</div>';
+
+        function renderVigencia_(h) {
+          if (!h.vigenciaInicio && !h.vigenciaFin) return '';
+          var fmt = function (v) { return v ? new Date(v).toLocaleDateString() : '?'; };
+          return ' <span class="detalle-secundario">(vigente ' + fmt(h.vigenciaInicio) + '–' + fmt(h.vigenciaFin) + ')</span>';
+        }
+        document.getElementById("listaHorarios").innerHTML = datos.horarios.length
+          ? datos.horarios.map(function (h) {
+              return filaHtml_(escapeHtml(h.dia) + ' <span class="detalle-secundario">' + escapeHtml(h.inicio) + '–' + escapeHtml(h.fin) + '</span>' + renderVigencia_(h) + renderBadge_(h.estado), 'HORARIO', h.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin franjas horarias registradas.</div>';
+
+        document.getElementById("listaDocumentos").innerHTML = datos.documentos.length
+          ? datos.documentos.map(function (d) {
+              return filaHtml_(escapeHtml(d.titulo) + (d.tipo ? ' <span class="detalle-secundario">— ' + escapeHtml(d.tipo) + '</span>' : '') + renderBadge_(d.estado), 'DOCUMENTO', d.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin documentos adjuntos.</div>';
+
+        document.getElementById("listaIncidencias").innerHTML = datos.incidenciasVinculadas.length
+          ? datos.incidenciasVinculadas.map(function (v) {
+              return filaHtml_(escapeHtml(v.titulo) + renderBadge_(v.estado), 'INCIDENCIA', v.incidenciaId);
+            }).join("")
+          : '<div class="vacio-bloque">Sin incidencias vinculadas.</div>';
+
+        document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("RECURSO", r.ID); });
+        document.getElementById("btnVerOcupacion").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirGanttOcupacionRecurso(r.ID, r.NOMBRE);
+        });
+        document.getElementById("btnNuevoHorario").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearHorarioParaRecurso(r.ID);
+        });
+        document.getElementById("btnNuevoDocumento").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearDocumentoParaRecurso(r.ID);
+        });
+      }
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaRecurso(ID_REGISTRO);
+    </script>
+  </body>
+</html>

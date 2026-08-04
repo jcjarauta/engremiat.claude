@@ -21,7 +21,18 @@
       <option value="PROYECTO">Informe de proyecto</option>
       <option value="MEMORIA">Memoria de producción</option>
       <option value="DESVIACION">Desviación de planificación</option>
+      <option value="CALIDAD_PLANIFICACION">Calidad de planificación</option>
+      <option value="JUSTIFICACION_ECONOMICA">Justificación económica</option>
     </select>
+
+    <div id="contenedor-nivel" style="display:none;">
+      <label for="nivel-economico">Nivel</label>
+      <select id="nivel-economico">
+        <option value="Campaña">Campaña</option>
+        <option value="Proyecto">Proyecto</option>
+        <option value="Producto">Producto</option>
+      </select>
+    </div>
 
     <div id="contenedor-registro">
       <label for="registro">Registro</label>
@@ -55,6 +66,14 @@
         <h4>Desviación de planificación (real vs. plan)</h4>
         <div id="desviacion-planificacion"></div>
       </div>
+      <div class="seccion" id="seccion-calidad" style="display:none;">
+        <h4>Calidad de planificación</h4>
+        <div id="calidad-planificacion"></div>
+      </div>
+      <div class="seccion" id="seccion-justificacion" style="display:none;">
+        <h4>Justificación económica</h4>
+        <div id="justificacion-economica"></div>
+      </div>
     </div>
 
     <script>
@@ -84,15 +103,48 @@
         }).join('');
       }
 
+      /*
+       * Justificación económica (Fase 3, ver conversación): a diferencia
+       * de los demás tipos (un solo registro), aquí hace falta elegir
+       * primero el NIVEL (Campaña/Proyecto/Producto) y luego el registro
+       * dependiente de ese nivel -- obtenerOpcionesRegistroPorNivel
+       * (CosteService.js) resuelve cualquiera de los 3 con el mismo
+       * mapa ENTIDAD_DOCUMENTO_A_MVP ya usado en el resto del sistema.
+       */
+      function cargarOpcionesRegistroPorNivel_() {
+        var nivel = document.getElementById('nivel-economico').value;
+        var select = document.getElementById('registro');
+        select.innerHTML = '<option>Cargando...</option>';
+        google.script.run
+          .withSuccessHandler(function (opciones) {
+            select.innerHTML = opciones.map(function (op) {
+              return '<option value="' + escapeHtml(op.id) + '">' + escapeHtml(op.etiqueta) + '</option>';
+            }).join('');
+          })
+          .withFailureHandler(mostrarError)
+          .obtenerOpcionesRegistroPorNivel(nivel);
+      }
+
       function cargarOpcionesRegistro() {
         var tipo = document.getElementById('tipo').value;
+        var contenedorNivel = document.getElementById('contenedor-nivel');
         var contenedorRegistro = document.getElementById('contenedor-registro');
         var select = document.getElementById('registro');
 
-        if (tipo === 'MEMORIA' || tipo === 'DESVIACION') {
+        if (tipo === 'MEMORIA' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+          contenedorNivel.style.display = 'none';
           contenedorRegistro.style.display = 'none';
           return;
         }
+
+        if (tipo === 'JUSTIFICACION_ECONOMICA') {
+          contenedorNivel.style.display = 'block';
+          contenedorRegistro.style.display = 'block';
+          cargarOpcionesRegistroPorNivel_();
+          return;
+        }
+
+        contenedorNivel.style.display = 'none';
         contenedorRegistro.style.display = 'block';
         select.innerHTML = '<option>Cargando...</option>';
         google.script.run
@@ -140,6 +192,111 @@
           renderDesviacionAgregada_(bloque.tareasPorResponsable);
       }
 
+      /*
+       * N3.4 (ver conversacion -- "Informe de calidad de planificación",
+       * cierra el bloque N3): añade lo que faltaba en Desviación -- %
+       * a tiempo, desviación por recurso y utilización del horario
+       * declarado por responsable. Reutiliza renderDesviacionAgregada_
+       * para las tablas de grupo, mismo lenguaje visual que el resto.
+       */
+      function renderUtilizacionHorario_(lista) {
+        if (!lista || lista.length === 0) return '<div class="vacio">Sin datos de horario cargado para calcular utilización.</div>';
+        return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Responsable</th><th>Días planificados</th><th>Días fuera de horario</th><th>Utilización</th></tr>' +
+          lista.map(function (r) {
+            var bajo = r.porcentajeUtilizacion !== null && r.porcentajeUtilizacion < 70;
+            var estiloFila = bajo ? ' style="background:#fdecea;color:#b00020;"' : '';
+            return '<tr' + estiloFila + '><td>' + escapeHtml(r.responsable) + '</td>' +
+              '<td style="text-align:center;">' + r.diasPlanificados + '</td>' +
+              '<td style="text-align:center;">' + r.diasFueraDeHorario + '</td>' +
+              '<td style="text-align:center;">' + (r.porcentajeUtilizacion === null ? '—' : r.porcentajeUtilizacion + '%' + (bajo ? ' ⚠' : '')) + '</td></tr>';
+          }).join('') + '</table>';
+      }
+
+      function renderCalidadPlanificacion_(informe) {
+        var contenedor = document.getElementById('calidad-planificacion');
+        contenedor.innerHTML =
+          '<div class="resumen-linea"><span>Procesos a tiempo</span><span class="badge">' + (informe.porcentajeProcesosATiempo === null ? '—' : informe.porcentajeProcesosATiempo + '%') + '</span></div>' +
+          '<div class="resumen-linea"><span>Tareas a tiempo</span><span class="badge">' + (informe.porcentajeTareasATiempo === null ? '—' : informe.porcentajeTareasATiempo + '%') + '</span></div>' +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por recurso usado</strong></p>' +
+          renderDesviacionAgregada_(informe.procesosPorRecurso) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Utilización del horario declarado por responsable</strong></p>' +
+          renderUtilizacionHorario_(informe.utilizacionHorarioPorResponsable);
+      }
+
+      /*
+       * Fase 3 (ver conversación): presupuesto vs coste real por
+       * categoría + fuentes de financiación, para el nivel elegido.
+       */
+      function renderCategoriasCoste_(categorias) {
+        return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Categoría</th><th>Previsto (€)</th><th>Real (€)</th><th>Desviación (€)</th></tr>' +
+          categorias.map(function (c) {
+            var sobrepasado = c.desviacion > 0;
+            var estiloFila = sobrepasado ? ' style="background:#fdecea;color:#b00020;"' : '';
+            return '<tr' + estiloFila + '><td>' + escapeHtml(c.categoria) + '</td>' +
+              '<td style="text-align:center;">' + c.previsto + '</td>' +
+              '<td style="text-align:center;">' + c.real + '</td>' +
+              '<td style="text-align:center;">' + (c.desviacion > 0 ? '+' : '') + c.desviacion + (sobrepasado ? ' ⚠' : '') + '</td></tr>';
+          }).join('') + '</table>';
+      }
+
+      function renderFuentesFinanciacion_(fuentes) {
+        if (!fuentes || fuentes.length === 0) return '<div class="vacio">Sin fuentes de financiación registradas.</div>';
+        return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Nombre</th><th>Tipo</th><th>Importe (€)</th><th>Estado</th></tr>' +
+          fuentes.map(function (f) {
+            return '<tr><td>' + escapeHtml(f.nombre) + '</td><td>' + escapeHtml(f.tipo) + '</td>' +
+              '<td style="text-align:center;">' + f.importe + '</td><td>' + escapeHtml(f.estado) + '</td></tr>';
+          }).join('') + '</table>';
+      }
+
+      /*
+       * Fase 4 (ver conversación): impacto social (personas voluntarias/
+       * atendidas -- reutiliza los ROL ya existentes, sin dato nuevo) y
+       * comparativa entre campañas (siempre todas, independiente del
+       * nivel elegido en el selector de arriba).
+       */
+      function renderComparativaCampanas_(campanas) {
+        if (!campanas || campanas.length === 0) return '<div class="vacio">Sin campañas activas.</div>';
+        return '<table style="width:100%;border-collapse:collapse;font-size:12px;">' +
+          '<tr><th style="text-align:left;">Campaña</th><th>Previsto (€)</th><th>Real (€)</th><th>Financiación</th><th>Voluntariado</th><th>Atendidas</th></tr>' +
+          campanas.map(function (c) {
+            return '<tr><td>' + escapeHtml(c.campanaNombre) + '</td>' +
+              '<td style="text-align:center;">' + c.totalPrevisto + '</td>' +
+              '<td style="text-align:center;">' + c.totalReal + '</td>' +
+              '<td style="text-align:center;">' + (c.coberturaFinanciacion === null ? '—' : c.coberturaFinanciacion + '%') + '</td>' +
+              '<td style="text-align:center;">' + c.personasVoluntariado + '</td>' +
+              '<td style="text-align:center;">' + c.personasAtendidas + '</td></tr>';
+          }).join('') + '</table>';
+      }
+
+      function renderJustificacionEconomica_(informe) {
+        var contenedor = document.getElementById('justificacion-economica');
+        var avisos = (informe.materialesSinPrecioReferencia || []).length > 0
+          ? '<div class="item alerta">Materiales sin precio de referencia (no incluidos en el coste): ' +
+            informe.materialesSinPrecioReferencia.map(function (m) { return escapeHtml(m.materialNombre); }).join(', ') + '</div>'
+          : '';
+        var impacto = informe.impactoSocial || { personasVoluntariado: 0, diasVoluntariado: 0, personasAtendidas: 0, diasPersonasAtendidas: 0 };
+
+        contenedor.innerHTML =
+          '<h4 style="margin-top:0;">' + escapeHtml(informe.entidadTipo) + ': ' + escapeHtml(informe.entidadNombre) + '</h4>' +
+          '<div class="resumen-linea"><span>Total previsto</span><span class="badge">' + informe.totalPrevisto + ' €</span></div>' +
+          '<div class="resumen-linea"><span>Total real</span><span class="badge">' + informe.totalReal + ' €</span></div>' +
+          '<div class="resumen-linea"><span>Desviación</span><span class="badge">' + (informe.desviacionTotal > 0 ? '+' : '') + informe.desviacionTotal + ' €</span></div>' +
+          '<div class="resumen-linea"><span>Financiación cubierta</span><span class="badge">' + (informe.coberturaFinanciacion === null ? '—' : informe.coberturaFinanciacion + '%') + '</span></div>' +
+          avisos +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Por categoría</strong></p>' +
+          renderCategoriasCoste_(informe.categorias) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Fuentes de financiación (total: ' + informe.totalFinanciacion + ' €)</strong></p>' +
+          renderFuentesFinanciacion_(informe.fuentesFinanciacion) +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Impacto social</strong></p>' +
+          '<div class="resumen-linea"><span>Personas voluntarias</span><span class="badge">' + impacto.personasVoluntariado + ' (' + impacto.diasVoluntariado + ' días)</span></div>' +
+          '<div class="resumen-linea"><span>Personas atendidas</span><span class="badge">' + impacto.personasAtendidas + ' (' + impacto.diasPersonasAtendidas + ' días)</span></div>' +
+          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Comparativa entre campañas</strong></p>' +
+          renderComparativaCampanas_(informe.comparativaCampanas);
+      }
+
       function renderInforme(informe) {
         if (!informe) {
           mostrarError({ message: 'El servidor no devolvio datos de informe (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
@@ -149,13 +306,20 @@
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
 
-        var esDesviacion = informe.tipo === 'DESVIACION';
+        var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || informe.tipo === 'JUSTIFICACION_ECONOMICA';
         ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
-          document.getElementById(id).closest('.seccion').style.display = esDesviacion ? 'none' : '';
+          document.getElementById(id).closest('.seccion').style.display = esInformeSinJerarquia ? 'none' : '';
         });
-        renderDesviacion(esDesviacion ? informe : informe.desviacionPlanificacion);
+        document.getElementById('seccion-desviacion').style.display = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? 'none' : '';
+        if (informe.tipo !== 'JUSTIFICACION_ECONOMICA') renderDesviacion(esInformeSinJerarquia ? informe : informe.desviacionPlanificacion);
 
-        if (esDesviacion) return;
+        document.getElementById('seccion-calidad').style.display = informe.tipo === 'CALIDAD_PLANIFICACION' ? '' : 'none';
+        if (informe.tipo === 'CALIDAD_PLANIFICACION') renderCalidadPlanificacion_(informe);
+
+        document.getElementById('seccion-justificacion').style.display = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? '' : 'none';
+        if (informe.tipo === 'JUSTIFICACION_ECONOMICA') renderJustificacionEconomica_(informe);
+
+        if (esInformeSinJerarquia) return;
 
         var conteoTareas = informe.tipo === 'MEMORIA'
           ? (informe.resumenGlobal ? informe.resumenGlobal.TAREA : {})
@@ -199,7 +363,13 @@
         var tipo = document.getElementById('tipo').value;
         var registro = document.getElementById('registro').value;
         tipoActual = tipo;
-        filtroActual = (tipo === 'MEMORIA' || tipo === 'DESVIACION') ? null : registro;
+        if (tipo === 'MEMORIA' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+          filtroActual = null;
+        } else if (tipo === 'JUSTIFICACION_ECONOMICA') {
+          filtroActual = { entidadTipo: document.getElementById('nivel-economico').value, entidadId: registro };
+        } else {
+          filtroActual = registro;
+        }
         document.getElementById('btn-exportar-csv').disabled = true;
         document.getElementById('btn-exportar-pdf').disabled = true;
         document.getElementById('resultado').style.display = 'none';
@@ -219,6 +389,7 @@
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual);
       });
       document.getElementById('tipo').addEventListener('change', cargarOpcionesRegistro);
+      document.getElementById('nivel-economico').addEventListener('change', cargarOpcionesRegistroPorNivel_);
       document.getElementById('btn-generar').addEventListener('click', generarInformeActual);
 
       cargarOpcionesRegistro();

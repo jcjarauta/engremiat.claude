@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera-ficha { margin-bottom: 14px; }
+      .cabecera-ficha h2 { margin: 0 0 4px 0; font-size: 18px; }
+      .cabecera-ficha .detalle { color: var(--color-texto-secundario); font-size: 13px; }
+      .cabecera-ficha .acciones { margin-top: 8px; display: flex; gap: 6px; }
+      section.bloque { margin-bottom: 16px; }
+      section.bloque h3 { font-size: 14px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+      .fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--color-borde); }
+      .fila:last-child { border-bottom: none; }
+      .fila .info { font-size: 13px; }
+      .fila .info .detalle-secundario { color: var(--color-texto-secundario); }
+      .btn-mini { font-size: 13px; padding: 5px 9px; }
+      .badge { font-size: 12px; padding: 2px 9px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .badge-preferente { background: #fff8e1; color: #8a6d00; }
+      .vacio-bloque { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; padding: 4px; }
+      .resumen-avance { display: flex; gap: 14px; flex-wrap: wrap; background: var(--color-fondo-suave); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
+      .resumen-avance .dato { display: flex; flex-direction: column; }
+      .resumen-avance .dato .valor { font-size: 16px; font-weight: bold; }
+      .resumen-avance .dato .etiqueta { color: var(--color-texto-secundario); font-size: 11px; }
+      #estadoCarga { padding: 12px 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="contenido" style="display:none;">
+      <div class="cabecera-ficha">
+        <h2 id="nombreProveedor"></h2>
+        <div class="detalle" id="detalleProveedor"></div>
+        <div class="acciones">
+          <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
+          <button id="btnExportarCsv" class="boton btn-mini">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="resumen-avance" id="resumenProveedor"></div>
+
+      <section class="bloque">
+        <h3>Materiales que suministra <button id="btnNuevoMaterial" class="boton btn-mini">+ Material</button></h3>
+        <div class="lista" id="listaMateriales"></div>
+      </section>
+      <section class="bloque">
+        <h3>Pedidos <button id="btnNuevoPedido" class="boton btn-mini">+ Pedido</button></h3>
+        <div class="lista" id="listaPedidos"></div>
+      </section>
+    </div>
+
+    <script>
+      var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("inactiv") !== -1 || texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("activ") !== -1 || texto.indexOf("recibido complet") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        if (!estado) return "";
+        return ' <span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function editar(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirEdicionConRetornoAFicha(entidad, id, 'PROVEEDOR', ID_REGISTRO);
+      }
+
+      function verFichaMaterial(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaMaterial(id);
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+        document.getElementById("contenido").style.display = "none";
+      }
+
+      function filaHtml_(infoHtml, entidadEditar, idEditar) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
+      }
+
+      /* Ver ficha del material ademas de editar la relacion (ver conversacion: navegacion cruzada Material<->Proveedor). */
+      function filaMaterialHtml_(infoHtml, relacionId, materialId) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<span class="celda-acciones" style="display:flex;gap:6px;">' +
+          '<button class="boton btn-mini" onclick="verFichaMaterial(\'' + materialId + '\')">Ver ficha</button>' +
+          '<button class="boton btn-mini" onclick="editar(\'PROVEEDOR_MATERIAL\',\'' + relacionId + '\')">Editar</button>' +
+          '</span></div>';
+      }
+
+      function fechaCorta_(v) {
+        return v ? new Date(v).toLocaleDateString() : '?';
+      }
+
+      function render(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        document.getElementById("contenido").style.display = "block";
+
+        var p = datos.proveedor;
+        document.getElementById("nombreProveedor").innerHTML = escapeHtml(p.NOMBRE) + renderBadge_(p.ESTADO);
+        document.getElementById("detalleProveedor").textContent =
+          p.ID + (p.CODIGO ? " · " + p.CODIGO : "") +
+          (p.PERSONA_CONTACTO ? " · " + p.PERSONA_CONTACTO : "") +
+          (p.EMAIL ? " · " + p.EMAIL : "") +
+          (p.TELEFONO ? " · " + p.TELEFONO : "") +
+          (p.PLAZO_ENTREGA_DIAS ? " · " + p.PLAZO_ENTREGA_DIAS + " días de plazo" : "");
+
+        var r = datos.resumen;
+        document.getElementById("resumenProveedor").innerHTML =
+          '<div class="dato"><span class="valor">' + r.pedidosTotal + '</span><span class="etiqueta">pedidos</span></div>' +
+          '<div class="dato"><span class="valor">' + r.pedidosRecibidos + '</span><span class="etiqueta">recibidos completos</span></div>' +
+          '<div class="dato"><span class="valor">' + r.gastoTotal + '</span><span class="etiqueta">gasto total (€)</span></div>' +
+          '<div class="dato"><span class="valor">' + r.materialesTotal + '</span><span class="etiqueta">materiales suministrados</span></div>';
+
+        document.getElementById("listaMateriales").innerHTML = datos.materiales.length
+          ? datos.materiales.map(function (m) {
+              var preferente = m.esPreferente ? ' <span class="badge badge-preferente">preferente</span>' : '';
+              var precio = m.precioUnitario ? ' <span class="detalle-secundario">— ' + escapeHtml(m.precioUnitario) + ' €/ud</span>' : '';
+              var plazo = m.plazoEntregaDias ? ' <span class="detalle-secundario">(' + escapeHtml(m.plazoEntregaDias) + ' días)</span>' : '';
+              return filaMaterialHtml_(escapeHtml(m.materialNombre) + precio + plazo + preferente + renderBadge_(m.estado), m.relacionId, m.materialId);
+            }).join("")
+          : '<div class="vacio-bloque">No suministra ningún material todavía.</div>';
+
+        document.getElementById("listaPedidos").innerHTML = datos.pedidos.length
+          ? datos.pedidos.map(function (ped) {
+              return filaHtml_(
+                fechaCorta_(ped.fechaPedido) + ' <span class="detalle-secundario">— ' + ped.numeroLineas + ' líneas, ' + ped.total + ' €</span>' + renderBadge_(ped.estado),
+                'PEDIDO_PROVEEDOR', ped.id
+              );
+            }).join("")
+          : '<div class="vacio-bloque">Sin pedidos registrados.</div>';
+
+        document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("PROVEEDOR", p.ID); });
+        document.getElementById("btnExportarCsv").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaProveedorCSV(p.ID);
+        });
+        document.getElementById("btnNuevoMaterial").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProveedorMaterialParaProveedor(p.ID);
+        });
+        document.getElementById("btnNuevoPedido").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearPedidoProveedorParaProveedor(p.ID);
+        });
+      }
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaProveedor(ID_REGISTRO);
+    </script>
+  </body>
+</html>

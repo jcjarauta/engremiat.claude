@@ -233,6 +233,8 @@ function generarInforme(tipo, id) {
     else if (tipo === 'EXCEPCIONES') informe = generarInformeExcepciones();
     else if (tipo === 'CAMBIOS') informe = generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta);
     else if (tipo === 'DESVIACION') informe = generarInformeDesviacion();
+    else if (tipo === 'CALIDAD_PLANIFICACION') informe = generarInformeCalidadPlanificacion();
+    else if (tipo === 'JUSTIFICACION_ECONOMICA') informe = generarInformeJustificacionEconomica(id && id.entidadTipo, id && id.entidadId);
     else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
 
     return serializarParaCliente_(informe);
@@ -344,9 +346,65 @@ function generarHtmlParaImprimir_(informe) {
   return html;
 }
 
+/*
+ * Fase 4 (ver conversación -- "plantilla PDF propia, no la tabla plana
+ * campo/valor que usan los demás informes"): memoria económica con
+ * formato de resumen + tablas por sección, pensada para entregar fuera
+ * del sistema (subvenciones/departamentos/clientes).
+ */
+function generarHtmlMemoriaEconomica_(informe) {
+  var filasCategorias = informe.categorias.map(function (c) {
+    return '<tr><td>' + escaparHtmlServer_(c.categoria) + '</td><td>' + c.previsto + '</td><td>' + c.real + '</td><td>' + c.desviacion + '</td></tr>';
+  }).join('');
+
+  var filasFuentes = (informe.fuentesFinanciacion || []).map(function (f) {
+    return '<tr><td>' + escaparHtmlServer_(f.nombre) + '</td><td>' + escaparHtmlServer_(f.tipo) + '</td><td>' + f.importe + '</td><td>' + escaparHtmlServer_(f.estado) + '</td></tr>';
+  }).join('') || '<tr><td colspan="4">Sin fuentes de financiación registradas.</td></tr>';
+
+  var filasComparativa = (informe.comparativaCampanas || []).map(function (c) {
+    return '<tr><td>' + escaparHtmlServer_(c.campanaNombre) + '</td><td>' + c.totalPrevisto + '</td><td>' + c.totalReal + '</td>' +
+      '<td>' + (c.coberturaFinanciacion === null ? '—' : c.coberturaFinanciacion + '%') + '</td>' +
+      '<td>' + c.personasVoluntariado + '</td><td>' + c.personasAtendidas + '</td></tr>';
+  }).join('');
+
+  var impacto = informe.impactoSocial || { personasVoluntariado: 0, personasAtendidas: 0 };
+
+  return '<html><head><meta charset="utf-8"><title>Memoria económica</title>' +
+    '<style>' +
+      'body{font-family:Arial,sans-serif;padding:30px;color:#202124;}' +
+      'h1{font-size:20px;border-bottom:2px solid #1a73e8;padding-bottom:8px;}' +
+      'h2{font-size:14px;margin-top:24px;color:#1a73e8;}' +
+      'table{border-collapse:collapse;width:100%;margin-top:8px;}' +
+      'td,th{border:1px solid #dadce0;padding:6px 8px;font-size:12px;text-align:left;}' +
+      'th{background:#f1f3f4;}' +
+      '.resumen{display:flex;gap:20px;margin:16px 0;flex-wrap:wrap;}' +
+      '.dato{background:#f5f5f5;border-radius:6px;padding:10px 16px;min-width:120px;}' +
+      '.dato .valor{font-size:20px;font-weight:bold;display:block;}' +
+      '.dato .etiqueta{font-size:11px;color:#5f6368;}' +
+      '@media print{button{display:none;}}' +
+    '</style></head><body>' +
+    '<button onclick="window.print()">Imprimir / Guardar como PDF</button>' +
+    '<h1>Memoria económica — ' + escaparHtmlServer_(informe.entidadTipo) + ': ' + escaparHtmlServer_(informe.entidadNombre) + '</h1>' +
+    '<p>Generado: ' + new Date().toString() + '</p>' +
+    '<div class="resumen">' +
+      '<div class="dato"><span class="valor">' + informe.totalPrevisto + ' €</span><span class="etiqueta">Presupuesto previsto</span></div>' +
+      '<div class="dato"><span class="valor">' + informe.totalReal + ' €</span><span class="etiqueta">Coste real</span></div>' +
+      '<div class="dato"><span class="valor">' + (informe.coberturaFinanciacion === null ? '—' : informe.coberturaFinanciacion + '%') + '</span><span class="etiqueta">Financiación cubierta</span></div>' +
+      '<div class="dato"><span class="valor">' + impacto.personasVoluntariado + '</span><span class="etiqueta">Personas voluntarias</span></div>' +
+      '<div class="dato"><span class="valor">' + impacto.personasAtendidas + '</span><span class="etiqueta">Personas atendidas</span></div>' +
+    '</div>' +
+    '<h2>Coste por categoría</h2>' +
+    '<table><tr><th>Categoría</th><th>Previsto (€)</th><th>Real (€)</th><th>Desviación (€)</th></tr>' + filasCategorias + '</table>' +
+    '<h2>Fuentes de financiación (total: ' + informe.totalFinanciacion + ' €)</h2>' +
+    '<table><tr><th>Nombre</th><th>Tipo</th><th>Importe (€)</th><th>Estado</th></tr>' + filasFuentes + '</table>' +
+    '<h2>Comparativa entre campañas</h2>' +
+    '<table><tr><th>Campaña</th><th>Previsto (€)</th><th>Real (€)</th><th>Financiación</th><th>Voluntariado</th><th>Personas atendidas</th></tr>' + filasComparativa + '</table>' +
+    '</body></html>';
+}
+
 function exportarInformePDF(tipo, idOFiltro, opcionesPrueba) {
   var informe = generarInforme(tipo, idOFiltro);
-  var html = generarHtmlParaImprimir_(informe);
+  var html = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? generarHtmlMemoriaEconomica_(informe) : generarHtmlParaImprimir_(informe);
   var nombre = nombreArchivoInforme_(tipo, 'html');
   registrarHistorial('INFORME', nombre, 'EXPORTAR_INFORME', [], Object.assign({ origen: (opcionesPrueba && opcionesPrueba.origen) || 'UI', formato: 'PDF_IMPRESION' }, opcionesPrueba || {}));
   return { nombreArchivo: nombre, contenidoHtml: html };

@@ -94,6 +94,11 @@
         google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
       }
 
+      /* Ver la ficha de registro de un producto directamente desde el árbol (ver conversacion). */
+      function verFichaProducto(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaProducto(id);
+      }
+
       function crearHijo(funcion, idPadre) {
         google.script.run.withFailureHandler(mostrarError)[funcion](idPadre);
       }
@@ -129,6 +134,7 @@
           '<summary>' +
             '<span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' ' + renderBadge_(producto.estado) + renderDetalle_(producto) + '</span>' +
             '<span class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="verFichaProducto(\'' + escapeAttr(producto.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
             '</span>' +

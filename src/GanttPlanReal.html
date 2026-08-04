@@ -28,7 +28,12 @@
       .barra-real-ok { top: 15px; background: #2e7d32; }
       .barra-real-tarde { top: 15px; background: var(--color-peligro); }
       .banda-fuera-horario { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(45deg, rgba(176,0,32,0.12), rgba(176,0,32,0.12) 3px, transparent 3px, transparent 6px); }
+      .celda-fase { display: flex; flex-direction: column; gap: 2px; }
+      .mini-track-fase { position: relative; height: 6px; width: 60px; background: var(--color-fondo-suave); border-radius: 2px; }
+      .mini-barra-fase { position: absolute; top: 0; left: 0; height: 6px; border-radius: 2px; background: #2e7d32; }
+      .mini-barra-fase.retraso { background: var(--color-peligro); }
       .linea-hoy { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--color-primario); z-index: 1; }
+      .linea-hito { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #e65100; z-index: 1; }
       .btn-editar { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 2px 6px; }
       .btn-editar:hover { background: var(--color-fondo-suave); }
       .enlace-mini { color: var(--color-primario); cursor: pointer; }
@@ -64,6 +69,21 @@
       .rejilla-disponibilidad > div { background: #fff; padding: 4px 6px; font-size: 11px; min-height: 24px; }
       .rejilla-disponibilidad .cab { font-weight: bold; background: var(--color-fondo-suave); text-align: center; }
       .rejilla-disponibilidad .fila-entidad { font-weight: bold; }
+      /*
+       * Calendario semanal (N4.4 -- roadmap "rejilla Lunes-Domingo x
+       * horas"): sustituye la lista de tags por dia por bloques
+       * posicionados por hora real, mismo dato (porDia) que ya traia
+       * obtenerDisponibilidadEntidades, sin llamada nueva.
+       */
+      .calendario-semana { display: grid; grid-template-columns: 40px repeat(7, 1fr); gap: 1px; background: var(--color-borde); border: 1px solid var(--color-borde); margin-top: 10px; }
+      .calendario-semana .cal-cab { background: var(--color-fondo-suave); font-weight: bold; text-align: center; font-size: 11px; padding: 3px 0; }
+      .calendario-semana .cal-eje, .calendario-semana .cal-dia { position: relative; height: 280px; background: #fff; }
+      .calendario-semana .cal-eje span { position: absolute; right: 4px; transform: translateY(-50%); font-size: 9px; color: var(--color-texto-secundario); }
+      .calendario-semana .cal-linea { position: absolute; left: 0; right: 0; border-top: 1px solid #f0f0f0; }
+      .cal-bloque { position: absolute; left: 2px; right: 2px; border-radius: 2px; font-size: 9px; color: #fff; padding: 1px 3px; overflow: hidden; white-space: nowrap; }
+      .cal-bloque-coincidencia { left: 0; right: 0; background: #fbc02d; color: #5d4400; border: 1px solid #f9a825; z-index: 2; }
+      .calendario-leyenda { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; font-size: 11px; }
+      .calendario-leyenda span.chip-color { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
       .franja { display: block; background: #e6f4ea; color: #2e7d32; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; }
       .fila-coincidencia { background: #fff8e1 !important; font-weight: bold; }
       .franja-coincidencia { display: block; background: #fbc02d; color: #5d4400; border-radius: 3px; padding: 1px 4px; margin-bottom: 2px; }
@@ -73,24 +93,19 @@
       .badge-fuera-horario { background: var(--color-peligro-fondo); color: var(--color-peligro); }
       .badge-disponible { background: #e6f4ea; color: #2e7d32; }
       .badge-sin-horario { background: var(--color-fondo-suave); color: var(--color-texto-secundario); }
+      .fila-grupo td { background: var(--color-fondo-suave); font-weight: bold; }
+      .badge-fase-actual { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #e3f2fd; color: #1565c0; }
+      .badge-fase-actual.completado { background: #e6f4ea; color: #2e7d32; }
     </style>
   </head>
   <body>
     <div class="cabecera-modos">
       <h3 style="margin:0;">Gantt: plan vs. real</h3>
       <span class="btn-modo activo" id="modo-plan-real">Plan vs. real</span>
+      <span class="btn-modo" id="modo-fases">Fases por producto</span>
       <span class="btn-modo" id="modo-disponibilidad">Disponibilidad</span>
     </div>
-    <div id="vista-plan-real">
-    <div class="leyenda">
-      <span style="background:#9e9e9e;"></span>Plan
-      <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
-      <span style="background:#b00020;margin-left:10px;"></span>Real (con retraso)
-      <span style="background:#1a73e8;margin-left:10px;"></span>Hoy
-      <span style="background:repeating-linear-gradient(45deg, rgba(176,0,32,0.35), rgba(176,0,32,0.35) 2px, transparent 2px, transparent 4px);margin-left:10px;"></span>Fuera de horario declarado
-    </div>
-
-    <div class="filtros">
+    <div id="filtros-compartidos" class="filtros">
       <div>
         <label for="filtro-campana">Campaña</label>
         <span style="display:flex;align-items:center;">
@@ -105,7 +120,7 @@
           <span class="icono-editar-filtro" id="editar-filtro-proyecto" title="Editar este proyecto" disabled>✎</span>
         </span>
       </div>
-      <div>
+      <div id="grupo-filtro-fase">
         <label for="filtro-fase">Fase de producción</label>
         <select id="filtro-fase"><option value="">(todas)</option></select>
       </div>
@@ -118,7 +133,17 @@
         <select id="filtro-recurso"><option value="">(todos)</option></select>
       </div>
       <button id="btn-exportar-csv">Exportar CSV (detalle)</button>
-      <button id="btn-actualizar-gantt" title="Recargar los datos del gantt">🔄 Actualizar</button>
+      <button id="btn-actualizar-gantt" title="Recargar los datos de la vista actual">🔄 Actualizar</button>
+    </div>
+
+    <div id="vista-plan-real">
+    <div class="leyenda">
+      <span style="background:#9e9e9e;"></span>Plan
+      <span style="background:#2e7d32;margin-left:10px;"></span>Real (a tiempo)
+      <span style="background:#b00020;margin-left:10px;"></span>Real (con retraso)
+      <span style="background:#1a73e8;margin-left:10px;"></span>Hoy
+      <span style="background:repeating-linear-gradient(45deg, rgba(176,0,32,0.35), rgba(176,0,32,0.35) 2px, transparent 2px, transparent 4px);margin-left:10px;"></span>Fuera de horario declarado
+      <span style="border-left:2px dashed #e65100;height:10px;display:inline-block;margin-left:10px;vertical-align:middle;"></span>Fecha requerida del producto
     </div>
 
     <div class="filtros">
@@ -150,6 +175,38 @@
     </div>
     </div>
 
+    <div id="vista-fases" style="display:none;">
+      <p class="rango-fechas">Totales por fase (previsto vs. real, en días) y ciclo completo de cada producto — ordenado por mayor desviación primero. Usa los mismos filtros de arriba.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px;">
+        <span>
+          <label style="font-size:11px;margin-right:4px;">Agrupar por</label>
+          <span class="btn-modo activo" id="fases-modo-producto">Producto</span>
+          <span class="btn-modo" id="fases-modo-proyecto">Proyecto</span>
+        </span>
+        <button id="btn-exportar-csv-fases" class="boton btn-mini">Exportar CSV</button>
+      </div>
+      <div id="resumen-fases" class="rango-fechas"></div>
+      <div id="cuello-botella-fases" class="rango-fechas"></div>
+      <div id="estado-carga-fases" class="vacio">Cargando...</div>
+      <div class="contenedor-tabla">
+        <table id="tabla-fases" style="display:none;">
+          <thead>
+            <tr>
+              <th class="col-nombre">Producto</th>
+              <th>Preproducción</th>
+              <th>Producción</th>
+              <th>Postproducción</th>
+              <th>Ciclo completo</th>
+              <th>Estado actual</th>
+              <th>Desviación</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="filas-fases"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div id="vista-disponibilidad" style="display:none;">
       <h4 style="margin:0 0 2px;">Vista del día</h4>
       <p class="rango-fechas">Horario previsto y tareas asignadas de todo el personal, para la fecha seleccionada.</p>
@@ -158,6 +215,33 @@
           <label for="fecha-vista-dia">Día</label>
           <input type="date" id="fecha-vista-dia">
         </div>
+        <div>
+          <label>&nbsp;</label>
+          <span style="display:flex;gap:4px;">
+            <button id="btn-dia-anterior" class="boton btn-mini" title="Día anterior">◀</button>
+            <button id="btn-dia-hoy" class="boton btn-mini">Hoy</button>
+            <button id="btn-dia-siguiente" class="boton btn-mini" title="Día siguiente">▶</button>
+          </span>
+        </div>
+        <div>
+          <label for="filtro-dia-rol">Rol</label>
+          <select id="filtro-dia-rol"><option value="">(todos)</option></select>
+        </div>
+        <div>
+          <label for="filtro-dia-estado">Estado</label>
+          <select id="filtro-dia-estado">
+            <option value="">(todos)</option>
+            <option value="ocupado">Ocupado</option>
+            <option value="fuera_de_horario">Fuera de horario</option>
+            <option value="disponible">Disponible</option>
+            <option value="sin_horario">Sin horario declarado</option>
+          </select>
+        </div>
+        <div>
+          <label for="filtro-dia-nombre">Buscar</label>
+          <input type="text" id="filtro-dia-nombre" placeholder="Nombre...">
+        </div>
+        <button id="btn-exportar-csv-dia" class="boton btn-mini">Exportar CSV</button>
       </div>
       <div id="rango-fechas-dia" class="rango-fechas"></div>
       <div class="contenedor-tabla" style="max-height:220px;">
@@ -176,6 +260,11 @@
         </table>
         <div id="vacio-dia" class="vacio"></div>
       </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;">
+        <span style="font-size:12px;font-weight:bold;">Incidencias abiertas <span class="badge" id="badge-incidencias-dia">0</span></span>
+      </div>
+      <div id="lista-incidencias-dia" style="margin-top:4px;"></div>
 
       <h4 style="margin:20px 0 4px;border-top:1px solid var(--color-borde);padding-top:14px;">Vista de rango</h4>
       <p class="rango-fechas">Actividad registrada en un periodo, agrupada por persona o por recurso.</p>
@@ -260,6 +349,8 @@
 
     <script>
       var PRESELECCION_CAMPANA = <?!= JSON.stringify(preseleccionCampana) ?>;
+      var PRESELECCION_PRODUCTO = <?!= JSON.stringify(preseleccionProducto) ?>;
+      var PRESELECCION_OCUPACION_RECURSO = <?!= preseleccionOcupacionRecurso || 'null' ?>;
 
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
@@ -435,7 +526,7 @@
 
         var fechas = [];
         filas.forEach(function (fila) {
-          [fila.fechaInicioPlan, fila.fechaFinPlan, fila.fechaInicioReal, fila.fechaFinReal].forEach(function (f) {
+          [fila.fechaInicioPlan, fila.fechaFinPlan, fila.fechaInicioReal, fila.fechaFinReal, fila.fechaRequeridaProducto].forEach(function (f) {
             if (f) fechas.push(new Date(f).getTime());
           });
         });
@@ -538,6 +629,20 @@
           var desv = formatearDesviacion_(fila.diasDesviacionFin, fila.diasRiesgo);
 
           /*
+           * Hito de FECHA_REQUERIDA (N3.3 -- roadmap): marca la fecha
+           * limite pedida por el producto en el eje de cada fila que
+           * pertenece a ese producto, para ver de un vistazo si el plan
+           * (o lo real) se pasa de la fecha comprometida.
+           */
+          var lineaHito = '';
+          if (fila.fechaRequeridaProducto) {
+            var posicionHito = posicion(fila.fechaRequeridaProducto);
+            if (posicionHito >= 0 && posicionHito <= 100) {
+              lineaHito = '<div class="linea-hito" style="left:' + posicionHito + '%;" title="Fecha requerida del producto: ' + escapeHtml(formatearFecha_(fila.fechaRequeridaProducto)) + '"></div>';
+            }
+          }
+
+          /*
            * Estilo (ver conversacion): la miga de pan Campaña/Proyecto
            * en la propia celda del proceso quedaba apretada y se partia
            * en varias lineas -- se mueve a un tooltip (igual que las
@@ -573,7 +678,7 @@
               bandasFueraDeHorario_(fila) +
               lineasCuadricula +
               '<div class="barra barra-plan" style="left:' + izqPlan + '%;width:' + anchoPlan + '%;" title="' + escapeHtml(tituloPlan) + '"></div>' +
-              barraReal + lineaHoy +
+              barraReal + lineaHoy + lineaHito +
             '</div></td>' +
             '<td><div class="celda-acciones"><span class="btn-editar" onclick="abrirEdicionProceso(\'' + escapeHtml(fila.id) + '\')">✎ Editar</span>' + selectTareas + '</div></td>' +
           '</tr>';
@@ -588,7 +693,15 @@
           proyectoId: document.getElementById('filtro-proyecto').value || null,
           faseProduccion: document.getElementById('filtro-fase').value || null,
           responsableId: document.getElementById('filtro-responsable').value || null,
-          recursoId: document.getElementById('filtro-recurso').value || null
+          recursoId: document.getElementById('filtro-recurso').value || null,
+          /*
+           * PRESELECCION_PRODUCTO (ver conversacion -- "Ver Gantt filtrado
+           * a este producto" desde la Ficha de Producto): a diferencia de
+           * campaña no tiene <select> propio, se queda fijo durante toda
+           * la sesion del dialogo (no hay forma de "quitarlo" desde la UI,
+           * es una vista de solo-este-producto).
+           */
+          productoId: PRESELECCION_PRODUCTO || null
         };
       }
 
@@ -730,10 +843,82 @@
           });
         }
 
-        contenedor.innerHTML = avisoSinHorario + '<div class="rejilla-disponibilidad">' + celdas + '</div>';
+        contenedor.innerHTML = avisoSinHorario + renderCalendarioSemanal_(entidades, datos.coincidencias) +
+          '<div class="rejilla-disponibilidad">' + celdas + '</div>';
       }
 
       var DIAS_SEMANA_ORDEN_JS_ = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+      /*
+       * N4.4 (roadmap -- "Calendario semanal, rejilla Lunes-Domingo x
+       * horas"): mismo dato que la rejilla de texto de abajo
+       * (entidad.porDia), pero posicionado por hora real en vez de
+       * listar tags -- responde de un vistazo "a qué hora" sin tener
+       * que leer cada etiqueta. Ventana fija 07:00-22:00 (horario
+       * habitual de taller); franjas fuera de esa ventana se recortan
+       * visualmente pero siguen legibles en la rejilla de texto de abajo.
+       */
+      var CALENDARIO_HORA_MIN_ = 7 * 60;
+      var CALENDARIO_HORA_MAX_ = 22 * 60;
+      var CALENDARIO_COLORES_ = ['#1a73e8', '#2e7d32', '#8e24aa', '#e65100', '#00838f', '#ad1457'];
+
+      function calendarioPosicion_(inicioHHMM, finHHMM) {
+        var inicio = Math.max(minutosDesdeHHMM_(inicioHHMM), CALENDARIO_HORA_MIN_);
+        var fin = Math.min(minutosDesdeHHMM_(finHHMM), CALENDARIO_HORA_MAX_);
+        var rango = CALENDARIO_HORA_MAX_ - CALENDARIO_HORA_MIN_;
+        if (fin <= inicio) return null;
+        return {
+          top: ((inicio - CALENDARIO_HORA_MIN_) / rango) * 100,
+          alto: Math.max(((fin - inicio) / rango) * 100, 2)
+        };
+      }
+      function minutosDesdeHHMM_(hhmm) {
+        var partes = String(hhmm || '').split(':');
+        return (Number(partes[0]) || 0) * 60 + (Number(partes[1]) || 0);
+      }
+
+      function renderCalendarioSemanal_(entidades, coincidencias) {
+        var lineasHora = [];
+        var etiquetasHora = [];
+        for (var m = CALENDARIO_HORA_MIN_; m <= CALENDARIO_HORA_MAX_; m += 120) {
+          var top = ((m - CALENDARIO_HORA_MIN_) / (CALENDARIO_HORA_MAX_ - CALENDARIO_HORA_MIN_)) * 100;
+          lineasHora.push('<div class="cal-linea" style="top:' + top + '%;"></div>');
+          etiquetasHora.push('<span style="top:' + top + '%;">' + Math.floor(m / 60) + 'h</span>');
+        }
+
+        var celdaEsquinaCab = '<div class="cal-cab"></div>';
+        var celdaEjeHoras = '<div class="cal-eje">' + etiquetasHora.join('') + '</div>';
+        var celdasDias = DIAS_SEMANA_ORDEN_JS_.map(function (dia) {
+          var bloques = lineasHora.join('');
+          entidades.forEach(function (entidad, indice) {
+            (entidad.porDia[dia] || []).forEach(function (f) {
+              var pos = calendarioPosicion_(f.inicio, f.fin);
+              if (!pos) return;
+              bloques += '<div class="cal-bloque" style="top:' + pos.top + '%;height:' + pos.alto + '%;background:' + CALENDARIO_COLORES_[indice % CALENDARIO_COLORES_.length] + ';" title="' +
+                escapeHtml(entidad.nombre) + ': ' + escapeHtml(f.inicio) + '–' + escapeHtml(f.fin) + '">' + escapeHtml(entidad.nombre) + '</div>';
+            });
+          });
+          if (coincidencias && coincidencias[dia]) {
+            coincidencias[dia].forEach(function (franja) {
+              var partes = franja.split('–');
+              var pos = calendarioPosicion_(partes[0], partes[1]);
+              if (!pos) return;
+              bloques += '<div class="cal-bloque cal-bloque-coincidencia" style="top:' + pos.top + '%;height:' + pos.alto + '%;" title="Coinciden todas: ' + escapeHtml(franja) + '">✓</div>';
+            });
+          }
+          return '<div class="cal-dia">' + bloques + '</div>';
+        }).join('');
+
+        var leyenda = '<div class="calendario-leyenda">' + entidades.map(function (e, indice) {
+          return '<span><span class="chip-color" style="background:' + CALENDARIO_COLORES_[indice % CALENDARIO_COLORES_.length] + ';"></span>' + escapeHtml(e.nombre) + '</span>';
+        }).join('') + '</div>';
+
+        return '<div class="calendario-semana">' + celdaEsquinaCab +
+          DIAS_SEMANA_ORDEN_JS_.map(function (d) { return '<div class="cal-cab">' + d + '</div>'; }).join('') +
+          '</div>' +
+          '<div class="calendario-semana" style="margin-top:0;">' + celdaEjeHoras + celdasDias + '</div>' +
+          leyenda;
+      }
 
       /*
        * Ocupacion real (ver conversacion: "misma vista que el Gantt
@@ -942,15 +1127,39 @@
         ocupado: 'Ocupado', fuera_de_horario: 'Fuera de horario', disponible: 'Disponible', sin_horario: 'Sin horario declarado'
       };
 
-      function renderVistaDia_(datos) {
+      var personasDiaCompletas_ = [];
+
+      function poblarFiltroRolDia_(personas) {
+        var select = document.getElementById('filtro-dia-rol');
+        var valorActual = select.value;
+        var roles = Array.from(new Set(personas.map(function (p) { return p.rol; }).filter(Boolean))).sort();
+        select.innerHTML = '<option value="">(todos)</option>' + roles.map(function (r) {
+          return '<option value="' + escapeHtml(r) + '">' + escapeHtml(r) + '</option>';
+        }).join('');
+        if (roles.indexOf(valorActual) !== -1) select.value = valorActual;
+      }
+
+      function aplicarFiltrosDiaYRenderizar_() {
+        var rol = document.getElementById('filtro-dia-rol').value;
+        var estado = document.getElementById('filtro-dia-estado').value;
+        var nombre = document.getElementById('filtro-dia-nombre').value.trim().toLowerCase();
+
+        var filtradas = personasDiaCompletas_.filter(function (p) {
+          if (rol && p.rol !== rol) return false;
+          if (estado && p.estado !== estado) return false;
+          if (nombre && p.nombre.toLowerCase().indexOf(nombre) === -1) return false;
+          return true;
+        });
+        renderVistaDia_(filtradas);
+      }
+
+      function renderVistaDia_(personas) {
         var tabla = document.getElementById('tabla-dia');
         var vacio = document.getElementById('vacio-dia');
-        var personas = datos.personas || [];
-        document.getElementById('rango-fechas-dia').textContent = datos.diaSemana + ' ' + formatearFecha_(datos.fecha + 'T00:00:00');
 
         if (personas.length === 0) {
           tabla.style.display = 'none';
-          vacio.textContent = 'Sin personas/equipos activos.';
+          vacio.textContent = personasDiaCompletas_.length === 0 ? 'Sin personas/equipos activos.' : 'Ningún resultado con estos filtros.';
           return;
         }
 
@@ -977,12 +1186,64 @@
         tabla.style.display = 'table';
       }
 
+      /*
+       * Incidencias abiertas (N4.3 -- roadmap "agenda del taller
+       * completo"): no estan filtradas a la fecha elegida (una
+       * incidencia no tiene "dia en que ocurre" como una tarea), se
+       * muestran todas las abiertas ahora mismo como contexto fijo del
+       * dia -- responde a "qué está pendiente" junto con quién trabaja hoy.
+       */
+      function renderIncidenciasDia_(incidencias) {
+        document.getElementById('badge-incidencias-dia').textContent = incidencias.length;
+        document.getElementById('lista-incidencias-dia').innerHTML = incidencias.length
+          ? incidencias.map(function (inc) {
+              return '<div class="fila" style="padding:4px 2px;border-bottom:1px solid var(--color-borde);">' +
+                '<span class="enlace-mini" onclick="abrirFichaIncidenciaDia_(\'' + escapeHtml(inc.id) + '\')">' + escapeHtml(inc.titulo) + '</span>' +
+                '<div class="rango-fechas" style="margin:0;">' + escapeHtml([inc.subtitulo, inc.contexto].filter(Boolean).join(' · ')) + '</div>' +
+              '</div>';
+            }).join('')
+          : '<div class="vacio">Sin incidencias abiertas.</div>';
+      }
+
+      function abrirFichaIncidenciaDia_(id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirFichaIncidencia('INCIDENCIA', id);
+      }
+
       function cargarVistaDia_() {
         var fecha = document.getElementById('fecha-vista-dia').value || null;
         document.getElementById('tabla-dia').style.display = 'none';
         document.getElementById('vacio-dia').textContent = 'Cargando…';
-        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(renderVistaDia_).obtenerVistaDelDia(fecha);
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          document.getElementById('rango-fechas-dia').textContent = datos.diaSemana + ' ' + formatearFecha_(datos.fecha + 'T00:00:00');
+          personasDiaCompletas_ = datos.personas || [];
+          poblarFiltroRolDia_(personasDiaCompletas_);
+          aplicarFiltrosDiaYRenderizar_();
+          renderIncidenciasDia_(datos.incidenciasAbiertas || []);
+        }).obtenerVistaDelDia(fecha);
       }
+
+      ['filtro-dia-rol', 'filtro-dia-estado'].forEach(function (id) {
+        document.getElementById(id).addEventListener('change', aplicarFiltrosDiaYRenderizar_);
+      });
+      document.getElementById('filtro-dia-nombre').addEventListener('input', aplicarFiltrosDiaYRenderizar_);
+
+      function sumarDiasFechaVistaDia_(delta) {
+        var input = document.getElementById('fecha-vista-dia');
+        var fecha = new Date(input.value + 'T00:00:00');
+        fecha.setDate(fecha.getDate() + delta);
+        input.value = fecha.toISOString().slice(0, 10);
+        cargarVistaDia_();
+      }
+      document.getElementById('btn-dia-anterior').addEventListener('click', function () { sumarDiasFechaVistaDia_(-1); });
+      document.getElementById('btn-dia-siguiente').addEventListener('click', function () { sumarDiasFechaVistaDia_(1); });
+      document.getElementById('btn-dia-hoy').addEventListener('click', function () {
+        document.getElementById('fecha-vista-dia').value = new Date().toISOString().slice(0, 10);
+        cargarVistaDia_();
+      });
+      document.getElementById('btn-exportar-csv-dia').addEventListener('click', function () {
+        var fecha = document.getElementById('fecha-vista-dia').value || null;
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarVistaDelDiaCSV(fecha);
+      });
 
       (function inicializarFechaVistaDia_() {
         var hoyISO = new Date().toISOString().slice(0, 10);
@@ -990,19 +1251,191 @@
       })();
       document.getElementById('fecha-vista-dia').addEventListener('change', cargarVistaDia_);
 
+      var modoActual_ = 'plan-real';
+
       function cambiarModo_(modo) {
-        var esDisponibilidad = modo === 'disponibilidad';
-        document.getElementById('vista-plan-real').style.display = esDisponibilidad ? 'none' : '';
-        document.getElementById('vista-disponibilidad').style.display = esDisponibilidad ? '' : 'none';
-        document.getElementById('modo-plan-real').classList.toggle('activo', !esDisponibilidad);
-        document.getElementById('modo-disponibilidad').classList.toggle('activo', esDisponibilidad);
-        if (esDisponibilidad) {
+        modoActual_ = modo;
+        document.getElementById('vista-plan-real').style.display = modo === 'plan-real' ? '' : 'none';
+        document.getElementById('vista-fases').style.display = modo === 'fases' ? '' : 'none';
+        document.getElementById('vista-disponibilidad').style.display = modo === 'disponibilidad' ? '' : 'none';
+        document.getElementById('filtros-compartidos').style.display = modo === 'disponibilidad' ? 'none' : '';
+        /*
+         * "Fase de producción" no tiene sentido en Fases por producto
+         * (esa vista YA desglosa por las 3 fases, filtrar a una sola
+         * vaciaria dos columnas) y "Exportar CSV (detalle)" exporta a
+         * nivel proceso -- redundante con el export propio de Fases
+         * (ver conversacion: dos botones "Exportar CSV" confundian).
+         */
+        document.getElementById('grupo-filtro-fase').style.display = modo === 'fases' ? 'none' : '';
+        document.getElementById('btn-exportar-csv').style.display = modo === 'fases' ? 'none' : '';
+        document.getElementById('modo-plan-real').classList.toggle('activo', modo === 'plan-real');
+        document.getElementById('modo-fases').classList.toggle('activo', modo === 'fases');
+        document.getElementById('modo-disponibilidad').classList.toggle('activo', modo === 'disponibilidad');
+        if (modo === 'fases') {
+          cargarFases_();
+        } else if (modo === 'disponibilidad') {
           recalcularDisponibilidad_();
           cargarVistaDia_();
         }
       }
       document.getElementById('modo-plan-real').addEventListener('click', function () { cambiarModo_('plan-real'); });
+      document.getElementById('modo-fases').addEventListener('click', function () { cambiarModo_('fases'); });
       document.getElementById('modo-disponibilidad').addEventListener('click', function () { cambiarModo_('disponibilidad'); });
+
+      var fasesCargadas_ = false;
+      var fasesProductosCache_ = [];
+      var agrupacionFases_ = 'producto';
+
+      function cargarFases_(forzar) {
+        if (fasesCargadas_ && !forzar) return;
+        document.getElementById('estado-carga-fases').style.display = 'block';
+        document.getElementById('estado-carga-fases').textContent = 'Cargando...';
+        document.getElementById('tabla-fases').style.display = 'none';
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          fasesCargadas_ = true;
+          renderResumenFases_(datos.resumen);
+          fasesProductosCache_ = datos.productos || [];
+          renderFases_(fasesProductosCache_);
+        }).obtenerDatosFasesPorProducto(filtroActual_());
+      }
+
+      function renderResumenFases_(r) {
+        if (!r) {
+          document.getElementById('resumen-fases').textContent = '';
+          document.getElementById('cuello-botella-fases').textContent = '';
+          return;
+        }
+        document.getElementById('resumen-fases').textContent =
+          r.productosTotal + ' productos · ' + r.productosMedidos + ' con ciclo medido · ' +
+          r.productosConRetraso + ' con retraso · desviación media del ciclo: ' + (r.desviacionMediaCiclo === null ? '—' : r.desviacionMediaCiclo + ' d');
+        var cb = r.cuelloDeBotella;
+        document.getElementById('cuello-botella-fases').textContent = cb
+          ? '🔴 Fase con más desviación media: ' + cb.fase + ' (+' + cb.desviacionMedia + ' d de media, ' + cb.casos + ' casos)'
+          : '';
+      }
+
+      /* Mini-barra: real como % de lo previsto (max 150% en pantalla), verde si <=100%, roja si se pasa. */
+      function miniBarraFase_(previsto, real) {
+        if (!previsto) return '';
+        var porcentaje = Math.min(real / previsto, 1.5) * 100;
+        var clase = real > previsto ? 'retraso' : '';
+        return '<div class="mini-track-fase"><div class="mini-barra-fase ' + clase + '" style="width:' + porcentaje + '%;"></div></div>';
+      }
+
+      function celdaFase_(bloque) {
+        if (!bloque || bloque.procesos === 0) return '<span class="detalle-secundario">—</span>';
+        /*
+         * typeof === 'number', no "!== null": google.script.run tiene una
+         * rareza conocida donde un null dentro de un objeto puede llegar
+         * al cliente como undefined, no como null -- "!== null" no lo
+         * detectaba y salia "undefined d real" (ver conversacion).
+         */
+        var hayReal = bloque.procesosCompletados > 0 && typeof bloque.diasReales === 'number';
+        var texto = bloque.diasPrevistos + ' d prev.' + (hayReal ? ' / ' + bloque.diasReales + ' d real' : '') +
+          ' <span class="detalle-secundario">(' + bloque.procesos + ' proc.)</span>';
+        return '<div class="celda-fase">' + texto + (hayReal ? miniBarraFase_(bloque.diasPrevistos, bloque.diasReales) : '') + '</div>';
+      }
+
+      var ETIQUETA_COLUMNAS_FASES_ = 8;
+
+      function claseFaseActual_(faseActual) {
+        return faseActual === 'Completado' ? 'badge-fase-actual completado' : 'badge-fase-actual';
+      }
+
+      function filaProductoFasesHtml_(p) {
+        var cicloTieneReal = typeof p.diasCicloReal === 'number';
+        var ciclo = typeof p.diasCicloPrevisto !== 'number' ? '—' :
+          p.diasCicloPrevisto + ' d prev.' + (cicloTieneReal ? ' / ' + p.diasCicloReal + ' d real' : '');
+        var desv = formatearDesviacion_(p.diasDesviacionCiclo, null);
+        return '<tr>' +
+          '<td class="col-nombre"><span class="enlace-mini" onclick="abrirFichaProductoDesdeFases_(\'' + escapeHtml(p.productoId) + '\')">' + escapeHtml(p.productoNombre) + '</span>' +
+            ' <span class="detalle-secundario">' + escapeHtml(p.proyectoNombre || '') + (p.campanaNombre ? ' · ' + escapeHtml(p.campanaNombre) : '') + '</span></td>' +
+          '<td>' + celdaFase_(p.fases[0]) + '</td>' +
+          '<td>' + celdaFase_(p.fases[1]) + '</td>' +
+          '<td>' + celdaFase_(p.fases[2]) + '</td>' +
+          '<td>' + ciclo + '</td>' +
+          '<td><span class="' + claseFaseActual_(p.faseActual) + '">' + escapeHtml(p.faseActual || '—') + '</span></td>' +
+          '<td class="col-desviacion ' + desv.clase + '">' + desv.texto + '</td>' +
+          '<td><div class="celda-acciones">' +
+            '<span class="btn-editar" onclick="abrirEdicionEntidad(\'PRODUCTO\',\'' + escapeHtml(p.productoId) + '\')">✎ Editar</span>' +
+            (p.campanaId ? '<span class="enlace-mini" onclick="verEnArbolDeCampana_(\'' + escapeHtml(p.campanaId) + '\')">Ver en árbol</span>' : '') +
+          '</div></td>' +
+        '</tr>';
+      }
+
+      function mediaDesviacion_(productos) {
+        var medidos = productos.filter(function (p) { return typeof p.diasDesviacionCiclo === 'number'; });
+        if (medidos.length === 0) return null;
+        var suma = medidos.reduce(function (acc, p) { return acc + p.diasDesviacionCiclo; }, 0);
+        return Math.round((suma / medidos.length) * 10) / 10;
+      }
+
+      function renderFasesAgrupadoPorProyecto_(productos) {
+        var porProyecto = {};
+        var orden = [];
+        productos.forEach(function (p) {
+          var clave = p.proyectoId || '(sin proyecto)';
+          if (!porProyecto[clave]) {
+            porProyecto[clave] = { nombre: p.proyectoNombre || '(sin proyecto)', productos: [] };
+            orden.push(clave);
+          }
+          porProyecto[clave].productos.push(p);
+        });
+        var grupos = orden.map(function (clave) { return porProyecto[clave]; });
+        grupos.forEach(function (g) { g.media = mediaDesviacion_(g.productos); });
+        grupos.sort(function (a, b) {
+          if (a.media === null && b.media === null) return 0;
+          if (a.media === null) return 1;
+          if (b.media === null) return -1;
+          return b.media - a.media;
+        });
+        return grupos.map(function (g) {
+          var mediaTexto = g.media === null ? '—' : (g.media > 0 ? '+' : '') + g.media + ' d';
+          var cabecera = '<tr class="fila-grupo"><td colspan="' + ETIQUETA_COLUMNAS_FASES_ + '">' +
+            escapeHtml(g.nombre) + ' — ' + g.productos.length + ' producto(s) · desviación media: ' + mediaTexto + '</td></tr>';
+          return cabecera + g.productos.map(filaProductoFasesHtml_).join('');
+        }).join('');
+      }
+
+      function renderFases_(productos) {
+        document.getElementById('estado-carga-fases').style.display = 'none';
+        var tabla = document.getElementById('tabla-fases');
+        if (productos.length === 0) {
+          document.getElementById('estado-carga-fases').textContent = 'No hay procesos con fechas de plan para este filtro.';
+          document.getElementById('estado-carga-fases').style.display = 'block';
+          tabla.style.display = 'none';
+          return;
+        }
+        document.getElementById('filas-fases').innerHTML = agrupacionFases_ === 'proyecto'
+          ? renderFasesAgrupadoPorProyecto_(productos)
+          : productos.map(filaProductoFasesHtml_).join('');
+        tabla.style.display = 'table';
+      }
+
+      function abrirFichaProductoDesdeFases_(productoId) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaProducto(productoId);
+      }
+
+      function verEnArbolDeCampana_(campanaId) {
+        google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(campanaId);
+      }
+
+      document.getElementById('fases-modo-producto').addEventListener('click', function () {
+        agrupacionFases_ = 'producto';
+        this.classList.add('activo');
+        document.getElementById('fases-modo-proyecto').classList.remove('activo');
+        renderFases_(fasesProductosCache_);
+      });
+      document.getElementById('fases-modo-proyecto').addEventListener('click', function () {
+        agrupacionFases_ = 'proyecto';
+        this.classList.add('activo');
+        document.getElementById('fases-modo-producto').classList.remove('activo');
+        renderFases_(fasesProductosCache_);
+      });
+
+      document.getElementById('btn-exportar-csv-fases').addEventListener('click', function () {
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFasesPorProductoCSV(filtroActual_());
+      });
 
       /*
        * Icono de editar junto al filtro (ver conversacion): en vez de
@@ -1023,8 +1456,17 @@
         }
       }
 
+      function refrescarVistaActiva_() {
+        fasesCargadas_ = false;
+        if (modoActual_ === 'fases') {
+          cargarFases_(true);
+        } else {
+          cargarGantt();
+        }
+      }
+
       ['filtro-campana', 'filtro-proyecto', 'filtro-fase', 'filtro-responsable', 'filtro-recurso'].forEach(function (id) {
-        document.getElementById(id).addEventListener('change', cargarGantt);
+        document.getElementById(id).addEventListener('change', refrescarVistaActiva_);
       });
       document.getElementById('filtro-campana').addEventListener('change', function () {
         actualizarIconoEditarFiltro_('filtro-campana', 'editar-filtro-campana', 'CAMPANA');
@@ -1038,9 +1480,14 @@
       document.getElementById('btn-exportar-csv').addEventListener('click', function () {
         google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarGanttCSV(filtroActual_());
       });
-      document.getElementById('btn-actualizar-gantt').addEventListener('click', cargarGantt);
+      document.getElementById('btn-actualizar-gantt').addEventListener('click', refrescarVistaActiva_);
       cargarOpcionesFiltro_();
       if (!PRESELECCION_CAMPANA) cargarGantt();
+      /* "Ver ocupación" desde Ficha de Recurso (ver conversacion): abre directo en modo Disponibilidad con el recurso ya añadido. */
+      if (PRESELECCION_OCUPACION_RECURSO) {
+        cambiarModo_('disponibilidad');
+        anadirChip_('Recurso', PRESELECCION_OCUPACION_RECURSO.id, PRESELECCION_OCUPACION_RECURSO.nombre);
+      }
     </script>
   </body>
 </html>

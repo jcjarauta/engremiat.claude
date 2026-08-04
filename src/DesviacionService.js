@@ -153,13 +153,61 @@ function listarDesviacionesTareas_(filtro) {
   });
 }
 
+/*
+ * Nombre de responsable en vez de ID crudo (ver conversacion -- la
+ * tabla "Procesos por responsable" mostraba PER-0006 en vez del
+ * nombre, porque se agrupaba directamente por RESPONSABLE_ID).
+ */
+function enriquecerConNombreResponsableProceso_(procesosConDesviacion) {
+  var nombresPersona = {};
+  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  return procesosConDesviacion.map(function (proceso) {
+    return Object.assign({}, proceso, {
+      RESPONSABLE_NOMBRE: proceso.RESPONSABLE_ID ? (nombresPersona[proceso.RESPONSABLE_ID] || proceso.RESPONSABLE_ID) : '(sin responsable)'
+    });
+  });
+}
+
+/*
+ * TAREA no tiene RESPONSABLE_ID propio -- el responsable se asigna via
+ * TAREA_RESPONSABLE (N:M, una tarea puede tener varios responsables).
+ * "Tareas por responsable" agrupaba por ese campo inexistente y
+ * siempre salia "(sin RESPONSABLE_ID)" (ver conversacion). Se expande
+ * una fila por cada responsable real de la tarea -- una tarea con 2
+ * responsables cuenta para ambos, mismo criterio que
+ * calcularDesviacionPorRecurso_ usa con los recursos de TAREA_RECURSO.
+ */
+function expandirTareasPorResponsable_(tareasConDesviacion) {
+  var nombresPersona = {};
+  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+
+  var responsablesPorTarea = {};
+  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+    if (!responsablesPorTarea[tr.TAREA_ID]) responsablesPorTarea[tr.TAREA_ID] = [];
+    responsablesPorTarea[tr.TAREA_ID].push(tr.PERSONA_EQUIPO_ID);
+  });
+
+  var registrosPlanos = [];
+  tareasConDesviacion.forEach(function (tarea) {
+    var responsables = responsablesPorTarea[tarea.ID] || [];
+    if (responsables.length === 0) {
+      registrosPlanos.push(Object.assign({}, tarea, { RESPONSABLE_NOMBRE: '(sin responsable)' }));
+      return;
+    }
+    responsables.forEach(function (personaId) {
+      registrosPlanos.push(Object.assign({}, tarea, { RESPONSABLE_NOMBRE: nombresPersona[personaId] || personaId }));
+    });
+  });
+  return registrosPlanos;
+}
+
 function construirBloqueDesviacion_(procesosConDesviacion, tareasConDesviacion) {
   return {
     procesosMedidos: procesosConDesviacion.length,
     tareasMedidas: tareasConDesviacion.length,
     procesosPorFase: calcularDesviacionAgregada_(procesosConDesviacion, 'FASE_PRODUCCION'),
-    procesosPorResponsable: calcularDesviacionAgregada_(procesosConDesviacion, 'RESPONSABLE_ID'),
-    tareasPorResponsable: calcularDesviacionAgregada_(tareasConDesviacion, 'RESPONSABLE_ID')
+    procesosPorResponsable: calcularDesviacionAgregada_(enriquecerConNombreResponsableProceso_(procesosConDesviacion), 'RESPONSABLE_NOMBRE'),
+    tareasPorResponsable: calcularDesviacionAgregada_(expandirTareasPorResponsable_(tareasConDesviacion), 'RESPONSABLE_NOMBRE')
   };
 }
 
@@ -173,6 +221,110 @@ function generarInformeDesviacion(filtro) {
     { tipo: 'DESVIACION' },
     construirBloqueDesviacion_(procesos, tareas),
     { procesosPorCampana: calcularDesviacionAgregada_(procesosConCampana, 'CAMPANA_NOMBRE') }
+  );
+}
+
+/*
+ * N3.4 (roadmap -- "Informe de calidad de planificación", cierra el
+ * bloque N3): añade lo que faltaba en generarInformeDesviacion --
+ * % de a tiempo, desviación por recurso y utilización del horario
+ * declarado -- sin duplicar lo ya calculado (fase/responsable/campaña
+ * se reutilizan tal cual via construirBloqueDesviacion_).
+ *
+ * "Por recurso" no existia como dimension: PROCESO no tiene RECURSO_ID
+ * propio, se llega via TAREA_RECURSO -> TAREA -> PROCESO. Un proceso
+ * con varias tareas que usan el mismo recurso solo debe contar una vez
+ * para ese recurso (vistoPorRecurso_), igual que un proceso que usa 2
+ * recursos distintos cuenta para ambos.
+ */
+function calcularDesviacionPorRecurso_(procesosConDesviacion) {
+  var procesoPorId = {};
+  procesosConDesviacion.forEach(function (p) { procesoPorId[p.ID] = p; });
+
+  var procesoIdPorTarea = {};
+  listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) { procesoIdPorTarea[t.ID] = t.PROCESO_ID; });
+
+  var nombresRecurso = {};
+  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+
+  var vistoPorRecurso_ = {};
+  var registrosPlanos = [];
+  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+    var procesoId = procesoIdPorTarea[tr.TAREA_ID];
+    var proceso = procesoId && procesoPorId[procesoId];
+    if (!proceso) return;
+    if (!vistoPorRecurso_[tr.RECURSO_ID]) vistoPorRecurso_[tr.RECURSO_ID] = {};
+    if (vistoPorRecurso_[tr.RECURSO_ID][procesoId]) return;
+    vistoPorRecurso_[tr.RECURSO_ID][procesoId] = true;
+    registrosPlanos.push(Object.assign({}, proceso, { RECURSO_NOMBRE: nombresRecurso[tr.RECURSO_ID] || tr.RECURSO_ID }));
+  });
+
+  return calcularDesviacionAgregada_(registrosPlanos, 'RECURSO_NOMBRE');
+}
+
+/*
+ * Utilización de capacidad (ver conversacion -- "cierra el puente entre
+ * HORARIO y planificacion, no solo desviacion"): no hay horas
+ * trabajadas registradas en el sistema (EJECUCION_TAREA no lleva
+ * horas), asi que se mide con lo que SI existe -- de los dias
+ * planificados de cada proceso, cuantos caen dentro del horario
+ * declarado del responsable/recursos (reutiliza diasFueraDeHorario, ya
+ * calculado por obtenerFilasGanttDetalladas_ para el overlay del
+ * Gantt). Solo se agregan procesos con horario cargado (diasFueraDeHorario
+ * !== null) -- sin eso no hay nada que medir para ese responsable.
+ */
+function calcularUtilizacionHorarioPorResponsable_(filasGantt) {
+  var porResponsable = {};
+  filasGantt.forEach(function (fila) {
+    if (fila.diasFueraDeHorario === null || fila.diasFueraDeHorario === undefined) return;
+    var clave = fila.responsable || '(sin responsable)';
+    if (!porResponsable[clave]) porResponsable[clave] = { responsable: clave, diasPlanificados: 0, diasFueraDeHorario: 0 };
+
+    var fechaFinTramo = fila.fechaFinReal && new Date(fila.fechaFinReal) > new Date(fila.fechaFinPlan)
+      ? fila.fechaFinReal : fila.fechaFinPlan;
+    var dias = duracionDias_(fila.fechaInicioPlan, fechaFinTramo);
+    porResponsable[clave].diasPlanificados += dias === null ? 0 : dias + 1;
+    porResponsable[clave].diasFueraDeHorario += fila.diasFueraDeHorario.length;
+  });
+
+  return Object.keys(porResponsable).map(function (clave) {
+    var r = porResponsable[clave];
+    var diasDentro = Math.max(r.diasPlanificados - r.diasFueraDeHorario, 0);
+    return {
+      responsable: r.responsable,
+      diasPlanificados: r.diasPlanificados,
+      diasFueraDeHorario: r.diasFueraDeHorario,
+      porcentajeUtilizacion: r.diasPlanificados > 0 ? Math.round((diasDentro / r.diasPlanificados) * 100) : null
+    };
+  }).sort(function (a, b) {
+    var av = a.porcentajeUtilizacion === null ? 999 : a.porcentajeUtilizacion;
+    var bv = b.porcentajeUtilizacion === null ? 999 : b.porcentajeUtilizacion;
+    return av - bv;
+  });
+}
+
+function generarInformeCalidadPlanificacion(filtro) {
+  var procesos = listarDesviacionesProcesos_(filtro);
+  var tareas = listarDesviacionesTareas_(filtro);
+  var procesosConCampana = enriquecerConCampana_(procesos, construirMapaCampanaPorProducto_());
+  var filasGantt = obtenerFilasGanttDetalladas_(filtro);
+
+  function porcentajeATiempo_(lista) {
+    if (lista.length === 0) return null;
+    var aTiempo = lista.filter(function (r) { return r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN <= 0; }).length;
+    return Math.round((aTiempo / lista.length) * 100);
+  }
+
+  return Object.assign(
+    { tipo: 'CALIDAD_PLANIFICACION' },
+    construirBloqueDesviacion_(procesos, tareas),
+    {
+      porcentajeProcesosATiempo: porcentajeATiempo_(procesos),
+      porcentajeTareasATiempo: porcentajeATiempo_(tareas),
+      procesosPorCampana: calcularDesviacionAgregada_(procesosConCampana, 'CAMPANA_NOMBRE'),
+      procesosPorRecurso: calcularDesviacionPorRecurso_(procesos),
+      utilizacionHorarioPorResponsable: calcularUtilizacionHorarioPorResponsable_(filasGantt)
+    }
   );
 }
 
@@ -389,6 +541,7 @@ function obtenerFilasGanttDetalladas_(filtro) {
     if (filtro.faseProduccion && proceso.FASE_PRODUCCION !== filtro.faseProduccion) return false;
     if (filtro.responsableId && proceso.RESPONSABLE_ID !== filtro.responsableId) return false;
     if (filtro.recursoId && recursosDelProceso_(proceso.ID).indexOf(filtro.recursoId) === -1) return false;
+    if (filtro.productoId && proceso.PRODUCTO_ID !== filtro.productoId) return false;
     var contexto = contextoPorProducto[proceso.PRODUCTO_ID];
     if (filtro.campanaId && (!contexto || contexto.campanaId !== filtro.campanaId)) return false;
     if (filtro.proyectoId && (!contexto || contexto.proyectoId !== filtro.proyectoId)) return false;
@@ -400,8 +553,10 @@ function obtenerFilasGanttDetalladas_(filtro) {
     nombresPersona[persona.ID] = persona.NOMBRE;
   });
   var nombresProducto = {};
+  var fechaRequeridaPorProducto_ = {};
   datos.PRODUCTO.forEach(function (producto) {
     nombresProducto[producto.ID] = producto.NOMBRE;
+    if (producto.FECHA_REQUERIDA) fechaRequeridaPorProducto_[producto.ID] = producto.FECHA_REQUERIDA;
   });
   var horariosPorPersona = {};
   var horariosPorRecurso = {};
@@ -436,6 +591,7 @@ function obtenerFilasGanttDetalladas_(filtro) {
       responsable: nombresPersona[proceso.RESPONSABLE_ID] || '',
       productoId: proceso.PRODUCTO_ID || '',
       productoNombre: nombresProducto[proceso.PRODUCTO_ID] || '',
+      fechaRequeridaProducto: fechaRequeridaPorProducto_[proceso.PRODUCTO_ID] || null,
       proyectoId: contexto.proyectoId || '',
       proyectoNombre: contexto.proyectoNombre || '',
       campanaId: contexto.campanaId || '',
@@ -457,6 +613,149 @@ function obtenerFilasGanttDetalladas_(filtro) {
 
 function obtenerDatosGanttPlanReal(filtro) {
   return serializarParaCliente_({ filas: obtenerFilasGanttDetalladas_(filtro) });
+}
+
+/*
+ * N3.1 (roadmap -- "Gantt como espacio operativo"): vista de fases
+ * agrupada por producto, con totales Preproducción/Producción/
+ * Postproducción (previsto vs. real) y ciclo completo. Responde
+ * directamente "cuánto duró cada fase" sin tener que sumar barras a
+ * ojo en el Gantt. Reutiliza obtenerFilasGanttDetalladas_ (mismos
+ * filtros, mismos datos ya calculados) en vez de releer nada.
+ */
+var FASES_ORDEN_ = ['Preproducción', 'Producción', 'Postproducción'];
+
+function duracionDias_(inicio, fin) {
+  if (!inicio || !fin) return null;
+  var i = new Date(inicio); i.setHours(0, 0, 0, 0);
+  var f = new Date(fin); f.setHours(0, 0, 0, 0);
+  return Math.round((f - i) / (24 * 60 * 60 * 1000));
+}
+
+function obtenerVistaFasesPorProducto(filtro) {
+  var filas = obtenerFilasGanttDetalladas_(filtro);
+  var porProducto = {};
+
+  filas.forEach(function (f) {
+    if (!porProducto[f.productoId]) {
+      var fasesVacias = {};
+      FASES_ORDEN_.forEach(function (fase) {
+        fasesVacias[fase] = { fase: fase, procesos: 0, procesosCompletados: 0, diasPrevistos: 0, diasReales: 0 };
+      });
+      porProducto[f.productoId] = {
+        productoId: f.productoId, productoNombre: f.productoNombre,
+        proyectoId: f.proyectoId, proyectoNombre: f.proyectoNombre,
+        campanaId: f.campanaId, campanaNombre: f.campanaNombre,
+        fases: fasesVacias,
+        fechaInicioPlanCiclo: null, fechaFinPlanCiclo: null,
+        fechaInicioRealCiclo: null, fechaFinRealCiclo: null
+      };
+    }
+    var p = porProducto[f.productoId];
+
+    if (p.fases[f.fase]) {
+      var bloque = p.fases[f.fase];
+      bloque.procesos++;
+      bloque.diasPrevistos += f.duracionPrevistaDias || 0;
+      if (f.duracionRealDias !== null) {
+        bloque.diasReales += f.duracionRealDias;
+        bloque.procesosCompletados++;
+      }
+    }
+
+    if (f.fechaInicioPlan && (!p.fechaInicioPlanCiclo || new Date(f.fechaInicioPlan) < new Date(p.fechaInicioPlanCiclo))) p.fechaInicioPlanCiclo = f.fechaInicioPlan;
+    if (f.fechaFinPlan && (!p.fechaFinPlanCiclo || new Date(f.fechaFinPlan) > new Date(p.fechaFinPlanCiclo))) p.fechaFinPlanCiclo = f.fechaFinPlan;
+    if (f.fechaInicioReal && (!p.fechaInicioRealCiclo || new Date(f.fechaInicioReal) < new Date(p.fechaInicioRealCiclo))) p.fechaInicioRealCiclo = f.fechaInicioReal;
+    if (f.fechaFinReal && (!p.fechaFinRealCiclo || new Date(f.fechaFinReal) > new Date(p.fechaFinRealCiclo))) p.fechaFinRealCiclo = f.fechaFinReal;
+  });
+
+  /*
+   * Fase actual (ver conversacion -- "en que punto estan los productos"):
+   * la primera fase (en orden Prepro->Pro->Postpro) que tiene procesos
+   * sin terminar. Si todas las fases con procesos estan completas,
+   * "Completado"; si no hay ningun proceso en ninguna fase reconocida,
+   * "Sin fase".
+   */
+  function faseActualDe_(fasesLista) {
+    for (var i = 0; i < fasesLista.length; i++) {
+      var b = fasesLista[i];
+      if (b.procesos > 0 && b.procesosCompletados < b.procesos) return b.fase;
+    }
+    var hayProcesos = fasesLista.some(function (b) { return b.procesos > 0; });
+    return hayProcesos ? 'Completado' : 'Sin fase';
+  }
+
+  var resultado = Object.keys(porProducto).map(function (id) {
+    var p = porProducto[id];
+    var diasCicloPrevisto = duracionDias_(p.fechaInicioPlanCiclo, p.fechaFinPlanCiclo);
+    var diasCicloReal = duracionDias_(p.fechaInicioRealCiclo, p.fechaFinRealCiclo);
+    var fasesLista = FASES_ORDEN_.map(function (fase) { return p.fases[fase]; });
+    return {
+      productoId: p.productoId, productoNombre: p.productoNombre,
+      proyectoId: p.proyectoId, proyectoNombre: p.proyectoNombre,
+      campanaId: p.campanaId, campanaNombre: p.campanaNombre,
+      fases: fasesLista,
+      faseActual: faseActualDe_(fasesLista),
+      diasCicloPrevisto: diasCicloPrevisto,
+      diasCicloReal: diasCicloReal,
+      diasDesviacionCiclo: (diasCicloPrevisto !== null && diasCicloReal !== null) ? (diasCicloReal - diasCicloPrevisto) : null
+    };
+  }).sort(function (a, b) {
+    // Mayor desviacion primero (los problematicos arriba); sin desviacion medible, al final, por nombre.
+    if (a.diasDesviacionCiclo === null && b.diasDesviacionCiclo === null) return a.productoNombre.localeCompare(b.productoNombre);
+    if (a.diasDesviacionCiclo === null) return 1;
+    if (b.diasDesviacionCiclo === null) return -1;
+    return b.diasDesviacionCiclo - a.diasDesviacionCiclo;
+  });
+
+  return resultado;
+}
+
+/*
+ * Cuello de botella (adelanto de N3.3, ver conversacion -- encaja mejor
+ * aqui que en su propio paso separado): que fase acumula mas desviacion
+ * media, agregando el bloque de cada fase de cada producto (solo los
+ * bloques con al menos un proceso completado, que es donde hay dato
+ * real que comparar).
+ */
+function calcularCuelloDeBotella_(productos) {
+  var sumaPorFase = {};
+  var casosPorFase = {};
+  FASES_ORDEN_.forEach(function (fase) { sumaPorFase[fase] = 0; casosPorFase[fase] = 0; });
+
+  productos.forEach(function (p) {
+    p.fases.forEach(function (bloque) {
+      if (bloque.procesosCompletados > 0) {
+        sumaPorFase[bloque.fase] += (bloque.diasReales - bloque.diasPrevistos);
+        casosPorFase[bloque.fase]++;
+      }
+    });
+  });
+
+  var peorFase = null;
+  var peorMedia = -Infinity;
+  FASES_ORDEN_.forEach(function (fase) {
+    if (casosPorFase[fase] === 0) return;
+    var media = sumaPorFase[fase] / casosPorFase[fase];
+    if (media > peorMedia) { peorMedia = media; peorFase = fase; }
+  });
+
+  if (!peorFase) return null;
+  return { fase: peorFase, desviacionMedia: Math.round(peorMedia * 10) / 10, casos: casosPorFase[peorFase] };
+}
+
+function obtenerDatosFasesPorProducto(filtro) {
+  var productos = obtenerVistaFasesPorProducto(filtro);
+  var medidos = productos.filter(function (p) { return p.diasDesviacionCiclo !== null; });
+  var sumaDesviacion = medidos.reduce(function (acc, p) { return acc + p.diasDesviacionCiclo; }, 0);
+  var resumen = {
+    productosTotal: productos.length,
+    productosMedidos: medidos.length,
+    productosConRetraso: medidos.filter(function (p) { return p.diasDesviacionCiclo > 0; }).length,
+    desviacionMediaCiclo: medidos.length > 0 ? Math.round((sumaDesviacion / medidos.length) * 10) / 10 : null,
+    cuelloDeBotella: calcularCuelloDeBotella_(productos)
+  };
+  return serializarParaCliente_({ productos: productos, resumen: resumen });
 }
 
 /**
@@ -540,13 +839,65 @@ function abrirDialogoExportarGanttCSV(filtro) {
   abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
+/* Exportar CSV de la vista "Fases por producto" (N3.1). */
+function exportarFasesPorProductoCSV(filtro) {
+  var productos = obtenerVistaFasesPorProducto(filtro);
+  var encabezados = [
+    'Producto', 'Proyecto', 'Campaña', 'Fase actual',
+    'Preproducción prev. (días)', 'Preproducción real (días)',
+    'Producción prev. (días)', 'Producción real (días)',
+    'Postproducción prev. (días)', 'Postproducción real (días)',
+    'Ciclo completo prev. (días)', 'Ciclo completo real (días)', 'Desviación ciclo (días)'
+  ];
+  var filasCsv = productos.map(function (p) {
+    return [
+      p.productoNombre, p.proyectoNombre, p.campanaNombre, p.faseActual,
+      p.fases[0].diasPrevistos, p.fases[0].procesosCompletados > 0 ? p.fases[0].diasReales : '',
+      p.fases[1].diasPrevistos, p.fases[1].procesosCompletados > 0 ? p.fases[1].diasReales : '',
+      p.fases[2].diasPrevistos, p.fases[2].procesosCompletados > 0 ? p.fases[2].diasReales : '',
+      p.diasCicloPrevisto, p.diasCicloReal, p.diasDesviacionCiclo
+    ];
+  });
+
+  var nombre = 'FASES_POR_PRODUCTO_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
+  registrarHistorial('INFORME', nombre, 'EXPORTAR_FASES_PRODUCTO', [], { origen: 'UI', formato: 'CSV' });
+  return { nombreArchivo: nombre, contenidoCsv: construirCsvConBom_(encabezados, filasCsv) };
+}
+
+function abrirDialogoExportarFasesPorProductoCSV(filtro) {
+  var resultado = exportarFasesPorProductoCSV(filtro);
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
+}
+
 /*
  * campanaId (opcional): al llegar desde el boton "Ver Gantt" del panel
  * de campana, preselecciona ese filtro en vez de abrir sin filtrar.
+ * productoId (opcional, ver conversacion -- "Ver Gantt filtrado a este
+ * producto" desde la Ficha de Producto): a diferencia de campanaId no
+ * tiene un <select> propio en el Gantt, se aplica de forma fija durante
+ * toda la sesion del dialogo (misma logica que filtroActual_ en
+ * GanttPlanReal.html).
  */
-function abrirGanttPlanReal(campanaId) {
+function abrirGanttPlanReal(campanaId, productoId) {
   var template = HtmlService.createTemplateFromFile('GanttPlanReal');
   template.preseleccionCampana = campanaId || '';
+  template.preseleccionProducto = productoId || '';
+  template.preseleccionOcupacionRecurso = '';
+  var html = template.evaluate().setWidth(920).setHeight(600);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Gantt: plan vs. real');
+}
+
+/*
+ * "Ver ocupación" desde la Ficha de Espacio/Recurso (ver conversacion):
+ * abre el Gantt directamente en modo Disponibilidad con este recurso ya
+ * añadido como chip, reutilizando la comparacion de ocupacion que ya
+ * existe (misma vista, misma barra de tiempo) en vez de duplicar nada.
+ */
+function abrirGanttOcupacionRecurso(recursoId, recursoNombre) {
+  var template = HtmlService.createTemplateFromFile('GanttPlanReal');
+  template.preseleccionCampana = '';
+  template.preseleccionProducto = '';
+  template.preseleccionOcupacionRecurso = JSON.stringify({ id: recursoId, nombre: recursoNombre });
   var html = template.evaluate().setWidth(920).setHeight(600);
   SpreadsheetApp.getUi().showModalDialog(html, 'Gantt: plan vs. real');
 }

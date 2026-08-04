@@ -114,6 +114,30 @@ const ENTIDADES_MVP = Object.freeze({
   HORARIO: Object.freeze({
     hoja: '29_HORARIO',
     prefijo: 'HOR'
+  }),
+  PRESUPUESTO: Object.freeze({
+    hoja: '30_PRESUPUESTO',
+    prefijo: 'PRE'
+  }),
+  FUENTE_FINANCIACION: Object.freeze({
+    hoja: '31_FUENTE_FINANCIACION',
+    prefijo: 'FIN'
+  }),
+  COSTE: Object.freeze({
+    hoja: '32_COSTE',
+    prefijo: 'COS'
+  }),
+  COMPETENCIA: Object.freeze({
+    hoja: '33_COMPETENCIA',
+    prefijo: 'CMP'
+  }),
+  PERSONA_COMPETENCIA: Object.freeze({
+    hoja: '34_PERSONA_COMPETENCIA',
+    prefijo: 'PCO'
+  }),
+  RECURSO_COMPETENCIA: Object.freeze({
+    hoja: '35_RECURSO_COMPETENCIA',
+    prefijo: 'RCO'
   })
 });
 

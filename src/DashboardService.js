@@ -123,6 +123,45 @@ function listarRelacionesIncompletas() {
   });
 }
 
+/*
+ * Base de competencias (ver conversación -- "recurso sin técnico
+ * disponible" como ejemplo del camino determinista antes de L6).
+ * Consulta simple, sin IA: recursos que requieren una competencia
+ * (RECURSO_COMPETENCIA) para la que NINGUNA persona activa la tiene
+ * declarada (PERSONA_COMPETENCIA). Se consolida junto a las demás
+ * excepciones del Panel operativo, no como informe aislado.
+ */
+function listarRecursosSinCompetenciaDisponible() {
+  var recursosCompetencia = listarRegistros('RECURSO_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  if (recursosCompetencia.length === 0) return [];
+
+  var personasPorId = {};
+  listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).forEach(function (p) {
+    if (p.ESTADO !== 'Inactivo') personasPorId[p.ID] = p;
+  });
+
+  var competenciasConPersonaDisponible = {};
+  listarRegistros('PERSONA_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (pc) {
+    if (personasPorId[pc.PERSONA_EQUIPO_ID]) competenciasConPersonaDisponible[pc.COMPETENCIA_ID] = true;
+  });
+
+  var recursosPorId = {};
+  listarRegistros('RECURSO', { ACTIVO: 'SÍ' }).forEach(function (r) { recursosPorId[r.ID] = r; });
+  var competenciasPorId = {};
+  listarRegistros('COMPETENCIA', {}).forEach(function (c) { competenciasPorId[c.ID] = c; });
+
+  return recursosCompetencia
+    .filter(function (rc) { return recursosPorId[rc.RECURSO_ID] && !competenciasConPersonaDisponible[rc.COMPETENCIA_ID]; })
+    .map(function (rc) {
+      return {
+        RECURSO_ID: rc.RECURSO_ID,
+        NOMBRE: recursosPorId[rc.RECURSO_ID].NOMBRE,
+        COMPETENCIA_ID: rc.COMPETENCIA_ID,
+        COMPETENCIA_NOMBRE: competenciasPorId[rc.COMPETENCIA_ID] ? competenciasPorId[rc.COMPETENCIA_ID].NOMBRE : rc.COMPETENCIA_ID
+      };
+    });
+}
+
 function listarTareasSinResponsable() {
   var tareas = listarRegistros('TAREA', { ACTIVO: 'SÍ' });
   var activas = tareas.filter(function (t) {
@@ -213,7 +252,8 @@ function obtenerPanelOperativo() {
       excepciones: {
         productosSinProyecto: listarProductosSinProyecto(),
         procesosSinFechas: listarProcesosSinFechas(),
-        relacionesIncompletas: listarRelacionesIncompletas()
+        relacionesIncompletas: listarRelacionesIncompletas(),
+        recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible()
       },
       materiales: {
         stockBajo: listarMaterialesStockBajo(),

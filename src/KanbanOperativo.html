@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 12px; }
+      .cabecera-modos { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+      .btn-modo { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 4px 10px; font-size: 12px; }
+      .btn-modo.activo { background: var(--color-primario); color: #fff; border-color: var(--color-primario); }
+      .filtros { display: flex; gap: 12px; align-items: flex-end; margin: 10px 0; flex-wrap: wrap; }
+      .filtros label { margin-bottom: 2px; font-size: 11px; }
+      select, button { padding: 4px; }
+      .tablero { display: flex; gap: 10px; overflow-x: auto; align-items: flex-start; }
+      .columna { flex: 0 0 220px; background: var(--color-fondo-suave); border-radius: 6px; padding: 6px; max-height: 480px; display: flex; flex-direction: column; }
+      .columna-titulo { font-weight: bold; font-size: 12px; padding: 4px 4px 8px; display: flex; justify-content: space-between; }
+      .columna-cuerpo { overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+      .tarjeta { background: #fff; border: 1px solid var(--color-borde); border-radius: 4px; padding: 6px; }
+      .tarjeta-titulo { font-weight: bold; cursor: pointer; color: var(--color-primario); }
+      .tarjeta-titulo:hover { text-decoration: underline; }
+      .tarjeta-sub { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
+      .tarjeta-fecha { font-size: 11px; margin-top: 4px; }
+      .tarjeta-fecha.vencida { color: var(--color-peligro); font-weight: bold; }
+      .tarjeta-select-estado { width: 100%; margin-top: 6px; font-size: 11px; padding: 3px; }
+      .vacio-columna { color: var(--color-texto-secundario); font-size: 11px; padding: 4px; }
+      .tarjeta-proceso-enlace { color: var(--color-primario); cursor: pointer; }
+      .tarjeta-proceso-enlace:hover { text-decoration: underline; }
+      .tarjeta-progreso { margin-top: 6px; }
+      .tarjeta-progreso .mini-track { position: relative; height: 6px; background: var(--color-fondo-suave); border-radius: 2px; margin-top: 2px; }
+      .tarjeta-progreso .mini-barra { position: absolute; top: 0; left: 0; height: 6px; border-radius: 2px; background: #2e7d32; }
+      .cabecera-grupo-proceso { font-weight: bold; font-size: 11px; color: var(--color-texto-secundario); padding: 2px 2px; margin-top: 2px; border-top: 1px dashed var(--color-borde); }
+      .cabecera-grupo-proceso:first-child { border-top: none; margin-top: 0; }
+    </style>
+  </head>
+  <body>
+    <div class="cabecera-modos">
+      <h3 style="margin:0;">Kanban operativo</h3>
+      <span class="btn-modo activo" id="modo-tarea">Tareas</span>
+      <span class="btn-modo" id="modo-proceso">Procesos</span>
+      <span class="btn-modo" id="modo-incidencia">Incidencias</span>
+    </div>
+
+    <div class="filtros">
+      <div>
+        <label for="filtro-campana">Campaña</label>
+        <select id="filtro-campana"><option value="">(todas)</option></select>
+      </div>
+      <div>
+        <label for="filtro-proyecto">Proyecto</label>
+        <select id="filtro-proyecto"><option value="">(todos)</option></select>
+      </div>
+      <div id="grupo-filtro-proceso">
+        <label for="filtro-proceso">Proceso</label>
+        <select id="filtro-proceso"><option value="">(todos)</option></select>
+      </div>
+      <div id="grupo-filtro-responsable">
+        <label for="filtro-responsable">Responsable</label>
+        <select id="filtro-responsable"><option value="">(todos)</option></select>
+      </div>
+      <div id="grupo-agrupar-proceso">
+        <label>&nbsp;</label>
+        <label style="font-weight:normal;display:flex;align-items:center;gap:4px;height:26px;">
+          <input type="checkbox" id="chk-agrupar-proceso"> Agrupar por proceso
+        </label>
+      </div>
+      <button id="btn-actualizar-kanban" title="Recargar el tablero">🔄 Actualizar</button>
+    </div>
+
+    <div id="estado-carga">Cargando...</div>
+    <div class="tablero" id="tablero" style="display:none;"></div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function formatearFecha_(fecha) {
+        var d = new Date(fecha);
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm + '/' + d.getFullYear();
+      }
+
+      function mostrarError(error) {
+        document.getElementById('estado-carga').textContent = 'Error: ' + (error && error.message ? error.message : error);
+        document.getElementById('estado-carga').style.display = 'block';
+      }
+
+      var entidadActual_ = 'TAREA';
+
+      /*
+       * Cadena jerarquica de filtros (ver conversacion -- "añadir
+       * proyecto y tendremos toda la jerarquia ordenada"):
+       * Campaña -> Proyecto -> Proceso, cada uno dependiente del
+       * anterior, mismo patron fk_dependiente ya usado en los
+       * formularios. Proyecto es comun a las 3 pestañas; Proceso solo
+       * tiene sentido viendo Tareas.
+       */
+      function poblarOpcionesProyecto_(recargar) {
+        var select = document.getElementById('filtro-proyecto');
+        var valorActual = select.value;
+        select.innerHTML = '<option value="">(todos)</option>';
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
+          opciones.forEach(function (p) {
+            select.innerHTML += '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.etiqueta) + '</option>';
+          });
+          if (opciones.some(function (p) { return p.id === valorActual; })) select.value = valorActual;
+          if (entidadActual_ === 'TAREA' || entidadActual_ === 'INCIDENCIA') poblarOpcionesProceso_();
+          else if (recargar !== false) cargarKanban_();
+        }).obtenerOpcionesProyectoKanban({ campanaId: document.getElementById('filtro-campana').value || null });
+      }
+
+      function poblarOpcionesProceso_() {
+        var select = document.getElementById('filtro-proceso');
+        var valorActual = select.value;
+        select.innerHTML = '<option value="">(todos)</option>';
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
+          opciones.forEach(function (p) {
+            select.innerHTML += '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.etiqueta) + '</option>';
+          });
+          if (opciones.some(function (p) { return p.id === valorActual; })) select.value = valorActual;
+          cargarKanban_();
+        }).obtenerOpcionesProcesoKanban({
+          campanaId: document.getElementById('filtro-campana').value || null,
+          proyectoId: document.getElementById('filtro-proyecto').value || null
+        });
+      }
+
+      function cambiarModo_(entidad) {
+        entidadActual_ = entidad;
+        document.getElementById('modo-tarea').classList.toggle('activo', entidad === 'TAREA');
+        document.getElementById('modo-proceso').classList.toggle('activo', entidad === 'PROCESO');
+        document.getElementById('modo-incidencia').classList.toggle('activo', entidad === 'INCIDENCIA');
+        /*
+         * INCIDENCIA no tiene RESPONSABLE_ID (ver conversacion -- se
+         * asignaria via ASIGNACION, generico), asi que ese filtro no
+         * tiene con que comparar y se oculta para no sugerir que hace
+         * algo que no hace. El filtro de Proceso SI aplica a Incidencia
+         * (tiene PROCESO_ID propio, a diferencia de Tarea) -- solo
+         * "Agrupar por proceso" queda exclusivo de Tareas (Proceso es
+         * su padre directo, no tiene sentido agrupar Procesos por si
+         * mismos ni Incidencias que solo a veces tienen proceso).
+         */
+        document.getElementById('grupo-filtro-responsable').style.display = entidad === 'INCIDENCIA' ? 'none' : '';
+        document.getElementById('grupo-filtro-proceso').style.display = entidad === 'PROCESO' ? 'none' : '';
+        document.getElementById('grupo-agrupar-proceso').style.display = entidad === 'TAREA' ? '' : 'none';
+        if (entidad === 'TAREA' || entidad === 'INCIDENCIA') {
+          poblarOpcionesProceso_();
+        } else {
+          cargarKanban_();
+        }
+      }
+      document.getElementById('modo-tarea').addEventListener('click', function () { cambiarModo_('TAREA'); });
+      document.getElementById('modo-proceso').addEventListener('click', function () { cambiarModo_('PROCESO'); });
+      document.getElementById('modo-incidencia').addEventListener('click', function () { cambiarModo_('INCIDENCIA'); });
+
+      function poblarOpcionesFiltro_(opciones) {
+        var selectCampana = document.getElementById('filtro-campana');
+        opciones.campanas.forEach(function (c) {
+          selectCampana.innerHTML += '<option value="' + escapeHtml(c.id) + '">' + escapeHtml(c.etiqueta) + '</option>';
+        });
+        var selectResponsable = document.getElementById('filtro-responsable');
+        opciones.personas.forEach(function (p) {
+          selectResponsable.innerHTML += '<option value="' + escapeHtml(p.id) + '">' + escapeHtml(p.etiqueta) + '</option>';
+        });
+      }
+
+      function filtroActual_() {
+        return {
+          campanaId: document.getElementById('filtro-campana').value || null,
+          proyectoId: document.getElementById('filtro-proyecto').value || null,
+          responsableId: document.getElementById('filtro-responsable').value || null,
+          procesoId: (entidadActual_ === 'TAREA' || entidadActual_ === 'INCIDENCIA') ? (document.getElementById('filtro-proceso').value || null) : null
+        };
+      }
+
+      function abrirEdicionTarjeta_(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+      }
+
+      function abrirTitulo_(entidad, id) {
+        /*
+         * Incidencia abre su Ficha (nueva, ver conversacion); Tarea y
+         * Proceso abren la edicion directa como hasta ahora -- no
+         * existe (ni hace falta) una Ficha de Tarea/Proceso propia.
+         */
+        if (entidad === 'INCIDENCIA') {
+          google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirFichaIncidencia(entidad, id);
+          return;
+        }
+        abrirEdicionTarjeta_(entidad, id);
+      }
+
+      function cambiarEstadoTarjeta_(entidad, id, nuevoEstado) {
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function () {
+          cargarKanban_();
+        }).cambiarEstadoKanban(entidad, id, nuevoEstado);
+      }
+
+      function tarjetaHtml_(tarjeta, columnas) {
+        var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+        var vencida = tarjeta.fechaClave && new Date(tarjeta.fechaClave) < hoy;
+        var fechaHtml = tarjeta.fechaClave
+          ? '<div class="tarjeta-fecha' + (vencida ? ' vencida' : '') + '">Plan: ' + escapeHtml(formatearFecha_(tarjeta.fechaClave)) + (vencida ? ' ⚠' : '') + '</div>'
+          : '';
+        var opcionesEstado = columnas.map(function (c) {
+          return '<option value="' + escapeHtml(c) + '"' + (c === tarjeta.estado ? ' selected' : '') + '>' + escapeHtml(c) + '</option>';
+        }).join('');
+
+        /*
+         * Tarjeta compacta (ver conversacion -- columnas con muchas
+         * tarjetas, ej. 21 en Pendiente, se quedaban sin espacio):
+         * responsable y proceso padre comparten una sola línea en vez
+         * de dos, y el proceso sigue siendo un enlace clicable dentro
+         * de ella.
+         */
+        var procesoEnlace = (tarjeta.entidad === 'TAREA' && tarjeta.procesoId)
+          ? '<span class="tarjeta-proceso-enlace" onclick="abrirEdicionTarjeta_(\'PROCESO\',\'' + escapeHtml(tarjeta.procesoId) + '\')">' + escapeHtml(tarjeta.procesoNombre) + '</span>'
+          : '';
+        var lineaSub = [escapeHtml(tarjeta.subtitulo), procesoEnlace].filter(Boolean).join(' · ');
+
+        /* Progreso de tareas hijas en la tarjeta de Proceso (ver conversacion). */
+        var progresoHtml = '';
+        if (tarjeta.entidad === 'PROCESO' && tarjeta.tareasTotal > 0) {
+          var porcentaje = Math.round((tarjeta.tareasTerminadas / tarjeta.tareasTotal) * 100);
+          progresoHtml = '<div class="tarjeta-progreso">' + tarjeta.tareasTerminadas + '/' + tarjeta.tareasTotal + ' tareas terminadas' +
+            '<div class="mini-track"><div class="mini-barra" style="width:' + porcentaje + '%;"></div></div></div>';
+        }
+
+        return '<div class="tarjeta">' +
+          '<div class="tarjeta-titulo" onclick="abrirTitulo_(\'' + tarjeta.entidad + '\',\'' + escapeHtml(tarjeta.id) + '\')">' + escapeHtml(tarjeta.titulo) + '</div>' +
+          '<div class="tarjeta-sub">' + lineaSub + '</div>' +
+          (tarjeta.contexto ? '<div class="tarjeta-sub">' + escapeHtml(tarjeta.contexto) + '</div>' : '') +
+          fechaHtml + progresoHtml +
+          '<select class="tarjeta-select-estado" onchange="cambiarEstadoTarjeta_(\'' + tarjeta.entidad + '\',\'' + escapeHtml(tarjeta.id) + '\',this.value)">' + opcionesEstado + '</select>' +
+        '</div>';
+      }
+
+      /*
+       * Orden por fecha límite (ver conversacion -- en columnas con
+       * muchas tarjetas, lo urgente quedaba enterrado en orden
+       * arbitrario): vencidas/próximas primero, sin fecha al final.
+       */
+      function ordenarPorFechaClave_(tarjetas) {
+        return tarjetas.slice().sort(function (a, b) {
+          if (!a.fechaClave && !b.fechaClave) return 0;
+          if (!a.fechaClave) return 1;
+          if (!b.fechaClave) return -1;
+          return new Date(a.fechaClave) - new Date(b.fechaClave);
+        });
+      }
+
+      /*
+       * Agrupar por proceso (ver conversacion -- "se siente repetitivo
+       * tener Procesos y Tareas por separado"): dentro de cada columna
+       * de estado, las tarjetas de Tarea se agrupan bajo una cabecera
+       * con el nombre de su proceso padre, en vez de una lista plana.
+       */
+      function cuerpoColumnaAgrupado_(tarjetas, columnas) {
+        var porProceso = {};
+        var orden = [];
+        tarjetas.forEach(function (t) {
+          var clave = t.procesoId || '(sin proceso)';
+          if (!porProceso[clave]) { porProceso[clave] = { nombre: t.procesoNombre || '(sin proceso)', tarjetas: [] }; orden.push(clave); }
+          porProceso[clave].tarjetas.push(t);
+        });
+        return orden.map(function (clave) {
+          var grupo = porProceso[clave];
+          return '<div class="cabecera-grupo-proceso">' + escapeHtml(grupo.nombre) + ' (' + grupo.tarjetas.length + ')</div>' +
+            ordenarPorFechaClave_(grupo.tarjetas).map(function (t) { return tarjetaHtml_(t, columnas); }).join('');
+        }).join('');
+      }
+
+      function renderTablero_(datos) {
+        document.getElementById('estado-carga').style.display = 'none';
+        var tablero = document.getElementById('tablero');
+        tablero.style.display = 'flex';
+
+        var agrupar = entidadActual_ === 'TAREA' && document.getElementById('chk-agrupar-proceso').checked;
+
+        var porColumna = {};
+        datos.columnas.forEach(function (c) { porColumna[c] = []; });
+        (datos.tarjetas || []).forEach(function (t) {
+          if (!porColumna[t.estado]) porColumna[t.estado] = [];
+          porColumna[t.estado].push(t);
+        });
+
+        tablero.innerHTML = datos.columnas.map(function (columna) {
+          var tarjetas = porColumna[columna] || [];
+          var cuerpo = tarjetas.length === 0
+            ? '<div class="vacio-columna">Vacío.</div>'
+            : (agrupar ? cuerpoColumnaAgrupado_(tarjetas, datos.columnas) : ordenarPorFechaClave_(tarjetas).map(function (t) { return tarjetaHtml_(t, datos.columnas); }).join(''));
+          return '<div class="columna">' +
+            '<div class="columna-titulo"><span>' + escapeHtml(columna) + '</span><span class="badge">' + tarjetas.length + '</span></div>' +
+            '<div class="columna-cuerpo">' + cuerpo + '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      var datosKanbanCache_ = null;
+
+      function cargarKanban_() {
+        document.getElementById('estado-carga').style.display = 'block';
+        document.getElementById('estado-carga').textContent = 'Cargando...';
+        document.getElementById('tablero').style.display = 'none';
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          datosKanbanCache_ = datos;
+          renderTablero_(datos);
+        }).obtenerDatosKanban(entidadActual_, filtroActual_());
+      }
+
+      document.getElementById('filtro-campana').addEventListener('change', function () {
+        poblarOpcionesProyecto_();
+      });
+      document.getElementById('filtro-proyecto').addEventListener('change', function () {
+        if (entidadActual_ === 'TAREA' || entidadActual_ === 'INCIDENCIA') poblarOpcionesProceso_();
+        else cargarKanban_();
+      });
+      document.getElementById('filtro-responsable').addEventListener('change', cargarKanban_);
+      document.getElementById('filtro-proceso').addEventListener('change', cargarKanban_);
+      document.getElementById('chk-agrupar-proceso').addEventListener('change', function () {
+        if (datosKanbanCache_) renderTablero_(datosKanbanCache_);
+      });
+      document.getElementById('btn-actualizar-kanban').addEventListener('click', cargarKanban_);
+
+      google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (opciones) {
+        poblarOpcionesFiltro_(opciones);
+        poblarOpcionesProyecto_();
+      }).obtenerOpcionesFiltroKanban();
+    </script>
+  </body>
+</html>

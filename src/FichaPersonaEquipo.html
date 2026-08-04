@@ -72,7 +72,7 @@
       }
 
       function editar(entidad, id) {
-        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+        google.script.run.withFailureHandler(mostrarError).abrirEdicionConRetornoAFicha(entidad, id, 'PERSONA_EQUIPO', ID_REGISTRO);
       }
 
       function mostrarError(error) {

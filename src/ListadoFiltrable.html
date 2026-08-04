@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 12px; }
+      .cabecera-modos { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+      .btn-modo { cursor: pointer; border: 1px solid var(--color-borde); background: #fafafa; border-radius: 3px; padding: 4px 8px; font-size: 11px; }
+      .btn-modo.activo { background: var(--color-primario); color: #fff; border-color: var(--color-primario); }
+      .filtros { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+      .filtros input { flex: 1; padding: 5px; }
+      .fila-listado { padding: 6px 4px; border-bottom: 1px solid var(--color-borde); }
+      .fila-listado:last-child { border-bottom: none; }
+      .fila-listado .titulo { font-weight: bold; color: var(--color-primario); cursor: pointer; }
+      .fila-listado .titulo:hover { text-decoration: underline; }
+      .fila-listado .sub { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
+      .fila-listado .fecha-vencida { color: var(--color-peligro); font-weight: bold; }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .badge-alerta { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .cabecera-lista { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+      .vacio-lista { color: var(--color-texto-secundario); font-size: 11px; padding: 8px 0; font-style: italic; }
+    </style>
+  </head>
+  <body>
+    <h3 style="margin:0 0 8px;">Listado filtrable</h3>
+    <div class="cabecera-modos">
+      <span class="btn-modo activo" id="modo-incidencia">Incidencias</span>
+      <span class="btn-modo" id="modo-decision">Decisiones</span>
+      <span class="btn-modo" id="modo-documento">Documentos</span>
+    </div>
+
+    <div class="filtros">
+      <input type="text" id="filtro-texto" placeholder="Buscar por título, tipo o contexto...">
+      <button id="btn-actualizar" title="Recargar">🔄</button>
+    </div>
+
+    <div class="cabecera-lista">
+      <span id="tituloLista" class="detalle-secundario"></span>
+      <button id="btn-exportar-csv" class="boton btn-mini">Exportar CSV</button>
+    </div>
+
+    <div id="estado-carga">Cargando...</div>
+    <div id="lista-filas" style="display:none;"></div>
+
+    <script>
+      var tipoActual_ = 'INCIDENCIA';
+      var filasCompletas_ = [];
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function formatearFecha_(fecha) {
+        var d = new Date(fecha);
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm + '/' + d.getFullYear();
+      }
+
+      function mostrarError(error) {
+        document.getElementById('estado-carga').textContent = 'Error: ' + (error && error.message ? error.message : error);
+        document.getElementById('estado-carga').style.display = 'block';
+        document.getElementById('lista-filas').style.display = 'none';
+      }
+
+      var ETIQUETAS_TIPO_ = { INCIDENCIA: 'Incidencias abiertas', DECISION: 'Decisiones pendientes', DOCUMENTO: 'Documentos vigentes' };
+
+      function cambiarModo_(tipo) {
+        tipoActual_ = tipo;
+        document.getElementById('modo-incidencia').classList.toggle('activo', tipo === 'INCIDENCIA');
+        document.getElementById('modo-decision').classList.toggle('activo', tipo === 'DECISION');
+        document.getElementById('modo-documento').classList.toggle('activo', tipo === 'DOCUMENTO');
+        document.getElementById('filtro-texto').value = '';
+        cargarListado_();
+      }
+      document.getElementById('modo-incidencia').addEventListener('click', function () { cambiarModo_('INCIDENCIA'); });
+      document.getElementById('modo-decision').addEventListener('click', function () { cambiarModo_('DECISION'); });
+      document.getElementById('modo-documento').addEventListener('click', function () { cambiarModo_('DOCUMENTO'); });
+
+      function abrirFila_(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirRegistroListado(entidad, id);
+      }
+
+      function filaHtml_(f) {
+        var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+        var vencida = f.fechaClave && new Date(f.fechaClave) < hoy;
+        var fechaHtml = f.fechaClave
+          ? '<div class="sub' + (vencida ? ' fecha-vencida' : '') + '">Límite: ' + escapeHtml(formatearFecha_(f.fechaClave)) + (vencida ? ' ⚠' : '') + '</div>'
+          : '';
+        return '<div class="fila-listado">' +
+          '<div class="titulo" onclick="abrirFila_(\'' + f.entidad + '\',\'' + escapeHtml(f.id) + '\')">' + escapeHtml(f.titulo) +
+          ' <span class="badge ' + (f.estado === 'Vencida' ? 'badge-alerta' : 'badge-neutro') + '">' + escapeHtml(f.estado) + '</span></div>' +
+          (f.subtitulo ? '<div class="sub">' + escapeHtml(f.subtitulo) + '</div>' : '') +
+          (f.contexto ? '<div class="sub">' + escapeHtml(f.contexto) + '</div>' : '') +
+          fechaHtml +
+        '</div>';
+      }
+
+      function aplicarFiltroTextoYRenderizar_() {
+        var texto = document.getElementById('filtro-texto').value.trim().toLowerCase();
+        var filas = !texto ? filasCompletas_ : filasCompletas_.filter(function (f) {
+          return [f.titulo, f.subtitulo, f.contexto].join(' ').toLowerCase().indexOf(texto) !== -1;
+        });
+
+        document.getElementById('estado-carga').style.display = 'none';
+        var contenedor = document.getElementById('lista-filas');
+        contenedor.style.display = 'block';
+        contenedor.innerHTML = filas.length
+          ? filas.map(filaHtml_).join('')
+          : '<div class="vacio-lista">' + (filasCompletas_.length === 0 ? 'Nada pendiente ahora mismo.' : 'Ningún resultado con ese texto.') + '</div>';
+      }
+
+      function cargarListado_() {
+        document.getElementById('tituloLista').textContent = ETIQUETAS_TIPO_[tipoActual_];
+        document.getElementById('estado-carga').style.display = 'block';
+        document.getElementById('estado-carga').textContent = 'Cargando...';
+        document.getElementById('lista-filas').style.display = 'none';
+        google.script.run.withFailureHandler(mostrarError).withSuccessHandler(function (datos) {
+          filasCompletas_ = datos.filas || [];
+          aplicarFiltroTextoYRenderizar_();
+        }).obtenerDatosListado(tipoActual_);
+      }
+
+      document.getElementById('filtro-texto').addEventListener('input', aplicarFiltroTextoYRenderizar_);
+      document.getElementById('btn-actualizar').addEventListener('click', cargarListado_);
+      document.getElementById('btn-exportar-csv').addEventListener('click', function () {
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarListadoCSV(tipoActual_);
+      });
+
+      cargarListado_();
+    </script>
+  </body>
+</html>
