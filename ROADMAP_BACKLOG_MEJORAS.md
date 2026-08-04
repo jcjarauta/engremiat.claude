@@ -300,7 +300,7 @@ Casos de prueba deliberados: retraso real con causa documentada (vacaciones de v
 
 El sistema se ha ido guiando por un marco de preguntas fundamentales (Qué/Quién/Dónde/Con qué/Cuándo — ya resueltas; Cómo/Cuánto/Por qué — pendientes) para no perder de vista qué falta de verdad. Esta fase organiza el trabajo pendiente contra ese marco, no por entidad técnica. **No se abre un bloque sin cerrar el anterior**, mismo principio que el resto del roadmap.
 
-**Nota de sincronización (2026-08-04)**: esta sección estaba desactualizada desde hacía varias sesiones — N1 a N5.1 y N7 ya estaban cerrados en código pero seguían descritos aquí como pendientes. Corregido contra el historial real de commits y verificación directa del código fuente, no por memoria.
+**Nota de sincronización (2026-08-04)**: esta sección estaba desactualizada desde hacía varias sesiones — N1 a N5.1 y N7 ya estaban cerrados en código pero seguían descritos aquí como pendientes. Corregido contra el historial real de commits y verificación directa del código fuente, no por memoria. N6 se cerró a continuación, en la misma sesión de esta sincronización.
 
 ### N1 — Arreglos inmediatos (deuda de la Fase M) ✅ CERRADO
 - **N1.1** — Bug de visualización de `HORARIO` en la ficha (fecha 1899 en vez de `HH:MM`). Cerrado (commit `b80b5e8`).
@@ -328,10 +328,14 @@ Ya validado 3 veces (Persona/Equipo, y el mismo molde sirve para lo que falta):
 - **N5.1** — ✅ **Cerrado, y muy excedido en alcance.** No se quedó en "agregación del coste de materiales" — se construyó `CosteService.js` completo (commit `6628627`): materiales (estimado desde `PRODUCTO_MATERIAL`/precio de proveedor preferente), recursos (coste diario por amortización o periódico × días de uso real vía `TAREA_RECURSO`), actividad/otros costes directos, comparativa contra `PRESUPUESTO` por categoría, múltiples fuentes de financiación, informe de justificación económica con plantilla PDF propia, comparativa multi-campaña. Con prueba reactiva dedicada (`Tests_CosteService.js`, commit `1949b78`).
 - **N5.2** — Coste de mano de obra (tiempo × persona) — **sigue aparcado explícitamente**, sin cambios: exige decidir antes si se pone un coste/hora a cada persona, dato sensible en un programa social.
 
-### N6 — Eje "Por qué" (impacto social/ecológico/económico) — **PENDIENTE, siguiente bloque a trabajar**
+### N6 — Eje "Por qué" (impacto social/ecológico/económico) ✅ CERRADO (2026-08-04)
 Consultado el Balanç Social de la XES (Xarxa d'Economia Solidària de Catalunya) como referencia externa: es una auditoría **anual y a nivel de organización completa**, no por proyecto, con 6 bloques basados en indicadores GRI. Decisión de alcance: no replicar el cuestionario completo dentro del sistema (mitad de sus preguntas —género, gobernanza, finanzas— no son datos operativos). En su lugar:
-- **N6.1** — Etiquetas de impacto (categoría social/ecológico/económico + nota) en Proyecto/Producto, mismo patrón polimórfico ya establecido. **No construido todavía.**
-- **N6.2** — Informe de evidencia (horas de voluntariado, personas atendidas, materiales reutilizados) que alimente el Balanç Social anual con datos reales en vez de reconstruirlos a mano cada año. **Parcialmente cubierto de forma no intencional**: `calcularImpactoSocialAmbito_` (`CosteService.js`, construido dentro de N5.1) ya calcula personas voluntarias/atendidas y días de dedicación, pero queda enterrado dentro del Informe de Justificación Económica — no existe como pieza propia, ni cubre materiales reutilizados. **Falta formalizarlo como bloque independiente**, tal como decía la estimación original (1-2 sesiones).
+- **N6.1** — Cerrado. Nueva entidad `ETIQUETA_IMPACTO` (`37_ETIQUETA_IMPACTO`, prefijo `IMP`) — categoría (catálogo nuevo `CFG_CATEGORIA_IMPACTO`: Social/Ecológico/Económico) + descripción, sobre Campaña/Proyecto/Producto (mismo catálogo de nivel que el eje económico, `CFG_ENTIDAD_PRESUPUESTO`, reutilizado sin crear uno nuevo). Instalador `instalarEntidadEtiquetaImpacto`. Descriptiva, sin regla de integridad nueva (mismo criterio que L1.3).
+- **N6.2** — Cerrado. `EvidenciaSocialService.js` formaliza como pieza propia (nuevo tipo de informe `EVIDENCIA_SOCIAL`) lo que antes vivía enterrado dentro de Justificación Económica: impacto social (voluntariado/personas atendidas, reutiliza `calcularImpactoSocialAmbito_` de `CosteService.js` sin duplicar), **reutilización de producto/proceso como proxy de "materiales reutilizados"** — no existe inventario de reutilización de materiales físicos en el sistema, así que se usa el dato determinista que sí existe (`MODO_USO`, L3.2, cuando indica reutilización/adaptación en `PROYECTO_PRODUCTO`/`PROCESO`), etiquetado explícitamente como proxy en la UI, sin presentarlo como si fuera literalmente material físico — y agregación de las etiquetas de N6.1 por categoría.
+
+**Verificado end-to-end vía `clasp run`**: alta de `ETIQUETA_IMPACTO` real, `generarInformeEvidenciaSocial('Proyecto', 'PRO-0007')` (etiqueta + impacto social correctos), y `generarInformeEvidenciaSocial('Campaña', 'CAM-0010')` confirmando que el proxy de reutilización detecta correctamente un registro real ya existente desde L3.2 (`PCS-0002`, `MODO_USO="Reutilización sin cambios"`). Dato de prueba desactivado tras verificar.
+
+**Estimación real: 1 sesión**, dentro del rango previsto (1-2 sesiones).
 
 ### N7 — Materiales-Proveedores ✅ CERRADO
 - **N7.1** — Ficha de registro de Producto-Material-Proveedor. Cerrado como enriquecimiento de la Ficha de Producto existente (proveedor/precio/coste estimado por material), no como ficha aislada — decisión de diseño consistente con el resto del sistema. Commit `55130ae`.
@@ -379,14 +383,14 @@ No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evi
 | N3 | Gantt como espacio operativo (4 pasos en orden) | ✅ Cerrado | N1.2 |
 | N4 | Formatos operativos baratos (kanban, listado, hoy, calendario) | ✅ Cerrado | — |
 | N5 | Eje "Cuánto" (coste de materiales; mano de obra aparcado) | ✅ N5.1 cerrado y excedido — N5.2 aparcado | — |
-| N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | ⏳ **Pendiente — siguiente bloque** | — |
+| N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | ✅ Cerrado | — |
 | N7 | Materiales-Proveedores (ficha + stock automático) | ✅ Cerrado | N2 |
-| N8 | Import masivo escalado (Recursos, Personas) | ⏳ **Pendiente, no empezado** | N2 (ya desbloqueado) |
+| N8 | Import masivo escalado (Recursos, Personas) | ⏳ **Pendiente — siguiente bloque, no empezado** | N2 (ya desbloqueado) |
 | N9 | Diferido (roles de usuario, cuestionario Balanç Social, todo L6) | — | revisión de contexto |
 | L6 | Diferido | — | revisión de contexto |
 | *(fuera de tabla)* | Base de competencias (prep. L6) + `CONVOCATORIA` Capa 1 | ✅ Cerrados | — |
 
-**L0-M, N1-N5, N7 cerrados y verificados en Apps Script real.** Quedan pendientes: **N6** (a continuación) y **N8**.
+**L0-M, N1-N7 cerrados y verificados en Apps Script real.** Queda pendiente: **N8**.
 
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
