@@ -431,6 +431,22 @@ Punto 3 de una revisión de asesor técnico: "¿el riesgo de `ROADMAP_IMPLEMENTA
 
 **Hallazgo de rendimiento, documentado y no corregido en esta sesión** (fuera de alcance del punto 3): `obtenerReporteIntegridad()` tarda ahora ~32s por llamada, frente a los 14.7s medidos en el Paso 6 original — el sistema ha crecido mucho desde esa medición (RECURSO, HORARIO, CONVOCATORIA, ETIQUETA_IMPACTO, PRESUPUESTO, COSTE, COMPETENCIA... y sus datos de prueba piloto). No bloquea nada hoy, pero si seguimos añadiendo entidades vale la pena revisar la caché de lectura (`CacheLecturaService.js`, Paso 6) antes de que se convierta en un problema real de UX en el Panel operativo/Informes.
 
+---
+
+## Distinción Operativo/Piloto/Auditoría ✅ CERRADO (2026-08-04)
+
+Surgido de una valoración de asesor técnico ("revisa las expectativas del sistema y lo que queda por construir"): el mayor riesgo identificado no era técnico sino de validación — el sistema nunca se ha usado en una campaña real, y los datos de auditoría/desarrollo convivían sin marcador con datos piloto y (en el futuro) datos operativos reales. Cierra la memoria `latroballa_datos_prueba_a_auditar` (campaña "Verificación visual Fase 10" apareciendo sin distinción en una ficha real).
+
+**Diseño acordado con el usuario** (no binario, dos niveles distintos): `CFG_NIVEL_DATO` (Operativo/Piloto/Auditoría) en `CAMPANA`, resuelto también para `PROYECTO` vía `CAMPANA_ID` (resolución directa, sin ambigüedad). **Alcance deliberadamente acotado**: `PRODUCTO`/`PROCESO`/`TAREA` quedan fuera de esta pasada — `PRODUCTO` se reutiliza entre campañas vía `PROYECTO_PRODUCTO` (N:M), así que filtrar ahí sin más evidencia se arriesgaba a ocultar datos reales por error.
+
+Comportamiento: oculto por defecto en `obtenerOpcionesEntidadParaSelector` (usado por `SelectorRegistro.html` en toda la app) y en `obtenerOpcionesCampanasActivas` (Panel de Campaña), con checkbox "incluir pruebas" para mostrarlos con sufijo `[Piloto]`/`[Auditoría]` en la etiqueta.
+
+**Backfill retroactivo** de las 14 campañas activas en ese momento, clasificación confirmada por el usuario: 7 auditoría (`CAM-0001/0002/0008/0009/0010/0011/0013`), 7 piloto (`CAM-0012/0014/0015/0016/0018/0019/0020`).
+
+**Consecuencia visible importante, esperada**: como todavía no existe ninguna campaña Operativa real, Panel de Campaña y los selectores de Campaña/Proyecto muestran vacío por defecto hasta que se cree o reclasifique una campaña como Operativa — no es un bug, es la primera señal honesta de que el sistema está listo para un primer uso real.
+
+**Pendiente natural, no abordado**: extender el mismo criterio a `PRODUCTO`/`PROCESO`/`TAREA` si aparece evidencia real de que hace falta; badge visual en fichas (hoy solo aplica a listas/selectores, no a la cabecera de una ficha abierta directamente por ID).
+
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
 - Ninguna IA colaboradora despliega o cierra fase por sí misma.
