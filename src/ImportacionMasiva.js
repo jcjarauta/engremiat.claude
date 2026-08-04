@@ -308,6 +308,237 @@ function procesarImportacionMasiva_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
+/*
+ * Fase N8 (ver conversación): mismo patrón STG_* / dry-run /
+ * confirmación humana / CORRELATION_ID que la importación de campaña (L5.3), pero en
+ * un flujo separado -- Recursos/Personas son dominios independientes
+ * de la jerarquía de campaña, no tiene sentido forzar un único
+ * resumen combinado. RECURSO es un árbol de profundidad variable
+ * (UBICACION_ID autorreferenciado) y PERSONA_EQUIPO tiene su propia
+ * autorreferencia (COORDINADOR_ID) -- ambas se resuelven en dos
+ * pasadas (alta sin la referencia circular, luego actualización) para
+ * no exigir que cada fila padre aparezca antes que sus hijas en la
+ * hoja, a diferencia de la jerarquía de campaña que sí depende del
+ * orden de filas para ORDEN_SECUENCIA/predecesor.
+ */
+function procesarImportacionRecursosPersonas_(confirmar) {
+  var errores = [];
+
+  var filasRecurso = leerFilasPendientesImportacion_('STG_RECURSO');
+  var filasPersona = leerFilasPendientesImportacion_('STG_PERSONA');
+  var filasEquipoMiembro = leerFilasPendientesImportacion_('STG_EQUIPO_MIEMBRO');
+
+  function validarObligatorios_(filas, hoja, campos) {
+    filas.forEach(function (f) {
+      campos.forEach(function (c) {
+        if (f[c] === '' || f[c] === null || f[c] === undefined) {
+          errores.push(hoja + ' fila ' + f._fila + ': falta el campo obligatorio ' + c);
+        }
+      });
+    });
+  }
+
+  validarObligatorios_(filasRecurso, 'STG_RECURSO', ['CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'ESTADO']);
+  validarObligatorios_(filasPersona, 'STG_PERSONA', ['TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO']);
+  validarObligatorios_(filasEquipoMiembro, 'STG_EQUIPO_MIEMBRO', ['EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO']);
+
+  function validarCatalogo_(filas, hoja, campo, nombreCatalogo) {
+    var valores = obtenerCatalogo(nombreCatalogo);
+
+    filas.forEach(function (f) {
+      var v = String(f[campo] || '').trim();
+      if (v && valores.indexOf(v) === -1) {
+        errores.push(
+          hoja + ' fila ' + f._fila + ': ' + campo + ' "' + v + '" no es un valor válido (esperado uno de: ' + valores.join(', ') + ')'
+        );
+      }
+    });
+  }
+
+  validarCatalogo_(filasRecurso, 'STG_RECURSO', 'CLASE_RECURSO', 'CFG_CLASE_RECURSO');
+  validarCatalogo_(filasRecurso, 'STG_RECURSO', 'CATEGORIA_RECURSO', 'CFG_CATEGORIA_RECURSO');
+  validarCatalogo_(filasRecurso, 'STG_RECURSO', 'ESTADO', 'CFG_ESTADO_RECURSO_FISICO');
+  validarCatalogo_(filasPersona, 'STG_PERSONA', 'TIPO', 'CFG_TIPO_RECURSO');
+  validarCatalogo_(filasPersona, 'STG_PERSONA', 'ROL', 'CFG_ROL_PERSONA');
+  validarCatalogo_(filasPersona, 'STG_PERSONA', 'DISPONIBILIDAD', 'CFG_DISPONIBILIDAD');
+  validarCatalogo_(filasPersona, 'STG_PERSONA', 'ESTADO', 'CFG_ESTADO_RECURSO');
+
+  filasPersona.forEach(function (f) {
+    var capacidad = Number(f.CAPACIDAD_SEMANAL_DIAS);
+    if (!isFinite(capacidad) || capacidad <= 0 || capacidad > 7) {
+      errores.push('STG_PERSONA fila ' + f._fila + ': CAPACIDAD_SEMANAL_DIAS debe ser un número mayor que 0 y menor o igual que 7');
+    }
+  });
+
+  function validarTemporalesUnicos_(filas, hoja) {
+    var vistos = {};
+    filas.forEach(function (f) {
+      var id = String(f.ID_TEMPORAL || '').trim();
+      if (vistos[id]) errores.push(hoja + ' fila ' + f._fila + ': ID_TEMPORAL "' + id + '" duplicado en la misma hoja');
+      vistos[id] = true;
+    });
+  }
+
+  validarTemporalesUnicos_(filasRecurso, 'STG_RECURSO');
+  validarTemporalesUnicos_(filasPersona, 'STG_PERSONA');
+
+  /*
+   * Referencia autorreferenciada (UBICACION_TEMPORAL/COORDINADOR_TEMPORAL/
+   * EQUIPO_TEMPORAL/MIEMBRO_TEMPORAL): a diferencia de
+   * validarReferenciaPadre_ (jerarquía de campaña), aquí no importa el
+   * orden de filas dentro del propio lote -- solo que el temporal
+   * exista en algún sitio del lote, o que sea ya un ID real.
+   */
+  function validarReferenciaOpcional_(filas, hoja, campo, filasDelMismoLote, entidadReal) {
+    filas.forEach(function (f) {
+      var valor = String(f[campo] || '').trim();
+      if (!valor) return;
+      var esTemporalDelLote = filasDelMismoLote.some(function (p) { return String(p.ID_TEMPORAL || '').trim() === valor; });
+      if (esTemporalDelLote) return;
+      if (obtenerRegistroPorId(entidadReal, valor)) return;
+      errores.push(hoja + ' fila ' + f._fila + ': ' + campo + ' "' + valor + '" no corresponde a ningún ID_TEMPORAL del lote ni a un ' + entidadReal + ' real existente');
+    });
+  }
+
+  validarReferenciaOpcional_(filasRecurso, 'STG_RECURSO', 'UBICACION_TEMPORAL', filasRecurso, 'RECURSO');
+  validarReferenciaOpcional_(filasPersona, 'STG_PERSONA', 'COORDINADOR_TEMPORAL', filasPersona, 'PERSONA_EQUIPO');
+  validarReferenciaOpcional_(filasEquipoMiembro, 'STG_EQUIPO_MIEMBRO', 'EQUIPO_TEMPORAL', filasPersona, 'PERSONA_EQUIPO');
+  validarReferenciaOpcional_(filasEquipoMiembro, 'STG_EQUIPO_MIEMBRO', 'MIEMBRO_TEMPORAL', filasPersona, 'PERSONA_EQUIPO');
+
+  var resumen = {
+    recursos: filasRecurso.length,
+    personas: filasPersona.length,
+    equipoMiembros: filasEquipoMiembro.length
+  };
+
+  if (errores.length > 0 || !confirmar) {
+    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+  }
+
+  var correlationId = Utilities.getUuid();
+  var mapaRecurso = {};
+  var mapaPersona = {};
+
+  filasRecurso.forEach(function (f) {
+    var resultado = insertarRegistroTransaccional('RECURSO', {
+      CODIGO: f.CODIGO,
+      NOMBRE: f.NOMBRE,
+      CLASE_RECURSO: f.CLASE_RECURSO,
+      CATEGORIA_RECURSO: f.CATEGORIA_RECURSO,
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    mapaRecurso[String(f.ID_TEMPORAL).trim()] = resultado.id;
+    marcarFilaImportacionMasiva_('STG_RECURSO', f._fila, resultado.id);
+  });
+
+  filasRecurso.forEach(function (f) {
+    var ubicacionTemporal = String(f.UBICACION_TEMPORAL || '').trim();
+    if (!ubicacionTemporal) return;
+    var ubicacionId = mapaRecurso[ubicacionTemporal] || ubicacionTemporal;
+    var recursoId = mapaRecurso[String(f.ID_TEMPORAL).trim()];
+    actualizarRegistroTransaccional('RECURSO', recursoId, { UBICACION_ID: ubicacionId }, { origen: 'ADMIN', correlationId: correlationId });
+  });
+
+  filasPersona.forEach(function (f) {
+    var resultado = insertarRegistroTransaccional('PERSONA_EQUIPO', {
+      TIPO: f.TIPO,
+      NOMBRE: f.NOMBRE,
+      ROL: f.ROL,
+      CAPACIDAD_SEMANAL_DIAS: f.CAPACIDAD_SEMANAL_DIAS,
+      DISPONIBILIDAD: f.DISPONIBILIDAD,
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    mapaPersona[String(f.ID_TEMPORAL).trim()] = resultado.id;
+    marcarFilaImportacionMasiva_('STG_PERSONA', f._fila, resultado.id);
+  });
+
+  filasPersona.forEach(function (f) {
+    var coordinadorTemporal = String(f.COORDINADOR_TEMPORAL || '').trim();
+    if (!coordinadorTemporal) return;
+    var coordinadorId = mapaPersona[coordinadorTemporal] || coordinadorTemporal;
+    var personaId = mapaPersona[String(f.ID_TEMPORAL).trim()];
+    actualizarRegistroTransaccional('PERSONA_EQUIPO', personaId, { COORDINADOR_ID: coordinadorId }, { origen: 'ADMIN', correlationId: correlationId });
+  });
+
+  filasEquipoMiembro.forEach(function (f) {
+    var equipoTemporal = String(f.EQUIPO_TEMPORAL).trim();
+    var miembroTemporal = String(f.MIEMBRO_TEMPORAL).trim();
+    var equipoId = mapaPersona[equipoTemporal] || equipoTemporal;
+    var miembroId = mapaPersona[miembroTemporal] || miembroTemporal;
+
+    var resultado = insertarRegistroTransaccional('EQUIPO_MIEMBRO', {
+      EQUIPO_ID: equipoId,
+      MIEMBRO_ID: miembroId,
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_EQUIPO_MIEMBRO', f._fila, resultado.id);
+  });
+
+  return { ok: true, errores: [], resumen: resumen };
+}
+
+function abrirImportacionMasivaRecursosPersonas() {
+  var ui = SpreadsheetApp.getUi();
+  var previsualizacion;
+
+  try {
+    previsualizacion = procesarImportacionRecursosPersonas_(false);
+  } catch (e) {
+    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
+    return;
+  }
+
+  if (previsualizacion.errores.length > 0) {
+    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
+    var extra = previsualizacion.errores.length > 20
+      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
+      : '';
+
+    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
+    return;
+  }
+
+  var r = previsualizacion.resumen;
+  var total = r.recursos + r.personas + r.equipoMiembros;
+
+  if (total === 0) {
+    ui.alert(
+      'Nada que importar',
+      'No hay filas pendientes en STG_RECURSO/STG_PERSONA/STG_EQUIPO_MIEMBRO (o ya están todas importadas).',
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  var mensaje =
+    'Se creará:\n' +
+    '- ' + r.recursos + ' recurso(s)\n' +
+    '- ' + r.personas + ' persona(s)/equipo(s)\n' +
+    '- ' + r.equipoMiembros + ' relación(es) equipo-miembro\n\n' +
+    'UBICACION_ID y COORDINADOR_ID (si se indicaron) se completan en una segunda pasada, una vez creados todos los registros.\n\n' +
+    '¿Confirmar la importación?';
+
+  var confirmacion = ui.alert('Confirmar importación de Recursos/Personas', mensaje, ui.ButtonSet.YES_NO);
+
+  if (confirmacion !== ui.Button.YES) return;
+
+  try {
+    var resultado = procesarImportacionRecursosPersonas_(true);
+    var r2 = resultado.resumen;
+
+    ui.alert(
+      'Importación completada',
+      'Se crearon ' + r2.recursos + ' recurso(s), ' + r2.personas + ' persona(s)/equipo(s) y ' + r2.equipoMiembros + ' relación(es) equipo-miembro.',
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
+  }
+}
+
 function abrirImportacionMasiva() {
   var ui = SpreadsheetApp.getUi();
   var previsualizacion;

@@ -42,6 +42,37 @@ function instalarStagingImportacionMasiva() {
     {
       hoja: 'STG_TAREA',
       cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * Fase N8 (ver conversación): extiende el patrón STG_* a Recursos y
+     * Personas -- a diferencia de la jerarquía de campaña (profundidad
+     * fija de 5 niveles), RECURSO es un árbol de profundidad variable
+     * (UBICACION_ID autorreferenciado). En vez de exigir que cada fila
+     * padre aparezca antes que sus hijas en la hoja, se importa en dos
+     * pasadas (ver ImportacionMasiva.js): 1) todas las filas sin
+     * UBICACION_ID, 2) actualiza UBICACION_ID ya con todos los IDs
+     * reales resueltos -- sin restricción de orden de filas.
+     */
+    {
+      hoja: 'STG_RECURSO',
+      cabeceras: ['ID_TEMPORAL', 'UBICACION_TEMPORAL', 'CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'CATEGORIA_RECURSO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * PERSONA/EQUIPO: mismo criterio de dos pasadas para COORDINADOR_ID
+     * (solo válido en filas TIPO=Equipo, apuntando a una fila
+     * TIPO=Persona -- la propia regla de negocio ya existente en
+     * Repository_InsertarRegistro.js se aplica igual en la segunda
+     * pasada, vía actualizarRegistroTransaccional, sin duplicarla aquí).
+     * EQUIPO_MIEMBRO (desglose N:M, L4) en hoja aparte, procesada
+     * después de que todas las personas/equipos ya tengan ID real.
+     */
+    {
+      hoja: 'STG_PERSONA',
+      cabeceras: ['ID_TEMPORAL', 'COORDINADOR_TEMPORAL', 'TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    {
+      hoja: 'STG_EQUIPO_MIEMBRO',
+      cabeceras: ['ID_TEMPORAL', 'EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
   ];
 
