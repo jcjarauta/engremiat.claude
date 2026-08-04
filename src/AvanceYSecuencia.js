@@ -141,7 +141,18 @@ function obtenerSugerenciaSecuencia(entidadClave, contexto) {
     var proyectoProductoId = String(contexto.PROYECTO_PRODUCTO_ID || '').trim();
     var productoId = String(contexto.PRODUCTO_ID || '').trim();
 
-    if (!productoId) {
+    /*
+     * Bug real (ver conversación -- L4 dejó esto "aplazado" sin
+     * diagnosticar): este guard exigía PRODUCTO_ID aunque
+     * PROYECTO_PRODUCTO_ID por sí solo ya es contexto suficiente (el
+     * filtro de más abajo ya sabe resolverlo). En el formulario,
+     * PRODUCTO_ID se autoderiva de PROYECTO_PRODUCTO_ID en el cliente
+     * y puede no estar relleno todavía en el instante exacto del
+     * evento "change" que dispara esta llamada -- la sugerencia
+     * devolvía null en silencio y el usuario tenía que teclear el
+     * orden a mano.
+     */
+    if (!productoId && !proyectoProductoId) {
       return {ordenSugerido: null, predecesorId: '', predecesorEtiqueta: ''};
     }
 
