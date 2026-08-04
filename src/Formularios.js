@@ -56,7 +56,8 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   COSTE: 'coste',
   COMPETENCIA: 'competencia',
   PERSONA_COMPETENCIA: 'persona - competencia',
-  RECURSO_COMPETENCIA: 'recurso - competencia'
+  RECURSO_COMPETENCIA: 'recurso - competencia',
+  CONVOCATORIA: 'convocatoria'
 });
 
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
@@ -69,7 +70,8 @@ var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Incidencia': 'INCIDENCIA',
   'Documento': 'DOCUMENTO',
   'Recurso': 'RECURSO',
-  'Persona/Equipo': 'PERSONA_EQUIPO'
+  'Persona/Equipo': 'PERSONA_EQUIPO',
+  'Convocatoria': 'CONVOCATORIA'
 });
 
 /*
@@ -1017,6 +1019,38 @@ INCIDENCIA: [
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_FUENTE_FINANCIACION', requerido: true, valorPorDefecto: 'Solicitada' },
     { campo: 'FECHA_SOLICITUD', etiqueta: 'Fecha de solicitud', tipo: 'fecha' },
     { campo: 'FECHA_RESOLUCION', etiqueta: 'Fecha de resolución', tipo: 'fecha' },
+    {
+      campo: 'CONVOCATORIA_ID', etiqueta: 'Convocatoria de origen (opcional)', tipo: 'fk', entidadFk: 'CONVOCATORIA',
+      ayuda: 'Si esta financiación viene de una convocatoria registrada, vincúlala aquí para llevar el histórico de a qué os habéis presentado.'
+    },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Eje económico, Capa 1 de convocatorias (ver conversación -- "un
+   * buscador de convocatorias por scrap web... generar propuestas de
+   * participación"). Esta pieza es solo el registro/seguimiento
+   * determinista de la OPORTUNIDAD en sí (antes de decidir presentarse),
+   * distinta de FUENTE_FINANCIACION (la aplicación concreta ya en
+   * marcha). TIPO_PROYECTO_ELEGIBLE reutiliza el catálogo CFG_TIPO_PROYECTO
+   * ya existente -- el filtro de encaje determinista es una simple
+   * igualdad de catálogo compartido, sin inventar taxonomía nueva.
+   */
+  CONVOCATORIA: [
+    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true, ayuda: 'Ej. "Subvenciones a entidades sociales 2026".' },
+    { campo: 'ENTIDAD_CONVOCANTE', etiqueta: 'Entidad convocante', tipo: 'texto', requerido: true },
+    { campo: 'TIPO', etiqueta: 'Tipo', tipo: 'catalogo', catalogo: 'CFG_TIPO_CONVOCATORIA', requerido: true },
+    { campo: 'IMPORTE_DISPONIBLE', etiqueta: 'Importe disponible (€)', tipo: 'numero', min: 0 },
+    { campo: 'IMPORTE_MINIMO_SOLICITUD', etiqueta: 'Importe mínimo de solicitud (€)', tipo: 'numero', min: 0 },
+    { campo: 'IMPORTE_MAXIMO_SOLICITUD', etiqueta: 'Importe máximo de solicitud (€)', tipo: 'numero', min: 0 },
+    {
+      campo: 'TIPO_PROYECTO_ELEGIBLE', etiqueta: 'Tipo de proyecto elegible (opcional)', tipo: 'catalogo', catalogo: 'CFG_TIPO_PROYECTO',
+      ayuda: 'Déjalo vacío si la convocatoria admite cualquier tipo de proyecto.'
+    },
+    { campo: 'FECHA_LIMITE', etiqueta: 'Fecha límite de solicitud', tipo: 'fecha', requerido: true },
+    { campo: 'REQUISITOS', etiqueta: 'Requisitos', tipo: 'textarea' },
+    { campo: 'URL_BASES', etiqueta: 'Enlace a las bases', tipo: 'texto' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CONVOCATORIA', requerido: true, valorPorDefecto: 'Abierta' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -2581,6 +2615,12 @@ function onOpen() {
             .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia')
         )
         .addSubMenu(
+          ui.createMenu('Convocatorias')
+            .addItem('Ficha de convocatoria (buscar)', 'abrirFichaConvocatoriaBuscar')
+            .addItem('Nueva convocatoria', 'abrirFormularioCrearConvocatoria')
+            .addItem('Editar convocatoria', 'abrirEditarConvocatoria')
+        )
+        .addSubMenu(
           ui.createMenu('Catálogos y administración')
             .addItem('Catálogos', 'abrirCatalogosAdmin')
             .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
@@ -2658,6 +2698,7 @@ function abrirFichaPorEntidad_(entidad, id) {
   if (clave === 'PROVEEDOR') { abrirFichaProveedor(id); return; }
   if (clave === 'MATERIAL') { abrirFichaMaterial(id); return; }
   if (clave === 'INCIDENCIA') { abrirFichaIncidencia(id); return; }
+  if (clave === 'CONVOCATORIA') { abrirFichaConvocatoria(id); return; }
   throw new Error('No hay ficha disponible para la entidad ' + entidad);
 }
 
@@ -2758,6 +2799,7 @@ function abrirFormularioCrearCoste() { abrirFormularioCrear_('COSTE', 'Nuevo cos
 function abrirFormularioCrearCompetencia() { abrirFormularioCrear_('COMPETENCIA', 'Nueva competencia'); }
 function abrirFormularioCrearPersonaCompetencia() { abrirFormularioCrear_('PERSONA_COMPETENCIA', 'Persona - Competencia (nueva)'); }
 function abrirFormularioCrearRecursoCompetencia() { abrirFormularioCrear_('RECURSO_COMPETENCIA', 'Recurso - Competencia requerida (nueva)'); }
+function abrirFormularioCrearConvocatoria() { abrirFormularioCrear_('CONVOCATORIA', 'Nueva convocatoria'); }
 
 
 /**
@@ -2851,6 +2893,7 @@ function abrirEditarCoste() { abrirEditarRegistroPorEntidad_('COSTE', 'coste'); 
 function abrirEditarCompetencia() { abrirEditarRegistroPorEntidad_('COMPETENCIA', 'competencia'); }
 function abrirEditarPersonaCompetencia() { abrirEditarRegistroPorEntidad_('PERSONA_COMPETENCIA', 'persona - competencia'); }
 function abrirEditarRecursoCompetencia() { abrirEditarRegistroPorEntidad_('RECURSO_COMPETENCIA', 'recurso - competencia'); }
+function abrirEditarConvocatoria() { abrirEditarRegistroPorEntidad_('CONVOCATORIA', 'convocatoria'); }
 function abrirEditarProyectoProducto() { abrirEditarRegistroPorEntidad_('PROYECTO_PRODUCTO', 'Proyecto-Producto'); }
 function abrirEditarTareaResponsable() { abrirEditarRegistroPorEntidad_('TAREA_RESPONSABLE', 'Tarea-Responsable'); }
 function abrirEditarProductoMaterial() { abrirEditarRegistroPorEntidad_('PRODUCTO_MATERIAL', 'Producto-Material'); }

@@ -249,6 +249,14 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'RECURSO_ID',
     'COMPETENCIA_ID',
     'ESTADO'
+  ]),
+
+  CONVOCATORIA: Object.freeze([
+    'NOMBRE',
+    'ENTIDAD_CONVOCANTE',
+    'TIPO',
+    'FECHA_LIMITE',
+    'ESTADO'
   ])
 });
 

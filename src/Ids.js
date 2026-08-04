@@ -138,6 +138,10 @@ const ENTIDADES_MVP = Object.freeze({
   RECURSO_COMPETENCIA: Object.freeze({
     hoja: '35_RECURSO_COMPETENCIA',
     prefijo: 'RCO'
+  }),
+  CONVOCATORIA: Object.freeze({
+    hoja: '36_CONVOCATORIA',
+    prefijo: 'CNV'
   })
 });
 
