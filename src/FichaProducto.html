@@ -98,6 +98,25 @@
           '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
       }
 
+      /*
+       * N7.1 (ver conversación -- "Ficha de Producto-Material-Proveedor"):
+       * en vez de una ficha nueva, el material ya listado aquí muestra su
+       * proveedor preferente/precio/coste estimado y navega directo a su
+       * propia Ficha de Material -- mismo patrón "Ver ficha" + "Editar"
+       * ya usado en Ficha de Proveedor/Material.
+       */
+      function verFichaMaterial(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaMaterial(id);
+      }
+
+      function filaMaterialHtml_(infoHtml, relacionId, materialId) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<span class="celda-acciones" style="display:flex;gap:6px;">' +
+          '<button class="boton btn-mini" onclick="verFichaMaterial(\'' + materialId + '\')">Ver ficha</button>' +
+          '<button class="boton btn-mini" onclick="editar(\'PRODUCTO_MATERIAL\',\'' + relacionId + '\')">Editar</button>' +
+          '</span></div>';
+      }
+
       function fechaCorta_(v) {
         return v ? new Date(v).toLocaleDateString() : '?';
       }
@@ -160,11 +179,15 @@
 
         document.getElementById("listaMateriales").innerHTML = datos.materiales.length
           ? datos.materiales.map(function (m) {
-              return filaHtml_(
+              var proveedor = m.proveedorNombre
+                ? ' <span class="detalle-secundario">— ' + escapeHtml(m.proveedorNombre) + (m.precioReferencia !== null ? ' a ' + escapeHtml(m.precioReferencia) + ' €/ud' : '') + '</span>'
+                : ' <span class="detalle-secundario">— sin proveedor de referencia</span>';
+              var coste = m.costeEstimado !== null ? ' <span class="detalle-secundario">(≈ ' + escapeHtml(m.costeEstimado) + ' €)</span>' : '';
+              return filaMaterialHtml_(
                 escapeHtml(m.materialNombre) +
                 (m.cantidadPrevista ? ' <span class="detalle-secundario">— ' + escapeHtml(m.cantidadPrevista) + (m.unidad ? ' ' + escapeHtml(m.unidad) : '') + '</span>' : '') +
-                renderBadge_(m.estado),
-                'PRODUCTO_MATERIAL', m.relacionId
+                renderBadge_(m.estado) + '<br>' + proveedor.trim() + coste,
+                m.relacionId, m.materialId
               );
             }).join("")
           : '<div class="vacio-bloque">Sin materiales asociados.</div>';
