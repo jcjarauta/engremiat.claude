@@ -406,6 +406,31 @@ No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evi
 
 **L0-M, N1-N8 cerrados y verificados en Apps Script real.** Queda **N9**, explícitamente diferido — no hay más bloques activos del backlog consolidado.
 
+---
+
+## Cierre del gap de cobertura de pruebas reactivas ✅ CERRADO (2026-08-04)
+
+Punto 3 de una revisión de asesor técnico: "¿el riesgo de `ROADMAP_IMPLEMENTACION.md` — 9 de 27 reglas `FUNC-*` sin prueba reactiva localizada — sigue siendo un hueco real?"
+
+**Reconciliación real hecha antes de tocar código** (grep de códigos `FUNC-*` en `IntegrityService.js` contra todos los `Tests_*.js`, luego verificación manual de que las funciones detectoras están enganchadas en `detectarProblemasFuncionales_()`/`obtenerReporteIntegridad()` — no solo grep, como ya advertía `INFORME_CIERRE_AUDITORIA_GLOBAL.md` sobre el método anterior):
+
+- El gap había crecido de 9 a **21 reglas** sin prueba (L0-N8 añadieron ~28 reglas nuevas desde la medición original).
+- Las 21 SÍ están activas en producción — no es código muerto, es ausencia de red de seguridad de regresión.
+- **Hallazgo más importante**: `Tests_IntegrityService_cobertura_directa_10_reglas.js` — el archivo que `ACTA_CIERRE_SESION.md` e `INFORME_CIERRE_AUDITORIA_GLOBAL.md` daban como el cierre del gap original ("62/62 reglas con prueba reactiva verificada") — era un **stub vacío** (`function myFunction() {}`). La verificación de Paso 9 se hizo de forma manual/ad-hoc contra `obtenerReporteIntegridad()` en su momento, pero nunca quedó como prueba permanente ejecutable.
+
+**Construido**: `Tests_IntegridadGapReglasFuncional.js` (sustituye al stub, eliminado), 21 pruebas reactivas nuevas — una por regla — reutilizando los helpers ya existentes en `Tests_Repository2.js` (`escribirCamposRegistroIntegridad_`, `assertHallazgoIntegridad_`, `assertSinHallazgoIntegridad_`, `insertarFilaCrudaIntegridad_`), sin duplicar infraestructura:
+- `FUNC-DEC-002/003/004` (DECISION: resolución en estado abierto, fechas anteriores a creación).
+- `FUNC-PMA-001/002/003` (PRODUCTO_MATERIAL: padre inactivo ×2, duplicado).
+- `FUNC-PROCESO-001/005` (PROCESO completado con tarea activa no terminada; avance "Por tareas" incoherente con el promedio de sus tareas).
+- `FUNC-TAREA-003/004/005/006/007/009/010/011` (fechas plan/real incoherentes con el estado, duración real inválida, predecesora inexistente o de otro proceso).
+- `FUNC-TMA-001/002/003/004/005` (TAREA_MATERIAL: cantidades negativas, padre inactivo ×2, duplicado).
+
+**Corrección durante la verificación**: los dos casos de duplicado (`PMA-003`/`TMA-005`) se diseñaron primero insertando la relación duplicada vía `insertarRegistroTransaccional` — pero el repositorio ya rechaza ese duplicado a nivel de aplicación (`ERROR_INSERCION_PRODUCTO_MATERIAL: relación activa duplicada`), confirmado al ejecutar la prueba por primera vez. `FUNC-PMA-003`/`FUNC-TMA-005` son una segunda red de seguridad para filas que se saltaran ese camino (import directo, edición manual de la hoja) — corregido a escribir la fila cruda directamente (`insertarFilaCrudaIntegridad_`), mismo patrón que la prueba ya existente `probarIntegridadMaterialCodigoDuplicado`.
+
+**Verificado 21/21 `result=OK` en Apps Script real**, mutando registros reales y confirmando tanto la detección como la restauración limpia.
+
+**Hallazgo de rendimiento, documentado y no corregido en esta sesión** (fuera de alcance del punto 3): `obtenerReporteIntegridad()` tarda ahora ~32s por llamada, frente a los 14.7s medidos en el Paso 6 original — el sistema ha crecido mucho desde esa medición (RECURSO, HORARIO, CONVOCATORIA, ETIQUETA_IMPACTO, PRESUPUESTO, COSTE, COMPETENCIA... y sus datos de prueba piloto). No bloquea nada hoy, pero si seguimos añadiendo entidades vale la pena revisar la caché de lectura (`CacheLecturaService.js`, Paso 6) antes de que se convierta en un problema real de UX en el Panel operativo/Informes.
+
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
 - Ninguna IA colaboradora despliega o cierra fase por sí misma.

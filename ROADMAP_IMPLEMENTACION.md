@@ -133,5 +133,5 @@ No bloquea nada de lo anterior ni depende de terminarlo todo. Puede insertarse e
 
 ## Riesgos abiertos a vigilar en todo el roadmap
 - Recurrencia de la divergencia clasp↔git (ya ocurrió una vez, se resolvió) — verificar `git status`/`clasp pull` antes de cada sesión de cierre de fase.
-- 9 de 27 reglas inventariadas sin prueba reactiva localizada — cerrar en paralelo, no esperar a que bloquee una fase.
+- ~~9 de 27 reglas inventariadas sin prueba reactiva localizada~~ — **cerrado 2026-08-04**. Reconciliación real (no solo grep) encontró que el gap había crecido a 21 reglas (L0-N8 añadieron ~28 reglas nuevas desde este riesgo original) y que el archivo que se creía que lo cerraba (Paso 9) era en realidad un stub vacío. Ver `ROADMAP_BACKLOG_MEJORAS.md` sección "Cierre del gap de cobertura" y `Tests_IntegridadGapReglasFuncional.js` (21/21 `result=OK`).
 - Apps Script sin pruebas locales completas — todo cierre de gate requiere ejecución real y, en Fase H, verificación visual humana.
