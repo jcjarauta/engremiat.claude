@@ -300,49 +300,55 @@ Casos de prueba deliberados: retraso real con causa documentada (vacaciones de v
 
 El sistema se ha ido guiando por un marco de preguntas fundamentales (Qué/Quién/Dónde/Con qué/Cuándo — ya resueltas; Cómo/Cuánto/Por qué — pendientes) para no perder de vista qué falta de verdad. Esta fase organiza el trabajo pendiente contra ese marco, no por entidad técnica. **No se abre un bloque sin cerrar el anterior**, mismo principio que el resto del roadmap.
 
-### N1 — Arreglos inmediatos (deuda de la Fase M, van primero)
-- **N1.1** — Bug de visualización de `HORARIO` en la ficha (fecha 1899 en vez de `HH:MM`).
-- **N1.2** — `HORARIO` con rango de vigencia temporal (`FECHA_INICIO_VIGENCIA`/`FECHA_FIN_VIGENCIA`) — prerrequisito real de N3.2, no opcional si se quiere modelar temporada alta/baja de verdad.
+**Nota de sincronización (2026-08-04)**: esta sección estaba desactualizada desde hacía varias sesiones — N1 a N5.1 y N7 ya estaban cerrados en código pero seguían descritos aquí como pendientes. Corregido contra el historial real de commits y verificación directa del código fuente, no por memoria.
 
-### N2 — Completar el patrón "ficha de registro"
+### N1 — Arreglos inmediatos (deuda de la Fase M) ✅ CERRADO
+- **N1.1** — Bug de visualización de `HORARIO` en la ficha (fecha 1899 en vez de `HH:MM`). Cerrado (commit `b80b5e8`).
+- **N1.2** — `HORARIO` con rango de vigencia temporal (`FECHA_INICIO_VIGENCIA`/`FECHA_FIN_VIGENCIA`). Cerrado — campos presentes en `Formularios.js`, `DisponibilidadService.js`, `DesviacionService.js`, `FichaRecursoService.js`, `FichaPersonaEquipoService.js`, `InstaladorHorario.js`.
+
+### N2 — Completar el patrón "ficha de registro" ✅ CERRADO, con más alcance del previsto
 Ya validado 3 veces (Persona/Equipo, y el mismo molde sirve para lo que falta):
-- **N2.1** — Ficha de Producto: proyectos vinculados (`PROYECTO_PRODUCTO` es N:M real — un producto puede reutilizarse en varios proyectos, hoy invisible), procesos/tareas, materiales (`PRODUCTO_MATERIAL`), documentos, avance/desviación agregado. La más valiosa de las dos — es donde nacen las tareas y se forman los proyectos.
-- **N2.2** — Ficha de Espacio/Recurso: tareas que lo usan (`TAREA_RECURSO`), horario, incidencias/documentos vinculados. Menor esfuerzo, las relaciones ya existen.
+- **N2.1** — Ficha de Producto: proyectos vinculados, procesos/tareas, materiales (`PRODUCTO_MATERIAL`), documentos, avance/desviación agregado. Cerrado (commit `6628627`), y ampliado después en N7.1 con proveedor/precio/coste estimado por material.
+- **N2.2** — Ficha de Espacio/Recurso: tareas que lo usan (`TAREA_RECURSO`), horario, incidencias/documentos vinculados. Cerrado (commit `6628627`).
+- **Fuera del alcance original de N2, cerrado en el mismo commit**: Ficha de Proveedor, Ficha de Material, Ficha de Incidencia — mismo patrón, se aprovechó el molde ya construido para cerrar los últimos huecos de fichas de una sola vez.
 
-### N3 — El Gantt como espacio operativo (orden obligatorio, cada uno depende del anterior)
-1. Vista de fases agrupada por producto, con totales Preproducción/Producción/Postproducción (previsto vs. real) y ciclo completo — responde directamente a "cuánto duró cada fase".
-2. **Overlay de capacidad real** (`HORARIO`) sobre las barras del Gantt — el puente entre disponibilidad declarada y planificación real; el corazón de convertir el Gantt en modelo operativo en vez de visualización. Depende de **N1.2**.
-3. Indicador de cuello de botella (qué fase acumula más desviación de media) + hitos (`FECHA_REQUERIDA`) en el eje.
-4. Informe de calidad de planificación (% de tareas a tiempo, desviación media por fase/responsable/recurso/campaña, utilización de capacidad) — usa los tres anteriores, cierra el círculo hacia "análisis de datos de calidad".
+### N3 — El Gantt como espacio operativo ✅ CERRADO (los 4 pasos)
+1. Vista de fases agrupada por producto, con totales Preproducción/Producción/Postproducción (previsto vs. real) y ciclo completo. Cerrado (commit `6628627`).
+2. **Overlay de capacidad real** (`HORARIO`) sobre las barras del Gantt. Cerrado (commits `75f529f`, `0ea771f` — incluye además fusión de días consecutivos, filtro de recurso y checkboxes de diagnóstico, no solo el overlay mínimo previsto).
+3. Indicador de cuello de botella + hitos (`FECHA_REQUERIDA`) en el eje. Cerrado (commit `6628627`).
+4. Informe de calidad de planificación (% de tareas a tiempo, desviación media por fase/responsable/recurso/campaña). Cerrado (commit `6628627`).
 
-### N4 — Formatos operativos baratos (independiente, se puede intercalar en cualquier momento)
-Reutilizan componentes ya compartidos (`Estilos.html`, patrón fila+badge+Editar, catálogos de `ESTADO` ya existentes) — coste bajo, valor inmediato:
-- **N4.1** — Kanban por estado (columnas = catálogo `ESTADO`, tarjetas = registros) para Tarea/Proceso/Incidencia — el más barato, responde "qué está pendiente" sin abrir formularios. Recomendado primero de este bloque.
-- **N4.2** — Listado filtrable plano para entidades sin árbol (Incidencias abiertas, Documentos vigentes, Decisiones pendientes) — hoy solo se buscan una a una.
-- **N4.3** — Vista "Hoy": agenda del taller completo (tareas + horario + incidencias abiertas del día), mismo cálculo que ya usa la ficha de Persona pero a nivel de todo el sistema.
-- **N4.4** — Calendario semanal (rejilla Lunes-Domingo × horas) para `HORARIO`.
+### N4 — Formatos operativos baratos ✅ CERRADO
+- **N4.1** — Kanban por estado (Tarea/Proceso/Incidencia). Cerrado (commit `6628627`).
+- **N4.2** — Listado filtrable plano (Incidencias abiertas, Documentos vigentes, Decisiones pendientes). Cerrado (commit `6628627`).
+- **N4.3** — Vista "Hoy" (tareas + horario + incidencias abiertas del día). Cerrado (commit `6628627`).
+- **N4.4** — Calendario semanal (rejilla Lunes-Domingo × horas) para `HORARIO`. Cerrado (commit `6628627`).
 
 ### N5 — Eje "Cuánto" (cantidad/capacidad/coste)
-- **N5.1** — Agregación del coste de materiales ya capturado (`PEDIDO_PROVEEDOR_LINEA.PRECIO_UNITARIO × CANTIDAD_PEDIDA`, existe desde L5.2 sin usar) a nivel de Producto/Proyecto/Campaña. Barato, sin decisiones pendientes.
-- **N5.2** — Coste de mano de obra (tiempo × persona) — **aparcado explícitamente**: exige decidir antes si se pone un coste/hora a cada persona, dato sensible en un programa social. No se diseña hasta que haya esa conversación.
+- **N5.1** — ✅ **Cerrado, y muy excedido en alcance.** No se quedó en "agregación del coste de materiales" — se construyó `CosteService.js` completo (commit `6628627`): materiales (estimado desde `PRODUCTO_MATERIAL`/precio de proveedor preferente), recursos (coste diario por amortización o periódico × días de uso real vía `TAREA_RECURSO`), actividad/otros costes directos, comparativa contra `PRESUPUESTO` por categoría, múltiples fuentes de financiación, informe de justificación económica con plantilla PDF propia, comparativa multi-campaña. Con prueba reactiva dedicada (`Tests_CosteService.js`, commit `1949b78`).
+- **N5.2** — Coste de mano de obra (tiempo × persona) — **sigue aparcado explícitamente**, sin cambios: exige decidir antes si se pone un coste/hora a cada persona, dato sensible en un programa social.
 
-### N6 — Eje "Por qué" (impacto social/ecológico/económico)
+### N6 — Eje "Por qué" (impacto social/ecológico/económico) — **PENDIENTE, siguiente bloque a trabajar**
 Consultado el Balanç Social de la XES (Xarxa d'Economia Solidària de Catalunya) como referencia externa: es una auditoría **anual y a nivel de organización completa**, no por proyecto, con 6 bloques basados en indicadores GRI. Decisión de alcance: no replicar el cuestionario completo dentro del sistema (mitad de sus preguntas —género, gobernanza, finanzas— no son datos operativos). En su lugar:
-- **N6.1** — Etiquetas de impacto (categoría social/ecológico/económico + nota) en Proyecto/Producto, mismo patrón polimórfico ya establecido.
-- **N6.2** — Informe de evidencia (horas de voluntariado, personas atendidas, materiales reutilizados) que alimente el Balanç Social anual con datos reales en vez de reconstruirlos a mano cada año.
+- **N6.1** — Etiquetas de impacto (categoría social/ecológico/económico + nota) en Proyecto/Producto, mismo patrón polimórfico ya establecido. **No construido todavía.**
+- **N6.2** — Informe de evidencia (horas de voluntariado, personas atendidas, materiales reutilizados) que alimente el Balanç Social anual con datos reales en vez de reconstruirlos a mano cada año. **Parcialmente cubierto de forma no intencional**: `calcularImpactoSocialAmbito_` (`CosteService.js`, construido dentro de N5.1) ya calcula personas voluntarias/atendidas y días de dedicación, pero queda enterrado dentro del Informe de Justificación Económica — no existe como pieza propia, ni cubre materiales reutilizados. **Falta formalizarlo como bloque independiente**, tal como decía la estimación original (1-2 sesiones).
 
-### N7 — Materiales-Proveedores (bloque grande, aparcado hasta cerrar N1-N4)
-Último dominio grande sin vista de consulta — solo formularios sueltos:
-- **N7.1** — Ficha de registro de Producto-Material-Proveedor (patrón "ficha de registro" para la relación N:M que no encaja en árbol, diferida varias veces).
-- **N7.2** — Recalculo automático de `MATERIAL.STOCK_ACTUAL` desde `MOVIMIENTO_MATERIAL` — hoy el libro de movimientos existe pero no actualiza el stock, marcado como pendiente desde L3.3.
+### N7 — Materiales-Proveedores ✅ CERRADO
+- **N7.1** — Ficha de registro de Producto-Material-Proveedor. Cerrado como enriquecimiento de la Ficha de Producto existente (proveedor/precio/coste estimado por material), no como ficha aislada — decisión de diseño consistente con el resto del sistema. Commit `55130ae`.
+- **N7.2** — Recálculo automático de `MATERIAL.STOCK_ACTUAL` desde `MOVIMIENTO_MATERIAL` (`aplicarMovimientoAStock_`, `StockMaterialService.js`). Commit `e3e8f5e`.
 
-### N8 — Import masivo escalado (aparcado hasta cerrar N2)
-Extender el patrón `STG_*` (L5.3, hoy solo Campaña→Tarea) a Recursos (jerarquía de profundidad variable) y Personas+`EQUIPO_MIEMBRO`. Materiales/Proveedores y las relaciones N:M quedan fuera hasta que N7.1 exista.
+### N8 — Import masivo escalado — **PENDIENTE, no empezado**
+Ya desbloqueado (N2 está cerrado). Extender el patrón `STG_*` (L5.3, hoy solo Campaña→Tarea) a Recursos (jerarquía de profundidad variable) y Personas+`EQUIPO_MIEMBRO`. Materiales/Proveedores y las relaciones N:M quedan fuera hasta que exista una necesidad real. Sin ningún commit todavía.
 
 ### N9 — Explícitamente diferido (sin fecha, no tocar hasta que N1-N8 cierren)
 - Roles de usuario / permisos — decisión de gobernanza, no una feature de código; requiere conversación previa sobre quién puede editar qué.
 - Cuestionario completo del Balanç Social — vive en la herramienta de XES, no en este sistema (ver N6).
 - Todo lo ya diferido en **Fase L6** (motor de eventos, simulación de escenarios, entrada conversacional, Google Calendar, tutoriales/gamificación) — sigue sin evidencia de que haga falta con esa forma.
+
+### Fuera de la numeración de esta tabla, construido en paralelo
+No estaban previstos como ítems del roadmap, surgidos de conversaciones de asesoría técnica durante el cierre de N5/N7:
+- **Base de competencias** (`COMPETENCIA`/`PERSONA_COMPETENCIA`/`RECURSO_COMPETENCIA` + detección determinista de recursos sin técnico disponible, consolidada en el Panel operativo). Preparación explícita para **Fase L6** (skills-matching), sin construir la capa de IA en sí. Commit `6628627`.
+- **`CONVOCATORIA` — Capa 1** (registro y seguimiento determinista de convocatorias/subvenciones, ficha con fuentes de financiación vinculadas y filtro de encaje determinista de proyectos por tipo elegible + rango de importe). Primera capa de una visión de 3 capas (Capa 2 = scraping web, Capa 3 = generación de propuestas con IA, ambas deliberadamente aparcadas y sin fecha, pendientes de su propia conversación de diseño). Commit `677b531`.
 
 ---
 
@@ -359,29 +365,28 @@ No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evi
 
 ## Resumen de secuencia y estimación total
 
-| Fase | Contenido | Estimación | Depende de |
+| Fase | Contenido | Estado | Depende de |
 |---|---|---|---|
-| L0 | Bug F-048 | 1 sesión | — |
-| L1 | 4 mecanismos transversales fundamentales | 3-5 sesiones | — (puede empezar tras L0) |
-| L2 | Ganancias baratas | 1 sesión | — (paralelo a L1) |
-| L3 | 6 mecanismos transversales secundarios | 4-6 sesiones | L1 |
-| L4 | 3 funcionalidades específicas | 2-3 sesiones | L1, L3 |
-| L5 | 3 bloques estructurales grandes | 8-10 sesiones | L1, L3, L4 |
-| M | Modelo operativo real (personas, espacios, tiempo, año completo de campañas) | ~6 sesiones | L1, L3, L4, L5 |
-| N1 | Arreglos inmediatos (bug horario + vigencia) | 1 sesión | M |
-| N2 | Ficha de Producto y de Espacio/Recurso | 2-3 sesiones | M |
-| N3 | Gantt como espacio operativo (4 pasos en orden) | 3-5 sesiones | N1.2 |
-| N4 | Formatos operativos baratos (kanban, listado, hoy, calendario) | 2-3 sesiones | — (paralelo a N2/N3) |
-| N5 | Eje "Cuánto" (coste de materiales; mano de obra aparcado) | 1 sesión (solo N5.1) | — |
-| N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | 1-2 sesiones | — |
-| N7 | Materiales-Proveedores (ficha + stock automático) | 3-4 sesiones | N2 |
-| N8 | Import masivo escalado (Recursos, Personas) | 1-2 sesiones | N2 |
+| L0 | Bug F-048 | ✅ Cerrado | — |
+| L1 | 4 mecanismos transversales fundamentales | ✅ Cerrado | — |
+| L2 | Ganancias baratas | ✅ Cerrado | — |
+| L3 | 6 mecanismos transversales secundarios | ✅ Cerrado | L1 |
+| L4 | 3 funcionalidades específicas | ✅ Cerrado | L1, L3 |
+| L5 | 3 bloques estructurales grandes | ✅ Cerrado | L1, L3, L4 |
+| M | Modelo operativo real (personas, espacios, tiempo, año completo de campañas) | ✅ Cerrado | L1, L3, L4, L5 |
+| N1 | Arreglos inmediatos (bug horario + vigencia) | ✅ Cerrado | M |
+| N2 | Ficha de Producto y de Espacio/Recurso | ✅ Cerrado (+ Proveedor, Material, Incidencia) | M |
+| N3 | Gantt como espacio operativo (4 pasos en orden) | ✅ Cerrado | N1.2 |
+| N4 | Formatos operativos baratos (kanban, listado, hoy, calendario) | ✅ Cerrado | — |
+| N5 | Eje "Cuánto" (coste de materiales; mano de obra aparcado) | ✅ N5.1 cerrado y excedido — N5.2 aparcado | — |
+| N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | ⏳ **Pendiente — siguiente bloque** | — |
+| N7 | Materiales-Proveedores (ficha + stock automático) | ✅ Cerrado | N2 |
+| N8 | Import masivo escalado (Recursos, Personas) | ⏳ **Pendiente, no empezado** | N2 (ya desbloqueado) |
 | N9 | Diferido (roles de usuario, cuestionario Balanç Social, todo L6) | — | revisión de contexto |
 | L6 | Diferido | — | revisión de contexto |
+| *(fuera de tabla)* | Base de competencias (prep. L6) + `CONVOCATORIA` Capa 1 | ✅ Cerrados | — |
 
-**Total estimado L0-L5: ~19-26 sesiones**, con gate humano en cada submódulo — no es una cifra para comprometerse como plazo, es una referencia de esfuerzo relativo entre fases, igual que las estimaciones del roadmap original.
-
-**Total estimado N1-N8: ~14-21 sesiones adicionales.**
+**L0-M, N1-N5, N7 cerrados y verificados en Apps Script real.** Quedan pendientes: **N6** (a continuación) y **N8**.
 
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
