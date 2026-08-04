@@ -341,8 +341,18 @@ Consultado el Balanç Social de la XES (Xarxa d'Economia Solidària de Catalunya
 - **N7.1** — Ficha de registro de Producto-Material-Proveedor. Cerrado como enriquecimiento de la Ficha de Producto existente (proveedor/precio/coste estimado por material), no como ficha aislada — decisión de diseño consistente con el resto del sistema. Commit `55130ae`.
 - **N7.2** — Recálculo automático de `MATERIAL.STOCK_ACTUAL` desde `MOVIMIENTO_MATERIAL` (`aplicarMovimientoAStock_`, `StockMaterialService.js`). Commit `e3e8f5e`.
 
-### N8 — Import masivo escalado — **PENDIENTE, no empezado**
-Ya desbloqueado (N2 está cerrado). Extender el patrón `STG_*` (L5.3, hoy solo Campaña→Tarea) a Recursos (jerarquía de profundidad variable) y Personas+`EQUIPO_MIEMBRO`. Materiales/Proveedores y las relaciones N:M quedan fuera hasta que exista una necesidad real. Sin ningún commit todavía.
+### N8 — Import masivo escalado ✅ CERRADO (2026-08-04)
+Extiende el patrón `STG_*`/dry-run/confirmación humana/`CORRELATION_ID` de L5.3 (hasta entonces solo Campaña→Tarea) a dos dominios independientes, cada uno con su propio flujo de menú (`abrirImportacionMasivaRecursosPersonas`), sin tocar el importador de campaña existente:
+- **`STG_RECURSO`** — a diferencia de la jerarquía de campaña (profundidad fija de 5 niveles), `RECURSO` es un árbol de profundidad variable (`UBICACION_ID` autorreferenciado). Se importa en dos pasadas: alta de todos los recursos sin `UBICACION_ID`, luego actualización ya con todos los IDs reales resueltos — evita exigir que cada fila padre aparezca antes que sus hijas en la hoja.
+- **`STG_PERSONA` + `STG_EQUIPO_MIEMBRO`** — mismo criterio de dos pasadas para `COORDINADOR_ID` (solo válido en filas `TIPO=Equipo`, apuntando a una fila `TIPO=Persona`; la propia regla de negocio de `Repository_InsertarRegistro.js` se aplica igual en la segunda pasada, sin duplicarla).
+
+Materiales/Proveedores y las relaciones N:M quedan fuera, como estaba previsto, hasta que exista una necesidad real.
+
+**Verificado con prueba reactiva** (`Tests_ImportacionRecursosPersonas.js`, `result=OK` en Apps Script real): dry-run, alta real de un espacio + una herramienta anidada (`UBICACION_ID` resuelto correctamente en la segunda pasada), una persona + un equipo (`COORDINADOR_ID` resuelto correctamente) y su `EQUIPO_MIEMBRO`, limpieza completa en el `finally`.
+
+**Incidente durante la verificación, corregido sin pérdida de datos**: el orden de limpieza de la prueba desactivaba primero al coordinador y después al equipo que lo referencia — `actualizarRegistroTransaccional` revalida el registro completo en cada escritura, así que "El coordinador debe estar ACTIVO=SÍ" salta aunque `COORDINADOR_ID` no cambie. Durante el diagnóstico manual se identificó mal la fila de prueba y se desactivó por error un registro real preexistente (`EQM-0007`, Encargado de Carpintería) — detectado y reactivado en el momento, verificado visible de nuevo en la ficha de Persona real. Corregido el orden de limpieza en la prueba (desactivar quien referencia antes que el referenciado) — mismo tipo de lección que ya dejó L3.1/M6 sobre revalidación completa en cada escritura.
+
+**Estimación real: 1 sesión**, dentro del rango previsto (1-2 sesiones).
 
 ### N9 — Explícitamente diferido (sin fecha, no tocar hasta que N1-N8 cierren)
 - Roles de usuario / permisos — decisión de gobernanza, no una feature de código; requiere conversación previa sobre quién puede editar qué.
@@ -385,12 +395,12 @@ No se empieza a diseñar nada de esto hasta que L0-L5 estén cerrados y haya evi
 | N5 | Eje "Cuánto" (coste de materiales; mano de obra aparcado) | ✅ N5.1 cerrado y excedido — N5.2 aparcado | — |
 | N6 | Eje "Por qué" (etiquetas de impacto + informe de evidencia) | ✅ Cerrado | — |
 | N7 | Materiales-Proveedores (ficha + stock automático) | ✅ Cerrado | N2 |
-| N8 | Import masivo escalado (Recursos, Personas) | ⏳ **Pendiente — siguiente bloque, no empezado** | N2 (ya desbloqueado) |
+| N8 | Import masivo escalado (Recursos, Personas) | ✅ Cerrado | N2 |
 | N9 | Diferido (roles de usuario, cuestionario Balanç Social, todo L6) | — | revisión de contexto |
 | L6 | Diferido | — | revisión de contexto |
 | *(fuera de tabla)* | Base de competencias (prep. L6) + `CONVOCATORIA` Capa 1 | ✅ Cerrados | — |
 
-**L0-M, N1-N7 cerrados y verificados en Apps Script real.** Queda pendiente: **N8**.
+**L0-M, N1-N8 cerrados y verificados en Apps Script real.** Queda **N9**, explícitamente diferido — no hay más bloques activos del backlog consolidado.
 
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
