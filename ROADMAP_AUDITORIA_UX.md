@@ -594,7 +594,7 @@ Hashes principales: `Formularios.js` `14e495f83f15708f86f5a05e57d46438fc81aca71f
 | Navegar | Dominio/entidad y después operación | 2520-2573 | Media-alta | Requiere identificar el dominio correcto | VERIFICADO |
 | Crear/gestionar | Tipo de operación + dominio + administración | 2576-2655 | Baja-media | Mezcla alta, edición, consulta, confirmación, reparación | VERIFICADO |
 | Formularios | Entidad y esquema de datos | ESQUEMAS_FORMULARIO_MVP | Alta técnicamente | Orden del modelo puede dominar la tarea humana | INFERENCIA estática |
-| Administración | Tecnología/estructura interna | STG_*, protección, hojas | 2647-2654 | Coherente para administrador | Fricción/riesgo para perfil operativo | VERIFICADO |
+| Administración | Tecnología/estructura interna | STG_*, protección, hojas; 2647-2654 | Coherente para administrador | Fricción/riesgo para perfil operativo | VERIFICADO |
 
 La coherencia conceptual del manual es superior a la implementación detallada: el primer nivel conserva la intención, pero niveles posteriores cambian entre dominio, entidad, operación y administración.
 
@@ -1233,6 +1233,8 @@ Dependencias inversas verificadas: producción contiene pruebas en `Repository.j
 | `src/ModalConfirmar.html` | A — Producción | operativo | — | medio | allowlist humana |
 | `src/NivelDatoService.js` | A — Producción | operativo | — | medio | allowlist humana |
 
+| Archivo | Paquete propuesto | Motivo | Dependencia cruzada | Riesgo | Decisión pendiente |
+|---|---|---|---|---|---|
 | `src/PanelCampana.html` | A — Producción | operativo | — | medio | allowlist humana |
 | `src/PanelCampanaService.js` | A — Producción | operativo | — | medio | allowlist humana |
 | `src/PanelOperativo.html` | A — Producción | operativo | — | medio | allowlist humana |
@@ -2088,6 +2090,8 @@ NEXT solicitar_gate_de_build
 ENGREMIAT_PACKAGE_END result=OK failures=0
 ```
 
+| Test | Comando | Resultado | Código | Evidencia | Cambios detectados | Estado |
+| ---- | ------- | --------- | -----: | --------- | ------------------ | ------ |
 | TEST-04 | `node tools/packager/build-packages.mjs --check --all --project-root "C:\Users\pc\Desktop\LaTroballa.audit"` | validación real fallida: 2 archivos clasificados como producción contienen marcadores detectados; solo 2/5 mixtos se notifican | 1 | 2026-08-04 23:02:13 CEST; 136 ms; salida completa debajo | ninguno: Git esperado, 4 hashes y 110 `src` intactos; solo log temporal; cero paquetes | ERR — NO_GO |
 | TEST-05 | no ejecutado | parada obligatoria tras TEST-04 | — | criterio de parada aprobado | ninguno | OMITIDO POR NO_GO |
 | TEST-06 | no ejecutado como fase independiente | parada obligatoria tras TEST-04; durante TEST-01–04 no se invocó red, navegador, autenticación, Drive, Apps Script API ni `clasp` | — | comandos registrados y salida local | ninguno | NO ALCANZADO |
@@ -2285,6 +2289,8 @@ Comandos previstos, en orden: `node --check` para los dos MJS; una ejecución de
 
 Incidencia no funcional: el wrapper de registro emitió después de ambos procesos un error PowerShell al formar la marca `NEXT` (`Where-Object Code -ne0`). No afectó a los comandos Node ni a sus códigos/salidas y no se repitieron. Se registró como WARN de trazabilidad y se corrigió únicamente la escritura del log, no código del proyecto.
 
+| Retest | Comando | Esperado | Obtenido | Código | Evidencia | Estado |
+| ------ | ------- | -------- | -------- | -----: | --------- | ------ |
 | RETEST-02 | `node tools/packager/build-packages.test.mjs` (una sola ejecución) | 53 descubiertas, 53 OK, 0 fallidas, 0 omitidas, código 0 | 53 descubiertas, 52 OK, 1 fallida, 0 omitidas | 1 | fallo 29 `llamada a suite externa no produce ERR`: `STRUCTURES_DIFFER`; salida completa debajo | ERR — NO_GO |
 | RETEST-03 | no ejecutado | `--check --all` | parada tras RETEST-02 | — | criterio obligatorio | NO ALCANZADO |
 | RETEST-04 | comparación posterior a suite | solo roadmap autorizado | árbol: únicamente roadmap; hashes y Git esperados; cero paquetes | 0 | inventario físico de 138 archivos | OK DE INTEGRIDAD, FASE DETENIDA |
@@ -2428,6 +2434,398 @@ Temporal exclusivo y seguro: `C:\Users\pc\AppData\Local\Temp\P0-RETEST02-2026080
 
 | Retest | Esperado | Obtenido | Código | Escrituras | Estado |
 | ------ | -------- | -------- | -----: | ---------- | ------ |
+| RETEST-01 — sintaxis | 2/2 OK, códigos 0 | 2/2 OK; salidas vacías; 76 ms y 58 ms | 0 / 0 | ninguna; hashes y Git intactos; cero paquetes | OK |
+| RETEST-02 — suite | 53 descubiertas/53 OK/0 fallidas/0 omitidas | 53/53/0/0; 614 ms; casos 29, 48 y 30–38, 41–53 OK | 0 | ninguna; suite limpió fixtures; hashes intactos | OK |
+
+Salida completa de la suite conservada en el log. Cierre: `NEXT solicitar_gate_de_build`; `ENGREMIAT_PACKAGE_END result=OK failures=0`.
+
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+| ------ | -------- | -------- | -----: | ---------- | ------ |
+| RETEST-03 — `--check --all` | código 0, 5 MIXED, 2 EMBEDDED, 1 runner, 0 ERR, sin warnings no previstos | código 0; 5 MIXED; **71 EMBEDDED**; 1 runner; 2 AMBIGUOUS; 0 ERR | 0 | ninguna, según comparación física posterior | ERR CONTRACTUAL — NO_GO |
+| RETEST-04 | integridad formal | no ejecutado por parada; comprobación de seguridad limitada confirma solo roadmap autorizado, hashes intactos y cero paquetes | — | ninguna inesperada | NO ALCANZADO |
+| RETEST-05 | argumentos/destinos | no ejecutado por parada | — | ninguna | NO ALCANZADO |
+| RETEST-06 | seguridad completa | no ejecutado por parada; hasta la parada no hubo red, navegador, Drive, APIs, `clasp`, procesos hijo ni fuentes ejecutadas | — | ninguna | NO ALCANZADO |
+
+Salida completa de RETEST-03 conservada en el log. Líneas contractuales coincidentes: cinco `WARN MIXED_ARCHITECTURE` (`Formularios.js`, `Ids.js`, `PedidoRecepcion.js`, `Repository.js`, `Validation.js`); un `WARN APPROVED_SUITE_RUNNER src/Código.js line=5`; cero `ERR`; `OK validacion_estatica packages=A,B,C`; cierre `result=OK mode=check`.
+
+Diferencias bloqueantes:
+
+- esperado: dos líneas `WARN EMBEDDED_TEST_CODE`, una por cada archivo afectado; obtenido: 71 líneas, seis declaraciones de `Ids.js` y 65 de `Repository.js`;
+- no previstas: `WARN AMBIGUOUS_TEST_ANALYSIS src/DesviacionService.js line=904 ... UNTERMINATED_SINGLE_STRING` y `src/ReportService.js line=427 ... UNTERMINATED_DOUBLE_STRING`;
+- la advertencia autorreferencial del roadmap permanece prevista por el contrato histórico y no es la causa del NO_GO.
+
+Aunque el proceso devolvió 0 y no emitió ERR, el recuento de advertencias y las dos ambigüedades incumplen el resultado obligatorio. Se aplicó parada inmediata: no se ejecutaron argumentos ni pasos posteriores, no se reintentó y no se modificó código.
+
+### Integridad, temporal y resultado
+
+La comprobación de seguridad posterior a la parada comparó el inventario de 138 archivos: solo el roadmap cambió por documentación autorizada. Los 110 hashes de `src`, detector, suite, matriz y README permanecen intactos; Git coincide; no existen paquetes A/B/C, `packages`, `dist` o `build`. El temporal contiene únicamente el log completo y `project-before.csv`; se conserva por NO_GO.
+
+Resultado P0-RETEST02: **NO_GO**. Evidencia válida: sintaxis 2/2 OK, suite 53/53 OK y `--check` sin ERR/código 0/sin escritura. Evidencia bloqueante: salida de warnings distinta del contrato. No se declara `--check OK` contractual ni `ARGUMENTOS Y DESTINOS OK`. Estados: **NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO operativo vigente**.
+
+Gate humano pendiente: **P0-FIX04 — corrección estática separada para agregar `EMBEDDED_TEST_CODE` por archivo —con detalle de declaraciones sin multiplicar la advertencia contractual— y diagnosticar las dos ambigüedades léxicas**. P0-BUILD01 continúa bloqueado.
+
+## P0-FIX04 — Consolidación de advertencias y corrección léxica
+
+### Baseline y evidencia de P0-RETEST02
+
+Gate P0-RETEST02 confirmado NO_GO. Autorizados únicamente detector, suite, README y este roadmap; prohibidos `src`, matriz, Node, pruebas, `--check`, build, dependencias, red/`clasp`, commit y P0-BUILD01.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; Git esperado. Detector `b6aa3708056748c8c081c4eed217694a2c8eb31c6a2b3d76a6edd6d9b98b8630`; suite `973d03e9c810fa4a601f3f48ca0d672a018668529bd5cca5f98bf86f2b45ce74`; README `12c024c76c4c06149c334f26febec5c79f6996fc65525966623a7afee59b63e6`; matriz intacta `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap inicial `08f55ef73e0038f2da6676a5075795d8a8bbaab78a132df4fb166d9e7dac44b2`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; 110 `src` sin divergencias. Log P0-RETEST02 conservado: 14.617 bytes, `ad3d624d2105db2c1548f1d30c9e875440b52528238b1cbff0d6951840eefac9`.
+
+Las 71 líneas públicas provenían de iterar cada declaración y emitir un WARN individual, pese a que el contrato exige una línea pública por archivo.
+
+| Archivo | Coincidencias | Tipos | Líneas | WARN anteriores |
+|---|---:|---|---|---:|
+| `src/Ids.js` | 6 | declaración | 152, 284, 341, 391, 466, 491 | 6 |
+| `src/Repository.js` | 65 | declaración | 302, 371, 420, 469, 522, 570, 622, 676, 727, 778, 830, 885, 963, 1038, 1127, 1185, 1258, 1332, 1406, 1461, 1566, 1626, 1733, 1794, 1873, 1901, 2012, 2119, 2226, 2318, 2464, 2553, 2653, 2742, 2790, 2871, 3089, 3124, 3446, 3688, 3930, 4242, 4347, 4559, 4820, 4894, 4951, 5059, 5234, 5409, 5476, 5654, 5832, 6015, 6197, 6383, 6563, 6887, 7054, 7213, 7381, 7587, 7826, 8026, 8335 | 65 |
+
+Todas las coincidencias son declaraciones con nombres del vocabulario de prueba; no se ocultaron para reducir el recuento. Causa raíz: el detalle interno y el protocolo público compartían el mismo bucle de emisión.
+
+### Diagnóstico de ambigüedades
+
+| Archivo | Inicio real | Fragmento mínimo | Estado previo | Carácter interpretado | Construcción real | Causa |
+|---|---:|---|---|---|---|---|
+| `DesviacionService.js` | 781 | `.replace(/"/g, '""')` | código, después de `(` | `"` tomado como inicio de string doble | regex literal `/"/g` | el scanner no reconocía regex; el estado erróneo acabó reportado al EOF como línea 904 |
+| `ReportService.js` | 313 | `.replace(/"/g, '""')` | código, después de `(` | `"` tomado como inicio de string doble | regex literal `/"/g` | misma causa; el estado erróneo acabó reportado al EOF como línea 427 |
+
+Clasificación de ambos: **FALSE_AMBIGUITY_REGEX_LITERAL**. Los literales están cerrados, tienen flag `g` y aparecen en contexto conservador de inicio de expresión. No existe error real de sintaxis deducible y no se modifica `src`.
+
+### Cambios del detector
+
+`maskNonCode` reconoce ahora regex después de contextos conservadores: inicio, `(`, `[`, `{`, coma, `=`, `:`, `!`, `?`, `;`, `return`, `case` y `=>`. Enmascara escapes, clases, barras/comillas internas y flags preservando líneas. Después de identificador, número, string cerrado, `)` o `]`, `/` se conserva como división. Un contexto restante genera `AMBIGUOUS_SLASH_CONTEXT`; regex, string, template o comentario de bloque sin cierre continúan advertidos. No hay excepciones por archivo ni dependencias nuevas.
+
+`validateContamination` mantiene evidencia detallada por coincidencia como objetos `path`, `line`, `kind`, `name`, `reason`, ordenados por ruta/línea/nombre. Para mixtos emite una única línea pública por archivo: `EMBEDDED_TEST_CODE path=... matches=... lines=... kinds=...`; líneas se deduplican y ordenan, tipos se deduplican. El proyecto real debe emitir exactamente dos WARN públicos, preservando las 71 evidencias. `runCheck` devuelve la evidencia estructurada y el futuro `validation-report.json` la conserva en `embeddedTestEvidence`. Las entradas se procesan por ruta para salida determinista.
+
+### Pruebas redactadas, no ejecutadas
+
+Se conservan los 53 casos y se añaden 20, numerados 54–73: consolidación de múltiples pruebas; detalle completo; líneas únicas/ordenadas; dos archivos/dos WARN; cinco mixtos; regex con comillas, `\/`, clases, barra interna y flags; división numérica/identificadores; comentario tras división; slash ambiguo; literal realmente abierto; casos reales de Desviacion/Report; determinismo con orden invertido; y recuento público real igual a dos. Total esperado: **73**. No se ejecutó ninguno.
+
+README documenta advertencia consolidada frente a evidencia, deduplicación, regex/división, ambigüedades, limitaciones y significado del recuento público. No afirma que la corrección esté probada.
+
+### Hashes, integridad y riesgos
+
+| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior |
+|---|---|---:|---|
+| `build-packages.mjs` | `b6aa3708056748c8c081c4eed217694a2c8eb31c6a2b3d76a6edd6d9b98b8630` | 30.056 | `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61` |
+| `build-packages.test.mjs` | `973d03e9c810fa4a601f3f48ca0d672a018668529bd5cca5f98bf86f2b45ce74` | 24.052 | `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7` |
+| `README.md` | `12c024c76c4c06149c334f26febec5c79f6996fc65525966623a7afee59b63e6` | 10.950 | `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d` |
+| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
+
+Riesgos/limitaciones: no es parser completo; flags desconocidos o gramática contextual compleja requieren revisión; `}` y otros contextos no concluyentes generan warning deliberado; templates se ignoran enteros; comportamiento y sintaxis quedan pendientes de retest. Sin imports nuevos, red, procesos hijo, evaluación o ejecución de fuentes.
+
+Resultado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO — NO_GO vigente**. Gate solicitado: **P0-RETEST03 — sintaxis, suite ampliada, `--check` y validaciones de argumentos, sin construir paquetes**. P0-BUILD01 continúa bloqueado.
+
+## P0-RETEST03 — Retest del contrato corregido
+
+### Autorización y baseline previo
+
+Gate P0-FIX04 aprobado estáticamente. Autorizados Node local, una ejecución de la suite, `--check`, combinaciones inválidas, temporal/log y roadmap. Prohibidos cambios de código, construcción válida, paquetes, cambios `src`, red/Drive/API/OAuth/`clasp`, exportación, despliegue, commit y P0-BUILD01.
+
+Baseline 2026-08-05: Node v24.18.0; rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; Git esperado. Hashes P0-FIX04: detector `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61`; suite `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7`; README `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`. Manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; roadmap inicial `3bc23fe28bf27ccc1f482b14bd2f4e2f9a7afac152a4b111142098ecd35ed058`.
+
+Integridad: 110 fuentes/0 divergencias; 134 entradas/134 rutas únicas; una declaración global de `probarReporteIntegridad`; `Código.js` auxiliar/C. Recuentos 63 production, 7 test, 35 auxiliary, 24 excluded, 5 mixed; A=68, B=7, C=35, NONE=24.
+
+Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST03-20260805-070009-532ab11722ae4ddc9be39a1da41a7a05`; log `P0-RETEST03-20260805-070009.log`; inventario previo 138 archivos. Orden: sintaxis 2/2; suite una vez; `--check --all`; integridad; argumentos/destinos; seguridad. Parada ante cualquier código, recuento, warning, evidencia, hash o escritura diferente, sin reintento ni edición.
+
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+| ------ | -------- | -------- | -----: | ---------- | ------ |
+| RETEST-01 | sintaxis 2/2 OK | 2/2 OK; salidas vacías; 79 ms y 39 ms | 0 / 0 | ninguna | OK |
+| RETEST-02 | 73/73 OK, 0 fallidas/omitidas | 73 descubiertas, 72 OK, 1 fallida, 0 omitidas; 10.650 ms | 1 | ninguna; fixtures limpiados | ERR — NO_GO |
+| RETEST-03 | `--check --all` | no ejecutado por parada en suite | — | ninguna | NO ALCANZADO |
+| RETEST-04 | integridad formal | no ejecutado; comprobación de seguridad limitada confirma solo roadmap autorizado, hashes intactos y cero paquetes | — | ninguna inesperada | NO ALCANZADO |
+| RETEST-05 | argumentos/destinos | no ejecutado | — | ninguna | NO ALCANZADO |
+| RETEST-06 | seguridad completa | no ejecutado; hasta la parada no hubo red, navegador, Drive, API, `clasp`, procesos hijo ni fuentes ejecutadas | — | ninguna | NO ALCANZADO |
+
+Fallo exacto de RETEST-02: caso `20 limpieza del temporal tras fallo`; esperado fragmento `NO_SE_PUEDE_LEER`; obtenido `CONSTRUCCION_INCOMPLETA`, por lo que la suite informó `UNEXPECTED_ERROR CONSTRUCCION_INCOMPLETA`. Los casos 1–19 y 21–73 aprobaron, incluidos consolidación, detalle estructurado, regex/división, ambigüedad real y casos reales Desviacion/Report. Salida completa de los 73 resultados preservada en el log.
+
+Diagnóstico estático posterior, sin editar: P0-FIX04 añadió `validateContamination(projectRoot, map)` al inicio de `buildPackages` para generar `embeddedTestEvidence`. El fixture del caso 20 usa deliberadamente `missing.js`. Esa lectura previa lanza un error nativo dentro del `try`, que el catch traduce a `CONSTRUCCION_INCOMPLETA`, antes de alcanzar la ruta histórica que producía `NO_SE_PUEDE_LEER`. Queda pendiente decidir en gate separado si la validación debe ocurrir antes del temporal mediante error contractual de lectura o si el caso debe aceptar la nueva precedencia; no se modifica ni reintenta aquí.
+
+### Parada e integridad
+
+Se aplicó parada inmediata: no hubo `--check`, argumentos, build ni pasos posteriores. La comparación de 138 archivos muestra solo el roadmap modificado por documentación; 110 `src`, detector, suite, matriz y README conservan hashes; Git esperado; cero paquetes; cero residuos `engremiat-packager-test-*`. El temporal propio contiene únicamente log e inventario y se conserva.
+
+Resultado P0-RETEST03: **NO_GO**. Evidencia válida: sintaxis 2/2 OK y 72/73 pruebas OK. Evidencia bloqueante: caso 20/código 1. No se declaran `--check OK`, contrato WARN ni argumentos/destinos verificados. Estados: **NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO operativo vigente**.
+
+Gate humano pendiente: **P0-FIX05 — corrección estática separada de la precedencia de validación/lectura y limpieza del caso 20, preservando `embeddedTestEvidence` y cleanup seguro**. P0-BUILD01 continúa bloqueado.
+
+## P0-FIX05 — Precedencia de validación y cleanup
+
+### Baseline y alcance
+
+Gate P0-RETEST03 confirmado como `NO_GO`. Fase limitada a corrección estática de `tools/packager/build-packages.mjs`, su suite, README y este roadmap. No se ejecutaron Node, pruebas, `--check`, builds, fuentes, red, `clasp` ni commits; no se modificaron `src` ni `package-map.json`.
+
+Baseline verificado: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector 30.056 bytes, `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61`; suite 24.052 bytes, `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7`; README 10.950 bytes, `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d`; matriz 32.504 bytes, `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap 283.195 bytes, `e47554cce4a8c8e2441a91033e5fcf38f5e95bfc9e9b8d089386bca4b473750f`; manual 11.491 bytes, `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`.
+
+El log preservado de P0-RETEST03 existe en `C:\Users\pc\AppData\Local\Temp\P0-RETEST03-20260805-070009-532ab11722ae4ddc9be39a1da41a7a05\P0-RETEST03-20260805-070009.log`: 4.762 bytes, SHA-256 `1dbe8dac12dfa7c49f79f2eb870e5607e610ee38d705b0dd62f16bf879e22fa4`. Registró 73 casos descubiertos, 72 correctos y un fallo: caso 20 esperaba `NO_SE_PUEDE_LEER` y obtuvo `CONSTRUCCION_INCOMPLETA`.
+
+### Trazado anterior y causa raíz
+
+| Orden anterior | Función | Acción | Archivo | Error posible | Traducción |
+|---:|---|---|---|---|---|
+| 1 | `buildPackages` | valida destino | salida | destino inseguro | error contractual |
+| 2 | `validateContamination` | abre directamente cada JS de A/C | `missing.js` | `ENOENT` nativo | todavía no contractual |
+| 3 | detector | genera `embeddedTestEvidence` | contenido leído directamente | análisis léxico | no alcanzado en caso 20 |
+| 4 | `mkdtempSync` | crea temporal | temporal hermano | error de escritura | no alcanzado |
+| 5 | `catch` | ejecuta cleanup | `tempDir=null` | operación vacía | ninguno |
+| 6 | `catch` | envuelve error no contractual | error `ENOENT` | pérdida de precedencia | `CONSTRUCCION_INCOMPLETA` |
+
+Causa raíz verificada: `validateContamination` recibía raíz y matriz y ejecutaba su propia lectura antes de `packageEntries`, que era la ruta que aplicaba `assertRegularNoSymlink` y traducía la ausencia a `NO_SE_PUEDE_LEER`. El `catch` de `buildPackages` convertía el `ENOENT` prematuro en `CONSTRUCCION_INCOMPLETA`. Además, una excepción de cleanup podía sustituir el error principal.
+
+### Orden corregido y cambios
+
+El flujo queda: argumentos; matriz/rutas; ruta segura; rechazo de symlink; existencia/lectura; tamaño y SHA-256; comparación; registro validado en memoria; detector sobre ese contenido; evidencia estructurada; paquete; y solo entonces temporal, copia desde el buffer validado, verificación y publicación.
+
+`validateUniverse` construye registros ordenados con `path`, `absolutePath`, metadatos de matriz, `size`, `sha256`, `buffer` y `content` solo para JavaScript. Existe una única llamada de lectura de cada fuente dentro de esa validación. `validateContamination` acepta los registros; el flujo de check/build le entrega contenido validado y no rutas. Hash, detector, copia y `embeddedTestEvidence` usan el mismo buffer. Buffer/contenido no se serializan en manifiestos, reportes ni logs.
+
+`buildPackages` valida antes de crear el temporal. Ausencia/ilegibilidad conserva `NO_SE_PUEDE_LEER`; hash distinto conserva `HASH_DIVERGENTE`; contaminación posterior se identifica como `CONTAMINACION`; errores propios de construcción quedan como `CONSTRUCCION_INCOMPLETA`. `preservePrimaryError` protege el error inicial y adjunta un eventual fallo de cleanup como `details.cleanupError`. `safeCleanupTemp` continúa restringido al temporal hermano con prefijo propio. No se tocaron las reglas de regex/división, consolidación, runners o detección.
+
+### Pruebas redactadas, no ejecutadas
+
+Se conservan los casos 1–73 y se añaden 74–89: ausencia; lectura única/registro coherente; evidencia sin relectura; hash y detector sobre el mismo contenido; cleanup vacío antes del temporal; eliminación exclusiva del temporal propio; conservación del error ante fallo de cleanup; evidencia secundaria; precedencia de hash; rechazo de symlink previo a lectura; contaminación posterior a hash correcto; caso 20 sin renombrar y con `NO_SE_PUEDE_LEER`; 71 evidencias; dos WARN consolidados; determinismo del error; y ausencia de temporal en check. Total esperado: **89**. No se ejecutó ningún caso.
+
+### Hashes, integridad, riesgos y reversión
+
+| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
+|---|---|---:|---|
+| `build-packages.mjs` | `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61` | 31.863 | `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3` |
+| `build-packages.test.mjs` | `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7` | 31.366 | `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507` |
+| `README.md` | `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d` | 12.654 | `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85` |
+| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
+
+Integridad estática posterior: 110 archivos `src`, 0 divergencias respecto de la matriz; matriz y manual intactos; log previo conservado. El estado Git preexistente de `src/IntegrityService.js`, `src/Tests_IntegridadGapReglasFuncional.js` y el manual no fue provocado por P0-FIX05.
+
+Riesgos y límites: interfaz y pruebas aún no han sido interpretadas por Node; no se ha demostrado el recuento de 71 evidencias ni los dos WARN mediante ejecución; el buffer aumenta memoria proporcionalmente al universo; las comprobaciones multiplataforma, permisos, symlinks y fallos reales de cleanup quedan pendientes. Reversión autorizable: retirar exclusivamente los cambios P0-FIX05 de los tres archivos de tooling y esta sección, sin `reset`, checkout destructivo ni cambios en fuentes.
+
+Resultado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
+
+Gate siguiente solicitado: **P0-RETEST04 — Sintaxis, suite ampliada, `--check`, argumentos y seguridad, sin construir paquetes**. P0-BUILD01 continúa bloqueado.
+
+## P0-RETEST04 — Retest integral previo a construcción
+
+### Baseline, autorización y criterios de parada
+
+Gate P0-FIX05 aprobado estáticamente. Se autoriza Node local, una ejecución de la suite, exclusivamente `--check`, argumentos y destinos inválidos, un temporal/log exclusivo y documentación. Continúan prohibidos cualquier build válido, paquetes, cambios de código o `src`, red/Drive/API/OAuth/`clasp`, exportación, despliegue, commit y P0-BUILD01.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 289.594 bytes y SHA-256 `2c53b69c55b36bdc63677dd36d6dde682d5cff552e37ef4de2f0d4d8dd42fb50`. Detector `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`.
+
+Verificado: 134 entradas y rutas únicas; categorías 63/7/35/24/5; paquetes A=68, B=7, C=35, NONE=24; 21 HTML en A; `src/appsscript.json` en A; 110 fuentes y cero divergencias; una declaración de `probarReporteIntegridad`; `src/Código.js` en C/auxiliary. Estado Git previo esperado, con cambios anteriores en roadmap, `IntegrityService.js`, `Tests_IntegridadGapReglasFuncional.js`, manual y tooling.
+
+Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST04-20260805-071848-a997c8e6ca6c4e06bd359e7369640e98`. Log: `P0-RETEST04-20260805-071848.log`.
+
+Orden autorizado: sintaxis 2/2; suite una vez; `--check --all`; integridad; argumentos/destinos; seguridad. Ante cualquier fallo se detendrá sin reintento, sin edición de código y sin continuar a pruebas posteriores; se preservarán temporal y log.
+
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+| ------ | -------- | -------- | -----: | ---------- | ------ |
+| RETEST-01 Sintaxis | 2/2 OK | 2/2 OK | 0, 0 | ninguna en proyecto | OK |
+| RETEST-02 Suite | 89/89, 0 fallos | 89/89, 0 fallos, 0 omitidas | 0 | fixtures solo en temporales propios de la suite | OK |
+| RETEST-03 `--check --all` | WARN 5/2/1, evidencia 71, ERR 0 | MIXED=5, EMBEDDED=2, RUNNER=1, Ids=6, Repository=65, total=71, ambigüedad=0, ERR=0 | 0 | ninguna en proyecto | OK |
+| RETEST-04 Integridad | cero cambios/paquetes | hashes fijos y 110 fuentes intactos; 0 temporales de build; 0 paquetes | 0 | solo roadmap y log autorizados | OK |
+| RETEST-05 Argumentos/destinos | rechazos contractuales | 12/12 combinaciones con códigos esperados; symlink condicional no disponible por privilegios | 0/2/4 esperados | fixtures controlados solo en temporal | OK con WARN |
+| RETEST-06 Seguridad | sin efectos externos ni paquetes | sin red, navegador, Drive, API, OAuth, `clasp`, procesos hijo, ejecución de fuentes o paquetes | 0 | ninguna fuera del temporal/roadmap | OK |
+
+### Resultados y evidencia
+
+RETEST-01 comprobó sintaxis de los dos módulos: 2/2 OK, ambos código 0. RETEST-02 ejecutó la suite una única vez: 89 descubiertas, 89 aprobadas, 0 fallidas, 0 omitidas, código 0. El caso 20 conservó nombre y expectativa `NO_SE_PUEDE_LEER`; los casos 74–89 verificaron lectura única, evidencia en memoria, mismo contenido para hash/detector, precedencia de hash, symlink previo a lectura mediante inspección contractual, cleanup vacío/propio, error original, detalle secundario, 71 evidencias, dos WARN y determinismo. Los casos heredados de regex/división también aprobaron.
+
+RETEST-03 ejecutó una sola vez `--check --all` contra la raíz autorizada. Resultado: código 0; `ENGREMIAT_PACKAGE_BEGIN`, `OK`, `WARN`, `NEXT` y `ENGREMIAT_PACKAGE_END`; ningún `ERR`. Recuentos públicos: cinco `MIXED_ARCHITECTURE`, dos `EMBEDDED_TEST_CODE`, un `APPROVED_SUITE_RUNNER`, cero `AMBIGUOUS_*` y cero `UNTERMINATED_*`. Evidencia: `Ids.js` 6, `Repository.js` 65, total 71, con líneas/tipos consolidados, únicos y ordenados. Se conservó aparte el WARN documentado `BASELINE_AUTORREFERENCIAL_NO_COMPARABLE` del roadmap. Universo: 134/134; categorías y paquetes conformes; 21 HTML en A; manifiesto Apps Script en A; cero desconocidos, ausentes o hashes divergentes; cero pruebas/runners indebidos en A.
+
+RETEST-04 y la verificación final no localizaron cambios en detector, suite, README, matriz, manual ni 110 fuentes respecto del baseline; no aparecieron temporales de build ni paquetes. Las únicas escrituras fueron esta documentación y el log/fixtures dentro del temporal exclusivo.
+
+RETEST-05: sin argumentos mostró ayuda con código 0. Opción desconocida, build sin salida, build sin selección, `--package` con `--all`, paquete inválido y output sin build devolvieron código 2. Proyecto, `src`, tooling, raíz de unidad y destino preexistente/no vacío devolvieron código 4. Ninguna combinación alcanzó un build válido. La creación del symlink controlado fue omitida con `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED` porque Windows exigió privilegios administrativos; no se elevó permiso.
+
+RETEST-06: ninguna operación de red, navegador, Drive, API, OAuth, `clasp`, proceso hijo, fuente Apps Script, borrado externo, exportación o despliegue. Cero paquetes construidos.
+
+### Limitaciones, resultado y gate
+
+Limitación residual: el rechazo de un symlink real no se ejercitó dinámicamente por falta de privilegios; sí aprobaron el caso 83 y la precedencia estática de `assertRegularNoSymlink`. El roadmap es autorreferencial y mantiene su advertencia de baseline. No se probó ninguna construcción válida, publicación, reproducibilidad de paquetes ni despliegue.
+
+Resultado: **VERIFICADO LOCALMENTE — 89/89 OK — `--check` OK — CONTRATO DE WARN OK — ARGUMENTOS Y DESTINOS OK — NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO vigente hasta P0-BUILD01**.
+
+Gate siguiente solicitado, sin ejecutarlo: **P0-BUILD01 — Construcción repetida de A, B y C en temporales, inspección de manifiestos, comparación reproducible y destrucción controlada, sin red ni publicación**.
+
+## P0-BUILD01 — Construcción reproducible en temporales
+
+### Autorización, baseline y preparación
+
+Gate P0-RETEST04 aprobado. Se autorizan dos construcciones locales `--build --all` en destinos temporales independientes, inspección/comparación, log, documentación y eliminación exclusiva de paquetes propios. Continúan prohibidos red, Drive/API/OAuth/`clasp`, publicación, exportación externa, despliegue, cambios en empaquetador o `src`, elevación, symlinks y commit. Se conserva `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED`.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 295.655 bytes, SHA-256 `816a3e0d4f0169ad75fd3ccc2c561ba521319c277f429753445ff089a9d9d470`; detector `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; log P0-RETEST04 `47d834630eacdc76f6de5787ff1116531252dd875c573e0b4156e96fd450a89c`. Verificados 110 archivos `src`, cero divergencias, 134 rutas únicas y recuentos A=68, B=7, C=35, NONE=24.
+
+El check previo único devolvió código 0, `MIXED_ARCHITECTURE=5`, `EMBEDDED_TEST_CODE=2`, `APPROVED_SUITE_RUNNER=1`, `ERR=0`. Las 89/89 pruebas permanecen documentadas por P0-RETEST04 y no se repiten.
+
+Raíz temporal exclusiva: `C:\Users\pc\AppData\Local\Temp\P0-BUILD01-20260805-072914-d7fc1919b62c4b28b8ee08b3d3206f50`. Destinos inicialmente inexistentes: `run-01` y `run-02`, hijos directos de esa raíz, fuera del proyecto y de cualquier raíz de unidad/zona prohibida. Comandos previstos: `node tools/packager/build-packages.mjs --build --all --output <raíz>\run-01` y posteriormente el equivalente para `run-02`.
+
+Política: detener ante cualquier código no cero, `ERR`, divergencia contractual, escritura externa o diferencia canónica; no ejecutar BUILD-02 si RUN-01 falla. Limpiar solo los dos hijos absolutos comprobados, nunca proyecto, `src`, tooling o rutas dudosas; conservar el log. Publicación y despliegue mantienen `NO_GO`.
+
+| Fase | Acción | Resultado | Código | Evidencia | Estado |
+| ---- | ------ | --------- | -----: | --------- | ------ |
+| Gate 0 | Baseline y `--check --all` | hashes/universo conformes; WARN 5/2/1; ERR 0 | 0 | log temporal | OK |
+| BUILD-01 | Construir A/B/C en `run-01` | A=68, B=7, C=35; cero ERR | 0 | salida completa y paquetes preservados | OK |
+| Inspección RUN-01 | Contenido, manifiestos e informes | copias/hashes/recuentos conformes; orden A no coincide con orden ordinal comprobado | 1 (inspección) | inversiones exactas en manifiesto A | NO_GO |
+
+### Resultado parcial de RUN-01 y criterio de parada
+
+La primera construcción se ejecutó una sola vez entre `2026-08-05T07:30:03.8132284+02:00` y `2026-08-05T07:30:06.7159314+02:00`. El empaquetador devolvió código 0, sin `ERR`, y creó únicamente A, B, C y `packager.log` dentro de `run-01`.
+
+Inventario verificado antes de la parada:
+
+| Paquete | Fuentes | Hash agregado | Estado | Copias divergentes | Evidencia |
+|---|---:|---|---|---:|---:|
+| A | 68 | `538d7da4cb4b476e34303edbb76183cdf76283b51bc737d5824ffcca1c730005` | `PRODUCTION_WITH_DECLARED_MIXED_DEBT` | 0 | 71 |
+| B | 7 | `5230de196415b9f86390a15846e24403130b5e70aa1ee646a78bee05997b5049` | `TESTS_DEPEND_ON_VERSIONED_PACKAGE_A` | 0 | 71 |
+| C | 35 | `67e33d61348f865fbcd583bb552d214ac84fa24b53850d58cd5e7e0e83e711f7` | `AUXILIARY_EXECUTION_REQUIRES_HUMAN_AUTHORIZATION` | 0 | 71 |
+
+A contiene 21 HTML, `src/appsscript.json`, cero `Tests_*`, cero `Código.js`, cero declaración `probarReporteIntegridad` en `IntegrityService.js` y deuda mixta declarada de cinco archivos. No se describe como producción limpia. B contiene siete `Tests_*`, ambos repositorios independientes y una declaración de `probarReporteIntegridad`; su dependencia referencia exactamente el hash agregado de A. C contiene 35 auxiliares y `Código.js`. Los tres informes son JSON legible, `ok=true`, conservan 71 evidencias (Ids=6, Repository=65); los manifiestos declaran esquema 1, paquete, commit, rama, categorías, hashes, cinco deudas mixtas y 24 exclusiones. No se localizaron copias desconocidas, divergencias byte a byte, barras invertidas en rutas, credenciales ni contenido fuente en metadatos.
+
+La inspección exigía lista ordenada. El manifiesto A no coincide con el orden ordinal de ruta: `src/appsscript.json` precede a `src/AvanceYSecuencia.js`, y `src/Repository_InsertarRegistro.js` precede a `src/Repository.js`. El orden observado es compatible con el uso actual de `localeCompare`, pero no se puede reformular como orden canónico ordinal ni asumir independiente de configuración regional. La comprobación clasificó la inspección con código 1.
+
+Se aplica el criterio de parada: **NO_GO**. BUILD-02 no se ejecutó; no existe comparación 2/2; no se limpió `run-01`; `run-02` permanece inexistente. El temporal y el log quedan preservados para revisión. No se modificó código ni `src`, y no se publicó, exportó o desplegó nada. Se conserva `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED`.
+
+Siguiente decisión humana propuesta: autorizar una corrección estática separada que defina orden canónico independiente de locale, o aceptar explícitamente `localeCompare` como contrato y autorizar una nueva inspección desde cero. P0-CLOSE01 no se inicia y permanece `NO_GO para publicación, clasp push y despliegue`.
+
+## P0-FIX06 — Orden canónico UTF-8 independiente del locale
+
+### Decisión, baseline y evidencia preservada
+
+Decisión humana: `localeCompare` no se acepta como contrato. El identificador obligatorio es `UTF8_NFC_BYTEWISE_V1`. Fase limitada a cambios estáticos en empaquetador, suite, README y roadmap; sin Node, pruebas, `--check`, builds, red, `clasp`, commit ni cambios en fuentes/matriz.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector 31.863 bytes, `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite 31.366 bytes, `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README 12.654 bytes, `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap 301.227 bytes, `9562349262227d8398499e0ca07fd0d7a576cbf57fd05fdbc9ad2b1e85e2f1b8`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; 110 fuentes, cero divergencias.
+
+RUN-01 anterior permanece en `C:\Users\pc\AppData\Local\Temp\P0-BUILD01-20260805-072914-d7fc1919b62c4b28b8ee08b3d3206f50\run-01`: 117 archivos y nueve directorios. Log: 5.757 bytes, `3bcec3d4151e311656b515b824f7d1c5c1ec8bcfa69d6c497b7c7d9f85b0ca88`. Manifiestos: A `aa6d78eae6a1407639540ed59b3c9e29923987c48bf2449e80c0eb4613dd6d50`; B `08a064e4e1aeb970110fcf6f9d890522a540a8ae19e9b2af6616b3d1fa38a22e`; C `1c7f16207489eb1550ce37749da909046417a66944f6294f619ae6a6c7bf1a12`. Sus hashes agregados antiguos A/B/C (`538d…`, `5230…`, `67e3…`) son evidencia del algoritmo anterior y no baseline del nuevo. RUN-01 es evidencia lógica de solo lectura, no se modifica ni reutiliza.
+
+### Inventario de ordenamientos
+
+| Ubicación/colección | Orden anterior | Hash | Salida | Cambio |
+|---|---|---:|---:|---|
+| listas de tests/mixtos en matriz | `.sort()` implícito | no | validación | comparador canónico |
+| enumeración `readdirSync` y árbol | `localeCompare`/`.sort()` | indirecto | sí | comparador canónico |
+| matriz y archivos validados | `localeCompare(path)` | sí | sí | comparador canónico |
+| marcadores y nombres técnicos | línea + `localeCompare` | no | evidencia | línea numérica + bytewise |
+| entradas A/C del detector | `localeCompare(path)` | no | warnings/evidencia | comparador canónico |
+| tipos consolidados | `.sort()` implícito | no | warning | bytewise; líneas siguen numéricas |
+| evidencia estructurada | ruta + línea + nombre con locale | no | informe | ruta/nombre bytewise, línea numérica |
+| concatenación del hash | `localeCompare(path)` | sí | manifiesto | NFC y bytes UTF-8 |
+| selección A/B/C | `localeCompare(path)` | sí | paquetes | comparador canónico |
+| deuda mixta/exclusiones/entradas | matriz o `.sort()` implícito | no/sí | manifiesto | rutas NFC bytewise |
+| claves de JSON estable | `.sort()` implícito | no | ficheros técnicos | comparador bytewise |
+| paquetes solicitados | orden de entrada | no | build/log | comparador canónico |
+
+Sets y Maps de validación conservan función de pertenencia/recuento; cuando su contenido se publica se materializa y ordena explícitamente. Dependencias contienen una única referencia A y no presentan ambigüedad de orden. No queda `localeCompare` en el empaquetador.
+
+### Algoritmo, colisiones y aplicación
+
+`canonicalPath` valida ruta relativa, convierte separadores a `/` y normaliza Unicode NFC. `compareCanonicalPaths` codifica ambas rutas en UTF-8 y usa `Buffer.compare`, sin locale, case folding o dependencia del filesystem. Los ejemplos quedan: `AvanceYSecuencia.js` antes de `appsscript.json`; `Repository.js` antes de `Repository_InsertarRegistro.js`; mayúsculas antes de minúsculas según bytes; `Código.js` se conserva NFC.
+
+`validateCanonicalPathSet` diferencia: duplicado original exacto → `DUPLICATE_CANONICAL_PATH`; originales distintos con la misma NFC → `CANONICAL_PATH_COLLISION`; diferencia solo por casing → `CASE_INSENSITIVE_PATH_COLLISION`. La última se emite como WARN y añade bloqueo `CANONICAL_PATH_REVIEW_REQUIRED`; ninguna ruta se renombra o pliega automáticamente.
+
+Matriz, escaneo, archivos validados, paquetes, manifiestos, deudas, exclusiones, warnings, evidencia, JSON técnico y hash agregado utilizan el comparador común. Las líneas mantienen orden numérico. El hash normaliza y ordena antes de concatenar `path + LF + sha256 + LF + size + LF`. El manifiesto añade `canonicalSort` con ID, NFC, UTF-8, comparación unsigned bytewise y `localeDependent:false`. Metadatos temporales/fecha/ejecución continúan fuera del hash.
+
+### Pruebas redactadas, no ejecutadas
+
+Se conservan 89 casos y se añaden 24 (90–113): los dos pares de RUN-01; casing; `Código.js`; compuesto/descompuesto; colisiones NFC, exacta y case-insensitive; independencia de locales español/inglés, entrada y `readdir`; manifiestos A/B/C; informe y evidencia; estabilidad/cambios del hash; metadatos no canónicos; declaración del algoritmo; ausencia de `localeCompare`; y uso de `Buffer.compare`. Total previsto: **113**. No se ejecutaron.
+
+### Hashes, integridad, reversión y gate
+
+| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
+|---|---|---:|---|
+| `build-packages.mjs` | `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3` | 34.819 | `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225` |
+| `build-packages.test.mjs` | `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507` | 37.367 | `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150` |
+| `README.md` | `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85` | 14.526 | `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8` |
+| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
+
+Integridad estática: matriz, manual y 110 fuentes intactos; RUN-01 preservado; sin dependencias, red o procesos hijo nuevos; `git diff --check` correcto. Riesgo residual: sintaxis, 113 casos, colisiones y hashes nuevos no están ejecutados. Los hashes viejos son deliberadamente incompatibles.
+
+Reversión autorizable: retirar exclusivamente los cambios P0-FIX06 de los tres archivos de tooling y esta sección, sin tocar RUN-01, fuentes o matriz.
+
+Resultado: **ORDEN CORREGIDO ESTÁTICAMENTE — RUN-01 ANTERIOR PRESERVADO — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
+
+Gate solicitado: **P0-RETEST05 — Sintaxis, suite ampliada y `--check` con verificación explícita del orden canónico, sin construir paquetes**. No se autoriza todavía una nueva construcción.
+
+## P0-RETEST05 — Verificación del orden canónico
+
+### Baseline, temporal y criterios de parada
+
+Gate P0-FIX06 aprobado estáticamente. Autorizados Node local, dos comprobaciones de sintaxis, una ejecución de 113 pruebas, exclusivamente `--check`, cálculo interno de orden/hashes sin build, fixtures/log temporal y roadmap. Prohibidos `--build`, paquetes, cambios de código o `src`, modificación/eliminación de RUN-01, red/Drive/API/OAuth/`clasp` y commit.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 307.868 bytes, `6ec3f7a0c733817c0bfeeeb17fe68923615d46f77d7bd8506adb46d267c541b6`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`. Universo 134/134; 110 fuentes, cero divergencias. Empaquetador: cero `localeCompare`, contrato `UTF8_NFC_BYTEWISE_V1`, NFC y `Buffer.compare` presentes.
+
+RUN-01 anterior: 117 archivos y cero divergencias en log/manifiestos; no se reutiliza. Temporal nuevo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST05-20260805-074350-ce275dd474994ee19f3b7962d74ee950`; log `P0-RETEST05-20260805-074350.log`.
+
+Orden: sintaxis; suite una vez; `--check --all`; cálculo en memoria de manifiestos/orden/hashes; integridad y seguridad. Ante cualquier fallo: parada sin reintento, edición ni construcción; conservación del temporal/log; P0-BUILD02 bloqueado.
+
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+| ------ | -------- | -------- | -----: | ---------- | ------ |
+| RETEST-02 Suite | 113/113 OK | 110 OK, 3 fallos, 0 omitidas | 1 | fixtures solo en temporales propios | NO_GO |
+
+### Fallo y parada
+
+La suite se ejecutó exactamente una vez. Descubrió 113 casos; 110 aprobaron y fallaron 93, 94 y 95; código final 1. No se reintentó.
+
+| Caso | Esperado | Obtenido | Diagnóstico estático posterior |
+|---:|---|---|---|
+| 93 | descompuesto `Co` + U+0301 → compuesto `Código.js` | esperado literal `CÃ³digo.js`; actual `Código.js` | el algoritmo NFC produjo el valor correcto, pero el literal compuesto del fixture está mojibake |
+| 94 | compuesto y descompuesto equivalentes | lados `Código.js` y `CÃ³digo.js` | misma inconsistencia de codificación del fixture |
+| 95 | `CANONICAL_PATH_COLLISION` | ninguna colisión | las dos entradas del fixture no normalizan a la misma cadena porque una contiene mojibake |
+
+Los casos 90–92 y 96–113 aprobaron, incluidos los dos pares de orden de RUN-01, casing, colisión exacta, colisión case-insensitive, independencia de entrada/readdir, manifiestos A/B/C, evidencia, hash agregado, metadatos, declaración `UTF8_NFC_BYTEWISE_V1`, ausencia de `localeCompare` y `Buffer.compare`. No se reformula el resultado como verificación completa.
+
+Se aplica el criterio de parada: RETEST-03 `--check --all`, orden calculado, hashes agregados y fases 04–07 no se ejecutaron. No se modificó código, no se construyeron paquetes y RUN-01 permanece preservado. El temporal/log P0-RETEST05 se conserva. `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED` continúa vigente.
+
+Resultado: **NO_GO — 110/113 OK — FIXTURES UNICODE 93–95 INCONSISTENTES — NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO**.
+
+Siguiente decisión humana propuesta: autorizar **P0-FIX07 — corrección estática limitada de los tres fixtures Unicode y su documentación, sin modificar el algoritmo**; P0-BUILD02 no se autoriza.
+
+## P0-FIX07 — Corrección de fixtures Unicode
+
+### Baseline y evidencia
+
+Gate P0-RETEST05 confirmado `NO_GO`. Autorización limitada a suite, README solo si contenía mojibake, y roadmap. No se ejecutaron Node, pruebas, `--check` o builds; no se modificaron algoritmo, empaquetador, matriz, fuentes, RUN-01 ni README.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite 37.367 bytes, `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; roadmap 311.594 bytes, `b78c1ef1933694d8110124d3297fdd61baf2ffbafb2b5c26d4fe7a207e1a5aa7`; 110 fuentes, cero divergencias. RUN-01 conserva 117 archivos y cero divergencias. Log P0-RETEST05: 7.194 bytes, `1798cf0e7fa2934648cdcc1b3145f731aec92a6ecf14e9970e0403253ce48dbe`.
+
+### Code points anteriores y causa
+
+| Caso | Literal actual anterior | Code points sensibles | Valor semántico previsto | Estado |
+|---:|---|---|---|---|
+| 93 | `src/CÃ³digo.js` | `C U+0043`, `Ã U+00C3`, `³ U+00B3` | `src/Código.js`, con `ó U+00F3` | mojibake verificado |
+| 94 | compuesto `src/CÃ³digo.js`; descompuesto `src/Co\u0301digo.js` | compuesto `U+00C3 U+00B3`; descompuesto `U+006F U+0301` | dos representaciones del mismo valor | fixture inconsistente |
+| 95 | mismas dos rutas | no convergían tras NFC | dos originales distintos con NFC igual | colisión no activada |
+
+Secuencia completa prevista para caso 93: `U+0073 U+0072 U+0063 U+002F U+0043 U+00F3 U+0064 U+0069 U+0067 U+006F U+002E U+006A U+0073`. La causa fue doble recodificación UTF-8/representación, no el algoritmo: el resultado real ya produjo `Código.js` correctamente.
+
+### Corrección aplicada
+
+Caso 93 usa exclusivamente `"src/C\u00F3digo.js"` y `"src/Co\u0301digo.js"`; verifica igualdad, NFC, posición bytewise antes de `src/D.js` y la lista completa de code points. Caso 94 usa compuesto `"src/Caf\u00E9.js"` y descompuesto `"src/Cafe\u0301.js"`; demuestra originales distintos, code points previos (`U+00E9` frente a `U+0065 U+0301`) e igualdad posterior a NFC. Caso 95 reutiliza esas dos entradas distintas, verifica NFC igual y espera `CANONICAL_PATH_COLLISION` sin warnings ni escrituras.
+
+El control anti-mojibake se limita al conjunto de fixtures Unicode de la suite y rechaza `\u00C3`, `\u00C2` y `\uFFFD`. El fixture técnico residual del caso 101 también usa `"C\u00F3digo.js"`. No queda la secuencia literal `CÃ³digo` en la suite. El README no contenía `Ã`, `Â` o `�`, por lo que no se modificó.
+
+### Hashes, integridad y gate
+
+| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
+|---|---|---:|---|
+| `build-packages.test.mjs` | `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150` | 38.670 | `d2abf98f4be6224e007401d40c4ef73e08e27030c3fa12a488f418f62b8cb1ab` |
+| `build-packages.mjs` | `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225` | 34.819 | sin cambios |
+| `README.md` | `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8` | 14.526 | sin cambios |
+| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
+
+Verificación estática: escapes exactos presentes; cero `CÃ³digo` en suite; compuesto/descompuesto y expectativa de colisión presentes; total 113 casos; `git diff --check` correcto. Empaquetador, matriz, README, manual, 110 fuentes y RUN-01 intactos. Reversión: retirar únicamente los cambios P0-FIX07 de los fixtures y esta sección.
+
+Resultado: **FIXTURES UNICODE CORREGIDOS ESTÁTICAMENTE — ALGORITMO INTACTO — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
+
+Gate solicitado: **P0-RETEST06 — Sintaxis, 113 pruebas y `--check` con orden canónico, sin construir paquetes**. P0-BUILD02 permanece bloqueado.
+
+## P0-RETEST06 — Retest del orden canónico y Unicode
+
+### Baseline, temporal y parada
+
+Gate P0-FIX07 aprobado estáticamente. Autorizados Node local, sintaxis, una ejecución de 113 pruebas, exclusivamente `--check`, cálculo en memoria sin build, temporal/log y roadmap. Prohibidos cambios de código/`src`, `--build`, paquetes, modificación de RUN-01, red/Drive/API/OAuth/`clasp` y commit.
+
+Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 315.637 bytes, `3a76f7d05b8e361682a7d58766b08a33b20e62edd150d508f3e6ceab3733b793`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite `d2abf98f4be6224e007401d40c4ef73e08e27030c3fa12a488f418f62b8cb1ab`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`. Universo 134/134; 110 fuentes, cero divergencias; 113 casos; cero `CÃ³digo`; escapes `\u00F3`, `\u00E9`, `\u0301` presentes. RUN-01: 117 archivos, manifiestos intactos.
+
+Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST06-20260805-075517-263bbf8cdbe64d3a9305c8767eac35a7`; log `P0-RETEST06-20260805-075517.log`. Orden: sintaxis; suite una vez; `--check --all`; orden/hashes calculados en memoria; integridad/seguridad. Ante fallo: parada sin reintento, edición o construcción; conservación del temporal/log y bloqueo de P0-BUILD02.
+
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+|---|---|---|---:|---|---|
 | RETEST-01 Sintaxis | 2/2 OK | 2/2 OK | 0, 0 | ninguna en proyecto | OK |
 | RETEST-02 Suite | 113/113 OK | 113 aprobadas, 0 fallidas, 0 omitidas | 0 | fixtures temporales propios | OK |
 | RETEST-03 `--check --all` | código 0, WARN 5/2/1, colisiones/ERR 0 | contrato completo conforme; evidencia 6+65=71 | 0 | ninguna en proyecto | OK |
@@ -2452,6 +2850,8 @@ Hashes canónicos calculados dos veces dentro del mismo proceso y coincidentes:
 
 Estos valores no se comparan como identidad con RUN-01 anterior. Fecha fijada, temporal y locale quedan fuera del agregado.
 
+| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
+|---|---|---|---:|---|---|
 | RETEST-06 Solo lectura/seguridad | cero cambios, paquetes y efectos externos | tooling/fuentes/RUN-01 intactos; temporal contiene solo log; cero paquetes/red/procesos hijo | 0 | solo roadmap y log autorizados | OK |
 
 ### Integridad, limitaciones y gate
@@ -2506,6 +2906,8 @@ Resultado previo a limpieza: **CONSTRUIDO LOCALMENTE — REPRODUCIBLE 2/2 — OR
 
 Se propone para cierre humano: `P0 TESTS EXPLÍCITOS EN A: RESUELTO LOCALMENTE` y `P0 HTML/MANIFIESTO OMITIDOS: RESUELTO LOCALMENTE`. Persisten cinco mixtos y `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED`.
 
+| Fase | Esperado | Obtenido | Código | Evidencia | Estado |
+|---|---|---|---:|---|---|
 | Limpieza | eliminar solo paquetes canónicos nuevos | canonical-run-01 y canonical-run-02 ausentes; log y RUN-01 anterior conservados | 0 | rutas absolutas revalidadas | OK |
 
 ### Integridad final, limitaciones y gate
@@ -2653,395 +3055,25 @@ Cuerpo autorizado:
 
 El hash del commit resultante se registra externamente porque escribirlo dentro del contenido comprometido modificaría el propio commit.
 
-Tras esta sección el roadmap no se vuelve a modificar. El commit será únicamente local, sin remoto, push, exportación ni despliegue.
-| RETEST-02 Suite | 113/113 OK | 110 OK, 3 fallos, 0 omitidas | 1 | fixtures solo en temporales propios | NO_GO |
-
-### Fallo y parada
-
-La suite se ejecutó exactamente una vez. Descubrió 113 casos; 110 aprobaron y fallaron 93, 94 y 95; código final 1. No se reintentó.
-
-| Caso | Esperado | Obtenido | Diagnóstico estático posterior |
-|---:|---|---|---|
-| 93 | descompuesto `Co` + U+0301 → compuesto `Código.js` | esperado literal `CÃ³digo.js`; actual `Código.js` | el algoritmo NFC produjo el valor correcto, pero el literal compuesto del fixture está mojibake |
-| 94 | compuesto y descompuesto equivalentes | lados `Código.js` y `CÃ³digo.js` | misma inconsistencia de codificación del fixture |
-| 95 | `CANONICAL_PATH_COLLISION` | ninguna colisión | las dos entradas del fixture no normalizan a la misma cadena porque una contiene mojibake |
-
-Los casos 90–92 y 96–113 aprobaron, incluidos los dos pares de orden de RUN-01, casing, colisión exacta, colisión case-insensitive, independencia de entrada/readdir, manifiestos A/B/C, evidencia, hash agregado, metadatos, declaración `UTF8_NFC_BYTEWISE_V1`, ausencia de `localeCompare` y `Buffer.compare`. No se reformula el resultado como verificación completa.
-
-Se aplica el criterio de parada: RETEST-03 `--check --all`, orden calculado, hashes agregados y fases 04–07 no se ejecutaron. No se modificó código, no se construyeron paquetes y RUN-01 permanece preservado. El temporal/log P0-RETEST05 se conserva. `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED` continúa vigente.
-
-Resultado: **NO_GO — 110/113 OK — FIXTURES UNICODE 93–95 INCONSISTENTES — NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO**.
-
-Siguiente decisión humana propuesta: autorizar una corrección estática limitada de los tres fixtures Unicode y su documentación, sin modificar el algoritmo; P0-BUILD02 no se autoriza.
-
-## P0-FIX07 — Corrección de fixtures Unicode
-
-### Baseline y evidencia
-
-Gate P0-RETEST05 confirmado `NO_GO`. Autorización limitada a suite, README solo si contenía mojibake, y roadmap. No se ejecutaron Node, pruebas, `--check` o builds; no se modificaron algoritmo, empaquetador, matriz, fuentes, RUN-01 ni README.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite 37.367 bytes, `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; roadmap 311.594 bytes, `b78c1ef1933694d8110124d3297fdd61baf2ffbafb2b5c26d4fe7a207e1a5aa7`; 110 fuentes, cero divergencias. RUN-01 conserva 117 archivos y cero divergencias. Log P0-RETEST05: 7.194 bytes, `1798cf0e7fa2934648cdcc1b3145f731aec92a6ecf14e9970e0403253ce48dbe`.
-
-### Code points anteriores y causa
-
-| Caso | Literal actual anterior | Code points sensibles | Valor semántico previsto | Estado |
-|---:|---|---|---|---|
-| 93 | `src/CÃ³digo.js` | `C U+0043`, `Ã U+00C3`, `³ U+00B3` | `src/Código.js`, con `ó U+00F3` | mojibake verificado |
-| 94 | compuesto `src/CÃ³digo.js`; descompuesto `src/Co\u0301digo.js` | compuesto `U+00C3 U+00B3`; descompuesto `U+006F U+0301` | dos representaciones del mismo valor | fixture inconsistente |
-| 95 | mismas dos rutas | no convergían tras NFC | dos originales distintos con NFC igual | colisión no activada |
-
-Secuencia completa prevista para caso 93: `U+0073 U+0072 U+0063 U+002F U+0043 U+00F3 U+0064 U+0069 U+0067 U+006F U+002E U+006A U+0073`. La causa fue doble recodificación UTF-8/representación, no el algoritmo: el resultado real ya produjo `Código.js` correctamente.
-
-### Corrección aplicada
-
-Caso 93 usa exclusivamente `"src/C\u00F3digo.js"` y `"src/Co\u0301digo.js"`; verifica igualdad, NFC, posición bytewise antes de `src/D.js` y la lista completa de code points. Caso 94 usa compuesto `"src/Caf\u00E9.js"` y descompuesto `"src/Cafe\u0301.js"`; demuestra originales distintos, code points previos (`U+00E9` frente a `U+0065 U+0301`) e igualdad posterior a NFC. Caso 95 reutiliza esas dos entradas distintas, verifica NFC igual y espera `CANONICAL_PATH_COLLISION` sin warnings ni escrituras.
-
-El control anti-mojibake se limita al conjunto de fixtures Unicode de la suite y rechaza `\u00C3`, `\u00C2` y `\uFFFD`. El fixture técnico residual del caso 101 también usa `"C\u00F3digo.js"`. No queda la secuencia literal `CÃ³digo` en la suite. El README no contenía `Ã`, `Â` o `�`, por lo que no se modificó.
-
-### Hashes, integridad y gate
-
-| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
-|---|---|---:|---|
-| `build-packages.test.mjs` | `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150` | 38.670 | `d2abf98f4be6224e007401d40c4ef73e08e27030c3fa12a488f418f62b8cb1ab` |
-| `build-packages.mjs` | `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225` | 34.819 | sin cambios |
-| `README.md` | `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8` | 14.526 | sin cambios |
-| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
-
-Verificación estática: escapes exactos presentes; cero `CÃ³digo` en suite; compuesto/descompuesto y expectativa de colisión presentes; total 113 casos; `git diff --check` correcto. Empaquetador, matriz, README, manual, 110 fuentes y RUN-01 intactos. Reversión: retirar únicamente los cambios P0-FIX07 de los fixtures y esta sección.
-
-Resultado: **FIXTURES UNICODE CORREGIDOS ESTÁTICAMENTE — ALGORITMO INTACTO — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
-
-Gate solicitado: **P0-RETEST06 — Sintaxis, 113 pruebas y `--check` con orden canónico, sin construir paquetes**. P0-BUILD02 permanece bloqueado.
-
-## P0-RETEST06 — Retest del orden canónico y Unicode
-
-### Baseline, temporal y parada
-
-Gate P0-FIX07 aprobado estáticamente. Autorizados Node local, sintaxis, una ejecución de 113 pruebas, exclusivamente `--check`, cálculo en memoria sin build, temporal/log y roadmap. Prohibidos cambios de código/`src`, `--build`, paquetes, modificación de RUN-01, red/Drive/API/OAuth/`clasp` y commit.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 315.637 bytes, `3a76f7d05b8e361682a7d58766b08a33b20e62edd150d508f3e6ceab3733b793`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite `d2abf98f4be6224e007401d40c4ef73e08e27030c3fa12a488f418f62b8cb1ab`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`. Universo 134/134; 110 fuentes, cero divergencias; 113 casos; cero `CÃ³digo`; escapes `\u00F3`, `\u00E9`, `\u0301` presentes. RUN-01: 117 archivos, manifiestos intactos.
-
-Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST06-20260805-075517-263bbf8cdbe64d3a9305c8767eac35a7`; log `P0-RETEST06-20260805-075517.log`. Orden: sintaxis; suite una vez; `--check --all`; orden/hashes calculados en memoria; integridad/seguridad. Ante fallo: parada sin reintento, edición o construcción; conservación del temporal/log y bloqueo de P0-BUILD02.
-
-| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
-|---|---|---|---:|---|---|
-| RETEST-01 Sintaxis | 2/2 OK | 2/2 OK | 0, 0 | ninguna en proyecto | OK |
-| RETEST-01 Sintaxis | 2/2 OK | 2/2 OK | 0, 0 | ninguna en proyecto | OK |
-| RETEST-02 Suite | 89/89, 0 fallos | 89/89, 0 fallos, 0 omitidas | 0 | fixtures solo en temporales propios de la suite | OK |
-| RETEST-03 `--check --all` | WARN 5/2/1, evidencia 71, ERR 0 | MIXED=5, EMBEDDED=2, RUNNER=1, Ids=6, Repository=65, total=71, ambigüedad=0, ERR=0 | 0 | ninguna en proyecto | OK |
-| RETEST-04 Integridad | cero cambios/paquetes | hashes fijos y 110 fuentes intactos; 0 temporales de build; 0 paquetes | 0 | solo roadmap y log autorizados | OK |
-| RETEST-05 Argumentos/destinos | rechazos contractuales | 12/12 combinaciones con códigos esperados; symlink condicional no disponible por privilegios | 0/2/4 esperados | fixtures controlados solo en temporal | OK con WARN |
-| RETEST-06 Seguridad | sin efectos externos ni paquetes | sin red, navegador, Drive, API, OAuth, `clasp`, procesos hijo, ejecución de fuentes o paquetes | 0 | ninguna fuera del temporal/roadmap | OK |
-
-### Resultados y evidencia
-
-RETEST-01 comprobó sintaxis de los dos módulos: 2/2 OK, ambos código 0. RETEST-02 ejecutó la suite una única vez: 89 descubiertas, 89 aprobadas, 0 fallidas, 0 omitidas, código 0. El caso 20 conservó nombre y expectativa `NO_SE_PUEDE_LEER`; los casos 74–89 verificaron lectura única, evidencia en memoria, mismo contenido para hash/detector, precedencia de hash, symlink previo a lectura mediante inspección contractual, cleanup vacío/propio, error original, detalle secundario, 71 evidencias, dos WARN y determinismo. Los casos heredados de regex/división también aprobaron.
-
-RETEST-03 ejecutó una sola vez `--check --all` contra la raíz autorizada. Resultado: código 0; `ENGREMIAT_PACKAGE_BEGIN`, `OK`, `WARN`, `NEXT` y `ENGREMIAT_PACKAGE_END`; ningún `ERR`. Recuentos públicos: cinco `MIXED_ARCHITECTURE`, dos `EMBEDDED_TEST_CODE`, un `APPROVED_SUITE_RUNNER`, cero `AMBIGUOUS_*` y cero `UNTERMINATED_*`. Evidencia: `Ids.js` 6, `Repository.js` 65, total 71, con líneas/tipos consolidados, únicos y ordenados. Se conservó aparte el WARN documentado `BASELINE_AUTORREFERENCIAL_NO_COMPARABLE` del roadmap. Universo: 134/134; categorías y paquetes conformes; 21 HTML en A; manifiesto Apps Script en A; cero desconocidos, ausentes o hashes divergentes; cero pruebas/runners indebidos en A.
-
-RETEST-04 y la verificación final no localizaron cambios en detector, suite, README, matriz, manual ni 110 fuentes respecto del baseline; no aparecieron temporales de build ni paquetes. Las únicas escrituras fueron esta documentación y el log/fixtures dentro del temporal exclusivo.
-
-RETEST-05: sin argumentos mostró ayuda con código 0. Opción desconocida, build sin salida, build sin selección, `--package` con `--all`, paquete inválido y output sin build devolvieron código 2. Proyecto, `src`, tooling, raíz de unidad y destino preexistente/no vacío devolvieron código 4. Ninguna combinación alcanzó un build válido. La creación del symlink controlado fue omitida con WARN porque Windows exigió privilegios administrativos; no se elevó permiso.
-
-RETEST-06: ninguna operación de red, navegador, Drive, API, OAuth, `clasp`, proceso hijo, fuente Apps Script, borrado externo, exportación o despliegue. Cero paquetes construidos.
-
-### Limitaciones, resultado y gate
-
-Limitación residual: el rechazo de un symlink real no se ejercitó dinámicamente por falta de privilegios; sí aprobaron el caso 83 y la precedencia estática de `assertRegularNoSymlink`. El roadmap es autorreferencial y mantiene su advertencia de baseline. No se probó ninguna construcción válida, publicación, reproducibilidad de paquetes ni despliegue.
-
-Resultado: **VERIFICADO LOCALMENTE — 89/89 OK — `--check` OK — CONTRATO DE WARN OK — ARGUMENTOS Y DESTINOS OK — NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO vigente hasta P0-BUILD01**.
-
-Gate siguiente solicitado, sin ejecutarlo: **P0-BUILD01 — Construcción repetida de A, B y C en temporales, inspección de manifiestos, comparación reproducible y destrucción controlada, sin red ni publicación**.
-
-## P0-BUILD01 — Construcción reproducible en temporales
-
-### Autorización, baseline y preparación
-
-Gate P0-RETEST04 aprobado. Se autorizan dos construcciones locales `--build --all` en destinos temporales independientes, inspección/comparación, log, documentación y eliminación exclusiva de paquetes propios. Continúan prohibidos red, Drive/API/OAuth/`clasp`, publicación, exportación externa, despliegue, cambios en empaquetador o `src`, elevación, symlinks y commit. Se conserva `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED`.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 295.655 bytes, SHA-256 `816a3e0d4f0169ad75fd3ccc2c561ba521319c277f429753445ff089a9d9d470`; detector `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; log P0-RETEST04 `47d834630eacdc76f6de5787ff1116531252dd875c573e0b4156e96fd450a89c`. Verificados 110 archivos `src`, cero divergencias, 134 rutas únicas y recuentos A=68, B=7, C=35, NONE=24.
-
-El check previo único devolvió código 0, `MIXED_ARCHITECTURE=5`, `EMBEDDED_TEST_CODE=2`, `APPROVED_SUITE_RUNNER=1`, `ERR=0`. Las 89/89 pruebas permanecen documentadas por P0-RETEST04 y no se repiten.
-
-Raíz temporal exclusiva: `C:\Users\pc\AppData\Local\Temp\P0-BUILD01-20260805-072914-d7fc1919b62c4b28b8ee08b3d3206f50`. Destinos inicialmente inexistentes: `run-01` y `run-02`, hijos directos de esa raíz, fuera del proyecto y de cualquier raíz de unidad/zona prohibida. Comandos previstos: `node tools/packager/build-packages.mjs --build --all --output <raíz>\run-01` y posteriormente el equivalente para `run-02`.
-
-Política: detener ante cualquier código no cero, `ERR`, divergencia contractual, escritura externa o diferencia canónica; no ejecutar BUILD-02 si RUN-01 falla. Limpiar solo los dos hijos absolutos comprobados, nunca proyecto, `src`, tooling o rutas dudosas; conservar el log. Publicación y despliegue mantienen `NO_GO`.
-
-| Fase | Acción | Resultado | Código | Evidencia | Estado |
-| ---- | ------ | --------- | -----: | --------- | ------ |
-| Gate 0 | Baseline y `--check --all` | hashes/universo conformes; WARN 5/2/1; ERR 0 | 0 | log temporal | OK |
-| BUILD-01 | Construir A/B/C en `run-01` | A=68, B=7, C=35; cero ERR | 0 | salida completa y paquetes preservados | OK |
-| Inspección RUN-01 | Contenido, manifiestos e informes | copias/hashes/recuentos conformes; orden A no coincide con orden ordinal comprobado | 1 (inspección) | inversiones exactas en manifiesto A | NO_GO |
-
-### Resultado parcial de RUN-01 y criterio de parada
-
-La primera construcción se ejecutó una sola vez entre `2026-08-05T07:30:03.8132284+02:00` y `2026-08-05T07:30:06.7159314+02:00`. El empaquetador devolvió código 0, sin `ERR`, y creó únicamente A, B, C y `packager.log` dentro de `run-01`.
-
-Inventario verificado antes de la parada:
-
-| Paquete | Fuentes | Hash agregado | Estado | Copias divergentes | Evidencia |
-|---|---:|---|---|---:|---:|
-| A | 68 | `538d7da4cb4b476e34303edbb76183cdf76283b51bc737d5824ffcca1c730005` | `PRODUCTION_WITH_DECLARED_MIXED_DEBT` | 0 | 71 |
-| B | 7 | `5230de196415b9f86390a15846e24403130b5e70aa1ee646a78bee05997b5049` | `TESTS_DEPEND_ON_VERSIONED_PACKAGE_A` | 0 | 71 |
-| C | 35 | `67e33d61348f865fbcd583bb552d214ac84fa24b53850d58cd5e7e0e83e711f7` | `AUXILIARY_EXECUTION_REQUIRES_HUMAN_AUTHORIZATION` | 0 | 71 |
-
-A contiene 21 HTML, `src/appsscript.json`, cero `Tests_*`, cero `Código.js`, cero declaración `probarReporteIntegridad` en `IntegrityService.js` y deuda mixta declarada de cinco archivos. No se describe como producción limpia. B contiene siete `Tests_*`, ambos repositorios independientes y una declaración de `probarReporteIntegridad`; su dependencia referencia exactamente el hash agregado de A. C contiene 35 auxiliares y `Código.js`. Los tres informes son JSON legible, `ok=true`, conservan 71 evidencias (Ids=6, Repository=65); los manifiestos declaran esquema 1, paquete, commit, rama, categorías, hashes, cinco deudas mixtas y 24 exclusiones. No se localizaron copias desconocidas, divergencias byte a byte, barras invertidas en rutas, credenciales ni contenido fuente en metadatos.
-
-La inspección exigía lista ordenada. El manifiesto A no coincide con el orden ordinal de ruta: `src/appsscript.json` precede a `src/AvanceYSecuencia.js`, y `src/Repository_InsertarRegistro.js` precede a `src/Repository.js`. El orden observado es compatible con el uso actual de `localeCompare`, pero no se puede reformular como orden canónico ordinal ni asumir independiente de configuración regional. La comprobación clasificó la inspección con código 1.
-
-Se aplica el criterio de parada: **NO_GO**. BUILD-02 no se ejecutó; no existe comparación 2/2; no se limpió `run-01`; `run-02` permanece inexistente. El temporal y el log quedan preservados para revisión. No se modificó código ni `src`, y no se publicó, exportó o desplegó nada. Se conserva `WARN: SYMLINK_DYNAMIC_NOT_VERIFIED`.
-
-Siguiente decisión humana propuesta: autorizar una corrección estática separada que defina orden canónico independiente de locale, o aceptar explícitamente `localeCompare` como contrato y autorizar una nueva inspección desde cero. P0-CLOSE01 no se inicia y permanece `NO_GO para publicación, clasp push y despliegue`.
-
-## P0-FIX06 — Orden canónico UTF-8 independiente del locale
-
-### Decisión, baseline y evidencia preservada
-
-Decisión humana: `localeCompare` no se acepta como contrato. El identificador obligatorio es `UTF8_NFC_BYTEWISE_V1`. Fase limitada a cambios estáticos en empaquetador, suite, README y roadmap; sin Node, pruebas, `--check`, builds, red, `clasp`, commit ni cambios en fuentes/matriz.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector 31.863 bytes, `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite 31.366 bytes, `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README 12.654 bytes, `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap 301.227 bytes, `9562349262227d8398499e0ca07fd0d7a576cbf57fd05fdbc9ad2b1e85e2f1b8`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; 110 fuentes, cero divergencias.
-
-RUN-01 anterior permanece en `C:\Users\pc\AppData\Local\Temp\P0-BUILD01-20260805-072914-d7fc1919b62c4b28b8ee08b3d3206f50\run-01`: 117 archivos y nueve directorios. Log: 5.757 bytes, `3bcec3d4151e311656b515b824f7d1c5c1ec8bcfa69d6c497b7c7d9f85b0ca88`. Manifiestos: A `aa6d78eae6a1407639540ed59b3c9e29923987c48bf2449e80c0eb4613dd6d50`; B `08a064e4e1aeb970110fcf6f9d890522a540a8ae19e9b2af6616b3d1fa38a22e`; C `1c7f16207489eb1550ce37749da909046417a66944f6294f619ae6a6c7bf1a12`. Sus hashes agregados antiguos A/B/C (`538d…`, `5230…`, `67e3…`) son evidencia del algoritmo anterior y no baseline del nuevo. RUN-01 es evidencia lógica de solo lectura, no se modifica ni reutiliza.
-
-### Inventario de ordenamientos
-
-| Ubicación/colección | Orden anterior | Hash | Salida | Cambio |
-|---|---|---:|---:|---|
-| listas de tests/mixtos en matriz | `.sort()` implícito | no | validación | comparador canónico |
-| enumeración `readdirSync` y árbol | `localeCompare`/`.sort()` | indirecto | sí | comparador canónico |
-| matriz y archivos validados | `localeCompare(path)` | sí | sí | comparador canónico |
-| marcadores y nombres técnicos | línea + `localeCompare` | no | evidencia | línea numérica + bytewise |
-| entradas A/C del detector | `localeCompare(path)` | no | warnings/evidencia | comparador canónico |
-| tipos consolidados | `.sort()` implícito | no | warning | bytewise; líneas siguen numéricas |
-| evidencia estructurada | ruta + línea + nombre con locale | no | informe | ruta/nombre bytewise, línea numérica |
-| concatenación del hash | `localeCompare(path)` | sí | manifiesto | NFC y bytes UTF-8 |
-| selección A/B/C | `localeCompare(path)` | sí | paquetes | comparador canónico |
-| deuda mixta/exclusiones/entradas | matriz o `.sort()` implícito | no/sí | manifiesto | rutas NFC bytewise |
-| claves de JSON estable | `.sort()` implícito | no | ficheros técnicos | comparador bytewise |
-| paquetes solicitados | orden de entrada | no | build/log | comparador canónico |
-
-Sets y Maps de validación conservan función de pertenencia/recuento; cuando su contenido se publica se materializa y ordena explícitamente. Dependencias contienen una única referencia A y no presentan ambigüedad de orden. No queda `localeCompare` en el empaquetador.
-
-### Algoritmo, colisiones y aplicación
-
-`canonicalPath` valida ruta relativa, convierte separadores a `/` y normaliza Unicode NFC. `compareCanonicalPaths` codifica ambas rutas en UTF-8 y usa `Buffer.compare`, sin locale, case folding o dependencia del filesystem. Los ejemplos quedan: `AvanceYSecuencia.js` antes de `appsscript.json`; `Repository.js` antes de `Repository_InsertarRegistro.js`; mayúsculas antes de minúsculas según bytes; `Código.js` se conserva NFC.
-
-`validateCanonicalPathSet` diferencia: duplicado original exacto → `DUPLICATE_CANONICAL_PATH`; originales distintos con la misma NFC → `CANONICAL_PATH_COLLISION`; diferencia solo por casing → `CASE_INSENSITIVE_PATH_COLLISION`. La última se emite como WARN y añade bloqueo `CANONICAL_PATH_REVIEW_REQUIRED`; ninguna ruta se renombra o pliega automáticamente.
-
-Matriz, escaneo, archivos validados, paquetes, manifiestos, deudas, exclusiones, warnings, evidencia, JSON técnico y hash agregado utilizan el comparador común. Las líneas mantienen orden numérico. El hash normaliza y ordena antes de concatenar `path + LF + sha256 + LF + size + LF`. El manifiesto añade `canonicalSort` con ID, NFC, UTF-8, comparación unsigned bytewise y `localeDependent:false`. Metadatos temporales/fecha/ejecución continúan fuera del hash.
-
-### Pruebas redactadas, no ejecutadas
-
-Se conservan 89 casos y se añaden 24 (90–113): los dos pares de RUN-01; casing; `Código.js`; compuesto/descompuesto; colisiones NFC, exacta y case-insensitive; independencia de locales español/inglés, entrada y `readdir`; manifiestos A/B/C; informe y evidencia; estabilidad/cambios del hash; metadatos no canónicos; declaración del algoritmo; ausencia de `localeCompare`; y uso de `Buffer.compare`. Total previsto: **113**. No se ejecutaron.
-
-### Hashes, integridad, reversión y gate
-
-| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
-|---|---|---:|---|
-| `build-packages.mjs` | `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3` | 34.819 | `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225` |
-| `build-packages.test.mjs` | `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507` | 37.367 | `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150` |
-| `README.md` | `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85` | 14.526 | `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8` |
-| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
-
-Integridad estática: matriz, manual y 110 fuentes intactos; RUN-01 preservado; sin dependencias, red o procesos hijo nuevos; `git diff --check` correcto. Riesgo residual: sintaxis, 113 casos, colisiones y hashes nuevos no están ejecutados. Los hashes viejos son deliberadamente incompatibles.
-
-Reversión autorizable: retirar exclusivamente los cambios P0-FIX06 de los tres archivos de tooling y esta sección, sin tocar RUN-01, fuentes o matriz.
-
-Resultado: **ORDEN CORREGIDO ESTÁTICAMENTE — RUN-01 ANTERIOR PRESERVADO — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
-
-Gate solicitado: **P0-RETEST05 — Sintaxis, suite ampliada y `--check` con verificación explícita del orden canónico, sin construir paquetes**. No se autoriza todavía una nueva construcción.
-
-## P0-RETEST05 — Verificación del orden canónico
-
-### Baseline, temporal y criterios de parada
-
-Gate P0-FIX06 aprobado estáticamente. Autorizados Node local, dos comprobaciones de sintaxis, una ejecución de 113 pruebas, exclusivamente `--check`, cálculo interno de orden/hashes sin build, fixtures/log temporal y roadmap. Prohibidos `--build`, paquetes, cambios de código o `src`, modificación/eliminación de RUN-01, red/Drive/API/OAuth/`clasp` y commit.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 307.868 bytes, `6ec3f7a0c733817c0bfeeeb17fe68923615d46f77d7bd8506adb46d267c541b6`; detector `41e0bfeeb0ebe73ed416da46b4712188da5dc68da4b71291af1e9974c9cd8225`; suite `8ca58185c8c27c163d08c449a2b6c7324cae119be7a26e6eee1e8058f5d56150`; README `836aac676da3368e9ef9ef7cf86e8de07be785159f311b0c63dbda2bc7f3cfd8`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`. Universo 134/134; 110 fuentes, cero divergencias. Empaquetador: cero `localeCompare`, contrato `UTF8_NFC_BYTEWISE_V1`, NFC y `Buffer.compare` presentes.
-
-RUN-01 anterior: 117 archivos y cero divergencias en log/manifiestos; no se reutiliza. Temporal nuevo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST05-20260805-074350-ce275dd474994ee19f3b7962d74ee950`; log `P0-RETEST05-20260805-074350.log`.
-
-Orden: sintaxis; suite una vez; `--check --all`; cálculo en memoria de manifiestos/orden/hashes; integridad y seguridad. Ante cualquier fallo: parada sin reintento, edición ni construcción; conservación del temporal/log; P0-BUILD02 bloqueado.
-
-| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
-| ------ | -------- | -------- | -----: | ---------- | ------ |
-
-## P0-FIX05 — Precedencia de validación y cleanup
-
-### Baseline y alcance
-
-Gate P0-RETEST03 confirmado como `NO_GO`. Fase limitada a corrección estática de `tools/packager/build-packages.mjs`, su suite, README y este roadmap. No se ejecutaron Node, pruebas, `--check`, builds, fuentes, red, `clasp` ni commits; no se modificaron `src` ni `package-map.json`.
-
-Baseline verificado: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; detector 30.056 bytes, `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61`; suite 24.052 bytes, `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7`; README 10.950 bytes, `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d`; matriz 32.504 bytes, `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap 283.195 bytes, `e47554cce4a8c8e2441a91033e5fcf38f5e95bfc9e9b8d089386bca4b473750f`; manual 11.491 bytes, `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`.
-
-El log preservado de P0-RETEST03 existe en `C:\Users\pc\AppData\Local\Temp\P0-RETEST03-20260805-070009-532ab11722ae4ddc9be39a1da41a7a05\P0-RETEST03-20260805-070009.log`: 4.762 bytes, SHA-256 `1dbe8dac12dfa7c49f79f2eb870e5607e610ee38d705b0dd62f16bf879e22fa4`. Registró 73 casos descubiertos, 72 correctos y un fallo: caso 20 esperaba `NO_SE_PUEDE_LEER` y obtuvo `CONSTRUCCION_INCOMPLETA`.
-
-### Trazado anterior y causa raíz
-
-| Orden anterior | Función | Acción | Archivo | Error posible | Traducción |
-|---:|---|---|---|---|---|
-| 1 | `buildPackages` | valida destino | salida | destino inseguro | error contractual |
-| 2 | `validateContamination` | abre directamente cada JS de A/C | `missing.js` | `ENOENT` nativo | todavía no contractual |
-| 3 | detector | genera `embeddedTestEvidence` | contenido leído directamente | análisis léxico | no alcanzado en caso 20 |
-| 4 | `mkdtempSync` | crea temporal | temporal hermano | error de escritura | no alcanzado |
-| 5 | `catch` | ejecuta cleanup | `tempDir=null` | operación vacía | ninguno |
-| 6 | `catch` | envuelve error no contractual | error `ENOENT` | pérdida de precedencia | `CONSTRUCCION_INCOMPLETA` |
-
-Causa raíz verificada: `validateContamination` recibía raíz y matriz y ejecutaba su propia lectura antes de `packageEntries`, que era la ruta que aplicaba `assertRegularNoSymlink` y traducía la ausencia a `NO_SE_PUEDE_LEER`. El `catch` de `buildPackages` convertía el `ENOENT` prematuro en `CONSTRUCCION_INCOMPLETA`. Además, una excepción de cleanup podía sustituir el error principal.
-
-### Orden corregido y cambios
-
-El flujo queda: argumentos; matriz/rutas; ruta segura; rechazo de symlink; existencia/lectura; tamaño y SHA-256; comparación; registro validado en memoria; detector sobre ese contenido; evidencia estructurada; paquete; y solo entonces temporal, copia desde el buffer validado, verificación y publicación.
-
-`validateUniverse` construye registros ordenados con `path`, `absolutePath`, metadatos de matriz, `size`, `sha256`, `buffer` y `content` solo para JavaScript. Existe una única llamada de lectura de cada fuente dentro de esa validación. `validateContamination` acepta los registros; el flujo de check/build le entrega contenido validado y no rutas. Hash, detector, copia y `embeddedTestEvidence` usan el mismo buffer. Buffer/contenido no se serializan en manifiestos, reportes ni logs.
-
-`buildPackages` valida antes de crear el temporal. Ausencia/ilegibilidad conserva `NO_SE_PUEDE_LEER`; hash distinto conserva `HASH_DIVERGENTE`; contaminación posterior se identifica como `CONTAMINACION`; errores propios de construcción quedan como `CONSTRUCCION_INCOMPLETA`. `preservePrimaryError` protege el error inicial y adjunta un eventual fallo de cleanup como `details.cleanupError`. `safeCleanupTemp` continúa restringido al temporal hermano con prefijo propio. No se tocaron las reglas de regex/división, consolidación, runners o detección.
-
-### Pruebas redactadas, no ejecutadas
-
-Se conservan los casos 1–73 y se añaden 74–89: ausencia; lectura única/registro coherente; evidencia sin relectura; hash y detector sobre el mismo contenido; cleanup vacío antes del temporal; eliminación exclusiva del temporal propio; conservación del error ante fallo de cleanup; evidencia secundaria; precedencia de hash; rechazo de symlink previo a lectura; contaminación posterior a hash correcto; caso 20 sin renombrar y con `NO_SE_PUEDE_LEER`; 71 evidencias; dos WARN consolidados; determinismo del error; y ausencia de temporal en check. Total esperado: **89**. No se ejecutó ningún caso.
-
-### Hashes, integridad, riesgos y reversión
-
-| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior estático |
-|---|---|---:|---|
-| `build-packages.mjs` | `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61` | 31.863 | `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3` |
-| `build-packages.test.mjs` | `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7` | 31.366 | `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507` |
-| `README.md` | `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d` | 12.654 | `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85` |
-| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
-
-Integridad estática posterior: 110 archivos `src`, 0 divergencias respecto de la matriz; matriz y manual intactos; log previo conservado. El estado Git preexistente de `src/IntegrityService.js`, `src/Tests_IntegridadGapReglasFuncional.js` y el manual no fue provocado por P0-FIX05.
-
-Riesgos y límites: interfaz y pruebas aún no han sido interpretadas por Node; no se ha demostrado el recuento de 71 evidencias ni los dos WARN mediante ejecución; el buffer aumenta memoria proporcionalmente al universo; las comprobaciones multiplataforma, permisos, symlinks y fallos reales de cleanup quedan pendientes. Reversión autorizable: retirar exclusivamente los cambios P0-FIX05 de los tres archivos de tooling y esta sección, sin `reset`, checkout destructivo ni cambios en fuentes.
-
-Resultado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO — NO_GO vigente**.
-
-Gate siguiente solicitado: **P0-RETEST04 — Sintaxis, suite ampliada, `--check`, argumentos y seguridad, sin construir paquetes**. P0-BUILD01 continúa bloqueado.
-
-## P0-RETEST04 — Retest integral previo a construcción
-
-### Baseline, autorización y criterios de parada
-
-Gate P0-FIX05 aprobado estáticamente. Se autoriza Node local, una ejecución de la suite, exclusivamente `--check`, argumentos y destinos inválidos, un temporal/log exclusivo y documentación. Continúan prohibidos cualquier build válido, paquetes, cambios de código o `src`, red/Drive/API/OAuth/`clasp`, exportación, despliegue, commit y P0-BUILD01.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; roadmap inicial 289.594 bytes y SHA-256 `2c53b69c55b36bdc63677dd36d6dde682d5cff552e37ef4de2f0d4d8dd42fb50`. Detector `70bbe6f270e9dbe33b73c048074a533ff75e97acec3724c0e91928c52b7576a3`; suite `a39daaad9adb35afdd9d4b157a8d747323395274d10f7690385e5dc733a34507`; README `85dc5a6812361d68ee9f05d4faa11af881831bfd2fb9971632bf82e1bb10bd85`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`.
-
-Verificado: 134 entradas y rutas únicas; categorías 63/7/35/24/5; paquetes A=68, B=7, C=35, NONE=24; 21 HTML en A; `src/appsscript.json` en A; 110 fuentes y cero divergencias; una declaración de `probarReporteIntegridad`; `src/Código.js` en C/auxiliary. Estado Git previo esperado, con cambios anteriores en roadmap, `IntegrityService.js`, `Tests_IntegridadGapReglasFuncional.js`, manual y tooling.
-
-Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST04-20260805-071848-a997c8e6ca6c4e06bd359e7369640e98`. Log: `P0-RETEST04-20260805-071848.log`.
-
-Orden autorizado: sintaxis 2/2; suite una vez; `--check --all`; integridad; argumentos/destinos; seguridad. Ante cualquier fallo se detendrá sin reintento, sin edición de código y sin continuar a pruebas posteriores; se preservarán temporal y log.
-
-| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
-| ------ | -------- | -------- | -----: | ---------- | ------ |
-| RETEST-01 | sintaxis 2/2 OK | 2/2 OK; salidas vacías; 79 ms y 39 ms | 0 / 0 | ninguna | OK |
-| RETEST-02 | 73/73 OK, 0 fallidas/omitidas | 73 descubiertas, 72 OK, 1 fallida, 0 omitidas; 10.650 ms | 1 | ninguna; fixtures limpiados | ERR — NO_GO |
-| RETEST-03 | `--check --all` | no ejecutado por parada en suite | — | ninguna | NO ALCANZADO |
-| RETEST-04 | integridad formal | no ejecutado; comprobación de seguridad limitada confirma solo roadmap autorizado, hashes intactos y cero paquetes | — | ninguna inesperada | NO ALCANZADO |
-| RETEST-05 | argumentos/destinos | no ejecutado | — | ninguna | NO ALCANZADO |
-| RETEST-06 | seguridad completa | no ejecutado; hasta la parada no hubo red, navegador, Drive, API, `clasp`, procesos hijo ni fuentes ejecutadas | — | ninguna | NO ALCANZADO |
-
-Fallo exacto de RETEST-02: caso `20 limpieza del temporal tras fallo`; esperado fragmento `NO_SE_PUEDE_LEER`; obtenido `CONSTRUCCION_INCOMPLETA`, por lo que la suite informó `UNEXPECTED_ERROR CONSTRUCCION_INCOMPLETA`. Los casos 1–19 y 21–73 aprobaron, incluidos consolidación, detalle estructurado, regex/división, ambigüedad real y casos reales Desviacion/Report. Salida completa de los 73 resultados preservada en el log.
-
-Diagnóstico estático posterior, sin editar: P0-FIX04 añadió `validateContamination(projectRoot, map)` al inicio de `buildPackages` para generar `embeddedTestEvidence`. El fixture del caso 20 usa deliberadamente `missing.js`. Esa lectura previa lanza un error nativo dentro del `try`, que el catch traduce a `CONSTRUCCION_INCOMPLETA`, antes de alcanzar la ruta histórica que producía `NO_SE_PUEDE_LEER`. Queda pendiente decidir en gate separado si la validación debe ocurrir antes del temporal mediante error contractual de lectura o si el caso debe aceptar la nueva precedencia; no se modifica ni reintenta aquí.
-
-### Parada e integridad
-
-Se aplicó parada inmediata: no hubo `--check`, argumentos, build ni pasos posteriores. La comparación de 138 archivos muestra solo el roadmap modificado por documentación; 110 `src`, detector, suite, matriz y README conservan hashes; Git esperado; cero paquetes; cero residuos `engremiat-packager-test-*`. El temporal propio contiene únicamente log e inventario y se conserva.
-
-Resultado P0-RETEST03: **NO_GO**. Evidencia válida: sintaxis 2/2 OK y 72/73 pruebas OK. Evidencia bloqueante: caso 20/código 1. No se declaran `--check OK`, contrato WARN ni argumentos/destinos verificados. Estados: **NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO operativo vigente**.
-
-Gate humano pendiente: corrección estática separada de la precedencia de validación/lectura y limpieza del caso 20, preservando `embeddedTestEvidence` y cleanup seguro. P0-BUILD01 continúa bloqueado.
-| RETEST-01 — sintaxis | 2/2 OK, códigos 0 | 2/2 OK; salidas vacías; 76 ms y 58 ms | 0 / 0 | ninguna; hashes y Git intactos; cero paquetes | OK |
-| RETEST-02 — suite | 53 descubiertas/53 OK/0 fallidas/0 omitidas | 53/53/0/0; 614 ms; casos 29, 48 y 30–38, 41–53 OK | 0 | ninguna; suite limpió fixtures; hashes intactos | OK |
-
-Salida completa de la suite conservada en el log. Cierre: `NEXT solicitar_gate_de_build`; `ENGREMIAT_PACKAGE_END result=OK failures=0`.
-
-| RETEST-03 — `--check --all` | código 0, 5 MIXED, 2 EMBEDDED, 1 runner, 0 ERR, sin warnings no previstos | código 0; 5 MIXED; **71 EMBEDDED**; 1 runner; 2 AMBIGUOUS; 0 ERR | 0 | ninguna, según comparación física posterior | ERR CONTRACTUAL — NO_GO |
-| RETEST-04 | integridad formal | no ejecutado por parada; comprobación de seguridad limitada confirma solo roadmap autorizado, hashes intactos y cero paquetes | — | ninguna inesperada | NO ALCANZADO |
-| RETEST-05 | argumentos/destinos | no ejecutado por parada | — | ninguna | NO ALCANZADO |
-| RETEST-06 | seguridad completa | no ejecutado por parada; hasta la parada no hubo red, navegador, Drive, APIs, `clasp`, procesos hijo ni fuentes ejecutadas | — | ninguna | NO ALCANZADO |
-
-Salida completa de RETEST-03 conservada en el log. Líneas contractuales coincidentes: cinco `WARN MIXED_ARCHITECTURE` (`Formularios.js`, `Ids.js`, `PedidoRecepcion.js`, `Repository.js`, `Validation.js`); un `WARN APPROVED_SUITE_RUNNER src/Código.js line=5`; cero `ERR`; `OK validacion_estatica packages=A,B,C`; cierre `result=OK mode=check`.
-
-Diferencias bloqueantes:
-
-- esperado: dos líneas `WARN EMBEDDED_TEST_CODE`, una por cada archivo afectado; obtenido: 71 líneas, seis declaraciones de `Ids.js` y 65 de `Repository.js`;
-- no previstas: `WARN AMBIGUOUS_TEST_ANALYSIS src/DesviacionService.js line=904 ... UNTERMINATED_SINGLE_STRING` y `src/ReportService.js line=427 ... UNTERMINATED_DOUBLE_STRING`;
-- la advertencia autorreferencial del roadmap permanece prevista por el contrato histórico y no es la causa del NO_GO.
-
-Aunque el proceso devolvió 0 y no emitió ERR, el recuento de advertencias y las dos ambigüedades incumplen el resultado obligatorio. Se aplicó parada inmediata: no se ejecutaron argumentos ni pasos posteriores, no se reintentó y no se modificó código.
-
-### Integridad, temporal y resultado
-
-La comprobación de seguridad posterior a la parada comparó el inventario de 138 archivos: solo el roadmap cambió por documentación autorizada. Los 110 hashes de `src`, detector, suite, matriz y README permanecen intactos; Git coincide; no existen paquetes A/B/C, `packages`, `dist` o `build`. El temporal contiene únicamente el log completo y `project-before.csv`; se conserva por NO_GO.
-
-Resultado P0-RETEST02: **NO_GO**. Evidencia válida: sintaxis 2/2 OK, suite 53/53 OK y `--check` sin ERR/código 0/sin escritura. Evidencia bloqueante: salida de warnings distinta del contrato. No se declara `--check OK` contractual ni `ARGUMENTOS Y DESTINOS OK`. Estados: **NO CONSTRUIDO — NO EXPORTADO — NO DESPLEGADO — NO_GO operativo vigente**.
-
-Gate humano pendiente: corrección estática separada para agregar `EMBEDDED_TEST_CODE` por archivo —con detalle de declaraciones sin multiplicar la advertencia contractual— y diagnosticar las dos ambigüedades léxicas. P0-BUILD01 continúa bloqueado.
-
-## P0-FIX04 — Consolidación de advertencias y corrección léxica
-
-### Baseline y evidencia de P0-RETEST02
-
-Gate P0-RETEST02 confirmado NO_GO. Autorizados únicamente detector, suite, README y este roadmap; prohibidos `src`, matriz, Node, pruebas, `--check`, build, dependencias, red/`clasp`, commit y P0-BUILD01.
-
-Baseline: rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; Git esperado. Detector `b6aa3708056748c8c081c4eed217694a2c8eb31c6a2b3d76a6edd6d9b98b8630`; suite `973d03e9c810fa4a601f3f48ca0d672a018668529bd5cca5f98bf86f2b45ce74`; README `12c024c76c4c06149c334f26febec5c79f6996fc65525966623a7afee59b63e6`; matriz intacta `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`; roadmap inicial `08f55ef73e0038f2da6676a5075795d8a8bbaab78a132df4fb166d9e7dac44b2`; manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; 110 `src` sin divergencias. Log P0-RETEST02 conservado: 14.617 bytes, `ad3d624d2105db2c1548f1d30c9e875440b52528238b1cbff0d6951840eefac9`.
-
-Las 71 líneas públicas provenían de iterar cada declaración y emitir un WARN individual, pese a que el contrato exige una línea pública por archivo.
-
-| Archivo | Coincidencias | Tipos | Líneas | WARN anteriores |
-|---|---:|---|---|---:|
-| `src/Ids.js` | 6 | declaración | 152, 284, 341, 391, 466, 491 | 6 |
-| `src/Repository.js` | 65 | declaración | 302, 371, 420, 469, 522, 570, 622, 676, 727, 778, 830, 885, 963, 1038, 1127, 1185, 1258, 1332, 1406, 1461, 1566, 1626, 1733, 1794, 1873, 1901, 2012, 2119, 2226, 2318, 2464, 2553, 2653, 2742, 2790, 2871, 3089, 3124, 3446, 3688, 3930, 4242, 4347, 4559, 4820, 4894, 4951, 5059, 5234, 5409, 5476, 5654, 5832, 6015, 6197, 6383, 6563, 6887, 7054, 7213, 7381, 7587, 7826, 8026, 8335 | 65 |
-
-Todas las coincidencias son declaraciones con nombres del vocabulario de prueba; no se ocultaron para reducir el recuento. Causa raíz: el detalle interno y el protocolo público compartían el mismo bucle de emisión.
-
-### Diagnóstico de ambigüedades
-
-| Archivo | Inicio real | Fragmento mínimo | Estado previo | Carácter interpretado | Construcción real | Causa |
-|---|---:|---|---|---|---|---|
-| `DesviacionService.js` | 781 | `.replace(/"/g, '""')` | código, después de `(` | `"` tomado como inicio de string doble | regex literal `/"/g` | el scanner no reconocía regex; el estado erróneo acabó reportado al EOF como línea 904 |
-| `ReportService.js` | 313 | `.replace(/"/g, '""')` | código, después de `(` | `"` tomado como inicio de string doble | regex literal `/"/g` | misma causa; el estado erróneo acabó reportado al EOF como línea 427 |
-
-Clasificación de ambos: **FALSE_AMBIGUITY_REGEX_LITERAL**. Los literales están cerrados, tienen flag `g` y aparecen en contexto conservador de inicio de expresión. No existe error real de sintaxis deducible y no se modifica `src`.
-
-### Cambios del detector
-
-`maskNonCode` reconoce ahora regex después de contextos conservadores: inicio, `(`, `[`, `{`, coma, `=`, `:`, `!`, `?`, `;`, `return`, `case` y `=>`. Enmascara escapes, clases, barras/comillas internas y flags preservando líneas. Después de identificador, número, string cerrado, `)` o `]`, `/` se conserva como división. Un contexto restante genera `AMBIGUOUS_SLASH_CONTEXT`; regex, string, template o comentario de bloque sin cierre continúan advertidos. No hay excepciones por archivo ni dependencias nuevas.
-
-`validateContamination` mantiene evidencia detallada por coincidencia como objetos `path`, `line`, `kind`, `name`, `reason`, ordenados por ruta/línea/nombre. Para mixtos emite una única línea pública por archivo: `EMBEDDED_TEST_CODE path=... matches=... lines=... kinds=...`; líneas se deduplican y ordenan, tipos se deduplican. El proyecto real debe emitir exactamente dos WARN públicos, preservando las 71 evidencias. `runCheck` devuelve la evidencia estructurada y el futuro `validation-report.json` la conserva en `embeddedTestEvidence`. Las entradas se procesan por ruta para salida determinista.
-
-### Pruebas redactadas, no ejecutadas
-
-Se conservan los 53 casos y se añaden 20, numerados 54–73: consolidación de múltiples pruebas; detalle completo; líneas únicas/ordenadas; dos archivos/dos WARN; cinco mixtos; regex con comillas, `\/`, clases, barra interna y flags; división numérica/identificadores; comentario tras división; slash ambiguo; literal realmente abierto; casos reales de Desviacion/Report; determinismo con orden invertido; y recuento público real igual a dos. Total esperado: **73**. No se ejecutó ninguno.
-
-README documenta advertencia consolidada frente a evidencia, deduplicación, regex/división, ambigüedades, limitaciones y significado del recuento público. No afirma que la corrección esté probada.
-
-### Hashes, integridad y riesgos
-
-| Archivo | SHA-256 anterior | Bytes posteriores | SHA-256 posterior |
-|---|---|---:|---|
-| `build-packages.mjs` | `b6aa3708056748c8c081c4eed217694a2c8eb31c6a2b3d76a6edd6d9b98b8630` | 30.056 | `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61` |
-| `build-packages.test.mjs` | `973d03e9c810fa4a601f3f48ca0d672a018668529bd5cca5f98bf86f2b45ce74` | 24.052 | `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7` |
-| `README.md` | `12c024c76c4c06149c334f26febec5c79f6996fc65525966623a7afee59b63e6` | 10.950 | `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d` |
-| `package-map.json` | `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b` | 32.504 | sin cambios |
-
-Riesgos/limitaciones: no es parser completo; flags desconocidos o gramática contextual compleja requieren revisión; `}` y otros contextos no concluyentes generan warning deliberado; templates se ignoran enteros; comportamiento y sintaxis quedan pendientes de retest. Sin imports nuevos, red, procesos hijo, evaluación o ejecución de fuentes.
-
-Resultado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO — NO_GO vigente**. Gate solicitado: **P0-RETEST03 — sintaxis, suite ampliada, `--check` y validaciones de argumentos, sin construir paquetes**. P0-BUILD01 continúa bloqueado.
-
-## P0-RETEST03 — Retest del contrato corregido
-
-### Autorización y baseline previo
-
-Gate P0-FIX04 aprobado estáticamente. Autorizados Node local, una ejecución de la suite, `--check`, combinaciones inválidas, temporal/log y roadmap. Prohibidos cambios de código, construcción válida, paquetes, cambios `src`, red/Drive/API/OAuth/`clasp`, exportación, despliegue, commit y P0-BUILD01.
-
-Baseline 2026-08-05: Node v24.18.0; rama `main`; commit `752e1c14ea3d9cadff102aa52780616d0e58336a`; Git esperado. Hashes P0-FIX04: detector `74d36176f37f8ef187d5ad8f534094028957862e7350971a0d18c6b9d5e51f61`; suite `b1398a876c7942173e855fe7c1d65ace2e3da07df4e31e77bb961282f6e002f7`; README `a86e3cebb393130308552f5dbc0a191466340a58cb4baa34649118501895500d`; matriz `b06a0d3ebca394aa451995ff5c48d4e416bb54e36abd72ef588c3c7766759a5b`. Manual `a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc`; roadmap inicial `3bc23fe28bf27ccc1f482b14bd2f4e2f9a7afac152a4b111142098ecd35ed058`.
-
-Integridad: 110 fuentes/0 divergencias; 134 entradas/134 rutas únicas; una declaración global de `probarReporteIntegridad`; `Código.js` auxiliar/C. Recuentos 63 production, 7 test, 35 auxiliary, 24 excluded, 5 mixed; A=68, B=7, C=35, NONE=24.
-
-Temporal exclusivo: `C:\Users\pc\AppData\Local\Temp\P0-RETEST03-20260805-070009-532ab11722ae4ddc9be39a1da41a7a05`; log `P0-RETEST03-20260805-070009.log`; inventario previo 138 archivos. Orden: sintaxis 2/2; suite una vez; `--check --all`; integridad; argumentos/destinos; seguridad. Parada ante cualquier código, recuento, warning, evidencia, hash o escritura diferente, sin reintento ni edición.
-
-| Retest | Esperado | Obtenido | Código | Escrituras | Estado |
-| ------ | -------- | -------- | -----: | ---------- | ------ |
+En el cierre P0-COMMIT01 se previó no volver a modificar el roadmap dentro de aquella secuencia de commit. La reparación documental posterior DOC-FIX01 queda expresamente trazada a continuación. El commit permanece únicamente local, sin remoto, push, exportación ni despliegue.
+
+### Nota posterior — DOC-FIX01
+
+Esta reparación documental se realizó después del commit `b4d2524`. Se limitó a reorganizar las fases P0 y corregir la atribución de evidencias ya existentes; no reejecutó pruebas ni modificó código. El roadmap reparado todavía no forma parte de un nuevo commit.
+## DOC-CLOSE01 — Trazabilidad documental posterior al commit
+
+- DOC-REC01 detectó desorden y atribuciones contradictorias; resultado: NO_GO_DOCUMENTAL.
+- DOC-FIX01 reordenó las 19 fases P0 y corrigió sus atribuciones; resultado verificado.
+- DOC-REVIEW01 confirmó la conservación semántica y detectó tablas fragmentadas.
+- DOC-FIX02 añadió cinco cabeceras y cinco separadores, y detectó cambios no autorizados de finales de línea.
+- DOC-EOL01 verificó 15 conversiones preexistentes de CRLF a LF.
+- DOC-FIX03, DOC-FIX03B y DOC-FIX03C produjeron candidatos físicos válidos; las publicaciones fallaron o fueron recuperadas sin pérdida.
+- DOC-FORMAL01 identificó el falso negativo del marcador y la fragmentación de la tabla PanelCampana.
+- DOC-FIX04 reparó PanelCampana en una candidata y detectó que la fila Administración tenía siete columnas.
+- DOC-FIX05 corrigió Administración a seis columnas y validó 100/100 tablas.
+- DOC-UNTRACKED01 y DOC-HEAD01 identificaron y verificaron el fixture posteriormente comprometido.
+- DOC-PREVAL01 identificó una deriva de alcance en el contador de hashes.
+- DOC-PUBLISH02E publicó localmente el roadmap con coincidencia byte a byte con la candidata, 28/28 controles, 100/100 tablas, 1.569 filas y cero defectos.
+- El baseline publicado por DOC-PUBLISH02E, anterior a DOC-CLOSE01, es 045cbe0c70a688ad54aee8f1627505c9987dadd37d8304244956b24437aaac88.
+- Quedan confirmadas la restauración de 15 terminadores preexistentes, la reparación de PanelCampana y la corrección de Administración; no se reejecutaron pruebas productivas ni se realizaron builds, Apps Script, clasp, red, exportación o despliegue. NO_GO REMOTO VIGENTE.
+- La incorporación de DOC-CLOSE01 se realiza mediante gates independientes de validación, publicación y commit.
