@@ -3512,16 +3512,6 @@ function abrirIntegridad() {
     .showSidebar(html);
 }
 
-function probarReporteIntegridad() {
-  console.log(
-    JSON.stringify(
-      obtenerReporteIntegridad(),
-      null,
-      2
-    )
-  );
-}
-
 function detectarRelacionesMaterialConPadresInactivos_(agregar) {
   var productosPorId = {};
   var tareasPorId = {};

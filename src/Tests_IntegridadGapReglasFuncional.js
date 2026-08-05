@@ -758,3 +758,17 @@ function ejecutarSuiteIntegridadGap21ReglasFuncionalesLote3() {
   ].forEach(function (p) { p(); });
   return 'result=OK lote=3';
 }
+
+/* ---------------------------------------------------------------- */
+/* PRUEBAS MANUALES DEL REPORTE DE INTEGRIDAD                       */
+/* ---------------------------------------------------------------- */
+
+function probarReporteIntegridad() {
+  console.log(
+    JSON.stringify(
+      obtenerReporteIntegridad(),
+      null,
+      2
+    )
+  );
+}
