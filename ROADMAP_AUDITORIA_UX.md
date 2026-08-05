@@ -1889,6 +1889,27 @@ Se intercambian los pasos 1 y 2 sugeridos originalmente: observabilidad precede 
 | Integridad paquete | ejecución local simulada | 134 decisiones, hash, HTML, manifest | temporal sin publicar |
 | Reversión | simulación local/DEV aislado | elimina solo IDs de ejecución | autorización específica |
 
+#### Ampliación para baseline dinámico y UX
+
+F08.6 continúa siendo un plan no ejecutado. Su objetivo ampliado es obtener evidencia dinámica y una línea base UX antes de implementar optimizaciones; cualquier ejecución requiere los gates humanos posteriores de F08.7 y los criterios de F08.8.
+
+- Entorno: la ejecución futura se limitará al navegador y a una Sheet DEV cuya identidad, URL, cuenta autorizada y separación de producción hayan sido verificadas. Producción queda prohibida.
+- Datos: solo podrán utilizarse datos sintéticos, identificables mediante la etiqueta única `UXF08-AAAAMMDD-HHMM`, reversibles e inventariados. No se modificarán registros preexistentes.
+- Progresión: D0 será solo lectura; D1, mínimo funcional; D2, flujo operativo coherente; D3, volumen operativo realista con cantidades aún pendientes de justificación; D4, carga elevada o casos límite bajo un gate independiente.
+- Ejecución: se realizará un caso por vez, con lectura previa, escritura enumerada, verificación posterior e inventario de cada registro creado o modificado. Cualquier `ERR`, `NO_GO`, identidad ambigua, pérdida de sesión, efecto destructivo o imposibilidad de verificar detendrá la ejecución.
+- Evidencias: cada caso conservará estado inicial, estado previo al guardado, resultado posterior, historial y trazabilidad asociados, mensajes de éxito o error y evidencia de limpieza.
+- Métricas: se registrarán tarea completada o no completada, tiempo, pasos o interacciones, cambios de contexto, errores, bloqueos, necesidad de ayuda, capacidad de recuperación y fricción observada.
+- Separación de medidas: el tiempo técnico corresponde a automatización o ejecución por el agente; el tiempo humano solo será válido cuando una persona realice la tarea; la valoración humana se registrará separadamente.
+- Verificación humana: claridad, encontrabilidad, esfuerzo, comodidad, confianza y recuperación permanecerán pendientes hasta que una persona las valore; no se inventarán respuestas.
+- Espacios operativos: se comprobarán orden y separación entre operación, administración, configuración, historial y pruebas, además de navegación, formularios, paneles, foco, teclado, accesibilidad, feedback y prevención de errores.
+- Controles transversales: antes de los casos funcionales se verificarán identidad DEV, cuenta y separación de producción; después de cualquier escritura se consultarán resultado, historial y trazabilidad; el cierre exigirá limpieza final y residuos cero.
+- Limpieza: se realizará en orden inverso de dependencias, seguida de una comprobación explícita. Si queda cualquier residuo, se detendrá la ejecución y se solicitará intervención humana.
+- Recomendaciones: cada hallazgo futuro se clasificará P0, P1 o P2 e incluirá evidencia, riesgo, impacto, cambio mínimo, criterio de aceptación, prueba de regresión, reversibilidad y gate humano.
+- No duplicación: no se repetirán pruebas unitarias P0, inventarios, validaciones estáticas campo a campo, integridad o empaquetado salvo que exista una pregunta concreta de integración.
+- Separación de fases: F08.6 obtendrá el baseline y formulará recomendaciones. Una fase posterior expresamente autorizada podrá implementar y comparar mejoras reutilizando la evidencia; no se crea F09 ni un proyecto paralelo denominado `UX-LAB`.
+- Gates: serán obligatorios los gates de identidad DEV y cuenta, planificación ejecutable, autorización de navegador, autorización de escrituras D1/D2, validación humana, limpieza y cierre.
+
+El `NO_GO REMOTO VIGENTE` continúa hasta que un gate humano conceda una excepción limitada a una Sheet DEV concreta. Esta ampliación no autoriza navegador, escrituras ni validación dinámica.
 ### F08.7 — Gates humanos obligatorios
 
 1. G-BACKLOG: aprobar prioridades y decisiones materiales.
