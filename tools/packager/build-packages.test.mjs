@@ -28,6 +28,7 @@ import {
   parseArgs,
   preservePrimaryError,
   readPackageMap,
+  resolveModuleClosure,
   runCheck,
   safeCleanupTemp,
   validateContamination,
@@ -107,15 +108,15 @@ const expectedMixed = [
   'src/Validation.js',
 ];
 
-test('01 universo de 135 entradas', () => {
+test('01 universo de 136 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 135);
-  assertEqual(map.universeExpected, 135);
+  assertEqual(map.entries.length, 136);
+  assertEqual(map.universeExpected, 136);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 135);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 136);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -475,8 +476,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [63, 7, 35, 25, 5]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [68, 7, 35, 25]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [63, 7, 35, 26, 5]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [68, 7, 35, 26]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -873,6 +874,74 @@ test('112 ausencia de localeCompare en rutas canÃ³nicas', () => {
 test('113 comparaciÃ³n canÃ³nica usa Buffer.compare sin locale', () => {
   const source = readFileSync(path.join(HERE, 'build-packages.mjs'), 'utf8');
   assert(source.includes("Buffer.compare(Buffer.from(canonicalPath(left), 'utf8'), Buffer.from(canonicalPath(right), 'utf8'))"));
+});
+
+test('114 recuento de módulos en package A', () => {
+  const map = readPackageMap(MAP_PATH);
+  const count = (moduleName) => map.entries.filter((entry) => entry.package === 'A' && entry.module === moduleName).length;
+  assertDeepEqual(
+    { CORE: count('CORE'), GANTT: count('GANTT'), ECONOMICO: count('ECONOMICO'), IMPACTO: count('IMPACTO'), COMPRAS: count('COMPRAS'), CONVOCATORIAS: count('CONVOCATORIAS') },
+    { CORE: 55, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
+  );
+});
+
+test('115 entradas fuera de package A no declaran módulo', () => {
+  const map = readPackageMap(MAP_PATH);
+  assert(map.entries.filter((entry) => entry.package !== 'A').every((entry) => entry.module === null));
+});
+
+test('116 moduleDependencies declara exactamente los seis módulos válidos', () => {
+  const map = readPackageMap(MAP_PATH);
+  assertDeepEqual(Object.keys(map.moduleDependencies).sort(), ['COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'GANTT', 'IMPACTO']);
+});
+
+test('117 resolveModuleClosure resuelve cierre transitivo', () => {
+  const map = readPackageMap(MAP_PATH);
+  const closure = resolveModuleClosure(['IMPACTO'], map.moduleDependencies);
+  assertDeepEqual([...closure].sort(), ['CORE', 'ECONOMICO', 'IMPACTO']);
+});
+
+test('118 resolveModuleClosure sin dependencias devuelve solo el módulo pedido', () => {
+  const map = readPackageMap(MAP_PATH);
+  const closure = resolveModuleClosure(['CORE'], map.moduleDependencies);
+  assertDeepEqual([...closure], ['CORE']);
+});
+
+test('119 --modules exige selección exclusiva frente a --package y --all', () => {
+  expectError(() => parseArgs(['--check', '--modules', 'CORE', '--package', 'A']), 'SELECCION_REQUIERE_PACKAGE_O_ALL_O_MODULES');
+  expectError(() => parseArgs(['--check', '--modules', 'CORE', '--all']), 'SELECCION_REQUIERE_PACKAGE_O_ALL_O_MODULES');
+  const parsed = parseArgs(['--check', '--modules', 'GANTT,CORE']);
+  assertDeepEqual(parsed.modules, ['GANTT', 'CORE']);
+});
+
+test('120 runCheck rechaza módulo desconocido', () => {
+  const map = readPackageMap(MAP_PATH);
+  const result = runCheck({ projectRoot: PROJECT_ROOT, map, packages: ['A'], modules: ['NOPE'] });
+  assert(result.errors.some((item) => item.includes('MODULO_DESCONOCIDO')));
+});
+
+test('121 runCheck acepta un módulo hoja válido', () => {
+  const map = readPackageMap(MAP_PATH);
+  const result = runCheck({ projectRoot: PROJECT_ROOT, map, packages: ['A'], modules: ['GANTT'] });
+  assertDeepEqual(result.errors, []);
+});
+
+test('122 buildPackages filtra archivos por cierre de módulos', () => {
+  const map = readPackageMap(MAP_PATH);
+  const parent = ownTemp();
+  try {
+    const output = path.join(parent, 'out');
+    const built = buildPackages({ projectRoot: PROJECT_ROOT, map, packages: ['A'], outputPath: output, runId: 'TEST', builtAt: new Date().toISOString(), modules: ['ECONOMICO'] });
+    const manifest = JSON.parse(readFileSync(path.join(built.output, 'manifest.json'), 'utf8'));
+    assertDeepEqual(manifest.modules.requested, ['ECONOMICO']);
+    assertDeepEqual(manifest.modules.resolved, ['CORE', 'ECONOMICO']);
+    const expectedFiles = map.entries.filter((entry) => entry.package === 'A' && (entry.module === 'CORE' || entry.module === 'ECONOMICO')).length;
+    assertEqual(manifest.entries.length, expectedFiles);
+    assert(manifest.entries.some((entry) => entry.path === 'src/CosteService.js'));
+    assert(!manifest.entries.some((entry) => entry.path === 'src/FichaMaterialService.js'));
+  } finally {
+    removeOwnTemp(parent);
+  }
 });
 
 async function main() {

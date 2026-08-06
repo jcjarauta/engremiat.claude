@@ -39,6 +39,8 @@ const DEFAULT_MAP = path.join(HERE, 'package-map.json');
 const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
+const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS']);
+const EXPECTED_MODULE_COUNTS = { CORE: 55, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -74,28 +76,43 @@ class PackagerError extends Error {
 export function printHelp(write = console.log) {
   write([
     'Uso:',
-    '  node tools/packager/build-packages.mjs --check (--package A|B|C | --all) [--project-root <ruta>]',
-    '  node tools/packager/build-packages.mjs --build --output <ruta> (--package A|B|C | --all) [--project-root <ruta>]',
+    '  node tools/packager/build-packages.mjs --check (--package A|B|C | --all | --modules M1,M2) [--project-root <ruta>]',
+    '  node tools/packager/build-packages.mjs --build --output <ruta> (--package A|B|C | --all | --modules M1,M2) [--project-root <ruta>]',
+    '',
+    'Módulos válidos (subconjunto de package A, cierre transitivo por moduleDependencies):',
+    `  ${[...VALID_MODULES].sort().join(', ')}`,
     '',
     'Sin argumentos muestra esta ayuda y no escribe.',
   ].join('\n'));
 }
 
+export function resolveModuleClosure(requestedModules, moduleDependencies) {
+  const closure = new Set();
+  const visit = (moduleName) => {
+    if (closure.has(moduleName)) return;
+    closure.add(moduleName);
+    for (const dep of moduleDependencies?.[moduleName] ?? []) visit(dep);
+  };
+  for (const moduleName of requestedModules) visit(moduleName);
+  return closure;
+}
+
 export function parseArgs(argv) {
   if (argv.length === 0) return { helpOnly: true };
-  const result = { mode: null, output: null, package: null, all: false, projectRoot: null, helpOnly: false };
+  const result = { mode: null, output: null, package: null, all: false, modules: null, projectRoot: null, helpOnly: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--check' || arg === '--build') {
       if (result.mode) throw new PackagerError('MODO_DUPLICADO', EXIT_CODES.ARGUMENTS);
       result.mode = arg.slice(2);
-    } else if (arg === '--output' || arg === '--package' || arg === '--project-root') {
+    } else if (arg === '--output' || arg === '--package' || arg === '--project-root' || arg === '--modules') {
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) throw new PackagerError(`OPCION_INCOMPLETA ${arg}`, EXIT_CODES.ARGUMENTS);
       index += 1;
       if (arg === '--output') result.output = value;
       if (arg === '--package') result.package = value;
       if (arg === '--project-root') result.projectRoot = value;
+      if (arg === '--modules') result.modules = value.split(',').map((item) => item.trim()).filter((item) => item.length > 0);
     } else if (arg === '--all') {
       result.all = true;
     } else if (arg === '--help' || arg === '-h') {
@@ -106,8 +123,10 @@ export function parseArgs(argv) {
     }
   }
   if (!result.mode) throw new PackagerError('FALTA_MODO_CHECK_BUILD', EXIT_CODES.ARGUMENTS);
-  if (result.all === Boolean(result.package)) throw new PackagerError('SELECCION_REQUIERE_PACKAGE_O_ALL', EXIT_CODES.ARGUMENTS);
+  const selectionCount = [Boolean(result.package), result.all, Boolean(result.modules)].filter(Boolean).length;
+  if (selectionCount !== 1) throw new PackagerError('SELECCION_REQUIERE_PACKAGE_O_ALL_O_MODULES', EXIT_CODES.ARGUMENTS);
   if (result.package && !['A', 'B', 'C'].includes(result.package)) throw new PackagerError('PAQUETE_INVALIDO', EXIT_CODES.ARGUMENTS);
+  if (result.modules && result.modules.length === 0) throw new PackagerError('MODULES_VACIO', EXIT_CODES.ARGUMENTS);
   if (result.mode === 'check' && result.output) throw new PackagerError('CHECK_NO_ADMITE_OUTPUT', EXIT_CODES.ARGUMENTS);
   if (result.mode === 'build' && !result.output) throw new PackagerError('BUILD_REQUIERE_OUTPUT', EXIT_CODES.ARGUMENTS);
   return result;
@@ -180,11 +199,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 135 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 136 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 135) errors.push(`UNIVERSO_ESPERADO_135 actual=${map.entries.length}`);
+  if (map.entries.length !== 136) errors.push(`UNIVERSO_ESPERADO_136 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -193,8 +212,9 @@ export function validatePackageMap(map) {
   }
   const seen = new Set();
   const categoryCounts = new Map();
+  const moduleCounts = new Map();
   for (const entry of map.entries) {
-    const fields = ['path', 'type', 'category', 'package', 'expectedSha256', 'required', 'reason', 'mixed'];
+    const fields = ['path', 'type', 'category', 'package', 'expectedSha256', 'required', 'reason', 'mixed', 'module'];
     if (fields.some((field) => !(field in entry))) {
       errors.push(`CAMPOS_INCOMPLETOS ${entry.path ?? '(sin ruta)'}`);
       continue;
@@ -214,11 +234,31 @@ export function validatePackageMap(map) {
     const expectedPackage = { production: 'A', test: 'B', auxiliary: 'C', excluded: 'NONE', mixed: 'A' }[entry.category];
     if (entry.package !== expectedPackage) errors.push(`ASIGNACION_INVALIDA ${entry.path}`);
     if (entry.mixed !== (entry.category === 'mixed')) errors.push(`BANDERA_MIXTA_INVALIDA ${entry.path}`);
+    if (entry.package === 'A') {
+      if (!VALID_MODULES.has(entry.module)) errors.push(`MODULO_INVALIDO ${entry.path}`);
+      else moduleCounts.set(entry.module, (moduleCounts.get(entry.module) ?? 0) + 1);
+    } else if (entry.module !== null) {
+      errors.push(`MODULO_DEBE_SER_NULO ${entry.path}`);
+    }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 63, test: 7, auxiliary: 35, excluded: 25, mixed: 5 };
+  const expectedCounts = { production: 63, test: 7, auxiliary: 35, excluded: 26, mixed: 5 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
+  }
+  for (const [moduleName, count] of Object.entries(EXPECTED_MODULE_COUNTS)) {
+    if (moduleCounts.get(moduleName) !== count) errors.push(`RECUENTO_MODULO_${moduleName} esperado=${count} actual=${moduleCounts.get(moduleName) ?? 0}`);
+  }
+  if (!map.moduleDependencies || typeof map.moduleDependencies !== 'object') {
+    errors.push('FALTA_MODULE_DEPENDENCIES');
+  } else {
+    const declaredModules = Object.keys(map.moduleDependencies).sort(compareCanonicalPaths);
+    const expectedModules = [...VALID_MODULES].sort(compareCanonicalPaths);
+    if (JSON.stringify(declaredModules) !== JSON.stringify(expectedModules)) errors.push('MODULE_DEPENDENCIES_CLAVES_NO_COINCIDEN');
+    for (const [moduleName, deps] of Object.entries(map.moduleDependencies)) {
+      if (!Array.isArray(deps) || deps.some((dep) => !VALID_MODULES.has(dep))) errors.push(`MODULE_DEPENDENCIES_INVALIDO ${moduleName}`);
+      else if (deps.includes(moduleName)) errors.push(`MODULE_DEPENDENCIES_AUTOREFERENCIA ${moduleName}`);
+    }
   }
   const tests = map.entries.filter((entry) => entry.category === 'test').map((entry) => canonicalPath(entry.path)).sort(compareCanonicalPaths);
   if (JSON.stringify(tests) !== JSON.stringify([...TEST_FILES].map(canonicalPath).sort(compareCanonicalPaths))) errors.push('SIETE_TESTS_NO_COINCIDEN');
@@ -547,22 +587,25 @@ function getGitInfo(projectRoot) {
   }
 }
 
-function packageEntries(validatedFiles, packageName) {
+function packageEntries(validatedFiles, packageName, moduleClosure = null) {
   return validatedFiles
     .filter((entry) => entry.package === packageName)
+    .filter((entry) => !moduleClosure || moduleClosure.has(entry.module))
     .map((entry) => ({ ...entry, path: canonicalPath(entry.path) }))
     .sort((a, b) => compareCanonicalPaths(a.path, b.path));
 }
 
-export function createManifest({ projectRoot, map, packageName, entries, allValidatedFiles = entries, builtAt = new Date().toISOString() }) {
+export function createManifest({ projectRoot, map, packageName, entries, allValidatedFiles = entries, builtAt = new Date().toISOString(), modules = null }) {
   const git = getGitInfo(projectRoot);
   const aEntries = packageName === 'A' ? entries : packageEntries(allValidatedFiles, 'A');
   const aAggregate = aggregateHash(aEntries);
+  const moduleClosure = modules ? resolveModuleClosure(modules, map.moduleDependencies) : null;
   return {
     schemaVersion: 1,
     generator: { name: 'engremiat-local-packager', version: '1-static' },
     package: packageName,
     status: PACKAGE_STATUS[packageName],
+    modules: moduleClosure ? { requested: [...modules].sort(compareCanonicalPaths), resolved: [...moduleClosure].sort(compareCanonicalPaths) } : null,
     commitLocal: git.commit,
     branch: git.branch,
     builtAtUtc: builtAt,
@@ -649,12 +692,16 @@ function copyAndVerifyPackage(packageDir, entries) {
   }
 }
 
-export function runCheck({ projectRoot, map, packages }) {
+export function runCheck({ projectRoot, map, packages, modules = null }) {
   const errors = [...validatePackageMap(map)];
   const warnings = [];
   const collisions = validateCanonicalPathSet(map.entries?.map((entry) => entry.path) ?? []);
   warnings.push(...collisions.warnings);
   if (collisions.warnings.length > 0) errors.push('CANONICAL_PATH_REVIEW_REQUIRED');
+  if (modules) {
+    const unknown = modules.filter((moduleName) => !VALID_MODULES.has(moduleName));
+    if (unknown.length > 0) errors.push(`MODULO_DESCONOCIDO ${unknown.join(',')}`);
+  }
   let evidence = [];
   if (errors.length === 0) {
     const universe = validateUniverse(projectRoot, map);
@@ -667,9 +714,15 @@ export function runCheck({ projectRoot, map, packages }) {
       evidence = contamination.evidence;
     }
   }
+  const moduleClosure = modules && errors.length === 0 ? resolveModuleClosure(modules, map.moduleDependencies) : null;
   for (const packageName of [...packages].sort(compareCanonicalPaths)) {
-    const count = map.entries.filter((entry) => entry.package === packageName).length;
-    if (count === 0) errors.push(`PAQUETE_VACIO ${packageName}`);
+    if (moduleClosure && packageName === 'A') {
+      const count = map.entries.filter((entry) => entry.package === packageName && moduleClosure.has(entry.module)).length;
+      if (count === 0) errors.push(`MODULO_VACIO ${[...modules].sort(compareCanonicalPaths).join(',')}`);
+    } else {
+      const count = map.entries.filter((entry) => entry.package === packageName).length;
+      if (count === 0) errors.push(`PAQUETE_VACIO ${packageName}`);
+    }
   }
   return {
     ok: errors.length === 0,
@@ -679,36 +732,48 @@ export function runCheck({ projectRoot, map, packages }) {
   };
 }
 
-export function buildPackages({ projectRoot, map, packages, outputPath, runId, builtAt }) {
+export function buildPackages({ projectRoot, map, packages, outputPath, runId, builtAt, modules = null }) {
   const output = validateOutputPath(projectRoot, outputPath);
   const parent = path.dirname(output);
   let tempDir = null;
   try {
     const mapErrors = 'schemaVersion' in map ? validatePackageMap(map) : [];
     if (mapErrors.length > 0) throw new PackagerError(mapErrors[0], EXIT_CODES.CONTRACT, { errors: mapErrors });
+    if (modules) {
+      const unknown = modules.filter((moduleName) => !VALID_MODULES.has(moduleName));
+      if (unknown.length > 0) throw new PackagerError(`MODULO_DESCONOCIDO ${unknown.join(',')}`, EXIT_CODES.CONTRACT);
+    }
     const collisionWarnings = validateCanonicalPathSet(map.entries.map((entry) => entry.path)).warnings;
     if (collisionWarnings.length > 0) throw new PackagerError(`CANONICAL_PATH_REVIEW_REQUIRED ${collisionWarnings[0]}`, EXIT_CODES.CONTRACT, { warnings: collisionWarnings });
     const validated = validateAndReadFiles(projectRoot, map);
     if (validated.errors.length > 0) throw new PackagerError(validated.errors[0], EXIT_CODES.CONTRACT, { errors: validated.errors });
     const contamination = validateContamination(validated.validatedFiles);
     if (contamination.errors.length > 0) throw new PackagerError(`CONTAMINACION ${contamination.errors[0]}`, EXIT_CODES.CONTRACT, { errors: contamination.errors });
+    const moduleClosure = modules ? resolveModuleClosure(modules, map.moduleDependencies) : null;
     for (const packageName of [...packages].sort(compareCanonicalPaths)) {
-      if (!validated.validatedFiles.some((entry) => entry.package === packageName)) throw new PackagerError(`PAQUETE_VACIO ${packageName}`, EXIT_CODES.CONTRACT);
+      if (moduleClosure && packageName === 'A') {
+        if (!validated.validatedFiles.some((entry) => entry.package === packageName && moduleClosure.has(entry.module))) {
+          throw new PackagerError(`MODULO_VACIO ${[...modules].sort(compareCanonicalPaths).join(',')}`, EXIT_CODES.CONTRACT);
+        }
+      } else if (!validated.validatedFiles.some((entry) => entry.package === packageName)) {
+        throw new PackagerError(`PAQUETE_VACIO ${packageName}`, EXIT_CODES.CONTRACT);
+      }
     }
     const contaminationEvidence = contamination.evidence;
     tempDir = mkdtempSync(path.join(parent, '.engremiat-packager-'));
     const logLines = [
       `runId=${runId}`,
       `packages=${packages.join(',')}`,
+      `modules=${modules ? modules.join(',') : 'ninguno'}`,
       `temporaryPath=${tempDir}`,
       `outputPath=${output}`,
     ];
     for (const packageName of [...packages].sort(compareCanonicalPaths)) {
-      const entries = packageEntries(validated.validatedFiles, packageName);
+      const entries = packageEntries(validated.validatedFiles, packageName, packageName === 'A' ? moduleClosure : null);
       const packageDir = packages.length === 1 ? tempDir : path.join(tempDir, packageName);
       if (packages.length > 1) mkdirSync(packageDir, { recursive: true });
       copyAndVerifyPackage(packageDir, entries);
-      const manifest = createManifest({ projectRoot, map, packageName, entries, allValidatedFiles: validated.validatedFiles, builtAt });
+      const manifest = createManifest({ projectRoot, map, packageName, entries, allValidatedFiles: validated.validatedFiles, builtAt, modules: packageName === 'A' ? modules : null });
       const report = { schemaVersion: 1, package: packageName, ok: true, warnings: packageName === 'C' ? [PACKAGE_STATUS.C] : [], embeddedTestEvidence: contaminationEvidence, aggregateSha256: manifest.aggregateSha256 };
       writeFileSync(path.join(packageDir, 'manifest.json'), stableJson(manifest), { encoding: 'utf8', flag: 'wx' });
       writeFileSync(path.join(packageDir, 'validation-report.json'), stableJson(report), { encoding: 'utf8', flag: 'wx' });
@@ -740,18 +805,18 @@ export function main(argv = process.argv.slice(2)) {
     }
     const projectRoot = realpathSync(options.projectRoot ? path.resolve(options.projectRoot) : path.resolve(HERE, '..', '..'));
     const map = readPackageMap();
-    const packages = options.all ? ['A', 'B', 'C'] : [options.package];
-    const checked = runCheck({ projectRoot, map, packages });
+    const packages = options.all ? ['A', 'B', 'C'] : options.modules ? ['A'] : [options.package];
+    const checked = runCheck({ projectRoot, map, packages, modules: options.modules });
     for (const warning of checked.warnings) logLine('WARN', warning);
     for (const error of checked.errors) logLine('ERR', error);
     if (!checked.ok) throw new PackagerError('VALIDACION_FALLIDA', EXIT_CODES.CONTRACT);
-    logLine('OK', `validacion_estatica packages=${packages.join(',')}`);
+    logLine('OK', `validacion_estatica packages=${packages.join(',')} modules=${options.modules ? options.modules.join(',') : 'ninguno'}`);
     if (options.mode === 'check') {
       logLine('NEXT', 'solicitar_gate_para_build');
       logLine('ENGREMIAT_PACKAGE_END', 'result=OK mode=check');
       return EXIT_CODES.OK;
     }
-    const built = buildPackages({ projectRoot, map, packages, outputPath: options.output, runId, builtAt: new Date().toISOString() });
+    const built = buildPackages({ projectRoot, map, packages, outputPath: options.output, runId, builtAt: new Date().toISOString(), modules: options.modules });
     logLine('OK', `construccion_local packages=${built.packages.join(',')}`);
     logLine('NEXT', 'revisar_manifest_y_solicitar_gate_exportacion');
     logLine('ENGREMIAT_PACKAGE_END', 'result=OK mode=build');

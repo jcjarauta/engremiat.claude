@@ -2,7 +2,7 @@
 
 Estado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO**.
 
-Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 134 archivos y el propio empaquetador lo excluye literalmente del escaneo.
+Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 136 archivos y el propio empaquetador lo excluye literalmente del escaneo.
 
 ## Propósito
 
@@ -18,7 +18,7 @@ Evita selección implícita, pruebas explícitas en A, pérdida de HTML o manifi
 
 | Archivo | Responsabilidad |
 |---|---|
-| `package-map.json` | allowlist exacta de las 134 rutas originales |
+| `package-map.json` | allowlist exacta de las 136 rutas originales, con `module` por archivo de A y `moduleDependencies` |
 | `build-packages.mjs` | CLI, validación, escaneo textual y futura construcción |
 | `build-packages.test.mjs` | 73 pruebas locales redactadas; las 20 de P0-FIX04 aún no ejecutadas |
 | `README.md` | contrato, uso, seguridad, límites y gates |
@@ -29,7 +29,9 @@ Solo se usan módulos integrados de Node.js 24. No hay NPM, `package.json`, red,
 
 ### A — `PRODUCTION_WITH_DECLARED_MIXED_DEBT`
 
-Incluye las 63 entradas `production` y cinco `mixed` (68 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los siete `Tests_*`, las 35 auxiliares y 24 excluidas.
+Incluye las 63 entradas `production` y cinco `mixed` (68 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los siete `Tests_*`, las 35 auxiliares y 26 excluidas.
+
+Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (55, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcion.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/Formularios.js` (CORE) y no se separan sin refactorizarlo.
 
 No es “producción limpia”. Mantiene deuda individual en:
 
@@ -93,6 +95,9 @@ node tools/packager/build-packages.mjs --check --all
 
 node tools/packager/build-packages.mjs --build --package A --output <ruta-nueva>
 node tools/packager/build-packages.mjs --build --all --output <ruta-nueva>
+
+node tools/packager/build-packages.mjs --check --modules GANTT
+node tools/packager/build-packages.mjs --build --modules GANTT,CONVOCATORIAS --output <ruta-nueva>
 ```
 
 Opciones:
@@ -101,10 +106,11 @@ Opciones:
 - `--build`: habilita construcción local; exige `--output`.
 - `--output <ruta>`: destino nuevo y explícito.
 - `--package A|B|C`: selecciona exactamente uno.
-- `--all`: selecciona A, B y C; incompatible con `--package`.
+- `--all`: selecciona A, B y C; incompatible con `--package`/`--modules`.
+- `--modules M1,M2`: selecciona un subconjunto de A por módulo lógico (`CORE`, `GANTT`, `ECONOMICO`, `IMPACTO`, `COMPRAS`, `CONVOCATORIAS`); resuelve automáticamente el cierre transitivo declarado en `moduleDependencies` (p.ej. pedir `IMPACTO` incluye también `CORE` y `ECONOMICO`); incompatible con `--package`/`--all`.
 - `--project-root <ruta>`: raíz local explícita.
 
-Sin argumentos muestra ayuda y no escribe. No existe paquete predeterminado. Opciones desconocidas o incompletas fallan.
+Sin argumentos muestra ayuda y no escribe. No existe paquete ni selección predeterminados: se exige exactamente una de `--package`, `--all` o `--modules`. Opciones desconocidas, incompletas o un módulo no reconocido fallan.
 
 ## Salida, estructura y reproducibilidad
 
