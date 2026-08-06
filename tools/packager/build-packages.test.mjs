@@ -93,6 +93,7 @@ function removeOwnTemp(tempPath) {
 const expectedTests = [
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
+  'src/Tests_Ids.js',
   'src/Tests_ImportacionRecursosPersonas.js',
   'src/Tests_IntegridadGapReglasFuncional.js',
   'src/Tests_LecturaBatch.js',
@@ -102,21 +103,19 @@ const expectedTests = [
 
 const expectedMixed = [
   'src/Formularios.js',
-  'src/Ids.js',
   'src/PedidoRecepcion.js',
-  'src/Repository.js',
   'src/Validation.js',
 ];
 
-test('01 universo de 136 entradas', () => {
+test('01 universo de 137 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 136);
-  assertEqual(map.universeExpected, 136);
+  assertEqual(map.entries.length, 137);
+  assertEqual(map.universeExpected, 137);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 136);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 137);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -393,16 +392,16 @@ test('36 los cinco mixtos reales declaran MIXED_ARCHITECTURE', () => {
   assert(expectedMixed.every((item) => result.warnings.some((warning) => warning.startsWith(`MIXED_ARCHITECTURE ${item} `))));
 });
 
-test('37 Ids real contiene EMBEDDED_TEST_CODE', () => {
+test('37 Ids.js real queda sin prueba embebida tras extracción a Tests_Ids.js', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assert(result.warnings.some((item) => item.startsWith('EMBEDDED_TEST_CODE path=src/Ids.js ')));
+  assert(!result.warnings.some((item) => item.startsWith('EMBEDDED_TEST_CODE path=src/Ids.js ')));
 });
 
-test('38 Repository real contiene EMBEDDED_TEST_CODE', () => {
+test('38 Repository.js real queda sin prueba embebida tras extracción a Tests_Repository2.js', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assert(result.warnings.some((item) => item.startsWith('EMBEDDED_TEST_CODE path=src/Repository.js ')));
+  assert(!result.warnings.some((item) => item.startsWith('EMBEDDED_TEST_CODE path=src/Repository.js ')));
 });
 
 test('39 mixto sin pruebas no declara EMBEDDED_TEST_CODE', () => {
@@ -476,8 +475,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [63, 7, 35, 26, 5]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [68, 7, 35, 26]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [65, 8, 35, 26, 3]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [68, 8, 35, 26]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -516,10 +515,10 @@ test('57 dos mixtos con pruebas producen dos WARN públicos', () => {
   assertEqual(result.warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 2);
 });
 
-test('58 proyecto real conserva cinco MIXED_ARCHITECTURE', () => {
+test('58 proyecto real conserva tres MIXED_ARCHITECTURE', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 5);
+  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 3);
 });
 
 test('59 regex con comilla simple no abre string', () => {
@@ -584,10 +583,10 @@ test('72 salida consolidada es determinista con orden distinto', () => {
   assertDeepEqual(contaminationForFiles(records), contaminationForFiles([...records].reverse()));
 });
 
-test('73 proyecto real publica exactamente dos EMBEDDED_TEST_CODE', () => {
+test('73 proyecto real ya no publica EMBEDDED_TEST_CODE tras cerrar la deuda de Ids.js/Repository.js', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assertEqual(result.warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 2);
+  assertEqual(result.warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 0);
 });
 
 function validatedFixture(source, overrides = {}) {
@@ -702,14 +701,14 @@ test('85 caso 20 conserva nombre y expectativa NO_SE_PUEDE_LEER', () => {
   assert(source.includes("}), 'NO_SE_PUEDE_LEER');"));
 });
 
-test('86 embeddedTestEvidence mantiene 71 coincidencias', () => {
+test('86 embeddedTestEvidence queda vacía tras cerrar la deuda de Ids.js/Repository.js', () => {
   const result = validateAndReadFiles(PROJECT_ROOT, readPackageMap(MAP_PATH));
-  assertEqual(validateContamination(result.validatedFiles).evidence.length, 71);
+  assertEqual(validateContamination(result.validatedFiles).evidence.length, 0);
 });
 
-test('87 consolidaciÃ³n pÃºblica mantiene dos WARN', () => {
+test('87 consolidación pública ya no publica EMBEDDED_TEST_CODE', () => {
   const result = validateAndReadFiles(PROJECT_ROOT, readPackageMap(MAP_PATH));
-  assertEqual(validateContamination(result.validatedFiles).warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 2);
+  assertEqual(validateContamination(result.validatedFiles).warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 0);
 });
 
 test('88 salida determinista ante error', () => {

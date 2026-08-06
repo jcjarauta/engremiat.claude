@@ -33,12 +33,14 @@ Cada punto de entrada necesita un envoltorio de una línea en el cascarón del c
 
 Esto son entre 150 y 250 envoltorios mecánicos, generables automáticamente a partir de la matriz de módulos del packager (`tools/packager/package-map.json`) en vez de escritos a mano — es la siguiente pieza de herramienta a construir, no trabajo manual por archivo.
 
-## Siguiente paso propuesto (no iniciado)
+## Siguiente paso propuesto
 
-1. Extender `package-map.json` con un campo `module` por archivo de producción (CORE, GANTT, ECONÓMICO, IMPACTO, COMPRAS, COMPETENCIAS, CONVOCATORIAS — límites detallados en la conversación de asesoría técnica).
-2. Extender el packager para generar, además del paquete de archivos, la lista de envoltorios necesarios para un cascarón dado un conjunto de módulos.
-3. Cerrar la deuda de los 5 archivos mixtos (`Repository.js` con 51 pruebas embebidas, `Ids.js`, `Formularios.js`, `Validation.js`, `PedidoRecepcion.js`) antes de publicar la primera versión real de la librería — no tiene sentido proteger un Core que arrastra ese peso.
-4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador).
+1. ✅ **Hecho.** `package-map.json` declara `module` por archivo de A (CORE 55, GANTT 3, ECONÓMICO 1, IMPACTO 1, COMPRAS 6, CONVOCATORIAS 2) y `moduleDependencies` con el cierre transitivo. COMPETENCIAS y PRESUPUESTO/FUENTE_FINANCIACION quedan documentados como límite conocido: sus esquemas viven embebidos en `Formularios.js`, sin archivo propio.
+2. ✅ **Hecho.** `tools/packager/generate-shell-wrappers.mjs` calcula, para un conjunto de módulos, qué envoltorios de cascarón son generables (verificado en real: los 6 módulos completos no dejan huecos; un módulo aislado sí revela huecos reales por el `onOpen()` monolítico).
+3. **Parcialmente cerrado.** La deuda de los 5 archivos mixtos tenía dos causas distintas, no una:
+   - **Código de prueba embebido** (`Ids.js`: 6 funciones; `Repository.js`: 65 funciones/9097→1080 líneas) — ✅ extraído a `Tests_Ids.js` (nuevo) y `Tests_Repository2.js`. Ninguna de las 71 funciones tenía referencias externas. Verificado: 0 `EMBEDDED_TEST_CODE`, 122/122 + 25/25 tests, Paquete A (68 archivos) y B (8 archivos) construyen sin error.
+   - **Mezcla de capas arquitectónicas** (UI_SERVIDOR + CONFIGURACION + DOMINIO + PERSISTENCIA + ADMIN_INSTALACION en un mismo archivo, sin código de prueba) — sigue abierta en `Formularios.js` (2987 líneas), `Validation.js` (3057 líneas), `PedidoRecepcion.js` (232 líneas). Es un refactor arquitectónico grande, no mecánico; plan de separación pendiente de diseñar antes de ejecutar.
+4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador) — bloqueado hasta cerrar el punto 3.
 
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.

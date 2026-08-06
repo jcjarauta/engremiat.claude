@@ -44,6 +44,7 @@ const EXPECTED_MODULE_COUNTS = { CORE: 55, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, C
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
+  'src/Tests_Ids.js',
   'src/Tests_ImportacionRecursosPersonas.js',
   'src/Tests_IntegridadGapReglasFuncional.js',
   'src/Tests_LecturaBatch.js',
@@ -52,9 +53,7 @@ const TEST_FILES = Object.freeze([
 ]);
 const MIXED_FILES = Object.freeze([
   'src/Formularios.js',
-  'src/Ids.js',
   'src/PedidoRecepcion.js',
-  'src/Repository.js',
   'src/Validation.js',
 ]);
 const TEST_NAME_PATTERN = /^(?:(?:prueba|probar|test|ejecutarSuite)[\w$]*|assert(?:Equals|True|False|Hallazgo|SinHallazgo)[\w$]*)$/iu;
@@ -199,11 +198,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 136 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 137 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 136) errors.push(`UNIVERSO_ESPERADO_136 actual=${map.entries.length}`);
+  if (map.entries.length !== 137) errors.push(`UNIVERSO_ESPERADO_137 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -242,7 +241,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 63, test: 7, auxiliary: 35, excluded: 26, mixed: 5 };
+  const expectedCounts = { production: 65, test: 8, auxiliary: 35, excluded: 26, mixed: 3 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }

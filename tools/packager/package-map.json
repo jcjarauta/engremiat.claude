@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 136,
+  "universeExpected": 137,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -682,12 +682,12 @@
     {
       "path": "src/Ids.js",
       "type": "js",
-      "category": "mixed",
+      "category": "production",
       "package": "A",
-      "expectedSha256": "17f75da065a8e210382e15b7104ea1f9cbafad28b7767769970d5b7d96bcff8e",
+      "expectedSha256": "6380919d642cf1722741113ad63582677c0e3b500d61c8f70ce45185f6ad1448",
       "required": true,
-      "reason": "producción+deuda",
-      "mixed": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
       "module": "CORE"
     },
     {
@@ -1331,12 +1331,12 @@
     {
       "path": "src/Repository.js",
       "type": "js",
-      "category": "mixed",
+      "category": "production",
       "package": "A",
-      "expectedSha256": "bc8f19f506e870ddbcde507efa0b31d90c69ee445b0e93d722ee731006b5d0cb",
+      "expectedSha256": "a62363817bc8bba2d217ca5f610dc407f97f72f6882ac3a6cdb44a44dcfb7cbb",
       "required": true,
-      "reason": "producción+deuda",
-      "mixed": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
       "module": "CORE"
     },
     {
@@ -1476,7 +1476,7 @@
       "type": "js",
       "category": "test",
       "package": "B",
-      "expectedSha256": "857d3e68f8911369cbdb6fc68f072f4aaddaf8108196d22aaeed9b4e5c7a912d",
+      "expectedSha256": "d046b45a915aee07553a8a6efd4532beb7eacc5f3b6e721dc3ce672692a37e19",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,
@@ -1501,6 +1501,17 @@
       "expectedSha256": "1891558b4d06e5591af205768d30fd46c2c6af85b45ef2b4ac9de9a291849fd9",
       "required": true,
       "reason": "no desplegable",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "src/Tests_Ids.js",
+      "type": "js",
+      "category": "test",
+      "package": "B",
+      "expectedSha256": "b0f5081d7c2b427a9d56cad37a42e050691844e87c599f9ce1007c20a58658ab",
+      "required": true,
+      "reason": "prueba explícita",
       "mixed": false,
       "module": null
     }
