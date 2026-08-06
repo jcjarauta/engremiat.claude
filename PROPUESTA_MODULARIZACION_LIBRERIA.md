@@ -35,13 +35,13 @@ Esto son entre 150 y 250 envoltorios mecánicos, generables automáticamente a p
 
 ## Siguiente paso propuesto
 
-1. ✅ **Hecho.** `package-map.json` declara `module` por archivo de A (CORE 55, GANTT 3, ECONÓMICO 1, IMPACTO 1, COMPRAS 6, CONVOCATORIAS 2) y `moduleDependencies` con el cierre transitivo. COMPETENCIAS y PRESUPUESTO/FUENTE_FINANCIACION quedan documentados como límite conocido: sus esquemas viven embebidos en `Formularios.js`, sin archivo propio.
+1. ✅ **Hecho.** `package-map.json` declara `module` por archivo de A (CORE, GANTT 3, ECONÓMICO 1, IMPACTO 1, COMPRAS 6, CONVOCATORIAS 2) y `moduleDependencies` con el cierre transitivo. COMPETENCIAS y PRESUPUESTO/FUENTE_FINANCIACION quedan documentados como límite conocido: sus esquemas viven embebidos en `FormularioEsquemas.js`, sin archivo propio.
 2. ✅ **Hecho.** `tools/packager/generate-shell-wrappers.mjs` calcula, para un conjunto de módulos, qué envoltorios de cascarón son generables (verificado en real: los 6 módulos completos no dejan huecos; un módulo aislado sí revela huecos reales por el `onOpen()` monolítico).
-3. **Prácticamente cerrado.** La deuda de los 5 archivos mixtos originales tenía tres causas distintas, no una:
-   - **Código de prueba embebido** (`Ids.js`: 6 funciones; `Repository.js`: 65 funciones/9097→1080 líneas) — ✅ extraído a `Tests_Ids.js` (nuevo) y `Tests_Repository2.js`. Ninguna de las 71 funciones tenía referencias externas. Verificado: 0 `EMBEDDED_TEST_CODE`, 122/122 + 25/25 tests, `clasp push` real + smoke test en el Sheet real (panel Personas y equipo, dependiente de `Repository.js`).
-   - **Código muerto/obsoleto mal clasificado como mixto** (`Validation.js`, 3057 líneas, 24 funciones) — investigado antes de tocarlo: **cero referencias externas** en todo el repositorio (ni menú, ni otro archivo), y valida un esquema de solo 17 hojas cuando el modelo real tiene 37+ entidades (falta Proveedor, Asignación, Relación... hasta Convocatoria/EtiquetaImpacto). Mismo perfil que los `Instalador*.js`: ejecución manual, nunca en el camino de producción. ✅ Reclasificado de `mixed`/A a `auxiliary`/C — cero cambios de código, solo metadatos del packager. Reversible.
-   - **Mezcla de capas arquitectónicas activa** (UI_SERVIDOR + DOMINIO interleaved, código realmente vivo y referenciado desde el menú) — sigue abierta en `Formularios.js` (2987 líneas, 115 funciones, ~90 de ellas envoltorios de un menú de `onOpen()` que sí se ejecuta) y `PedidoRecepcion.js` (232 líneas, 6 funciones; una de ellas, `corregirEstadoPedidosExistentes`, es también un backfill de un solo uso sin referencias, candidata a reclasificar igual que `Validation.js`). Plan de separación: ver sección siguiente.
-4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador) — bloqueado hasta cerrar el punto 3.
+3. ✅ **Cerrado.** La deuda de los 5 archivos mixtos originales tenía tres causas distintas, no una:
+   - **Código de prueba embebido** (`Ids.js`: 6 funciones; `Repository.js`: 65 funciones/9097→1080 líneas) — extraído a `Tests_Ids.js` (nuevo) y `Tests_Repository2.js`. Ninguna de las 71 funciones tenía referencias externas. Verificado: 0 `EMBEDDED_TEST_CODE`, `clasp push` real + smoke test en el Sheet real (panel Personas y equipo, dependiente de `Repository.js`).
+   - **Código muerto/obsoleto mal clasificado como mixto** (`Validation.js`, 3057 líneas, 24 funciones) — investigado antes de tocarlo: cero referencias externas en todo el repositorio, valida un esquema de solo 17 hojas cuando el modelo real tiene 37+ entidades. Mismo perfil que los `Instalador*.js`. Reclasificado de `mixed`/A a `auxiliary`/C — cero cambios de código.
+   - **Mezcla de capas arquitectónicas activa** — cerrada en `Formularios.js` (separado en `FormularioMotorUI.js`/`FormularioValidacionService.js`/`FormularioEsquemas.js`, ver sección siguiente). `PedidoRecepcion.js` conserva su único backfill sin referencias (`corregirEstadoPedidosExistentes`, ya reclasificado a `auxiliary`/C) pero sigue `mixed:true` — las 5 funciones restantes son UI+DOMINIO activo y no se ha ejecutado su separación (queda como único mixto real, riesgo bajo dado el tamaño del archivo).
+4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador) — desbloqueado, pendiente de ejecutar.
 
 ## Plan de separación de capas — Formularios.js y PedidoRecepcion.js (diseño, no ejecutado)
 
@@ -52,19 +52,17 @@ Esto son entre 150 y 250 envoltorios mecánicos, generables automáticamente a p
 - `confirmarRecepcion_`, `actualizarEstadoPedidoTrasRecepcion_`, `obtenerOpcionesRecepcionPendiente` → DOMINIO, quedarían en el archivo (ya es su función principal).
 - `abrirConfirmarRecepcion`, `seleccionarYConfirmarRecepcion` → UI_SERVIDOR, candidatas a mover a un archivo de UI si se agrupan con Formularios.js, o quedarse (el archivo ya es pequeño tras retirar el backfill).
 
-### Formularios.js (2987 líneas, 115 funciones) — refactor grande, requiere plan propio
-Perfil real tras inventariar las 115 funciones:
-- **~90 funciones `abrir*`**: UI_SERVIDOR puro — envoltorios de una a tres líneas que delegan en un puñado de motores genéricos (`abrirFormularioCrear_`, `abrirFormularioEditarPorId`, `abrirEditarRegistroPorEntidad_`, `abrirSelectorConAccion_`, `abrirFichaPorEntidad_`, `abrirRetorno`) más `onOpen()` (el menú real, ~100 `addItem`).
-- **~12 funciones `validarReglasNegocio*_`**: DOMINIO — reglas de negocio específicas por entidad (Material, Tarea, TareaResponsable, Documento, Incidencia, Decisión, PersonaEquipo, EquipoMiembro, Horario, TareaMaterial).
-- **`guardarFormulario`, `obtenerEsquemaFormulario`, `validarClavesForaneasFormulario_`, `validarDuplicidadFormulario_`, `normalizarValorFormulario_`, `traducirErrorFuncional_`**: el orquestador de guardado genérico + esquema — CONFIGURACION/DOMINIO, el núcleo real de la capa de formularios.
-- **`obtenerOpcionesDependientes`, `obtenerOpcionesEntidadParaSelector`, `etiquetaExtraSelector_`, `obtenerProductoDesdeProyectoProducto`, `obtenerVinculosDeEntidad`**: consultas de apoyo a la UI.
+### Formularios.js (2987 líneas, 115 funciones + 11 constantes de nivel superior) — ✅ ejecutado y verificado
 
-Propuesta de destino (a validar con el usuario antes de ejecutar, no decidido en firme):
-1. `FormularioMotorUI.js` — los ~90 `abrir*` uno-línea + `onOpen()` + los 6 motores genéricos. Es, de lejos, el bloque más grande pero también el más mecánico y de menor riesgo semántico (son despachadores, no lógica).
-2. `FormularioValidacionService.js` — los `validarReglasNegocio*_` (reglas por entidad).
-3. Núcleo (`guardarFormulario` + esquema + normalización) — a decidir si queda en `Formularios.js` (renombrado a algo como `FormularioCoreService.js`) o se funde con (2).
+Inventario real (126 declaraciones de nivel superior, no solo funciones — se encontraron 11 `var` de configuración/esquema que el conteo inicial de "115 funciones" no cubría: `ETIQUETA_ENTIDAD_MVP`, `ENTIDAD_DOCUMENTO_A_MVP`, `ENTIDAD_HORARIO_A_MVP`, `MVP_A_ENTIDAD_DOCUMENTO_`, `MAPAS_DEPENDENCIA_MVP`, `CLAVES_DUPLICADO_MVP`, `ESQUEMAS_FORMULARIO_MVP` de ~900 líneas, `ESTADOS_DECISION_CIERRE_`, `ESTADOS_INCIDENCIA_CIERRE_`, `NIVELES_JERARQUIA_INCIDENCIA_`, `ESTADO_DOCUMENTO_VIGENTE_`). Separado en tres archivos por capa real:
 
-No ejecutar sin confirmación explícita: es un diff de ~2900 líneas movidas, con más superficie de revisión humana que las extracciones anteriores (aunque el riesgo de romper referencias sea bajo por la razón explicada arriba).
+1. **`FormularioMotorUI.js`** (486 líneas, 95 funciones) — UI_SERVIDOR: `onOpen()` + los 6 motores genéricos (`abrirFormularioCrear_`, `abrirFormularioEditarPorId`, `abrirEditarRegistroPorEntidad_`, `abrirSelectorConAccion_`, `abrirFichaPorEntidad_`, `abrirRetorno`) + los ~90 despachadores `abrir*` de una línea.
+2. **`FormularioValidacionService.js`** (1365 líneas, 20 funciones) — DOMINIO: `validarReglasNegocio*_` por entidad, `guardarFormulario`, `obtenerEsquemaFormulario`, `validarClavesForaneasFormulario_`, `validarDuplicidadFormulario_`, `normalizarValorFormulario_`, `traducirErrorFuncional_`, y las consultas de apoyo (`obtenerVinculosDeEntidad`, `obtenerOpcionesDependientes`, `obtenerProductoDesdeProyectoProducto`).
+3. **`FormularioEsquemas.js`** (1099 líneas, 11 constantes) — CONFIGURACION: los catálogos y esquemas compartidos por los dos archivos anteriores (`ESQUEMAS_FORMULARIO_MVP` es usado tanto por `guardarFormulario`/`obtenerEsquemaFormulario` como por `abrirFormularioEditarPorId`).
+
+**Extracción mecánica, no manual**: el script particiona el archivo en trozos contiguos por posición de bytes (fin de una declaración → fin de la siguiente), no reconoce comentarios por heurística — garantiza cobertura total por construcción, no por verificación posterior. Confirmado antes de aplicar: mismo conjunto de 126 nombres de declaración en origen y en la unión de los 3 destinos, mismo recuento exacto de caracteres no-blancos (96689 en ambos lados).
+
+Verificado: 122/122 + 25/25 tests, `--check` sin `HASH_DIVERGENTE`, generador de envoltorios sigue en 176/0 huecos con los 6 módulos, Paquete A (69 archivos) construye sin error.
 
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.

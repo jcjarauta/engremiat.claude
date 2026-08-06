@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 139,
+  "universeExpected": 141,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -611,17 +611,6 @@
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/Formularios.js",
-      "type": "js",
-      "category": "mixed",
-      "package": "A",
-      "expectedSha256": "14e495f83f15708f86f5a05e57d46438fc81aca71f5d37331ac432dc843ea2de",
-      "required": true,
-      "reason": "producción+deuda",
-      "mixed": true,
       "module": "CORE"
     },
     {
@@ -1498,7 +1487,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "9eee88bfbbb17ca352435b22e53b1cd42da78b710d1c4c4e01d71e3134a06cfd",
+      "expectedSha256": "e86efed83e57d304b01c8bbd00ee02c9c30adf723278870ca4a94b2e23de275a",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -1536,6 +1525,39 @@
       "reason": "no desplegable",
       "mixed": false,
       "module": null
+    },
+    {
+      "path": "src/FormularioMotorUI.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "63e20533fd38e5fb2c2c8887eba4c6d9e469a1e2869492a765fe7cac46a13e7b",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FormularioValidacionService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "f4df0430d67b54f388b5aa30b2a12cf9af32e7a90343bd724240535ef85aad5d",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FormularioEsquemas.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "92c202d66ab43194280c747da351b7b5bdab2d6884b58e8994acd389b98a34a0",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
     }
   ],
   "moduleDependencies": {

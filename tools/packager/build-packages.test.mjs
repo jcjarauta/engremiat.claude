@@ -102,19 +102,18 @@ const expectedTests = [
 ];
 
 const expectedMixed = [
-  'src/Formularios.js',
   'src/PedidoRecepcion.js',
 ];
 
-test('01 universo de 139 entradas', () => {
+test('01 universo de 141 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 139);
-  assertEqual(map.universeExpected, 139);
+  assertEqual(map.entries.length, 141);
+  assertEqual(map.universeExpected, 141);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 139);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 141);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -193,7 +192,7 @@ test('13 inclusión de appsscript.json en A', () => {
   assert(map.entries.some((entry) => entry.path === 'src/appsscript.json' && entry.package === 'A'));
 });
 
-test('14 advertencia por cinco mixtos', () => {
+test('14 advertencia por un mixto', () => {
   const map = readPackageMap(MAP_PATH);
   const mixed = map.entries.filter((entry) => entry.mixed).map((entry) => entry.path).sort();
   assertDeepEqual(mixed, [...expectedMixed].sort());
@@ -385,7 +384,7 @@ test('35 archivo B permite declaraciones de prueba', () => {
   assertDeepEqual(result, { errors: [], warnings: [], evidence: [] });
 });
 
-test('36 los dos mixtos reales declaran MIXED_ARCHITECTURE', () => {
+test('36 el único mixto real declara MIXED_ARCHITECTURE', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
   assert(expectedMixed.every((item) => result.warnings.some((warning) => warning.startsWith(`MIXED_ARCHITECTURE ${item} `))));
@@ -474,8 +473,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [65, 8, 37, 27, 2]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [67, 8, 37, 27]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [68, 8, 37, 27, 1]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [69, 8, 37, 27]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -514,10 +513,10 @@ test('57 dos mixtos con pruebas producen dos WARN públicos', () => {
   assertEqual(result.warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 2);
 });
 
-test('58 proyecto real conserva dos MIXED_ARCHITECTURE', () => {
+test('58 proyecto real conserva un MIXED_ARCHITECTURE', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 2);
+  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 1);
 });
 
 test('59 regex con comilla simple no abre string', () => {
@@ -879,7 +878,7 @@ test('114 recuento de módulos en package A', () => {
   const count = (moduleName) => map.entries.filter((entry) => entry.package === 'A' && entry.module === moduleName).length;
   assertDeepEqual(
     { CORE: count('CORE'), GANTT: count('GANTT'), ECONOMICO: count('ECONOMICO'), IMPACTO: count('IMPACTO'), COMPRAS: count('COMPRAS'), CONVOCATORIAS: count('CONVOCATORIAS') },
-    { CORE: 54, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
+    { CORE: 56, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
   );
 });
 

@@ -40,7 +40,7 @@ const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
 const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS']);
-const EXPECTED_MODULE_COUNTS = { CORE: 54, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 };
+const EXPECTED_MODULE_COUNTS = { CORE: 56, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -52,7 +52,6 @@ const TEST_FILES = Object.freeze([
   'src/Tests_Repository2.js',
 ]);
 const MIXED_FILES = Object.freeze([
-  'src/Formularios.js',
   'src/PedidoRecepcion.js',
 ]);
 const TEST_NAME_PATTERN = /^(?:(?:prueba|probar|test|ejecutarSuite)[\w$]*|assert(?:Equals|True|False|Hallazgo|SinHallazgo)[\w$]*)$/iu;
@@ -197,11 +196,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 139 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 141 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 139) errors.push(`UNIVERSO_ESPERADO_139 actual=${map.entries.length}`);
+  if (map.entries.length !== 141) errors.push(`UNIVERSO_ESPERADO_141 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -240,7 +239,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 65, test: 8, auxiliary: 37, excluded: 27, mixed: 2 };
+  const expectedCounts = { production: 68, test: 8, auxiliary: 37, excluded: 27, mixed: 1 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
