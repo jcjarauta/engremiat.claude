@@ -1,6 +1,6 @@
 {
     "schemaVersion":  1,
-    "universeExpected":  134,
+    "universeExpected":  135,
     "toolingExclusions":  [
                               "tools/packager/"
                           ],
@@ -14,6 +14,7 @@
     {"path":"BACKLOG_CONSOLIDADO.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"c89b9fb466657daea8c5b50564b135bf23e3fc07adb4ab0f6ff21a948036e950","required":true,"reason":"no desplegable","mixed":false},
     {"path":"BASELINE_DESARROLLO.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"447e8bee12b758bf1db85f119cd78d84ca781ad8c958d6c118eb81fcb615af9a","required":true,"reason":"no desplegable","mixed":false},
     {"path":"HASHES_CIERRE.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"7cd2e2f34a17661c65eeb69aa3b439105d2b5f1236651117d0ad3d3f9de58348","required":true,"reason":"no desplegable","mixed":false},
+    {"path":"docs/LT-CASE-003_PRUEBA_WORK_CODEX.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"e94b85828efd3565100341fc87ed4c0a9c6e58dfdf046ccc5fc4e1824b8ad0c6","required":true,"reason":"fixture desechable no productivo (ARCHIVO_PRODUCTIVO=false)","mixed":false},
     {"path":"INFORME_CIERRE_AUDITORIA_GLOBAL.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"68b5e3518f56562a224a1f182c057ff9fed35b605273a1c68a7c495deeeb1704","required":true,"reason":"no desplegable","mixed":false},
     {"path":"MANUAL_MARCO_FUNDAMENTAL.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"a18332565c408e9f283df26201c1a6745d1699ce9fd557d709d980225321c1fc","required":true,"reason":"no desplegable","mixed":false},
     {"path":"PROPUESTA_CAMPANA_ALTA_PLANIFICACION.md","type":"md","category":"excluded","package":"NONE","expectedSha256":"1d68b73f2eba7ac5fc42c66e888b9480c8a84b00bb65f18d27e30d06eb42b729","required":true,"reason":"no desplegable","mixed":false},
