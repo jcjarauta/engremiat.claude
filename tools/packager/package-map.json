@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 137,
+  "universeExpected": 138,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -1267,7 +1267,7 @@
       "type": "js",
       "category": "mixed",
       "package": "A",
-      "expectedSha256": "02b2e27989053f71e4971fcbc4c479c612a7d098ae05354998de00307072785a",
+      "expectedSha256": "6eab75ec13352b6930bd50a938f1dc20d0292b2b6beb56f9d8ffce43b1c42457",
       "required": true,
       "reason": "producción+deuda",
       "mixed": true,
@@ -1512,6 +1512,17 @@
       "expectedSha256": "b0f5081d7c2b427a9d56cad37a42e050691844e87c599f9ce1007c20a58658ab",
       "required": true,
       "reason": "prueba explícita",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "src/CorregirEstadoPedidosExistentes.js",
+      "type": "js",
+      "category": "auxiliary",
+      "package": "C",
+      "expectedSha256": "6855579bbdd11f5c74bb59beb0d4174ff45be580a8221a199ac3b707a3c34a33",
+      "required": true,
+      "reason": "instalación/fixture/tooling",
       "mixed": false,
       "module": null
     }

@@ -126,38 +126,6 @@ function actualizarEstadoPedidoTrasRecepcion_(pedidoId) {
 }
 
 /*
- * Backfill de un solo uso: recalcula ESTADO en todos los PEDIDO_PROVEEDOR
- * que ya tengan alguna RECEPCION Confirmada, para los pedidos dados de
- * alta antes de que actualizarEstadoPedidoTrasRecepcion_ existiera.
- * Sin parametros para poder ejecutarse directamente desde el
- * desplegable "Seleccionar funcion" del editor de Apps Script.
- */
-function corregirEstadoPedidosExistentes() {
-  var packageName = 'CORREGIR_ESTADO_PEDIDOS_EXISTENTES';
-
-  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
-
-  var pedidos = listarRegistros('PEDIDO_PROVEEDOR', {ACTIVO: 'SÍ'});
-  var corregidos = 0;
-
-  pedidos.forEach(function (pedido) {
-    var antes = pedido.ESTADO;
-    actualizarEstadoPedidoTrasRecepcion_(pedido.ID);
-    var despues = obtenerRegistroPorId('PEDIDO_PROVEEDOR', pedido.ID).ESTADO;
-
-    if (antes !== despues) {
-      corregidos += 1;
-      console.log('OK pedido_corregido=' + pedido.ID + ' antes=' + antes + ' despues=' + despues);
-    }
-  });
-
-  console.log('OK pedidos_revisados=' + pedidos.length + ' pedidos_corregidos=' + corregidos);
-  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
-
-  return true;
-}
-
-/*
  * Reemplaza el ui.prompt() original (pedia el ID de memoria, mismo
  * hueco que "Editar registro" antes de L5.1) por el selector con
  * buscador generico (abrirSelectorConAccion_, Formularios.js). Solo

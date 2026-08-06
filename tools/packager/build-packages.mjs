@@ -197,11 +197,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 137 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 138 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 137) errors.push(`UNIVERSO_ESPERADO_137 actual=${map.entries.length}`);
+  if (map.entries.length !== 138) errors.push(`UNIVERSO_ESPERADO_138 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -240,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 65, test: 8, auxiliary: 36, excluded: 26, mixed: 2 };
+  const expectedCounts = { production: 65, test: 8, auxiliary: 37, excluded: 26, mixed: 2 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
