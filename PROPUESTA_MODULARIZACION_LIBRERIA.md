@@ -45,7 +45,11 @@ Esto son entre 150 y 250 envoltorios mecánicos, generables automáticamente a p
 **Resultado: 0 archivos `mixed` en todo el proyecto** (`MIXED_FILES` vacío en `build-packages.mjs`). Verificado: `--check` limpio sin ningún `WARN MIXED_ARCHITECTURE`, 122/122 + 25/25 tests, Paquete A (69 archivos) construye sin error, generador de envoltorios sigue en 176/0 huecos, `clasp push` real + smoke test en el Sheet real ("Nueva tarea" y "Editar Campaña" abren correctamente tras la separación de `Formularios.js`).
 
 Efecto colateral positivo: al implementar el recuento por módulo en 0 (`MIXED_FILES` vacío), se encontró y corrigió un bug real en `validatePackageMap` — comparaba `categoryCounts.get(category) !== count` sin `?? 0`, así que un recuento esperado en 0 siempre fallaba con `undefined !== 0` aunque el estado real fuera correcto. Corregido en `build-packages.mjs`, con test de regresión (`build-packages.test.mjs`, caso 58).
-4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador) — desbloqueado, pendiente de ejecutar. Con 0 archivos mixtos, el `PACKAGE_STATUS.A` del packager pasó de `PRODUCTION_WITH_DECLARED_MIXED_DEBT` a `PRODUCTION_CLEAN`.
+4. ✅ **Hecho y verificado en real.** Primera versión real de la librería con el Core completo:
+   - **Librería**: proyecto standalone "LaTroballa Core v1" (Script ID `1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M`), 69 archivos (Paquete A completo vía `--modules CORE,GANTT,ECONOMICO,IMPACTO,COMPRAS,CONVOCATORIAS`), desplegada como versión `@1`.
+   - **Cascarón**: Sheet+script nuevo "LaTroballa - Cascarón (candidato v1)" (Sheet `1cY4KsyjI3FKKSykJyZZDPRvmh0_Qgz2VCJFW4oL8DR4`), `appsscript.json` con `dependencies.libraries` apuntando a la librería v1, y un único archivo `Codigo.js` de 176 envoltorios generado automáticamente por `generate-shell-wrappers.mjs` (no escrito a mano).
+   - **Verificado en real** (no simulado): `clasp push` a ambos proyectos, autorización OAuth real, menú completo cargado (los 3 submenús con sus ~176 puntos de entrada). Dos acciones de módulos distintos probadas de punta a punta: "Panel operativo" (CORE) y "Gantt: plan vs. real" (GANTT) — ambas abrieron su UI completa (plantilla HTML resuelta desde la librería) y fallaron limpiamente por falta de datos en el Sheet cascarón vacío (`ERROR_CONSULTA`/`ERROR_CATALOGO`), confirmando que la cadena completa cascarón→librería→`SpreadsheetApp.getActiveSpreadsheet()` (resolviendo el Sheet del cliente, no el de la librería) funciona con el Core real, no solo con el POC de juguete.
+   - Con 0 archivos mixtos, el `PACKAGE_STATUS.A` del packager pasó de `PRODUCTION_WITH_DECLARED_MIXED_DEBT` a `PRODUCTION_CLEAN`.
 
 ## Separación de capas — Formularios.js y PedidoRecepcion.js (✅ ambos ejecutados y verificados)
 
@@ -69,6 +73,14 @@ Inventario real (126 declaraciones de nivel superior, no solo funciones — se e
 **Extracción mecánica, no manual**: el script particiona el archivo en trozos contiguos por posición de bytes (fin de una declaración → fin de la siguiente), no reconoce comentarios por heurística — garantiza cobertura total por construcción, no por verificación posterior. Confirmado antes de aplicar: mismo conjunto de 126 nombres de declaración en origen y en la unión de los 3 destinos, mismo recuento exacto de caracteres no-blancos (96689 en ambos lados).
 
 Verificado: 122/122 + 25/25 tests, `--check` sin `HASH_DIVERGENTE`, generador de envoltorios sigue en 176/0 huecos con los 6 módulos, Paquete A (69 archivos) construye sin error.
+
+## Estado tras el punto 4 y próximos pasos reales
+
+Los 4 puntos del plan original están hechos y verificados en real. El patrón Core-como-librería queda validado de punta a punta con el sistema completo, no solo con la POC. Lo que sigue **no** es parte de este plan (son decisiones nuevas, cada una merece su propia conversación antes de tocar código):
+
+- La librería/cascarón "candidato v1" son recursos reales nuevos en Drive, separados del proyecto principal (`.clasp.json` de la raíz sigue apuntando al Sheet de desarrollo de siempre) — no se ha migrado nada en producción.
+- Falta sembrar el cascarón con datos/catálogos reales para probar un flujo de negocio completo (crear una tarea, ver el Gantt con datos), no solo confirmar que la arquitectura no rompe.
+- Falta decidir el mecanismo de reparto por organización (Camino A: cada organización con su propio cascarón + Sheet, todas apuntando a la misma librería con Script ID fijo) y cómo se versiona/actualiza la librería sin romper cascarones ya desplegados.
 
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.
