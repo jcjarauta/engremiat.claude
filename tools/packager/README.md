@@ -2,14 +2,14 @@
 
 Estado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO**.
 
-Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 136 archivos y el propio empaquetador lo excluye literalmente del escaneo.
+Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 137 archivos y el propio empaquetador lo excluye literalmente del escaneo.
 
 ## Propósito
 
 Definir y, tras un gate futuro, comprobar/construir localmente paquetes reproducibles:
 
 - A: runtime de producción con deuda mixta declarada.
-- B: siete archivos de pruebas, dependientes de una versión fijada de A.
+- B: ocho archivos de pruebas, dependientes de una versión fijada de A.
 - C: instaladores, migraciones, fixtures, reparadores y tooling auxiliar.
 
 Evita selección implícita, pruebas explícitas en A, pérdida de HTML o manifiesto, archivos desconocidos, hashes divergentes, salidas inseguras, sobrescrituras y publicaciones parciales presentadas como completas.
@@ -18,7 +18,7 @@ Evita selección implícita, pruebas explícitas en A, pérdida de HTML o manifi
 
 | Archivo | Responsabilidad |
 |---|---|
-| `package-map.json` | allowlist exacta de las 136 rutas originales, con `module` por archivo de A y `moduleDependencies` |
+| `package-map.json` | allowlist exacta de las 137 rutas originales, con `module` por archivo de A y `moduleDependencies` |
 | `build-packages.mjs` | CLI, validación, escaneo textual y futura construcción |
 | `build-packages.test.mjs` | 73 pruebas locales redactadas; las 20 de P0-FIX04 aún no ejecutadas |
 | `generate-shell-wrappers.mjs` | calcula, para un conjunto de módulos, qué funciones (menú/`google.script.run`/triggers) quedan dentro del cierre y genera sus envoltorios de una línea para el futuro cascarón del cliente |
@@ -31,17 +31,16 @@ Solo se usan módulos integrados de Node.js 24. No hay NPM, `package.json`, red,
 
 ### A — `PRODUCTION_WITH_DECLARED_MIXED_DEBT`
 
-Incluye las 63 entradas `production` y cinco `mixed` (68 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los siete `Tests_*`, las 35 auxiliares y 26 excluidas.
+Incluye las 65 entradas `production` y dos `mixed` (67 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los ocho `Tests_*`, las 36 auxiliares y 26 excluidas.
 
-Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (55, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcion.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/Formularios.js` (CORE) y no se separan sin refactorizarlo.
+Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (54, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcion.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/Formularios.js` (CORE) y no se separan sin refactorizarlo.
 
-No es “producción limpia”. Mantiene deuda individual en:
+No es “producción limpia”. Mantiene deuda individual (mezcla de capas UI/dominio, no código de prueba) en:
 
 - `src/Formularios.js`
-- `src/Ids.js`
 - `src/PedidoRecepcion.js`
-- `src/Repository.js`
-- `src/Validation.js`
+
+`src/Ids.js` y `src/Repository.js` cerraron su deuda (código de prueba embebido, extraído a `Tests_Ids.js`/`Tests_Repository2.js` — ver `PROPUESTA_MODULARIZACION_LIBRERIA.md`). `src/Validation.js` se reclasificó a C: sin referencias externas en todo el repositorio y valida un esquema de 17 hojas obsoleto frente a las 37+ entidades reales — mismo perfil que los `Instalador*.js`, no deuda de capas activa.
 
 El detector separa dos conceptos:
 
@@ -65,23 +64,24 @@ Incluye exactamente:
 
 1. `src/Tests_AvanceYSecuencia.js`
 2. `src/Tests_CosteService.js`
-3. `src/Tests_ImportacionRecursosPersonas.js`
-4. `src/Tests_IntegridadGapReglasFuncional.js`
-5. `src/Tests_LecturaBatch.js`
-6. `src/Tests_Repository.js`
-7. `src/Tests_Repository2.js`
+3. `src/Tests_Ids.js`
+4. `src/Tests_ImportacionRecursosPersonas.js`
+5. `src/Tests_IntegridadGapReglasFuncional.js`
+6. `src/Tests_LecturaBatch.js`
+7. `src/Tests_Repository.js`
+8. `src/Tests_Repository2.js`
 
 Los dos repositorios permanecen separados. El manifiesto de B declara el hash agregado de A, los mixtos y la limitación de autonomía. Los fixtures concretos requieren decisión humana antes de ejecutar.
 
 ### C — `AUXILIARY_EXECUTION_REQUIRES_HUMAN_AUTHORIZATION`
 
-Incluye exactamente las 35 entradas `auxiliary`. El empaquetador las copia en un futuro build autorizado, pero nunca las ejecuta. No deben usarse cotidianamente en producción.
+Incluye exactamente las 36 entradas `auxiliary`. El empaquetador las copia en un futuro build autorizado, pero nunca las ejecuta. No deben usarse cotidianamente en producción.
 
 `src/Código.js` pertenece a C como runner manual de la suite 305–310: conserva `myFunction`, ejecuta `ejecutarSuitePaso305a310()` y escribe diagnóstico en `00_INICIO!A1:A2`. No tiene entrada productiva localizada. El detector emite `WARN APPROVED_SUITE_RUNNER` para esta llamada en C; la misma llamada directa desde producción A sería `ERR SUITE_CALL_IN_PRODUCTION`. No se convierten en error llamadas productivas ordinarias con palabras parecidas.
 
 ### Advertencias consolidadas y evidencia
 
-`EMBEDDED_TEST_CODE` es un recuento público por archivo, no por función. Cada mixto afectado produce una sola línea determinista con `path`, número de `matches`, lista de líneas ordenada/sin duplicados y tipos únicos. El detalle no se elimina: `validateContamination` conserva una colección estructurada por coincidencia (`path`, `line`, `kind`, `name`, `reason`), ordenada por ruta/línea/nombre, y el futuro `validation-report.json` la incluye como `embeddedTestEvidence`. Por ello el proyecto real debe publicar dos WARN —Ids y Repository— aunque el detalle contenga 71 declaraciones.
+`EMBEDDED_TEST_CODE` es un recuento público por archivo, no por función. Cada mixto afectado produce una sola línea determinista con `path`, número de `matches`, lista de líneas ordenada/sin duplicados y tipos únicos. El detalle no se elimina: `validateContamination` conserva una colección estructurada por coincidencia (`path`, `line`, `kind`, `name`, `reason`), ordenada por ruta/línea/nombre, y el futuro `validation-report.json` la incluye como `embeddedTestEvidence`. Tras extraer las 71 declaraciones de Ids.js/Repository.js a sus `Tests_*.js`, el proyecto real ya no publica ningún `EMBEDDED_TEST_CODE`.
 
 El enmascarado léxico reconoce regex literales de forma conservadora después de contextos de expresión como `(`, `[`, `{`, coma, asignación, `:`, `!`, `?`, `;`, `return`, `case` o `=>`. Soporta escapes, `\/`, clases `[...]`, barras/comillas dentro de clases y flags. Una barra después de identificador, número, string cerrado, `)` o `]` se trata como división. Los contextos que no pueden decidirse conservadoramente generan `AMBIGUOUS_SLASH_CONTEXT`; los strings, comentarios, templates o regex realmente sin cerrar continúan generando advertencia. No hay excepciones por nombre de archivo ni parser externo.
 

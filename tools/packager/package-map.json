@@ -1485,20 +1485,20 @@
     {
       "path": "src/Validation.js",
       "type": "js",
-      "category": "mixed",
-      "package": "A",
+      "category": "auxiliary",
+      "package": "C",
       "expectedSha256": "6f88b5c5d29db911b32f1e97443a5e63265c41b9fa2c05d9018f99700f3a1aae",
       "required": true,
-      "reason": "producción+deuda",
-      "mixed": true,
-      "module": "CORE"
+      "reason": "instalación/fixture/tooling -- sin referencias externas, valida un esquema de 17 hojas obsoleto (ver PROPUESTA_MODULARIZACION_LIBRERIA.md)",
+      "mixed": false,
+      "module": null
     },
     {
       "path": "PROPUESTA_MODULARIZACION_LIBRERIA.md",
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "1891558b4d06e5591af205768d30fd46c2c6af85b45ef2b4ac9de9a291849fd9",
+      "expectedSha256": "9eee88bfbbb17ca352435b22e53b1cd42da78b710d1c4c4e01d71e3134a06cfd",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,

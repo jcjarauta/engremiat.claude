@@ -40,7 +40,7 @@ const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
 const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS']);
-const EXPECTED_MODULE_COUNTS = { CORE: 55, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 };
+const EXPECTED_MODULE_COUNTS = { CORE: 54, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -54,7 +54,6 @@ const TEST_FILES = Object.freeze([
 const MIXED_FILES = Object.freeze([
   'src/Formularios.js',
   'src/PedidoRecepcion.js',
-  'src/Validation.js',
 ]);
 const TEST_NAME_PATTERN = /^(?:(?:prueba|probar|test|ejecutarSuite)[\w$]*|assert(?:Equals|True|False|Hallazgo|SinHallazgo)[\w$]*)$/iu;
 const TEST_DECLARATION_PATTERNS = Object.freeze([
@@ -241,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 65, test: 8, auxiliary: 35, excluded: 26, mixed: 3 };
+  const expectedCounts = { production: 65, test: 8, auxiliary: 36, excluded: 26, mixed: 2 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }

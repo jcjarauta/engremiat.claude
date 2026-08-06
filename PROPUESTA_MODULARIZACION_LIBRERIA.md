@@ -37,10 +37,34 @@ Esto son entre 150 y 250 envoltorios mecánicos, generables automáticamente a p
 
 1. ✅ **Hecho.** `package-map.json` declara `module` por archivo de A (CORE 55, GANTT 3, ECONÓMICO 1, IMPACTO 1, COMPRAS 6, CONVOCATORIAS 2) y `moduleDependencies` con el cierre transitivo. COMPETENCIAS y PRESUPUESTO/FUENTE_FINANCIACION quedan documentados como límite conocido: sus esquemas viven embebidos en `Formularios.js`, sin archivo propio.
 2. ✅ **Hecho.** `tools/packager/generate-shell-wrappers.mjs` calcula, para un conjunto de módulos, qué envoltorios de cascarón son generables (verificado en real: los 6 módulos completos no dejan huecos; un módulo aislado sí revela huecos reales por el `onOpen()` monolítico).
-3. **Parcialmente cerrado.** La deuda de los 5 archivos mixtos tenía dos causas distintas, no una:
-   - **Código de prueba embebido** (`Ids.js`: 6 funciones; `Repository.js`: 65 funciones/9097→1080 líneas) — ✅ extraído a `Tests_Ids.js` (nuevo) y `Tests_Repository2.js`. Ninguna de las 71 funciones tenía referencias externas. Verificado: 0 `EMBEDDED_TEST_CODE`, 122/122 + 25/25 tests, Paquete A (68 archivos) y B (8 archivos) construyen sin error.
-   - **Mezcla de capas arquitectónicas** (UI_SERVIDOR + CONFIGURACION + DOMINIO + PERSISTENCIA + ADMIN_INSTALACION en un mismo archivo, sin código de prueba) — sigue abierta en `Formularios.js` (2987 líneas), `Validation.js` (3057 líneas), `PedidoRecepcion.js` (232 líneas). Es un refactor arquitectónico grande, no mecánico; plan de separación pendiente de diseñar antes de ejecutar.
+3. **Prácticamente cerrado.** La deuda de los 5 archivos mixtos originales tenía tres causas distintas, no una:
+   - **Código de prueba embebido** (`Ids.js`: 6 funciones; `Repository.js`: 65 funciones/9097→1080 líneas) — ✅ extraído a `Tests_Ids.js` (nuevo) y `Tests_Repository2.js`. Ninguna de las 71 funciones tenía referencias externas. Verificado: 0 `EMBEDDED_TEST_CODE`, 122/122 + 25/25 tests, `clasp push` real + smoke test en el Sheet real (panel Personas y equipo, dependiente de `Repository.js`).
+   - **Código muerto/obsoleto mal clasificado como mixto** (`Validation.js`, 3057 líneas, 24 funciones) — investigado antes de tocarlo: **cero referencias externas** en todo el repositorio (ni menú, ni otro archivo), y valida un esquema de solo 17 hojas cuando el modelo real tiene 37+ entidades (falta Proveedor, Asignación, Relación... hasta Convocatoria/EtiquetaImpacto). Mismo perfil que los `Instalador*.js`: ejecución manual, nunca en el camino de producción. ✅ Reclasificado de `mixed`/A a `auxiliary`/C — cero cambios de código, solo metadatos del packager. Reversible.
+   - **Mezcla de capas arquitectónicas activa** (UI_SERVIDOR + DOMINIO interleaved, código realmente vivo y referenciado desde el menú) — sigue abierta en `Formularios.js` (2987 líneas, 115 funciones, ~90 de ellas envoltorios de un menú de `onOpen()` que sí se ejecuta) y `PedidoRecepcion.js` (232 líneas, 6 funciones; una de ellas, `corregirEstadoPedidosExistentes`, es también un backfill de un solo uso sin referencias, candidata a reclasificar igual que `Validation.js`). Plan de separación: ver sección siguiente.
 4. Publicar una primera versión real de la librería con el Core completo (no la POC de juguete) y un cascarón generado automáticamente, verificado igual que el Paquete A (`clasp push` + prueba real en navegador) — bloqueado hasta cerrar el punto 3.
+
+## Plan de separación de capas — Formularios.js y PedidoRecepcion.js (diseño, no ejecutado)
+
+**Hallazgo que reduce el riesgo del refactor**: en Apps Script no existen módulos/imports — todas las funciones de nivel superior de cualquier `.js` del proyecto comparten un único espacio de nombres global. Mover una función de archivo no requiere tocar ningún llamador: es reorganización pura de archivos fuente, no una reescritura de dependencias. El riesgo real está en (a) la mecánica de extracción (como ya pasó con Ids.js/Repository.js, hay que verificar con conteo de llaves, no a mano) y (b) el tamaño del diff para revisión humana — no en romper referencias.
+
+### PedidoRecepcion.js (232 líneas, 6 funciones) — bajo riesgo, ejecutable en una sesión corta
+- `corregirEstadoPedidosExistentes` → reclasificar a auxiliar/C (mismo tratamiento que Validation.js: backfill de un solo uso, sin referencias externas).
+- `confirmarRecepcion_`, `actualizarEstadoPedidoTrasRecepcion_`, `obtenerOpcionesRecepcionPendiente` → DOMINIO, quedarían en el archivo (ya es su función principal).
+- `abrirConfirmarRecepcion`, `seleccionarYConfirmarRecepcion` → UI_SERVIDOR, candidatas a mover a un archivo de UI si se agrupan con Formularios.js, o quedarse (el archivo ya es pequeño tras retirar el backfill).
+
+### Formularios.js (2987 líneas, 115 funciones) — refactor grande, requiere plan propio
+Perfil real tras inventariar las 115 funciones:
+- **~90 funciones `abrir*`**: UI_SERVIDOR puro — envoltorios de una a tres líneas que delegan en un puñado de motores genéricos (`abrirFormularioCrear_`, `abrirFormularioEditarPorId`, `abrirEditarRegistroPorEntidad_`, `abrirSelectorConAccion_`, `abrirFichaPorEntidad_`, `abrirRetorno`) más `onOpen()` (el menú real, ~100 `addItem`).
+- **~12 funciones `validarReglasNegocio*_`**: DOMINIO — reglas de negocio específicas por entidad (Material, Tarea, TareaResponsable, Documento, Incidencia, Decisión, PersonaEquipo, EquipoMiembro, Horario, TareaMaterial).
+- **`guardarFormulario`, `obtenerEsquemaFormulario`, `validarClavesForaneasFormulario_`, `validarDuplicidadFormulario_`, `normalizarValorFormulario_`, `traducirErrorFuncional_`**: el orquestador de guardado genérico + esquema — CONFIGURACION/DOMINIO, el núcleo real de la capa de formularios.
+- **`obtenerOpcionesDependientes`, `obtenerOpcionesEntidadParaSelector`, `etiquetaExtraSelector_`, `obtenerProductoDesdeProyectoProducto`, `obtenerVinculosDeEntidad`**: consultas de apoyo a la UI.
+
+Propuesta de destino (a validar con el usuario antes de ejecutar, no decidido en firme):
+1. `FormularioMotorUI.js` — los ~90 `abrir*` uno-línea + `onOpen()` + los 6 motores genéricos. Es, de lejos, el bloque más grande pero también el más mecánico y de menor riesgo semántico (son despachadores, no lógica).
+2. `FormularioValidacionService.js` — los `validarReglasNegocio*_` (reglas por entidad).
+3. Núcleo (`guardarFormulario` + esquema + normalización) — a decidir si queda en `Formularios.js` (renombrado a algo como `FormularioCoreService.js`) o se funde con (2).
+
+No ejecutar sin confirmación explícita: es un diff de ~2900 líneas movidas, con más superficie de revisión humana que las extracciones anteriores (aunque el riesgo de romper referencias sea bajo por la razón explicada arriba).
 
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.

@@ -104,7 +104,6 @@ const expectedTests = [
 const expectedMixed = [
   'src/Formularios.js',
   'src/PedidoRecepcion.js',
-  'src/Validation.js',
 ];
 
 test('01 universo de 137 entradas', () => {
@@ -386,7 +385,7 @@ test('35 archivo B permite declaraciones de prueba', () => {
   assertDeepEqual(result, { errors: [], warnings: [], evidence: [] });
 });
 
-test('36 los cinco mixtos reales declaran MIXED_ARCHITECTURE', () => {
+test('36 los dos mixtos reales declaran MIXED_ARCHITECTURE', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
   assert(expectedMixed.every((item) => result.warnings.some((warning) => warning.startsWith(`MIXED_ARCHITECTURE ${item} `))));
@@ -475,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [65, 8, 35, 26, 3]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [68, 8, 35, 26]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [65, 8, 36, 26, 2]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [67, 8, 36, 26]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -515,10 +514,10 @@ test('57 dos mixtos con pruebas producen dos WARN públicos', () => {
   assertEqual(result.warnings.filter((item) => item.startsWith('EMBEDDED_TEST_CODE ')).length, 2);
 });
 
-test('58 proyecto real conserva tres MIXED_ARCHITECTURE', () => {
+test('58 proyecto real conserva dos MIXED_ARCHITECTURE', () => {
   const map = readPackageMap(MAP_PATH);
   const result = validateContamination(validateAndReadFiles(PROJECT_ROOT, map).validatedFiles);
-  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 3);
+  assertEqual(result.warnings.filter((item) => item.startsWith('MIXED_ARCHITECTURE ')).length, 2);
 });
 
 test('59 regex con comilla simple no abre string', () => {
@@ -880,7 +879,7 @@ test('114 recuento de módulos en package A', () => {
   const count = (moduleName) => map.entries.filter((entry) => entry.package === 'A' && entry.module === moduleName).length;
   assertDeepEqual(
     { CORE: count('CORE'), GANTT: count('GANTT'), ECONOMICO: count('ECONOMICO'), IMPACTO: count('IMPACTO'), COMPRAS: count('COMPRAS'), CONVOCATORIAS: count('CONVOCATORIAS') },
-    { CORE: 55, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
+    { CORE: 54, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
   );
 });
 
