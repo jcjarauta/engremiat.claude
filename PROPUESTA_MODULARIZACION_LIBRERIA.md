@@ -104,5 +104,32 @@ Verificado: 13/13 tests (incluida una construcción real contra el repositorio: 
 huecos esperados, los 6 módulos completos sin huecos), 122/122 + 25/25 de las suites existentes
 sin romperse, `--check` limpio con `tools/constructor/` excluido del escaneo del packager.
 
+## Instalador limpio del Core (✅ EstructuraInicialService.js, v2/v3 de la librería)
+
+Hallazgo real al probar el primer cliente Nivel 1 ("La Troballa - Taller Ocupacional"): el
+cascarón + la librería Core dan un menú funcional pero **sin hojas de datos** -- los
+`Instalador*.js` que crean las 37 hojas de entidad + `90_CONFIGURACION` + `91_HISTORIAL` son
+todos `package:'C'` (auxiliar), nunca incluidos en la librería. `Verificar integridad` fallaba
+con `ERROR_CONSULTA: hoja no encontrada`.
+
+Solución: `src/EstructuraInicialService.js` + `src/EstructuraInicialDatos.js` (nuevos,
+`package:'A'`/`module:'CORE'`), función `instalarEstructuraInicial()` (menú "Catálogos y
+administración → Instalar estructura inicial"):
+- Crea las 37 hojas + `90_CONFIGURACION` + `91_HISTORIAL` que falten, con cabeceras verificadas
+  campo a campo contra la hoja de desarrollo real. Idempotente -- una hoja ya existente no se toca.
+- Si `90_CONFIGURACION` se crea de cero, la siembra con las 326 filas reales del catálogo
+  (`CATALOGO_SEMILLA_MVP`, transcripción literal, no inventada).
+- Asegura los rangos con nombre `CFG_<CATEGORIA>` (columna VALOR) que `Validation.js`/
+  `Repository.js` usan para resolver catálogos -- **no basta con las filas**: sin el named range,
+  `Verificar integridad` sigue fallando con `ERROR_CATALOGO: no existe el rango con nombre`. Este
+  paso se ejecuta siempre (no solo en la siembra inicial), así que también repara un
+  `90_CONFIGURACION` que ya tenía datos pero no rangos.
+
+Verificado en real sobre "La Troballa - Taller Ocupacional" (librería v3): ejecución del
+instalador crea las 39 hojas + siembra 326 filas + 57 rangos con nombre; `Verificar integridad`
+pasa de `ERROR_CONSULTA`/`ERROR_CATALOGO` a "Sin problemas de integridad detectados." Universo del
+packager actualizado 141→143 archivos (`RECUENTO_MODULO_CORE` 56→58, `RECUENTO_PRODUCTION`
+69→71).
+
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.

@@ -1,7 +1,7 @@
 {
   "libraryId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-  "version": "1",
+  "version": "3",
   "userSymbol": "Core",
   "timeZone": "Europe/Madrid",
-  "notas": "Librería compartida 'LaTroballa Core v1' (ver PROPUESTA_MODULARIZACION_LIBRERIA.md). Nivel 1 (autoservicio de módulos estándar): todos los clientes de este nivel apuntan a la misma librería -- solo cambia qué envoltorios genera montar-cliente.mjs, no la librería en sí. Actualizar version aquí tras cada 'clasp deploy' nuevo de la librería."
+  "notas": "Librería compartida 'LaTroballa Core' (ver PROPUESTA_MODULARIZACION_LIBRERIA.md). v2 añade EstructuraInicialService.js/EstructuraInicialDatos.js (instalador limpio: crea las 37 hojas de entidad + 90_CONFIGURACION con catálogo semilla + 91_HISTORIAL, idempotente). Nivel 1 (autoservicio de módulos estándar): todos los clientes de este nivel apuntan a la misma librería -- solo cambia qué envoltorios genera montar-cliente.mjs, no la librería en sí. Actualizar version aquí tras cada 'clasp deploy' nuevo de la librería."
 }

@@ -174,6 +174,7 @@ function onOpen() {
             .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
             .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
             .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
+            .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial')
         )
     )
     .addToUi();

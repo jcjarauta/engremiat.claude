@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 141,
+  "universeExpected": 143,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -1476,7 +1476,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "7bcd2b32ccd0aea2a41f2a2426d9a3495ebcf4aa4fb6d6d76d6bc66026bf2e4f",
+      "expectedSha256": "ee32065846eb450524d7039e9188c65c1f7de56e2e93c4513bdb4cb085d0dde1",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -1520,7 +1520,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "e430ef7bb916014a39a1d1bb27990e1f69bf73ac65adf5e182aed4fc4191d93e",
+      "expectedSha256": "8c828c812bf3b69f7b857cf143dec10fec67627c862223bfa114a4e308db91ad",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1558,6 +1558,28 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "COMPRAS"
+    },
+    {
+      "path": "src/EstructuraInicialDatos.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "2e197262624820450ac7198fc96f93fd5af9b9ffafb205eda11ca044a53d7fb6",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/EstructuraInicialService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "843a33a286eb5b8c0c1409af28ea701d2b98c6d4da5b23dae1e1b3a20344cec5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
     }
   ],
   "moduleDependencies": {
