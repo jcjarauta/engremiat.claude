@@ -2,7 +2,7 @@
 
 Estado: **CORREGIDO ESTÁTICAMENTE — NO EJECUTADO — NO PROBADO**.
 
-Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 137 archivos y el propio empaquetador lo excluye literalmente del escaneo.
+Continúa el **NO_GO operativo** para ejecutar el empaquetador, ejecutar sus pruebas, construir paquetes, exportar, usar `clasp` o desplegar. Este directorio no es parte del universo Apps Script de 139 archivos y el propio empaquetador lo excluye literalmente del escaneo, igual que `.git/` y `.claude/` (config local de Claude Code, no versionada).
 
 ## Propósito
 
@@ -18,7 +18,7 @@ Evita selección implícita, pruebas explícitas en A, pérdida de HTML o manifi
 
 | Archivo | Responsabilidad |
 |---|---|
-| `package-map.json` | allowlist exacta de las 137 rutas originales, con `module` por archivo de A y `moduleDependencies` |
+| `package-map.json` | allowlist exacta de las 139 rutas originales, con `module` por archivo de A y `moduleDependencies` |
 | `build-packages.mjs` | CLI, validación, escaneo textual y futura construcción |
 | `build-packages.test.mjs` | 73 pruebas locales redactadas; las 20 de P0-FIX04 aún no ejecutadas |
 | `generate-shell-wrappers.mjs` | calcula, para un conjunto de módulos, qué funciones (menú/`google.script.run`/triggers) quedan dentro del cierre y genera sus envoltorios de una línea para el futuro cascarón del cliente |
@@ -31,7 +31,7 @@ Solo se usan módulos integrados de Node.js 24. No hay NPM, `package.json`, red,
 
 ### A — `PRODUCTION_WITH_DECLARED_MIXED_DEBT`
 
-Incluye las 65 entradas `production` y dos `mixed` (67 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los ocho `Tests_*`, las 36 auxiliares y 26 excluidas.
+Incluye las 65 entradas `production` y dos `mixed` (67 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los ocho `Tests_*`, las 37 auxiliares y 27 excluidas.
 
 Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (54, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcion.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/Formularios.js` (CORE) y no se separan sin refactorizarlo.
 
@@ -75,7 +75,7 @@ Los dos repositorios permanecen separados. El manifiesto de B declara el hash ag
 
 ### C — `AUXILIARY_EXECUTION_REQUIRES_HUMAN_AUTHORIZATION`
 
-Incluye exactamente las 36 entradas `auxiliary`. El empaquetador las copia en un futuro build autorizado, pero nunca las ejecuta. No deben usarse cotidianamente en producción.
+Incluye exactamente las 37 entradas `auxiliary`. El empaquetador las copia en un futuro build autorizado, pero nunca las ejecuta. No deben usarse cotidianamente en producción.
 
 `src/Código.js` pertenece a C como runner manual de la suite 305–310: conserva `myFunction`, ejecuta `ejecutarSuitePaso305a310()` y escribe diagnóstico en `00_INICIO!A1:A2`. No tiene entrada productiva localizada. El detector emite `WARN APPROVED_SUITE_RUNNER` para esta llamada en C; la misma llamada directa desde producción A sería `ERR SUITE_CALL_IN_PRODUCTION`. No se convierten en error llamadas productivas ordinarias con palabras parecidas.
 

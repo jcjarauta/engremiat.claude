@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 138,
+  "universeExpected": 139,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -1523,6 +1523,17 @@
       "expectedSha256": "6855579bbdd11f5c74bb59beb0d4174ff45be580a8221a199ac3b707a3c34a33",
       "required": true,
       "reason": "instalación/fixture/tooling",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": ".gitignore",
+      "type": "text",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "442787ab3b4dcc0aeb55d4d866ec72bcc23b754efde3815e97f598ae79c42ba4",
+      "required": true,
+      "reason": "no desplegable",
       "mixed": false,
       "module": null
     }

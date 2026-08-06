@@ -197,11 +197,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 138 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 139 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 138) errors.push(`UNIVERSO_ESPERADO_138 actual=${map.entries.length}`);
+  if (map.entries.length !== 139) errors.push(`UNIVERSO_ESPERADO_139 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -240,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 65, test: 8, auxiliary: 37, excluded: 26, mixed: 2 };
+  const expectedCounts = { production: 65, test: 8, auxiliary: 37, excluded: 27, mixed: 2 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
@@ -298,7 +298,7 @@ export function scanProjectFiles(projectRoot) {
     const entries = readdirSync(absoluteDir, { withFileTypes: true }).sort((a, b) => compareCanonicalPaths(a.name, b.name));
     for (const dirent of entries) {
       const relative = normalizeRelativePath(relativeDir ? `${relativeDir}/${dirent.name}` : dirent.name);
-      if (relative === '.git' || relative.startsWith('.git/') || relative === 'tools/packager' || relative.startsWith(TOOLING_PREFIX)) continue;
+      if (relative === '.git' || relative.startsWith('.git/') || relative === '.claude' || relative.startsWith('.claude/') || relative === 'tools/packager' || relative.startsWith(TOOLING_PREFIX)) continue;
       const absolute = path.join(absoluteDir, dirent.name);
       const info = lstatSync(absolute);
       if (info.isSymbolicLink()) throw new PackagerError(`SYMLINK_RECHAZADO ${relative}`, EXIT_CODES.CONTRACT);
