@@ -379,6 +379,83 @@ function etiquetaExtraSelector_(clave, registro) {
   }
   return '';
 }
+/*
+ * Hallazgo real al verificar el cierre de PedidoRecepcion.js (ver
+ * conversación -- "en estos buscadores solo sale el id, necesitamos que
+ * salga el nombre"): 22 de las 37 entidades no tienen NOMBRE/TITULO
+ * (son relaciones/movimientos, p.ej. RECEPCION_LINEA, PEDIDO_PROVEEDOR),
+ * así que el buscador solo mostraba el ID. En vez de mantener una lista
+ * aparte de "campos identificativos" por entidad (se desincronizaría del
+ * esquema real), se reutiliza ESQUEMAS_FORMULARIO_MVP -- ya es la fuente
+ * de verdad de qué campos tiene cada entidad y en qué orden importan.
+ *
+ * Toma los 3 primeros campos del esquema (saltando ESTADO/OBSERVACIONES,
+ * ya cubiertos por otras vías) y construye una etiqueta legible:
+ * - tipo 'fk': resuelve el NOMBRE/TITULO del registro referenciado
+ *   (con caché por llamada, ver cacheNombresFk_ en
+ *   obtenerOpcionesEntidadParaSelector). Si el propio referenciado
+ *   tampoco tiene NOMBRE/TITULO (encadenamiento, p.ej.
+ *   RECEPCION_LINEA -> RECEPCION), cae al ID en crudo -- no se resuelve
+ *   en cascada para no complicar ni encarecer la búsqueda.
+ * - tipo 'fk_dependiente' (ENTIDAD_TIPO/ENTIDAD_ID polimórfico): se
+ *   deja en crudo (el propio ENTIDAD_TIPO ya es legible, p.ej.
+ *   "Proceso"); resolver el registro apuntado exigiría repetir la
+ *   lógica de MAPAS_DEPENDENCIA_MVP aquí, fuera de alcance de este
+ *   arreglo puntual.
+ * - tipo 'fecha': formatea con Utilities.formatDate (mismo patrón que
+ *   el resto del proyecto, p.ej. DesviacionService.js).
+ * - el resto (numero/catalogo/texto): valor tal cual.
+ */
+function resolverNombreFk_(entidadFk, id, cacheNombresFk_) {
+  if (!id) return null;
+
+  var claveCache = entidadFk + ':' + id;
+
+  if (cacheNombresFk_.hasOwnProperty(claveCache)) {
+    return cacheNombresFk_[claveCache];
+  }
+
+  var registroFk = obtenerRegistroPorId(entidadFk, id);
+  var nombre = registroFk ? (registroFk.NOMBRE || registroFk.TITULO || null) : null;
+
+  cacheNombresFk_[claveCache] = nombre;
+
+  return nombre;
+}
+function resolverEtiquetaPrincipal_(clave, registro, cacheNombresFk_) {
+  if (registro.NOMBRE) return registro.NOMBRE;
+  if (registro.TITULO) return registro.TITULO;
+
+  var esquema = ESQUEMAS_FORMULARIO_MVP[clave];
+
+  if (!esquema) return '';
+
+  var campos = esquema
+    .filter(function (campo) { return campo.campo !== 'ESTADO' && campo.campo !== 'OBSERVACIONES'; })
+    .slice(0, 3);
+
+  var partes = campos.map(function (campo) {
+    var valor = registro[campo.campo];
+
+    if (valor === undefined || valor === null || valor === '') return null;
+
+    if (campo.tipo === 'fk') {
+      return resolverNombreFk_(campo.entidadFk, valor, cacheNombresFk_) || valor;
+    }
+
+    if (campo.tipo === 'fecha') {
+      try {
+        return Utilities.formatDate(new Date(valor), Session.getScriptTimeZone() || 'Europe/Madrid', 'dd/MM/yyyy');
+      } catch (e) {
+        return valor;
+      }
+    }
+
+    return valor;
+  }).filter(function (parte) { return parte !== null && parte !== undefined && parte !== ''; });
+
+  return partes.join(' · ');
+}
 function obtenerOpcionesEntidadParaSelector(entidad, incluirPruebas) {
   var clave = String(entidad || '').trim().toUpperCase();
 
@@ -389,8 +466,11 @@ function obtenerOpcionesEntidadParaSelector(entidad, incluirPruebas) {
   var registros = listarRegistros(clave, { ACTIVO: 'SÍ' });
   registros = filtrarPorNivelDato_(clave, registros, incluirPruebas);
 
+  var cacheNombresFk_ = {};
+
   return registros.map(function (registro) {
-    var etiqueta = registro.ID + ' - ' + (registro.NOMBRE || registro.TITULO || '') + etiquetaExtraSelector_(clave, registro);
+    var etiquetaPrincipal = resolverEtiquetaPrincipal_(clave, registro, cacheNombresFk_);
+    var etiqueta = registro.ID + (etiquetaPrincipal ? ' - ' + etiquetaPrincipal : '') + etiquetaExtraSelector_(clave, registro);
     return {
       id: registro.ID,
       etiqueta: aplicarSufijoNivelDato_(clave, registro, etiqueta)

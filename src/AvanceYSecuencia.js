@@ -61,24 +61,24 @@ function recalcularAvanceProceso_(procesoId, confirmar) {
   };
 }
 
+/*
+ * Antes pedia el ID de memoria con ui.prompt() -- unico hueco que
+ * quedaba sin el buscador generico, senalado por el usuario al revisar
+ * "Movimientos y confirmaciones" (ver conversacion). Mismo patron que
+ * abrirConfirmarRecepcion (FormularioMotorUI.js): selector con
+ * buscador, previsualizacion y confirmacion explicita antes de escribir.
+ */
 function abrirRecalcularAvanceProceso() {
-  var ui = SpreadsheetApp.getUi();
-
-  var resp = ui.prompt(
+  abrirSelectorConAccion_(
+    'PROCESO',
     'Recalcular avance de proceso',
-    'Esta acción calcula el % de avance de un PROCESO a partir del avance ' +
-      'de sus tareas (promedio de las tareas activas y no canceladas) y, ' +
-      'si lo confirmas, lo guarda.\n\n' +
-      'Escribe el ID del proceso a recalcular (lo encuentras en la ' +
-      'columna ID de la hoja PROCESO, ej. PCS-0001):',
-    ui.ButtonSet.OK_CANCEL
+    'seleccionarYRecalcularAvance',
+    'obtenerOpcionesEntidadParaSelector'
   );
+}
 
-  if (resp.getSelectedButton() !== ui.Button.OK) return;
-
-  var id = resp.getResponseText().trim();
-
-  if (!id) return;
+function seleccionarYRecalcularAvance(entidad, id) {
+  var ui = SpreadsheetApp.getUi();
 
   var resultado;
 
@@ -90,7 +90,7 @@ function abrirRecalcularAvanceProceso() {
       e.message,
       ui.ButtonSet.OK
     );
-    return;
+    return true;
   }
 
   var proceso = obtenerRegistroPorId('PROCESO', id);
@@ -111,7 +111,7 @@ function abrirRecalcularAvanceProceso() {
     ui.ButtonSet.YES_NO
   );
 
-  if (confirmacion !== ui.Button.YES) return;
+  if (confirmacion !== ui.Button.YES) return true;
 
   try {
     recalcularAvanceProceso_(id, true);
@@ -123,6 +123,8 @@ function abrirRecalcularAvanceProceso() {
   } catch (e) {
     ui.alert('Error al guardar', e.message, ui.ButtonSet.OK);
   }
+
+  return true;
 }
 
 /**
