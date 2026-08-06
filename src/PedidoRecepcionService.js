@@ -8,6 +8,10 @@
  *
  * Protegido contra doble confirmacion: si la RECEPCION ya esta
  * Confirmada, se rechaza (evitaria duplicar la entrada de stock).
+ *
+ * DOMINIO puro (ver PROPUESTA_MODULARIZACION_LIBRERIA.md): los
+ * manejadores de UI (abrirConfirmarRecepcion, seleccionarYConfirmarRecepcion)
+ * viven en FormularioMotorUI.js.
  */
 
 function confirmarRecepcion_(recepcionId, confirmar) {
@@ -125,22 +129,6 @@ function actualizarEstadoPedidoTrasRecepcion_(pedidoId) {
   );
 }
 
-/*
- * Reemplaza el ui.prompt() original (pedia el ID de memoria, mismo
- * hueco que "Editar registro" antes de L5.1) por el selector con
- * buscador generico (abrirSelectorConAccion_, Formularios.js). Solo
- * ofrece recepciones no Confirmadas/Canceladas -- "pedidos a
- * recepcionar" en la terminologia del usuario.
- */
-function abrirConfirmarRecepcion() {
-  abrirSelectorConAccion_(
-    'RECEPCION',
-    'Confirmar recepción de pedido',
-    'seleccionarYConfirmarRecepcion',
-    'obtenerOpcionesRecepcionPendiente'
-  );
-}
-
 function obtenerOpcionesRecepcionPendiente() {
   return listarRegistros('RECEPCION', { ACTIVO: 'SÍ' })
     .filter(function (r) {
@@ -152,49 +140,4 @@ function obtenerOpcionesRecepcionPendiente() {
         etiqueta: r.ID + ' - Pedido ' + r.PEDIDO_PROVEEDOR_ID + ' (' + r.ESTADO + ')'
       };
     });
-}
-
-/*
- * Igual que el flujo previo del ui.prompt: previsualiza (ui.alert),
- * pide confirmacion explicita y solo entonces escribe. Se llama desde
- * SelectorRegistro.html tras elegir la recepcion en el buscador.
- */
-function seleccionarYConfirmarRecepcion(entidad, recepcionId) {
-  var ui = SpreadsheetApp.getUi();
-
-  var resultado;
-
-  try {
-    resultado = confirmarRecepcion_(recepcionId, false);
-  } catch (e) {
-    ui.alert('No se puede confirmar', e.message, ui.ButtonSet.OK);
-    return true;
-  }
-
-  var detalleLineas = resultado.lineas
-    .map(function (l) { return '- ' + l.materialId + ': ' + l.cantidad + ' ' + l.unidad; })
-    .join('\n');
-
-  var mensaje =
-    'Pedido: ' + resultado.pedidoId + '\n' +
-    'Se generará una entrada de stock por cada línea:\n' +
-    detalleLineas + '\n\n' +
-    '¿Confirmar la recepción y registrar estas entradas?';
-
-  var confirmacion = ui.alert('Confirmar recepción', mensaje, ui.ButtonSet.YES_NO);
-
-  if (confirmacion !== ui.Button.YES) return true;
-
-  try {
-    confirmarRecepcion_(recepcionId, true);
-    ui.alert(
-      'Recepción confirmada',
-      'Se registraron ' + resultado.numLineas + ' entradas de material para ' + recepcionId + '.',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('Error al confirmar', e.message, ui.ButtonSet.OK);
-  }
-
-  return true;
 }

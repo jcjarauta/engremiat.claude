@@ -29,7 +29,7 @@ export const EXIT_CODES = Object.freeze({
 });
 
 export const PACKAGE_STATUS = Object.freeze({
-  A: 'PRODUCTION_WITH_DECLARED_MIXED_DEBT',
+  A: 'PRODUCTION_CLEAN',
   B: 'TESTS_DEPEND_ON_VERSIONED_PACKAGE_A',
   C: 'AUXILIARY_EXECUTION_REQUIRES_HUMAN_AUTHORIZATION',
 });
@@ -51,9 +51,7 @@ const TEST_FILES = Object.freeze([
   'src/Tests_Repository.js',
   'src/Tests_Repository2.js',
 ]);
-const MIXED_FILES = Object.freeze([
-  'src/PedidoRecepcion.js',
-]);
+const MIXED_FILES = Object.freeze([]);
 const TEST_NAME_PATTERN = /^(?:(?:prueba|probar|test|ejecutarSuite)[\w$]*|assert(?:Equals|True|False|Hallazgo|SinHallazgo)[\w$]*)$/iu;
 const TEST_DECLARATION_PATTERNS = Object.freeze([
   { type: 'declaración', regex: /\bfunction\s+([\w$]+)\s*\(/gu },
@@ -239,12 +237,12 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 68, test: 8, auxiliary: 37, excluded: 27, mixed: 1 };
+  const expectedCounts = { production: 69, test: 8, auxiliary: 37, excluded: 27, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
-    if (categoryCounts.get(category) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
+    if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
   for (const [moduleName, count] of Object.entries(EXPECTED_MODULE_COUNTS)) {
-    if (moduleCounts.get(moduleName) !== count) errors.push(`RECUENTO_MODULO_${moduleName} esperado=${count} actual=${moduleCounts.get(moduleName) ?? 0}`);
+    if ((moduleCounts.get(moduleName) ?? 0) !== count) errors.push(`RECUENTO_MODULO_${moduleName} esperado=${count} actual=${moduleCounts.get(moduleName) ?? 0}`);
   }
   if (!map.moduleDependencies || typeof map.moduleDependencies !== 'object') {
     errors.push('FALTA_MODULE_DEPENDENCIES');

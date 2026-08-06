@@ -29,17 +29,13 @@ Solo se usan módulos integrados de Node.js 24. No hay NPM, `package.json`, red,
 
 ## Contrato de paquetes
 
-### A — `PRODUCTION_WITH_DECLARED_MIXED_DEBT`
+### A — `PRODUCTION_CLEAN` (deuda de mezcla de capas cerrada)
 
-Incluye las 68 entradas `production` y un `mixed` (69 entradas A). Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los ocho `Tests_*`, las 37 auxiliares y 27 excluidas.
+Incluye las 69 entradas `production`, cero `mixed`. Contiene obligatoriamente los 21 HTML y `src/appsscript.json`. Excluye los ocho `Tests_*`, las 37 auxiliares y 27 excluidas.
 
-Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (56, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcion.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/FormularioEsquemas.js` (CORE) y no se separan sin refactorizarlo.
+Cada entrada de A declara además un `module` (subconjunto lógico dentro de A, no un paquete nuevo): `CORE` (56, cimiento — jerarquía, personas, espacios, formularios genéricos, paneles, integridad, historial, protección, selectores, catálogos, kanban, listados, informes genéricos), `GANTT` (3: `DesviacionService.js`, `DisponibilidadService.js`, `GanttPlanReal.html`), `ECONOMICO` (1: `CosteService.js`), `IMPACTO` (1: `EvidenciaSocialService.js`), `COMPRAS` (6: ficha material/proveedor, `PedidoRecepcionService.js`, `StockMaterialService.js`) y `CONVOCATORIAS` (2: ficha convocatoria). `map.moduleDependencies` declara el cierre requerido por módulo (p.ej. `IMPACTO` exige `CORE` + `ECONOMICO`); `--modules` resuelve ese cierre transitivo antes de filtrar. `COMPETENCIAS` y `PRESUPUESTO/FUENTE_FINANCIACION` no tienen archivos propios — sus esquemas viven embebidos en `src/FormularioEsquemas.js` (CORE) y no se separan sin refactorizarlo.
 
-No es “producción limpia”. Mantiene deuda individual (mezcla de capas UI/dominio, no código de prueba) en:
-
-- `src/PedidoRecepcion.js`
-
-El resto de la deuda original se cerró (ver `PROPUESTA_MODULARIZACION_LIBRERIA.md`): `src/Ids.js` y `src/Repository.js` tenían código de prueba embebido, extraído a `Tests_Ids.js`/`Tests_Repository2.js`. `src/Validation.js` se reclasificó a C: sin referencias externas en todo el repositorio y valida un esquema de 17 hojas obsoleto frente a las 37+ entidades reales — mismo perfil que los `Instalador*.js`. `src/Formularios.js` (2987 líneas, mezcla UI+DOMINIO activa referenciada desde el menú real) se separó en `src/FormularioMotorUI.js` (UI_SERVIDOR), `src/FormularioValidacionService.js` (DOMINIO) y `src/FormularioEsquemas.js` (CONFIGURACION).
+Ningún archivo mixto declarado (`MIXED_FILES` vacío). Los 5 mixtos originales cerraron su deuda (ver `PROPUESTA_MODULARIZACION_LIBRERIA.md`, tres causas distintas): `src/Ids.js`/`src/Repository.js` tenían código de prueba embebido, extraído a `Tests_Ids.js`/`Tests_Repository2.js`. `src/Validation.js` era código muerto sin referencias, reclasificado a C. `src/Formularios.js` (2987 líneas, UI+DOMINIO activo) se separó en `src/FormularioMotorUI.js`/`src/FormularioValidacionService.js`/`src/FormularioEsquemas.js`. `src/PedidoRecepcion.js` (último mixto real) se dividió en `src/PedidoRecepcionService.js` (DOMINIO, permanece con ese nombre) y sus dos manejadores de UI, movidos a `src/FormularioMotorUI.js`; su backfill de un solo uso ya vivía en `src/CorregirEstadoPedidosExistentes.js` (auxiliary/C) desde un paso anterior.
 
 El detector separa dos conceptos:
 

@@ -483,5 +483,68 @@ function abrirHojaAdmin_(nombreHoja) {
 function abrirPersonasEquiposAdmin() { abrirHojaAdmin_('11_PERSONAS_EQUIPOS'); }
 function abrirProveedoresAdmin() { abrirHojaAdmin_('15_PROVEEDORES'); }
 function abrirHistorialAdmin() { abrirHojaAdmin_('91_HISTORIAL'); }
+
+/*
+ * Extraidas de PedidoRecepcion.js (ver PROPUESTA_MODULARIZACION_LIBRERIA.md):
+ * unico manejador de menu real para confirmar recepciones. Reemplaza el
+ * ui.prompt() original (pedia el ID de memoria) por el selector con
+ * buscador generico (abrirSelectorConAccion_). Solo ofrece recepciones no
+ * Confirmadas/Canceladas -- "pedidos a recepcionar" en la terminologia del
+ * usuario. La logica de dominio (confirmarRecepcion_ y compañia) vive en
+ * PedidoRecepcionService.js.
+ */
+function abrirConfirmarRecepcion() {
+  abrirSelectorConAccion_(
+    'RECEPCION',
+    'Confirmar recepción de pedido',
+    'seleccionarYConfirmarRecepcion',
+    'obtenerOpcionesRecepcionPendiente'
+  );
+}
+
+/*
+ * Igual que el flujo previo del ui.prompt: previsualiza (ui.alert), pide
+ * confirmacion explicita y solo entonces escribe. Se llama desde
+ * SelectorRegistro.html tras elegir la recepcion en el buscador.
+ */
+function seleccionarYConfirmarRecepcion(entidad, recepcionId) {
+  var ui = SpreadsheetApp.getUi();
+
+  var resultado;
+
+  try {
+    resultado = confirmarRecepcion_(recepcionId, false);
+  } catch (e) {
+    ui.alert('No se puede confirmar', e.message, ui.ButtonSet.OK);
+    return true;
+  }
+
+  var detalleLineas = resultado.lineas
+    .map(function (l) { return '- ' + l.materialId + ': ' + l.cantidad + ' ' + l.unidad; })
+    .join('\n');
+
+  var mensaje =
+    'Pedido: ' + resultado.pedidoId + '\n' +
+    'Se generará una entrada de stock por cada línea:\n' +
+    detalleLineas + '\n\n' +
+    '¿Confirmar la recepción y registrar estas entradas?';
+
+  var confirmacion = ui.alert('Confirmar recepción', mensaje, ui.ButtonSet.YES_NO);
+
+  if (confirmacion !== ui.Button.YES) return true;
+
+  try {
+    confirmarRecepcion_(recepcionId, true);
+    ui.alert(
+      'Recepción confirmada',
+      'Se registraron ' + resultado.numLineas + ' entradas de material para ' + recepcionId + '.',
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('Error al confirmar', e.message, ui.ButtonSet.OK);
+  }
+
+  return true;
+}
 function abrirFormularioCrearMaterial() { abrirFormularioCrear_('MATERIAL', 'Nuevo material'); }
 function abrirFormularioCrearPersonaEquipo() { abrirFormularioCrear_('PERSONA_EQUIPO', 'Nueva persona/equipo'); }

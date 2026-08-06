@@ -1252,17 +1252,6 @@
       "module": "CORE"
     },
     {
-      "path": "src/PedidoRecepcion.js",
-      "type": "js",
-      "category": "mixed",
-      "package": "A",
-      "expectedSha256": "6eab75ec13352b6930bd50a938f1dc20d0292b2b6beb56f9d8ffce43b1c42457",
-      "required": true,
-      "reason": "producción+deuda",
-      "mixed": true,
-      "module": "COMPRAS"
-    },
-    {
       "path": "src/ProcesoService.js",
       "type": "js",
       "category": "production",
@@ -1487,7 +1476,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "e86efed83e57d304b01c8bbd00ee02c9c30adf723278870ca4a94b2e23de275a",
+      "expectedSha256": "b370f71f0ed3279ba55f3d2b946cf01642b18386bd3c8fb696a001e33221d519",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -1531,7 +1520,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "63e20533fd38e5fb2c2c8887eba4c6d9e469a1e2869492a765fe7cac46a13e7b",
+      "expectedSha256": "a7ba05874bc306047d86acd95c66b49431350d240358ebe5bee04b9d2090dd20",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1558,6 +1547,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/PedidoRecepcionService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "71b49545059f3484c4e88f1537dff3494b3b97cf801261dec5c12327240c2ba5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "COMPRAS"
     }
   ],
   "moduleDependencies": {
