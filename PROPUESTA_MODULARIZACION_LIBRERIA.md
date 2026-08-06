@@ -82,5 +82,27 @@ Los 4 puntos del plan original están hechos y verificados en real. El patrón C
 - Falta sembrar el cascarón con datos/catálogos reales para probar un flujo de negocio completo (crear una tarea, ver el Gantt con datos), no solo confirmar que la arquitectura no rompe.
 - Falta decidir el mecanismo de reparto por organización (Camino A: cada organización con su propio cascarón + Sheet, todas apuntando a la misma librería con Script ID fijo) y cómo se versiona/actualiza la librería sin romper cascarones ya desplegados.
 
+## Constructor de clientes — Nivel 1 (✅ registro + comando montados)
+
+Valorado como asesor técnico (ver conversación -- "automatizar preventas con la mínima fricción"):
+dos niveles de personalización con coste muy distinto. **Nivel 1** (autoservicio de módulos
+estándar, sin lógica propia): todos los clientes comparten la misma librería, así que mejorar el
+Core no exige redesplegar nada por cliente. **Nivel 2** (lógica propia real): requiere librería
+propia por cliente, coste de mantenimiento que crece con el número de clientes -- se deja para más
+adelante, solo cuando la paguen clientes concretos.
+
+`tools/constructor/` implementa el Nivel 1 (ver `tools/constructor/README.md`):
+- `libreria.json`: Script ID/versión/símbolo de la librería compartida vigente.
+- `clientes.json`: registro de clientes montados (módulos, envoltorios, huecos, estado).
+- `montar-cliente.mjs`: genera el cascarón (`Codigo.js` + `appsscript.json`) de un cliente
+  reutilizando `resolveWrapperPlan`/`renderWrapperStubs` (ya construidos y verificados, cero
+  lógica nueva de empaquetado) y lo registra. No crea recursos de Drive ni ejecuta `clasp` --
+  imprime los comandos exactos para ese paso manual, mismo criterio de "acción con efectos reales
+  requiere confirmación explícita" que el resto del proyecto.
+
+Verificado: 13/13 tests (incluida una construcción real contra el repositorio: CORE+GANTT con
+huecos esperados, los 6 módulos completos sin huecos), 122/122 + 25/25 de las suites existentes
+sin romperse, `--check` limpio con `tools/constructor/` excluido del escaneo del packager.
+
 ## Recordatorio de gobernanza (heredado, sin cambios)
 Git local, `clasp push` con autorización explícita, cambios mínimos, verificación humana en Apps Script real antes de dar nada por cerrado — mismo criterio que el resto de este proyecto.

@@ -295,7 +295,7 @@ export function scanProjectFiles(projectRoot) {
     const entries = readdirSync(absoluteDir, { withFileTypes: true }).sort((a, b) => compareCanonicalPaths(a.name, b.name));
     for (const dirent of entries) {
       const relative = normalizeRelativePath(relativeDir ? `${relativeDir}/${dirent.name}` : dirent.name);
-      if (relative === '.git' || relative.startsWith('.git/') || relative === '.claude' || relative.startsWith('.claude/') || relative === 'tools/packager' || relative.startsWith(TOOLING_PREFIX)) continue;
+      if (relative === '.git' || relative.startsWith('.git/') || relative === '.claude' || relative.startsWith('.claude/') || relative === 'tools/packager' || relative.startsWith(TOOLING_PREFIX) || relative === 'tools/constructor' || relative.startsWith('tools/constructor/')) continue;
       const absolute = path.join(absoluteDir, dirent.name);
       const info = lstatSync(absolute);
       if (info.isSymbolicLink()) throw new PackagerError(`SYMLINK_RECHAZADO ${relative}`, EXIT_CODES.CONTRACT);

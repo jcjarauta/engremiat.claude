@@ -1,0 +1,7 @@
+{
+  "libraryId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
+  "version": "1",
+  "userSymbol": "Core",
+  "timeZone": "Europe/Madrid",
+  "notas": "Librería compartida 'LaTroballa Core v1' (ver PROPUESTA_MODULARIZACION_LIBRERIA.md). Nivel 1 (autoservicio de módulos estándar): todos los clientes de este nivel apuntan a la misma librería -- solo cambia qué envoltorios genera montar-cliente.mjs, no la librería en sí. Actualizar version aquí tras cada 'clasp deploy' nuevo de la librería."
+}
