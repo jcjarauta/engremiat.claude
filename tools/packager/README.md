@@ -21,6 +21,8 @@ Evita selección implícita, pruebas explícitas en A, pérdida de HTML o manifi
 | `package-map.json` | allowlist exacta de las 136 rutas originales, con `module` por archivo de A y `moduleDependencies` |
 | `build-packages.mjs` | CLI, validación, escaneo textual y futura construcción |
 | `build-packages.test.mjs` | 73 pruebas locales redactadas; las 20 de P0-FIX04 aún no ejecutadas |
+| `generate-shell-wrappers.mjs` | calcula, para un conjunto de módulos, qué funciones (menú/`google.script.run`/triggers) quedan dentro del cierre y genera sus envoltorios de una línea para el futuro cascarón del cliente |
+| `generate-shell-wrappers.test.mjs` | 25 pruebas, incluidas 3 contra el repositorio real |
 | `README.md` | contrato, uso, seguridad, límites y gates |
 
 Solo se usan módulos integrados de Node.js 24. No hay NPM, `package.json`, red, Drive, Apps Script API, OAuth, `clasp`, evaluación dinámica, procesos hijo ni ejecución del código fuente.
@@ -111,6 +113,21 @@ Opciones:
 - `--project-root <ruta>`: raíz local explícita.
 
 Sin argumentos muestra ayuda y no escribe. No existe paquete ni selección predeterminados: se exige exactamente una de `--package`, `--all` o `--modules`. Opciones desconocidas, incompletas o un módulo no reconocido fallan.
+
+### Envoltorios del cascarón (`generate-shell-wrappers.mjs`)
+
+Para el patrón de librería de Apps Script (ver `PROPUESTA_MODULARIZACION_LIBRERIA.md`), cada punto de entrada invocado desde el cascarón del cliente —ítem de menú (`addItem`), llamada `google.script.run` desde HTML, o trigger simple (`onOpen`/`onEdit`)— necesita un envoltorio de una línea si su lógica real vive en la librería. Esta herramienta calcula, para un conjunto de módulos dado, qué envoltorios son generables (la función que define el punto de entrada cae dentro del cierre de módulos pedido) y cuáles no (deuda a resolver: la función vive en un módulo no seleccionado, no tiene declaración localizable, o tiene más de una declaración ambigua).
+
+```text
+node tools/packager/generate-shell-wrappers.mjs --modules CORE,GANTT
+node tools/packager/generate-shell-wrappers.mjs --modules CORE,GANTT,ECONOMICO,IMPACTO,COMPRAS,CONVOCATORIAS --output <archivo.js> --user-symbol Core
+```
+
+Opciones: `--modules M1,M2` (obligatoria, mismo cierre transitivo que `build-packages.mjs`), `--output <archivo.js>` (opcional; sin ella solo informa por consola, no escribe; no sobrescribe destinos existentes ni escribe dentro de `src/` o `tools/packager/`), `--user-symbol <Nombre>` (símbolo de la librería en `appsscript.json`, por defecto `Core`), `--project-root <ruta>`.
+
+Cada envoltorio generado es genérico: `function nombre() { return Symbol.nombre.apply(null, arguments); }`, sin necesidad de conocer la firma real de cada función (validado en la POC: funciona de punta a punta con este patrón). Solo lee el repositorio real (no copia ni construye paquetes); no requiere `--check`/`--build` previos.
+
+Estado real verificado contra el proyecto: pidiendo los seis módulos completos no queda ningún hueco (176 envoltorios generables, incluidos `onOpen`/`onEdit`). Pidiendo un módulo aislado (p.ej. `GANTT`) sí aparecen huecos reales `FUERA_DE_MODULOS`, porque `onOpen()` hoy es un único menú monolítico que referencia funciones de todos los módulos — confirma la limitación ya documentada en `PROPUESTA_MODULARIZACION_LIBRERIA.md`: mientras `onOpen()` no se reparta por módulo, un cascarón module-scoped solo es autosuficiente si incluye la selección completa de módulos.
 
 ## Salida, estructura y reproducibilidad
 
