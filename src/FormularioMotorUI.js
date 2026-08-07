@@ -345,6 +345,7 @@ function construirSubmenuImpacto_(ui) {
 function construirSubmenuCatalogosYAdministracion_(ui) {
   var menu = ui.createMenu('Catálogos y administración');
   menu = agregarCatalogosCore_(menu);
+  if (moduloInstalado_('COMPRAS')) menu = agregarCatalogosCompras_(menu);
   if (moduloInstalado_('CLIENTE')) menu = agregarCatalogosCliente_(menu);
   if (moduloInstalado_('VENTAS')) menu = agregarCatalogosVentas_(menu);
   if (moduloInstalado_('OPORTUNIDAD')) menu = agregarCatalogosOportunidad_(menu);
@@ -374,6 +375,10 @@ function agregarCatalogosCore_(menu) {
       .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
   }
   return menu;
+}
+
+function agregarCatalogosCompras_(menu) {
+  return menu.addItem('Instalar catálogo de Compras (L4)', 'abrirInstalarCatalogoComprasL4');
 }
 
 function agregarCatalogosCliente_(menu) {

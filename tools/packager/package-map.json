@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 155,
+  "universeExpected": 157,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -288,7 +288,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "5d8bdf4d539bde06bc6498b853bf75d338b6973ad0c3ddf690fb3723faa1e711",
+      "expectedSha256": "fabc3b24bfed6495308672736dbb9daf5af38db2a9b81d7ddbe13be5023f3504",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -695,7 +695,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c0446703da9e57296c1e94a8f4f6a07b19f16012d04c21f68cfb63ebf52be1c4",
+      "expectedSha256": "b2f02c9c83364b99d70ade43964758855f819cafc7c0366555d5d9d420263fc8",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -887,6 +887,17 @@
       "reason": "instalación/fixture/tooling",
       "mixed": false,
       "module": null
+    },
+    {
+      "path": "src/InstaladorComprasL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "4a86bf262c344ca326e254b50fa9fd73808a5c4e118dc7641867620dff46c033",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Compras L4)",
+      "mixed": false,
+      "module": "COMPRAS"
     },
     {
       "path": "src/InstaladorConvocatoria.js",
@@ -1333,7 +1344,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c1e47fef9e1f900181c7f6f487e18b82777c535576998783f01495f868b8b75b",
+      "expectedSha256": "b33d0b76c5a521df4c678f20963902a23c959a1e4d2c41eee9ac418e0942c177",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -1664,6 +1675,17 @@
       "category": "test",
       "package": "B",
       "expectedSha256": "9dea37c0c516e8c0c114c8c16e14a91b60f675875fc240559273ef9af85167b4",
+      "required": true,
+      "reason": "prueba explícita",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "src/Tests_ModulosInstalados.js",
+      "type": "js",
+      "category": "test",
+      "package": "B",
+      "expectedSha256": "f83d2df72ec8a9d431709ea28ccd3f10660ca66b0c667df1750b01100827efd5",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,

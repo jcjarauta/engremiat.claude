@@ -97,18 +97,44 @@ sistema -- objetivo económico central de esta fase.
 `PanelVentas.html` + exportador CSV compartido, mismo patrón que el resto
 de paneles.
 
-## Fase 3 -- Aprovisionamiento (infraestructura, no económico -- baja prioridad)
+## Fase 3 -- Aprovisionamiento (infraestructura, no económico)
 
-Boceto ya escrito y NO activado en
-[`src/AprovisionamientoService.js`](src/AprovisionamientoService.js):
+**Activada y probada de extremo a extremo** (ver
+[`src/AprovisionamientoService.js`](src/AprovisionamientoService.js)):
 trigger instalable sobre una hoja `SOLICITUDES_MONTAJE` protegida que,
-al aprobar una fila, llama a la Apps Script API (`script.projects.create`)
-para crear el Sheet+Script del nuevo cliente sin pasar por `clasp`.
-Pendiente: scope OAuth `script.projects` (requiere nuevo consentimiento,
-confirmación explícita antes de aplicar), `subirContenidoScript_`
-(portar `generate-shell-wrappers.mjs` a texto generado en Apps Script).
-Se retoma cuando el volumen de montajes lo justifique -- hoy el flujo
-manual (`montar-cliente.mjs` + `clasp`) es suficiente.
+al aprobar una fila (`NOMBRE` + `MODULOS`), crea el Sheet+Script nuevo
+vinculado a la librería CORE (`script.projects.create`), sube su
+`Codigo.js`/`appsscript.json` generados
+(`GeneradorEnvoltoriosEmbebido.js`, puerto de
+`generate-shell-wrappers.mjs` a Apps Script, verificado byte a byte
+idéntico al generador Node), e instala su estructura de hojas/catálogo
+(`instalarEstructuraInicial`) -- todo en una sola ejecución, sin pasos
+manuales. Scopes `script.scriptapp`/`script.projects` añadidos y
+autorizados. Sacada de la librería (`package C`, auxiliar): dar a
+cualquier cliente externo la capacidad de crear proyectos de Apps
+Script nuevos era más alcance del debido para una herramienta de
+administración interna de LaTroballa Software -- solo el Sheet maestro
+y proyectos internos la ven (`moduloInstalado_('INTERNO')`, pseudo-
+módulo que ningún cliente real pide nunca).
+
+### Menú y hojas condicionados por módulo (mecanismo transversal)
+
+De aquí salió el hallazgo de que el menú y las hojas de cada cliente
+seguían mostrando/creando todos los módulos, herencia del sheet
+maestro. Se resolvió con `MODULOS_INSTALADOS_CLIENTE`: una constante
+que `generate-shell-wrappers.mjs`/`GeneradorEnvoltoriosEmbebido.js`
+escriben en el `Codigo.js` de cada cliente con el cierre real de
+módulos resuelto. Como una librería de Apps Script corre en su propio
+ámbito global (no puede leer variables globales del proyecto que la
+invoca), los envoltorios de `onOpen()` y `abrirInstalarEstructuraInicial()`
+la pasan como argumento explícito en vez del reenvío genérico
+(`FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS`, ambos generadores).
+`moduloInstalado_()` (`FormularioMotorUI.js`) condiciona cada bloque
+del menú; `hojaInstalable_()`/`categoriaInstalable_()`
+(`EstructuraInicialService.js`, con `MODULO_POR_HOJA_MVP` en `Ids.js`
+y `MODULO_POR_CATEGORIA_CATALOGO` en `EstructuraInicialDatos.js`)
+condicionan qué hojas y catálogo semilla se crean. Cubierto por test
+reactivo (`Tests_ModulosInstalados.js`).
 
 ## Fase 4 -- Oportunidad y prospección (CRM, dos niveles)
 
@@ -154,6 +180,16 @@ todas las entidades y se queda en CORE -- igual que ocurre hoy con
 actualizado para reflejar `libreriaVersion=7` y los módulos reales de
 Gestor de Proyectos (estaba desincronizado desde antes de esta sesión).
 
+**`COMPRAS` cerrado como módulo real** (deuda detectada al construir el
+mecanismo de menú/hojas condicionado, ver Fase 3): tenía UI marcada como
+módulo (`FichaMaterialService.js`, `FichaProveedorService.js`,
+`PedidoRecepcionService.js`, `StockMaterialService.js`) pero sus 10 hojas
+de entidad (`08_MATERIALES`...`28_RECEPCION_LINEA`) se instalaban siempre,
+las tuviera el cliente contratado o no. Ya tenía `MODULO_POR_HOJA_MVP`/
+`MODULO_POR_CATEGORIA_CATALOGO` filtrando su instalación; se completó con
+`InstaladorComprasL4.js` (mismo patrón que `InstaladorClienteL4.js`) para
+altas de catálogo incrementales sobre un `90_CONFIGURACION` ya poblado.
+
 ## Combinaciones de valor (cruces entre módulos)
 
 Distinto de un "pack" (lista de módulos a instalar junta, sin lógica
@@ -171,11 +207,13 @@ activos con datos reales (evitar diseñar contra un vacío).
 
 ## Orden de ejecución acordado
 
-1. **Fase 0 -- Cliente** (en curso).
-2. **Fase 2 -- Ventas** (prioridad económica; puede empezar en paralelo a
-   Fase 1 una vez Cliente esté cerrado, ya que ambas dependen solo de
-   Cliente, no entre sí).
-3. Fase 1 -- Mantenimiento (UI, no bloquea Ventas).
-4. Fase 4 nivel básico -- Oportunidad.
-5. Fase 3 -- Aprovisionamiento, y Fase 4 nivel avanzado -- scraping, sin
-   fecha fija, se retoman cuando aporten valor inmediato.
+1. **Fase 0 -- Cliente** -- hecho.
+2. **Fase 2 -- Ventas** -- hecho.
+3. **Fase 4 nivel básico -- Oportunidad** -- hecho.
+4. **Fase 3 -- Aprovisionamiento** -- hecho (activada, probada de
+   extremo a extremo, y de paso cerró `COMPRAS` como módulo real).
+5. Fase 1 -- Mantenimiento (UI, `PanelClientes.html` ya construido en
+   Fase 0/2 -- queda pendiente lo no bloqueante: comunicación/acceso
+   para actualizar el Sheet de un cliente ya entregado).
+6. Fase 4 nivel avanzado -- scraping, sin fecha fija, se retoma cuando
+   aporte valor inmediato.

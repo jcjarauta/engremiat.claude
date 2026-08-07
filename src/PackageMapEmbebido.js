@@ -207,6 +207,10 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CLIENTE"
     },
     {
+      "path": "src/InstaladorComprasL4.js",
+      "module": "COMPRAS"
+    },
+    {
       "path": "src/InstaladorOportunidadL4.js",
       "module": "OPORTUNIDAD"
     },
