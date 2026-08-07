@@ -100,25 +100,94 @@ export function extractMenuEntries(jsSource) {
   return entries;
 }
 
-// Los handlers pueden pasar una función anónima con sus propios paréntesis
-// (p.ej. withFailureHandler(function () { ... })), no solo un nombre suelto.
-// Se tolera un nivel de anidamiento; el negativo lookahead evita capturar el
-// propio nombre del handler como si fuera la función objetivo cuando el
-// argumento excede ese nivel y el regex retrocede a cero repeticiones.
-const HANDLER_ARG = '(?:[^()]|\\([^()]*\\))*';
-const GOOGLE_SCRIPT_RUN_REGEX = new RegExp(
-  `google\\.script\\.run(?:\\s*\\.\\s*with(?:Success|Failure)Handler\\s*\\(${HANDLER_ARG}\\))*\\s*\\.\\s*(?!with(?:Success|Failure)Handler\\b)([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(`,
-  'gu',
-);
+const HANDLER_NAMES = new Set(['withSuccessHandler', 'withFailureHandler']);
+const IDENTIFIER_START_RE = /^[a-zA-Z_][a-zA-Z0-9_]*/u;
 
+// Salta un literal de cadena/plantilla completo (comillas ya masked-safe: los
+// comentarios se blanquearon antes, pero las strings quedan intactas y deben
+// recorrerse respetando el escape \ para no confundir un ) o ' interno con
+// el cierre real.
+function skipStringLiteral(source, quoteIndex) {
+  const quote = source[quoteIndex];
+  let index = quoteIndex + 1;
+  while (index < source.length) {
+    if (source[index] === '\\') { index += 1; }
+    else if (source[index] === quote) return index;
+    index += 1;
+  }
+  return index;
+}
+
+// Devuelve el índice del ')' que cierra el '(' en openIndex, contando
+// profundidad de paréntesis y saltando literales de cadena -- a diferencia
+// del regex anterior (HANDLER_ARG), no hay límite de niveles de anidamiento,
+// así que un handler con cualquier cantidad de funciones/objetos anidados
+// dentro (p.ej. el withSuccessHandler grande de cargarEsquema en
+// FormularioGenerico.html) se salta correctamente entero.
+function findMatchingParen(source, openIndex) {
+  let depth = 0;
+  for (let index = openIndex; index < source.length; index += 1) {
+    const char = source[index];
+    if (char === "'" || char === '"' || char === '`') { index = skipStringLiteral(source, index); continue; }
+    if (char === '(') depth += 1;
+    else if (char === ')') {
+      depth -= 1;
+      if (depth === 0) return index;
+    }
+  }
+  return -1;
+}
+
+function skipWhitespace(source, index) {
+  let cursor = index;
+  while (cursor < source.length && /\s/u.test(source[cursor])) cursor += 1;
+  return cursor;
+}
+
+// Recorre la cadena `google.script.run.withXHandler(...).withYHandler(...).funcion(...)`
+// carácter a carácter (en vez de con un regex de anidamiento acotado) para
+// que un cuerpo de handler arbitrariamente anidado no rompa la detección de
+// la función real invocada al final de la cadena.
 export function extractGoogleScriptRunTargets(jsSource) {
   const masked = maskCommentsOnly(jsSource);
-  GOOGLE_SCRIPT_RUN_REGEX.lastIndex = 0;
+  const anchor = 'google.script.run';
   const entries = [];
-  let match;
-  while ((match = GOOGLE_SCRIPT_RUN_REGEX.exec(masked))) {
-    entries.push({ functionName: match[1], line: lineAt(jsSource, match.index) });
+  let searchFrom = 0;
+
+  while (true) {
+    const anchorIndex = masked.indexOf(anchor, searchFrom);
+    if (anchorIndex === -1) break;
+    searchFrom = anchorIndex + anchor.length;
+
+    let cursor = anchorIndex + anchor.length;
+    let targetName = null;
+
+    while (true) {
+      cursor = skipWhitespace(masked, cursor);
+      if (masked[cursor] !== '.') break;
+      cursor = skipWhitespace(masked, cursor + 1);
+
+      const nameMatch = IDENTIFIER_START_RE.exec(masked.slice(cursor));
+      if (!nameMatch) break;
+      const name = nameMatch[0];
+      cursor = skipWhitespace(masked, cursor + name.length);
+
+      if (masked[cursor] !== '(') break;
+      const closeParen = findMatchingParen(masked, cursor);
+      if (closeParen === -1) break;
+
+      if (HANDLER_NAMES.has(name)) {
+        cursor = closeParen + 1;
+        continue;
+      }
+
+      targetName = name;
+      break;
+    }
+
+    if (targetName) entries.push({ functionName: targetName, line: lineAt(jsSource, anchorIndex) });
   }
+
   return entries;
 }
 

@@ -9,7 +9,7 @@
       "modulosResueltos": [
         "CORE"
       ],
-      "envoltoriosGenerados": 146,
+      "envoltoriosGenerados": 156,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -41,6 +41,43 @@
       "fechaCreacion": "2026-08-06T17:42:55.369Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_latroballa"
+    },
+    {
+      "nombre": "gestor-proyectos",
+      "modulosSolicitados": [
+        "CORE",
+        "GANTT"
+      ],
+      "modulosResueltos": [
+        "CORE",
+        "GANTT"
+      ],
+      "envoltoriosGenerados": 169,
+      "huecos": [
+        {
+          "funcion": "abrirFichaConvocatoriaBuscar",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirFichaMaterial",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirFichaMaterialBuscar",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirFichaProveedorBuscar",
+          "estado": "EXCLUDED_MODULE_GAP"
+        }
+      ],
+      "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
+      "libreriaVersion": "3",
+      "fechaCreacion": "2026-08-07T05:30:42.090Z",
+      "estado": "desplegado_y_verificado",
+      "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_gestor_proyectos",
+      "sheetId": "142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ",
+      "scriptId": "1MGAFsDgI_xqmwc29PtmoNxOJxIVliu3RRYAvEre4O-d27x8fcmk3Q4OU"
     }
   ]
 }
