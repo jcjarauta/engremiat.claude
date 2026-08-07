@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; flex-wrap: wrap; }
+      .cabecera button { flex-shrink: 0; }
+      h3 { font-size: 14px; margin: 16px 0 8px; }
+      .resumen { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 4px; }
+      .fila { border: 1px solid var(--color-borde); border-radius: 6px; padding: 8px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .fila-principal { font-weight: bold; font-size: 14px; }
+      .fila-detalle { color: var(--color-texto-secundario); font-size: 13px; margin-top: 2px; }
+      .btn-mini { font-size: 13px; padding: 6px 10px; flex-shrink: 0; }
+      .badge { font-size: 13px; padding: 2px 10px; }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 8px 0; }
+    </style>
+  </head>
+  <body>
+    <div class="cabecera">
+      <button id="btnNuevoPedido" class="btn-mini boton-primario" title="Nuevo pedido de cliente">+ Pedido</button>
+      <button id="btnNuevoContrato" class="btn-mini boton-primario" title="Nuevo contrato de servicio">+ Contrato</button>
+      <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇ CSV</button>
+      <button id="btnActualizar" class="btn-mini" title="Volver a cargar">🔄</button>
+    </div>
+
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+
+    <h3>Pedidos de cliente</h3>
+    <div id="resumenPedidos" class="resumen"></div>
+    <div id="listaPedidos"></div>
+
+    <h3>Contratos de servicio</h3>
+    <div id="resumenContratos" class="resumen"></div>
+    <div id="listaContratos"></div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+      function escapeAttr(texto) {
+        return escapeHtml(texto).replace(/"/g, "&quot;");
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+      }
+
+      function editarPedido(id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion("PEDIDO_CLIENTE", id);
+      }
+      function editarContrato(id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion("CONTRATO_SERVICIO", id);
+      }
+
+      function renderPedido_(p) {
+        return '<div class="fila">' +
+          '<div>' +
+            '<div class="fila-principal">' + escapeHtml(p.clienteNombre) + ' — ' + p.total + ' €</div>' +
+            '<div class="fila-detalle">' + escapeHtml(p.canal) + ' · ' + escapeHtml(p.fechaPedido) + ' · ' + p.numeroLineas + ' líneas · <span class="badge badge-neutro">' + escapeHtml(p.estado) + '</span></div>' +
+          '</div>' +
+          '<button class="boton btn-mini" onclick="editarPedido(\'' + escapeAttr(p.id) + '\')">Editar</button>' +
+        '</div>';
+      }
+
+      function renderContrato_(c) {
+        var importe = c.importePeriodico ? c.importePeriodico + ' €' : '—';
+        return '<div class="fila">' +
+          '<div>' +
+            '<div class="fila-principal">' + escapeHtml(c.clienteNombre) + ' — ' + importe + ' / ' + escapeHtml(c.periodicidad) + '</div>' +
+            '<div class="fila-detalle">' + escapeHtml(c.modalidadPago) + (c.fechaRenovacion ? ' · renueva: ' + escapeHtml(c.fechaRenovacion) : '') + ' · <span class="badge badge-neutro">' + escapeHtml(c.estado) + '</span></div>' +
+          '</div>' +
+          '<button class="boton btn-mini" onclick="editarContrato(\'' + escapeAttr(c.id) + '\')">Editar</button>' +
+        '</div>';
+      }
+
+      function renderLista(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+
+        document.getElementById("resumenPedidos").textContent = datos.pedidos.length + " pedidos";
+        document.getElementById("listaPedidos").innerHTML = datos.pedidos.length
+          ? datos.pedidos.map(renderPedido_).join("")
+          : '<div class="vacio-nivel">No hay pedidos todavía.</div>';
+
+        document.getElementById("resumenContratos").textContent = datos.contratos.length + " contratos";
+        document.getElementById("listaContratos").innerHTML = datos.contratos.length
+          ? datos.contratos.map(renderContrato_).join("")
+          : '<div class="vacio-nivel">No hay contratos de servicio todavía.</div>';
+      }
+
+      function cargarLista() {
+        document.getElementById("estadoCarga").textContent = "Cargando...";
+        document.getElementById("estadoCarga").style.display = "block";
+        google.script.run.withSuccessHandler(renderLista).withFailureHandler(mostrarError).obtenerListaVentas();
+      }
+
+      document.getElementById("btnActualizar").addEventListener("click", cargarLista);
+      document.getElementById("btnNuevoPedido").addEventListener("click", function () {
+        google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearPedidoCliente();
+      });
+      document.getElementById("btnNuevoContrato").addEventListener("click", function () {
+        google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearContratoServicio();
+      });
+      document.getElementById("btnExportar").addEventListener("click", function () {
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarVentasCSV();
+      });
+
+      cargarLista();
+    </script>
+  </body>
+</html>

@@ -24,160 +24,324 @@
  *   ➕ Crear y gestionar datos -- alta de registros/relaciones nuevas
  *      y administracion (catalogos, importacion, mantenimiento).
  * Ningun nombre de funcion cambia, solo se reagrupan los accesos.
+ *
+ * Refactor (ver conversación -- "el menú sigue creciendo, valora una
+ * nueva segmentación ahora que los módulos están definidos"): cada
+ * submenú se construye en su propia función, nombrada por el módulo
+ * que aporta sus ítems (CORE/GANTT/COMPRAS/ECONOMICO/CONVOCATORIAS/
+ * IMPACTO/comercial = CLIENTE+VENTAS+OPORTUNIDAD). Las listas que ya
+ * mezclaban módulos ("Nuevo registro", "Nueva relación / vínculo",
+ * "Movimientos y confirmaciones", "Catálogos y administración") se
+ * reparten entre funciones "agregarX_" encadenadas -- incluye
+ * reagrupar visualmente sus ítems por módulo (antes intercalados sin
+ * criterio); nombres de función, etiquetas y estructura de submenús
+ * quedan igual. Es solo reorganización de código -- todavía no
+ * condiciona qué bloques se muestran según módulos instalados (eso es
+ * el siguiente paso, pendiente de una señal en tiempo de ejecución que
+ * hoy no existe).
  */
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
-    .addSubMenu(
-      ui.createMenu('📊 Analizar')
-        .addItem('Panel operativo', 'abrirPanelOperativo')
-        .addItem('Informes', 'abrirInformes')
-        .addItem('Gantt: plan vs. real', 'abrirGanttPlanReal')
-        .addItem('Kanban operativo (Tarea/Proceso/Incidencia)', 'abrirKanban')
-        .addItem('Listado filtrable (Incidencias/Decisiones/Documentos)', 'abrirListadoFiltrable')
-        .addItem('Verificar integridad', 'abrirIntegridad')
-        .addItem('Historial', 'abrirHistorialAdmin')
-    )
-    .addSubMenu(
-      ui.createMenu('🌳 Navegar y editar')
-        .addSubMenu(
-          ui.createMenu('Campaña → Proyecto → Producto → Proceso → Tarea')
-            .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
-            .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
-            .addItem('Editar campaña', 'abrirEditarCampana')
-            .addItem('Editar proyecto', 'abrirEditarProyecto')
-            .addItem('Editar producto', 'abrirEditarProducto')
-            .addItem('Editar Proyecto-Producto', 'abrirEditarProyectoProducto')
-            .addItem('Editar proceso', 'abrirEditarProceso')
-            .addItem('Editar tarea', 'abrirEditarTarea')
-        )
-        .addSubMenu(
-          ui.createMenu('Personas y equipos')
-            .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
-            .addItem('Ficha de persona/equipo (buscar)', 'abrirFichaPersonaEquipoBuscar')
-            .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
-            .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
-            .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable')
-        )
-        .addSubMenu(
-          ui.createMenu('Espacios y recursos')
-            .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
-            .addItem('Ficha de espacio/recurso (buscar)', 'abrirFichaRecursoBuscar')
-            .addItem('Editar recurso', 'abrirEditarRecurso')
-            .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
-            .addItem('Editar horario', 'abrirEditarHorario')
-        )
-        .addSubMenu(
-          ui.createMenu('Materiales y proveedores')
-            .addItem('Ficha de material (buscar)', 'abrirFichaMaterialBuscar')
-            .addItem('Editar material', 'abrirEditarMaterial')
-            .addItem('Editar Producto-Material', 'abrirEditarProductoMaterial')
-            .addItem('Editar Tarea-Material', 'abrirEditarTareaMaterial')
-            .addItem('Ficha de proveedor (buscar)', 'abrirFichaProveedorBuscar')
-            .addItem('Editar proveedor', 'abrirEditarProveedor')
-            .addItem('Editar Proveedor-Material', 'abrirEditarProveedorMaterial')
-            .addItem('Editar pedido a proveedor', 'abrirEditarPedidoProveedor')
-            .addItem('Editar Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
-            .addItem('Editar recepción de pedido', 'abrirEditarRecepcion')
-            .addItem('Editar Recepción-Línea', 'abrirEditarRecepcionLinea')
-            .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial')
-        )
-        .addSubMenu(
-          ui.createMenu('Seguimiento y decisiones')
-            .addItem('Ficha de incidencia (buscar)', 'abrirFichaIncidenciaBuscar')
-            .addItem('Editar incidencia', 'abrirEditarIncidencia')
-            .addItem('Editar decisión', 'abrirEditarDecision')
-            .addItem('Editar documento', 'abrirEditarDocumento')
-            .addItem('Editar Relación', 'abrirEditarRelacion')
-            .addItem('Editar Vínculo', 'abrirEditarVinculo')
-            .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
-            .addItem('Editar Asignación', 'abrirEditarAsignacion')
-        )
-    )
-    .addSubMenu(
-      ui.createMenu('➕ Crear y gestionar datos')
-        .addSubMenu(
-          ui.createMenu('Nuevo registro')
-            .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
-            .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
-            .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
-            .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
-            .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
-            .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
-            .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
-            .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
-            .addItem('Nuevo material', 'abrirFormularioCrearMaterial')
-            .addItem('Nuevo proveedor', 'abrirFormularioCrearProveedor')
-            .addItem('Nuevo pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
-            .addItem('Nueva recepción de pedido', 'abrirFormularioCrearRecepcion')
-            .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
-            .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
-            .addItem('Nuevo documento', 'abrirFormularioCrearDocumento')
-        )
-        .addSubMenu(
-          ui.createMenu('Nueva relación / vínculo')
-            .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
-            .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
-            .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
-            .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
-            .addItem('Producto - Material (nueva relación)', 'abrirFormularioCrearProductoMaterial')
-            .addItem('Tarea - Material (nueva relación)', 'abrirFormularioCrearTareaMaterial')
-            .addItem('Proveedor - Material (nueva relación)', 'abrirFormularioCrearProveedorMaterial')
-            .addItem('Pedido - Línea (nueva)', 'abrirFormularioCrearPedidoProveedorLinea')
-            .addItem('Recepción - Línea (nueva)', 'abrirFormularioCrearRecepcionLinea')
-            .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
-            .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
-            .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
-            .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion')
-        )
-        .addSubMenu(
-          ui.createMenu('Movimientos y confirmaciones')
-            .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
-            .addItem('Movimiento de material (nuevo)', 'abrirFormularioCrearMovimientoMaterial')
-            .addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso')
-        )
-        .addSubMenu(
-          ui.createMenu('Presupuesto y financiación')
-            .addItem('Nueva línea de presupuesto', 'abrirFormularioCrearPresupuesto')
-            .addItem('Editar línea de presupuesto', 'abrirEditarPresupuesto')
-            .addItem('Nueva fuente de financiación', 'abrirFormularioCrearFuenteFinanciacion')
-            .addItem('Editar fuente de financiación', 'abrirEditarFuenteFinanciacion')
-            .addItem('Nuevo coste (materiales/recursos/actividad)', 'abrirFormularioCrearCoste')
-            .addItem('Editar coste', 'abrirEditarCoste')
-        )
-        .addSubMenu(
-          ui.createMenu('Competencias')
-            .addItem('Nueva competencia', 'abrirFormularioCrearCompetencia')
-            .addItem('Editar competencia', 'abrirEditarCompetencia')
-            .addItem('Persona - Competencia (asignar)', 'abrirFormularioCrearPersonaCompetencia')
-            .addItem('Editar Persona-Competencia', 'abrirEditarPersonaCompetencia')
-            .addItem('Recurso - Competencia requerida (asignar)', 'abrirFormularioCrearRecursoCompetencia')
-            .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia')
-        )
-        .addSubMenu(
-          ui.createMenu('Convocatorias')
-            .addItem('Ficha de convocatoria (buscar)', 'abrirFichaConvocatoriaBuscar')
-            .addItem('Nueva convocatoria', 'abrirFormularioCrearConvocatoria')
-            .addItem('Editar convocatoria', 'abrirEditarConvocatoria')
-        )
-        .addSubMenu(
-          ui.createMenu('Impacto')
-            .addItem('Nueva etiqueta de impacto', 'abrirFormularioCrearEtiquetaImpacto')
-            .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto')
-        )
-        .addSubMenu(
-          ui.createMenu('Catálogos y administración')
-            .addItem('Catálogos', 'abrirCatalogosAdmin')
-            .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
-            .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
-            .addItem('Protección de hojas', 'abrirProteccionHojas')
-            .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
-            .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
-            .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
-            .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial')
-        )
-    )
+    .addSubMenu(construirSubmenuAnalizar_(ui))
+    .addSubMenu(construirSubmenuNavegarYEditar_(ui))
+    .addSubMenu(construirSubmenuCrearYGestionar_(ui))
     .addToUi();
+}
+
+/* === 📊 Analizar === */
+
+function construirSubmenuAnalizar_(ui) {
+  var menu = ui.createMenu('📊 Analizar');
+  menu = agregarAnalizarCore_(menu);
+  menu = agregarAnalizarGantt_(menu);
+  menu = agregarAnalizarComercial_(menu);
+  return menu;
+}
+
+function agregarAnalizarCore_(menu) {
+  return menu
+    .addItem('Panel operativo', 'abrirPanelOperativo')
+    .addItem('Informes', 'abrirInformes')
+    .addItem('Kanban operativo (Tarea/Proceso/Incidencia)', 'abrirKanban')
+    .addItem('Listado filtrable (Incidencias/Decisiones/Documentos)', 'abrirListadoFiltrable')
+    .addItem('Verificar integridad', 'abrirIntegridad')
+    .addItem('Historial', 'abrirHistorialAdmin');
+}
+
+function agregarAnalizarGantt_(menu) {
+  return menu.addItem('Gantt: plan vs. real', 'abrirGanttPlanReal');
+}
+
+function agregarAnalizarComercial_(menu) {
+  return menu
+    .addItem('Panel de clientes', 'abrirPanelClientes')
+    .addItem('Panel de ventas', 'abrirPanelVentas');
+}
+
+/* === 🌳 Navegar y editar === */
+
+function construirSubmenuNavegarYEditar_(ui) {
+  return ui.createMenu('🌳 Navegar y editar')
+    .addSubMenu(construirSubmenuCampanaProyecto_(ui))
+    .addSubMenu(construirSubmenuPersonasYEquipos_(ui))
+    .addSubMenu(construirSubmenuEspaciosYRecursos_(ui))
+    .addSubMenu(construirSubmenuMaterialesYProveedores_(ui))
+    .addSubMenu(construirSubmenuSeguimientoYDecisiones_(ui))
+    .addSubMenu(construirSubmenuClientesYVentas_(ui));
+}
+
+/* CORE */
+function construirSubmenuCampanaProyecto_(ui) {
+  return ui.createMenu('Campaña → Proyecto → Producto → Proceso → Tarea')
+    .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
+    .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
+    .addItem('Editar campaña', 'abrirEditarCampana')
+    .addItem('Editar proyecto', 'abrirEditarProyecto')
+    .addItem('Editar producto', 'abrirEditarProducto')
+    .addItem('Editar Proyecto-Producto', 'abrirEditarProyectoProducto')
+    .addItem('Editar proceso', 'abrirEditarProceso')
+    .addItem('Editar tarea', 'abrirEditarTarea');
+}
+
+/* CORE */
+function construirSubmenuPersonasYEquipos_(ui) {
+  return ui.createMenu('Personas y equipos')
+    .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
+    .addItem('Ficha de persona/equipo (buscar)', 'abrirFichaPersonaEquipoBuscar')
+    .addItem('Editar persona/equipo', 'abrirEditarPersonaEquipo')
+    .addItem('Editar Equipo-Miembro', 'abrirEditarEquipoMiembro')
+    .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable');
+}
+
+/* CORE */
+function construirSubmenuEspaciosYRecursos_(ui) {
+  return ui.createMenu('Espacios y recursos')
+    .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
+    .addItem('Ficha de espacio/recurso (buscar)', 'abrirFichaRecursoBuscar')
+    .addItem('Editar recurso', 'abrirEditarRecurso')
+    .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
+    .addItem('Editar horario', 'abrirEditarHorario');
+}
+
+/* COMPRAS */
+function construirSubmenuMaterialesYProveedores_(ui) {
+  return ui.createMenu('Materiales y proveedores')
+    .addItem('Ficha de material (buscar)', 'abrirFichaMaterialBuscar')
+    .addItem('Editar material', 'abrirEditarMaterial')
+    .addItem('Editar Producto-Material', 'abrirEditarProductoMaterial')
+    .addItem('Editar Tarea-Material', 'abrirEditarTareaMaterial')
+    .addItem('Ficha de proveedor (buscar)', 'abrirFichaProveedorBuscar')
+    .addItem('Editar proveedor', 'abrirEditarProveedor')
+    .addItem('Editar Proveedor-Material', 'abrirEditarProveedorMaterial')
+    .addItem('Editar pedido a proveedor', 'abrirEditarPedidoProveedor')
+    .addItem('Editar Pedido-Línea', 'abrirEditarPedidoProveedorLinea')
+    .addItem('Editar recepción de pedido', 'abrirEditarRecepcion')
+    .addItem('Editar Recepción-Línea', 'abrirEditarRecepcionLinea')
+    .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial');
+}
+
+/* CORE */
+function construirSubmenuSeguimientoYDecisiones_(ui) {
+  return ui.createMenu('Seguimiento y decisiones')
+    .addItem('Ficha de incidencia (buscar)', 'abrirFichaIncidenciaBuscar')
+    .addItem('Editar incidencia', 'abrirEditarIncidencia')
+    .addItem('Editar decisión', 'abrirEditarDecision')
+    .addItem('Editar documento', 'abrirEditarDocumento')
+    .addItem('Editar Relación', 'abrirEditarRelacion')
+    .addItem('Editar Vínculo', 'abrirEditarVinculo')
+    .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
+    .addItem('Editar Asignación', 'abrirEditarAsignacion');
+}
+
+/* Comercial: CLIENTE + VENTAS */
+function construirSubmenuClientesYVentas_(ui) {
+  return ui.createMenu('Clientes y ventas')
+    .addItem('Editar cliente', 'abrirEditarCliente')
+    .addItem('Editar pedido de cliente', 'abrirEditarPedidoCliente')
+    .addItem('Editar Pedido-Línea', 'abrirEditarPedidoClienteLinea')
+    .addItem('Editar entrega', 'abrirEditarEntrega')
+    .addItem('Editar Entrega-Línea', 'abrirEditarEntregaLinea')
+    .addItem('Editar contrato de servicio', 'abrirEditarContratoServicio')
+    .addItem('Editar oportunidad', 'abrirEditarOportunidad');
+}
+
+/* === ➕ Crear y gestionar datos === */
+
+function construirSubmenuCrearYGestionar_(ui) {
+  return ui.createMenu('➕ Crear y gestionar datos')
+    .addSubMenu(construirSubmenuNuevoRegistro_(ui))
+    .addSubMenu(construirSubmenuNuevaRelacion_(ui))
+    .addSubMenu(construirSubmenuMovimientosYConfirmaciones_(ui))
+    .addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui))
+    .addSubMenu(construirSubmenuCompetencias_(ui))
+    .addSubMenu(construirSubmenuConvocatorias_(ui))
+    .addSubMenu(construirSubmenuImpacto_(ui))
+    .addSubMenu(construirSubmenuCatalogosYAdministracion_(ui));
+}
+
+function construirSubmenuNuevoRegistro_(ui) {
+  var menu = ui.createMenu('Nuevo registro');
+  menu = agregarNuevoRegistroCore_(menu);
+  menu = agregarNuevoRegistroCompras_(menu);
+  menu = agregarNuevoRegistroComercial_(menu);
+  return menu;
+}
+
+function agregarNuevoRegistroCore_(menu) {
+  return menu
+    .addItem('Nueva campaña', 'abrirFormularioCrearCampana')
+    .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
+    .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
+    .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
+    .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
+    .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
+    .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
+    .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
+    .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
+    .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
+    .addItem('Nuevo documento', 'abrirFormularioCrearDocumento');
+}
+
+function agregarNuevoRegistroCompras_(menu) {
+  return menu
+    .addItem('Nuevo material', 'abrirFormularioCrearMaterial')
+    .addItem('Nuevo proveedor', 'abrirFormularioCrearProveedor')
+    .addItem('Nuevo pedido a proveedor', 'abrirFormularioCrearPedidoProveedor')
+    .addItem('Nueva recepción de pedido', 'abrirFormularioCrearRecepcion');
+}
+
+function agregarNuevoRegistroComercial_(menu) {
+  return menu
+    .addItem('Nuevo cliente', 'abrirFormularioCrearCliente')
+    .addItem('Nuevo pedido de cliente', 'abrirFormularioCrearPedidoCliente')
+    .addItem('Nueva entrega', 'abrirFormularioCrearEntrega')
+    .addItem('Nuevo contrato de servicio', 'abrirFormularioCrearContratoServicio')
+    .addItem('Nueva oportunidad', 'abrirFormularioCrearOportunidad');
+}
+
+function construirSubmenuNuevaRelacion_(ui) {
+  var menu = ui.createMenu('Nueva relación / vínculo');
+  menu = agregarNuevaRelacionCore_(menu);
+  menu = agregarNuevaRelacionCompras_(menu);
+  menu = agregarNuevaRelacionComercial_(menu);
+  return menu;
+}
+
+function agregarNuevaRelacionCore_(menu) {
+  return menu
+    .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
+    .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
+    .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
+    .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
+    .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
+    .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
+    .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
+    .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion');
+}
+
+function agregarNuevaRelacionCompras_(menu) {
+  return menu
+    .addItem('Producto - Material (nueva relación)', 'abrirFormularioCrearProductoMaterial')
+    .addItem('Tarea - Material (nueva relación)', 'abrirFormularioCrearTareaMaterial')
+    .addItem('Proveedor - Material (nueva relación)', 'abrirFormularioCrearProveedorMaterial')
+    .addItem('Pedido - Línea (nueva)', 'abrirFormularioCrearPedidoProveedorLinea')
+    .addItem('Recepción - Línea (nueva)', 'abrirFormularioCrearRecepcionLinea');
+}
+
+function agregarNuevaRelacionComercial_(menu) {
+  return menu
+    .addItem('Pedido de cliente - Línea (nueva)', 'abrirFormularioCrearPedidoClienteLinea')
+    .addItem('Entrega - Línea (nueva)', 'abrirFormularioCrearEntregaLinea');
+}
+
+function construirSubmenuMovimientosYConfirmaciones_(ui) {
+  var menu = ui.createMenu('Movimientos y confirmaciones');
+  menu = agregarMovimientosCompras_(menu);
+  menu = agregarMovimientosCore_(menu);
+  return menu;
+}
+
+function agregarMovimientosCompras_(menu) {
+  return menu
+    .addItem('Confirmar recepción de pedido', 'abrirConfirmarRecepcion')
+    .addItem('Movimiento de material (nuevo)', 'abrirFormularioCrearMovimientoMaterial');
+}
+
+function agregarMovimientosCore_(menu) {
+  return menu.addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso');
+}
+
+/* ECONOMICO */
+function construirSubmenuPresupuestoYFinanciacion_(ui) {
+  return ui.createMenu('Presupuesto y financiación')
+    .addItem('Nueva línea de presupuesto', 'abrirFormularioCrearPresupuesto')
+    .addItem('Editar línea de presupuesto', 'abrirEditarPresupuesto')
+    .addItem('Nueva fuente de financiación', 'abrirFormularioCrearFuenteFinanciacion')
+    .addItem('Editar fuente de financiación', 'abrirEditarFuenteFinanciacion')
+    .addItem('Nuevo coste (materiales/recursos/actividad)', 'abrirFormularioCrearCoste')
+    .addItem('Editar coste', 'abrirEditarCoste');
+}
+
+/* CORE */
+function construirSubmenuCompetencias_(ui) {
+  return ui.createMenu('Competencias')
+    .addItem('Nueva competencia', 'abrirFormularioCrearCompetencia')
+    .addItem('Editar competencia', 'abrirEditarCompetencia')
+    .addItem('Persona - Competencia (asignar)', 'abrirFormularioCrearPersonaCompetencia')
+    .addItem('Editar Persona-Competencia', 'abrirEditarPersonaCompetencia')
+    .addItem('Recurso - Competencia requerida (asignar)', 'abrirFormularioCrearRecursoCompetencia')
+    .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia');
+}
+
+/* CONVOCATORIAS */
+function construirSubmenuConvocatorias_(ui) {
+  return ui.createMenu('Convocatorias')
+    .addItem('Ficha de convocatoria (buscar)', 'abrirFichaConvocatoriaBuscar')
+    .addItem('Nueva convocatoria', 'abrirFormularioCrearConvocatoria')
+    .addItem('Editar convocatoria', 'abrirEditarConvocatoria');
+}
+
+/* IMPACTO */
+function construirSubmenuImpacto_(ui) {
+  return ui.createMenu('Impacto')
+    .addItem('Nueva etiqueta de impacto', 'abrirFormularioCrearEtiquetaImpacto')
+    .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto');
+}
+
+function construirSubmenuCatalogosYAdministracion_(ui) {
+  var menu = ui.createMenu('Catálogos y administración');
+  menu = agregarCatalogosCore_(menu);
+  menu = agregarCatalogosCliente_(menu);
+  menu = agregarCatalogosVentas_(menu);
+  menu = agregarCatalogosOportunidad_(menu);
+  return menu;
+}
+
+function agregarCatalogosCore_(menu) {
+  return menu
+    .addItem('Catálogos', 'abrirCatalogosAdmin')
+    .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
+    .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
+    .addItem('Protección de hojas', 'abrirProteccionHojas')
+    .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
+    .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
+    .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
+    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
+}
+
+function agregarCatalogosCliente_(menu) {
+  return menu.addItem('Instalar catálogo de Cliente (L4)', 'abrirInstalarCatalogoClienteL4');
+}
+
+function agregarCatalogosVentas_(menu) {
+  return menu.addItem('Instalar catálogo de Ventas (L4)', 'abrirInstalarCatalogoVentasL4');
+}
+
+function agregarCatalogosOportunidad_(menu) {
+  return menu
+    .addItem('Instalar catálogo de Oportunidad (L4)', 'abrirInstalarCatalogoOportunidadL4')
+    .addItem('Recalcular encaje de oportunidades', 'abrirRecalcularPuntuacionEncajeOportunidades');
 }
 /*
  * prefill (opcional): valores iniciales para campos del formulario en
@@ -325,6 +489,19 @@ function abrirFormularioCrearProducto() { abrirFormularioCrear_('PRODUCTO', 'Nue
 function abrirFormularioCrearProceso() { abrirFormularioCrear_('PROCESO', 'Nuevo proceso'); }
 function abrirFormularioCrearTarea() { abrirFormularioCrear_('TAREA', 'Nueva tarea'); }
 function abrirFormularioCrearProveedor() { abrirFormularioCrear_('PROVEEDOR', 'Nuevo proveedor'); }
+function abrirFormularioCrearCliente() { abrirFormularioCrear_('CLIENTE', 'Nuevo cliente'); }
+function abrirFormularioCrearPedidoCliente() { abrirFormularioCrear_('PEDIDO_CLIENTE', 'Nuevo pedido de cliente'); }
+function abrirFormularioCrearPedidoClienteLinea() { abrirFormularioCrear_('PEDIDO_CLIENTE_LINEA', 'Línea de pedido de cliente'); }
+function abrirFormularioCrearEntrega() { abrirFormularioCrear_('ENTREGA', 'Nueva entrega'); }
+function abrirFormularioCrearEntregaLinea() { abrirFormularioCrear_('ENTREGA_LINEA', 'Línea de entrega'); }
+function abrirFormularioCrearContratoServicio() { abrirFormularioCrear_('CONTRATO_SERVICIO', 'Nuevo contrato de servicio'); }
+function abrirFormularioCrearOportunidad() { abrirFormularioCrear_('OPORTUNIDAD', 'Nueva oportunidad'); }
+function abrirFormularioCrearIncidenciaParaCliente(clienteId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
+    CLIENTE_ID: clienteId,
+    NIVEL_INCIDENCIA: 'Cliente'
+  });
+}
 function abrirFormularioCrearDecision() { abrirFormularioCrear_('DECISION', 'Nueva decisión'); }
 function abrirFormularioCrearIncidencia() { abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia'); }
 function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'Nuevo documento'); }
@@ -497,6 +674,13 @@ function abrirEditarTarea() { abrirEditarRegistroPorEntidad_('TAREA', 'Tarea'); 
 function abrirEditarMaterial() { abrirEditarRegistroPorEntidad_('MATERIAL', 'Material'); }
 function abrirEditarPersonaEquipo() { abrirEditarRegistroPorEntidad_('PERSONA_EQUIPO', 'Persona/Equipo'); }
 function abrirEditarProveedor() { abrirEditarRegistroPorEntidad_('PROVEEDOR', 'Proveedor'); }
+function abrirEditarCliente() { abrirEditarRegistroPorEntidad_('CLIENTE', 'Cliente'); }
+function abrirEditarPedidoCliente() { abrirEditarRegistroPorEntidad_('PEDIDO_CLIENTE', 'Pedido de cliente'); }
+function abrirEditarPedidoClienteLinea() { abrirEditarRegistroPorEntidad_('PEDIDO_CLIENTE_LINEA', 'Pedido de cliente - Línea'); }
+function abrirEditarEntrega() { abrirEditarRegistroPorEntidad_('ENTREGA', 'Entrega'); }
+function abrirEditarEntregaLinea() { abrirEditarRegistroPorEntidad_('ENTREGA_LINEA', 'Entrega - Línea'); }
+function abrirEditarContratoServicio() { abrirEditarRegistroPorEntidad_('CONTRATO_SERVICIO', 'Contrato de servicio'); }
+function abrirEditarOportunidad() { abrirEditarRegistroPorEntidad_('OPORTUNIDAD', 'Oportunidad'); }
 function abrirEditarDecision() { abrirEditarRegistroPorEntidad_('DECISION', 'Decisión'); }
 function abrirEditarIncidencia() { abrirEditarRegistroPorEntidad_('INCIDENCIA', 'Incidencia'); }
 function abrirEditarDocumento() { abrirEditarRegistroPorEntidad_('DOCUMENTO', 'Documento'); }

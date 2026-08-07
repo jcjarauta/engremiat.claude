@@ -146,6 +146,34 @@ const ENTIDADES_MVP = Object.freeze({
   ETIQUETA_IMPACTO: Object.freeze({
     hoja: '37_ETIQUETA_IMPACTO',
     prefijo: 'IMP'
+  }),
+  CLIENTE: Object.freeze({
+    hoja: '38_CLIENTE',
+    prefijo: 'CLI'
+  }),
+  PEDIDO_CLIENTE: Object.freeze({
+    hoja: '39_PEDIDO_CLIENTE',
+    prefijo: 'PDC'
+  }),
+  PEDIDO_CLIENTE_LINEA: Object.freeze({
+    hoja: '40_PEDIDO_CLIENTE_LINEA',
+    prefijo: 'PDL'
+  }),
+  ENTREGA: Object.freeze({
+    hoja: '41_ENTREGA',
+    prefijo: 'ENT'
+  }),
+  ENTREGA_LINEA: Object.freeze({
+    hoja: '42_ENTREGA_LINEA',
+    prefijo: 'ENL'
+  }),
+  CONTRATO_SERVICIO: Object.freeze({
+    hoja: '43_CONTRATO_SERVICIO',
+    prefijo: 'CTS'
+  }),
+  OPORTUNIDAD: Object.freeze({
+    hoja: '44_OPORTUNIDAD',
+    prefijo: 'OPO'
   })
 });
 

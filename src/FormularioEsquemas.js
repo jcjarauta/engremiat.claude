@@ -65,7 +65,14 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   PERSONA_COMPETENCIA: 'persona - competencia',
   RECURSO_COMPETENCIA: 'recurso - competencia',
   CONVOCATORIA: 'convocatoria',
-  ETIQUETA_IMPACTO: 'etiqueta de impacto'
+  ETIQUETA_IMPACTO: 'etiqueta de impacto',
+  CLIENTE: 'cliente',
+  PEDIDO_CLIENTE: 'pedido de cliente',
+  PEDIDO_CLIENTE_LINEA: 'línea de pedido de cliente',
+  ENTREGA: 'entrega',
+  ENTREGA_LINEA: 'línea de entrega',
+  CONTRATO_SERVICIO: 'contrato de servicio',
+  OPORTUNIDAD: 'oportunidad'
 });
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Campaña': 'CAMPANA',
@@ -78,7 +85,8 @@ var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Documento': 'DOCUMENTO',
   'Recurso': 'RECURSO',
   'Persona/Equipo': 'PERSONA_EQUIPO',
-  'Convocatoria': 'CONVOCATORIA'
+  'Convocatoria': 'CONVOCATORIA',
+  'Cliente': 'CLIENTE'
 });
 /*
  * Igual que ENTIDAD_DOCUMENTO_A_MVP pero para HORARIO (ver conversacion:
@@ -253,6 +261,13 @@ PROYECTO: [
     tipo: 'fk',
     entidadFk: 'PERSONA_EQUIPO',
     excluirEstados: ['Inactivo']
+  },
+  {
+    campo: 'CLIENTE_ID',
+    etiqueta: 'Cliente',
+    tipo: 'fk',
+    entidadFk: 'CLIENTE',
+    ayuda: 'Déjalo vacío si es un proyecto interno (sin cliente externo).'
   },
   {
     campo: 'FECHA_INICIO_PLAN',
@@ -655,6 +670,89 @@ PROYECTO: [
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
+  CLIENTE: [
+    {
+      campo: 'CODIGO',
+      etiqueta: 'Código',
+      tipo: 'texto',
+      requerido: true,
+      sugerenciaCodigo: { camposContexto: ['NOMBRE'] }
+    },
+    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true },
+    { campo: 'TIPO_CLIENTE', etiqueta: 'Tipo de cliente', tipo: 'catalogo', catalogo: 'CFG_TIPO_CLIENTE', requerido: true },
+    { campo: 'NIF_CIF', etiqueta: 'NIF / CIF', tipo: 'texto' },
+    { campo: 'PERSONA_CONTACTO', etiqueta: 'Persona de contacto', tipo: 'texto' },
+    { campo: 'EMAIL', etiqueta: 'Email', tipo: 'texto' },
+    { campo: 'TELEFONO', etiqueta: 'Teléfono', tipo: 'texto' },
+    { campo: 'DIRECCION', etiqueta: 'Dirección', tipo: 'texto' },
+    { campo: 'RESPONSABLE_CUENTA_ID', etiqueta: 'Responsable de cuenta', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CLIENTE', requerido: true, valorPorDefecto: 'Prospecto' },
+    { campo: 'SHEET_URL', etiqueta: 'URL del Sheet (si es cliente de software)', tipo: 'texto' },
+    { campo: 'SCRIPT_ID', etiqueta: 'Script ID (si es cliente de software)', tipo: 'texto' },
+    { campo: 'MODULOS_CONTRATADOS', etiqueta: 'Módulos contratados', tipo: 'texto' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  PEDIDO_CLIENTE: [
+    { campo: 'CLIENTE_ID', etiqueta: 'Cliente', tipo: 'fk', entidadFk: 'CLIENTE', requerido: true, excluirEstados: ['Baja'] },
+    { campo: 'PROYECTO_ID', etiqueta: 'Proyecto', tipo: 'fk', entidadFk: 'PROYECTO', ayuda: 'Solo si es un encargo ligado a un proyecto. Déjalo vacío en venta directa (feria/tienda).' },
+    { campo: 'CANAL', etiqueta: 'Canal', tipo: 'catalogo', catalogo: 'CFG_CANAL_PEDIDO_CLIENTE', requerido: true },
+    { campo: 'FECHA_PEDIDO', etiqueta: 'Fecha del pedido', tipo: 'fecha', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_PEDIDO_CLIENTE', requerido: true, valorPorDefecto: 'Borrador' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  PEDIDO_CLIENTE_LINEA: [
+    { campo: 'PEDIDO_CLIENTE_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_CLIENTE', requerido: true, excluirEstados: ['Entregado completo', 'Cancelado'] },
+    { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
+    { campo: 'CANTIDAD', etiqueta: 'Cantidad', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'PRECIO_UNITARIO', etiqueta: 'Precio unitario', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  ENTREGA: [
+    { campo: 'PEDIDO_CLIENTE_ID', etiqueta: 'Pedido', tipo: 'fk', entidadFk: 'PEDIDO_CLIENTE', requerido: true, excluirEstados: ['Entregado completo', 'Cancelado'] },
+    { campo: 'FECHA_ENTREGA', etiqueta: 'Fecha de entrega', tipo: 'fecha', requerido: true },
+    { campo: 'RESPONSABLE_ID', etiqueta: 'Responsable', tipo: 'fk', entidadFk: 'PERSONA_EQUIPO', excluirEstados: ['Inactivo'] },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ENTREGA', requerido: true, valorPorDefecto: 'Borrador' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  ENTREGA_LINEA: [
+    { campo: 'ENTREGA_ID', etiqueta: 'Entrega', tipo: 'fk', entidadFk: 'ENTREGA', requerido: true },
+    { campo: 'PRODUCTO_ID', etiqueta: 'Producto', tipo: 'fk', entidadFk: 'PRODUCTO', requerido: true },
+    { campo: 'CANTIDAD_ENTREGADA', etiqueta: 'Cantidad entregada', tipo: 'numero', requerido: true, min: 0 },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  CONTRATO_SERVICIO: [
+    { campo: 'CLIENTE_ID', etiqueta: 'Cliente', tipo: 'fk', entidadFk: 'CLIENTE', requerido: true, excluirEstados: ['Baja'] },
+    { campo: 'PROYECTO_ID', etiqueta: 'Proyecto de mantenimiento', tipo: 'fk', entidadFk: 'PROYECTO', ayuda: 'El proyecto de tipo Mantenimiento asociado a este cliente.' },
+    { campo: 'MODULOS_CONTRATADOS', etiqueta: 'Módulos contratados', tipo: 'texto' },
+    { campo: 'PERIODICIDAD', etiqueta: 'Periodicidad', tipo: 'catalogo', catalogo: 'CFG_PERIODICIDAD_CONTRATO', requerido: true },
+    { campo: 'IMPORTE_PERIODICO', etiqueta: 'Importe periódico', tipo: 'numero', min: 0 },
+    { campo: 'MODALIDAD_PAGO', etiqueta: 'Modalidad de pago', tipo: 'catalogo', catalogo: 'CFG_MODALIDAD_PAGO', requerido: true },
+    { campo: 'FECHA_INICIO', etiqueta: 'Fecha de inicio', tipo: 'fecha', requerido: true },
+    { campo: 'FECHA_RENOVACION', etiqueta: 'Fecha de renovación', tipo: 'fecha' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CONTRATO_SERVICIO', requerido: true, valorPorDefecto: 'Borrador' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  OPORTUNIDAD: [
+    { campo: 'CLIENTE_ID', etiqueta: 'Cliente', tipo: 'fk', entidadFk: 'CLIENTE', ayuda: 'Déjalo vacío si todavía no hay un contacto verificado -- una oportunidad puede nacer solo con datos de origen.' },
+    { campo: 'ORIGEN', etiqueta: 'Origen', tipo: 'catalogo', catalogo: 'CFG_ORIGEN_OPORTUNIDAD', requerido: true },
+    { campo: 'ORIGEN_PLATAFORMA', etiqueta: 'Plataforma de origen', tipo: 'texto' },
+    { campo: 'ORIGEN_URL', etiqueta: 'URL de origen', tipo: 'texto' },
+    { campo: 'AMBITO', etiqueta: 'Ámbito', tipo: 'catalogo', catalogo: 'CFG_AMBITO_OPORTUNIDAD', requerido: true },
+    { campo: 'DESCRIPCION_PROYECTO_ORIGEN', etiqueta: 'Descripción del proyecto de origen', tipo: 'texto' },
+    { campo: 'IMPORTE_OBJETIVO_CAMPANA', etiqueta: 'Importe objetivo de campaña', tipo: 'numero', min: 0, ayuda: 'Opcional -- no todas las plataformas de origen dan este dato.' },
+    { campo: 'TIPO_OPORTUNIDAD', etiqueta: 'Tipo de oportunidad', tipo: 'catalogo', catalogo: 'CFG_TIPO_OPORTUNIDAD', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_OPORTUNIDAD', requerido: true, valorPorDefecto: 'Identificada' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
   PROVEEDOR_MATERIAL: [
     { campo: 'PROVEEDOR_ID', etiqueta: 'Proveedor', tipo: 'fk', entidadFk: 'PROVEEDOR', requerido: true, excluirEstados: ['Inactivo', 'Bloqueado'] },
     { campo: 'MATERIAL_ID', etiqueta: 'Material', tipo: 'fk', entidadFk: 'MATERIAL', requerido: true },
@@ -741,6 +839,14 @@ INCIDENCIA: [
     tipo: 'fk_dependiente',
     dependeDe: 'PRODUCTO_ID',
     mapaEntidad: 'INCIDENCIA_PROCESO_ID'
+  },
+  {
+    campo: 'CLIENTE_ID',
+    etiqueta: 'Cliente',
+    tipo: 'fk',
+    entidadFk: 'CLIENTE',
+    ayuda: 'Solo si Nivel de incidencia es "Cliente" -- incidencia de mantenimiento/soporte sin proyecto activo.',
+    visibleSi: { campo: 'NIVEL_INCIDENCIA', valores: ['Cliente'] }
   },
   {
     campo: 'TAREA_ID',

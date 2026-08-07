@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 143,
+  "universeExpected": 153,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -273,6 +273,17 @@
       "module": null
     },
     {
+      "path": "ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "5d8bdf4d539bde06bc6498b853bf75d338b6973ad0c3ddf690fb3723faa1e711",
+      "required": true,
+      "reason": "no desplegable",
+      "mixed": false,
+      "module": null
+    },
+    {
       "path": "ROADMAP_IMPLEMENTACION.md",
       "type": "md",
       "category": "excluded",
@@ -291,6 +302,17 @@
       "expectedSha256": "8b154472f9fbeb54d6ac82f8c0622d16f4243a61932aa024825a0e0f7e080b4f",
       "required": true,
       "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/AprovisionamientoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "aa464c1d59fee2c91879bb3041d0dd55c229b0e18f6c7c5926f43fbe0aaca167",
+      "required": true,
+      "reason": "operación/UI/config -- boceto sin activar (ver AprovisionamientoService.js), no invocado desde menú ni instalador",
       "mixed": false,
       "module": "CORE"
     },
@@ -673,7 +695,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "6380919d642cf1722741113ad63582677c0e3b500d61c8f70ce45185f6ad1448",
+      "expectedSha256": "fc3c73633b386415b7655824b7e4c3f592d0b0bb727b1a4c7fff58b06b12ee78",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -755,6 +777,94 @@
       "reason": "instalación/fixture/tooling",
       "mixed": false,
       "module": null
+    },
+    {
+      "path": "src/InstaladorClienteL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "0ae55ffdbd8777091391894e41bd3f5712471c03f565f6a87c01cb0a504d64ef",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Cliente L4)",
+      "mixed": false,
+      "module": "CLIENTE"
+    },
+    {
+      "path": "src/InstaladorVentasL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "cdb7f9e570685d5ba7eb221f490654dc2c69b1415d9fb6e0f30216b6745269ea",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Ventas L4)",
+      "mixed": false,
+      "module": "VENTAS"
+    },
+    {
+      "path": "src/PanelClientesService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "389582f6909d81fe91a911632d28e649e29c89043e727240e945af1006e656d8",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CLIENTE"
+    },
+    {
+      "path": "src/PanelClientes.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "8902a96dc20138dfce9c608aaa2593664f4f017faa2a582fd23174e4f5b0dad0",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CLIENTE"
+    },
+    {
+      "path": "src/PanelVentasService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "47172ba69811009302de21fb59c50569b99bc08b9513a5547825b68390bd18e3",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "VENTAS"
+    },
+    {
+      "path": "src/PanelVentas.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "af7d24d6cecca39564891779d530421342685795daad701c90bbcbbb52de0a1b",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "VENTAS"
+    },
+    {
+      "path": "src/OportunidadService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "68862ef344ed78f4646e125ddbf02271e8bffbcbfd4bfe9b9ad2014a68c5b941",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "OPORTUNIDAD"
+    },
+    {
+      "path": "src/InstaladorOportunidadL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "13898bee667eb0a248cc4a3fbbc686feba4fcb9157c6cea5509ac243ba467cd3",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Oportunidad L4)",
+      "mixed": false,
+      "module": "OPORTUNIDAD"
     },
     {
       "path": "src/InstaladorCompetencia.js",
@@ -1520,7 +1630,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "8c828c812bf3b69f7b857cf143dec10fec67627c862223bfa114a4e308db91ad",
+      "expectedSha256": "9628205d4f16a9726b0fb1923f6c8a3d2e5c65c40ada3a5ccf4592df02eafc4f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1542,7 +1652,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "92c202d66ab43194280c747da351b7b5bdab2d6884b58e8994acd389b98a34a0",
+      "expectedSha256": "2eb9a6442d9ce553f558f6f745f88ad00b70e1c10460a20d993a1fc798d74da5",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1564,7 +1674,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "2e197262624820450ac7198fc96f93fd5af9b9ffafb205eda11ca044a53d7fb6",
+      "expectedSha256": "9d9fbc06bbc730695a0984c7b70ef06b0feb4abb845f3e530ac6b3c462612d04",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1600,6 +1710,17 @@
     "CONVOCATORIAS": [
       "CORE",
       "ECONOMICO"
+    ],
+    "CLIENTE": [
+      "CORE"
+    ],
+    "VENTAS": [
+      "CORE",
+      "CLIENTE"
+    ],
+    "OPORTUNIDAD": [
+      "CORE",
+      "CLIENTE"
     ]
   }
 }

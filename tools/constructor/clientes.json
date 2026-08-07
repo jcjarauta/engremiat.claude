@@ -46,13 +46,19 @@
       "nombre": "gestor-proyectos",
       "modulosSolicitados": [
         "CORE",
-        "GANTT"
+        "GANTT",
+        "CLIENTE",
+        "VENTAS",
+        "OPORTUNIDAD"
       ],
       "modulosResueltos": [
         "CORE",
-        "GANTT"
+        "GANTT",
+        "CLIENTE",
+        "VENTAS",
+        "OPORTUNIDAD"
       ],
-      "envoltoriosGenerados": 169,
+      "envoltoriosGenerados": 194,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -72,7 +78,7 @@
         }
       ],
       "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-      "libreriaVersion": "3",
+      "libreriaVersion": "10",
       "fechaCreacion": "2026-08-07T05:30:42.090Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_gestor_proyectos",
