@@ -39,10 +39,6 @@ var PACKAGE_MAP_EMBEBIDO = {
   },
   "entriesPackageA": [
     {
-      "path": "src/AprovisionamientoService.js",
-      "module": "CORE"
-    },
-    {
       "path": "src/AvanceYSecuencia.js",
       "module": "CORE"
     },

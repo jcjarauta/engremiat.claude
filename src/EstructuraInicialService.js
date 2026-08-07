@@ -36,8 +36,15 @@ function hojaInstalable_(nombreHoja, modulosInstalados) {
  * generado en el Codigo.js de cada cliente (mismo patrón que onOpen() en
  * FormularioMotorUI.js -- una librería no puede leer MODULOS_INSTALADOS_CLIENTE
  * directamente, corre en su propio ámbito global).
+ *
+ * ssDestino (opcional): Spreadsheet sobre el que instalar, en vez de
+ * SpreadsheetApp.getActiveSpreadsheet(). Lo usa subirContenidoScript_
+ * (AprovisionamientoService.js, Fase 3) para instalar la estructura en el
+ * Sheet recién creado de un cliente nuevo en la misma ejecución -- ambas
+ * funciones viven en la misma librería CORE, así que no hace falta ninguna
+ * llamada remota (Execution API) ni scope adicional.
  */
-function instalarEstructuraInicial(modulosInstalados) {
+function instalarEstructuraInicial(modulosInstalados, ssDestino) {
   var packageName = 'ESTRUCTURA_INICIAL';
 
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
@@ -48,7 +55,7 @@ function instalarEstructuraInicial(modulosInstalados) {
   try {
     bloqueo.waitLock(10000);
 
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var ss = ssDestino || SpreadsheetApp.getActiveSpreadsheet();
 
     ORDEN_HOJAS_ESTRUCTURA_INICIAL.forEach(function (nombreHoja) {
       if (!hojaInstalable_(nombreHoja, modulosInstalados)) {

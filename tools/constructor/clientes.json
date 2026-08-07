@@ -9,7 +9,7 @@
       "modulosResueltos": [
         "CORE"
       ],
-      "envoltoriosGenerados": 172,
+      "envoltoriosGenerados": 170,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -65,7 +65,7 @@
         }
       ],
       "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-      "libreriaVersion": "13",
+      "libreriaVersion": "15",
       "fechaCreacion": "2026-08-06T17:42:55.369Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_latroballa"
@@ -86,7 +86,7 @@
         "VENTAS",
         "OPORTUNIDAD"
       ],
-      "envoltoriosGenerados": 196,
+      "envoltoriosGenerados": 194,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -106,7 +106,7 @@
         }
       ],
       "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-      "libreriaVersion": "13",
+      "libreriaVersion": "15",
       "fechaCreacion": "2026-08-07T05:30:42.090Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_gestor_proyectos",

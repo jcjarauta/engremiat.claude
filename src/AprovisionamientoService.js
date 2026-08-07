@@ -236,10 +236,13 @@ function alAprobarMontaje_(e) {
 
 /**
  * Crea el Spreadsheet nuevo, el proyecto de Apps Script vinculado
- * (script.projects.create con parentId), y sube el Codigo.js/appsscript.json
- * generados para los modulos pedidos. Requiere el scope OAuth
- * https://www.googleapis.com/auth/script.projects (Fase 3, pendiente de
- * anadir hasta que el resto quede probado).
+ * (script.projects.create con parentId), sube el Codigo.js/appsscript.json
+ * generados para los modulos pedidos, e instala las hojas de datos de esos
+ * mismos modulos -- todo en una sola ejecucion, sin pasos manuales para
+ * quien aprueba el montaje. instalarEstructuraInicial vive en la misma
+ * libreria CORE (EstructuraInicialService.js), asi que se llama
+ * directamente sobre el ss recien creado, sin Execution API ni scopes
+ * adicionales.
  */
 function crearProyectoScript_(nombre, modulos) {
   var ss = SpreadsheetApp.create(nombre);
@@ -259,6 +262,7 @@ function crearProyectoScript_(nombre, modulos) {
 
   var proyecto = JSON.parse(respCrear.getContentText());
   subirContenidoScript_(proyecto.scriptId, modulos);
+  instalarEstructuraInicial(modulos, ss);
 
   return { spreadsheetId: ss.getId(), spreadsheetUrl: ss.getUrl(), scriptId: proyecto.scriptId };
 }

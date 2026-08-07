@@ -352,7 +352,7 @@ function construirSubmenuCatalogosYAdministracion_(ui) {
 }
 
 function agregarCatalogosCore_(menu) {
-  return menu
+  menu = menu
     .addItem('Catálogos', 'abrirCatalogosAdmin')
     .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
     .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
@@ -360,9 +360,20 @@ function agregarCatalogosCore_(menu) {
     .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
     .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
-    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial')
-    .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
-    .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
+    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
+  // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de
+  // administración interna de LaTroballa Software, no una función de negocio
+  // del cliente -- ver AprovisionamientoService.js, ya fuera de la librería
+  // (package C). 'INTERNO' no es un módulo real: ningún cliente lo pide
+  // nunca, así que moduloInstalado_('INTERNO') siempre es false ahí; en el
+  // propio Sheet maestro (que ejecuta el código en crudo, sin envoltorios,
+  // sin MODULOS_INSTALADOS_CLIENTE) el valor por defecto es true.
+  if (moduloInstalado_('INTERNO')) {
+    menu = menu
+      .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
+      .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
+  }
+  return menu;
 }
 
 function agregarCatalogosCliente_(menu) {
