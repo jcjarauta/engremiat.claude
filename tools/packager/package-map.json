@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 153,
+  "universeExpected": 155,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -14,6 +14,17 @@
       "category": "excluded",
       "package": "NONE",
       "expectedSha256": "74afd2762554f31b9c3d125c75d94bd7362120fc6bdfa25d9a7e8cdd7b13161d",
+      "required": true,
+      "reason": "no desplegable",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": ".gitignore",
+      "type": "text",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "442787ab3b4dcc0aeb55d4d866ec72bcc23b754efde3815e97f598ae79c42ba4",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -71,17 +82,6 @@
       "expectedSha256": "7cd2e2f34a17661c65eeb69aa3b439105d2b5f1236651117d0ad3d3f9de58348",
       "required": true,
       "reason": "no desplegable",
-      "mixed": false,
-      "module": null
-    },
-    {
-      "path": "docs/LT-CASE-003_PRUEBA_WORK_CODEX.md",
-      "type": "md",
-      "category": "excluded",
-      "package": "NONE",
-      "expectedSha256": "e94b85828efd3565100341fc87ed4c0a9c6e58dfdf046ccc5fc4e1824b8ad0c6",
-      "required": true,
-      "reason": "fixture desechable no productivo (ARCHIVO_PRODUCTIVO=false)",
       "mixed": false,
       "module": null
     },
@@ -146,6 +146,17 @@
       "category": "excluded",
       "package": "NONE",
       "expectedSha256": "078f7d10221bd563b9056fac635858cf985bbe299ac4d19d3a70c00740a99917",
+      "required": true,
+      "reason": "no desplegable",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "PROPUESTA_MODULARIZACION_LIBRERIA.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "ee32065846eb450524d7039e9188c65c1f7de56e2e93c4513bdb4cb085d0dde1",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -295,22 +306,22 @@
       "module": null
     },
     {
-      "path": "src/appsscript.json",
-      "type": "json",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "8b154472f9fbeb54d6ac82f8c0622d16f4243a61932aa024825a0e0f7e080b4f",
+      "path": "docs/LT-CASE-003_PRUEBA_WORK_CODEX.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "e94b85828efd3565100341fc87ed4c0a9c6e58dfdf046ccc5fc4e1824b8ad0c6",
       "required": true,
-      "reason": "operación/UI/config",
+      "reason": "fixture desechable no productivo (ARCHIVO_PRODUCTIVO=false)",
       "mixed": false,
-      "module": "CORE"
+      "module": null
     },
     {
       "path": "src/AprovisionamientoService.js",
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "aa464c1d59fee2c91879bb3041d0dd55c229b0e18f6c7c5926f43fbe0aaca167",
+      "expectedSha256": "485037219d0e0eb8dca35208e7aea8715a45ef590e3a8232573253db2b63d4c1",
       "required": true,
       "reason": "operación/UI/config -- boceto sin activar (ver AprovisionamientoService.js), no invocado desde menú ni instalador",
       "mixed": false,
@@ -350,17 +361,6 @@
       "module": "CORE"
     },
     {
-      "path": "src/Código.js",
-      "type": "js",
-      "category": "auxiliary",
-      "package": "C",
-      "expectedSha256": "c5bb093173f04ab7f7226f433cc3cbcd3a8157df68687d693175d3fd4690456a",
-      "required": true,
-      "reason": "manual test runner for suite 305-310; writes diagnostics to 00_INICIO",
-      "mixed": false,
-      "module": null
-    },
-    {
       "path": "src/ConfigRepository.js",
       "type": "js",
       "category": "production",
@@ -383,6 +383,17 @@
       "module": null
     },
     {
+      "path": "src/CorregirEstadoPedidosExistentes.js",
+      "type": "js",
+      "category": "auxiliary",
+      "package": "C",
+      "expectedSha256": "6855579bbdd11f5c74bb59beb0d4174ff45be580a8221a199ac3b707a3c34a33",
+      "required": true,
+      "reason": "instalación/fixture/tooling",
+      "mixed": false,
+      "module": null
+    },
+    {
       "path": "src/CosteService.js",
       "type": "js",
       "category": "production",
@@ -392,6 +403,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "ECONOMICO"
+    },
+    {
+      "path": "src/Código.js",
+      "type": "js",
+      "category": "auxiliary",
+      "package": "C",
+      "expectedSha256": "c5bb093173f04ab7f7226f433cc3cbcd3a8157df68687d693175d3fd4690456a",
+      "required": true,
+      "reason": "manual test runner for suite 305-310; writes diagnostics to 00_INICIO",
+      "mixed": false,
+      "module": null
     },
     {
       "path": "src/DashboardService.js",
@@ -443,6 +465,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "2e3df759ede71610f7f4c1a91633bf6262c17d4969287f453f7ee0468cc1062e",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/EstructuraInicialDatos.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "d4c5979511dd9e06351bb3407ba82dd2ae354be7063e46b594a08e0326bc9381",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/EstructuraInicialService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "6bfbbef8f80ae68b2c7fd1d5b31054603af1eac63ddb3d07467417db50f899a6",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -625,11 +669,44 @@
       "module": "CORE"
     },
     {
+      "path": "src/FormularioEsquemas.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "2eb9a6442d9ce553f558f6f745f88ad00b70e1c10460a20d993a1fc798d74da5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
       "path": "src/FormularioGenerico.html",
       "type": "html",
       "category": "production",
       "package": "A",
       "expectedSha256": "a9e53541d3326dadd7b71e8e907d4104471a44b317bdc923bf4679428805a4f5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FormularioMotorUI.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "46a8d4e24da4b2259f606d0c14eb7b3317ce41a1dd68d58f795515ca7b3949eb",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FormularioValidacionService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "f4df0430d67b54f388b5aa30b2a12cf9af32e7a90343bd724240535ef85aad5d",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -654,6 +731,17 @@
       "expectedSha256": "aded9126acd0b8e9523f9a85f8a6cfb33dc214cf83ef41551e45bca4767cc319",
       "required": true,
       "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/GeneradorEnvoltoriosEmbebido.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "61585c2bd8fd7db6b6b17c54036992611761b4e8956fe8debbb7e063c61dc8d8",
+      "required": true,
+      "reason": "operación/UI/config -- puerto de generate-shell-wrappers.mjs para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
       "module": "CORE"
     },
@@ -695,7 +783,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "fc3c73633b386415b7655824b7e4c3f592d0b0bb727b1a4c7fff58b06b12ee78",
+      "expectedSha256": "6610ead96bd36d67a66a137b48ce9ac33b238196ec11ce677e9a21e2dea05b4e",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -788,83 +876,6 @@
       "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Cliente L4)",
       "mixed": false,
       "module": "CLIENTE"
-    },
-    {
-      "path": "src/InstaladorVentasL4.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "cdb7f9e570685d5ba7eb221f490654dc2c69b1415d9fb6e0f30216b6745269ea",
-      "required": true,
-      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Ventas L4)",
-      "mixed": false,
-      "module": "VENTAS"
-    },
-    {
-      "path": "src/PanelClientesService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "389582f6909d81fe91a911632d28e649e29c89043e727240e945af1006e656d8",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CLIENTE"
-    },
-    {
-      "path": "src/PanelClientes.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "8902a96dc20138dfce9c608aaa2593664f4f017faa2a582fd23174e4f5b0dad0",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CLIENTE"
-    },
-    {
-      "path": "src/PanelVentasService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "47172ba69811009302de21fb59c50569b99bc08b9513a5547825b68390bd18e3",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "VENTAS"
-    },
-    {
-      "path": "src/PanelVentas.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "af7d24d6cecca39564891779d530421342685795daad701c90bbcbbb52de0a1b",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "VENTAS"
-    },
-    {
-      "path": "src/OportunidadService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "68862ef344ed78f4646e125ddbf02271e8bffbcbfd4bfe9b9ad2014a68c5b941",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "OPORTUNIDAD"
-    },
-    {
-      "path": "src/InstaladorOportunidadL4.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "13898bee667eb0a248cc4a3fbbc686feba4fcb9157c6cea5509ac243ba467cd3",
-      "required": true,
-      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Oportunidad L4)",
-      "mixed": false,
-      "module": "OPORTUNIDAD"
     },
     {
       "path": "src/InstaladorCompetencia.js",
@@ -1076,6 +1087,17 @@
       "module": null
     },
     {
+      "path": "src/InstaladorOportunidadL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "13898bee667eb0a248cc4a3fbbc686feba4fcb9157c6cea5509ac243ba467cd3",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Oportunidad L4)",
+      "mixed": false,
+      "module": "OPORTUNIDAD"
+    },
+    {
       "path": "src/InstaladorPaqueteInformes.js",
       "type": "js",
       "category": "auxiliary",
@@ -1162,6 +1184,17 @@
       "reason": "instalación/fixture/tooling",
       "mixed": false,
       "module": null
+    },
+    {
+      "path": "src/InstaladorVentasL4.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "cdb7f9e570685d5ba7eb221f490654dc2c69b1415d9fb6e0f30216b6745269ea",
+      "required": true,
+      "reason": "operación/UI/config -- referenciada desde el menú (Instalar catálogo de Ventas L4)",
+      "mixed": false,
+      "module": "VENTAS"
     },
     {
       "path": "src/InstaladorVinculo.js",
@@ -1285,6 +1318,28 @@
       "module": "CORE"
     },
     {
+      "path": "src/OportunidadService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "68862ef344ed78f4646e125ddbf02271e8bffbcbfd4bfe9b9ad2014a68c5b941",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "OPORTUNIDAD"
+    },
+    {
+      "path": "src/PackageMapEmbebido.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "0f0b0bd8a61633ec2f37ddb439bc0a51777d148fccf73ccbbfd7b0eaba33b41c",
+      "required": true,
+      "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
       "path": "src/PanelCampana.html",
       "type": "html",
       "category": "production",
@@ -1305,6 +1360,28 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/PanelClientes.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "8902a96dc20138dfce9c608aaa2593664f4f017faa2a582fd23174e4f5b0dad0",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CLIENTE"
+    },
+    {
+      "path": "src/PanelClientesService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "389582f6909d81fe91a911632d28e649e29c89043e727240e945af1006e656d8",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CLIENTE"
     },
     {
       "path": "src/PanelOperativo.html",
@@ -1360,6 +1437,39 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/PanelVentas.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "af7d24d6cecca39564891779d530421342685795daad701c90bbcbbb52de0a1b",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "VENTAS"
+    },
+    {
+      "path": "src/PanelVentasService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "47172ba69811009302de21fb59c50569b99bc08b9513a5547825b68390bd18e3",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "VENTAS"
+    },
+    {
+      "path": "src/PedidoRecepcionService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "71b49545059f3484c4e88f1537dff3494b3b97cf801261dec5c12327240c2ba5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "COMPRAS"
     },
     {
       "path": "src/ProcesoService.js",
@@ -1516,6 +1626,17 @@
       "module": null
     },
     {
+      "path": "src/Tests_Ids.js",
+      "type": "js",
+      "category": "test",
+      "package": "B",
+      "expectedSha256": "b0f5081d7c2b427a9d56cad37a42e050691844e87c599f9ce1007c20a58658ab",
+      "required": true,
+      "reason": "prueba explícita",
+      "mixed": false,
+      "module": null
+    },
+    {
       "path": "src/Tests_ImportacionRecursosPersonas.js",
       "type": "js",
       "category": "test",
@@ -1582,110 +1703,11 @@
       "module": null
     },
     {
-      "path": "PROPUESTA_MODULARIZACION_LIBRERIA.md",
-      "type": "md",
-      "category": "excluded",
-      "package": "NONE",
-      "expectedSha256": "ee32065846eb450524d7039e9188c65c1f7de56e2e93c4513bdb4cb085d0dde1",
-      "required": true,
-      "reason": "no desplegable",
-      "mixed": false,
-      "module": null
-    },
-    {
-      "path": "src/Tests_Ids.js",
-      "type": "js",
-      "category": "test",
-      "package": "B",
-      "expectedSha256": "b0f5081d7c2b427a9d56cad37a42e050691844e87c599f9ce1007c20a58658ab",
-      "required": true,
-      "reason": "prueba explícita",
-      "mixed": false,
-      "module": null
-    },
-    {
-      "path": "src/CorregirEstadoPedidosExistentes.js",
-      "type": "js",
-      "category": "auxiliary",
-      "package": "C",
-      "expectedSha256": "6855579bbdd11f5c74bb59beb0d4174ff45be580a8221a199ac3b707a3c34a33",
-      "required": true,
-      "reason": "instalación/fixture/tooling",
-      "mixed": false,
-      "module": null
-    },
-    {
-      "path": ".gitignore",
-      "type": "text",
-      "category": "excluded",
-      "package": "NONE",
-      "expectedSha256": "442787ab3b4dcc0aeb55d4d866ec72bcc23b754efde3815e97f598ae79c42ba4",
-      "required": true,
-      "reason": "no desplegable",
-      "mixed": false,
-      "module": null
-    },
-    {
-      "path": "src/FormularioMotorUI.js",
-      "type": "js",
+      "path": "src/appsscript.json",
+      "type": "json",
       "category": "production",
       "package": "A",
-      "expectedSha256": "9628205d4f16a9726b0fb1923f6c8a3d2e5c65c40ada3a5ccf4592df02eafc4f",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/FormularioValidacionService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "f4df0430d67b54f388b5aa30b2a12cf9af32e7a90343bd724240535ef85aad5d",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/FormularioEsquemas.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "2eb9a6442d9ce553f558f6f745f88ad00b70e1c10460a20d993a1fc798d74da5",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/PedidoRecepcionService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "71b49545059f3484c4e88f1537dff3494b3b97cf801261dec5c12327240c2ba5",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "COMPRAS"
-    },
-    {
-      "path": "src/EstructuraInicialDatos.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "9d9fbc06bbc730695a0984c7b70ef06b0feb4abb845f3e530ac6b3c462612d04",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/EstructuraInicialService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "843a33a286eb5b8c0c1409af28ea701d2b98c6d4da5b23dae1e1b3a20344cec5",
+      "expectedSha256": "38132357557b774d27e339552b1739e70354c247d7ae75bf9520ea630be868ff",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

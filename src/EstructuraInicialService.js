@@ -15,13 +15,35 @@
  * EstructuraInicialDatos.js -- transcripción literal de la hoja de
  * desarrollo real, no inventada aquí.
  */
-function instalarEstructuraInicial() {
+/**
+ * true si la hoja corresponde a un módulo instalado. Sin lista (null/
+ * undefined, cliente antiguo sin regenerar Codigo.js, o el propio Sheet
+ * maestro) instala todo, por compatibilidad -- mismo criterio que
+ * moduloInstalado_ en FormularioMotorUI.js. 90_CONFIGURACION/91_HISTORIAL
+ * no son hojas de entidad (no están en MODULO_POR_HOJA_MVP) y se instalan
+ * siempre.
+ */
+function hojaInstalable_(nombreHoja, modulosInstalados) {
+  if (!modulosInstalados) return true;
+  var modulo = MODULO_POR_HOJA_MVP[nombreHoja];
+  if (!modulo) return true;
+  return modulosInstalados.indexOf(modulo) !== -1;
+}
+
+/**
+ * modulosInstalados: array de módulos instalados en el cliente, pasado
+ * explícitamente por el envoltorio abrirInstalarEstructuraInicial()
+ * generado en el Codigo.js de cada cliente (mismo patrón que onOpen() en
+ * FormularioMotorUI.js -- una librería no puede leer MODULOS_INSTALADOS_CLIENTE
+ * directamente, corre en su propio ámbito global).
+ */
+function instalarEstructuraInicial(modulosInstalados) {
   var packageName = 'ESTRUCTURA_INICIAL';
 
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
 
   var bloqueo = LockService.getScriptLock();
-  var resultado = { hojasCreadas: [], hojasExistentes: [], catalogoSembrado: false, rangosNombradosAsegurados: 0 };
+  var resultado = { hojasCreadas: [], hojasExistentes: [], hojasOmitidasPorModulo: [], catalogoSembrado: false, rangosNombradosAsegurados: 0 };
 
   try {
     bloqueo.waitLock(10000);
@@ -29,6 +51,11 @@ function instalarEstructuraInicial() {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
     ORDEN_HOJAS_ESTRUCTURA_INICIAL.forEach(function (nombreHoja) {
+      if (!hojaInstalable_(nombreHoja, modulosInstalados)) {
+        resultado.hojasOmitidasPorModulo.push(nombreHoja);
+        return;
+      }
+
       var cabeceras = CABECERAS_HOJA_MVP[nombreHoja];
       var hoja = ss.getSheetByName(nombreHoja);
       var creadaAhora = false;
@@ -47,7 +74,7 @@ function instalarEstructuraInicial() {
 
       if (nombreHoja === '90_CONFIGURACION') {
         if (creadaAhora) {
-          sembrarCatalogoInicial_(hoja);
+          sembrarCatalogoInicial_(hoja, modulosInstalados);
           resultado.catalogoSembrado = true;
         }
         resultado.rangosNombradosAsegurados = asegurarRangosNombradosCatalogo_(ss, hoja);
@@ -61,6 +88,7 @@ function instalarEstructuraInicial() {
     'ENGREMIAT_PACKAGE_END package=' + packageName +
     ' status=OK hojas_creadas=' + resultado.hojasCreadas.length +
     ' hojas_existentes=' + resultado.hojasExistentes.length +
+    ' hojas_omitidas_por_modulo=' + resultado.hojasOmitidasPorModulo.length +
     ' catalogo_sembrado=' + resultado.catalogoSembrado
   );
 
@@ -76,11 +104,26 @@ function instalarEstructuraInicial() {
  * asegurarRangosNombradosCatalogo_, para que también se reparen en un
  * 90_CONFIGURACION que ya tenía filas pero no rangos.
  */
-function sembrarCatalogoInicial_(hojaConfig) {
+/**
+ * true si la categoría corresponde a un módulo instalado. Mismo criterio
+ * que hojaInstalable_: sin lista instala todo.
+ */
+function categoriaInstalable_(categoria, modulosInstalados) {
+  if (!modulosInstalados) return true;
+  var modulo = MODULO_POR_CATEGORIA_CATALOGO[categoria];
+  if (!modulo) return true;
+  return modulosInstalados.indexOf(modulo) !== -1;
+}
+
+function sembrarCatalogoInicial_(hojaConfig, modulosInstalados) {
   var ahora = new Date();
   var usuario = Session.getEffectiveUser().getEmail() || 'USUARIO_NO_IDENTIFICADO';
 
-  var filas = CATALOGO_SEMILLA_MVP.map(function (entrada, indice) {
+  var entradas = CATALOGO_SEMILLA_MVP.filter(function (entrada) {
+    return categoriaInstalable_(entrada.categoria, modulosInstalados);
+  });
+
+  var filas = entradas.map(function (entrada, indice) {
     return [
       'CFG-' + String(indice + 1).padStart(4, '0'),
       entrada.categoria,
@@ -95,6 +138,8 @@ function sembrarCatalogoInicial_(hojaConfig) {
       usuario
     ];
   });
+
+  if (filas.length === 0) return;
 
   hojaConfig.getRange(2, 1, filas.length, filas[0].length).setValues(filas);
 
@@ -150,25 +195,36 @@ function asegurarRangosNombradosCatalogo_(ss, hojaConfig) {
  * el Sheet activo -- mismo criterio que el resto del proyecto para acciones
  * con efecto persistente.
  */
-function abrirInstalarEstructuraInicial() {
+/**
+ * modulosInstalados: array de módulos instalados en el cliente que llama,
+ * pasado explícitamente por el envoltorio generado en el Codigo.js de cada
+ * cliente (ver renderWrapperStubs/renderizarEnvoltorios_) -- mismo patrón
+ * especial que onOpen().
+ */
+function abrirInstalarEstructuraInicial(modulosInstalados) {
   var ui = SpreadsheetApp.getUi();
 
   var resp = ui.alert(
     'Instalar estructura inicial',
-    'Esto crea las hojas de datos que falten (37 entidades + 90_CONFIGURACION + 91_HISTORIAL) en este Sheet ' +
-    'y asegura los rangos con nombre del catálogo (CFG_*). Las hojas que ya existen no se tocan. ¿Continuar?',
+    'Esto crea las hojas de datos que falten (de los módulos instalados en este cliente) + 90_CONFIGURACION + ' +
+    '91_HISTORIAL en este Sheet, y asegura los rangos con nombre del catálogo (CFG_*). Las hojas que ya existen ' +
+    'no se tocan. ¿Continuar?',
     ui.ButtonSet.YES_NO
   );
 
   if (resp !== ui.Button.YES) return;
 
   try {
-    var resultado = instalarEstructuraInicial();
+    var resultado = instalarEstructuraInicial(modulosInstalados);
 
     var mensaje = resultado.hojasCreadas.length > 0
       ? 'Hojas creadas: ' + resultado.hojasCreadas.join(', ') +
         (resultado.catalogoSembrado ? '\n\nCatálogo inicial sembrado en 90_CONFIGURACION.' : '')
       : 'No había hojas que crear: la estructura ya estaba completa.';
+
+    if (resultado.hojasOmitidasPorModulo.length > 0) {
+      mensaje += '\n\nOmitidas (módulo no instalado): ' + resultado.hojasOmitidasPorModulo.join(', ');
+    }
 
     mensaje += '\n\nRangos con nombre asegurados: ' + resultado.rangosNombradosAsegurados;
 

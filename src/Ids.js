@@ -1,3 +1,35 @@
+/**
+ * Módulo dueño de cada entidad MVP -- usado por EstructuraInicialService.js
+ * (Fase de optimización de hojas hijo, ver conversación "repensar lo mismo
+ * con las hojas que se importan a los sheets hijo") para instalar solo las
+ * hojas de los módulos realmente instalados en cada cliente. Las entidades
+ * sin entrada aquí se consideran CORE (base, siempre instalada).
+ */
+const MODULO_POR_ENTIDAD_MVP = Object.freeze({
+  MATERIAL: 'COMPRAS',
+  PRODUCTO_MATERIAL: 'COMPRAS',
+  TAREA_MATERIAL: 'COMPRAS',
+  PROVEEDOR: 'COMPRAS',
+  MOVIMIENTO_MATERIAL: 'COMPRAS',
+  PROVEEDOR_MATERIAL: 'COMPRAS',
+  PEDIDO_PROVEEDOR: 'COMPRAS',
+  PEDIDO_PROVEEDOR_LINEA: 'COMPRAS',
+  RECEPCION: 'COMPRAS',
+  RECEPCION_LINEA: 'COMPRAS',
+  PRESUPUESTO: 'ECONOMICO',
+  FUENTE_FINANCIACION: 'ECONOMICO',
+  COSTE: 'ECONOMICO',
+  CONVOCATORIA: 'CONVOCATORIAS',
+  ETIQUETA_IMPACTO: 'IMPACTO',
+  CLIENTE: 'CLIENTE',
+  PEDIDO_CLIENTE: 'VENTAS',
+  PEDIDO_CLIENTE_LINEA: 'VENTAS',
+  ENTREGA: 'VENTAS',
+  ENTREGA_LINEA: 'VENTAS',
+  CONTRATO_SERVICIO: 'VENTAS',
+  OPORTUNIDAD: 'OPORTUNIDAD'
+});
+
 const ENTIDADES_MVP = Object.freeze({
   CAMPANA: Object.freeze({
     hoja: '01_CAMPANAS',
@@ -177,6 +209,18 @@ const ENTIDADES_MVP = Object.freeze({
   })
 });
 
+/**
+ * Precalculado a partir de ENTIDADES_MVP + MODULO_POR_ENTIDAD_MVP: nombre
+ * de hoja -> módulo dueño. Las hojas de entidades sin entrada explícita en
+ * MODULO_POR_ENTIDAD_MVP son CORE. Usado por EstructuraInicialService.js
+ * para instalar solo las hojas de los módulos realmente instalados.
+ */
+const MODULO_POR_HOJA_MVP = Object.freeze(
+  Object.keys(ENTIDADES_MVP).reduce(function (acumulado, claveEntidad) {
+    acumulado[ENTIDADES_MVP[claveEntidad].hoja] = MODULO_POR_ENTIDAD_MVP[claveEntidad] || 'CORE';
+    return acumulado;
+  }, {})
+);
 
 /**
  * Devuelve el siguiente identificador disponible de una entidad.

@@ -9,7 +9,7 @@
       "modulosResueltos": [
         "CORE"
       ],
-      "envoltoriosGenerados": 156,
+      "envoltoriosGenerados": 172,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -34,10 +34,38 @@
         {
           "funcion": "abrirGanttPlanReal",
           "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirInstalarCatalogoClienteL4",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirInstalarCatalogoOportunidadL4",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirInstalarCatalogoVentasL4",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirPanelClientes",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirPanelVentas",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "abrirRecalcularPuntuacionEncajeOportunidades",
+          "estado": "EXCLUDED_MODULE_GAP"
+        },
+        {
+          "funcion": "obtenerOpcionesRegistroPorNivel",
+          "estado": "EXCLUDED_MODULE_GAP"
         }
       ],
       "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-      "libreriaVersion": "3",
+      "libreriaVersion": "13",
       "fechaCreacion": "2026-08-06T17:42:55.369Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_latroballa"
@@ -58,7 +86,7 @@
         "VENTAS",
         "OPORTUNIDAD"
       ],
-      "envoltoriosGenerados": 194,
+      "envoltoriosGenerados": 196,
       "huecos": [
         {
           "funcion": "abrirFichaConvocatoriaBuscar",
@@ -78,7 +106,7 @@
         }
       ],
       "libreriaId": "1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M",
-      "libreriaVersion": "10",
+      "libreriaVersion": "13",
       "fechaCreacion": "2026-08-07T05:30:42.090Z",
       "estado": "desplegado_y_verificado",
       "directorioSalida": "../../AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/cliente_gestor_proyectos",

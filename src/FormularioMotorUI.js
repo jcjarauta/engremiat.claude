@@ -40,7 +40,38 @@
  * el siguiente paso, pendiente de una señal en tiempo de ejecución que
  * hoy no existe).
  */
-function onOpen() {
+/**
+ * Módulos instalados del cliente que llamó a onOpen() en esta ejecución.
+ * Una librería de Apps Script corre en su PROPIO ámbito global, aislado del
+ * proyecto que la invoca -- por eso MODULOS_INSTALADOS_CLIENTE, definida en
+ * el Codigo.js de cada cliente, no es visible aquí directamente y hay que
+ * pasarla como argumento explícito a onOpen() (ver más abajo) y guardarla en
+ * esta variable de módulo para que moduloInstalado_() pueda leerla.
+ */
+var modulosInstaladosClienteActual_ = null;
+
+/**
+ * true si nombreModulo está en la lista de módulos instalados del cliente
+ * que llamó a onOpen(). Si onOpen() se ejecutó sin argumento (cliente
+ * antiguo sin regenerar Codigo.js, o el propio Sheet maestro) se asume que
+ * todos los módulos están instalados, por compatibilidad -- así onOpen()
+ * nunca deja de mostrar el menú.
+ */
+function moduloInstalado_(nombreModulo) {
+  if (!modulosInstaladosClienteActual_) return true;
+  return modulosInstaladosClienteActual_.indexOf(nombreModulo) !== -1;
+}
+
+/**
+ * modulosInstalados: array de módulos instalados en el cliente que llama,
+ * pasado explícitamente por el envoltorio onOpen() generado en el Codigo.js
+ * de cada cliente (ver renderWrapperStubs/renderizarEnvoltorios_) como
+ * Core.onOpen(MODULOS_INSTALADOS_CLIENTE) -- no como .apply(null, arguments)
+ * genérico, precisamente porque una librería no puede leer las variables
+ * globales de quien la invoca.
+ */
+function onOpen(modulosInstalados) {
+  modulosInstaladosClienteActual_ = modulosInstalados || null;
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
     .addSubMenu(construirSubmenuAnalizar_(ui))
@@ -54,8 +85,8 @@ function onOpen() {
 function construirSubmenuAnalizar_(ui) {
   var menu = ui.createMenu('📊 Analizar');
   menu = agregarAnalizarCore_(menu);
-  menu = agregarAnalizarGantt_(menu);
-  menu = agregarAnalizarComercial_(menu);
+  if (moduloInstalado_('GANTT')) menu = agregarAnalizarGantt_(menu);
+  if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS')) menu = agregarAnalizarComercial_(menu);
   return menu;
 }
 
@@ -82,13 +113,14 @@ function agregarAnalizarComercial_(menu) {
 /* === 🌳 Navegar y editar === */
 
 function construirSubmenuNavegarYEditar_(ui) {
-  return ui.createMenu('🌳 Navegar y editar')
+  var menu = ui.createMenu('🌳 Navegar y editar')
     .addSubMenu(construirSubmenuCampanaProyecto_(ui))
     .addSubMenu(construirSubmenuPersonasYEquipos_(ui))
     .addSubMenu(construirSubmenuEspaciosYRecursos_(ui))
-    .addSubMenu(construirSubmenuMaterialesYProveedores_(ui))
-    .addSubMenu(construirSubmenuSeguimientoYDecisiones_(ui))
-    .addSubMenu(construirSubmenuClientesYVentas_(ui));
+    .addSubMenu(construirSubmenuSeguimientoYDecisiones_(ui));
+  if (moduloInstalado_('COMPRAS')) menu = menu.addSubMenu(construirSubmenuMaterialesYProveedores_(ui));
+  if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS') || moduloInstalado_('OPORTUNIDAD')) menu = menu.addSubMenu(construirSubmenuClientesYVentas_(ui));
+  return menu;
 }
 
 /* CORE */
@@ -169,22 +201,23 @@ function construirSubmenuClientesYVentas_(ui) {
 /* === ➕ Crear y gestionar datos === */
 
 function construirSubmenuCrearYGestionar_(ui) {
-  return ui.createMenu('➕ Crear y gestionar datos')
+  var menu = ui.createMenu('➕ Crear y gestionar datos')
     .addSubMenu(construirSubmenuNuevoRegistro_(ui))
     .addSubMenu(construirSubmenuNuevaRelacion_(ui))
     .addSubMenu(construirSubmenuMovimientosYConfirmaciones_(ui))
-    .addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui))
-    .addSubMenu(construirSubmenuCompetencias_(ui))
-    .addSubMenu(construirSubmenuConvocatorias_(ui))
-    .addSubMenu(construirSubmenuImpacto_(ui))
-    .addSubMenu(construirSubmenuCatalogosYAdministracion_(ui));
+    .addSubMenu(construirSubmenuCompetencias_(ui));
+  if (moduloInstalado_('ECONOMICO')) menu = menu.addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui));
+  if (moduloInstalado_('CONVOCATORIAS')) menu = menu.addSubMenu(construirSubmenuConvocatorias_(ui));
+  if (moduloInstalado_('IMPACTO')) menu = menu.addSubMenu(construirSubmenuImpacto_(ui));
+  menu = menu.addSubMenu(construirSubmenuCatalogosYAdministracion_(ui));
+  return menu;
 }
 
 function construirSubmenuNuevoRegistro_(ui) {
   var menu = ui.createMenu('Nuevo registro');
   menu = agregarNuevoRegistroCore_(menu);
-  menu = agregarNuevoRegistroCompras_(menu);
-  menu = agregarNuevoRegistroComercial_(menu);
+  if (moduloInstalado_('COMPRAS')) menu = agregarNuevoRegistroCompras_(menu);
+  if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS') || moduloInstalado_('OPORTUNIDAD')) menu = agregarNuevoRegistroComercial_(menu);
   return menu;
 }
 
@@ -223,8 +256,8 @@ function agregarNuevoRegistroComercial_(menu) {
 function construirSubmenuNuevaRelacion_(ui) {
   var menu = ui.createMenu('Nueva relación / vínculo');
   menu = agregarNuevaRelacionCore_(menu);
-  menu = agregarNuevaRelacionCompras_(menu);
-  menu = agregarNuevaRelacionComercial_(menu);
+  if (moduloInstalado_('COMPRAS')) menu = agregarNuevaRelacionCompras_(menu);
+  if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS')) menu = agregarNuevaRelacionComercial_(menu);
   return menu;
 }
 
@@ -257,7 +290,7 @@ function agregarNuevaRelacionComercial_(menu) {
 
 function construirSubmenuMovimientosYConfirmaciones_(ui) {
   var menu = ui.createMenu('Movimientos y confirmaciones');
-  menu = agregarMovimientosCompras_(menu);
+  if (moduloInstalado_('COMPRAS')) menu = agregarMovimientosCompras_(menu);
   menu = agregarMovimientosCore_(menu);
   return menu;
 }
@@ -312,9 +345,9 @@ function construirSubmenuImpacto_(ui) {
 function construirSubmenuCatalogosYAdministracion_(ui) {
   var menu = ui.createMenu('Catálogos y administración');
   menu = agregarCatalogosCore_(menu);
-  menu = agregarCatalogosCliente_(menu);
-  menu = agregarCatalogosVentas_(menu);
-  menu = agregarCatalogosOportunidad_(menu);
+  if (moduloInstalado_('CLIENTE')) menu = agregarCatalogosCliente_(menu);
+  if (moduloInstalado_('VENTAS')) menu = agregarCatalogosVentas_(menu);
+  if (moduloInstalado_('OPORTUNIDAD')) menu = agregarCatalogosOportunidad_(menu);
   return menu;
 }
 
@@ -327,7 +360,9 @@ function agregarCatalogosCore_(menu) {
     .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
     .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
-    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
+    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial')
+    .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
+    .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
 }
 
 function agregarCatalogosCliente_(menu) {

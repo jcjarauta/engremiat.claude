@@ -75,6 +75,46 @@ var ORDEN_HOJAS_ESTRUCTURA_INICIAL = Object.freeze([
 ]);
 
 /**
+ * Módulo dueño de cada categoría de 90_CONFIGURACION -- usado por
+ * sembrarCatalogoInicial_ (EstructuraInicialService.js) para no sembrar
+ * catálogo de módulos que el cliente no tiene instalados. Las categorías
+ * sin entrada aquí se consideran CORE (base, siempre instalada).
+ */
+var MODULO_POR_CATEGORIA_CATALOGO = Object.freeze({
+  CATEGORIA_MATERIAL: 'COMPRAS',
+  ESTADO_MATERIAL: 'COMPRAS',
+  ESTADO_PROVEEDOR: 'COMPRAS',
+  ESTADO_PEDIDO_PROVEEDOR: 'COMPRAS',
+  ESTADO_RECEPCION: 'COMPRAS',
+  TIPO_MOVIMIENTO: 'COMPRAS',
+  CATEGORIA_PRESUPUESTO: 'ECONOMICO',
+  ENTIDAD_PRESUPUESTO: 'ECONOMICO',
+  ESTADO_FUENTE_FINANCIACION: 'ECONOMICO',
+  TIPO_FUENTE_FINANCIACION: 'ECONOMICO',
+  ENTIDAD_COSTE: 'ECONOMICO',
+  ESTADO_COSTE: 'ECONOMICO',
+  PERIODICIDAD_COSTE: 'ECONOMICO',
+  MODO_COSTE_RECURSO: 'ECONOMICO',
+  ESTADO_CONVOCATORIA: 'CONVOCATORIAS',
+  TIPO_CONVOCATORIA: 'CONVOCATORIAS',
+  CATEGORIA_IMPACTO: 'IMPACTO',
+  IMPACTO: 'IMPACTO',
+  ESTADO_CLIENTE: 'CLIENTE',
+  TIPO_CLIENTE: 'CLIENTE',
+  CANAL_PEDIDO_CLIENTE: 'VENTAS',
+  ESTADO_PEDIDO_CLIENTE: 'VENTAS',
+  ESTADO_ENTREGA: 'VENTAS',
+  PERIODICIDAD_CONTRATO: 'VENTAS',
+  MODALIDAD_PAGO: 'VENTAS',
+  ESTADO_CONTRATO_SERVICIO: 'VENTAS',
+  ORIGEN_OPORTUNIDAD: 'OPORTUNIDAD',
+  AMBITO_OPORTUNIDAD: 'OPORTUNIDAD',
+  TIPO_OPORTUNIDAD: 'OPORTUNIDAD',
+  ESTADO_OPORTUNIDAD: 'OPORTUNIDAD',
+  SECTOR_OBJETIVO: 'OPORTUNIDAD'
+});
+
+/**
  * Semilla de 90_CONFIGURACION: transcripción literal de las 326 filas reales
  * (categoria, clave, valor, orden, descripcion). orden/descripcion son null
  * cuando la fila real de origen no los tenía rellenados (altas posteriores

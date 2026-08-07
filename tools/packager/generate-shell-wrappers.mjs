@@ -25,6 +25,14 @@ class WrapperError extends Error {
 
 const SIMPLE_TRIGGER_NAMES = new Set(['onOpen', 'onEdit']);
 
+// Funciones cuyo envoltorio debe pasar MODULOS_INSTALADOS_CLIENTE como
+// argumento explícito, en vez del reenvío genérico .apply(null, arguments):
+// una librería de Apps Script corre en su propio ámbito global, aislado del
+// proyecto que la invoca, así que no puede leer esa constante directamente
+// (definida en el Codigo.js del cliente). Ver moduloInstalado_ en
+// FormularioMotorUI.js.
+const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstalarEstructuraInicial']);
+
 /**
  * A diferencia de maskNonCode (build-packages.mjs), que también blanquea el
  * contenido de strings para evitar falsos positivos en nombres de prueba,
@@ -313,12 +321,18 @@ export function renderWrapperStubs(plan, userSymbol) {
     ` * Módulos solicitados: ${plan.requestedModules.join(', ')}`,
     ` * Módulos resueltos (cierre transitivo): ${plan.resolvedModules.join(', ')}`,
     ' * Cada función reenvía la llamada a la librería sin conocer su lógica interna.',
+    ' * MODULOS_INSTALADOS_CLIENTE la lee moduloInstalado_() en la librería CORE',
+    ' * (FormularioMotorUI.js) para condicionar los bloques de onOpen() a los',
+    ' * módulos realmente instalados en este cliente.',
     ' */',
+    '',
+    `var MODULOS_INSTALADOS_CLIENTE = ${JSON.stringify(plan.resolvedModules)};`,
     '',
   ];
   for (const name of plan.wrappers) {
     lines.push(`function ${name}() {`);
-    lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
+    if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS.has(name)) lines.push(`  return ${userSymbol}.${name}(MODULOS_INSTALADOS_CLIENTE);`);
+    else lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
     lines.push('}');
     lines.push('');
   }
