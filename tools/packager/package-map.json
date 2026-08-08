@@ -1685,7 +1685,7 @@
       "type": "js",
       "category": "test",
       "package": "B",
-      "expectedSha256": "f83d2df72ec8a9d431709ea28ccd3f10660ca66b0c667df1750b01100827efd5",
+      "expectedSha256": "d230536ec56f470d345bee8b84279d6ccb47ef6a99391d3c5820c3f50241489c",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,

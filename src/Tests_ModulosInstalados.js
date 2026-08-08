@@ -8,11 +8,17 @@
  * romper el filtrado sin que nadie lo note hasta que un cliente vea un
  * módulo que no tiene instalado.
  *
- * Todas las funciones probadas son puras (no leen SpreadsheetApp), salvo
- * moduloInstalado_, que lee la variable de módulo modulosInstaladosClienteActual_
- * -- en Apps Script no hay privacidad real de fichero, así que esta prueba
- * la fija directamente, sin pasar por onOpen() (que exige un Spreadsheet
- * activo real).
+ * La mayoría de las funciones probadas son puras (no leen SpreadsheetApp),
+ * salvo moduloInstalado_, que lee la variable de módulo
+ * modulosInstaladosClienteActual_ -- en Apps Script no hay privacidad real
+ * de fichero, así que la mayoría de estas pruebas la fijan directamente,
+ * sin pasar por onOpen(). La excepción es
+ * pruebaOnOpenNoRompeConObjetoEventoReal, que sí llama a la onOpen() real
+ * -- fija en código el bug detectado en vivo el 08/08/2026: Google Sheets
+ * pasa un objeto de evento (no un array) como primer argumento cuando
+ * onOpen() se dispara como trigger real, y eso rompía moduloInstalado_
+ * (.indexOf no existe en un objeto de evento) en el Sheet maestro, que
+ * invoca onOpen() directamente como trigger sin envoltorio de cliente.
  */
 
 function pruebaModuloInstaladoSinListaAsumeTodoInstalado() {
@@ -55,6 +61,44 @@ function pruebaModuloInstaladoConListaFiltraCorrectamente() {
   }
 
   console.log('OK: con MODULOS_INSTALADOS_CLIENTE=[CORE,GANTT], moduloInstalado_ filtra correctamente (' + casos.length + ' casos verificados)');
+  return true;
+}
+
+/**
+ * Fija en código el bug detectado en vivo el 08/08/2026: onOpen() recibía
+ * el objeto de evento real de Google Sheets (no un array) al dispararse
+ * como trigger, y lo trataba como MODULOS_INSTALADOS_CLIENTE sin comprobar
+ * -- moduloInstalado_ rompía en .indexOf porque un objeto de evento no
+ * tiene ese método. Llama a la onOpen() real (no una copia): si alguien
+ * quita el Array.isArray de onOpen(), esta prueba vuelve a fallar con el
+ * mismo TypeError que rompió el menú del Sheet maestro en producción.
+ * onOpen() también llama a SpreadsheetApp.getUi(), que sí falla fuera de
+ * un Spreadsheet real -- eso es esperado y no es lo que esta prueba fija;
+ * solo falla si el error es el TypeError de .indexOf.
+ */
+function pruebaOnOpenNoRompeConObjetoEventoReal() {
+  var eventoSimulado = { authMode: 'FULL', source: {}, triggerUid: 'PRUEBA', user: {} };
+  var errorDeIndexOf = null;
+
+  try {
+    onOpen(eventoSimulado);
+  } catch (e) {
+    if (/indexOf is not a function/.test(e.message)) errorDeIndexOf = e.message;
+  }
+
+  try {
+    onOpen(undefined);
+  } catch (e) {
+    if (/indexOf is not a function/.test(e.message)) errorDeIndexOf = errorDeIndexOf || e.message;
+  }
+
+  modulosInstaladosClienteActual_ = null;
+
+  if (errorDeIndexOf) {
+    throw new Error('PRUEBA_ONOPEN_EVENTO_REAL_ERROR: ' + errorDeIndexOf);
+  }
+
+  console.log('OK: onOpen() no rompe moduloInstalado_ con un objeto de evento real ni con undefined');
   return true;
 }
 
@@ -207,6 +251,7 @@ function pruebaHojaInstalableConjuntoCoreOnlyCoincideConElReal() {
 function ejecutarSuiteModulosInstalados() {
   pruebaModuloInstaladoSinListaAsumeTodoInstalado();
   pruebaModuloInstaladoConListaFiltraCorrectamente();
+  pruebaOnOpenNoRompeConObjetoEventoReal();
   pruebaModuloInstaladoInternoSoloEnMaestro();
   pruebaHojaInstalableSinListaInstalaTodo();
   pruebaHojaInstalableFiltraPorModuloReal();
