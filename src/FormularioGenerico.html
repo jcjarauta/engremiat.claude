@@ -6,9 +6,9 @@
 </head>
 <body>
   <h3><?= titulo ?></h3>
-  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:2px;"></div>
-  <div id="verPanel" class="campo-oculto" style="margin-bottom:10px;">
-    <span class="boton btn-mini" style="cursor:pointer;" onclick="abrirPanelDesdeAqui_()">📋 Ver panel de campaña</span>
+  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:0;"></div>
+  <div id="verPanel" class="ayuda-campo campo-oculto" style="margin-bottom:10px;">
+    <span style="color:var(--color-primario);cursor:pointer;" onclick="abrirPanelDesdeAqui_()">📋 Ver panel de campaña</span>
   </div>
   <?!= include('ModalConfirmar') ?>
   <div id="campos">Cargando formulario...</div>
