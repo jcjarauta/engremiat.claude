@@ -461,7 +461,7 @@ function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta, c
   template.ruta = JSON.stringify(ruta || []);
   template.campanaRaiz = JSON.stringify(campanaRaiz || null);
   var html = template.evaluate().setWidth(420).setHeight(520);
-  SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
+  SpreadsheetApp.getUi().showModelessDialog(html, tituloVentana);
 }
 /*
  * retorno (opcional, {entidad, id}): a que formulario volver al cerrar
@@ -485,7 +485,7 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   template.ruta = JSON.stringify([]);
   template.campanaRaiz = JSON.stringify(null);
   var html = template.evaluate().setWidth(420).setHeight(520);
-  SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
+  SpreadsheetApp.getUi().showModelessDialog(html, tituloVentana);
 }
 /*
  * Llamada desde el listado de dependientes bloqueantes de "Desactivar"
@@ -645,13 +645,18 @@ function abrirEditarRegistroPorEntidad_(entidad, etiqueta) {
  * verificar L5.2).
  *
  * abreOtroDialogo (boolean, default false): true si accionFn termina
- * abriendo otro SpreadsheetApp.getUi().showModalDialog() (p.ej.
- * seleccionarYAbrirEdicion, seleccionarYAbrirFicha*) -- Apps Script
- * ignora en silencio un showModalDialog() mientras este selector siga
- * abierto, asi que SelectorRegistro.html necesita cerrarse ANTES de
- * llamar a accionFn en ese caso, no despues de que tenga exito (que es
- * lo correcto cuando accionFn no abre nada mas y puede fallar con un
- * error que hay que mostrar aqui mismo, como en confirmarRecepcion_).
+ * abriendo otro SpreadsheetApp.getUi().showModelessDialog() (p.ej.
+ * seleccionarYAbrirEdicion, seleccionarYAbrirFicha*). Los dialogos son
+ * modeless (ver conversacion -- "no pueden convivir los dos espacios"):
+ * pueden coexistir sin pisarse, asi que ya no hace falta cerrar este
+ * selector para que el siguiente se muestre. Sigue haciendo falta
+ * lanzar accionFn ANTES de cerrar, no despues -- cerrar corta el canal
+ * de google.script.run de ESTE dialogo antes de que la peticion salga
+ * (confirmado con un marcador de diagnostico), problema de ciclo de
+ * vida del iframe, no de modal-vs-modeless. Cuando accionFn no abre
+ * nada mas y puede fallar con un error que hay que mostrar aqui mismo
+ * (confirmarRecepcion_), sigue siendo correcto cerrar solo tras el
+ * exito.
  */
 function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn, abreOtroDialogo) {
   var template = HtmlService.createTemplateFromFile('SelectorRegistro');
@@ -661,7 +666,7 @@ function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn, a
   template.opcionesFn = opcionesFn;
   template.abreOtroDialogo = !!abreOtroDialogo;
   var html = template.evaluate().setWidth(380).setHeight(220);
-  SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
+  SpreadsheetApp.getUi().showModelessDialog(html, tituloVentana);
 }
 /*
  * Texto adicional buscable por entidad, mas alla de ID/NOMBRE (ver

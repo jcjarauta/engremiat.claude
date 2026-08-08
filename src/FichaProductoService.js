@@ -160,7 +160,7 @@ function abrirFichaProducto(id) {
   var template = HtmlService.createTemplateFromFile('FichaProducto');
   template.idRegistro = id;
   var html = template.evaluate().setWidth(560).setHeight(640);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Ficha: ' + id);
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Ficha: ' + id);
 }
 
 /* accionFn del selector generico (SelectorRegistro.html): firma (entidad, idRegistro). */

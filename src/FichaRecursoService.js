@@ -101,7 +101,7 @@ function abrirFichaRecurso(id) {
   var template = HtmlService.createTemplateFromFile('FichaRecurso');
   template.idRegistro = id;
   var html = template.evaluate().setWidth(560).setHeight(640);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Ficha: ' + id);
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Ficha: ' + id);
 }
 
 function seleccionarYAbrirFichaRecurso(entidad, idRegistro) {

@@ -806,7 +806,7 @@ function abrirDialogoDescargaCSV_(nombreArchivo, contenidoCsv) {
     '<script>document.getElementById("dl").click();setTimeout(function(){ google.script.host.close(); }, 800);</script>' +
     '</body></html>';
   var output = HtmlService.createHtmlOutput(html).setWidth(360).setHeight(120);
-  SpreadsheetApp.getUi().showModalDialog(output, 'Descargando CSV');
+  SpreadsheetApp.getUi().showModelessDialog(output, 'Descargando CSV');
 }
 
 function exportarGanttCSV(filtro) {
@@ -884,7 +884,7 @@ function abrirGanttPlanReal(campanaId, productoId) {
   template.preseleccionProducto = productoId || '';
   template.preseleccionOcupacionRecurso = '';
   var html = template.evaluate().setWidth(920).setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Gantt: plan vs. real');
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Gantt: plan vs. real');
 }
 
 /*
@@ -899,5 +899,5 @@ function abrirGanttOcupacionRecurso(recursoId, recursoNombre) {
   template.preseleccionProducto = '';
   template.preseleccionOcupacionRecurso = JSON.stringify({ id: recursoId, nombre: recursoNombre });
   var html = template.evaluate().setWidth(920).setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Gantt: plan vs. real');
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Gantt: plan vs. real');
 }

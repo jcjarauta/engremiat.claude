@@ -236,5 +236,5 @@ function abrirKanban() {
     .setTitle('Kanban operativo')
     .setWidth(1000)
     .setHeight(640);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Kanban operativo');
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Kanban operativo');
 }

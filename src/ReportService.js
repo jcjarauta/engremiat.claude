@@ -414,7 +414,7 @@ function exportarInformePDF(tipo, idOFiltro, opcionesPrueba) {
 function abrirDialogoExportarPDF(tipo, idOFiltro) {
   var resultado = exportarInformePDF(tipo, idOFiltro, {});
   var output = HtmlService.createHtmlOutput(resultado.contenidoHtml).setWidth(820).setHeight(600);
-  SpreadsheetApp.getUi().showModalDialog(output, 'Informe -- usa Imprimir para guardar como PDF');
+  SpreadsheetApp.getUi().showModelessDialog(output, 'Informe -- usa Imprimir para guardar como PDF');
 }
 
 function abrirInformes() {

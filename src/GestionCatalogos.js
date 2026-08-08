@@ -141,7 +141,7 @@ function abrirGestionCatalogo_(categoria) {
   var template = HtmlService.createTemplateFromFile('GestionCatalogo');
   template.categoria = categoria;
   var html = template.evaluate().setWidth(380).setHeight(420);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Catálogo: ' + categoria);
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Catálogo: ' + categoria);
 }
 
 function obtenerValoresCatalogoParaGestion(categoria) {

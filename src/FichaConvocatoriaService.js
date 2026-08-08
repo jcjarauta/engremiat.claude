@@ -85,7 +85,7 @@ function abrirFichaConvocatoria(id) {
   var template = HtmlService.createTemplateFromFile('FichaConvocatoria');
   template.idRegistro = id;
   var html = template.evaluate().setWidth(600).setHeight(660);
-  SpreadsheetApp.getUi().showModalDialog(html, 'Ficha: ' + id);
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Ficha: ' + id);
 }
 
 function seleccionarYAbrirFichaConvocatoria(entidad, idRegistro) {
