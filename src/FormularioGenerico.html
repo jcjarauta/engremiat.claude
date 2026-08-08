@@ -6,7 +6,10 @@
 </head>
 <body>
   <h3><?= titulo ?></h3>
-  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:10px;"></div>
+  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:2px;"></div>
+  <div id="verPanel" class="campo-oculto" style="margin-bottom:10px;">
+    <span class="boton btn-mini" style="cursor:pointer;" onclick="abrirPanelDesdeAqui_()">📋 Ver panel de campaña</span>
+  </div>
   <?!= include('ModalConfirmar') ?>
   <div id="campos">Cargando formulario...</div>
   <div id="mensaje"></div>
@@ -23,6 +26,7 @@
     var PREFILL = <?!= prefill ?>;
     var RETORNO = <?!= retorno ?>;
     var RUTA = <?!= ruta ?>;
+    var CAMPANA_RAIZ = <?!= campanaRaiz ?>;
     var esquemaActual = [];
 
     /*
@@ -41,6 +45,23 @@
     }
 
     /*
+     * "Ver panel de campaña" (ver conversacion -- "entrar en la ficha...
+     * con opcion de volver atras, editar, ver resultados"): el Panel es
+     * un sidebar (showSidebar), no un dialogo modal, asi que abrirlo NO
+     * cierra este dialogo ni compite por el hueco de modal -- se puede
+     * dejar abierto como mapa en vivo de toda la campaña (con Editar y
+     * Ficha por nodo) mientras se sigue rellenando la cadena. Solo
+     * disponible cuando venimos de la cadena de creacion (CAMPANA_RAIZ
+     * conocido); fuera de ella (crear suelto, editar) no se muestra.
+     */
+    if (CAMPANA_RAIZ) {
+      document.getElementById("verPanel").classList.remove("campo-oculto");
+    }
+    function abrirPanelDesdeAqui_() {
+      google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(CAMPANA_RAIZ);
+    }
+
+    /*
      * google.script.run solo expone las funciones que el generador de
      * envoltorios (generate-shell-wrappers.mjs) detecta de forma estatica
      * en el codigo fuente -- busca llamadas LITERALES tipo
@@ -52,25 +73,25 @@
      * en el Codigo.js del cliente). Este switch fuerza que cada nombre
      * real aparezca como llamada literal en el fuente.
      */
-    function invocarCadenaHijo_(nombreFuncion, id, ruta) {
-      // Cada case repite la cadena google.script.run....(id, ruta) COMPLETA
-      // (no una variable reutilizada) porque el generador de envoltorios
-      // busca la cadena literal entera "google.script.run....nombre(...)"
-      // en el fuente -- si el nombre final viene de una variable
-      // intermedia (aunque la variable se construya a partir de un
-      // literal), no lo detecta.
+    function invocarCadenaHijo_(nombreFuncion, id, ruta, campanaRaiz) {
+      // Cada case repite la cadena google.script.run....(id, ruta,
+      // campanaRaiz) COMPLETA (no una variable reutilizada) porque el
+      // generador de envoltorios busca la cadena literal entera
+      // "google.script.run....nombre(...)" en el fuente -- si el nombre
+      // final viene de una variable intermedia (aunque la variable se
+      // construya a partir de un literal), no lo detecta.
       switch (nombreFuncion) {
         case "abrirFormularioCrearProyectoConCampana":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(id, ruta);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(id, ruta, campanaRaiz);
           return;
         case "abrirFormularioCrearProductoConProyecto":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(id, ruta);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(id, ruta, campanaRaiz);
           return;
         case "abrirFormularioCrearProcesoConProducto":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(id, ruta);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(id, ruta, campanaRaiz);
           return;
         case "abrirFormularioCrearTareaConProceso":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(id, ruta);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(id, ruta, campanaRaiz);
           return;
       }
       mostrarError({ message: "Función de cadena desconocida: " + nombreFuncion });
@@ -902,11 +923,12 @@
                   // para que este dialogo ya no ocupe el hueco cuando el
                   // servidor intente abrir el siguiente.
                   // Un "hermano" se crea bajo el mismo padre que este
-                  // registro -- la RUTA que trajo este dialogo (sin
-                  // añadirse a si mismo) sigue siendo la correcta.
+                  // registro -- la RUTA y CAMPANA_RAIZ que trajeron este
+                  // dialogo (sin añadirse a si mismo) siguen siendo las
+                  // correctas.
                   google.script.run
                     .withFailureHandler(mostrarError)
-                    .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano, RUTA);
+                    .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano, RUTA, CAMPANA_RAIZ);
                   google.script.host.close();
                 },
                 function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
@@ -925,9 +947,13 @@
                 // peticion antes de cerrar, no despues.
                 // El hijo hereda RUTA + este registro recien creado, para
                 // que su propia miga de pan muestre todo el camino
-                // recorrido hasta aqui.
+                // recorrido hasta aqui. CAMPANA_RAIZ tambien se hereda tal
+                // cual, salvo en la propia CAMPANA (aun no la tiene): en
+                // ese caso resultado.id ES la raiz, para que el enlace al
+                // panel funcione desde el primer Proyecto en adelante.
                 var rutaHijo = RUTA.concat([{ etiqueta: datos.NOMBRE || resultado.id }]);
-                invocarCadenaHijo_(cadenaHijo.funcion, resultado.id, rutaHijo);
+                var campanaRaizHijo = CAMPANA_RAIZ || resultado.id;
+                invocarCadenaHijo_(cadenaHijo.funcion, resultado.id, rutaHijo, campanaRaizHijo);
                 google.script.host.close();
               },
               function () { ofrecerHermanoOFinal_(); },

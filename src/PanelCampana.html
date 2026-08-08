@@ -102,8 +102,33 @@
         google.script.run.withFailureHandler(mostrarError).abrirFichaProducto(id);
       }
 
+      /*
+       * Despacho literal, no dinamico (ver conversacion -- hallazgo en
+       * TEST-Combo-CORE): google.script.run solo expone las funciones que
+       * el generador de envoltorios detecta como llamada LITERAL
+       * "google.script.run....nombre(...)" en el fuente. [funcion](idPadre)
+       * es invisible a ese escaneo estatico, asi que el cliente se
+       * quedaba sin envoltorio para esa funcion en cuanto solo se llamaba
+       * asi (funcionaba aqui de rebote porque FormularioGenerico.html
+       * tambien la llama de forma literal, pero no hay que depender de
+       * eso).
+       */
       function crearHijo(funcion, idPadre) {
-        google.script.run.withFailureHandler(mostrarError)[funcion](idPadre);
+        switch (funcion) {
+          case "abrirFormularioCrearProyectoConCampana":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(idPadre);
+            return;
+          case "abrirFormularioCrearProductoConProyecto":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(idPadre);
+            return;
+          case "abrirFormularioCrearProcesoConProducto":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(idPadre);
+            return;
+          case "abrirFormularioCrearTareaConProceso":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(idPadre);
+            return;
+        }
+        mostrarError({ message: "Función de creación desconocida: " + funcion });
       }
 
       function renderTarea(tarea) {

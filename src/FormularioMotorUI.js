@@ -442,7 +442,16 @@ function resolverEtiquetaRetorno_(retorno) {
   }
   return copia;
 }
-function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta) {
+/*
+ * campanaRaiz (opcional): id de la CAMPANA raiz de la cadena de creacion
+ * en curso (ver conversacion -- "entrar en la ficha... con opcion de
+ * volver atras, editar, ver resultados"). Se usa solo para ofrecer el
+ * enlace "Ver panel de campaña" en FormularioGenerico.html -- el Panel es
+ * un sidebar (showSidebar), no un dialogo modal, asi que abrirlo NO
+ * cierra ni compite con el dialogo de creacion actual; se puede dejar
+ * abierto todo el rato como mapa en vivo mientras se sigue la cadena.
+ */
+function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta, campanaRaiz) {
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = entidad;
   template.idRegistro = '';
@@ -450,6 +459,7 @@ function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta) {
   template.prefill = JSON.stringify(prefill || {});
   template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
   template.ruta = JSON.stringify(ruta || []);
+  template.campanaRaiz = JSON.stringify(campanaRaiz || null);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
@@ -473,6 +483,7 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   template.prefill = JSON.stringify({});
   template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
   template.ruta = JSON.stringify([]);
+  template.campanaRaiz = JSON.stringify(null);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
@@ -540,8 +551,8 @@ function abrirEdicionConRetornoAFicha(entidad, idRegistro, fichaEntidad, fichaId
  * proyecto" con CAMPANA_ID precargado (mismo buscador de FK de
  * siempre, solo que ya viene relleno).
  */
-function abrirFormularioCrearProyectoConCampana(campanaId, ruta) {
-  abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto', { CAMPANA_ID: campanaId }, null, ruta);
+function abrirFormularioCrearProyectoConCampana(campanaId, ruta, campanaRaiz) {
+  abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto', { CAMPANA_ID: campanaId }, null, ruta, campanaRaiz);
 }
 /*
  * Mismo flujo encadenado, un nivel mas abajo: Proyecto->Producto. El
@@ -550,19 +561,19 @@ function abrirFormularioCrearProyectoConCampana(campanaId, ruta) {
  * que guardarFormulario resuelve creando el PROYECTO_PRODUCTO en el
  * mismo guardado.
  */
-function abrirFormularioCrearProductoConProyecto(proyectoId, ruta) {
-  abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId }, null, ruta);
+function abrirFormularioCrearProductoConProyecto(proyectoId, ruta, campanaRaiz) {
+  abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId }, null, ruta, campanaRaiz);
 }
 /*
  * Resto de la cadena hacia abajo: Producto->Proceso->Tarea. Aqui
  * PRODUCTO_ID/PROCESO_ID si son campos reales de PROCESO/TAREA (no
  * virtuales como PROYECTO_VINCULAR_ID), asi que el prefill es directo.
  */
-function abrirFormularioCrearProcesoConProducto(productoId, ruta) {
-  abrirFormularioCrear_('PROCESO', 'Nuevo proceso', { PRODUCTO_ID: productoId }, null, ruta);
+function abrirFormularioCrearProcesoConProducto(productoId, ruta, campanaRaiz) {
+  abrirFormularioCrear_('PROCESO', 'Nuevo proceso', { PRODUCTO_ID: productoId }, null, ruta, campanaRaiz);
 }
-function abrirFormularioCrearTareaConProceso(procesoId, ruta) {
-  abrirFormularioCrear_('TAREA', 'Nueva tarea', { PROCESO_ID: procesoId }, null, ruta);
+function abrirFormularioCrearTareaConProceso(procesoId, ruta, campanaRaiz) {
+  abrirFormularioCrear_('TAREA', 'Nueva tarea', { PROCESO_ID: procesoId }, null, ruta, campanaRaiz);
 }
 /*
  * Cadena "hermano": crear otro registro del mismo tipo para el mismo
@@ -571,12 +582,12 @@ function abrirFormularioCrearTareaConProceso(procesoId, ruta) {
  * desplegable. Generico para toda la jerarquia -- un unico punto de
  * entrada en vez de una funcion "ConMismoPadre" por entidad.
  */
-function abrirFormularioCrearHermano(entidad, campoPadre, valorPadre, ruta) {
+function abrirFormularioCrearHermano(entidad, campoPadre, valorPadre, ruta, campanaRaiz) {
   var clave = String(entidad || '').trim().toUpperCase();
   var etiquetas = { CAMPANA: 'campaña', PROYECTO: 'proyecto', PRODUCTO: 'producto', PROCESO: 'proceso', TAREA: 'tarea' };
   var prefill = {};
   prefill[campoPadre] = valorPadre;
-  abrirFormularioCrear_(clave, 'Nuevo ' + (etiquetas[clave] || clave.toLowerCase()), prefill, null, ruta);
+  abrirFormularioCrear_(clave, 'Nuevo ' + (etiquetas[clave] || clave.toLowerCase()), prefill, null, ruta, campanaRaiz);
 }
 function abrirFormularioCrearCampana() { abrirFormularioCrear_('CAMPANA', 'Nueva campaña'); }
 function abrirFormularioCrearProyecto() { abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto'); }
