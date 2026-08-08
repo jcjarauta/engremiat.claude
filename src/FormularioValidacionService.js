@@ -110,10 +110,25 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
      * - permite excluir estados concretos.
      */
     if (copia.tipo === 'fk') {
-      var registros = listarRegistros(
-        copia.entidadFk,
-        { ACTIVO: 'SÍ' }
-      );
+      /*
+       * Un campo fk puede apuntar a una entidad de un módulo que este
+       * cliente no tiene instalado (p.ej. PROYECTO.CLIENTE_ID -> CLIENTE,
+       * módulo CLIENTE) -- su hoja simplemente no existe en este Sheet.
+       * Antes eso reventaba obtenerEsquemaFormulario entero con
+       * ERROR_CONSULTA (hallazgo en vivo: "Nuevo proyecto" no se podía ni
+       * abrir en un cliente solo-CORE). Sin esa hoja no hay registros que
+       * ofrecer, así que el campo simplemente se queda sin opciones en vez
+       * de romper todo el formulario.
+       */
+      var registros;
+      try {
+        registros = listarRegistros(
+          copia.entidadFk,
+          { ACTIVO: 'SÍ' }
+        );
+      } catch (errorFk) {
+        registros = [];
+      }
 
       registros =
         Array.isArray(registros)

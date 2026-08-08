@@ -706,7 +706,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "f4df0430d67b54f388b5aa30b2a12cf9af32e7a90343bd724240535ef85aad5d",
+      "expectedSha256": "952aba30fef08a63e6e7ba20ca4dda4c70624c18ceadb7393c038498815cb963",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
