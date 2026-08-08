@@ -364,8 +364,9 @@ function construirSubmenuCatalogosYAdministracion_(ui) {
 function agregarCatalogosCore_(menu) {
   menu = menu
     .addItem('Catálogos', 'abrirCatalogosAdmin')
-    .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin')
-    .addItem('Proveedores (hoja)', 'abrirProveedoresAdmin')
+    .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin');
+  if (moduloInstalado_('COMPRAS')) menu = menu.addItem('Proveedores (hoja)', 'abrirProveedoresAdmin');
+  menu = menu
     .addItem('Protección de hojas', 'abrirProteccionHojas')
     .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
     .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
