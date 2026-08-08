@@ -212,9 +212,22 @@ function abrirDialogoExportarArbolCampanaCSV(campanaId) {
   abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
-function abrirPanelCampana() {
-  var html = HtmlService.createTemplateFromFile('PanelCampana')
-    .evaluate()
+/*
+ * preseleccionCampanaId (opcional): igual que preseleccionCampana en
+ * abrirGanttPlanReal (DesviacionService.js) -- se pasa DIRECTO en el
+ * template, no por un round-trip de guardarUltimaCampanaPanel() +
+ * obtenerUltimaCampanaPanel() desde el cliente. Ese round-trip via
+ * PropertiesService (usado antes desde abrirPanelCampanaEnCampana) daba
+ * problemas intermitentes en vivo (el panel se abria vacio en vez de con
+ * la campaña ya elegida) -- probablemente una condicion de carrera entre
+ * el guardado server-side y la lectura async posterior desde el cliente
+ * recien cargado. Pasarlo en el propio render es sincrono y no depende
+ * de ninguna llamada adicional.
+ */
+function abrirPanelCampana(preseleccionCampanaId) {
+  var template = HtmlService.createTemplateFromFile('PanelCampana');
+  template.preseleccionCampanaId = JSON.stringify(preseleccionCampanaId || null);
+  var html = template.evaluate()
     .setTitle('Gestión de campaña')
     .setWidth(440);
   SpreadsheetApp.getUi().showSidebar(html);
@@ -223,11 +236,11 @@ function abrirPanelCampana() {
 /*
  * Abre el Panel de Campaña ya preseleccionado en una campaña concreta
  * (ver conversacion -- "link para entrar en el árbol del producto",
- * desde la vista de Fases por producto del Gantt). Reutiliza el mismo
- * mecanismo de "recordar última campaña elegida" en vez de inventar un
- * parametro nuevo -- el panel ya lo lee al abrir.
+ * desde la vista de Fases por producto del Gantt). Tambien guarda la
+ * eleccion como "ultima campaña" para que la proxima vez que se abra el
+ * panel SIN preseleccion (menu, sin campanaId) recuerde esta.
  */
 function abrirPanelCampanaEnCampana(campanaId) {
   if (campanaId) guardarUltimaCampanaPanel(campanaId);
-  abrirPanelCampana();
+  abrirPanelCampana(campanaId);
 }

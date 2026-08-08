@@ -9,15 +9,24 @@
       .cabecera select { flex: 1; font-size: 14px; padding: 8px; }
       .cabecera button { flex-shrink: 0; }
       .resumen-campana { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 12px; }
-      details { margin-bottom: 6px; }
+      details { margin-bottom: 8px; }
       details > div { margin-left: 18px; border-left: 2px solid var(--color-borde); padding-left: 12px; }
-      summary { cursor: pointer; padding: 7px 4px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      summary { cursor: pointer; padding: 8px 4px; }
       summary::-webkit-details-marker { color: var(--color-texto-secundario); }
+      .fila-superior { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
       .nombre-nodo { font-weight: bold; font-size: 14px; }
       .detalle-nodo { font-weight: normal; color: var(--color-texto-secundario); font-size: 13px; }
-      .fila-hoja { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px 6px 20px; }
-      .acciones-nodo { display: flex; gap: 6px; flex-shrink: 0; }
-      .btn-mini { font-size: 13px; padding: 6px 10px; }
+      /*
+       * Botones en su propia fila, debajo del nombre (ver conversacion --
+       * "los botones del panel...son muy pequeños, crean confusion"):
+       * antes compartian la misma linea que nombre+badge+detalle, muy
+       * apretado en el ancho fijo del sidebar (no ajustable por codigo,
+       * showSidebar ignora setWidth). Separarlos en su propia fila deja
+       * sitio para un padding mas comodo sin que nada se solape.
+       */
+      .fila-hoja { padding: 6px 4px 6px 20px; }
+      .acciones-nodo { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+      .btn-mini { font-size: 13px; padding: 7px 12px; }
       .btn-anadir { font-size: 13px; padding: 8px 12px; margin: 6px 0 10px 18px; }
       .vacio-nivel { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 4px 0 10px 20px; }
       .badge { font-size: 13px; padding: 2px 10px; }
@@ -44,6 +53,8 @@
     <div id="arbol"></div>
 
     <script>
+      var PRESELECCION_CAMPANA_ID = <?!= preseleccionCampanaId ?>;
+
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return "";
         return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -133,8 +144,8 @@
 
       function renderTarea(tarea) {
         return '<div class="fila-hoja">' +
-          '<span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span>' +
-          '<span class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></span>' +
+          '<div class="fila-superior"><span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span></div>' +
+          '<div class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></div>' +
         '</div>';
       }
 
@@ -144,11 +155,11 @@
           : '<div class="vacio-nivel">Sin tareas todavía.</div>';
         return '<details>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span>' +
-            '<span class="acciones-nodo">' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span></div>' +
+            '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
-            '</span>' +
+            '</div>' +
           '</summary>' +
           '<div>' + tareas + '</div>' +
         '</details>';
@@ -160,12 +171,12 @@
           : '<div class="vacio-nivel">Sin procesos todavía.</div>';
         return '<details open>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' ' + renderBadge_(producto.estado) + renderDetalle_(producto) + '</span>' +
-            '<span class="acciones-nodo">' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' ' + renderBadge_(producto.estado) + renderDetalle_(producto) + '</span></div>' +
+            '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProducto(\'' + escapeAttr(producto.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
-            '</span>' +
+            '</div>' +
           '</summary>' +
           '<div>' + procesos + '</div>' +
         '</details>';
@@ -177,11 +188,11 @@
           : '<div class="vacio-nivel">Sin productos todavía.</div>';
         return '<details open>' +
           '<summary>' +
-            '<span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span>' +
-            '<span class="acciones-nodo">' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span></div>' +
+            '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
-            '</span>' +
+            '</div>' +
           '</summary>' +
           '<div>' + productos + '</div>' +
         '</details>';
@@ -202,8 +213,8 @@
 
         document.getElementById("arbol").innerHTML =
           '<div class="fila-hoja" style="padding-left:2px;">' +
-            '<span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' ' + renderBadge_(datos.campana.estado) + '</span>' +
-            '<button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button>' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' ' + renderBadge_(datos.campana.estado) + '</span></div>' +
+            '<div class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button></div>' +
           '</div>' +
           contenedorProyectos +
           '<button class="boton btn-anadir boton-primario" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
@@ -249,6 +260,21 @@
 
       document.getElementById("selectCampana").addEventListener("change", cargarArbol);
       document.getElementById("btnActualizar").addEventListener("click", function () { cargarOpcionesCampana(); });
+
+      /*
+       * Auto-actualizar al volver el foco a este panel (ver conversacion --
+       * "los botones del panel...", seguido de "deberia salir ya el
+       * proyecto en uso precargado"): no existe forma de que el dialogo de
+       * creacion (otra ventana/iframe) avise directamente a este sidebar
+       * cuando se guarda algo -- son contextos separados sin canal de
+       * mensajeria entre si en Apps Script. Lo mas simple y fiable es
+       * refrescar el arbol cada vez que el usuario vuelve a hacer click
+       * aqui (evento focus), que es justo el momento en que quiere ver el
+       * resultado de lo que acaba de guardar en el dialogo.
+       */
+      window.addEventListener("focus", function () {
+        if (campanaSeleccionada_()) cargarArbol();
+      });
       document.getElementById("incluirPruebas").addEventListener("change", function () { cargarOpcionesCampana(); });
       document.getElementById("btnNuevaCampana").addEventListener("click", function () {
         google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearCampana();
@@ -264,11 +290,28 @@
         google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(campanaId);
       });
 
-      // Recuerda la última campaña elegida (por usuario) al reabrir el panel.
-      google.script.run
-        .withSuccessHandler(function (ultimaCampanaId) { cargarOpcionesCampana(ultimaCampanaId); })
-        .withFailureHandler(function () { cargarOpcionesCampana(); })
-        .obtenerUltimaCampanaPanel();
+      /*
+       * PRESELECCION_CAMPANA_ID (ver conversacion -- "al dar clic en abrir
+       * panel se abre vacio"): cuando se llega aqui con una campaña
+       * concreta ya elegida (p.ej. desde el enlace "Ver panel de
+       * campaña" del dialogo de creacion), usarla DIRECTO -- no hacer el
+       * round-trip async a obtenerUltimaCampanaPanel(), que ademas de
+       * una llamada de mas era la causa real del panel abriendose vacio
+       * de forma intermitente (una condicion de carrera entre el
+       * guardado de "ultima campaña" hecho por abrirPanelCampanaEnCampana
+       * justo antes de renderizar, y esta lectura async posterior desde
+       * el cliente recien cargado). Sin preseleccion directa (abrir el
+       * panel desde el menu, sin contexto), se mantiene el
+       * comportamiento de siempre: recordar la ultima campaña elegida.
+       */
+      if (PRESELECCION_CAMPANA_ID) {
+        cargarOpcionesCampana(PRESELECCION_CAMPANA_ID);
+      } else {
+        google.script.run
+          .withSuccessHandler(function (ultimaCampanaId) { cargarOpcionesCampana(ultimaCampanaId); })
+          .withFailureHandler(function () { cargarOpcionesCampana(); })
+          .obtenerUltimaCampanaPanel();
+      }
     </script>
   </body>
 </html>

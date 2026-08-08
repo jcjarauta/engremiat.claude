@@ -6,9 +6,9 @@
 </head>
 <body>
   <h3><?= titulo ?></h3>
-  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:0;"></div>
-  <div id="verPanel" class="ayuda-campo campo-oculto" style="margin-bottom:10px;">
-    <span style="color:var(--color-primario);cursor:pointer;" onclick="abrirPanelDesdeAqui_()">📋 Ver panel de campaña</span>
+  <div id="rutaYPanel" class="ayuda-campo campo-oculto" style="margin-bottom:10px;">
+    <span id="ruta"></span>
+    <span id="verPanel" class="campo-oculto" style="color:var(--color-primario);cursor:pointer;" onclick="abrirPanelDesdeAqui_()">📋 Ver panel de campaña</span>
   </div>
   <?!= include('ModalConfirmar') ?>
   <div id="campos">Cargando formulario...</div>
@@ -39,9 +39,7 @@
      * muestra nada en ese caso.
      */
     if (RUTA && RUTA.length > 0) {
-      var elRuta = document.getElementById("ruta");
-      elRuta.textContent = RUTA.map(function (paso) { return paso.etiqueta; }).join(" → ");
-      elRuta.classList.remove("campo-oculto");
+      document.getElementById("ruta").textContent = RUTA.map(function (paso) { return paso.etiqueta; }).join(" → ") + "  ·  ";
     }
 
     /*
@@ -56,6 +54,11 @@
      */
     if (CAMPANA_RAIZ) {
       document.getElementById("verPanel").classList.remove("campo-oculto");
+    }
+    // Migas de pan + enlace comparten fila (ver conversacion -- ahorrar
+    // altura vertical); la fila solo se muestra si hay algo que enseñar.
+    if ((RUTA && RUTA.length > 0) || CAMPANA_RAIZ) {
+      document.getElementById("rutaYPanel").classList.remove("campo-oculto");
     }
     function abrirPanelDesdeAqui_() {
       google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(CAMPANA_RAIZ);
@@ -266,6 +269,28 @@
       html += "</datalist>";
       html += "<input type=\"hidden\" id=\"" + id + "\" value=\"\">";
       return html;
+    }
+
+    /*
+     * Bloquea el input de texto de un buscador FK precargado por PREFILL
+     * (ver conversacion -- campo padre de la cadena de creacion) y añade
+     * un enlace "Cambiar" que lo desbloquea bajo demanda. disabled (no
+     * readonly) porque el datalist nativo del navegador no reacciona a
+     * readonly en algunos navegadores -- con disabled el valor sigue
+     * viajando igual en el guardado porque el campo oculto real
+     * (campo_X, sin "_texto") ya quedo relleno en cargarEsquema.
+     */
+    function bloquearCampoPrefilled_(elTexto) {
+      elTexto.disabled = true;
+      var enlace = document.createElement("span");
+      enlace.textContent = "Cambiar";
+      enlace.style.cssText = "margin-left:8px;font-size:11px;color:var(--color-primario);cursor:pointer;";
+      enlace.onclick = function () {
+        elTexto.disabled = false;
+        elTexto.focus();
+        enlace.remove();
+      };
+      elTexto.insertAdjacentElement("afterend", enlace);
     }
 
     function renderCampo(campo) {
@@ -819,6 +844,7 @@
           esquemaActual.forEach(function (campo) {
             if (PREFILL[campo.campo] !== undefined && (campo.valorActual === undefined || campo.valorActual === null || campo.valorActual === "")) {
               campo.valorActual = PREFILL[campo.campo];
+              campo.prefilled = true;
             }
           });
           document.getElementById("campos").innerHTML = esquema.map(renderCampo).join("");
@@ -833,6 +859,15 @@
                   return String(op.id) === String(campo.valorActual);
                 })[0];
                 elTexto.value = coincidente ? coincidente.etiqueta : campo.valorActual;
+                /*
+                 * Bloquear el campo padre precargado desde la cadena (ver
+                 * conversacion -- "un clic accidental podria redirigir el
+                 * nuevo Proyecto a la campaña equivocada"). Se deja un
+                 * enlace "Cambiar" para el caso real en que si haga falta
+                 * corregirlo -- no es un candado permanente, solo evita el
+                 * despiste de tocar el buscador sin querer.
+                 */
+                if (campo.prefilled) bloquearCampoPrefilled_(elTexto);
               }
               return;
             }

@@ -460,7 +460,7 @@ function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta, c
   template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
   template.ruta = JSON.stringify(ruta || []);
   template.campanaRaiz = JSON.stringify(campanaRaiz || null);
-  var html = template.evaluate().setWidth(420).setHeight(520);
+  var html = template.evaluate().setWidth(460).setHeight(540);
   SpreadsheetApp.getUi().showModelessDialog(html, tituloVentana);
 }
 /*
@@ -484,7 +484,7 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
   template.ruta = JSON.stringify([]);
   template.campanaRaiz = JSON.stringify(null);
-  var html = template.evaluate().setWidth(420).setHeight(520);
+  var html = template.evaluate().setWidth(460).setHeight(540);
   SpreadsheetApp.getUi().showModelessDialog(html, tituloVentana);
 }
 /*
