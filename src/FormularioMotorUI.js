@@ -212,9 +212,16 @@ function construirSubmenuClientesYVentas_(ui) {
 function construirSubmenuCrearYGestionar_(ui) {
   var menu = ui.createMenu('➕ Crear y gestionar datos')
     .addSubMenu(construirSubmenuNuevoRegistro_(ui))
-    .addSubMenu(construirSubmenuNuevaRelacion_(ui))
-    .addSubMenu(construirSubmenuMovimientosYConfirmaciones_(ui))
-    .addSubMenu(construirSubmenuCompetencias_(ui));
+    .addSubMenu(construirSubmenuNuevaRelacion_(ui));
+  // Sin COMPRAS, "Movimientos y confirmaciones" solo tendria un item
+  // (Recalcular avance de proceso) -- se aplana como item directo en vez
+  // de un submenu de un solo elemento.
+  if (moduloInstalado_('COMPRAS')) {
+    menu = menu.addSubMenu(construirSubmenuMovimientosYConfirmaciones_(ui));
+  } else {
+    menu = menu.addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso');
+  }
+  menu = menu.addSubMenu(construirSubmenuCompetencias_(ui));
   if (moduloInstalado_('ECONOMICO')) menu = menu.addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui));
   if (moduloInstalado_('CONVOCATORIAS')) menu = menu.addSubMenu(construirSubmenuConvocatorias_(ui));
   if (moduloInstalado_('IMPACTO')) menu = menu.addSubMenu(construirSubmenuImpacto_(ui));

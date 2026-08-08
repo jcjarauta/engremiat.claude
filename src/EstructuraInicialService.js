@@ -87,6 +87,19 @@ function instalarEstructuraInicial(modulosInstalados, ssDestino) {
         resultado.rangosNombradosAsegurados = asegurarRangosNombradosCatalogo_(ss, hoja);
       }
     });
+
+    // Limpia la hoja "Hoja 1"/"Sheet1" que SpreadsheetApp.create() deja por
+    // defecto en todo Spreadsheet nuevo -- solo si sigue vacia y solo en una
+    // instalacion real (no en una re-ejecucion idempotente sobre un Sheet ya
+    // instalado), para no borrar nunca una hoja que el cliente haya vuelto a
+    // usar con ese mismo nombre.
+    if (resultado.hojasCreadas.length > 0) {
+      var hojaPorDefecto = ss.getSheetByName('Hoja 1') || ss.getSheetByName('Sheet1');
+      if (hojaPorDefecto && ss.getSheets().length > 1 &&
+          hojaPorDefecto.getLastRow() === 0 && hojaPorDefecto.getLastColumn() === 0) {
+        ss.deleteSheet(hojaPorDefecto);
+      }
+    }
   } finally {
     bloqueo.releaseLock();
   }
