@@ -174,7 +174,7 @@ function seleccionarYAbrirFichaProducto(entidad, idRegistro) {
 }
 
 function abrirFichaProductoBuscar() {
-  abrirSelectorConAccion_('PRODUCTO', 'Ver ficha de producto', 'seleccionarYAbrirFichaProducto', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('PRODUCTO', 'Ver ficha de producto', 'seleccionarYAbrirFichaProducto', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 /*

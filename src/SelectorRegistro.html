@@ -45,16 +45,52 @@
         .replace(/>/g, "&gt;");
     }
 
+    /*
+     * google.script.run solo expone como propiedad las funciones que el
+     * generador de envoltorios (generate-shell-wrappers.mjs) detecta de
+     * forma estatica en el codigo fuente -- y ese generador busca llamadas
+     * LITERALES tipo "google.script.run....nombreFuncion(...)", no
+     * despachos dinamicos como el [OPCIONES_FN] que este fichero usaba
+     * antes. Con despacho dinamico, el generador nunca veia el nombre real
+     * y el cliente se quedaba sin envoltorio -- "no es una funcion" en
+     * cuanto se intentaba usar (hallazgo en vivo sobre TEST-Combo-CORE:
+     * varias funciones de obtenerOpciones/seleccionarY* faltaban del
+     * Codigo.js de clientes ya desplegados). Este switch fuerza que cada
+     * nombre real aparezca como llamada literal en el fuente, para que el
+     * generador la detecte y genere el envoltorio.
+     */
+    function invocarOpciones_(nombreFuncion, entidad, incluirPruebas, onExito, onError) {
+      // Cada case repite la cadena google.script.run....(...) COMPLETA (no
+      // una variable reutilizada): el generador busca la cadena literal
+      // entera en el fuente y no sigue una llamada hecha sobre una
+      // variable intermedia, aunque esa variable venga de un literal.
+      switch (nombreFuncion) {
+        case "obtenerOpcionesEntidadParaSelector":
+          google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).obtenerOpcionesEntidadParaSelector(entidad, incluirPruebas);
+          return;
+        case "obtenerOpcionesRecepcionPendiente":
+          google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).obtenerOpcionesRecepcionPendiente(entidad, incluirPruebas);
+          return;
+        case "obtenerOpcionesCategoriaParaSelector":
+          google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).obtenerOpcionesCategoriaParaSelector(entidad, incluirPruebas);
+          return;
+      }
+      onError({ message: "Función de opciones desconocida: " + nombreFuncion });
+    }
+
     function cargarOpciones() {
-      google.script.run
-        .withSuccessHandler(function (lista) {
+      invocarOpciones_(
+        OPCIONES_FN,
+        ENTIDAD,
+        document.getElementById("incluirPruebas").checked,
+        function (lista) {
           opciones = lista || [];
           filtrarYRenderizar_();
-        })
-        .withFailureHandler(function (error) {
+        },
+        function (error) {
           document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
-        })
-        [OPCIONES_FN](ENTIDAD, document.getElementById("incluirPruebas").checked);
+        }
+      );
     }
 
     document.getElementById("incluirPruebas").addEventListener("change", cargarOpciones);
@@ -105,27 +141,67 @@
       seleccionar_(fila.dataset.id, fila.dataset.etiqueta);
     });
 
+    /*
+     * Mismo motivo que invocarOpciones_ mas arriba: despacho literal, cada
+     * case con la cadena google.script.run....(...) completa en una sola
+     * sentencia. Dos variantes (con/sin withSuccessHandler) porque
+     * withSuccessHandler(null) no es seguro de pasar tal cual a la API real.
+     */
+    function invocarAccionSinExito_(nombreFuncion, entidad, id, onError) {
+      switch (nombreFuncion) {
+        case "seleccionarYAbrirEdicion": google.script.run.withFailureHandler(onError).seleccionarYAbrirEdicion(entidad, id); return;
+        case "seleccionarYAbrirFicha": google.script.run.withFailureHandler(onError).seleccionarYAbrirFicha(entidad, id); return;
+        case "seleccionarYAbrirFichaConvocatoria": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaConvocatoria(entidad, id); return;
+        case "seleccionarYAbrirFichaIncidencia": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaIncidencia(entidad, id); return;
+        case "seleccionarYAbrirFichaMaterial": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaMaterial(entidad, id); return;
+        case "seleccionarYAbrirFichaProducto": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaProducto(entidad, id); return;
+        case "seleccionarYAbrirFichaProveedor": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaProveedor(entidad, id); return;
+        case "seleccionarYAbrirFichaRecurso": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaRecurso(entidad, id); return;
+        case "seleccionarYRecalcularAvance": google.script.run.withFailureHandler(onError).seleccionarYRecalcularAvance(entidad, id); return;
+        case "seleccionarYConfirmarRecepcion": google.script.run.withFailureHandler(onError).seleccionarYConfirmarRecepcion(entidad, id); return;
+        case "seleccionarYAbrirCatalogo": google.script.run.withFailureHandler(onError).seleccionarYAbrirCatalogo(entidad, id); return;
+      }
+      onError({ message: "Función de acción desconocida: " + nombreFuncion });
+    }
+
+    function invocarAccionConExito_(nombreFuncion, entidad, id, onExito, onError) {
+      switch (nombreFuncion) {
+        case "seleccionarYAbrirEdicion": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirEdicion(entidad, id); return;
+        case "seleccionarYAbrirFicha": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFicha(entidad, id); return;
+        case "seleccionarYAbrirFichaConvocatoria": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaConvocatoria(entidad, id); return;
+        case "seleccionarYAbrirFichaIncidencia": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaIncidencia(entidad, id); return;
+        case "seleccionarYAbrirFichaMaterial": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaMaterial(entidad, id); return;
+        case "seleccionarYAbrirFichaProducto": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaProducto(entidad, id); return;
+        case "seleccionarYAbrirFichaProveedor": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaProveedor(entidad, id); return;
+        case "seleccionarYAbrirFichaRecurso": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaRecurso(entidad, id); return;
+        case "seleccionarYRecalcularAvance": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYRecalcularAvance(entidad, id); return;
+        case "seleccionarYConfirmarRecepcion": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYConfirmarRecepcion(entidad, id); return;
+        case "seleccionarYAbrirCatalogo": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirCatalogo(entidad, id); return;
+      }
+      onError({ message: "Función de acción desconocida: " + nombreFuncion });
+    }
+
     function aceptar() {
       var id = elIdSeleccionado.value;
       if (!id) return;
       elBtnAceptar.disabled = true;
-      var llamada = google.script.run.withFailureHandler(function (error) {
+      var onError = function (error) {
         document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
         elBtnAceptar.disabled = false;
-      });
+      };
       if (ABRE_OTRO_DIALOGO) {
         // accionFn termina abriendo otro modal (p.ej. seleccionarYAbrirFicha*,
         // seleccionarYAbrirEdicion). Lanzar la llamada ANTES de cerrar: si
         // se cierra primero, el canal de google.script.run se corta y la
         // peticion nunca llega al servidor (confirmado con un marcador de
         // diagnostico). Cerrar justo despues, sin esperar respuesta.
-        llamada[ACCION_FN](ENTIDAD, id);
+        invocarAccionSinExito_(ACCION_FN, ENTIDAD, id, onError);
         google.script.host.close();
       } else {
         // accionFn no abre nada mas y puede fallar con un error de negocio
         // (p.ej. confirmarRecepcion_) que hay que poder mostrar aqui mismo,
         // asi que este caso sigue cerrando solo tras el exito.
-        llamada.withSuccessHandler(function () { google.script.host.close(); })[ACCION_FN](ENTIDAD, id);
+        invocarAccionConExito_(ACCION_FN, ENTIDAD, id, function () { google.script.host.close(); }, onError);
       }
     }
 

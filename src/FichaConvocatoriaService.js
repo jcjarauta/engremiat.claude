@@ -98,7 +98,7 @@ function seleccionarYAbrirFichaConvocatoria(entidad, idRegistro) {
 }
 
 function abrirFichaConvocatoriaBuscar() {
-  abrirSelectorConAccion_('CONVOCATORIA', 'Ver ficha de convocatoria', 'seleccionarYAbrirFichaConvocatoria', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('CONVOCATORIA', 'Ver ficha de convocatoria', 'seleccionarYAbrirFichaConvocatoria', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 function abrirFormularioCrearDocumentoParaConvocatoria(convocatoriaId) {

@@ -91,7 +91,7 @@ function seleccionarYAbrirFichaMaterial(entidad, idRegistro) {
 }
 
 function abrirFichaMaterialBuscar() {
-  abrirSelectorConAccion_('MATERIAL', 'Ver ficha de material', 'seleccionarYAbrirFichaMaterial', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('MATERIAL', 'Ver ficha de material', 'seleccionarYAbrirFichaMaterial', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 function abrirFormularioCrearMovimientoMaterialParaMaterial(materialId) {

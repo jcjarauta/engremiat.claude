@@ -209,7 +209,7 @@ function seleccionarYAbrirFicha(entidad, idRegistro) {
 }
 
 function abrirFichaPersonaEquipoBuscar() {
-  abrirSelectorConAccion_('PERSONA_EQUIPO', 'Ver ficha de persona/equipo', 'seleccionarYAbrirFicha', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('PERSONA_EQUIPO', 'Ver ficha de persona/equipo', 'seleccionarYAbrirFicha', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 /*

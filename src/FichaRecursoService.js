@@ -114,7 +114,7 @@ function seleccionarYAbrirFichaRecurso(entidad, idRegistro) {
 }
 
 function abrirFichaRecursoBuscar() {
-  abrirSelectorConAccion_('RECURSO', 'Ver ficha de espacio/recurso', 'seleccionarYAbrirFichaRecurso', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('RECURSO', 'Ver ficha de espacio/recurso', 'seleccionarYAbrirFichaRecurso', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 function abrirFormularioCrearHorarioParaRecurso(recursoId) {

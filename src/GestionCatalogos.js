@@ -153,6 +153,7 @@ function abrirCatalogosAdmin() {
     'CATALOGO',
     'Catálogos',
     'seleccionarYAbrirCatalogo',
-    'obtenerOpcionesCategoriaParaSelector'
+    'obtenerOpcionesCategoriaParaSelector',
+    true
   );
 }

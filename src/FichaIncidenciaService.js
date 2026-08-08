@@ -76,7 +76,7 @@ function seleccionarYAbrirFichaIncidencia(entidad, idRegistro) {
 }
 
 function abrirFichaIncidenciaBuscar() {
-  abrirSelectorConAccion_('INCIDENCIA', 'Ver ficha de incidencia', 'seleccionarYAbrirFichaIncidencia', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('INCIDENCIA', 'Ver ficha de incidencia', 'seleccionarYAbrirFichaIncidencia', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 function abrirFormularioCrearDocumentoParaIncidencia(incidenciaId) {

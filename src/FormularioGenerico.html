@@ -23,6 +23,42 @@
     var RETORNO = <?!= retorno ?>;
     var esquemaActual = [];
 
+    /*
+     * google.script.run solo expone las funciones que el generador de
+     * envoltorios (generate-shell-wrappers.mjs) detecta de forma estatica
+     * en el codigo fuente -- busca llamadas LITERALES tipo
+     * "google.script.run....nombreFuncion(...)", no despachos dinamicos
+     * como [cadenaHijo.funcion]. Con despacho dinamico el generador nunca
+     * veia el nombre real y el cliente se quedaba sin envoltorio para el
+     * (hallazgo en vivo sobre TEST-Combo-CORE: "Sí, crear proyecto" no
+     * abria nada porque abrirFormularioCrearProyectoConCampana no existia
+     * en el Codigo.js del cliente). Este switch fuerza que cada nombre
+     * real aparezca como llamada literal en el fuente.
+     */
+    function invocarCadenaHijo_(nombreFuncion, id) {
+      // Cada case repite la cadena google.script.run....(id) COMPLETA (no
+      // una variable reutilizada) porque el generador de envoltorios busca
+      // la cadena literal entera "google.script.run....nombre(...)" en el
+      // fuente -- si el nombre final viene de una variable intermedia
+      // (aunque la variable se construya a partir de un literal), no lo
+      // detecta.
+      switch (nombreFuncion) {
+        case "abrirFormularioCrearProyectoConCampana":
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(id);
+          return;
+        case "abrirFormularioCrearProductoConProyecto":
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(id);
+          return;
+        case "abrirFormularioCrearProcesoConProducto":
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(id);
+          return;
+        case "abrirFormularioCrearTareaConProceso":
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(id);
+          return;
+      }
+      mostrarError({ message: "Función de cadena desconocida: " + nombreFuncion });
+    }
+
     var CADENA_HIJO_MVP = {
       CAMPANA: {
         pregunta: "Campaña creada. ¿Quieres crear ya el primer proyecto?",
@@ -823,9 +859,7 @@
               function () {
                 // Mismo motivo que en ofrecerHermanoOFinal_: lanzar la
                 // peticion antes de cerrar, no despues.
-                google.script.run
-                  .withFailureHandler(mostrarError)
-                  [cadenaHijo.funcion](resultado.id);
+                invocarCadenaHijo_(cadenaHijo.funcion, resultado.id);
                 google.script.host.close();
               },
               function () { ofrecerHermanoOFinal_(); },

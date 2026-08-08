@@ -78,7 +78,7 @@ function seleccionarYAbrirFichaProveedor(entidad, idRegistro) {
 }
 
 function abrirFichaProveedorBuscar() {
-  abrirSelectorConAccion_('PROVEEDOR', 'Ver ficha de proveedor', 'seleccionarYAbrirFichaProveedor', 'obtenerOpcionesEntidadParaSelector');
+  abrirSelectorConAccion_('PROVEEDOR', 'Ver ficha de proveedor', 'seleccionarYAbrirFichaProveedor', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
 function abrirFormularioCrearProveedorMaterialParaProveedor(proveedorId) {
