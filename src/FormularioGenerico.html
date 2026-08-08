@@ -6,6 +6,7 @@
 </head>
 <body>
   <h3><?= titulo ?></h3>
+  <div id="ruta" class="ayuda-campo campo-oculto" style="margin-bottom:10px;"></div>
   <?!= include('ModalConfirmar') ?>
   <div id="campos">Cargando formulario...</div>
   <div id="mensaje"></div>
@@ -21,7 +22,23 @@
     var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
     var PREFILL = <?!= prefill ?>;
     var RETORNO = <?!= retorno ?>;
+    var RUTA = <?!= ruta ?>;
     var esquemaActual = [];
+
+    /*
+     * Migas de pan del recorrido guiado (ver conversacion -- "falta
+     * tenerlo mas claro para el operador"): RUTA es la cadena de
+     * antecesores ya creados en esta sesion de creacion encadenada
+     * (Campaña->Proyecto->Producto->...), construida y pasada de un
+     * dialogo al siguiente por invocarCadenaHijo_/abrirFormularioCrearHermano.
+     * Vacia fuera de la cadena (crear suelto, editar, etc.) -- no se
+     * muestra nada en ese caso.
+     */
+    if (RUTA && RUTA.length > 0) {
+      var elRuta = document.getElementById("ruta");
+      elRuta.textContent = RUTA.map(function (paso) { return paso.etiqueta; }).join(" → ");
+      elRuta.classList.remove("campo-oculto");
+    }
 
     /*
      * google.script.run solo expone las funciones que el generador de
@@ -35,25 +52,25 @@
      * en el Codigo.js del cliente). Este switch fuerza que cada nombre
      * real aparezca como llamada literal en el fuente.
      */
-    function invocarCadenaHijo_(nombreFuncion, id) {
-      // Cada case repite la cadena google.script.run....(id) COMPLETA (no
-      // una variable reutilizada) porque el generador de envoltorios busca
-      // la cadena literal entera "google.script.run....nombre(...)" en el
-      // fuente -- si el nombre final viene de una variable intermedia
-      // (aunque la variable se construya a partir de un literal), no lo
-      // detecta.
+    function invocarCadenaHijo_(nombreFuncion, id, ruta) {
+      // Cada case repite la cadena google.script.run....(id, ruta) COMPLETA
+      // (no una variable reutilizada) porque el generador de envoltorios
+      // busca la cadena literal entera "google.script.run....nombre(...)"
+      // en el fuente -- si el nombre final viene de una variable
+      // intermedia (aunque la variable se construya a partir de un
+      // literal), no lo detecta.
       switch (nombreFuncion) {
         case "abrirFormularioCrearProyectoConCampana":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(id);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(id, ruta);
           return;
         case "abrirFormularioCrearProductoConProyecto":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(id);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoConProyecto(id, ruta);
           return;
         case "abrirFormularioCrearProcesoConProducto":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(id);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProcesoConProducto(id, ruta);
           return;
         case "abrirFormularioCrearTareaConProceso":
-          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(id);
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaConProceso(id, ruta);
           return;
       }
       mostrarError({ message: "Función de cadena desconocida: " + nombreFuncion });
@@ -108,7 +125,8 @@
      * de origen en vez de simplemente cerrar el dialogo.
      */
     if (RETORNO && RETORNO.entidad && RETORNO.id) {
-      document.getElementById("btnCancelar").textContent = "Cancelar y volver";
+      document.getElementById("btnCancelar").textContent =
+        RETORNO.etiquetaDestino ? "Cancelar y volver a " + RETORNO.etiquetaDestino : "Cancelar y volver";
     }
 
     /*
@@ -630,6 +648,48 @@
     }
 
     /*
+     * Sugerencia de VERSION para PRODUCTO (ver conversacion -- "esto
+     * deberia ser dinamico para evitar errores humanos": la guia de
+     * datos de ejemplo sugeria escribir "v1" a mano siempre, lo que en
+     * la practica dejaba revisiones reales de un mismo producto todas
+     * marcadas "v1"). Mismo patron que activarSugerenciasCodigo_: solo
+     * precarga si el campo esta vacio, nunca pisa lo ya escrito.
+     */
+    function activarSugerenciasVersion_() {
+      esquemaActual.forEach(function (campo) {
+        if (!campo.sugerenciaVersion) return;
+        var elVersion = document.getElementById("campo_" + campo.campo);
+        var camposContexto = campo.sugerenciaVersion.camposContexto;
+        if (!elVersion) return;
+
+        var actualizar = function () {
+          if (elVersion.value) return;
+          var contexto = {};
+          var hayContexto = false;
+          camposContexto.forEach(function (nombreCampo) {
+            var el = document.getElementById("campo_" + nombreCampo);
+            contexto[nombreCampo] = el ? el.value : "";
+            if (contexto[nombreCampo]) hayContexto = true;
+          });
+          if (!hayContexto) return;
+
+          google.script.run
+            .withSuccessHandler(function (sugerencia) {
+              if (!sugerencia || !sugerencia.versionSugerida) return;
+              if (!elVersion.value) elVersion.value = sugerencia.versionSugerida;
+            })
+            .withFailureHandler(function () { /* sugerencia opcional: fallo silencioso */ })
+            .obtenerSugerenciaVersion(ENTIDAD, contexto);
+        };
+
+        camposContexto.forEach(function (nombreCampo) {
+          var el = document.getElementById("campo_" + nombreCampo);
+          if (el) el.addEventListener("change", actualizar);
+        });
+      });
+    }
+
+    /*
      * Hallazgo #5 (repaso de UX): los catalogos siempre empezaban en
      * "-- seleccionar --" aunque hubiera un valor inicial obvio (ej.
      * Estado=Borrador). Se preselecciona (solo al crear, nunca al
@@ -765,6 +825,7 @@
           activarDependenciasFk_();
           activarSugerenciasSecuencia_();
           activarSugerenciasCodigo_();
+          activarSugerenciasVersion_();
           activarDerivacionDeRelacion_();
           activarAltaRapidaCatalogo_();
           activarValidacionEnVivo_();
@@ -840,9 +901,12 @@
                   // Cerrar justo despues, sin esperar respuesta, basta
                   // para que este dialogo ya no ocupe el hueco cuando el
                   // servidor intente abrir el siguiente.
+                  // Un "hermano" se crea bajo el mismo padre que este
+                  // registro -- la RUTA que trajo este dialogo (sin
+                  // añadirse a si mismo) sigue siendo la correcta.
                   google.script.run
                     .withFailureHandler(mostrarError)
-                    .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano);
+                    .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano, RUTA);
                   google.script.host.close();
                 },
                 function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
@@ -859,7 +923,11 @@
               function () {
                 // Mismo motivo que en ofrecerHermanoOFinal_: lanzar la
                 // peticion antes de cerrar, no despues.
-                invocarCadenaHijo_(cadenaHijo.funcion, resultado.id);
+                // El hijo hereda RUTA + este registro recien creado, para
+                // que su propia miga de pan muestre todo el camino
+                // recorrido hasta aqui.
+                var rutaHijo = RUTA.concat([{ etiqueta: datos.NOMBRE || resultado.id }]);
+                invocarCadenaHijo_(cadenaHijo.funcion, resultado.id, rutaHijo);
                 google.script.host.close();
               },
               function () { ofrecerHermanoOFinal_(); },

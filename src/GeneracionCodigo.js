@@ -199,3 +199,43 @@ function obtenerSugerenciaCodigo(entidadClave, contexto) {
 
   return { codigoSugerido: segmentos.join('-') };
 }
+
+/**
+ * Sugerencia de VERSION para PRODUCTO (ver conversacion -- recorrido
+ * funcional guiado: la guía de datos de ejemplo sugería escribir "v1" a
+ * mano para cualquier producto nuevo, y en la práctica eso llevaba a que
+ * revisiones reales de un mismo producto (mismo NOMBRE -- ej. repetir una
+ * campaña de "Bolsa de tela serigrafiada" al año siguiente) quedaran
+ * todas marcadas "v1" sin distinción real entre ellas. Se busca el mayor
+ * número de versión ya usado entre los PRODUCTO existentes con el MISMO
+ * NOMBRE (comparación insensible a mayúsculas/espacios) y se sugiere el
+ * siguiente; sin coincidencias previas, sugiere "v1". Igual que el resto
+ * de sugerencias de esta capa: nunca se escribe sola, solo precarga si el
+ * campo está vacío (ver activarSugerenciasVersion_ en FormularioGenerico.html).
+ */
+function obtenerSugerenciaVersion(entidadClave, contexto) {
+  var clave = String(entidadClave || '').trim().toUpperCase();
+  contexto = contexto || {};
+
+  if (clave !== 'PRODUCTO') {
+    throw new Error('No hay sugerencia de versión configurada para ' + entidadClave);
+  }
+
+  var nombre = String(contexto.NOMBRE || '').trim();
+  if (!nombre) return null;
+
+  var nombreNormalizado = nombre.toLowerCase();
+  var maximo = 0;
+
+  listarRegistros('PRODUCTO').forEach(function (registro) {
+    var nombreExistente = String(registro.NOMBRE || '').trim().toLowerCase();
+    if (nombreExistente !== nombreNormalizado) return;
+    var coincidencia = String(registro.VERSION || '').match(/(\d+)/);
+    if (coincidencia) {
+      var numero = Number(coincidencia[1]);
+      if (numero > maximo) maximo = numero;
+    }
+  });
+
+  return { versionSugerida: 'v' + (maximo + 1) };
+}

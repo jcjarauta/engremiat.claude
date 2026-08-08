@@ -417,17 +417,39 @@ function agregarCatalogosOportunidad_(menu) {
  * (abrirFormularioCrearProyectoConCampana), para no obligar a buscar de
  * nuevo la campaña que se acaba de crear en el buscador de CAMPANA_ID.
  */
-function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno) {
+/*
+ * Resuelve la etiqueta legible del destino de un RETORNO (ver
+ * conversacion -- "ya hay un recorrido reversible, falta tenerlo mas
+ * claro"): el mecanismo de volver ya existia (cerrarOVolver_/abrirRetorno)
+ * pero el boton solo decia "Cancelar y volver", sin decir a donde.
+ * Se resuelve aqui, en el unico punto donde se construye el `retorno`
+ * que ve el cliente, para que sea igual venga de donde venga (dependiente
+ * bloqueante, ficha con retorno...). Si no se puede resolver (registro
+ * borrado, error de lectura) se deja etiquetaDestino=null y el cliente
+ * cae al texto generico de siempre.
+ */
+function resolverEtiquetaRetorno_(retorno) {
+  if (!retorno || !retorno.entidad || !retorno.id) return retorno || null;
+  var copia = Object.assign({}, retorno);
   try {
-    var hojaDiag_ = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('90_CONFIGURACION');
-    if (hojaDiag_) hojaDiag_.getRange('Z1').setValue('DIAG abrirFormularioCrear_ llamada: ' + entidad + ' @ ' + new Date().toISOString());
-  } catch (eDiag_) { /* diagnostico temporal, no debe romper el flujo real */ }
+    var clave = String(retorno.entidad).trim().toUpperCase();
+    var registro = obtenerRegistroPorId(clave, retorno.id);
+    var etiquetaEntidad = ETIQUETA_ENTIDAD_MVP[clave] || clave.toLowerCase();
+    var nombre = registro ? (registro.NOMBRE || registro.TITULO || retorno.id) : retorno.id;
+    copia.etiquetaDestino = etiquetaEntidad + ' "' + nombre + '"';
+  } catch (e) {
+    copia.etiquetaDestino = null;
+  }
+  return copia;
+}
+function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno, ruta) {
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = entidad;
   template.idRegistro = '';
   template.titulo = tituloVentana;
   template.prefill = JSON.stringify(prefill || {});
-  template.retorno = JSON.stringify(retorno || null);
+  template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
+  template.ruta = JSON.stringify(ruta || []);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
@@ -449,7 +471,8 @@ function abrirFormularioEditarPorId(entidad, idRegistro, retorno) {
   template.idRegistro = idRegistro;
   template.titulo = tituloVentana;
   template.prefill = JSON.stringify({});
-  template.retorno = JSON.stringify(retorno || null);
+  template.retorno = JSON.stringify(resolverEtiquetaRetorno_(retorno));
+  template.ruta = JSON.stringify([]);
   var html = template.evaluate().setWidth(420).setHeight(520);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
@@ -517,8 +540,8 @@ function abrirEdicionConRetornoAFicha(entidad, idRegistro, fichaEntidad, fichaId
  * proyecto" con CAMPANA_ID precargado (mismo buscador de FK de
  * siempre, solo que ya viene relleno).
  */
-function abrirFormularioCrearProyectoConCampana(campanaId) {
-  abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto', { CAMPANA_ID: campanaId });
+function abrirFormularioCrearProyectoConCampana(campanaId, ruta) {
+  abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto', { CAMPANA_ID: campanaId }, null, ruta);
 }
 /*
  * Mismo flujo encadenado, un nivel mas abajo: Proyecto->Producto. El
@@ -527,19 +550,19 @@ function abrirFormularioCrearProyectoConCampana(campanaId) {
  * que guardarFormulario resuelve creando el PROYECTO_PRODUCTO en el
  * mismo guardado.
  */
-function abrirFormularioCrearProductoConProyecto(proyectoId) {
-  abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId });
+function abrirFormularioCrearProductoConProyecto(proyectoId, ruta) {
+  abrirFormularioCrear_('PRODUCTO', 'Nuevo producto', { PROYECTO_VINCULAR_ID: proyectoId }, null, ruta);
 }
 /*
  * Resto de la cadena hacia abajo: Producto->Proceso->Tarea. Aqui
  * PRODUCTO_ID/PROCESO_ID si son campos reales de PROCESO/TAREA (no
  * virtuales como PROYECTO_VINCULAR_ID), asi que el prefill es directo.
  */
-function abrirFormularioCrearProcesoConProducto(productoId) {
-  abrirFormularioCrear_('PROCESO', 'Nuevo proceso', { PRODUCTO_ID: productoId });
+function abrirFormularioCrearProcesoConProducto(productoId, ruta) {
+  abrirFormularioCrear_('PROCESO', 'Nuevo proceso', { PRODUCTO_ID: productoId }, null, ruta);
 }
-function abrirFormularioCrearTareaConProceso(procesoId) {
-  abrirFormularioCrear_('TAREA', 'Nueva tarea', { PROCESO_ID: procesoId });
+function abrirFormularioCrearTareaConProceso(procesoId, ruta) {
+  abrirFormularioCrear_('TAREA', 'Nueva tarea', { PROCESO_ID: procesoId }, null, ruta);
 }
 /*
  * Cadena "hermano": crear otro registro del mismo tipo para el mismo
@@ -548,12 +571,12 @@ function abrirFormularioCrearTareaConProceso(procesoId) {
  * desplegable. Generico para toda la jerarquia -- un unico punto de
  * entrada en vez de una funcion "ConMismoPadre" por entidad.
  */
-function abrirFormularioCrearHermano(entidad, campoPadre, valorPadre) {
+function abrirFormularioCrearHermano(entidad, campoPadre, valorPadre, ruta) {
   var clave = String(entidad || '').trim().toUpperCase();
   var etiquetas = { CAMPANA: 'campaña', PROYECTO: 'proyecto', PRODUCTO: 'producto', PROCESO: 'proceso', TAREA: 'tarea' };
   var prefill = {};
   prefill[campoPadre] = valorPadre;
-  abrirFormularioCrear_(clave, 'Nuevo ' + (etiquetas[clave] || clave.toLowerCase()), prefill);
+  abrirFormularioCrear_(clave, 'Nuevo ' + (etiquetas[clave] || clave.toLowerCase()), prefill, null, ruta);
 }
 function abrirFormularioCrearCampana() { abrirFormularioCrear_('CAMPANA', 'Nueva campaña'); }
 function abrirFormularioCrearProyecto() { abrirFormularioCrear_('PROYECTO', 'Nuevo proyecto'); }

@@ -336,7 +336,10 @@ PROYECTO: [
       campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true
     },
     { campo: 'DESCRIPCION', etiqueta: 'Descripción', tipo: 'texto' },
-    { campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto' },
+    {
+      campo: 'VERSION', etiqueta: 'Versión', tipo: 'texto',
+      sugerenciaVersion: { camposContexto: ['NOMBRE'] }
+    },
     { campo: 'ORIGEN', etiqueta: 'Origen', tipo: 'catalogo', catalogo: 'CFG_ORIGEN_PRODUCTO', requerido: true },
     { campo: 'UNIDAD', etiqueta: 'Unidad', tipo: 'catalogo', catalogo: 'CFG_UNIDAD', requerido: true },
     { campo: 'CANTIDAD_PREVISTA', etiqueta: 'Cantidad prevista', tipo: 'numero', requerido: true, min: 0 },
