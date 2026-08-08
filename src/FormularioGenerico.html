@@ -84,10 +84,14 @@
      */
     function cerrarOVolver_() {
       if (RETORNO && RETORNO.entidad && RETORNO.id) {
+        // Lanzar la llamada ANTES de cerrar -- ver nota junto a
+        // ofrecerHermanoOFinal_ mas abajo: cerrar primero corta el canal
+        // de google.script.run antes de que llegue a salir la peticion,
+        // asi que el servidor nunca la recibe.
         google.script.run
-          .withSuccessHandler(function () { google.script.host.close(); })
           .withFailureHandler(mostrarError)
           .abrirRetorno(RETORNO);
+        google.script.host.close();
         return;
       }
       google.script.host.close();
@@ -95,9 +99,9 @@
 
     function abrirDependiente_(entidad, id) {
       google.script.run
-        .withSuccessHandler(function () { google.script.host.close(); })
         .withFailureHandler(mostrarError)
         .abrirDependienteConRetorno(entidad, id, ENTIDAD, ID_REGISTRO);
+      google.script.host.close();
     }
 
     /*
@@ -793,10 +797,17 @@
               confirmarAccion_(
                 cadenaHermano.pregunta,
                 function () {
+                  // Lanzar la peticion ANTES de cerrar: si se cierra
+                  // primero, el canal de google.script.run se corta y la
+                  // llamada nunca llega al servidor (confirmado con un
+                  // marcador de diagnostico -- el servidor no se enteraba).
+                  // Cerrar justo despues, sin esperar respuesta, basta
+                  // para que este dialogo ya no ocupe el hueco cuando el
+                  // servidor intente abrir el siguiente.
                   google.script.run
-                    .withSuccessHandler(function () { google.script.host.close(); })
                     .withFailureHandler(mostrarError)
                     .abrirFormularioCrearHermano(ENTIDAD, cadenaHermano.campoPadre, valorPadreHermano);
+                  google.script.host.close();
                 },
                 function () { setTimeout(function () { cerrarOVolver_(); }, 300); },
                 "Sí, añadir otro"
@@ -810,10 +821,12 @@
             confirmarAccion_(
               cadenaHijo.pregunta,
               function () {
+                // Mismo motivo que en ofrecerHermanoOFinal_: lanzar la
+                // peticion antes de cerrar, no despues.
                 google.script.run
-                  .withSuccessHandler(function () { google.script.host.close(); })
                   .withFailureHandler(mostrarError)
                   [cadenaHijo.funcion](resultado.id);
+                google.script.host.close();
               },
               function () { ofrecerHermanoOFinal_(); },
               cadenaHijo.textoBoton

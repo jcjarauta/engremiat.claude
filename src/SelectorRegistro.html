@@ -31,6 +31,7 @@
     var ENTIDAD = <?!= JSON.stringify(entidad) ?>;
     var ACCION_FN = <?!= JSON.stringify(accionFn) ?>;
     var OPCIONES_FN = <?!= JSON.stringify(opcionesFn) ?>;
+    var ABRE_OTRO_DIALOGO = <?!= JSON.stringify(!!abreOtroDialogo) ?>;
     var opciones = [];
     var elBuscador = document.getElementById("buscador");
     var elResultados = document.getElementById("resultados");
@@ -108,13 +109,24 @@
       var id = elIdSeleccionado.value;
       if (!id) return;
       elBtnAceptar.disabled = true;
-      google.script.run
-        .withSuccessHandler(function () { google.script.host.close(); })
-        .withFailureHandler(function (error) {
-          document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
-          elBtnAceptar.disabled = false;
-        })
-        [ACCION_FN](ENTIDAD, id);
+      var llamada = google.script.run.withFailureHandler(function (error) {
+        document.getElementById("mensaje").textContent = (error && error.message) ? error.message : String(error);
+        elBtnAceptar.disabled = false;
+      });
+      if (ABRE_OTRO_DIALOGO) {
+        // accionFn termina abriendo otro modal (p.ej. seleccionarYAbrirFicha*,
+        // seleccionarYAbrirEdicion). Lanzar la llamada ANTES de cerrar: si
+        // se cierra primero, el canal de google.script.run se corta y la
+        // peticion nunca llega al servidor (confirmado con un marcador de
+        // diagnostico). Cerrar justo despues, sin esperar respuesta.
+        llamada[ACCION_FN](ENTIDAD, id);
+        google.script.host.close();
+      } else {
+        // accionFn no abre nada mas y puede fallar con un error de negocio
+        // (p.ej. confirmarRecepcion_) que hay que poder mostrar aqui mismo,
+        // asi que este caso sigue cerrando solo tras el exito.
+        llamada.withSuccessHandler(function () { google.script.host.close(); })[ACCION_FN](ENTIDAD, id);
+      }
     }
 
     cargarOpciones();

@@ -418,6 +418,10 @@ function agregarCatalogosOportunidad_(menu) {
  * nuevo la campaña que se acaba de crear en el buscador de CAMPANA_ID.
  */
 function abrirFormularioCrear_(entidad, tituloVentana, prefill, retorno) {
+  try {
+    var hojaDiag_ = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('90_CONFIGURACION');
+    if (hojaDiag_) hojaDiag_.getRange('Z1').setValue('DIAG abrirFormularioCrear_ llamada: ' + entidad + ' @ ' + new Date().toISOString());
+  } catch (eDiag_) { /* diagnostico temporal, no debe romper el flujo real */ }
   var template = HtmlService.createTemplateFromFile('FormularioGenerico');
   template.entidad = entidad;
   template.idRegistro = '';
@@ -595,7 +599,9 @@ function abrirFormularioCrearEtiquetaImpacto() { abrirFormularioCrear_('ETIQUETA
  * que FormularioGenerico.html.
  */
 function abrirEditarRegistroPorEntidad_(entidad, etiqueta) {
-  abrirSelectorConAccion_(entidad, 'Editar ' + etiqueta, 'seleccionarYAbrirEdicion', 'obtenerOpcionesEntidadParaSelector');
+  // seleccionarYAbrirEdicion abre otro modal (el formulario de edicion) --
+  // ver abreOtroDialogo en abrirSelectorConAccion_.
+  abrirSelectorConAccion_(entidad, 'Editar ' + etiqueta, 'seleccionarYAbrirEdicion', 'obtenerOpcionesEntidadParaSelector', true);
 }
 /*
  * Generaliza el selector con buscador (nacido en "Editar registro",
@@ -603,13 +609,23 @@ function abrirEditarRegistroPorEntidad_(entidad, etiqueta) {
  * abrirConfirmarRecepcion lo reutiliza para no volver a pedir el ID a
  * memoria con un ui.prompt() (mismo hueco senalado por el usuario al
  * verificar L5.2).
+ *
+ * abreOtroDialogo (boolean, default false): true si accionFn termina
+ * abriendo otro SpreadsheetApp.getUi().showModalDialog() (p.ej.
+ * seleccionarYAbrirEdicion, seleccionarYAbrirFicha*) -- Apps Script
+ * ignora en silencio un showModalDialog() mientras este selector siga
+ * abierto, asi que SelectorRegistro.html necesita cerrarse ANTES de
+ * llamar a accionFn en ese caso, no despues de que tenga exito (que es
+ * lo correcto cuando accionFn no abre nada mas y puede fallar con un
+ * error que hay que mostrar aqui mismo, como en confirmarRecepcion_).
  */
-function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn) {
+function abrirSelectorConAccion_(entidad, tituloVentana, accionFn, opcionesFn, abreOtroDialogo) {
   var template = HtmlService.createTemplateFromFile('SelectorRegistro');
   template.entidad = entidad;
   template.titulo = tituloVentana;
   template.accionFn = accionFn;
   template.opcionesFn = opcionesFn;
+  template.abreOtroDialogo = !!abreOtroDialogo;
   var html = template.evaluate().setWidth(380).setHeight(220);
   SpreadsheetApp.getUi().showModalDialog(html, tituloVentana);
 }
