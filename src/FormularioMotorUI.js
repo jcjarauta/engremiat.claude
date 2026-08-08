@@ -71,7 +71,16 @@ function moduloInstalado_(nombreModulo) {
  * globales de quien la invoca.
  */
 function onOpen(modulosInstalados) {
-  modulosInstaladosClienteActual_ = modulosInstalados || null;
+  // Google Sheets pasa un objeto de evento (no un array) como primer
+  // argumento cuando onOpen() se dispara como trigger real (simple o
+  // instalable) -- el maestro invoca onOpen() directamente como trigger
+  // (sin envoltorio), así que ese objeto de evento llegaba aquí y rompía
+  // moduloInstalado_ (.indexOf no existe en un objeto de evento). Los
+  // clientes no lo sufren porque su envoltorio llama explícitamente
+  // Core.onOpen(MODULOS_INSTALADOS_CLIENTE), una llamada normal, no un
+  // disparo de trigger. Array.isArray descarta cualquier objeto de
+  // evento/argumento inesperado sin tocar el caso real (array de módulos).
+  modulosInstaladosClienteActual_ = Array.isArray(modulosInstalados) ? modulosInstalados : null;
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
     .addSubMenu(construirSubmenuAnalizar_(ui))
