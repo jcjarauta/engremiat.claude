@@ -604,3 +604,20 @@ function abrirImportacionMasiva() {
     ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
   }
 }
+
+/*
+ * Punto de entrada desde el Mapa del sheet (ver conversación --
+ * "importación masiva ... cheap now: surface the existing staging-
+ * sheet importer as una tarjeta con un pequeño diálogo explicando el
+ * flujo STG_*"). No sustituye los items de menú ya existentes
+ * (Catálogos y administración), solo da un punto de entrada visual con
+ * las 3 acciones del flujo en orden: preparar hojas, importar
+ * campaña→tarea, importar recursos/personas.
+ */
+function abrirImportacionMasivaInicio() {
+  var html = HtmlService.createTemplateFromFile('ImportacionMasivaInicio')
+    .evaluate()
+    .setWidth(420)
+    .setHeight(480);
+  SpreadsheetApp.getUi().showModelessDialog(html, 'Importación masiva');
+}

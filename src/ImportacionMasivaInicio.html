@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      h3 { font-size: 16px; }
+      p { line-height: 1.4; }
+      ol { padding-left: 20px; line-height: 1.6; }
+      .paso {
+        display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;
+        padding: 12px; border: 1px solid var(--color-borde); border-radius: 8px;
+      }
+      .paso .numero {
+        flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
+        background: var(--color-primario); color: #fff; font-weight: bold;
+        display: flex; align-items: center; justify-content: center; font-size: 12px;
+      }
+      .paso .texto { flex: 1; }
+      .paso .titulo { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+      .paso .detalle { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 8px; }
+      .paso button { width: 100%; }
+      #mensaje { margin-top: 12px; }
+    </style>
+  </head>
+  <body>
+    <h3>📥 Importación masiva</h3>
+    <p style="color:var(--color-texto-secundario); font-size:12px;">
+      Para cargar muchos registros de golpe (en vez de uno a uno con "Nuevo X"), se rellenan unas hojas
+      de trabajo (<code>STG_*</code>) directamente en el Sheet y luego se valida e importa todo junto.
+    </p>
+
+    <div class="paso">
+      <span class="numero">1</span>
+      <span class="texto">
+        <div class="titulo">Preparar las hojas de trabajo</div>
+        <div class="detalle">
+          Crea (si no existen ya) las hojas <code>STG_CAMPANA</code>, <code>STG_PROYECTO</code>,
+          <code>STG_PRODUCTO</code>, <code>STG_PROCESO</code>, <code>STG_TAREA</code>,
+          <code>STG_RECURSO</code>, <code>STG_PERSONA</code> y <code>STG_EQUIPO_MIEMBRO</code>, cada una
+          con sus columnas ya tituladas. No borra ni toca hojas que ya tengas.
+        </div>
+        <button class="boton" onclick="ejecutar('instalarStagingImportacionMasiva')">Preparar hojas</button>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">2</span>
+      <span class="texto">
+        <div class="titulo">Rellenar las filas a mano</div>
+        <div class="detalle">
+          En cada hoja <code>STG_*</code>, una fila por registro. <code>ID_TEMPORAL</code> es una
+          referencia tuya dentro del mismo lote (p.ej. "P1"); las columnas que enlazan con el nivel
+          padre (<code>PROYECTO_TEMPORAL</code>, <code>PROCESO_TEMPORAL</code>...) pueden apuntar a un
+          <code>ID_TEMPORAL</code> de otra fila del lote, o a un ID real ya existente si estás ampliando
+          algo que ya tenías creado. No toques <code>ESTADO_IMPORTACION</code> ni <code>ID_REAL</code>,
+          los rellena el propio proceso.
+        </div>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">3</span>
+      <span class="texto">
+        <div class="titulo">Importar Campaña → Proyecto → Producto → Proceso → Tarea</div>
+        <div class="detalle">
+          Valida todo primero (campos obligatorios, catálogos, que cada referencia exista) y te enseña
+          un resumen antes de crear nada. Solo crea registros si confirmas.
+        </div>
+        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionMasiva')">Validar e importar</button>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">4</span>
+      <span class="texto">
+        <div class="titulo">Importar Recursos / Personas y equipos</div>
+        <div class="detalle">
+          Mismo criterio de validar-antes-de-crear, para las hojas <code>STG_RECURSO</code>,
+          <code>STG_PERSONA</code> y <code>STG_EQUIPO_MIEMBRO</code>.
+        </div>
+        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionMasivaRecursosPersonas')">Validar e importar</button>
+      </span>
+    </div>
+
+    <div id="mensaje"></div>
+
+    <script>
+      function mostrarError(error) {
+        document.getElementById('mensaje').className = 'error';
+        document.getElementById('mensaje').textContent = 'Error: ' + (error && error.message ? error.message : error);
+      }
+      function mostrarOk(texto) {
+        document.getElementById('mensaje').className = 'ok';
+        document.getElementById('mensaje').textContent = texto;
+      }
+
+      /*
+       * Despacho literal, no dinámico (ver conversación -- hallazgo
+       * repetido en este sheet): google.script.run solo expone las
+       * funciones que el generador de envoltorios detecta como llamada
+       * LITERAL "google.script.run....nombre(...)" en el fuente.
+       */
+      function ejecutar(funcion) {
+        document.getElementById('mensaje').className = '';
+        document.getElementById('mensaje').textContent = '';
+        switch (funcion) {
+          case 'instalarStagingImportacionMasiva':
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { mostrarOk('Hojas STG_* preparadas. Ya puedes rellenarlas.'); })
+              .instalarStagingImportacionMasiva();
+            return;
+          case 'abrirImportacionMasiva':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionMasiva();
+            return;
+          case 'abrirImportacionMasivaRecursosPersonas':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionMasivaRecursosPersonas();
+            return;
+        }
+        mostrarError({ message: 'Acción desconocida: ' + funcion });
+      }
+    </script>
+  </body>
+</html>

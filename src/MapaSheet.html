@@ -42,6 +42,15 @@
       </span>
     </button>
 
+    <div class="separador">Datos</div>
+    <button class="tarjeta" onclick="abrir('abrirImportacionMasivaInicio')">
+      <span class="icono">📥</span>
+      <span class="texto">
+        <div class="titulo">Importación masiva</div>
+        <div class="detalle">Cargar muchos registros de golpe (Campaña→Tarea, Recursos, Personas)</div>
+      </span>
+    </button>
+
     <div class="separador">Equipo</div>
     <button class="tarjeta" onclick="abrir('abrirPanelPersonas')">
       <span class="icono">👥</span>
@@ -130,6 +139,9 @@
             return;
           case 'abrirPanelVentas':
             google.script.run.withFailureHandler(mostrarError).abrirPanelVentas();
+            return;
+          case 'abrirImportacionMasivaInicio':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionMasivaInicio();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });

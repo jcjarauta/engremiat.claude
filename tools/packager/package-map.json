@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 167,
+  "universeExpected": 168,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -882,7 +882,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "cba55c2a18d48bafcf5077a051b6acd5e16793e8e5b48b0295e5f4012eeefa36",
+      "expectedSha256": "843ab2b9f1bbdf404d1c20f1f3e5c2c60e4cecdabdfdde22aa7c115ca311661c",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -894,6 +894,17 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "bb3ba83d64e0b31954a0fa03a7ee28c27a065a716dd7b99c18976b42a03617e8",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/ImportacionMasivaInicio.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "146672bc315932087ff0625d8ef8e3caecc615ce1b6b889b16595cf6cd6db9ea",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1111,13 +1122,13 @@
     {
       "path": "src/InstaladorImportacionMasiva.js",
       "type": "js",
-      "category": "auxiliary",
-      "package": "C",
+      "category": "production",
+      "package": "A",
       "expectedSha256": "03709f3c9d8b09aa2a5705079e8b00d2fe25da4369d96446905c70915e5cbaaa",
       "required": true,
-      "reason": "instalación/fixture/tooling",
+      "reason": "operación/UI/config",
       "mixed": false,
-      "module": null
+      "module": "CORE"
     },
     {
       "path": "src/InstaladorJerarquiaFisica.js",
@@ -1377,7 +1388,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "2cb80b8d16f2ee2c62c5f4b2572943181d80bfe53e2a10d2a1604c26b7a6c294",
+      "expectedSha256": "d8ad890347b1f38602aff0c702ed9fcb62ec988ecd40a8cf77dbbf11be441997",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
