@@ -96,50 +96,60 @@ function obtenerFichaProducto(id) {
     diasDesviacionMedia: procesosConFinReal.length > 0 ? Math.round((sumaDesviacion / procesosConFinReal.length) * 10) / 10 : null
   };
 
-  var materialesPorId = {};
-  listarRegistros('MATERIAL', {}).forEach(function (m) { materialesPorId[m.ID] = m; });
-
   /*
-   * N7.1 (roadmap -- "Ficha de Producto-Material-Proveedor"): en vez de
-   * una ficha nueva para una relación N:M sin ID propio con el que
-   * navegar (mismo matiz que "Ficha de Presupuesto" -- ver conversación),
-   * se enriquece la lista de materiales que YA tiene esta ficha con el
-   * proveedor preferente, su precio de referencia y el coste estimado
-   * -- mismo criterio ya usado en CosteService.js (calcularCosteMaterialesEstimado_),
-   * no se duplica la lógica, solo se reexpone aquí.
+   * MATERIAL/PROVEEDOR/PROVEEDOR_MATERIAL/PRODUCTO_MATERIAL son del
+   * módulo COMPRAS -- en un cliente solo-CORE esas hojas no existen
+   * (mismo caso que CLIENTE_ID en FichaProyectoService.js). Envuelto en
+   * try/catch para no romper el resto de la ficha si falta ese módulo:
+   * "Materiales" se queda vacío en vez de reventar toda la ficha.
    */
-  var preciosPorMaterial_ = {};
-  var proveedorPreferentePorMaterial_ = {};
-  var nombresProveedor_ = {};
-  listarRegistros('PROVEEDOR', {}).forEach(function (p) { nombresProveedor_[p.ID] = p.NOMBRE; });
-  listarRegistros('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (pm) {
-    if (!preciosPorMaterial_[pm.MATERIAL_ID] || pm.ES_PREFERENTE === 'SÍ') {
-      preciosPorMaterial_[pm.MATERIAL_ID] = Number(pm.PRECIO_UNITARIO) || 0;
-      proveedorPreferentePorMaterial_[pm.MATERIAL_ID] = pm.PROVEEDOR_ID;
-    }
-  });
+  var materiales = [];
+  try {
+    var materialesPorId = {};
+    listarRegistros('MATERIAL', {}).forEach(function (m) { materialesPorId[m.ID] = m; });
 
-  var materiales = listarRegistros('PRODUCTO_MATERIAL', { ACTIVO: 'SÍ' })
-    .filter(function (pm) { return pm.PRODUCTO_ID === id; })
-    .map(function (pm) {
-      var material = materialesPorId[pm.MATERIAL_ID];
-      var precioReferencia = preciosPorMaterial_[pm.MATERIAL_ID];
-      var proveedorId = proveedorPreferentePorMaterial_[pm.MATERIAL_ID];
-      var cantidad = Number(pm.CANTIDAD_PREVISTA) || 0;
-      return {
-        relacionId: pm.ID,
-        materialId: pm.MATERIAL_ID,
-        materialNombre: material ? material.NOMBRE : pm.MATERIAL_ID,
-        cantidadPrevista: pm.CANTIDAD_PREVISTA,
-        unidad: pm.UNIDAD,
-        cantidadReservada: pm.CANTIDAD_RESERVADA,
-        estado: pm.ESTADO,
-        proveedorId: proveedorId || null,
-        proveedorNombre: proveedorId ? (nombresProveedor_[proveedorId] || proveedorId) : null,
-        precioReferencia: precioReferencia !== undefined ? precioReferencia : null,
-        costeEstimado: precioReferencia !== undefined ? Math.round(cantidad * precioReferencia * 100) / 100 : null
-      };
+    /*
+     * N7.1 (roadmap -- "Ficha de Producto-Material-Proveedor"): en vez de
+     * una ficha nueva para una relación N:M sin ID propio con el que
+     * navegar (mismo matiz que "Ficha de Presupuesto" -- ver conversación),
+     * se enriquece la lista de materiales que YA tiene esta ficha con el
+     * proveedor preferente, su precio de referencia y el coste estimado
+     * -- mismo criterio ya usado en CosteService.js (calcularCosteMaterialesEstimado_),
+     * no se duplica la lógica, solo se reexpone aquí.
+     */
+    var preciosPorMaterial_ = {};
+    var proveedorPreferentePorMaterial_ = {};
+    var nombresProveedor_ = {};
+    listarRegistros('PROVEEDOR', {}).forEach(function (p) { nombresProveedor_[p.ID] = p.NOMBRE; });
+    listarRegistros('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (pm) {
+      if (!preciosPorMaterial_[pm.MATERIAL_ID] || pm.ES_PREFERENTE === 'SÍ') {
+        preciosPorMaterial_[pm.MATERIAL_ID] = Number(pm.PRECIO_UNITARIO) || 0;
+        proveedorPreferentePorMaterial_[pm.MATERIAL_ID] = pm.PROVEEDOR_ID;
+      }
     });
+
+    materiales = listarRegistros('PRODUCTO_MATERIAL', { ACTIVO: 'SÍ' })
+      .filter(function (pm) { return pm.PRODUCTO_ID === id; })
+      .map(function (pm) {
+        var material = materialesPorId[pm.MATERIAL_ID];
+        var precioReferencia = preciosPorMaterial_[pm.MATERIAL_ID];
+        var proveedorId = proveedorPreferentePorMaterial_[pm.MATERIAL_ID];
+        var cantidad = Number(pm.CANTIDAD_PREVISTA) || 0;
+        return {
+          relacionId: pm.ID,
+          materialId: pm.MATERIAL_ID,
+          materialNombre: material ? material.NOMBRE : pm.MATERIAL_ID,
+          cantidadPrevista: pm.CANTIDAD_PREVISTA,
+          unidad: pm.UNIDAD,
+          cantidadReservada: pm.CANTIDAD_RESERVADA,
+          estado: pm.ESTADO,
+          proveedorId: proveedorId || null,
+          proveedorNombre: proveedorId ? (nombresProveedor_[proveedorId] || proveedorId) : null,
+          precioReferencia: precioReferencia !== undefined ? precioReferencia : null,
+          costeEstimado: precioReferencia !== undefined ? Math.round(cantidad * precioReferencia * 100) / 100 : null
+        };
+      });
+  } catch (eCompras) { /* módulo COMPRAS no instalado */ }
 
   var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Producto' && d.ENTIDAD_ID === id; })
