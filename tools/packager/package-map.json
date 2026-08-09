@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 159,
+  "universeExpected": 163,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -603,6 +603,28 @@
       "module": "CORE"
     },
     {
+      "path": "src/FichaProceso.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "c19197d7f4532088adcdf174b1e265eaa1c7d1d82dcf77f3c7e9f7c3d7bb9f20",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaProcesoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "9cddcef3465bc11730ea4277382300e25c3be603a8ef2e6165780338c71b5bf2",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
       "path": "src/FichaProducto.html",
       "type": "html",
       "category": "production",
@@ -691,6 +713,28 @@
       "module": "CORE"
     },
     {
+      "path": "src/FichaTarea.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "4b11daf5e374fb63fa9e8dff04377468974fff1a38ba75b838053f2b8b7eab28",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaTareaService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "6ac111bed0b48b2550a9f1645bd9aa1ce8639ff9060f0808320fbcaad990cb8b",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
       "path": "src/FormularioEsquemas.js",
       "type": "js",
       "category": "production",
@@ -717,7 +761,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "3732894589884f8f0dd0eb263c99d07fd5faa2ec00d03769f9399217d77f993e",
+      "expectedSha256": "c377926a79f1f297d11b79cd2a9f0e9def3e1d1ea406650041e43413561b99e4",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1377,7 +1421,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "cb2525c59c9efc09dd068c713c8c71b83d4897fe5949bff4c52fdd4c7f34c082",
+      "expectedSha256": "ee04160679e5601259ee76877b652d793c948d91dcb763177c4f3cbedd57a9fc",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1597,7 +1641,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "40ada369a95375fa105edd815a1288c948d3bd58b3467ac6238cbf2a2f9bbc55",
+      "expectedSha256": "04d2c11575131b786298c7334bea7ae68e78823977317fff71468892c395a392",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

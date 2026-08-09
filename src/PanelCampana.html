@@ -221,6 +221,14 @@
         google.script.run.withFailureHandler(mostrarError).abrirFichaProyecto(id);
       }
 
+      /* Idem para Proceso y Tarea, completando la cobertura de Ficha en toda la jerarquía. */
+      function verFichaProceso(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaProceso(id);
+      }
+      function verFichaTarea(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaTarea(id);
+      }
+
       /*
        * Despacho literal, no dinamico (ver conversacion -- hallazgo en
        * TEST-Combo-CORE): google.script.run solo expone las funciones que
@@ -259,7 +267,10 @@
           renderIncidencias_(tarea, "TAREA", CAMPANA_ACTUAL_ID, tarea.proyectoId, tarea.productoId, tarea.procesoId, tarea.id);
         return '<div class="fila-hoja">' +
           '<div class="fila-superior"><span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span></div>' +
-          '<div class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></div>' +
+          '<div class="acciones-nodo">' +
+            '<button class="boton btn-mini" onclick="verFichaTarea(\'' + escapeAttr(tarea.id) + '\')">Ficha</button>' +
+            '<button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button>' +
+          '</div>' +
           subListas +
         '</div>';
       }
@@ -272,6 +283,7 @@
           '<summary>' +
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span></div>' +
             '<div class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="verFichaProceso(\'' + escapeAttr(proceso.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
             '</div>' +

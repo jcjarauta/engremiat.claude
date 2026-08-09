@@ -138,6 +138,8 @@ function construirSubmenuCampanaProyecto_(ui) {
     .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
     .addItem('Ficha de proyecto (buscar)', 'abrirFichaProyectoBuscar')
     .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
+    .addItem('Ficha de proceso (buscar)', 'abrirFichaProcesoBuscar')
+    .addItem('Ficha de tarea (buscar)', 'abrirFichaTareaBuscar')
     .addItem('Editar campaña', 'abrirEditarCampana')
     .addItem('Editar proyecto', 'abrirEditarProyecto')
     .addItem('Editar producto', 'abrirEditarProducto')
@@ -509,6 +511,8 @@ function abrirFichaPorEntidad_(entidad, id) {
   if (clave === 'PERSONA_EQUIPO') { abrirFichaPersonaEquipo(id); return; }
   if (clave === 'PROYECTO') { abrirFichaProyecto(id); return; }
   if (clave === 'PRODUCTO') { abrirFichaProducto(id); return; }
+  if (clave === 'PROCESO') { abrirFichaProceso(id); return; }
+  if (clave === 'TAREA') { abrirFichaTarea(id); return; }
   if (clave === 'RECURSO') { abrirFichaRecurso(id); return; }
   if (clave === 'PROVEEDOR') { abrirFichaProveedor(id); return; }
   if (clave === 'MATERIAL') { abrirFichaMaterial(id); return; }
@@ -627,16 +631,16 @@ function abrirFormularioCrearIncidencia() { abrirFormularioCrear_('INCIDENCIA', 
  * siguiente al quedar resuelto.
  */
 function abrirFormularioCrearTareaResponsableParaTarea(tareaId) {
-  abrirFormularioCrear_('TAREA_RESPONSABLE', 'Nueva asignación tarea-responsable', { TAREA_ID: tareaId });
+  abrirFormularioCrear_('TAREA_RESPONSABLE', 'Nueva asignación tarea-responsable', { TAREA_ID: tareaId }, { tipo: 'ficha', entidad: 'TAREA', id: tareaId });
 }
 function abrirFormularioCrearTareaRecursoParaTarea(tareaId) {
-  abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso', { TAREA_ID: tareaId });
+  abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso', { TAREA_ID: tareaId }, { tipo: 'ficha', entidad: 'TAREA', id: tareaId });
 }
 function abrirFormularioCrearTareaMaterialParaTarea(tareaId) {
-  abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material', { TAREA_ID: tareaId });
+  abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material', { TAREA_ID: tareaId }, { tipo: 'ficha', entidad: 'TAREA', id: tareaId });
 }
 function abrirFormularioCrearEjecucionTareaParaTarea(tareaId) {
-  abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea', { TAREA_ID: tareaId });
+  abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea', { TAREA_ID: tareaId }, { tipo: 'ficha', entidad: 'TAREA', id: tareaId });
 }
 /*
  * retorno tipo='ficha' (ver conversacion -- "Panel = navegación, Ficha =
@@ -663,12 +667,12 @@ function abrirFormularioCrearIncidenciaParaProducto(campanaId, proyectoId, produ
 function abrirFormularioCrearIncidenciaParaProceso(campanaId, proyectoId, productoId, procesoId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
     CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, PRODUCTO_ID: productoId, PROCESO_ID: procesoId, NIVEL_INCIDENCIA: 'Proceso'
-  });
+  }, { tipo: 'ficha', entidad: 'PROCESO', id: procesoId });
 }
 function abrirFormularioCrearIncidenciaParaTarea(campanaId, proyectoId, productoId, procesoId, tareaId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
     CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, PRODUCTO_ID: productoId, PROCESO_ID: procesoId, TAREA_ID: tareaId, NIVEL_INCIDENCIA: 'Tarea'
-  });
+  }, { tipo: 'ficha', entidad: 'TAREA', id: tareaId });
 }
 function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'Nuevo documento'); }
 function abrirFormularioCrearPresupuesto() { abrirFormularioCrear_('PRESUPUESTO', 'Nueva línea de presupuesto'); }
