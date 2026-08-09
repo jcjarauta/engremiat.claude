@@ -610,6 +610,58 @@ function abrirFormularioCrearIncidenciaParaCliente(clienteId) {
 }
 function abrirFormularioCrearDecision() { abrirFormularioCrear_('DECISION', 'Nueva decisión'); }
 function abrirFormularioCrearIncidencia() { abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia'); }
+/*
+ * Fase 1 del Panel de campaña (ver conversacion -- "cada parte del
+ * formulario deberia tener una forma de acceder a la barra lateral...
+ * para no repetir estructura del sheet"): abridores "ParaX" que
+ * precargan el padre desde el nodo del arbol donde se pulsa "+", mismo
+ * patron que abrirFormularioCrearProyectoConCampana etc.
+ *
+ * INCIDENCIA es la unica con una cadena de fk_dependiente (CAMPANA_ID->
+ * PROYECTO_ID->PRODUCTO_ID->PROCESO_ID->TAREA_ID): hay que precargar
+ * TODOS los ancestros, no solo el nivel pulsado, para que
+ * repoblarDependiente_ (FormularioGenerico.html) pueda resolver la
+ * cadena entera en cascada -- cada nivel dispara el "change" del
+ * siguiente al quedar resuelto.
+ */
+function abrirFormularioCrearTareaResponsableParaTarea(tareaId) {
+  abrirFormularioCrear_('TAREA_RESPONSABLE', 'Nueva asignación tarea-responsable', { TAREA_ID: tareaId });
+}
+function abrirFormularioCrearTareaRecursoParaTarea(tareaId) {
+  abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso', { TAREA_ID: tareaId });
+}
+function abrirFormularioCrearTareaMaterialParaTarea(tareaId) {
+  abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material', { TAREA_ID: tareaId });
+}
+function abrirFormularioCrearEjecucionTareaParaTarea(tareaId) {
+  abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea', { TAREA_ID: tareaId });
+}
+function abrirFormularioCrearDecisionParaProyecto(proyectoId) {
+  abrirFormularioCrear_('DECISION', 'Nueva decisión', { PROYECTO_ID: proyectoId });
+}
+function abrirFormularioCrearIncidenciaParaCampana(campanaId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', { CAMPANA_ID: campanaId, NIVEL_INCIDENCIA: 'Campaña' });
+}
+function abrirFormularioCrearIncidenciaParaProyecto(campanaId, proyectoId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
+    CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, NIVEL_INCIDENCIA: 'Proyecto'
+  });
+}
+function abrirFormularioCrearIncidenciaParaProducto(campanaId, proyectoId, productoId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
+    CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, PRODUCTO_ID: productoId, NIVEL_INCIDENCIA: 'Producto'
+  });
+}
+function abrirFormularioCrearIncidenciaParaProceso(campanaId, proyectoId, productoId, procesoId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
+    CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, PRODUCTO_ID: productoId, PROCESO_ID: procesoId, NIVEL_INCIDENCIA: 'Proceso'
+  });
+}
+function abrirFormularioCrearIncidenciaParaTarea(campanaId, proyectoId, productoId, procesoId, tareaId) {
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
+    CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, PRODUCTO_ID: productoId, PROCESO_ID: procesoId, TAREA_ID: tareaId, NIVEL_INCIDENCIA: 'Tarea'
+  });
+}
 function abrirFormularioCrearDocumento() { abrirFormularioCrear_('DOCUMENTO', 'Nuevo documento'); }
 function abrirFormularioCrearPresupuesto() { abrirFormularioCrear_('PRESUPUESTO', 'Nueva línea de presupuesto'); }
 function abrirFormularioCrearFuenteFinanciacion() { abrirFormularioCrear_('FUENTE_FINANCIACION', 'Nueva fuente de financiación'); }

@@ -39,6 +39,74 @@ function obtenerArbolCampana(campanaId) {
     responsablesPorTarea[asignacion.TAREA_ID].push({ id: asignacion.PERSONA_EQUIPO_ID, nombre: nombre });
   });
 
+  /*
+   * Fase 1 (ver conversacion -- "cada parte del formulario deberia tener
+   * una forma de acceder a la barra lateral... para no repetir
+   * estructura del sheet"): las relaciones N:M puras que cuelgan de
+   * Tarea (Responsable/Recurso/Material/Ejecucion) y las entidades con
+   * FK fija que cuelgan de Proyecto (Decision) o de cualquier nivel
+   * (Incidencia) se muestran dentro del propio nodo, en vez de exigir
+   * un "Editar X" suelto del menu sin contexto.
+   */
+  var nombresRecurso_ = {};
+  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso_[r.ID] = r.NOMBRE; });
+  var recursosPorTarea = {};
+  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+    if (!recursosPorTarea[tr.TAREA_ID]) recursosPorTarea[tr.TAREA_ID] = [];
+    recursosPorTarea[tr.TAREA_ID].push({ id: tr.RECURSO_ID, nombre: nombresRecurso_[tr.RECURSO_ID] || tr.RECURSO_ID, tipoUso: tr.TIPO_USO });
+  });
+
+  /*
+   * MATERIAL/TAREA_MATERIAL son del modulo COMPRAS -- en un cliente sin
+   * ese modulo esas hojas no existen (mismo caso que el fk CLIENTE_ID en
+   * PROYECTO, ver conversacion anterior). Envuelto en try/catch para que
+   * un cliente solo-CORE siga viendo el resto del arbol sin romperse.
+   */
+  var materialesPorTarea = {};
+  try {
+    var nombresMaterial_ = {};
+    listarRegistros('MATERIAL', {}).forEach(function (m) { nombresMaterial_[m.ID] = m.NOMBRE; });
+    listarRegistros('TAREA_MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (tm) {
+      if (!materialesPorTarea[tm.TAREA_ID]) materialesPorTarea[tm.TAREA_ID] = [];
+      materialesPorTarea[tm.TAREA_ID].push({
+        id: tm.MATERIAL_ID, nombre: nombresMaterial_[tm.MATERIAL_ID] || tm.MATERIAL_ID,
+        cantidadPrevista: tm.CANTIDAD_PREVISTA, unidad: tm.UNIDAD
+      });
+    });
+  } catch (eMaterial_) { /* modulo COMPRAS no instalado en este cliente */ }
+
+  var ejecucionesPorTarea = {};
+  listarRegistros('EJECUCION_TAREA', { ACTIVO: 'SÍ' }).forEach(function (ej) {
+    if (!ejecucionesPorTarea[ej.TAREA_ID]) ejecucionesPorTarea[ej.TAREA_ID] = [];
+    ejecucionesPorTarea[ej.TAREA_ID].push({
+      id: ej.ID, responsableNombre: nombresPersona[ej.RESPONSABLE_ID] || '',
+      estado: ej.ESTADO, resultado: ej.RESULTADO || ''
+    });
+  });
+
+  var decisionesPorProyecto = {};
+  listarRegistros('DECISION', { ACTIVO: 'SÍ' }).forEach(function (d) {
+    if (!decisionesPorProyecto[d.PROYECTO_ID]) decisionesPorProyecto[d.PROYECTO_ID] = [];
+    decisionesPorProyecto[d.PROYECTO_ID].push({ id: d.ID, titulo: d.TITULO, estado: d.ESTADO });
+  });
+
+  /*
+   * Incidencia se ancla al nivel MAS PROFUNDO que tenga relleno (TAREA_ID
+   * si existe, si no PROCESO_ID, etc.) -- el mismo criterio que ya usa
+   * NIVELES_JERARQUIA_INCIDENCIA_ (Ids.js) para saber "de que trata"
+   * realmente una incidencia, en vez de fiarse solo de la etiqueta libre
+   * NIVEL_INCIDENCIA.
+   */
+  var incidenciasPorNivelId_ = { CAMPANA_ID: {}, PROYECTO_ID: {}, PRODUCTO_ID: {}, PROCESO_ID: {}, TAREA_ID: {} };
+  listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' }).forEach(function (inc) {
+    var campoNivel = ['TAREA_ID', 'PROCESO_ID', 'PRODUCTO_ID', 'PROYECTO_ID', 'CAMPANA_ID'].filter(function (c) { return inc[c]; })[0];
+    if (!campoNivel) return;
+    var mapa = incidenciasPorNivelId_[campoNivel];
+    var id = inc[campoNivel];
+    if (!mapa[id]) mapa[id] = [];
+    mapa[id].push({ id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO });
+  });
+
   var contadores = { proyectos: 0, productos: 0, procesos: 0, tareas: 0 };
 
   function desviacionDe_(registro) {
@@ -89,7 +157,15 @@ function obtenerArbolCampana(campanaId) {
             estado: tarea.ESTADO,
             responsable: responsablesTarea.map(function (r) { return r.nombre; }).join(', '),
             diasDesviacion: desviacionDe_(tarea),
-            sobreasignado: false
+            sobreasignado: false,
+            responsables: responsablesTarea,
+            recursos: recursosPorTarea[tarea.ID] || [],
+            materiales: materialesPorTarea[tarea.ID] || [],
+            ejecuciones: ejecucionesPorTarea[tarea.ID] || [],
+            incidencias: incidenciasPorNivelId_.TAREA_ID[tarea.ID] || [],
+            proyectoId: proyecto.ID,
+            productoId: producto.ID,
+            procesoId: proceso.ID
           };
           responsablesTarea.forEach(function (r) {
             registrarAsignacion_(asignacionesTareaPorPersona, r.id, nodoTarea, tarea.FECHA_INICIO_PLAN, tarea.FECHA_FIN_PLAN);
@@ -103,7 +179,10 @@ function obtenerArbolCampana(campanaId) {
           responsable: nombresPersona[proceso.RESPONSABLE_ID] || '',
           diasDesviacion: desviacionDe_(proceso),
           sobreasignado: false,
-          tareas: tareas
+          tareas: tareas,
+          incidencias: incidenciasPorNivelId_.PROCESO_ID[proceso.ID] || [],
+          proyectoId: proyecto.ID,
+          productoId: producto.ID
         };
         registrarAsignacion_(asignacionesProcesoPorPersona, proceso.RESPONSABLE_ID, nodoProceso, proceso.FECHA_INICIO_PLAN, proceso.FECHA_FIN_PLAN);
         return nodoProceso;
@@ -113,7 +192,9 @@ function obtenerArbolCampana(campanaId) {
         nombre: producto.NOMBRE,
         estado: producto.ESTADO,
         responsable: nombresPersona[producto.RESPONSABLE_ID] || '',
-        procesos: procesos
+        procesos: procesos,
+        incidencias: incidenciasPorNivelId_.PRODUCTO_ID[producto.ID] || [],
+        proyectoId: proyecto.ID
       };
     });
     return {
@@ -121,7 +202,9 @@ function obtenerArbolCampana(campanaId) {
       nombre: proyecto.NOMBRE,
       estado: proyecto.ESTADO,
       responsable: nombresPersona[proyecto.RESPONSABLE_ID] || '',
-      productos: productos
+      productos: productos,
+      decisiones: decisionesPorProyecto[proyecto.ID] || [],
+      incidencias: incidenciasPorNivelId_.PROYECTO_ID[proyecto.ID] || []
     };
   });
 
@@ -147,7 +230,8 @@ function obtenerArbolCampana(campanaId) {
       nombre: campana.NOMBRE,
       estado: campana.ESTADO,
       fechaInicioPlan: campana.FECHA_INICIO_PLAN,
-      fechaFinPlan: campana.FECHA_FIN_PLAN
+      fechaFinPlan: campana.FECHA_FIN_PLAN,
+      incidencias: incidenciasPorNivelId_.CAMPANA_ID[campana.ID] || []
     },
     contadores: contadores,
     proyectos: proyectos

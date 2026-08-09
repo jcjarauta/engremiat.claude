@@ -34,6 +34,16 @@
       .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
       .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
       .alerta-desviacion { color: var(--color-peligro); font-weight: bold; }
+      /*
+       * Fase 1 (ver conversacion -- relaciones que cuelgan de Tarea/
+       * Proyecto/etc, sin panel propio, embebidas en el nodo dueño):
+       * una linea compacta por relacion, no una lista expandida --
+       * mismo criterio de "no amontonar botones" que ya se aplico a
+       * Editar/Ficha/+Hijo.
+       */
+      .sub-lista { font-size: 12px; color: var(--color-texto-secundario); margin: 3px 0 0 2px; }
+      .sub-etiqueta { font-weight: 600; }
+      .anadir-mini { color: var(--color-primario); cursor: pointer; margin-left: 4px; white-space: nowrap; }
     </style>
   </head>
   <body>
@@ -54,6 +64,10 @@
 
     <script>
       var PRESELECCION_CAMPANA_ID = <?!= preseleccionCampanaId ?>;
+      // Campaña actualmente cargada -- la necesitan las incidencias de
+      // cualquier nivel (CAMPANA_ID es el primer eslabón de su cadena de
+      // fk_dependiente). Se fija en renderArbol().
+      var CAMPANA_ACTUAL_ID = "";
 
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return "";
@@ -104,6 +118,95 @@
         document.getElementById("estadoCarga").style.display = "block";
       }
 
+      /*
+       * Fase 1 (ver conversacion -- relaciones que cuelgan de un nodo:
+       * Responsable/Recurso/Material/Ejecucion en Tarea, Decision en
+       * Proyecto, Incidencia en cualquier nivel). Despacho literal por
+       * switch, no dinamico -- mismo motivo que crearHijo mas abajo: el
+       * generador de envoltorios solo detecta "google.script.run....
+       * nombre(...)" como cadena completa en el fuente.
+       */
+      function pedirRelacionTarea_(tipo, tareaId) {
+        switch (tipo) {
+          case "RESPONSABLE":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaResponsableParaTarea(tareaId);
+            return;
+          case "RECURSO":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaRecursoParaTarea(tareaId);
+            return;
+          case "MATERIAL":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearTareaMaterialParaTarea(tareaId);
+            return;
+          case "EJECUCION":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearEjecucionTareaParaTarea(tareaId);
+            return;
+        }
+        mostrarError({ message: "Relación de tarea desconocida: " + tipo });
+      }
+
+      function pedirIncidencia_(nivel, campanaId, proyectoId, productoId, procesoId, tareaId) {
+        switch (nivel) {
+          case "CAMPANA":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaCampana(campanaId);
+            return;
+          case "PROYECTO":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaProyecto(campanaId, proyectoId);
+            return;
+          case "PRODUCTO":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaProducto(campanaId, proyectoId, productoId);
+            return;
+          case "PROCESO":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaProceso(campanaId, proyectoId, productoId, procesoId);
+            return;
+          case "TAREA":
+            google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaTarea(campanaId, proyectoId, productoId, procesoId, tareaId);
+            return;
+        }
+        mostrarError({ message: "Nivel de incidencia desconocido: " + nivel });
+      }
+
+      function renderSubListaTarea_(icono, etiqueta, items, textoItem, tipo, tareaId, textoAnadir) {
+        var texto = (items && items.length) ? items.map(textoItem).join(", ") : "ninguno";
+        return '<div class="sub-lista"><span class="sub-etiqueta">' + icono + " " + etiqueta + ':</span> ' + texto +
+          ' <span class="anadir-mini" onclick="pedirRelacionTarea_(\'' + tipo + "','" + escapeAttr(tareaId) + '\')">' + (textoAnadir || "+ añadir") + '</span></div>';
+      }
+
+      function renderDecisionesProyecto_(proyecto) {
+        var decisiones = proyecto.decisiones || [];
+        var texto = decisiones.length
+          ? decisiones.map(function (d) { return escapeHtml(d.titulo) + " " + renderBadge_(d.estado); }).join(", ")
+          : "ninguna";
+        return '<div class="sub-lista"><span class="sub-etiqueta">🧭 Decisiones:</span> ' + texto +
+          ' <span class="anadir-mini" onclick="pedirDecision_(\'' + escapeAttr(proyecto.id) + '\')">+ añadir</span></div>';
+      }
+
+      /*
+       * Envoltorio JS propio (no la llamada literal directamente en el
+       * HTML) -- ver conversacion: incrustar "google.script.run....
+       * nombre(\\'" + variable + "\\')" dentro de la cadena que
+       * construye el atributo onclick confunde al generador de
+       * envoltorios: su rastreo de parentesis interpreta \' + ' como
+       * cierre/apertura de una cadena vacia y pierde el cierre real del
+       * parentesis de la llamada. Con la llamada dentro de una funcion
+       * JS normal (mismo patron que editar()/verFichaProducto()) el
+       * texto fuente es una sentencia limpia, sin ese escaneo problematico.
+       */
+      function pedirDecision_(proyectoId) {
+        google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearDecisionParaProyecto(proyectoId);
+      }
+
+      function renderIncidencias_(nodo, nivel, campanaId, proyectoId, productoId, procesoId, tareaId) {
+        var incidencias = nodo.incidencias || [];
+        var texto = incidencias.length
+          ? incidencias.map(function (i) { return escapeHtml(i.titulo) + " " + renderBadge_(i.estado); }).join(", ")
+          : "ninguna";
+        var args = [nivel, campanaId, proyectoId, productoId, procesoId, tareaId].map(function (v) {
+          return "'" + escapeAttr(v || "") + "'";
+        }).join(",");
+        return '<div class="sub-lista"><span class="sub-etiqueta">⚠️ Incidencias:</span> ' + texto +
+          ' <span class="anadir-mini" onclick="pedirIncidencia_(' + args + ')">+ añadir</span></div>';
+      }
+
       function editar(entidad, id) {
         google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
       }
@@ -143,9 +246,16 @@
       }
 
       function renderTarea(tarea) {
+        var subListas =
+          renderSubListaTarea_("👤", "Responsables", tarea.responsables, function (r) { return escapeHtml(r.nombre); }, "RESPONSABLE", tarea.id) +
+          renderSubListaTarea_("🛠️", "Recursos", tarea.recursos, function (r) { return escapeHtml(r.nombre); }, "RECURSO", tarea.id) +
+          renderSubListaTarea_("📦", "Materiales", tarea.materiales, function (m) { return escapeHtml(m.nombre); }, "MATERIAL", tarea.id) +
+          renderSubListaTarea_("▶️", "Ejecución", tarea.ejecuciones, function (e) { return escapeHtml(e.responsableNombre || e.estado); }, "EJECUCION", tarea.id, "+ registrar") +
+          renderIncidencias_(tarea, "TAREA", CAMPANA_ACTUAL_ID, tarea.proyectoId, tarea.productoId, tarea.procesoId, tarea.id);
         return '<div class="fila-hoja">' +
           '<div class="fila-superior"><span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span></div>' +
           '<div class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button></div>' +
+          subListas +
         '</div>';
       }
 
@@ -160,6 +270,7 @@
               '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
             '</div>' +
+            renderIncidencias_(proceso, "PROCESO", CAMPANA_ACTUAL_ID, proceso.proyectoId, proceso.productoId, proceso.id, "") +
           '</summary>' +
           '<div>' + tareas + '</div>' +
         '</details>';
@@ -177,6 +288,7 @@
               '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
             '</div>' +
+            renderIncidencias_(producto, "PRODUCTO", CAMPANA_ACTUAL_ID, producto.proyectoId, producto.id, "", "") +
           '</summary>' +
           '<div>' + procesos + '</div>' +
         '</details>';
@@ -193,12 +305,15 @@
               '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
             '</div>' +
+            renderDecisionesProyecto_(proyecto) +
+            renderIncidencias_(proyecto, "PROYECTO", CAMPANA_ACTUAL_ID, proyecto.id, "", "", "") +
           '</summary>' +
           '<div>' + productos + '</div>' +
         '</details>';
       }
 
       function renderArbol(datos) {
+        CAMPANA_ACTUAL_ID = datos.campana.id;
         document.getElementById("estadoCarga").style.display = "none";
         var contenedorProyectos = datos.proyectos.length
           ? datos.proyectos.map(renderProyecto).join("")
@@ -215,6 +330,7 @@
           '<div class="fila-hoja" style="padding-left:2px;">' +
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' ' + renderBadge_(datos.campana.estado) + '</span></div>' +
             '<div class="acciones-nodo"><button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button></div>' +
+            renderIncidencias_(datos.campana, "CAMPANA", datos.campana.id, "", "", "", "") +
           '</div>' +
           contenedorProyectos +
           '<button class="boton btn-anadir boton-primario" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
