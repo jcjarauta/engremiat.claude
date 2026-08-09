@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 157,
+  "universeExpected": 159,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -625,6 +625,28 @@
       "module": "CORE"
     },
     {
+      "path": "src/FichaProyecto.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "bbe3ef46c30e83817e6055d541bd5d6b31cb0b83c09d137fe8fe903c381725cd",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaProyectoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "f11b8b5273a1dd22305ac1a08c3a93e79a819cada0d7aea8dcc9e9f070b980b3",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
       "path": "src/FichaProveedor.html",
       "type": "html",
       "category": "production",
@@ -695,7 +717,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "e72abff22c734dad6573424865a39fbb8759bcd178cf8580aa7b41f37c328bec",
+      "expectedSha256": "3732894589884f8f0dd0eb263c99d07fd5faa2ec00d03769f9399217d77f993e",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1355,7 +1377,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "a60b2ab45cf1357c7232b143ad4da59e09edded4a750e54f034ec6676766e81d",
+      "expectedSha256": "cb2525c59c9efc09dd068c713c8c71b83d4897fe5949bff4c52fdd4c7f34c082",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1575,7 +1597,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c77a8f6d905d16d7d3cb01647b10f1fcf93ce84f6560dbaa2768eca55494177f",
+      "expectedSha256": "40ada369a95375fa105edd815a1288c948d3bd58b3467ac6238cbf2a2f9bbc55",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

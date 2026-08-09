@@ -136,6 +136,7 @@ function construirSubmenuNavegarYEditar_(ui) {
 function construirSubmenuCampanaProyecto_(ui) {
   return ui.createMenu('Campaña → Proyecto → Producto → Proceso → Tarea')
     .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
+    .addItem('Ficha de proyecto (buscar)', 'abrirFichaProyectoBuscar')
     .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
     .addItem('Editar campaña', 'abrirEditarCampana')
     .addItem('Editar proyecto', 'abrirEditarProyecto')
@@ -506,6 +507,7 @@ function abrirDependienteConRetorno(entidadHijo, idHijo, entidadOrigen, idOrigen
 function abrirFichaPorEntidad_(entidad, id) {
   var clave = String(entidad || '').trim().toUpperCase();
   if (clave === 'PERSONA_EQUIPO') { abrirFichaPersonaEquipo(id); return; }
+  if (clave === 'PROYECTO') { abrirFichaProyecto(id); return; }
   if (clave === 'PRODUCTO') { abrirFichaProducto(id); return; }
   if (clave === 'RECURSO') { abrirFichaRecurso(id); return; }
   if (clave === 'PROVEEDOR') { abrirFichaProveedor(id); return; }
@@ -636,8 +638,14 @@ function abrirFormularioCrearTareaMaterialParaTarea(tareaId) {
 function abrirFormularioCrearEjecucionTareaParaTarea(tareaId) {
   abrirFormularioCrear_('EJECUCION_TAREA', 'Nueva ejecución de tarea', { TAREA_ID: tareaId });
 }
+/*
+ * retorno tipo='ficha' (ver conversacion -- "Panel = navegación, Ficha =
+ * detalle"): al cerrar, vuelve a la Ficha de Proyecto en vez de a nada.
+ * Usada tanto desde el Panel de campaña (Fase 1) como desde la propia
+ * Ficha de Proyecto -- mismo destino coherente venga de donde venga.
+ */
 function abrirFormularioCrearDecisionParaProyecto(proyectoId) {
-  abrirFormularioCrear_('DECISION', 'Nueva decisión', { PROYECTO_ID: proyectoId });
+  abrirFormularioCrear_('DECISION', 'Nueva decisión', { PROYECTO_ID: proyectoId }, { tipo: 'ficha', entidad: 'PROYECTO', id: proyectoId });
 }
 function abrirFormularioCrearIncidenciaParaCampana(campanaId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', { CAMPANA_ID: campanaId, NIVEL_INCIDENCIA: 'Campaña' });
@@ -645,7 +653,7 @@ function abrirFormularioCrearIncidenciaParaCampana(campanaId) {
 function abrirFormularioCrearIncidenciaParaProyecto(campanaId, proyectoId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
     CAMPANA_ID: campanaId, PROYECTO_ID: proyectoId, NIVEL_INCIDENCIA: 'Proyecto'
-  });
+  }, { tipo: 'ficha', entidad: 'PROYECTO', id: proyectoId });
 }
 function abrirFormularioCrearIncidenciaParaProducto(campanaId, proyectoId, productoId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {

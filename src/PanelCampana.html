@@ -216,6 +216,11 @@
         google.script.run.withFailureHandler(mostrarError).abrirFichaProducto(id);
       }
 
+      /* Idem para Proyecto (ver conversacion -- "Panel = navegación, Ficha = detalle"). */
+      function verFichaProyecto(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaProyecto(id);
+      }
+
       /*
        * Despacho literal, no dinamico (ver conversacion -- hallazgo en
        * TEST-Combo-CORE): google.script.run solo expone las funciones que
@@ -302,6 +307,7 @@
           '<summary>' +
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span></div>' +
             '<div class="acciones-nodo">' +
+              '<button class="boton btn-mini" onclick="verFichaProyecto(\'' + escapeAttr(proyecto.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
             '</div>' +
