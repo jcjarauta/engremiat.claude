@@ -134,9 +134,19 @@ function obtenerActividadReciente(limite) {
   var indice = {};
   encabezados.forEach(function (c, i) { indice[c] = i; });
 
+  /*
+   * "Actividad" es solo cambio real de estado de negocio (alta/edición/
+   * baja/reactivación/reversión) -- se excluyen EDICION_DIRECTA_DETECTADA
+   * (un aviso técnico de onEdit, no una escritura por el sistema) y los
+   * EXPORTAR_* (solo lectura, no cambian nada). Sin este filtro, un
+   * puñado de ediciones directas en 90_CONFIGURACION puede inundar el
+   * feed y tapar la actividad real (hallazgo en vivo en TEST-Combo-CORE).
+   */
+  var accionesActividad_ = { CREAR: true, ACTUALIZAR: true, DESACTIVAR: true, REACTIVAR: true, REVERTIR: true };
+
   var n = limite || 10;
-  var margenPruebas = 4;
-  var filasALeer = Math.min(ultimaFila - 1, n * margenPruebas);
+  var margenRuido = 12;
+  var filasALeer = Math.min(ultimaFila - 1, n * margenRuido);
   var filaInicio = ultimaFila - filasALeer + 1;
   var valores = hoja.getRange(filaInicio, 1, filasALeer, ultimaColumna).getValues();
 
@@ -152,7 +162,7 @@ function obtenerActividadReciente(limite) {
         esPrueba: fila[indice.ES_PRUEBA]
       };
     })
-    .filter(function (r) { return r.esPrueba !== 'SÍ'; })
+    .filter(function (r) { return r.esPrueba !== 'SÍ' && accionesActividad_[r.accion]; })
     .reverse()
     .slice(0, n);
 
