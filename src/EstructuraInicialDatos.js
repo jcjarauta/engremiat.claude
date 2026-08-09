@@ -79,6 +79,14 @@ var ORDEN_HOJAS_ESTRUCTURA_INICIAL = Object.freeze([
  * sembrarCatalogoInicial_ (EstructuraInicialService.js) para no sembrar
  * catálogo de módulos que el cliente no tiene instalados. Las categorías
  * sin entrada aquí se consideran CORE (base, siempre instalada).
+ *
+ * IMPORTANTE (hallazgo en vivo -- ERROR_CATALOGO: no existe el rango con
+ * nombre CFG_IMPACTO al crear una Decisión/Incidencia en un cliente sin
+ * el módulo IMPACTO): IMPACTO (Bajo/Medio/Alto/Crítico) NO va aquí,
+ * aunque su nombre se parezca a CATEGORIA_IMPACTO -- lo usan
+ * DECISION.IMPACTO e INCIDENCIA.IMPACTO, ambas entidades CORE, así que
+ * tiene que sembrarse siempre. CATEGORIA_IMPACTO (Social/Ecológico/
+ * Económico) sí es del módulo IMPACTO -- solo la usa ETIQUETA_IMPACTO.
  */
 var MODULO_POR_CATEGORIA_CATALOGO = Object.freeze({
   CATEGORIA_MATERIAL: 'COMPRAS',
@@ -98,7 +106,6 @@ var MODULO_POR_CATEGORIA_CATALOGO = Object.freeze({
   ESTADO_CONVOCATORIA: 'CONVOCATORIAS',
   TIPO_CONVOCATORIA: 'CONVOCATORIAS',
   CATEGORIA_IMPACTO: 'IMPACTO',
-  IMPACTO: 'IMPACTO',
   ESTADO_CLIENTE: 'CLIENTE',
   TIPO_CLIENTE: 'CLIENTE',
   CANAL_PEDIDO_CLIENTE: 'VENTAS',

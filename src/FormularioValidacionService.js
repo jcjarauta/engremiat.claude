@@ -94,8 +94,21 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
       if (Array.isArray(copia.opciones)) {
         copia.opciones = copia.opciones.slice();
       } else {
-        var catalogo =
-          obtenerCatalogo(copia.catalogo);
+        /*
+         * Igual que el fk mas abajo (ver conversacion -- ERROR_CATALOGO:
+         * no existe el rango con nombre CFG_IMPACTO): un campo catalogo
+         * puede apuntar a una categoria que, por un mapeo de modulo
+         * equivocado, no se sembro en este cliente. El caso concreto ya
+         * esta corregido en MODULO_POR_CATEGORIA_CATALOGO, pero sin este
+         * try/catch cualquier descuadre similar futuro rompia el
+         * formulario ENTERO en vez de solo dejar ese campo sin opciones.
+         */
+        var catalogo;
+        try {
+          catalogo = obtenerCatalogo(copia.catalogo);
+        } catch (errorCatalogo) {
+          catalogo = [];
+        }
 
         copia.opciones =
           Array.isArray(catalogo)
