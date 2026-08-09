@@ -151,6 +151,7 @@
       switch (nombreFuncion) {
         case "seleccionarYAbrirEdicion": google.script.run.withFailureHandler(onError).seleccionarYAbrirEdicion(entidad, id); return;
         case "seleccionarYAbrirFicha": google.script.run.withFailureHandler(onError).seleccionarYAbrirFicha(entidad, id); return;
+        case "seleccionarYAbrirFichaCampana": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaCampana(entidad, id); return;
         case "seleccionarYAbrirFichaConvocatoria": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaConvocatoria(entidad, id); return;
         case "seleccionarYAbrirFichaIncidencia": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaIncidencia(entidad, id); return;
         case "seleccionarYAbrirFichaMaterial": google.script.run.withFailureHandler(onError).seleccionarYAbrirFichaMaterial(entidad, id); return;
@@ -171,6 +172,7 @@
       switch (nombreFuncion) {
         case "seleccionarYAbrirEdicion": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirEdicion(entidad, id); return;
         case "seleccionarYAbrirFicha": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFicha(entidad, id); return;
+        case "seleccionarYAbrirFichaCampana": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaCampana(entidad, id); return;
         case "seleccionarYAbrirFichaConvocatoria": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaConvocatoria(entidad, id); return;
         case "seleccionarYAbrirFichaIncidencia": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaIncidencia(entidad, id); return;
         case "seleccionarYAbrirFichaMaterial": google.script.run.withSuccessHandler(onExito).withFailureHandler(onError).seleccionarYAbrirFichaMaterial(entidad, id); return;

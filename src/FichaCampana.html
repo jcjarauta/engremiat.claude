@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .cabecera-ficha { margin-bottom: 14px; }
+      .cabecera-ficha h2 { margin: 0 0 4px 0; font-size: 18px; }
+      .cabecera-ficha .detalle { color: var(--color-texto-secundario); font-size: 13px; }
+      .cabecera-ficha .acciones { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+      section.bloque { margin-bottom: 16px; }
+      section.bloque h3 { font-size: 14px; margin: 0 0 6px 0; display: flex; align-items: center; justify-content: space-between; }
+      .fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 4px; border-bottom: 1px solid var(--color-borde); }
+      .fila:last-child { border-bottom: none; }
+      .fila .info { font-size: 13px; }
+      .fila .info .detalle-secundario { color: var(--color-texto-secundario); }
+      .btn-mini { font-size: 13px; padding: 5px 9px; }
+      .badge { font-size: 12px; padding: 2px 9px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-bloque { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; padding: 4px; }
+      .resumen-avance { display: flex; gap: 14px; flex-wrap: wrap; background: var(--color-fondo-suave); border-radius: 6px; padding: 8px 12px; font-size: 13px; margin-bottom: 16px; }
+      .resumen-avance .dato { display: flex; flex-direction: column; }
+      .resumen-avance .dato .valor { font-size: 16px; font-weight: bold; }
+      .resumen-avance .dato .etiqueta { color: var(--color-texto-secundario); font-size: 11px; }
+      #estadoCarga { padding: 12px 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="contenido" style="display:none;">
+      <div class="cabecera-ficha">
+        <h2 id="nombreCampana"></h2>
+        <div class="detalle" id="detalleCampana"></div>
+        <div class="acciones">
+          <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
+          <button id="btnVerPanel" class="boton btn-mini">Ver panel de campaña</button>
+          <button id="btnVerGantt" class="boton btn-mini">Ver Gantt</button>
+          <button id="btnExportarCsv" class="boton btn-mini">Exportar CSV</button>
+        </div>
+      </div>
+
+      <div class="resumen-avance" id="resumenAvance"></div>
+
+      <section class="bloque">
+        <h3>Proyectos vinculados <button id="btnNuevoProyecto" class="boton btn-mini">+ Proyecto</button></h3>
+        <div class="lista" id="listaProyectos"></div>
+      </section>
+      <section class="bloque">
+        <h3>Incidencias <button id="btnNuevaIncidencia" class="boton btn-mini">+ Incidencia</button></h3>
+        <div class="lista" id="listaIncidencias"></div>
+      </section>
+      <section class="bloque">
+        <h3>Documentos <button id="btnNuevoDocumento" class="boton btn-mini">+ Documento</button></h3>
+        <div class="lista" id="listaDocumentos"></div>
+      </section>
+      <section class="bloque" id="bloquePresupuesto">
+        <h3>Presupuesto</h3>
+        <div class="lista" id="listaPresupuesto"></div>
+      </section>
+    </div>
+
+    <script>
+      var ID_REGISTRO = <?!= JSON.stringify(idRegistro) ?>;
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || "").toLowerCase();
+        if (texto.indexOf("inactiv") !== -1 || texto.indexOf("no dispon") !== -1 || texto.indexOf("bloque") !== -1 || texto.indexOf("cancel") !== -1 || texto.indexOf("rechaz") !== -1) return "badge-bloqueado";
+        if (texto.indexOf("activ") !== -1) return "badge-completado";
+        if (texto.indexOf("complet") !== -1 || texto.indexOf("aprob") !== -1) return "badge-completado";
+        return "badge-neutro";
+      }
+
+      function renderBadge_(estado) {
+        if (!estado) return "";
+        return ' <span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function editar(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirEdicionConRetornoAFicha(entidad, id, 'CAMPANA', ID_REGISTRO);
+      }
+
+      function mostrarError(error) {
+        document.getElementById("estadoCarga").textContent = "Error: " + (error && error.message ? error.message : error);
+        document.getElementById("estadoCarga").style.display = "block";
+        document.getElementById("contenido").style.display = "none";
+      }
+
+      function filaHtml_(infoHtml, entidadEditar, idEditar) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
+      }
+
+      /* Mismo patron "Ver ficha" + "Editar" que Ficha de Proyecto usa para Producto. */
+      function verFichaProyecto(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaProyecto(id);
+      }
+
+      function filaProyectoHtml_(infoHtml, proyectoId) {
+        return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
+          '<span class="celda-acciones" style="display:flex;gap:6px;">' +
+          '<button class="boton btn-mini" onclick="verFichaProyecto(\'' + proyectoId + '\')">Ver ficha</button>' +
+          '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + proyectoId + '\')">Editar</button>' +
+          '</span></div>';
+      }
+
+      function render(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+        document.getElementById("contenido").style.display = "block";
+
+        var c = datos.campana;
+        document.getElementById("nombreCampana").innerHTML = escapeHtml(c.NOMBRE) + renderBadge_(c.ESTADO);
+        document.getElementById("detalleCampana").textContent =
+          c.ID +
+          (c.FECHA_INICIO_PLAN ? " · " + new Date(c.FECHA_INICIO_PLAN).toLocaleDateString() : "") +
+          (c.FECHA_FIN_PLAN ? " – " + new Date(c.FECHA_FIN_PLAN).toLocaleDateString() : "") +
+          (c.OBJETIVO ? " · " + c.OBJETIVO : "");
+
+        var r = datos.resumenAvance;
+        document.getElementById("resumenAvance").innerHTML =
+          '<div class="dato"><span class="valor">' + datos.proyectos.length + '</span><span class="etiqueta">proyectos</span></div>' +
+          '<div class="dato"><span class="valor">' + r.procesosTotal + '</span><span class="etiqueta">procesos</span></div>' +
+          '<div class="dato"><span class="valor">' + (r.diasDesviacionMedia === null ? '—' : r.diasDesviacionMedia) + '</span><span class="etiqueta">desviación media (días)</span></div>' +
+          '<div class="dato"><span class="valor">' + r.procesosEnRiesgo + '</span><span class="etiqueta">en riesgo (plazo vencido, sin terminar)</span></div>';
+
+        document.getElementById("listaProyectos").innerHTML = datos.proyectos.length
+          ? datos.proyectos.map(function (p) {
+              return filaProyectoHtml_(escapeHtml(p.nombre) + renderBadge_(p.estado), p.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin proyectos vinculados todavía.</div>';
+
+        document.getElementById("listaIncidencias").innerHTML = datos.incidencias.length
+          ? datos.incidencias.map(function (i) {
+              return filaHtml_(escapeHtml(i.titulo) + renderBadge_(i.estado), 'INCIDENCIA', i.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin incidencias a este nivel.</div>';
+
+        document.getElementById("listaDocumentos").innerHTML = datos.documentos.length
+          ? datos.documentos.map(function (d) {
+              return filaHtml_(escapeHtml(d.titulo) + (d.tipo ? ' <span class="detalle-secundario">— ' + escapeHtml(d.tipo) + '</span>' : '') + renderBadge_(d.estado), 'DOCUMENTO', d.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin documentos adjuntos.</div>';
+
+        /*
+         * Presupuesto solo tiene sentido con el módulo ECONOMICO
+         * instalado -- mismo criterio que FichaProyecto.html.
+         */
+        if (datos.presupuesto && datos.presupuesto.length) {
+          document.getElementById("listaPresupuesto").innerHTML = datos.presupuesto.map(function (pr) {
+            return filaHtml_(escapeHtml(pr.categoria) + (pr.importePrevisto ? ' <span class="detalle-secundario">— ' + escapeHtml(pr.importePrevisto) + ' €</span>' : ''), 'PRESUPUESTO', pr.id);
+          }).join("");
+        } else {
+          document.getElementById("bloquePresupuesto").style.display = "none";
+        }
+
+        document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("CAMPANA", c.ID); });
+        document.getElementById("btnVerPanel").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(c.ID);
+        });
+        document.getElementById("btnVerGantt").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(c.ID);
+        });
+        document.getElementById("btnExportarCsv").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaCampanaCSV(c.ID);
+        });
+        document.getElementById("btnNuevoProyecto").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoConCampana(c.ID);
+        });
+        document.getElementById("btnNuevaIncidencia").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaCampana(c.ID);
+        });
+        document.getElementById("btnNuevoDocumento").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearDocumentoParaCampana(c.ID);
+        });
+      }
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaCampana(ID_REGISTRO);
+    </script>
+  </body>
+</html>

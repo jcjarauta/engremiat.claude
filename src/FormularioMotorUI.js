@@ -136,6 +136,7 @@ function construirSubmenuNavegarYEditar_(ui) {
 function construirSubmenuCampanaProyecto_(ui) {
   return ui.createMenu('Campaña → Proyecto → Producto → Proceso → Tarea')
     .addItem('Gestión de campaña (vista global)', 'abrirPanelCampana')
+    .addItem('Ficha de campaña (buscar)', 'abrirFichaCampanaBuscar')
     .addItem('Ficha de proyecto (buscar)', 'abrirFichaProyectoBuscar')
     .addItem('Ficha de producto (buscar)', 'abrirFichaProductoBuscar')
     .addItem('Ficha de proceso (buscar)', 'abrirFichaProcesoBuscar')
@@ -509,6 +510,7 @@ function abrirDependienteConRetorno(entidadHijo, idHijo, entidadOrigen, idOrigen
 function abrirFichaPorEntidad_(entidad, id) {
   var clave = String(entidad || '').trim().toUpperCase();
   if (clave === 'PERSONA_EQUIPO') { abrirFichaPersonaEquipo(id); return; }
+  if (clave === 'CAMPANA') { abrirFichaCampana(id); return; }
   if (clave === 'PROYECTO') { abrirFichaProyecto(id); return; }
   if (clave === 'PRODUCTO') { abrirFichaProducto(id); return; }
   if (clave === 'PROCESO') { abrirFichaProceso(id); return; }
@@ -652,7 +654,7 @@ function abrirFormularioCrearDecisionParaProyecto(proyectoId) {
   abrirFormularioCrear_('DECISION', 'Nueva decisión', { PROYECTO_ID: proyectoId }, { tipo: 'ficha', entidad: 'PROYECTO', id: proyectoId });
 }
 function abrirFormularioCrearIncidenciaParaCampana(campanaId) {
-  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', { CAMPANA_ID: campanaId, NIVEL_INCIDENCIA: 'Campaña' });
+  abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', { CAMPANA_ID: campanaId, NIVEL_INCIDENCIA: 'Campaña' }, { tipo: 'ficha', entidad: 'CAMPANA', id: campanaId });
 }
 function abrirFormularioCrearIncidenciaParaProyecto(campanaId, proyectoId) {
   abrirFormularioCrear_('INCIDENCIA', 'Nueva incidencia', {
