@@ -62,6 +62,25 @@ function moduloInstalado_(nombreModulo) {
   return modulosInstaladosClienteActual_.indexOf(nombreModulo) !== -1;
 }
 
+/*
+ * moduloGanttInstalado (ver conversacion -- "el boton de acceso a
+ * gantt... deberiamos dejarlo visible pero anulado... o eliminado"):
+ * a diferencia de moduloInstalado_(), que solo puede leer
+ * modulosInstaladosClienteActual_ (fijada por onOpen(), no vigente en
+ * la ejecucion aislada de un google.script.run posterior desde una
+ * Ficha/Panel), esta función recibe MODULOS_INSTALADOS_CLIENTE como
+ * argumento explícito -- mismo caso especial que abrirInstalarEstructuraInicial,
+ * ver FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS en generate-shell-wrappers.mjs
+ * y GeneradorEnvoltoriosEmbebido.js. Las Fichas/Panel la llaman al cargar
+ * para ocultar "Ver Gantt"/"Ver ocupación" en clientes sin GANTT --
+ * GanttPlanReal.html hace ~17 llamadas a funciones del módulo GANTT
+ * (DesviacionService.js), así que sin ese módulo el diálogo se queda
+ * colgado en "Cargando..." en vez de fallar con un error claro.
+ */
+function moduloGanttInstalado(modulosInstalados) {
+  return Array.isArray(modulosInstalados) ? modulosInstalados.indexOf('GANTT') !== -1 : true;
+}
+
 /**
  * modulosInstalados: array de módulos instalados en el cliente que llama,
  * pasado explícitamente por el envoltorio onOpen() generado en el Codigo.js

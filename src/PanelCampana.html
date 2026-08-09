@@ -5,9 +5,20 @@
     <?!= include('Estilos') ?>
     <style>
       body { font-size: 14px; }
-      .cabecera { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-      .cabecera select { flex: 1; font-size: 14px; padding: 8px; }
-      .cabecera button { flex-shrink: 0; }
+      /*
+       * Buscador + botones en dos filas (ver conversacion -- "el
+       * buscador de campaña queda muy pequeño en la barra lateral"):
+       * antes compartian una sola fila con 4 botones, dejando muy poco
+       * ancho al <select> en el ancho fijo del sidebar. Fila 1 =
+       * buscador + "Nueva campaña" (la accion mas usada); fila 2 = el
+       * resto de acciones secundarias (actualizar/exportar/Gantt) +
+       * el checkbox de piloto/auditoria.
+       */
+      .cabecera { margin-bottom: 8px; }
+      .cabecera-fila { display: flex; gap: 8px; align-items: center; }
+      .cabecera-fila + .cabecera-fila { margin-top: 6px; }
+      .cabecera-fila select { flex: 1; font-size: 14px; padding: 8px; }
+      .cabecera-fila button { flex-shrink: 0; }
       .resumen-campana { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 12px; }
       details { margin-bottom: 8px; }
       details > div { margin-left: 18px; border-left: 2px solid var(--color-borde); padding-left: 12px; }
@@ -48,14 +59,18 @@
   </head>
   <body>
     <div class="cabecera">
-      <select id="selectCampana"><option value="">-- elige una campaña --</option></select>
-      <button id="btnNuevaCampana" class="btn-mini boton-primario" title="Nueva campaña">+</button>
-      <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
-      <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇️</button>
-      <button id="btnVerGantt" class="btn-mini" title="Ver Gantt de esta campaña">📊</button>
-      <label style="display:flex;align-items:center;gap:4px;font-weight:normal;font-size:12px;">
-        <input type="checkbox" id="incluirPruebas"> Piloto/auditoría
-      </label>
+      <div class="cabecera-fila">
+        <select id="selectCampana"><option value="">-- elige una campaña --</option></select>
+        <button id="btnNuevaCampana" class="btn-mini boton-primario" title="Nueva campaña">+</button>
+      </div>
+      <div class="cabecera-fila">
+        <button id="btnActualizar" class="btn-mini" title="Volver a cargar (por si has creado/editado algo)">🔄</button>
+        <button id="btnExportar" class="btn-mini" title="Exportar CSV">⬇️</button>
+        <button id="btnVerGantt" class="btn-mini" title="Ver Gantt de esta campaña">📊</button>
+        <label style="display:flex;align-items:center;gap:4px;font-weight:normal;font-size:12px;">
+          <input type="checkbox" id="incluirPruebas"> Piloto/auditoría
+        </label>
+      </div>
     </div>
     <div id="resumenCampana" class="resumen-campana"></div>
 
@@ -454,6 +469,11 @@
           .withFailureHandler(function () { cargarOpcionesCampana(); })
           .obtenerUltimaCampanaPanel();
       }
+
+      /* "Ver Gantt" solo tiene sentido con el módulo GANTT instalado -- ver FichaCampana.html. */
+      google.script.run.withSuccessHandler(function (instalado) {
+        if (!instalado) document.getElementById("btnVerGantt").style.display = "none";
+      }).moduloGanttInstalado();
     </script>
   </body>
 </html>

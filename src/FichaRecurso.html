@@ -149,6 +149,11 @@
       }
 
       google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaRecurso(ID_REGISTRO);
+
+      /* "Ver ocupación" solo tiene sentido con el módulo GANTT instalado -- ver FichaCampana.html. */
+      google.script.run.withSuccessHandler(function (instalado) {
+        if (!instalado) document.getElementById("btnVerOcupacion").style.display = "none";
+      }).moduloGanttInstalado();
     </script>
   </body>
 </html>

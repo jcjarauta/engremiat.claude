@@ -182,6 +182,19 @@
       }
 
       google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaCampana(ID_REGISTRO);
+
+      /*
+       * "Ver Gantt" abre GanttPlanReal.html, que hace ~17 llamadas a
+       * funciones del módulo GANTT (DesviacionService.js) -- sin ese
+       * módulo instalado el diálogo se queda colgado en "Cargando..."
+       * en vez de fallar con un error claro (ver conversación). Se
+       * oculta el botón en vez de deshabilitarlo: en un cliente sin
+       * GANTT nadie puede instalarlo desde aquí, así que un botón gris
+       * con tooltip solo añade ruido sin dar ninguna opción real.
+       */
+      google.script.run.withSuccessHandler(function (instalado) {
+        if (!instalado) document.getElementById("btnVerGantt").style.display = "none";
+      }).moduloGanttInstalado();
     </script>
   </body>
 </html>

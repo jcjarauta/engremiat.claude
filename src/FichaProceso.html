@@ -167,6 +167,11 @@
       }
 
       google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerFichaProceso(ID_REGISTRO);
+
+      /* "Ver Gantt" solo tiene sentido con el módulo GANTT instalado -- ver FichaCampana.html. */
+      google.script.run.withSuccessHandler(function (instalado) {
+        if (!instalado) document.getElementById("btnVerGantt").style.display = "none";
+      }).moduloGanttInstalado();
     </script>
   </body>
 </html>
