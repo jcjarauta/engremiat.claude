@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 168,
+  "universeExpected": 169,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -333,6 +333,17 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "4ba573c9c4534d74cc598bb4c39017e979d8add978d035a3dfac29b5463fcbf1",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/BusquedaGlobalService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "bcd0fb4524f7665528a3bf63f36b471c717ab9a1ae24f07aa618bced0b080798",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -860,7 +871,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "a66deababd7a1bd1b6522a0a9c76af7df397e655037446ecbfa0b577a63f2d71",
+      "expectedSha256": "ec737ed2ec094fa6b2887da48cdd0795bd303ff65b6eeddefb2445415146f8ae",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1388,7 +1399,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "d8ad890347b1f38602aff0c702ed9fcb62ec988ecd40a8cf77dbbf11be441997",
+      "expectedSha256": "4999e36e07825975df60d6f8f4710c3cc6710a8b8837cd0e1bcdec3b949b74bf",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

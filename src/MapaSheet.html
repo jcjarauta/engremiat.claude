@@ -20,11 +20,30 @@
       .tarjeta .detalle { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
       .separador { font-size: 11px; font-weight: bold; color: var(--color-texto-secundario); text-transform: uppercase; letter-spacing: .03em; margin: 16px 0 6px 2px; }
       .separador:first-of-type { margin-top: 0; }
+      .fila-busqueda { display: flex; gap: 6px; margin-bottom: 4px; }
+      .fila-busqueda input { flex: 1; margin-top: 0; }
+      .resultado-busqueda {
+        display: flex; justify-content: space-between; align-items: center; gap: 8px;
+        padding: 7px 8px; cursor: pointer; border-radius: 6px; font-size: 12px;
+      }
+      .resultado-busqueda:hover { background: var(--color-fondo-suave); }
+      .resultado-busqueda .etiqueta-entidad { color: var(--color-texto-secundario); font-size: 10px; text-transform: uppercase; flex-shrink: 0; }
+      .vacio-busqueda { color: var(--color-texto-secundario); font-style: italic; font-size: 12px; padding: 4px; }
+      .fila-actividad { padding: 6px 2px; border-bottom: 1px solid var(--color-borde); font-size: 12px; cursor: pointer; }
+      .fila-actividad:last-child { border-bottom: none; }
+      .fila-actividad:hover { background: var(--color-fondo-suave); }
+      .fila-actividad .cuando { color: var(--color-texto-secundario); font-size: 11px; }
     </style>
   </head>
   <body>
     <h3>🗺️ Mapa del sheet</h3>
     <div class="subtitulo">Un único punto de partida para navegar el taller -- elige un espacio.</div>
+
+    <div class="fila-busqueda">
+      <input type="text" id="terminoBusqueda" placeholder="Buscar por nombre o ID..." onkeydown="if(event.key==='Enter')buscar();">
+      <button class="boton boton-primario" onclick="buscar()">Buscar</button>
+    </div>
+    <div id="resultadosBusqueda"></div>
 
     <div class="separador">Producción</div>
     <button class="tarjeta" onclick="abrir('abrirPanelCampana')">
@@ -83,6 +102,9 @@
       </span>
     </button>
 
+    <div class="separador">Actividad reciente</div>
+    <div id="listaActividad" class="vacio-busqueda">Cargando...</div>
+
     <div id="mensaje"></div>
 
     <script>
@@ -112,6 +134,66 @@
         document.getElementById('mensaje').className = 'error';
         document.getElementById('mensaje').textContent = 'Error: ' + (error && error.message ? error.message : error);
       }
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function verFichaDesdeMapa(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaDesdeResultadoBusqueda(entidad, id);
+      }
+
+      function buscar() {
+        var termino = document.getElementById('terminoBusqueda').value;
+        var contenedor = document.getElementById('resultadosBusqueda');
+        if (!termino || !termino.trim()) { contenedor.innerHTML = ''; return; }
+        contenedor.innerHTML = '<div class="vacio-busqueda">Buscando...</div>';
+        google.script.run
+          .withFailureHandler(mostrarError)
+          .withSuccessHandler(function (resultados) {
+            contenedor.innerHTML = resultados.length
+              ? resultados.map(function (r) {
+                  return '<div class="resultado-busqueda" onclick="verFichaDesdeMapa(\'' + r.entidad + '\',\'' + escapeHtml(r.id) + '\')">' +
+                    '<span>' + escapeHtml(r.etiqueta) + '</span>' +
+                    '<span class="etiqueta-entidad">' + escapeHtml(r.entidadEtiqueta) + '</span>' +
+                  '</div>';
+                }).join('')
+              : '<div class="vacio-busqueda">Sin resultados para "' + escapeHtml(termino) + '".</div>';
+          })
+          .buscarGlobal(termino);
+      }
+
+      var ETIQUETAS_ENTIDAD_ACTIVIDAD_ = {
+        CAMPANA: 'Campaña', PROYECTO: 'Proyecto', PRODUCTO: 'Producto', PROCESO: 'Proceso', TAREA: 'Tarea',
+        PERSONA_EQUIPO: 'Persona/equipo', RECURSO: 'Recurso', INCIDENCIA: 'Incidencia',
+        MATERIAL: 'Material', PROVEEDOR: 'Proveedor', CONVOCATORIA: 'Convocatoria'
+      };
+      var ACCIONES_ACTIVIDAD_ = { CREAR: 'creó', ACTUALIZAR: 'editó', DESACTIVAR: 'desactivó', REACTIVAR: 'reactivó' };
+
+      function formatearFechaRelativa_(iso) {
+        var fecha = new Date(iso);
+        if (isNaN(fecha.getTime())) return '';
+        return fecha.toLocaleDateString() + ' ' + fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+
+      google.script.run
+        .withFailureHandler(function () { document.getElementById('listaActividad').innerHTML = '<div class="vacio-busqueda">No se pudo cargar la actividad reciente.</div>'; })
+        .withSuccessHandler(function (actividad) {
+          document.getElementById('listaActividad').innerHTML = actividad.length
+            ? actividad.map(function (a) {
+                var etiquetaEntidad = ETIQUETAS_ENTIDAD_ACTIVIDAD_[a.entidad] || a.entidad;
+                var accion = ACCIONES_ACTIVIDAD_[a.accion] || a.accion;
+                var abrible = !!ETIQUETAS_ENTIDAD_ACTIVIDAD_[a.entidad];
+                var onclick = abrible ? ' onclick="verFichaDesdeMapa(\'' + a.entidad + '\',\'' + escapeHtml(a.registroId) + '\')"' : '';
+                return '<div class="fila-actividad"' + onclick + '>' +
+                  escapeHtml(a.usuario) + ' ' + accion + ' ' + etiquetaEntidad.toLowerCase() + ' ' + escapeHtml(a.registroId) +
+                  '<div class="cuando">' + formatearFechaRelativa_(a.timestamp) + '</div>' +
+                '</div>';
+              }).join('')
+            : '<div class="vacio-busqueda">Sin actividad todavía.</div>';
+        })
+        .obtenerActividadReciente(8);
 
       /*
        * Despacho literal, no dinámico (ver conversación -- hallazgo

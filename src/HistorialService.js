@@ -113,6 +113,52 @@ function listarHistorialPorOrigen(origen, incluirPruebas) {
     });
 }
 
+/*
+ * Actividad reciente (ver conversación -- "Mapa del sheet ... actividad
+ * reciente"): las últimas N operaciones REALES (se descartan las
+ * marcadas ES_PRUEBA) sobre cualquier entidad, más recientes primero.
+ * 91_HISTORIAL se escribe siempre con appendRow, así que las filas ya
+ * están en orden cronológico -- no hace falta ordenar, solo leer la
+ * cola de la hoja y descartar pruebas. Se sobre-lee un margen (x4) para
+ * no quedarse corto de resultados reales tras filtrar pruebas.
+ */
+function obtenerActividadReciente(limite) {
+  var hoja = SpreadsheetApp.getActive().getSheetByName('91_HISTORIAL');
+  if (!hoja) return [];
+
+  var ultimaFila = hoja.getLastRow();
+  if (ultimaFila < 2) return [];
+
+  var ultimaColumna = hoja.getLastColumn();
+  var encabezados = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0];
+  var indice = {};
+  encabezados.forEach(function (c, i) { indice[c] = i; });
+
+  var n = limite || 10;
+  var margenPruebas = 4;
+  var filasALeer = Math.min(ultimaFila - 1, n * margenPruebas);
+  var filaInicio = ultimaFila - filasALeer + 1;
+  var valores = hoja.getRange(filaInicio, 1, filasALeer, ultimaColumna).getValues();
+
+  var resultado = valores
+    .map(function (fila) {
+      return {
+        id: fila[indice.ID_HISTORIAL],
+        timestamp: fila[indice.TIMESTAMP],
+        usuario: fila[indice.USUARIO],
+        accion: fila[indice.ACCION],
+        entidad: fila[indice.ENTIDAD],
+        registroId: fila[indice.REGISTRO_ID],
+        esPrueba: fila[indice.ES_PRUEBA]
+      };
+    })
+    .filter(function (r) { return r.esPrueba !== 'SÍ'; })
+    .reverse()
+    .slice(0, n);
+
+  return serializarParaCliente_(resultado);
+}
+
 /**
  * Migracion unica de 91_HISTORIAL del esquema de Fase 10 (12 columnas) al esquema
  * ampliado de Fase 1 de BL-MVP-02 (15 columnas). Preserva todas las filas existentes.
