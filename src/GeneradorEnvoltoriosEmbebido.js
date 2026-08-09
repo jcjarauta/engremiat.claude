@@ -23,7 +23,7 @@ var SIMPLE_TRIGGER_NAMES_EMBEBIDO_ = { onOpen: true, onEdit: true };
 
 // Ver FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS en generate-shell-wrappers.mjs:
 // mismo criterio, misma lista.
-var FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_ = { onOpen: true, abrirInstalarEstructuraInicial: true, moduloGanttInstalado: true };
+var FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_ = { onOpen: true, abrirInstalarEstructuraInicial: true, moduloGanttInstalado: true, abrirMapaSheet: true };
 
 function compararRutasCanonicas_(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;

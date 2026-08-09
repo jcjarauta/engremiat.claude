@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 165,
+  "universeExpected": 167,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -783,7 +783,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "71ad16b9bbec9549353f1bff8bc1eabbd52403dcd2b9ff45d89a6bdb7dfdbe1a",
+      "expectedSha256": "a2b7da5628cff78b8cbff6c1a3ddf51665d43d0fde876c874dc5564e91810c88",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -827,7 +827,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c11f419f2a1855f65a5fb93e6ce1ff83910f86b785a02017ec3095bd04892cee",
+      "expectedSha256": "b7319a3cb466c1163f839526af209ab783809704922ad83e6547d89193fef609",
       "required": true,
       "reason": "operación/UI/config -- puerto de generate-shell-wrappers.mjs para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -1367,6 +1367,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "321d42f087f8dad6cf2db3b8cb4c11c26ba61a2a5d1de443cd070773fa64e857",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheet.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "2cb80b8d16f2ee2c62c5f4b2572943181d80bfe53e2a10d2a1604c26b7a6c294",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheetService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "e1da6d59036595bbe6674ace5b12c2d10fb1b0bd84a67b16f467fce962d5ec01",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

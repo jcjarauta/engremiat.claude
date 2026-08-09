@@ -102,6 +102,7 @@ function onOpen(modulosInstalados) {
   modulosInstaladosClienteActual_ = Array.isArray(modulosInstalados) ? modulosInstalados : null;
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
+    .addItem('🗺️ Mapa del sheet (inicio)', 'abrirMapaSheet')
     .addSubMenu(construirSubmenuAnalizar_(ui))
     .addSubMenu(construirSubmenuNavegarYEditar_(ui))
     .addSubMenu(construirSubmenuCrearYGestionar_(ui))

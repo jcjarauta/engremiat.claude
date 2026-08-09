@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      h3 { font-size: 16px; margin-bottom: 2px; }
+      .subtitulo { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 16px; }
+      .tarjeta {
+        display: flex; align-items: center; gap: 12px; width: 100%;
+        padding: 12px; margin-bottom: 10px; background: #fff; cursor: pointer;
+        border: 1px solid var(--color-borde); border-radius: 8px; text-align: left;
+        font-family: inherit; color: var(--color-texto);
+      }
+      .tarjeta:hover { background: var(--color-fondo-suave); border-color: var(--color-primario); }
+      .tarjeta .icono { font-size: 22px; flex-shrink: 0; }
+      .tarjeta .texto { flex: 1; }
+      .tarjeta .titulo { font-weight: bold; font-size: 13px; }
+      .tarjeta .detalle { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
+      .separador { font-size: 11px; font-weight: bold; color: var(--color-texto-secundario); text-transform: uppercase; letter-spacing: .03em; margin: 16px 0 6px 2px; }
+      .separador:first-of-type { margin-top: 0; }
+    </style>
+  </head>
+  <body>
+    <h3>🗺️ Mapa del sheet</h3>
+    <div class="subtitulo">Un único punto de partida para navegar el taller -- elige un espacio.</div>
+
+    <div class="separador">Producción</div>
+    <button class="tarjeta" onclick="abrir('abrirPanelCampana')">
+      <span class="icono">🏗️</span>
+      <span class="texto">
+        <div class="titulo">Gestión de campaña</div>
+        <div class="detalle">Campaña → Proyecto → Producto → Proceso → Tarea</div>
+      </span>
+    </button>
+    <button class="tarjeta" id="tarjetaOperativo" onclick="abrir('abrirPanelOperativo')">
+      <span class="icono">📊</span>
+      <span class="texto">
+        <div class="titulo">Panel operativo</div>
+        <div class="detalle">Alertas y avisos del taller de un vistazo</div>
+      </span>
+    </button>
+
+    <div class="separador">Equipo</div>
+    <button class="tarjeta" onclick="abrir('abrirPanelPersonas')">
+      <span class="icono">👥</span>
+      <span class="texto">
+        <div class="titulo">Personas y equipos</div>
+        <div class="detalle">Coordinador → equipo → miembros</div>
+      </span>
+    </button>
+    <button class="tarjeta" onclick="abrir('abrirPanelRecursos')">
+      <span class="icono">🛠️</span>
+      <span class="texto">
+        <div class="titulo">Espacios y recursos</div>
+        <div class="detalle">Herramientas, maquinaria, espacios físicos</div>
+      </span>
+    </button>
+
+    <div class="separador" id="separadorComercial" style="display:none;">Comercial</div>
+    <button class="tarjeta" id="tarjetaClientes" style="display:none;" onclick="abrir('abrirPanelClientes')">
+      <span class="icono">🧑‍💼</span>
+      <span class="texto">
+        <div class="titulo">Clientes</div>
+        <div class="detalle">Fichas de cliente e incidencias asociadas</div>
+      </span>
+    </button>
+    <button class="tarjeta" id="tarjetaVentas" style="display:none;" onclick="abrir('abrirPanelVentas')">
+      <span class="icono">💰</span>
+      <span class="texto">
+        <div class="titulo">Ventas</div>
+        <div class="detalle">Pedidos, entregas y contratos de servicio</div>
+      </span>
+    </button>
+
+    <div id="mensaje"></div>
+
+    <script>
+      var MODULOS_INSTALADOS = <?!= modulosInstalados ?>;
+
+      /*
+       * null = sin información de módulos (Sheet maestro en crudo, sin
+       * envoltorio) -- se asume que todo está instalado, mismo criterio
+       * de compatibilidad que moduloInstalado_() en FormularioMotorUI.js.
+       */
+      function moduloInstalado_(nombreModulo) {
+        if (!MODULOS_INSTALADOS) return true;
+        return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
+      }
+
+      if (!moduloInstalado_('COMPRAS')) {
+        document.getElementById('tarjetaOperativo').style.display = 'none';
+      }
+      var hayComercial = moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS');
+      if (hayComercial) {
+        document.getElementById('separadorComercial').style.display = '';
+        if (moduloInstalado_('CLIENTE')) document.getElementById('tarjetaClientes').style.display = '';
+        if (moduloInstalado_('VENTAS')) document.getElementById('tarjetaVentas').style.display = '';
+      }
+
+      function mostrarError(error) {
+        document.getElementById('mensaje').className = 'error';
+        document.getElementById('mensaje').textContent = 'Error: ' + (error && error.message ? error.message : error);
+      }
+
+      /*
+       * Despacho literal, no dinámico (ver conversación -- hallazgo
+       * repetido en este sheet): google.script.run solo expone las
+       * funciones que el generador de envoltorios detecta como llamada
+       * LITERAL "google.script.run....nombre(...)" en el fuente.
+       * [funcion]() es invisible a ese escaneo estático.
+       */
+      function abrir(funcion) {
+        switch (funcion) {
+          case 'abrirPanelCampana':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelCampana();
+            return;
+          case 'abrirPanelOperativo':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelOperativo();
+            return;
+          case 'abrirPanelPersonas':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelPersonas();
+            return;
+          case 'abrirPanelRecursos':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelRecursos();
+            return;
+          case 'abrirPanelClientes':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelClientes();
+            return;
+          case 'abrirPanelVentas':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelVentas();
+            return;
+        }
+        mostrarError({ message: 'Espacio desconocido: ' + funcion });
+      }
+    </script>
+  </body>
+</html>

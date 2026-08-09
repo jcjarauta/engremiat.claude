@@ -40,7 +40,7 @@ const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
 const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD']);
-const EXPECTED_MODULE_COUNTS = { CORE: 68, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 };
+const EXPECTED_MODULE_COUNTS = { CORE: 70, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -195,11 +195,11 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 165 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 167 || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 165) errors.push(`UNIVERSO_ESPERADO_165 actual=${map.entries.length}`);
+  if (map.entries.length !== 167) errors.push(`UNIVERSO_ESPERADO_167 actual=${map.entries.length}`);
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -238,7 +238,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 90, test: 9, auxiliary: 38, excluded: 28, mixed: 0 };
+  const expectedCounts = { production: 92, test: 9, auxiliary: 38, excluded: 28, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
@@ -261,7 +261,7 @@ export function validatePackageMap(map) {
   const mixed = map.entries.filter((entry) => entry.mixed).map((entry) => canonicalPath(entry.path)).sort(compareCanonicalPaths);
   if (JSON.stringify(mixed) !== JSON.stringify([...MIXED_FILES].map(canonicalPath).sort(compareCanonicalPaths))) errors.push('CINCO_MIXTOS_NO_COINCIDEN');
   const htmlA = map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html'));
-  if (htmlA.length !== 27) errors.push(`HTML_A_ESPERADOS_27 actual=${htmlA.length}`);
+  if (htmlA.length !== 28) errors.push(`HTML_A_ESPERADOS_28 actual=${htmlA.length}`);
   if (!map.entries.some((entry) => entry.path === 'src/appsscript.json' && entry.package === 'A')) errors.push('APPSSCRIPT_JSON_FALTA_EN_A');
   return errors;
 }
