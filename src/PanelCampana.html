@@ -429,7 +429,7 @@
       document.getElementById("btnVerGantt").addEventListener("click", function () {
         var campanaId = campanaSeleccionada_();
         if (!campanaId) { mostrarError({ message: "Elige una campaña antes de ver el Gantt." }); return; }
-        google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(campanaId);
+        google.script.run.withFailureHandler(mostrarError).abrirGanttParaCampana(campanaId);
       });
 
       /*

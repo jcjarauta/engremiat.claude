@@ -99,6 +99,21 @@ function abrirFichaCampanaBuscar() {
   abrirSelectorConAccion_('CAMPANA', 'Ver ficha de campaña', 'seleccionarYAbrirFichaCampana', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
+/*
+ * abrirGanttPlanReal (DesviacionService.js) es del módulo GANTT: en un
+ * cliente sin ese módulo instalado, google.script.run no tiene envoltorio
+ * para llamarla directo desde un HTML (el generador de envoltorios solo
+ * expone las funciones del módulo del cliente). Este pequeño wrapper SÍ
+ * es CORE, así que el botón "Ver Gantt" de la ficha funciona igual esté
+ * o no instalado GANTT -- si no lo está, la propia librería sigue
+ * teniendo la función (todas las librerías comparten un único código
+ * fuente), solo que ningún HTML de un cliente sin GANTT podía llamarla
+ * directamente hasta ahora.
+ */
+function abrirGanttParaCampana(campanaId) {
+  abrirGanttPlanReal(campanaId);
+}
+
 function abrirFormularioCrearDocumentoParaCampana(campanaId) {
   abrirFormularioCrear_('DOCUMENTO', 'Nuevo documento', { ENTIDAD_TIPO: 'Campaña', ENTIDAD_ID: campanaId }, { tipo: 'ficha', entidad: 'CAMPANA', id: campanaId });
 }

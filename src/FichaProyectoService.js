@@ -150,6 +150,22 @@ function abrirFormularioCrearDocumentoParaProyecto(proyectoId) {
 }
 
 /*
+ * abrirGanttPlanReal (DesviacionService.js) es del módulo GANTT -- mismo
+ * caso que abrirGanttParaCampana en FichaCampanaService.js: este
+ * wrapper SÍ es CORE, así que "Ver Gantt" funciona esté o no instalado
+ * GANTT. Resuelve la campaña internamente (PROYECTO.CAMPANA_ID es
+ * siempre una FK real, a diferencia de Proceso/Tarea) para no depender
+ * de que el cliente ya la traiga cargada.
+ */
+function abrirGanttParaProyecto(proyectoId) {
+  var proyecto = obtenerRegistroPorId('PROYECTO', proyectoId);
+  if (!proyecto) {
+    throw new Error('No existe ningún registro de Proyecto con id "' + proyectoId + '".');
+  }
+  abrirGanttPlanReal(proyecto.CAMPANA_ID);
+}
+
+/*
  * Exportar CSV de la ficha -- mismo exportador compartido que Producto,
  * Material y el Panel de Campaña.
  */

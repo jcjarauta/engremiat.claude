@@ -117,6 +117,16 @@ function abrirFichaRecursoBuscar() {
   abrirSelectorConAccion_('RECURSO', 'Ver ficha de espacio/recurso', 'seleccionarYAbrirFichaRecurso', 'obtenerOpcionesEntidadParaSelector', true);
 }
 
+/*
+ * abrirGanttOcupacionRecurso (DesviacionService.js) es del módulo
+ * GANTT -- mismo caso que abrirGanttParaCampana en
+ * FichaCampanaService.js: este wrapper SÍ es CORE, así que "Ver
+ * ocupación" funciona esté o no instalado GANTT.
+ */
+function abrirGanttOcupacionParaRecurso(recursoId, recursoNombre) {
+  abrirGanttOcupacionRecurso(recursoId, recursoNombre);
+}
+
 function abrirFormularioCrearHorarioParaRecurso(recursoId) {
   abrirFormularioCrear_('HORARIO', 'Nuevo horario (franja semanal)', {
     ENTIDAD_TIPO: 'Recurso', ENTIDAD_ID: recursoId

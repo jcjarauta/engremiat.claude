@@ -185,7 +185,7 @@
           google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(datos.campanaId);
         });
         document.getElementById("btnVerGantt").addEventListener("click", function () {
-          google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(datos.campanaId);
+          google.script.run.withFailureHandler(mostrarError).abrirGanttParaProyecto(p.ID);
         });
         document.getElementById("btnExportarCsv").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaProyectoCSV(p.ID);

@@ -138,7 +138,7 @@
 
         document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("RECURSO", r.ID); });
         document.getElementById("btnVerOcupacion").addEventListener("click", function () {
-          google.script.run.withFailureHandler(mostrarError).abrirGanttOcupacionRecurso(r.ID, r.NOMBRE);
+          google.script.run.withFailureHandler(mostrarError).abrirGanttOcupacionParaRecurso(r.ID, r.NOMBRE);
         });
         document.getElementById("btnNuevoHorario").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearHorarioParaRecurso(r.ID);

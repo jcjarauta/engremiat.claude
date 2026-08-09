@@ -165,7 +165,7 @@
           google.script.run.withFailureHandler(mostrarError).abrirPanelCampanaEnCampana(c.ID);
         });
         document.getElementById("btnVerGantt").addEventListener("click", function () {
-          google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal(c.ID);
+          google.script.run.withFailureHandler(mostrarError).abrirGanttParaCampana(c.ID);
         });
         document.getElementById("btnExportarCsv").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaCampanaCSV(c.ID);
