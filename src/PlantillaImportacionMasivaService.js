@@ -176,6 +176,14 @@ function construirPromptIA_(grupo) {
     'masiva" del Sheet (paso "Subir CSV ya rellenado"), con el mismo nombre',
     'de archivo que la hoja de destino.',
     '',
+    esCampana
+      ? 'Importante para el final de la conversación: esta plantilla NO asigna responsables ni ' +
+        'recursos a las tareas -- eso es un lote aparte (grupo "Asignaciones", plantilla ' +
+        'STG_TAREA_RESPONSABLE/STG_TAREA_RECURSO). Cuando terminemos de generar y confirmar este ' +
+        'lote, recuérdame explícitamente que las tareas se quedan sin responsable/recurso hasta que ' +
+        'haga esa segunda importación -- no lo des por hecho ni lo omitas.'
+      : null,
+    '',
     'Para empezar, hazme la primera pregunta del bloque 1.'
   ];
 
