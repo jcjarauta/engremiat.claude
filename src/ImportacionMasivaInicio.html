@@ -42,6 +42,7 @@
           con sus columnas ya tituladas. No borra ni toca hojas que ya tengas.
         </div>
         <button class="boton" onclick="ejecutar('instalarStagingImportacionMasiva')">Preparar hojas</button>
+        <button class="boton boton-peligro" style="margin-top:6px;" onclick="ejecutar('vaciarHojasStaging')">Vaciar todas las hojas STG_*</button>
       </span>
     </div>
 
@@ -158,6 +159,7 @@
 
     <script>
       function mostrarError(error) {
+        establecerOcupado_(false);
         document.getElementById('mensaje').className = 'error';
         document.getElementById('mensaje').textContent = 'Error: ' + (error && error.message ? error.message : error);
       }
@@ -167,12 +169,32 @@
       }
 
       /*
+       * Indicador de "cargando" (ver conversación -- "necesitamos añadirle
+       * algún cargando para no crear confusión"): con lotes grandes (la
+       * validación de 100+ filas, o el commit de una importación real)
+       * pasan varios segundos entre pulsar el botón y que aparezca el
+       * primer diálogo nativo de confirmación/error -- sin esto, ese hueco
+       * parecía que el botón no había hecho nada. Deshabilita todos los
+       * botones mientras hay una operación en curso, para evitar además
+       * un doble clic que dispare el mismo lote dos veces.
+       */
+      function establecerOcupado_(ocupado, mensaje) {
+        document.querySelectorAll('.boton').forEach(function (boton) { boton.disabled = ocupado; });
+        var inputCsv = document.getElementById('inputCsv');
+        if (inputCsv) inputCsv.disabled = ocupado;
+        if (ocupado) {
+          document.getElementById('mensaje').className = 'ok';
+          document.getElementById('mensaje').textContent = '⏳ ' + mensaje;
+        }
+      }
+
+      /*
        * Descarga vía data: URI (sin Drive ni permisos extra): el
        * servidor devuelve el .zip en base64, el cliente lo convierte en
        * Blob y dispara la descarga con un <a download> temporal.
        */
       function descargarPlantilla(grupo) {
-        mostrarOk('Generando plantilla...');
+        establecerOcupado_(true, 'Generando plantilla...');
         google.script.run
           .withFailureHandler(mostrarError)
           .withSuccessHandler(function (resultado) {
@@ -188,6 +210,7 @@
             enlace.click();
             document.body.removeChild(enlace);
             URL.revokeObjectURL(url);
+            establecerOcupado_(false);
             mostrarOk('Plantilla descargada: ' + resultado.nombreArchivo);
           })
           .generarPlantillasImportacionMasiva(grupo);
@@ -238,8 +261,9 @@
       document.getElementById('inputCsv').addEventListener('change', function (evento) {
         var archivos = Array.prototype.slice.call(evento.target.files);
         if (archivos.length === 0) return;
-        mostrarOk('Subiendo ' + archivos.length + ' archivo(s)...');
+        establecerOcupado_(true, 'Subiendo ' + archivos.length + ' archivo(s)...');
         Promise.all(archivos.map(subirUnCSV_)).then(function (resultados) {
+          establecerOcupado_(false);
           mostrarOk(resultados.join('\n'));
           evento.target.value = '';
         });
@@ -252,28 +276,55 @@
        * LITERAL "google.script.run....nombre(...)" en el fuente.
        */
       function ejecutar(funcion) {
-        document.getElementById('mensaje').className = '';
-        document.getElementById('mensaje').textContent = '';
         switch (funcion) {
           case 'instalarStagingImportacionMasiva':
+            establecerOcupado_(true, 'Preparando hojas...');
             google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { mostrarOk('Hojas STG_* preparadas. Ya puedes rellenarlas.'); })
+              .withSuccessHandler(function () {
+                establecerOcupado_(false);
+                mostrarOk('Hojas STG_* preparadas. Ya puedes rellenarlas.');
+              })
               .instalarStagingImportacionMasiva();
             return;
           case 'abrirImportacionMasiva':
-            google.script.run.withFailureHandler(mostrarError).abrirImportacionMasiva();
+            establecerOcupado_(true, 'Validando Campaña → Tarea...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
+              .abrirImportacionMasiva();
             return;
           case 'abrirImportacionMasivaRecursosPersonas':
-            google.script.run.withFailureHandler(mostrarError).abrirImportacionMasivaRecursosPersonas();
+            establecerOcupado_(true, 'Validando Recursos/Personas...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
+              .abrirImportacionMasivaRecursosPersonas();
             return;
           case 'abrirImportacionAsignaciones':
-            google.script.run.withFailureHandler(mostrarError).abrirImportacionAsignaciones();
+            establecerOcupado_(true, 'Validando Asignaciones...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
+              .abrirImportacionAsignaciones();
             return;
           case 'abrirImportacionSeguimiento':
-            google.script.run.withFailureHandler(mostrarError).abrirImportacionSeguimiento();
+            establecerOcupado_(true, 'Validando Decisiones/Incidencias/Documentos...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
+              .abrirImportacionSeguimiento();
             return;
           case 'abrirImportacionHorario':
-            google.script.run.withFailureHandler(mostrarError).abrirImportacionHorario();
+            establecerOcupado_(true, 'Validando Horarios...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
+              .abrirImportacionHorario();
+            return;
+          case 'vaciarHojasStaging':
+            if (!confirm('¿Seguro? Esto borra TODAS las filas de TODAS las hojas STG_* (rellenadas y ya importadas). No afecta a los datos reales ya creados en el Sheet.')) return;
+            establecerOcupado_(true, 'Vaciando hojas STG_*...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function (resultado) {
+                establecerOcupado_(false);
+                mostrarOk('Hojas STG_* vaciadas: ' + resultado.filasBorradas + ' fila(s) en total.');
+              })
+              .vaciarHojasStagingImportacionMasiva();
             return;
         }
         mostrarError({ message: 'Acción desconocida: ' + funcion });

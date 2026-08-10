@@ -221,3 +221,42 @@ function instalarStagingImportacionMasiva() {
 
   return true;
 }
+
+/*
+ * Vaciar de un clic (ver conversación -- "necesitamos poder borrar todos
+ * los datos del stg de un clic"): borra todas las filas de datos (todo
+ * lo que no sea la fila de cabecera) de cada hoja STG_* existente, tanto
+ * pendientes como ya importadas -- para volver a empezar una prueba
+ * limpia sin arrastrar restos de lotes anteriores (el hallazgo real de
+ * esta sesión: filas STG_PROYECTO duplicadas y filas STG_PRODUCTO
+ * huérfanas de un lote abandonado, mezcladas con el lote nuevo). NO
+ * toca los datos ya importados a las hojas reales (CAMPANA, PROYECTO...)
+ * -- solo limpia el área de trabajo.
+ */
+function vaciarHojasStagingImportacionMasiva() {
+  var ss = SpreadsheetApp.getActive();
+  var filasBorradas = 0;
+  var hojasVaciadas = 0;
+
+  var bloqueo = LockService.getScriptLock();
+  try {
+    bloqueo.waitLock(10000);
+
+    DEFINICIONES_STAGING_IMPORTACION_MASIVA_.forEach(function (definicion) {
+      var hoja = ss.getSheetByName(definicion.hoja);
+      if (!hoja) return;
+
+      var ultimaFila = hoja.getLastRow();
+      var ultimaColumna = hoja.getLastColumn();
+      if (ultimaFila < 2 || ultimaColumna < 1) return;
+
+      filasBorradas += ultimaFila - 1;
+      hojasVaciadas++;
+      hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).clearContent();
+    });
+  } finally {
+    bloqueo.releaseLock();
+  }
+
+  return { filasBorradas: filasBorradas, hojasVaciadas: hojasVaciadas };
+}
