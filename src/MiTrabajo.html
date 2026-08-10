@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      h3 { font-size: 16px; margin-bottom: 2px; }
+      .subtitulo { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 16px; }
+      .separador { font-size: 11px; font-weight: bold; color: var(--color-texto-secundario); text-transform: uppercase; letter-spacing: .03em; margin: 16px 0 6px 2px; }
+      .separador:first-of-type { margin-top: 0; }
+      .fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 7px 4px; border-bottom: 1px solid var(--color-borde); cursor: pointer; font-size: 13px; }
+      .fila:last-child { border-bottom: none; }
+      .fila:hover { background: var(--color-fondo-suave); }
+      .badge { font-size: 12px; padding: 2px 9px; }
+      .badge-completado { background: #e6f4ea; color: var(--color-exito); }
+      .badge-bloqueado { background: var(--color-peligro-fondo); color: var(--color-peligro); }
+      .badge-neutro { background: var(--color-fondo-suave); color: var(--color-texto); }
+      .vacio-bloque { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; padding: 4px; }
+      #estadoCarga { padding: 12px 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando...</div>
+    <div id="contenido" style="display:none;">
+      <h3>🙋 Mi trabajo</h3>
+      <div class="subtitulo" id="subtitulo"></div>
+
+      <div class="separador">Tareas</div>
+      <div id="listaTareas"></div>
+
+      <div class="separador">Incidencias</div>
+      <div id="listaIncidencias"></div>
+
+      <div class="separador">Decisiones</div>
+      <div id="listaDecisiones"></div>
+    </div>
+    <div id="sinPersona" style="display:none;">
+      <h3>🙋 Mi trabajo</h3>
+      <p style="color:var(--color-texto-secundario); font-size:13px; line-height:1.5;">
+        No encontramos ninguna persona del equipo con tu email en <b>Personas y equipos</b>.
+        Pide a quien administra este Sheet que la añada (o que actualice el email de tu ficha)
+        para poder ver aquí tus tareas, incidencias y decisiones pendientes.
+      </p>
+    </div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function claseBadgeEstado_(estado) {
+        var texto = String(estado || '').toLowerCase();
+        if (texto.indexOf('bloque') !== -1 || texto.indexOf('cancel') !== -1 || texto.indexOf('rechaz') !== -1) return 'badge-bloqueado';
+        if (texto.indexOf('complet') !== -1 || texto.indexOf('termin') !== -1 || texto.indexOf('resuel') !== -1) return 'badge-completado';
+        return 'badge-neutro';
+      }
+
+      function renderBadge_(estado) {
+        if (!estado) return '';
+        return ' <span class="badge ' + claseBadgeEstado_(estado) + '">' + escapeHtml(estado) + '</span>';
+      }
+
+      function mostrarError(error) {
+        document.getElementById('estadoCarga').textContent = 'Error: ' + (error && error.message ? error.message : error);
+        document.getElementById('estadoCarga').style.display = 'block';
+      }
+
+      function verFicha(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaDesdeResultadoBusqueda(entidad, id);
+      }
+
+      function render(datos) {
+        document.getElementById('estadoCarga').style.display = 'none';
+
+        if (datos.sinPersona) {
+          document.getElementById('sinPersona').style.display = 'block';
+          return;
+        }
+        document.getElementById('contenido').style.display = 'block';
+        document.getElementById('subtitulo').textContent = datos.nombre;
+
+        document.getElementById('listaTareas').innerHTML = datos.tareas.length
+          ? datos.tareas.map(function (t) {
+              return '<div class="fila" onclick="verFicha(\'TAREA\',\'' + escapeHtml(t.id) + '\')">' +
+                '<span>' + escapeHtml(t.nombre) + renderBadge_(t.estado) + '</span></div>';
+            }).join('')
+          : '<div class="vacio-bloque">Sin tareas pendientes.</div>';
+
+        document.getElementById('listaIncidencias').innerHTML = datos.incidencias.length
+          ? datos.incidencias.map(function (i) {
+              return '<div class="fila" onclick="verFicha(\'INCIDENCIA\',\'' + escapeHtml(i.id) + '\')">' +
+                '<span>' + escapeHtml(i.titulo) + renderBadge_(i.estado) + '</span></div>';
+            }).join('')
+          : '<div class="vacio-bloque">Sin incidencias pendientes.</div>';
+
+        document.getElementById('listaDecisiones').innerHTML = datos.decisiones.length
+          ? datos.decisiones.map(function (d) {
+              return '<div class="fila" onclick="verFicha(\'PROYECTO\',\'' + escapeHtml(d.proyectoId) + '\')">' +
+                '<span>' + escapeHtml(d.titulo) + ' <span style="color:var(--color-texto-secundario);font-size:11px;">— ' + escapeHtml(d.proyectoNombre) + '</span>' + renderBadge_(d.estado) + '</span></div>';
+            }).join('')
+          : '<div class="vacio-bloque">Sin decisiones pendientes.</div>';
+      }
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerMiTrabajo();
+    </script>
+  </body>
+</html>

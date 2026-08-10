@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 171,
+  "universeExpected": 173,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -1421,7 +1421,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "78dc7c9d2651bbf253824073e1372735450e2485995569aa108d0d8e21c4ad08",
+      "expectedSha256": "090dc1066db43dc53a53fe8da37c11fea6dc8286a9786a9323df8100385c791f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1455,6 +1455,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "1587ca25a38b40f3f2fb3fda159b9a26c2eb3f71dc360b5890a10e7ff9144300",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MiTrabajo.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "5abc98eac3470a194b4648a8faa2749a7f6ec2f79468fe7fbbf2ad1db06c4af8",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MiTrabajoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "8f53f40f24f8ad93d24fc41e962760678ec9f740f87bc8e5139c18538f151666",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
