@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 173,
+  "universeExpected": 174,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -937,7 +937,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "146672bc315932087ff0625d8ef8e3caecc615ce1b6b889b16595cf6cd6db9ea",
+      "expectedSha256": "b3ef70d4e16798d7cb02a43ce6385844616f79d75d071cd075ec6a9d13ad48bd",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1157,7 +1157,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "03709f3c9d8b09aa2a5705079e8b00d2fe25da4369d96446905c70915e5cbaaa",
+      "expectedSha256": "d2ad6564e98d1054258d3eed9fd81ce58de47b0569ce8f332bade59417d90c98",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1657,6 +1657,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "COMPRAS"
+    },
+    {
+      "path": "src/PlantillaImportacionMasivaService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "90fb2e127b1a2d4cdba0432a0f2c7706b3fe22c23cfa8a935fd8ed048288b775",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
     },
     {
       "path": "src/ProcesoService.js",

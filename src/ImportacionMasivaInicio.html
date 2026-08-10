@@ -21,7 +21,7 @@
       .paso .titulo { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
       .paso .detalle { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 8px; }
       .paso button { width: 100%; }
-      #mensaje { margin-top: 12px; }
+      #mensaje { margin-top: 12px; white-space: pre-line; }
     </style>
   </head>
   <body>
@@ -48,20 +48,48 @@
     <div class="paso">
       <span class="numero">2</span>
       <span class="texto">
-        <div class="titulo">Rellenar las filas a mano</div>
+        <div class="titulo">Rellenar las filas</div>
         <div class="detalle">
           En cada hoja <code>STG_*</code>, una fila por registro. <code>ID_TEMPORAL</code> es una
           referencia tuya dentro del mismo lote (p.ej. "P1"); las columnas que enlazan con el nivel
           padre (<code>PROYECTO_TEMPORAL</code>, <code>PROCESO_TEMPORAL</code>...) pueden apuntar a un
           <code>ID_TEMPORAL</code> de otra fila del lote, o a un ID real ya existente si estás ampliando
           algo que ya tenías creado. No toques <code>ESTADO_IMPORTACION</code> ni <code>ID_REAL</code>,
-          los rellena el propio proceso.
+          los rellena el propio proceso. Puedes escribir a mano en el Sheet, o usar la plantilla + IA de
+          abajo y subir el resultado.
         </div>
       </span>
     </div>
 
     <div class="paso">
       <span class="numero">3</span>
+      <span class="texto">
+        <div class="titulo">Plantilla para rellenar con una IA</div>
+        <div class="detalle">
+          Descarga un .zip con un CSV vacío por hoja más un LEEME.txt con las columnas, los campos
+          obligatorios y los valores de catálogo permitidos. Pégalo entero en una IA junto con tu
+          petición real y pídele que te devuelva cada CSV ya relleno.
+        </div>
+        <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
+        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">4</span>
+      <span class="texto">
+        <div class="titulo">Subir CSV ya rellenado</div>
+        <div class="detalle">
+          Sube uno o varios CSV con el mismo nombre que la hoja de destino (p.ej.
+          <code>STG_CAMPANA.csv</code>). Se añaden al final de la hoja correspondiente; no borran ni
+          tocan filas que ya tuvieras.
+        </div>
+        <input type="file" id="inputCsv" accept=".csv" multiple style="width:100%;" />
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">5</span>
       <span class="texto">
         <div class="titulo">Importar Campaña → Proyecto → Producto → Proceso → Tarea</div>
         <div class="detalle">
@@ -73,7 +101,7 @@
     </div>
 
     <div class="paso">
-      <span class="numero">4</span>
+      <span class="numero">6</span>
       <span class="texto">
         <div class="titulo">Importar Recursos / Personas y equipos</div>
         <div class="detalle">
@@ -95,6 +123,76 @@
         document.getElementById('mensaje').className = 'ok';
         document.getElementById('mensaje').textContent = texto;
       }
+
+      /*
+       * Descarga vía data: URI (sin Drive ni permisos extra): el
+       * servidor devuelve el .zip en base64, el cliente lo convierte en
+       * Blob y dispara la descarga con un <a download> temporal.
+       */
+      function descargarPlantilla(grupo) {
+        mostrarOk('Generando plantilla...');
+        google.script.run
+          .withFailureHandler(mostrarError)
+          .withSuccessHandler(function (resultado) {
+            var bytes = atob(resultado.base64);
+            var arr = new Uint8Array(bytes.length);
+            for (var i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+            var blob = new Blob([arr], { type: resultado.mimeType });
+            var url = URL.createObjectURL(blob);
+            var enlace = document.createElement('a');
+            enlace.href = url;
+            enlace.download = resultado.nombreArchivo;
+            document.body.appendChild(enlace);
+            enlace.click();
+            document.body.removeChild(enlace);
+            URL.revokeObjectURL(url);
+            mostrarOk('Plantilla descargada: ' + resultado.nombreArchivo);
+          })
+          .generarPlantillasImportacionMasiva(grupo);
+      }
+
+      var HOJAS_STAGING_CONOCIDAS_ = [
+        'STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA',
+        'STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'
+      ];
+
+      function detectarHojaDestino_(nombreArchivo) {
+        var base = nombreArchivo.replace(/\.csv$/i, '').toUpperCase();
+        var i = HOJAS_STAGING_CONOCIDAS_.indexOf(base);
+        return i === -1 ? null : HOJAS_STAGING_CONOCIDAS_[i];
+      }
+
+      function subirUnCSV_(archivo) {
+        return new Promise(function (resolve) {
+          var hojaDestino = detectarHojaDestino_(archivo.name);
+          if (!hojaDestino) {
+            resolve(archivo.name + ': nombre no reconocido (debe llamarse igual que una hoja STG_*, ej. STG_CAMPANA.csv)');
+            return;
+          }
+          var lector = new FileReader();
+          lector.onload = function () {
+            google.script.run
+              .withFailureHandler(function (error) {
+                resolve(archivo.name + ': error -- ' + (error && error.message ? error.message : error));
+              })
+              .withSuccessHandler(function (resultado) {
+                resolve(archivo.name + ' -> ' + hojaDestino + ': ' + resultado.filasEscritas + ' fila(s) añadida(s).');
+              })
+              .escribirFilasCSVEnHojaStaging(hojaDestino, lector.result);
+          };
+          lector.readAsText(archivo);
+        });
+      }
+
+      document.getElementById('inputCsv').addEventListener('change', function (evento) {
+        var archivos = Array.prototype.slice.call(evento.target.files);
+        if (archivos.length === 0) return;
+        mostrarOk('Subiendo ' + archivos.length + ' archivo(s)...');
+        Promise.all(archivos.map(subirUnCSV_)).then(function (resultados) {
+          mostrarOk(resultados.join('\n'));
+          evento.target.value = '';
+        });
+      });
 
       /*
        * Despacho literal, no dinámico (ver conversación -- hallazgo

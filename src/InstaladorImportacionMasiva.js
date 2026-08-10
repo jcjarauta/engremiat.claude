@@ -17,12 +17,14 @@
  *
  * Idempotente. Debe ejecutarse una unica vez, manualmente.
  */
-function instalarStagingImportacionMasiva() {
-  var packageName = 'INSTALAR_STAGING_IMPORTACION_MASIVA';
 
-  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
-
-  var definiciones = [
+/*
+ * Definicion compartida con PlantillaImportacionMasivaService.js (genera
+ * las plantillas descargables) -- una sola fuente de verdad para las
+ * cabeceras de cada hoja STG_*, para que ambos ficheros no puedan
+ * divergir.
+ */
+var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
     {
       hoja: 'STG_CAMPANA',
       cabeceras: ['ID_TEMPORAL', 'NOMBRE', 'FECHA_INICIO_PLAN', 'FECHA_FIN_PLAN', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
@@ -74,7 +76,12 @@ function instalarStagingImportacionMasiva() {
       hoja: 'STG_EQUIPO_MIEMBRO',
       cabeceras: ['ID_TEMPORAL', 'EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
-  ];
+];
+
+function instalarStagingImportacionMasiva() {
+  var packageName = 'INSTALAR_STAGING_IMPORTACION_MASIVA';
+
+  console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
 
   var bloqueo = LockService.getScriptLock();
 
@@ -83,7 +90,7 @@ function instalarStagingImportacionMasiva() {
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    definiciones.forEach(function (definicion) {
+    DEFINICIONES_STAGING_IMPORTACION_MASIVA_.forEach(function (definicion) {
       var hoja = ss.getSheetByName(definicion.hoja);
 
       if (!hoja) {
