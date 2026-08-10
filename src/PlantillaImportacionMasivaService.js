@@ -135,6 +135,21 @@ function construirPromptIA_(grupo) {
     '- Fechas en formato AAAA-MM-DD. Números decimales con punto, no coma.' + (esCampana ? ' El orden de las filas dentro de un mismo padre debe seguir la secuencia lógica de ejecución real -- el sistema deriva automáticamente el orden y el predecesor, no hace falta indicarlo aparte.' : ''),
     '- No añadas columnas, comentarios ni filas de ejemplo dentro del CSV: solo la fila de cabecera (tal cual viene en la plantilla) y las filas de datos reales.',
     '',
+    'Autocomprobación obligatoria antes de entregar (hazla tú mismo, no me la pidas a mí):',
+    '- Por cada valor que hayas escrito en una columna que termine en _TEMPORAL, repasa que ese' +
+      ' mismo ID_TEMPORAL aparece definido en el CSV del nivel superior que le corresponde (o que' +
+      ' yo te confirmé explícitamente que es un ID real ya existente en el Sheet).' +
+      (esCampana ? ' En concreto: todo CAMPANA_TEMPORAL usado en STG_PROYECTO.csv debe tener su fila' +
+        ' correspondiente en STG_CAMPANA.csv -- si vas a crear campañas nuevas (no ampliar una ya' +
+        ' existente), STG_CAMPANA.csv es obligatorio en la entrega, nunca lo omitas aunque no te lo' +
+        ' pida explícitamente en ese turno.' : ''),
+    '- Si detectas una referencia sin definir, NO la entregues así: o añades la fila que falta, o me' +
+      ' preguntas explícitamente antes de generar el resto -- nunca entregues un lote con referencias' +
+      ' colgantes esperando que yo me dé cuenta.',
+    '- Si esto es una conversación larga con varios lotes, antes de generar CSV nuevos recuérdame' +
+      ' (en una línea) qué claves ID_TEMPORAL de niveles superiores ya identificamos antes, para no' +
+      ' inventar una clave nueva por error cuando en realidad me refiero a algo ya creado.',
+    '',
     'Formato de entrega:',
     '- Antes de los CSV, dame un resumen breve de lo que vas a crear, para que lo revise de un vistazo antes de descargar o pegar nada.',
     '- Devuélveme el contenido completo de cada CSV en su propio bloque de código, con el nombre exacto del fichero como título justo encima (ej. "' + GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo][0] + '.csv"), listo para guardar tal cual.',
