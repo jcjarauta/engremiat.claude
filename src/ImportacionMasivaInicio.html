@@ -157,8 +157,15 @@
         'STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'
       ];
 
+      /*
+       * Tolera el sufijo "(1)"/"(2)" que el navegador añade solo cuando
+       * ya existe un archivo con ese nombre en la carpeta de descargas
+       * (hallazgo real: STG_PROYECTO(1).csv se subía silenciosamente
+       * como "no reconocido" porque la comparación era exacta, dejando
+       * el lote a medias sin que el operador se diera cuenta del motivo).
+       */
       function detectarHojaDestino_(nombreArchivo) {
-        var base = nombreArchivo.replace(/\.csv$/i, '').toUpperCase();
+        var base = nombreArchivo.replace(/\.csv$/i, '').replace(/\s*\(\d+\)$/, '').toUpperCase();
         var i = HOJAS_STAGING_CONOCIDAS_.indexOf(base);
         return i === -1 ? null : HOJAS_STAGING_CONOCIDAS_[i];
       }
