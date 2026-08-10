@@ -60,6 +60,13 @@
         <div class="detalle">Alertas y avisos del taller de un vistazo</div>
       </span>
     </button>
+    <button class="tarjeta" onclick="abrir('abrirInformes')">
+      <span class="icono">📄</span>
+      <span class="texto">
+        <div class="titulo">Informes</div>
+        <div class="detalle">Campaña, proyecto, desviación entre campañas -- con exportación</div>
+      </span>
+    </button>
 
     <div class="separador">Datos</div>
     <button class="tarjeta" onclick="abrir('abrirImportacionMasivaInicio')">
@@ -236,6 +243,9 @@
             return;
           case 'abrirBiblioteca':
             google.script.run.withFailureHandler(mostrarError).abrirBiblioteca();
+            return;
+          case 'abrirInformes':
+            google.script.run.withFailureHandler(mostrarError).abrirInformes();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });
