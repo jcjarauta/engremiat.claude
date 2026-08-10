@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 174,
+  "universeExpected": 175,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -948,7 +948,18 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "6f95c0f947987384c5005fc014c19545dcff046a17cc89cc02f23d8787f77f16",
+      "expectedSha256": "55e3088e2a83d84de54b1daa551019a0ba5ff56c067247032462e4394bed996c",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/InformesVisuales.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "dd9ba2d77ec1933fbcae9416a2f1ee28f38b72f5609cc769c21fbea796593006",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1718,7 +1729,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "813d6b452d6eae027d833cdc45e781853c101d222a2824ac9d40d7aad5ccc873",
+      "expectedSha256": "c262769127632fcee8a51afdfbf4667d97aabef16162cde97b491521108f039f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

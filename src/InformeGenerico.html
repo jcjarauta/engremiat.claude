@@ -26,7 +26,16 @@
       <option value="JUSTIFICACION_ECONOMICA" id="opcion-justificacion">Justificación económica</option>
       <option value="EVIDENCIA_SOCIAL" id="opcion-evidencia">Evidencia de impacto (Por qué)</option>
       <option value="CAMBIOS">Cambios (auditoría por fecha)</option>
+      <option value="EJECUTIVO">Ejecutivo (todas las campañas activas)</option>
+      <option value="CIERRE_CAMPANA">Cierre de campaña (post-mortem)</option>
     </select>
+
+    <div id="contenedor-nivel-detalle" style="margin-top:8px;">
+      <label style="display:flex; align-items:center; gap:6px; font-weight:normal;">
+        <input type="checkbox" id="nivel-detalle-resumen" style="width:auto; margin:0;" />
+        Resumen ejecutivo (recorta las listas largas a lo más relevante)
+      </label>
+    </div>
 
     <div id="contenedor-nivel" style="display:none;">
       <label for="nivel-economico">Nivel</label>
@@ -179,7 +188,7 @@
           return;
         }
 
-        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION' || tipo === 'EJECUTIVO') {
           contenedorNivel.style.display = 'none';
           contenedorRegistro.style.display = 'none';
           return;
@@ -453,7 +462,7 @@
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
 
-        var tiposSinDesviacion = ['JUSTIFICACION_ECONOMICA', 'EVIDENCIA_SOCIAL', 'EXCEPCIONES', 'CAMBIOS'];
+        var tiposSinDesviacion = ['JUSTIFICACION_ECONOMICA', 'EVIDENCIA_SOCIAL', 'EXCEPCIONES', 'CAMBIOS', 'EJECUTIVO'];
         var sinDesviacion = tiposSinDesviacion.indexOf(informe.tipo) !== -1;
         var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || sinDesviacion;
         ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
@@ -521,7 +530,7 @@
         var tipo = document.getElementById('tipo').value;
         var registro = document.getElementById('registro').value;
         tipoActual = tipo;
-        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION' || tipo === 'EJECUTIVO') {
           filtroActual = null;
         } else if (tipo === 'CAMBIOS') {
           filtroActual = {
@@ -549,7 +558,8 @@
       });
       document.getElementById('btn-exportar-pdf').addEventListener('click', function () {
         if (!tipoActual) return;
-        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual);
+        var nivel = document.getElementById('nivel-detalle-resumen').checked ? 'resumen' : 'completo';
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual, nivel);
       });
       document.getElementById('tipo').addEventListener('change', cargarOpcionesRegistro);
       document.getElementById('nivel-economico').addEventListener('change', cargarOpcionesRegistroPorNivel_);

@@ -207,7 +207,7 @@ function generarInformeCambios(fechaDesde, fechaHasta) {
 }
 
 function obtenerOpcionesInforme(tipo) {
-  if (tipo === 'CAMPANA') {
+  if (tipo === 'CAMPANA' || tipo === 'CIERRE_CAMPANA') {
     return listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
       return { id: campana.ID, etiqueta: campana.ID + ' - ' + campana.NOMBRE };
     });
@@ -218,6 +218,68 @@ function obtenerOpcionesInforme(tipo) {
     });
   }
   throw new Error('ERROR_INFORME: tipo de informe no soportado para opciones: ' + tipo);
+}
+
+/*
+ * Ejecutivo (N12 -- "podemos generar algún informe que nos interese
+ * para el core?"): instantánea de una página con los KPI de TODAS las
+ * campañas activas a la vez, sin elegir ninguna -- pensado para
+ * repartir sin abrir el Sheet. Reutiliza obtenerResumenGlobal/
+ * listarTareasRetrasadas/listarIncidenciasAbiertas/
+ * listarDecisionesPendientes/listarSobreasignaciones (DashboardService.js,
+ * ya CORE-safe) en vez de duplicar ninguna consulta.
+ */
+function generarInformeEjecutivo() {
+  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' });
+  var campanasActivas = campanas.filter(function (c) { return c.ESTADO === 'Activa'; });
+  var procesosActivos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' });
+  var avanceMedioProcesos = procesosActivos.length > 0
+    ? Math.round(procesosActivos.reduce(function (acc, p) { return acc + (Number(p.PORCENTAJE_AVANCE) || 0); }, 0) / procesosActivos.length)
+    : null;
+
+  return {
+    tipo: 'EJECUTIVO',
+    totalCampanas: campanas.length,
+    totalCampanasActivas: campanasActivas.length,
+    avanceMedioProcesos: avanceMedioProcesos,
+    resumenGlobal: obtenerResumenGlobal(),
+    tareasRetrasadas: listarTareasRetrasadas(),
+    incidenciasAbiertas: listarIncidenciasAbiertas(),
+    decisionesPendientes: listarDecisionesPendientes(),
+    sobreasignaciones: listarSobreasignaciones()
+  };
+}
+
+/*
+ * Cierre de campaña / post-mortem (N12): mismo cálculo que
+ * generarInformeCampania pero con el ángulo "ya terminó, ¿qué tal fue?"
+ * -- % completado en vez de pendientes, decisiones/incidencias en TODOS
+ * los estados (no solo abiertas) para ver el recorrido completo.
+ */
+function generarInformeCierreCampana(campanaId) {
+  var base = generarInformeCampania(campanaId);
+  var idsProyectos = base.proyectos.map(function (p) { return p.ID; });
+
+  var todasDecisiones = listarRegistros('DECISION', { ACTIVO: 'SÍ' }).filter(function (d) {
+    return idsProyectos.indexOf(d.PROYECTO_ID) !== -1;
+  });
+  var todasIncidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' }).filter(function (i) {
+    return i.CAMPANA_ID === campanaId || idsProyectos.indexOf(i.PROYECTO_ID) !== -1;
+  });
+
+  var proyectosCompletados = base.proyectos.filter(function (p) { return p.ESTADO === 'Completado'; }).length;
+
+  return Object.assign({}, base, {
+    tipo: 'CIERRE_CAMPANA',
+    porcentajeProyectosCompletados: base.proyectos.length > 0 ? Math.round((proyectosCompletados / base.proyectos.length) * 100) : 0,
+    porcentajeTareasCompletadas: base.totales.tareas > 0
+      ? Math.round(((base.tareasPorEstado.Terminada || 0) / base.totales.tareas) * 100)
+      : 0,
+    decisionesPorEstado: contarPorEstadoLista_(todasDecisiones),
+    incidenciasPorEstado: contarPorEstadoLista_(todasIncidencias),
+    todasDecisiones: todasDecisiones,
+    todasIncidencias: todasIncidencias
+  });
 }
 
 function generarInforme(tipo, id) {
@@ -235,6 +297,8 @@ function generarInforme(tipo, id) {
     else if (tipo === 'CALIDAD_PLANIFICACION') informe = generarInformeCalidadPlanificacion();
     else if (tipo === 'JUSTIFICACION_ECONOMICA') informe = generarInformeJustificacionEconomica(id && id.entidadTipo, id && id.entidadId);
     else if (tipo === 'EVIDENCIA_SOCIAL') informe = generarInformeEvidenciaSocial(id && id.entidadTipo, id && id.entidadId);
+    else if (tipo === 'EJECUTIVO') informe = generarInformeEjecutivo();
+    else if (tipo === 'CIERRE_CAMPANA') informe = generarInformeCierreCampana(id);
     else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
 
     return serializarParaCliente_(informe);
@@ -330,20 +394,297 @@ function abrirDialogoExportarCSV(tipo, idOFiltro) {
   abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
+/*
+ * Fallback genérico (ver conversación -- "los informes son genéricos"):
+ * ya NO es el camino normal de ningún tipo conocido, queda solo como
+ * red de seguridad si algún tipo nuevo se añade a generarInforme() sin
+ * su propia plantilla en generarHtmlInformeVisual_.
+ */
 function generarHtmlParaImprimir_(informe) {
   var filas = aplanarInformeParaExportar_(informe);
-  var html = '<html><head><meta charset="utf-8"><title>Informe ' + escaparHtmlServer_(informe.tipo) + '</title>' +
-    '<style>body{font-family:Arial,sans-serif;padding:20px;} table{border-collapse:collapse;width:100%;} td,th{border:1px solid #ccc;padding:6px;text-align:left;font-size:12px;} h1{font-size:18px;} @media print { button { display:none; } }</style>' +
-    '</head><body>' +
-    '<button onclick="window.print()">Imprimir / Guardar como PDF</button>' +
-    '<h1>Informe: ' + escaparHtmlServer_(informe.tipo) + '</h1>' +
-    '<p>Generado: ' + new Date().toString() + '</p>' +
-    '<table><tr><th>Campo</th><th>Valor</th></tr>';
-  filas.forEach(function (f) {
-    html += '<tr><td>' + escaparHtmlServer_(f[0]) + '</td><td>' + escaparHtmlServer_(f[1]) + '</td></tr>';
-  });
-  html += '</table></body></html>';
-  return html;
+  return construirDocumentoInformeImprimible_('Informe: ' + informe.tipo, '', tablaSimpleHtml_(['Campo', 'Valor'], filas));
+}
+
+function generarHtmlCampana_(informe, nivel) {
+  var c = informe.campana;
+  var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
+  var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
+  var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
+  var d = informe.desviacionPlanificacion;
+
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: informe.totales.proyectos, etiqueta: 'Proyectos' },
+      { valor: informe.totales.productos, etiqueta: 'Productos' },
+      { valor: informe.totales.procesos, etiqueta: 'Procesos' },
+      { valor: informe.totales.tareas, etiqueta: 'Tareas' },
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
+      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
+      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
+    ]) +
+    '<h2>Proyectos por estado</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.proyectosPorEstado).map(function (k) { return { etiqueta: k, valor: informe.proyectosPorEstado[k] }; })) +
+    '<h2>Tareas por estado</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
+    '<h2>Desviación de planificación (días de media por fase)</h2>' +
+    graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Tareas retrasadas</h2>' +
+    tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
+    '<h2>Incidencias abiertas</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
+    '<h2>Decisiones pendientes</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+
+  return construirDocumentoInformeImprimible_('Informe de campaña — ' + c.NOMBRE, c.ESTADO + ' · ' + c.FECHA_INICIO_PLAN + ' a ' + c.FECHA_FIN_PLAN, cuerpo);
+}
+
+function generarHtmlProyecto_(informe, nivel) {
+  var p = informe.proyecto;
+  var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
+  var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
+  var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
+  var d = informe.desviacionPlanificacion;
+
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: informe.totales.productos, etiqueta: 'Productos' },
+      { valor: informe.totales.procesos, etiqueta: 'Procesos' },
+      { valor: informe.totales.tareas, etiqueta: 'Tareas' },
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
+      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
+      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
+    ]) +
+    '<h2>Productos (% avance)</h2>' +
+    graficoBarrasHtml_(informe.productos.map(function (pr) { return { etiqueta: pr.NOMBRE, valor: pr.PORCENTAJE_AVANCE_CALCULADO }; }), { max: 100 }) +
+    '<h2>Tareas por estado</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
+    '<h2>Desviación de planificación (días de media por fase)</h2>' +
+    graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Tareas retrasadas</h2>' +
+    tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
+    '<h2>Incidencias abiertas</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
+    '<h2>Decisiones pendientes</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+
+  return construirDocumentoInformeImprimible_('Informe de proyecto — ' + p.NOMBRE, p.ESTADO, cuerpo);
+}
+
+function generarHtmlMemoria_(informe, nivel) {
+  var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
+  var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
+  var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
+  var d = informe.desviacionPlanificacion;
+
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: informe.campanas.length, etiqueta: 'Campañas' },
+      { valor: informe.resumenGlobal.PROYECTO ? Object.keys(informe.resumenGlobal.PROYECTO).reduce(function (a, k) { return a + informe.resumenGlobal.PROYECTO[k]; }, 0) : 0, etiqueta: 'Proyectos' },
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
+      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
+      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
+    ]) +
+    '<h2>Tareas por estado (global)</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
+    '<h2>Campañas</h2>' +
+    tablaSimpleHtml_(['Campaña', 'Estado', 'Proyectos'], informe.campanas.map(function (c) { return [c.campana.NOMBRE, c.campana.ESTADO, c.totalProyectos]; })) +
+    '<h2>Desviación de planificación (días de media por campaña)</h2>' +
+    graficoBarrasHtml_(d.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Tareas retrasadas</h2>' +
+    tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
+    '<h2>Incidencias abiertas</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
+    '<h2>Decisiones pendientes</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+
+  return construirDocumentoInformeImprimible_('Memoria de producción', '', cuerpo);
+}
+
+function generarHtmlExcepciones_(informe, nivel) {
+  var categorias = [
+    ['Tareas retrasadas', informe.tareasRetrasadas, ['Tarea', 'Vencía'], function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; }],
+    ['Tareas bloqueadas', informe.tareasBloqueadas, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Tareas pospuestas', informe.tareasPospuestas, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Tareas sin responsable', informe.tareasSinResponsable, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Productos sin proyecto', informe.productosSinProyecto, ['Producto'], function (p) { return [p.NOMBRE]; }],
+    ['Procesos sin fechas', informe.procesosSinFechas, ['Proceso'], function (p) { return [p.NOMBRE]; }],
+    ['Relaciones incompletas', informe.relacionesIncompletas, ['Registro'], function (r) { return [r.NOMBRE || r.ID]; }],
+    ['Materiales con stock bajo', (informe.materiales || {}).stockBajo, ['Material', 'Stock'], function (m) { return [m.NOMBRE, m.STOCK_ACTUAL]; }],
+    ['Materiales agotados', (informe.materiales || {}).agotados, ['Material'], function (m) { return [m.NOMBRE]; }],
+    ['Decisiones pendientes', informe.decisionesPendientes, ['Título', 'Estado'], function (d) { return [d.TITULO, d.ESTADO]; }],
+    ['Incidencias abiertas', informe.incidenciasAbiertas, ['Título', 'Estado'], function (i) { return [i.TITULO, i.ESTADO]; }]
+  ];
+
+  var cuerpo =
+    '<h2>Resumen por categoría</h2>' +
+    graficoBarrasHtml_(categorias.map(function (c) { return { etiqueta: c[0], valor: (c[1] || []).length }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    categorias.map(function (c) {
+      var titulo = c[0], lista = limitarSiResumen_(c[1], nivel, 8), encabezados = c[2], plantilla = c[3];
+      if (lista.filas.length === 0) return '';
+      return '<h2>' + escaparHtmlServer_(titulo) + '</h2>' +
+        tablaSimpleHtml_(encabezados, lista.filas.map(plantilla)) + avisoOcultasHtml_(lista.ocultas);
+    }).join('');
+
+  return construirDocumentoInformeImprimible_('Excepciones (calidad de datos)', '', cuerpo);
+}
+
+function generarHtmlDesviacion_(informe, nivel) {
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: informe.procesosMedidos, etiqueta: 'Procesos medidos' },
+      { valor: informe.tareasMedidas, etiqueta: 'Tareas medidas' }
+    ]) +
+    '<h2>Por fase (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Procesos por responsable (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.procesosPorResponsable.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Tareas por responsable (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.tareasPorResponsable.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    (informe.procesosPorCampana ? '<h2>Por campaña (días de desviación media)</h2>' +
+      graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) : '');
+
+  return construirDocumentoInformeImprimible_('Desviación de planificación', 'Real vs. plan', cuerpo);
+}
+
+function generarHtmlCalidad_(informe, nivel) {
+  var cuerpo =
+    '<div class="fila-donuts">' +
+      donutProgresoSvg_(informe.porcentajeProcesosATiempo, 'Procesos a tiempo') +
+      donutProgresoSvg_(informe.porcentajeTareasATiempo, 'Tareas a tiempo') +
+    '</div>' +
+    tarjetasResumenHtml_([
+      { valor: informe.procesosMedidos, etiqueta: 'Procesos medidos' },
+      { valor: informe.tareasMedidas, etiqueta: 'Tareas medidas' }
+    ]) +
+    '<h2>Utilización de horario por responsable</h2>' +
+    graficoBarrasHtml_(informe.utilizacionHorarioPorResponsable.map(function (u) { return { etiqueta: u.responsable, valor: u.porcentajeUtilizacion || 0 }; }), { max: 100, alertaSi: function (i) { return i.valor < 70; } }) +
+    '<h2>Por fase (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Por recurso (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.procesosPorRecurso.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Por campaña (días de desviación media)</h2>' +
+    graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } });
+
+  return construirDocumentoInformeImprimible_('Calidad de planificación', '', cuerpo);
+}
+
+function generarHtmlEvidenciaSocial_(informe, nivel) {
+  var im = informe.impactoSocial || { personasVoluntariado: 0, diasVoluntariado: 0, personasAtendidas: 0, diasPersonasAtendidas: 0 };
+  var reutilizacion = informe.reutilizacion || { relacionesReutilizadas: [], procesosReutilizados: [], totalReutilizaciones: 0 };
+  var etiquetas = limitarSiResumen_(informe.etiquetasImpacto, nivel, 10);
+
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: im.personasVoluntariado, etiqueta: 'Personas voluntarias' },
+      { valor: im.diasVoluntariado, etiqueta: 'Días de voluntariado' },
+      { valor: im.personasAtendidas, etiqueta: 'Personas atendidas' },
+      { valor: im.diasPersonasAtendidas, etiqueta: 'Días de atención' },
+      { valor: reutilizacion.totalReutilizaciones, etiqueta: 'Reutilizaciones' }
+    ]) +
+    '<h2>Etiquetas de impacto por categoría</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.etiquetasPorCategoria || {}).map(function (k) { return { etiqueta: k, valor: informe.etiquetasPorCategoria[k] }; })) +
+    '<h2>Etiquetas de impacto (detalle)</h2>' +
+    tablaSimpleHtml_(['Categoría', 'Registro', 'Descripción'], etiquetas.filas.map(function (e) { return [e.categoria, e.entidadTipo + ': ' + e.entidadNombre, e.descripcion]; })) + avisoOcultasHtml_(etiquetas.ocultas) +
+    '<h2>Reutilización (vía "Modo de uso")</h2>' +
+    tablaSimpleHtml_(['Producto/Proceso', 'Proyecto', 'Modo de uso'],
+      reutilizacion.relacionesReutilizadas.map(function (r) { return [r.productoNombre, r.proyectoNombre, r.modoUso]; })
+        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.productoNombre, p.modoUso]; })));
+
+  return construirDocumentoInformeImprimible_('Evidencia de impacto', informe.entidadTipo + ': ' + informe.entidadNombre, cuerpo);
+}
+
+function generarHtmlCambios_(informe, nivel) {
+  var cambios = limitarSiResumen_(informe.cambios, nivel, 30);
+  var subtitulo = (informe.fechaDesde || informe.fechaHasta)
+    ? 'Desde ' + (informe.fechaDesde || '(sin límite)') + ' hasta ' + (informe.fechaHasta || '(sin límite)')
+    : 'Todo el histórico disponible';
+
+  var cuerpo =
+    tarjetasResumenHtml_([{ valor: informe.cambios.length, etiqueta: 'Cambios' }]) +
+    tablaSimpleHtml_(['Fecha', 'Usuario', 'Acción', 'Entidad', 'Registro'],
+      cambios.filas.map(function (c) { return [c.TIMESTAMP, c.USUARIO, c.ACCION, c.ENTIDAD, c.REGISTRO_ID]; })) +
+    avisoOcultasHtml_(cambios.ocultas);
+
+  return construirDocumentoInformeImprimible_('Cambios (auditoría)', subtitulo, cuerpo);
+}
+
+function generarHtmlEjecutivo_(informe) {
+  var cuerpo =
+    '<div class="fila-donuts">' +
+      (informe.avanceMedioProcesos !== null ? donutProgresoSvg_(informe.avanceMedioProcesos, 'Avance medio de procesos') : '') +
+    '</div>' +
+    tarjetasResumenHtml_([
+      { valor: informe.totalCampanasActivas, etiqueta: 'Campañas activas' },
+      { valor: informe.totalCampanas, etiqueta: 'Campañas totales' },
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
+      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
+      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' },
+      { valor: informe.sobreasignaciones.length, etiqueta: 'Sobreasignaciones', alerta: informe.sobreasignaciones.length > 0 }
+    ]) +
+    '<h2>Tareas por estado (global)</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
+    '<h2>Tareas retrasadas (top 8)</h2>' +
+    tablaSimpleHtml_(['Tarea', 'Vencía'], informe.tareasRetrasadas.slice(0, 8).map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) +
+    '<h2>Incidencias abiertas (top 8)</h2>' +
+    tablaSimpleHtml_(['Título', 'Prioridad'], informe.incidenciasAbiertas.slice(0, 8).map(function (i) { return [i.TITULO, i.PRIORIDAD]; })) +
+    '<h2>Decisiones pendientes (top 8)</h2>' +
+    tablaSimpleHtml_(['Título', 'Fecha límite'], informe.decisionesPendientes.slice(0, 8).map(function (d) { return [d.TITULO, d.FECHA_LIMITE]; }));
+
+  return construirDocumentoInformeImprimible_('Informe ejecutivo', Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'), cuerpo);
+}
+
+function generarHtmlCierreCampana_(informe, nivel) {
+  var c = informe.campana;
+  var decisiones = limitarSiResumen_(informe.todasDecisiones, nivel, 10);
+  var incidencias = limitarSiResumen_(informe.todasIncidencias, nivel, 10);
+
+  var cuerpo =
+    '<div class="fila-donuts">' +
+      donutProgresoSvg_(informe.porcentajeProyectosCompletados, 'Proyectos completados') +
+      donutProgresoSvg_(informe.porcentajeTareasCompletadas, 'Tareas completadas') +
+    '</div>' +
+    tarjetasResumenHtml_([
+      { valor: informe.totales.proyectos, etiqueta: 'Proyectos' },
+      { valor: informe.totales.productos, etiqueta: 'Productos' },
+      { valor: informe.totales.tareas, etiqueta: 'Tareas' },
+      { valor: informe.todasDecisiones.length, etiqueta: 'Decisiones tomadas' },
+      { valor: informe.todasIncidencias.length, etiqueta: 'Incidencias registradas' }
+    ]) +
+    '<h2>Decisiones por estado</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
+    '<h2>Incidencias por estado</h2>' +
+    graficoBarrasHtml_(Object.keys(informe.incidenciasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.incidenciasPorEstado[k] }; })) +
+    '<h2>Desviación de planificación (días de media por fase)</h2>' +
+    graficoBarrasHtml_(informe.desviacionPlanificacion.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    '<h2>Decisiones</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado'], decisiones.filas.map(function (d) { return [d.TITULO, d.ESTADO]; })) + avisoOcultasHtml_(decisiones.ocultas) +
+    '<h2>Incidencias</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO]; })) + avisoOcultasHtml_(incidencias.ocultas);
+
+  return construirDocumentoInformeImprimible_('Cierre de campaña — ' + c.NOMBRE, c.ESTADO, cuerpo);
+}
+
+/*
+ * Punto único de generación de HTML imprimible por tipo (ver
+ * conversación -- "revisa cada informe y propón una mejora"): cada tipo
+ * tiene su propia plantilla visual en vez de compartir el volcado plano
+ * genérico. nivel: 'resumen' (listas largas recortadas a los primeros
+ * elementos) o 'completo' (todo, por defecto).
+ */
+function generarHtmlInformeVisual_(informe, nivel) {
+  nivel = nivel === 'resumen' ? 'resumen' : 'completo';
+  if (informe.tipo === 'JUSTIFICACION_ECONOMICA') return generarHtmlMemoriaEconomica_(informe);
+  if (informe.tipo === 'CAMPANA') return generarHtmlCampana_(informe, nivel);
+  if (informe.tipo === 'PROYECTO') return generarHtmlProyecto_(informe, nivel);
+  if (informe.tipo === 'MEMORIA') return generarHtmlMemoria_(informe, nivel);
+  if (informe.tipo === 'EXCEPCIONES') return generarHtmlExcepciones_(informe, nivel);
+  if (informe.tipo === 'DESVIACION') return generarHtmlDesviacion_(informe, nivel);
+  if (informe.tipo === 'CALIDAD_PLANIFICACION') return generarHtmlCalidad_(informe, nivel);
+  if (informe.tipo === 'EVIDENCIA_SOCIAL') return generarHtmlEvidenciaSocial_(informe, nivel);
+  if (informe.tipo === 'CAMBIOS') return generarHtmlCambios_(informe, nivel);
+  if (informe.tipo === 'EJECUTIVO') return generarHtmlEjecutivo_(informe);
+  if (informe.tipo === 'CIERRE_CAMPANA') return generarHtmlCierreCampana_(informe, nivel);
+  return generarHtmlParaImprimir_(informe);
 }
 
 /*
@@ -369,49 +710,34 @@ function generarHtmlMemoriaEconomica_(informe) {
 
   var impacto = informe.impactoSocial || { personasVoluntariado: 0, personasAtendidas: 0 };
 
-  return '<html><head><meta charset="utf-8"><title>Memoria económica</title>' +
-    '<style>' +
-      'body{font-family:Arial,sans-serif;padding:30px;color:#202124;}' +
-      'h1{font-size:20px;border-bottom:2px solid #1a73e8;padding-bottom:8px;}' +
-      'h2{font-size:14px;margin-top:24px;color:#1a73e8;}' +
-      'table{border-collapse:collapse;width:100%;margin-top:8px;}' +
-      'td,th{border:1px solid #dadce0;padding:6px 8px;font-size:12px;text-align:left;}' +
-      'th{background:#f1f3f4;}' +
-      '.resumen{display:flex;gap:20px;margin:16px 0;flex-wrap:wrap;}' +
-      '.dato{background:#f5f5f5;border-radius:6px;padding:10px 16px;min-width:120px;}' +
-      '.dato .valor{font-size:20px;font-weight:bold;display:block;}' +
-      '.dato .etiqueta{font-size:11px;color:#5f6368;}' +
-      '@media print{button{display:none;}}' +
-    '</style></head><body>' +
-    '<button onclick="window.print()">Imprimir / Guardar como PDF</button>' +
-    '<h1>Memoria económica — ' + escaparHtmlServer_(informe.entidadTipo) + ': ' + escaparHtmlServer_(informe.entidadNombre) + '</h1>' +
-    '<p>Generado: ' + new Date().toString() + '</p>' +
-    '<div class="resumen">' +
-      '<div class="dato"><span class="valor">' + informe.totalPrevisto + ' €</span><span class="etiqueta">Presupuesto previsto</span></div>' +
-      '<div class="dato"><span class="valor">' + informe.totalReal + ' €</span><span class="etiqueta">Coste real</span></div>' +
-      '<div class="dato"><span class="valor">' + (informe.coberturaFinanciacion === null ? '—' : informe.coberturaFinanciacion + '%') + '</span><span class="etiqueta">Financiación cubierta</span></div>' +
-      '<div class="dato"><span class="valor">' + impacto.personasVoluntariado + '</span><span class="etiqueta">Personas voluntarias</span></div>' +
-      '<div class="dato"><span class="valor">' + impacto.personasAtendidas + '</span><span class="etiqueta">Personas atendidas</span></div>' +
-    '</div>' +
+  var cuerpo =
+    tarjetasResumenHtml_([
+      { valor: informe.totalPrevisto + ' €', etiqueta: 'Presupuesto previsto' },
+      { valor: informe.totalReal + ' €', etiqueta: 'Coste real' },
+      { valor: informe.coberturaFinanciacion === null ? '—' : informe.coberturaFinanciacion + '%', etiqueta: 'Financiación cubierta' },
+      { valor: impacto.personasVoluntariado, etiqueta: 'Personas voluntarias' },
+      { valor: impacto.personasAtendidas, etiqueta: 'Personas atendidas' }
+    ]) +
     '<h2>Coste por categoría</h2>' +
     '<table><tr><th>Categoría</th><th>Previsto (€)</th><th>Real (€)</th><th>Desviación (€)</th></tr>' + filasCategorias + '</table>' +
     '<h2>Fuentes de financiación (total: ' + informe.totalFinanciacion + ' €)</h2>' +
     '<table><tr><th>Nombre</th><th>Tipo</th><th>Importe (€)</th><th>Estado</th></tr>' + filasFuentes + '</table>' +
     '<h2>Comparativa entre campañas</h2>' +
-    '<table><tr><th>Campaña</th><th>Previsto (€)</th><th>Real (€)</th><th>Financiación</th><th>Voluntariado</th><th>Personas atendidas</th></tr>' + filasComparativa + '</table>' +
-    '</body></html>';
+    '<table><tr><th>Campaña</th><th>Previsto (€)</th><th>Real (€)</th><th>Financiación</th><th>Voluntariado</th><th>Personas atendidas</th></tr>' + filasComparativa + '</table>';
+
+  return construirDocumentoInformeImprimible_('Memoria económica', informe.entidadTipo + ': ' + informe.entidadNombre, cuerpo);
 }
 
-function exportarInformePDF(tipo, idOFiltro, opcionesPrueba) {
+function exportarInformePDF(tipo, idOFiltro, nivel, opcionesPrueba) {
   var informe = generarInforme(tipo, idOFiltro);
-  var html = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? generarHtmlMemoriaEconomica_(informe) : generarHtmlParaImprimir_(informe);
+  var html = generarHtmlInformeVisual_(informe, nivel);
   var nombre = nombreArchivoInforme_(tipo, 'html');
   registrarHistorial('INFORME', nombre, 'EXPORTAR_INFORME', [], Object.assign({ origen: (opcionesPrueba && opcionesPrueba.origen) || 'UI', formato: 'PDF_IMPRESION' }, opcionesPrueba || {}));
   return { nombreArchivo: nombre, contenidoHtml: html };
 }
 
-function abrirDialogoExportarPDF(tipo, idOFiltro) {
-  var resultado = exportarInformePDF(tipo, idOFiltro, {});
+function abrirDialogoExportarPDF(tipo, idOFiltro, nivel) {
+  var resultado = exportarInformePDF(tipo, idOFiltro, nivel, {});
   var output = HtmlService.createHtmlOutput(resultado.contenidoHtml).setWidth(820).setHeight(600);
   SpreadsheetApp.getUi().showModelessDialog(output, 'Informe -- usa Imprimir para guardar como PDF');
 }
