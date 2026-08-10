@@ -60,6 +60,78 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
   STG_EQUIPO_MIEMBRO: 'EQUIPO_TEMPORAL y MIEMBRO_TEMPORAL apuntan cada uno al ID_TEMPORAL de una fila de STG_PERSONA.'
 };
 
+/*
+ * PROMPT_IA.txt del .zip (ver conversación -- "redacta un prompt master
+ * para usar esta plantilla en una IA"): a diferencia de LEEME.txt (el
+ * esquema técnico), esto es el guion de conversación en sí -- abre con
+ * una entrevista por bloques antes de generar nada, para que la IA no
+ * invente campaña/fechas/cantidades sin preguntar, y cierra con el
+ * formato de entrega exacto que espera escribirFilasCSVEnHojaStaging
+ * (un bloque de código por CSV, cabecera intacta, nombre de fichero
+ * como título). Adaptado por grupo: la entrevista de RECURSOS_PERSONAS
+ * no tiene sentido preguntar por campaña/productos/procesos.
+ */
+function construirPromptIA_(grupo) {
+  var esCampana = grupo === 'CAMPANA';
+
+  var bloques = esCampana
+    ? [
+        '1. **Objetivo general** -- ¿qué campaña/proyecto estamos montando y para qué sirve? Fecha de inicio y fin previstas. Estado inicial.',
+        '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
+        '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
+        '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
+      ]
+    : [
+        '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
+        '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
+        '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
+      ];
+
+  var lineas = [
+    'PROMPT MASTER -- Importación masiva LaTroballa (uso con IA)',
+    '',
+    'Eres mi asistente para preparar datos de importación masiva del "Taller',
+    'de Producción" de La Troballa, un gestor de proyectos sobre Google',
+    'Sheets. Vamos a rellenar una plantilla formada por varios CSV' + (esCampana ? ' encadenados' : '') + '.',
+    'Te adjunto el LEEME.txt con las columnas exactas, los campos',
+    'obligatorios y los valores de catálogo permitidos de cada CSV -- son',
+    'una lista cerrada, no te los inventes.',
+    '',
+    'No generes ningún CSV todavía. Primero quiero que me entrevistes para',
+    'entender qué necesito, por bloques (uno detrás de otro, no todo de',
+    'golpe), y que resumas lo entendido antes de pasar al siguiente bloque:',
+    '',
+    bloques.join('\n'),
+    '',
+    'Si en algún bloque me faltan datos obligatorios (según LEEME.txt) y no',
+    'te los he dado, pregúntamelos explícitamente -- no rellenes huecos con',
+    'nombres, fechas o cantidades inventadas. Si no sé una respuesta al',
+    'momento, sugiéreme un valor razonable pero márcalo como "PENDIENTE DE',
+    'CONFIRMAR" para que lo revise antes de importar.',
+    '',
+    'Reglas de generación (una vez cerrada la entrevista):',
+    '- ID_TEMPORAL: una clave corta y legible que tú inventas, única dentro de cada CSV (ej. "C1", "PR1", "T1"). No hace falta que sea consecutiva.',
+    '- Las columnas que terminan en _TEMPORAL deben apuntar exactamente a un ID_TEMPORAL que exista en el CSV del nivel padre correspondiente, o a un ID real ya existente en el Sheet solo si yo te digo explícitamente que estoy ampliando algo ya creado.',
+    '- No rellenes ESTADO_IMPORTACION ni ID_REAL -- quedan vacíos, los escribe el propio proceso de importación al confirmar.',
+    '- Usa únicamente los valores de catálogo listados en LEEME.txt para las columnas marcadas como tales. Si necesitas un valor que no aparece en la lista, dímelo en vez de forzar uno parecido.',
+    '- Fechas en formato AAAA-MM-DD. Números decimales con punto, no coma.' + (esCampana ? ' El orden de las filas dentro de un mismo padre debe seguir la secuencia lógica de ejecución real -- el sistema deriva automáticamente el orden y el predecesor, no hace falta indicarlo aparte.' : ''),
+    '- No añadas columnas, comentarios ni filas de ejemplo dentro del CSV: solo la fila de cabecera (tal cual viene en la plantilla) y las filas de datos reales.',
+    '',
+    'Formato de entrega:',
+    '- Antes de los CSV, dame un resumen breve de lo que vas a crear, para que lo revise de un vistazo antes de descargar o pegar nada.',
+    '- Devuélveme el contenido completo de cada CSV en su propio bloque de código, con el nombre exacto del fichero como título justo encima (ej. "' + GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo][0] + '.csv"), listo para guardar tal cual.',
+    '- Si algo queda "PENDIENTE DE CONFIRMAR", resúmelo también aparte al final, en una lista corta.',
+    '',
+    'Cuando tenga los CSV, los subiré desde el diálogo de "Importación',
+    'masiva" del Sheet (paso "Subir CSV ya rellenado"), con el mismo nombre',
+    'de archivo que la hoja de destino.',
+    '',
+    'Para empezar, hazme la primera pregunta del bloque 1.'
+  ];
+
+  return lineas.join('\n');
+}
+
 function buscarDefinicionStaging_(nombreHoja) {
   var definicion = DEFINICIONES_STAGING_IMPORTACION_MASIVA_.filter(function (d) {
     return d.hoja === nombreHoja;
@@ -144,6 +216,7 @@ function generarPlantillasImportacionMasiva(grupo) {
   });
 
   blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', 'LEEME.txt'));
+  blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', 'PROMPT_IA.txt'));
 
   var nombreZip = 'plantilla_importacion_' + (grupo === 'CAMPANA' ? 'campana' : 'recursos_personas') + '.zip';
   var zip = Utilities.zip(blobs, nombreZip);
