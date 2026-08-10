@@ -172,6 +172,51 @@ function procesarImportacionMasiva_(confirmar) {
   validarReferenciaPadre_(filasProceso, 'STG_PROCESO', 'PRODUCTO_TEMPORAL', filasProducto, 'PRODUCTO');
   validarReferenciaPadre_(filasTarea, 'STG_TAREA', 'PROCESO_TEMPORAL', filasProceso, 'PROCESO');
 
+  /*
+   * Espejo del dry-run de la regla de coherencia ESTADO/fecha-real que
+   * Repository_InsertarRegistro.js aplica a PROYECTO/PROCESO/TAREA (ver
+   * conversación -- hallazgo real: sin esto, la fila reventaba a mitad
+   * del commit -- después de que otras filas anteriores del mismo lote
+   * YA se hubieran creado -- en vez de avisar en el resumen antes de
+   * escribir nada). Estados "iniciales" varían por entidad (Borrador/
+   * Planificado en Proyecto; Pendiente/Preparado en Proceso; Pendiente/
+   * Preparada en Tarea), el resto de la regla es idéntica.
+   */
+  function validarCoherenciaFechaReal_(filas, hoja, estadosIniciales, estadoEnProceso, estadoCompletado, exigeDuracionReal) {
+    filas.forEach(function (f) {
+      var estado = f.ESTADO;
+      var tieneInicio = f.FECHA_INICIO_REAL !== undefined && f.FECHA_INICIO_REAL !== null && String(f.FECHA_INICIO_REAL).trim() !== '';
+      var tieneFin = f.FECHA_FIN_REAL !== undefined && f.FECHA_FIN_REAL !== null && String(f.FECHA_FIN_REAL).trim() !== '';
+      var tieneDuracion = f.DURACION_REAL_DIAS !== undefined && f.DURACION_REAL_DIAS !== null && String(f.DURACION_REAL_DIAS).trim() !== '';
+
+      if (estadosIniciales.indexOf(estado) !== -1 && tieneInicio) {
+        errores.push(hoja + ' fila ' + f._fila + ': FECHA_INICIO_REAL no es compatible con ESTADO ' + estado);
+        return;
+      }
+      if (estado === estadoEnProceso && !tieneInicio) {
+        errores.push(hoja + ' fila ' + f._fila + ': ESTADO ' + estadoEnProceso + ' requiere FECHA_INICIO_REAL');
+        return;
+      }
+      if (estado === estadoCompletado) {
+        if (!tieneInicio || !tieneFin) {
+          errores.push(hoja + ' fila ' + f._fila + ': ESTADO ' + estadoCompletado + ' requiere FECHA_INICIO_REAL y FECHA_FIN_REAL');
+          return;
+        }
+        if (new Date(f.FECHA_FIN_REAL).getTime() < new Date(f.FECHA_INICIO_REAL).getTime()) {
+          errores.push(hoja + ' fila ' + f._fila + ': FECHA_FIN_REAL no puede ser anterior a FECHA_INICIO_REAL');
+          return;
+        }
+        if (exigeDuracionReal && !tieneDuracion) {
+          errores.push(hoja + ' fila ' + f._fila + ': ESTADO ' + estadoCompletado + ' requiere DURACION_REAL_DIAS');
+        }
+      }
+    });
+  }
+
+  validarCoherenciaFechaReal_(filasProyecto, 'STG_PROYECTO', ['Borrador', 'Planificado'], 'En proceso', 'Completado', false);
+  validarCoherenciaFechaReal_(filasProceso, 'STG_PROCESO', ['Pendiente', 'Preparado'], 'En proceso', 'Completado', true);
+  validarCoherenciaFechaReal_(filasTarea, 'STG_TAREA', ['Pendiente', 'Preparada'], 'En proceso', 'Terminada', true);
+
   var resumen = {
     campanas: filasCampana.length,
     proyectos: filasProyecto.length,
@@ -212,7 +257,9 @@ function procesarImportacionMasiva_(confirmar) {
       NOMBRE: f.NOMBRE,
       TIPO_PROYECTO: f.TIPO_PROYECTO,
       PRIORIDAD: f.PRIORIDAD,
-      ESTADO: f.ESTADO
+      ESTADO: f.ESTADO,
+      FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
+      FECHA_FIN_REAL: f.FECHA_FIN_REAL || ''
     }, {origen: 'ADMIN', correlationId: correlationId});
 
     mapaProyecto[String(f.ID_TEMPORAL).trim()] = resultado.id;
@@ -268,7 +315,10 @@ function procesarImportacionMasiva_(confirmar) {
         PROCESO_PREDECESOR_ID: predecesorId,
         DURACION_PREVISTA_DIAS: f.DURACION_PREVISTA_DIAS,
         PORCENTAJE_AVANCE: 0,
-        ESTADO: f.ESTADO
+        ESTADO: f.ESTADO,
+        FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
+        FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
+        DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''
       }, {origen: 'ADMIN', correlationId: correlationId});
 
       mapaProceso[String(f.ID_TEMPORAL).trim()] = resultado.id;
@@ -297,7 +347,10 @@ function procesarImportacionMasiva_(confirmar) {
         TAREA_PREDECESORA_ID: predecesoraId,
         DURACION_PREVISTA_DIAS: f.DURACION_PREVISTA_DIAS,
         PORCENTAJE_AVANCE: 0,
-        ESTADO: f.ESTADO
+        ESTADO: f.ESTADO,
+        FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
+        FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
+        DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''
       }, {origen: 'ADMIN', correlationId: correlationId});
 
       predecesoraId = resultado.id;

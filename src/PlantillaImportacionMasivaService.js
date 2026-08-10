@@ -68,6 +68,20 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
 };
 
 /*
+ * Regla de coherencia ESTADO/fecha-real (ver conversación -- hallazgo
+ * real: "ESTADO En proceso requiere FECHA_INICIO_REAL" reventaba el
+ * commit sin que la plantilla avisara). Válida también en la UI manual
+ * (Repository_InsertarRegistro.js), aquí solo se documenta para quien
+ * rellena el CSV -- la validación real está en
+ * validarCoherenciaFechaReal_ (ImportacionMasiva.js).
+ */
+var NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_ = {
+  STG_PROYECTO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL son opcionales, pero: ESTADO "Borrador"/"Planificado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL y FECHA_FIN_REAL.',
+  STG_PROCESO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
+  STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.'
+};
+
+/*
  * PROMPT_IA.txt del .zip (ver conversación -- "redacta un prompt master
  * para usar esta plantilla en una IA"): a diferencia de LEEME.txt (el
  * esquema técnico), esto es el guion de conversación en sí -- abre con
@@ -133,6 +147,9 @@ function construirPromptIA_(grupo) {
     '- No rellenes ESTADO_IMPORTACION ni ID_REAL -- quedan vacíos, los escribe el propio proceso de importación al confirmar.',
     '- Usa únicamente los valores de catálogo listados en LEEME.txt para las columnas marcadas como tales. Si necesitas un valor que no aparece en la lista, dímelo en vez de forzar uno parecido.',
     '- Fechas en formato AAAA-MM-DD. Números decimales con punto, no coma.' + (esCampana ? ' El orden de las filas dentro de un mismo padre debe seguir la secuencia lógica de ejecución real -- el sistema deriva automáticamente el orden y el predecesor, no hace falta indicarlo aparte.' : ''),
+    esCampana
+      ? '- En Proyecto/Proceso/Tarea, si ESTADO no es un estado inicial (Borrador/Planificado, Pendiente/Preparado(a)), la fila necesita fechas reales: "En proceso" exige FECHA_INICIO_REAL; "Completado"/"Terminada" exige FECHA_INICIO_REAL + FECHA_FIN_REAL (y DURACION_REAL_DIAS en Proceso/Tarea). Un estado inicial NO debe llevar FECHA_INICIO_REAL. Revisa el LEEME.txt de cada hoja para el detalle exacto.'
+      : null,
     '- No añadas columnas, comentarios ni filas de ejemplo dentro del CSV: solo la fila de cabecera (tal cual viene en la plantilla) y las filas de datos reales.',
     '',
     'Autocomprobación obligatoria antes de entregar (hazla tú mismo, no me la pidas a mí):',
@@ -230,6 +247,9 @@ function construirInstruccionesPlantilla_(grupo) {
 
     if (TEMPORALES_EXPLICADOS_POR_HOJA_[nombreHoja]) {
       lineas.push('  ' + TEMPORALES_EXPLICADOS_POR_HOJA_[nombreHoja]);
+    }
+    if (NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_[nombreHoja]) {
+      lineas.push('  ' + NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_[nombreHoja]);
     }
 
     lineas.push('');
@@ -330,8 +350,8 @@ function escribirFilasCSVEnHojaStaging(nombreHoja, textoCSV) {
     );
   }
 
-  var indicePorColumna = {};
-  cabecerasCSV.forEach(function (c, i) { indicePorColumna[c] = i; });
+  var indicePorColumnaCSV = {};
+  cabecerasCSV.forEach(function (c, i) { indicePorColumnaCSV[c] = i; });
 
   var filasDatos = filasCSV.slice(1).filter(function (fila) {
     return fila.some(function (v) { return String(v || '').trim() !== ''; });
@@ -339,16 +359,29 @@ function escribirFilasCSVEnHojaStaging(nombreHoja, textoCSV) {
 
   if (filasDatos.length === 0) return { filasEscritas: 0 };
 
+  /*
+   * Escribe por nombre de cabecera FÍSICA de la hoja (no por el orden de
+   * DEFINICIONES_STAGING_IMPORTACION_MASIVA_): una hoja ya creada antes
+   * de que el esquema ganara columnas nuevas las tiene añadidas al final
+   * vía la auto-migración de instalarStagingImportacionMasiva, en vez de
+   * en su posición "canónica" -- escribir por posición asumiendo el
+   * orden de DEFINICIONES desalinearía esas columnas.
+   */
+  var ultimaColumnaHoja = hoja.getLastColumn();
+  var cabecerasHoja = hoja.getRange(1, 1, 1, ultimaColumnaHoja).getValues()[0].map(function (c) {
+    return String(c || '').trim();
+  });
+
   var filasParaEscribir = filasDatos.map(function (fila) {
-    return definicion.cabeceras.map(function (columna) {
-      if (columna === 'ESTADO_IMPORTACION' || columna === 'ID_REAL' || columna === 'PROYECTO_PRODUCTO_ID_REAL') return '';
-      var indice = indicePorColumna[columna];
+    return cabecerasHoja.map(function (columnaHoja) {
+      if (columnaHoja === 'ESTADO_IMPORTACION' || columnaHoja === 'ID_REAL' || columnaHoja === 'PROYECTO_PRODUCTO_ID_REAL') return '';
+      var indice = indicePorColumnaCSV[columnaHoja];
       return indice === undefined ? '' : (fila[indice] === undefined ? '' : fila[indice]);
     });
   });
 
   var ultimaFila = hoja.getLastRow();
-  hoja.getRange(ultimaFila + 1, 1, filasParaEscribir.length, definicion.cabeceras.length).setValues(filasParaEscribir);
+  hoja.getRange(ultimaFila + 1, 1, filasParaEscribir.length, cabecerasHoja.length).setValues(filasParaEscribir);
 
   return { filasEscritas: filasParaEscribir.length };
 }

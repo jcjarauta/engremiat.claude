@@ -29,9 +29,20 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
       hoja: 'STG_CAMPANA',
       cabeceras: ['ID_TEMPORAL', 'NOMBRE', 'FECHA_INICIO_PLAN', 'FECHA_FIN_PLAN', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
+    /*
+     * FECHA_INICIO_REAL/FECHA_FIN_REAL (PROYECTO/PROCESO/TAREA) y
+     * DURACION_REAL_DIAS (PROCESO/TAREA) son opcionales, pero condicionales
+     * de verdad (ver conversación -- hallazgo real probando con datos de
+     * IA): Repository_InsertarRegistro.js exige FECHA_INICIO_REAL cuando
+     * ESTADO='En proceso', y FECHA_INICIO_REAL+FECHA_FIN_REAL (+DURACION_REAL_DIAS
+     * en Proceso/Tarea) cuando ESTADO='Completado'/'Terminada' -- sin estas
+     * columnas, cualquier fila con esos estados quedaba bloqueada en el
+     * commit (no en el dry-run) sin forma de completarla. Ver validación
+     * espejo en ImportacionMasiva.js (validarCoherenciaFechaReal_).
+     */
     {
       hoja: 'STG_PROYECTO',
-      cabeceras: ['ID_TEMPORAL', 'CAMPANA_TEMPORAL', 'NOMBRE', 'TIPO_PROYECTO', 'PRIORIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'CAMPANA_TEMPORAL', 'NOMBRE', 'TIPO_PROYECTO', 'PRIORIDAD', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_PRODUCTO',
@@ -39,11 +50,11 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
     },
     {
       hoja: 'STG_PROCESO',
-      cabeceras: ['ID_TEMPORAL', 'PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_TAREA',
-      cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
      * Fase N8 (ver conversación): extiende el patrón STG_* a Recursos y
@@ -133,15 +144,22 @@ function instalarStagingImportacionMasiva() {
         });
 
         if (faltantes.length > 0) {
-          throw new Error(
-            'INSTALAR_STAGING_IMPORTACION_MASIVA_ERROR: la hoja ' +
-              definicion.hoja +
-              ' ya existe pero le faltan columnas: ' +
-              faltantes.join(', ')
-          );
+          /*
+           * Auto-migración (ver conversación -- hallazgo real: cada vez
+           * que el esquema de una hoja STG_* gana una columna nueva, las
+           * hojas ya creadas en un cliente se quedaban desincronizadas y
+           * bloqueaban "Preparar hojas" con un error manual). Añadir al
+           * final es seguro: no reordena ni toca columnas existentes, y
+           * escribirFilasCSVEnHojaStaging/leerFilasPendientesImportacion_
+           * ya resuelven columnas por nombre de cabecera, no por posición,
+           * así que el orden físico no tiene que coincidir con
+           * DEFINICIONES_STAGING_IMPORTACION_MASIVA_.
+           */
+          hoja.getRange(1, ultimaColumna + 1, 1, faltantes.length).setValues([faltantes]);
+          console.log('OK hoja_migrada=' + definicion.hoja + ' columnas_anadidas=' + faltantes.join(', '));
+        } else {
+          console.log('OK hoja_ya_existente_y_valida=' + definicion.hoja);
         }
-
-        console.log('OK hoja_ya_existente_y_valida=' + definicion.hoja);
       }
     });
   } finally {
