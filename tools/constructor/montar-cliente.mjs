@@ -93,6 +93,17 @@ export function construirManifiestoCascaron(libreria) {
           version: String(libreria.version),
         },
       ],
+      // Requerido por LecturaBatchService.js (Sheets.Spreadsheets.Values.batchGet,
+      // usado por Kanban/Gantt/Vista del dia): los servicios avanzados no se heredan
+      // de la libreria, cada proyecto cliente debe declararlos por su cuenta o la
+      // llamada falla con "servicio Google Sheets API no activado".
+      enabledAdvancedServices: [
+        {
+          userSymbol: 'Sheets',
+          serviceId: 'sheets',
+          version: 'v4',
+        },
+      ],
     },
     exceptionLogging: 'STACKDRIVER',
     runtimeVersion: 'V8',

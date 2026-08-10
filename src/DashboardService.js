@@ -232,6 +232,25 @@ function listarConsumoDesperdicioMaterial() {
     return (Number(tm.CANTIDAD_CONSUMIDA) || 0) > 0 || (Number(tm.CANTIDAD_DESPERDICIADA) || 0) > 0;
   });
 }
+function obtenerAlertasMaterialesSeguro_() {
+  try {
+    return {
+      stockBajo: listarMaterialesStockBajo(),
+      agotados: listarMaterialesAgotados(),
+      reservasSuperanStock: listarReservasSuperanStock(),
+      necesidadesReposicion: listarNecesidadesReposicion(),
+      criticos: listarMaterialesCriticos(),
+      consumoDesperdicio: listarConsumoDesperdicioMaterial()
+    };
+  } catch (e) {
+    console.warn('PANEL_OPERATIVO_MATERIALES_OMITIDO: ' + e.message);
+    return {
+      stockBajo: [], agotados: [], reservasSuperanStock: [],
+      necesidadesReposicion: [], criticos: [], consumoDesperdicio: []
+    };
+  }
+}
+
 function obtenerPanelOperativo() {
   cacheLecturaIniciarContexto_();
 
@@ -255,14 +274,7 @@ function obtenerPanelOperativo() {
         relacionesIncompletas: listarRelacionesIncompletas(),
         recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible()
       },
-      materiales: {
-        stockBajo: listarMaterialesStockBajo(),
-        agotados: listarMaterialesAgotados(),
-        reservasSuperanStock: listarReservasSuperanStock(),
-        necesidadesReposicion: listarNecesidadesReposicion(),
-        criticos: listarMaterialesCriticos(),
-        consumoDesperdicio: listarConsumoDesperdicioMaterial()
-      }
+      materiales: obtenerAlertasMaterialesSeguro_()
     };
 
     return serializarParaCliente_(panel);
