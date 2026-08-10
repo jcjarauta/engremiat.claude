@@ -2868,6 +2868,22 @@ function detectarProblemasEquipoMiembro_(agregar) {
   detectarProblemasEquipoMiembroEnRegistros_(relaciones, personasEquipos, agregar);
 }
 
+/*
+ * Aísla cada chequeo individual: si uno falla (típicamente porque toca
+ * una entidad de un módulo opcional -- MATERIAL, PROVEEDOR -- no
+ * instalado en este cliente, hoja inexistente), se omite ese chequeo
+ * en vez de abortar TODO el reporte de integridad sin devolver nada
+ * (hallazgo en vivo en TEST-Combo-CORE: ERROR_CONSULTA en el chequeo
+ * de MATERIAL mataba el reporte entero).
+ */
+function ejecutarChequeoIntegridadSeguro_(nombreChequeo, fn) {
+  try {
+    fn();
+  } catch (e) {
+    console.warn('INTEGRIDAD_CHEQUEO_OMITIDO ' + nombreChequeo + ': ' + e.message);
+  }
+}
+
 function detectarProblemasFuncionales_() {
   var hallazgos = [];
 
@@ -2893,41 +2909,41 @@ function detectarProblemasFuncionales_() {
    * STOCK
    * Integridad funcional histórica.
    */
-  detectarProblemasStock_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasStock_', function () { detectarProblemasStock_(agregar); });
 
   /*
    * TAREA_MATERIAL
    * Integridad funcional histórica.
    */
-  detectarProblemasTareaMaterial_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasTareaMaterial_', function () { detectarProblemasTareaMaterial_(agregar); });
 
   /*
  * PRODUCTO_MATERIAL / TAREA_MATERIAL
  * Relaciones activas con padres lógicamente inactivos.
  */
-detectarRelacionesMaterialConPadresInactivos_(
-  agregar
-);
+ejecutarChequeoIntegridadSeguro_('detectarRelacionesMaterialConPadresInactivos_', function () {
+  detectarRelacionesMaterialConPadresInactivos_(agregar);
+});
 
 /*
  * PRODUCTO_MATERIAL / TAREA_MATERIAL
  * Duplicidades funcionales históricas activas.
  */
-detectarDuplicidadesRelacionesMaterial_(
-  agregar
-);
+ejecutarChequeoIntegridadSeguro_('detectarDuplicidadesRelacionesMaterial_', function () {
+  detectarDuplicidadesRelacionesMaterial_(agregar);
+});
 
   /*
    * TAREA
    * Integridad funcional histórica.
    */
-  detectarProblemasTarea_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasTarea_', function () { detectarProblemasTarea_(agregar); });
 
   /*
    * TAREA_RESPONSABLE
    * Integridad funcional histórica.
    */
-  detectarProblemasTareaResponsable_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasTareaResponsable_', function () { detectarProblemasTareaResponsable_(agregar); });
 
   /*
    * FUNC-ASG-001
@@ -2937,7 +2953,7 @@ detectarDuplicidadesRelacionesMaterial_(
    * TAREA_RESPONSABLE (FUNC-REC-001) en esta fase — limite de alcance
    * documentado en Fase L1.1 del roadmap de backlog.
    */
-  detectarProblemasAsignacion_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasAsignacion_', function () { detectarProblemasAsignacion_(agregar); });
 
   /*
    * FUNC-GRF-001
@@ -2946,14 +2962,14 @@ detectarDuplicidadesRelacionesMaterial_(
    * destino. Alcance minimo de esta fase (L1.2) — deteccion de ciclos
    * mas alla del par directo queda fuera por ahora.
    */
-  detectarProblemasRelacion_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasRelacion_', function () { detectarProblemasRelacion_(agregar); });
 
   /*
    * FUNC-VIN-001
    * Vinculo polimorfico generico (VINCULO): no puede referenciar el
    * mismo registro (mismo tipo y mismo ID) como origen y destino.
    */
-  detectarProblemasVinculo_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasVinculo_', function () { detectarProblemasVinculo_(agregar); });
 
   /*
    * FUNC-MOV-001
@@ -2961,14 +2977,14 @@ detectarDuplicidadesRelacionesMaterial_(
    * de un movimiento siempre debe ser positiva; el TIPO_MOVIMIENTO
    * indica la direccion, no un valor negativo.
    */
-  detectarProblemasMovimientoMaterial_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasMovimientoMaterial_', function () { detectarProblemasMovimientoMaterial_(agregar); });
 
   /*
    * FUNC-EJT-001
    * Definicion vs. ejecucion (EJECUCION_TAREA): la fecha de fin no puede
    * ser anterior a la fecha de inicio de la misma ejecucion.
    */
-  detectarProblemasEjecucionTarea_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasEjecucionTarea_', function () { detectarProblemasEjecucionTarea_(agregar); });
 
   /*
    * FUNC-PROCESO-004 / FUNC-PROCESO-005
@@ -2976,7 +2992,7 @@ detectarDuplicidadesRelacionesMaterial_(
    * PORCENTAJE_AVANCE con el ESTADO, y con el promedio de sus TAREA
    * cuando METODO_CALCULO_AVANCE = "Por tareas".
    */
-  detectarProblemasAvanceProceso_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasAvanceProceso_', function () { detectarProblemasAvanceProceso_(agregar); });
 
   /*
    * FUNC-TAREA-014
@@ -2984,102 +3000,102 @@ detectarDuplicidadesRelacionesMaterial_(
    * no deberia tener avance superior a 0. (Terminada != 100 ya lo
    * cubre FUNC-TAREA-001, no se duplica aqui.)
    */
-  detectarProblemasAvanceTarea_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasAvanceTarea_', function () { detectarProblemasAvanceTarea_(agregar); });
 
   /*
    * FUNC-REC-002
    * Solapamiento temporal de asignaciones activas de una misma persona.
    */
-  detectarSolapamientoTemporalTareaResponsable_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarSolapamientoTemporalTareaResponsable_', function () { detectarSolapamientoTemporalTareaResponsable_(agregar); });
 
   /*
    * FUNC-REC-003
    * Persona con ESTADO Inactivo que mantiene una asignacion activa.
    */
-  detectarPersonaInactivaConAsignacionActiva_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarPersonaInactivaConAsignacionActiva_', function () { detectarPersonaInactivaConAsignacionActiva_(agregar); });
 
   /*
    * FUNC-REC-004
    * Densidad de trabajo de la asignacion por encima de la capacidad semanal.
    */
-  detectarCapacidadSemanalInsuficiente_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarCapacidadSemanalInsuficiente_', function () { detectarCapacidadSemanalInsuficiente_(agregar); });
 
   /*
    * FUNC-REC-005
    * Suma de dedicacion en periodos solapados de una misma persona por encima del 100%.
    */
-  detectarSobrecargaPorPeriodo_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarSobrecargaPorPeriodo_', function () { detectarSobrecargaPorPeriodo_(agregar); });
 
   /*
    * FUNC-PER-001 a FUNC-PER-004
    * Coherencia del coordinador de PERSONA_EQUIPO.
    */
-  detectarProblemasCoordinadorPersonaEquipo_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasCoordinadorPersonaEquipo_', function () { detectarProblemasCoordinadorPersonaEquipo_(agregar); });
 
   /* FUNC-EQM-001 a FUNC-EQM-008: coherencia de EQUIPO_MIEMBRO. */
-  detectarProblemasEquipoMiembro_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasEquipoMiembro_', function () { detectarProblemasEquipoMiembro_(agregar); });
 
   /*
    * DECISION
    * Integridad funcional histórica.
    */
-  detectarProblemasDecision_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasDecision_', function () { detectarProblemasDecision_(agregar); });
 
   /*
    * INCIDENCIA
    * Integridad funcional histórica.
    */
-  detectarProblemasIncidencia_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasIncidencia_', function () { detectarProblemasIncidencia_(agregar); });
 
   /*
    * PROVEEDOR
    * Integridad funcional histórica.
    */
-  detectarProblemasProveedor_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasProveedor_', function () { detectarProblemasProveedor_(agregar); });
 
   /*
    * MATERIAL
    * Integridad funcional histórica.
    */
-  detectarProblemasMaterial_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasMaterial_', function () { detectarProblemasMaterial_(agregar); });
 
   /*
    * PROYECTO_PRODUCTO
    * Integridad funcional histórica.
    */
-  detectarProblemasProyectoProducto_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasProyectoProducto_', function () { detectarProblemasProyectoProducto_(agregar); });
 
   /*
    * FUNC-JER-001 / FUNC-JER-002
    * Proyecto planificado fuera de la ventana temporal de su campana.
    */
-  detectarProyectoFueraDeVentanaCampana_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProyectoFueraDeVentanaCampana_', function () { detectarProyectoFueraDeVentanaCampana_(agregar); });
 
   /*
    * FUNC-JER-003
    * Campana cerrada (Completada/Cancelada) con un proyecto activo no cerrado.
    */
-  detectarCampanaCerradaConProyectoActivo_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarCampanaCerradaConProyectoActivo_', function () { detectarCampanaCerradaConProyectoActivo_(agregar); });
 
   /*
    * FUNC-JER-004 / FUNC-JER-007
    * Coherencia de estado y fecha requerida entre PROYECTO y PRODUCTO
    * (via PROYECTO_PRODUCTO).
    */
-  detectarProblemasProyectoProductoJerarquia_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasProyectoProductoJerarquia_', function () { detectarProblemasProyectoProductoJerarquia_(agregar); });
 
   /*
    * FUNC-JER-005 / FUNC-JER-006
    * Coherencia de estado y fecha entre PRODUCTO y sus PROCESO.
    */
-  detectarProblemasProductoProcesoJerarquia_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasProductoProcesoJerarquia_', function () { detectarProblemasProductoProcesoJerarquia_(agregar); });
 
   /*
    * FUNC-DOC-001 a FUNC-DOC-006
    * Referencia polimorfica de DOCUMENTO, vigencia unica y duplicados,
    * formato de VERSION y URL.
    */
-  detectarProblemasDocumento_(agregar);
+  ejecutarChequeoIntegridadSeguro_('detectarProblemasDocumento_', function () { detectarProblemasDocumento_(agregar); });
 
 
   /*
@@ -3333,34 +3349,36 @@ detectarDuplicidadesRelacionesMaterial_(
    * Un PROVEEDOR Activo sin NIF/CIF ni contacto no representa todavia
    * una relacion comercial confirmada.
    */
-  listarRegistros(
-    'PROVEEDOR',
-    {ACTIVO: 'SÍ'}
-  ).forEach(function (proveedor) {
-    if (proveedor.ESTADO !== 'Activo') {
-      return;
-    }
+  ejecutarChequeoIntegridadSeguro_('FUNC-PRV-006', function () {
+    listarRegistros(
+      'PROVEEDOR',
+      {ACTIVO: 'SÍ'}
+    ).forEach(function (proveedor) {
+      if (proveedor.ESTADO !== 'Activo') {
+        return;
+      }
 
-    var faltantes = [];
+      var faltantes = [];
 
-    if (!String(proveedor.NIF_CIF || '').trim()) {
-      faltantes.push('NIF_CIF');
-    }
+      if (!String(proveedor.NIF_CIF || '').trim()) {
+        faltantes.push('NIF_CIF');
+      }
 
-    if (!String(proveedor.PERSONA_CONTACTO || '').trim()) {
-      faltantes.push('PERSONA_CONTACTO');
-    }
+      if (!String(proveedor.PERSONA_CONTACTO || '').trim()) {
+        faltantes.push('PERSONA_CONTACTO');
+      }
 
-    if (faltantes.length > 0) {
-      agregar(
-        'FUNC-PRV-006',
-        'PROVEEDOR',
-        proveedor.ID,
-        'Proveedor Activo sin: ' + faltantes.join(', ') + '.',
-        'ADVERTENCIA',
-        'Completar el NIF/CIF y la persona de contacto antes de marcar el proveedor como activo, o revisar el estado si aún no es una relación comercial confirmada.'
-      );
-    }
+      if (faltantes.length > 0) {
+        agregar(
+          'FUNC-PRV-006',
+          'PROVEEDOR',
+          proveedor.ID,
+          'Proveedor Activo sin: ' + faltantes.join(', ') + '.',
+          'ADVERTENCIA',
+          'Completar el NIF/CIF y la persona de contacto antes de marcar el proveedor como activo, o revisar el estado si aún no es una relación comercial confirmada.'
+        );
+      }
+    });
   });
 
   /*
@@ -3427,20 +3445,32 @@ function obtenerReporteIntegridad() {
         function () {
           Object.keys(ENTIDADES_MVP)
             .forEach(function (entidad) {
-              var duplicados =
-                detectarIdsDuplicados(entidad);
+              /*
+               * Entidad de un módulo opcional (MATERIAL, PROVEEDOR...)
+               * no instalado en este cliente -> su hoja no existe.
+               * Sin este try/catch, ERROR_CONSULTA aborta TODO el
+               * reporte de integridad en vez de omitir solo esa
+               * entidad (hallazgo en vivo en TEST-Combo-CORE, mismo
+               * caso ya corregido en Fichas/Panel para MATERIAL).
+               */
+              try {
+                var duplicados =
+                  detectarIdsDuplicados(entidad);
 
-              if (duplicados.length > 0) {
-                reporte.idsDuplicados[entidad] =
-                  duplicados;
-              }
+                if (duplicados.length > 0) {
+                  reporte.idsDuplicados[entidad] =
+                    duplicados;
+                }
 
-              var huerfanas =
-                detectarReferenciasHuerfanas(entidad);
+                var huerfanas =
+                  detectarReferenciasHuerfanas(entidad);
 
-              if (huerfanas.length > 0) {
-                reporte.referenciasHuerfanas[entidad] =
-                  huerfanas;
+                if (huerfanas.length > 0) {
+                  reporte.referenciasHuerfanas[entidad] =
+                    huerfanas;
+                }
+              } catch (eEntidadOpcional_) {
+                console.warn('INTEGRIDAD_ENTIDAD_OMITIDA ' + entidad + ': ' + eEntidadOpcional_.message);
               }
             });
         }
