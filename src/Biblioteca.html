@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      h3 { font-size: 16px; margin-bottom: 2px; }
+      .subtitulo { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 16px; }
+      details {
+        margin-bottom: 8px; border: 1px solid var(--color-borde); border-radius: 8px;
+        padding: 0 12px;
+      }
+      summary { cursor: pointer; padding: 10px 0; font-weight: bold; font-size: 13px; }
+      summary::-webkit-details-marker { color: var(--color-texto-secundario); }
+      details > div { padding-bottom: 12px; font-size: 13px; line-height: 1.5; color: var(--color-texto); }
+      details ul { margin: 4px 0; padding-left: 18px; }
+      details li { margin-bottom: 4px; }
+      .caja-ayuda {
+        margin-top: 16px; padding: 12px; background: var(--color-fondo-suave);
+        border-radius: 8px; font-size: 12px; line-height: 1.5;
+      }
+      .caja-ayuda h4 { margin: 0 0 6px 0; font-size: 13px; }
+      .caja-ayuda ul { margin: 4px 0; padding-left: 18px; }
+    </style>
+  </head>
+  <body>
+    <h3>📚 Biblioteca</h3>
+    <div class="subtitulo">Qué es cada cosa en el taller, en dos frases.</div>
+
+    <details open>
+      <summary>¿Qué es una Campaña?</summary>
+      <div>
+        La Campaña es el encargo o iniciativa de más alto nivel del taller (p.ej. "Serigrafía de bolsas 2026").
+        Dentro de una Campaña hay uno o más Proyectos.
+      </div>
+    </details>
+
+    <details>
+      <summary>La cadena de trabajo: Campaña → Proyecto → Producto → Proceso → Tarea</summary>
+      <div>
+        <ul>
+          <li><b>Proyecto:</b> una parte concreta de la campaña, con su propio responsable y plazos.</li>
+          <li><b>Producto:</b> lo que se fabrica o entrega dentro de un proyecto.</li>
+          <li><b>Proceso:</b> una fase de producción del producto (p.ej. "Serigrafía", "Corte").</li>
+          <li><b>Tarea:</b> el trabajo concreto del día a día dentro de un proceso.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Panel, Ficha y Formulario: ¿cuál uso?</summary>
+      <div>
+        <ul>
+          <li><b>Panel</b> (barra lateral): para navegar el árbol completo y ver de un vistazo el estado de todo.</li>
+          <li><b>Ficha</b> (ventana): el detalle de UN registro concreto -- todo lo relacionado con él en un solo sitio.</li>
+          <li><b>Formulario</b> (ventana pequeña): para crear o editar un registro, campo a campo.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Incidencias y Decisiones</summary>
+      <div>
+        <ul>
+          <li><b>Incidencia:</b> algo que ha ido mal o necesita atención, a cualquier nivel (Campaña, Proyecto, Producto, Proceso o Tarea).</li>
+          <li><b>Decisión:</b> una decisión tomada sobre un Proyecto, con su contexto y responsable, para no perder el porqué más adelante.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details>
+      <summary>Cargar muchos registros de golpe</summary>
+      <div>
+        Para no dar de alta uno a uno, hay una <b>Importación masiva</b> (tarjeta propia en el Mapa del sheet):
+        se rellenan unas hojas de trabajo y se valida todo antes de crear nada.
+      </div>
+    </details>
+
+    <div class="caja-ayuda">
+      <h4>¿Atascado o algo no funciona?</h4>
+      <ul>
+        <li>Recarga la hoja (F5) -- casi siempre soluciona menús o paneles que no responden.</li>
+        <li>Comprueba que has elegido una campaña/registro antes de pulsar un botón que lo necesite.</li>
+        <li>Si un botón da error, apunta el mensaje exacto y coméntaselo a quien administra este Sheet.</li>
+      </ul>
+    </div>
+  </body>
+</html>

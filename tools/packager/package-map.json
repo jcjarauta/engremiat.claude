@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 169,
+  "universeExpected": 171,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -333,6 +333,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "4ba573c9c4534d74cc598bb4c39017e979d8add978d035a3dfac29b5463fcbf1",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/Biblioteca.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "18ad04e21fb25834ae1172d859646745458ecb4b79d00d0b8328bed574cc01e9",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/BibliotecaService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "afe61ea19c58ec9e0a81d7693cd7b788fb60c4c8f2f21307f72c2a928c6ebb78",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1399,7 +1421,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c84428b39c463c1690e80745ea5d5156431497ea01cd091009df841c3b79edd5",
+      "expectedSha256": "369f55bef0487225f8a91eb0eddb3e2bc9bac9542a58ed3af28d2c8d4a558da1",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

@@ -102,6 +102,15 @@
       </span>
     </button>
 
+    <div class="separador">Ayuda</div>
+    <button class="tarjeta" onclick="abrir('abrirBiblioteca')">
+      <span class="icono">📚</span>
+      <span class="texto">
+        <div class="titulo">Biblioteca</div>
+        <div class="detalle">Qué es cada cosa: Campaña, Ficha, Panel... y qué hacer si algo se atasca</div>
+      </span>
+    </button>
+
     <div class="separador">Actividad reciente</div>
     <div id="listaActividad" class="vacio-busqueda">Cargando...</div>
 
@@ -224,6 +233,9 @@
             return;
           case 'abrirImportacionMasivaInicio':
             google.script.run.withFailureHandler(mostrarError).abrirImportacionMasivaInicio();
+            return;
+          case 'abrirBiblioteca':
+            google.script.run.withFailureHandler(mostrarError).abrirBiblioteca();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });
