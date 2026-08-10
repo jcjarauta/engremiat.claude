@@ -20,7 +20,9 @@
 var GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ = {
   CAMPANA: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
   RECURSOS_PERSONAS: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
-  ASIGNACIONES: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO']
+  ASIGNACIONES: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
+  SEGUIMIENTO: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
+  HORARIO: ['STG_HORARIO']
 };
 
 /*
@@ -39,7 +41,11 @@ var CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_ = {
   STG_PERSONA: ['TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO'],
   STG_EQUIPO_MIEMBRO: ['EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO'],
   STG_TAREA_RESPONSABLE: ['TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO'],
-  STG_TAREA_RECURSO: ['TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO']
+  STG_TAREA_RECURSO: ['TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO'],
+  STG_DECISION: ['PROYECTO_TEMPORAL', 'TITULO', 'TIPO', 'ESTADO'],
+  STG_INCIDENCIA: ['NIVEL_INCIDENCIA', 'TITULO', 'TIPO', 'PRIORIDAD', 'FECHA_DETECCION', 'ESTADO'],
+  STG_DOCUMENTO: ['ENTIDAD_TIPO', 'TIPO_DOCUMENTO', 'TITULO', 'URL', 'ESTADO'],
+  STG_HORARIO: ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO']
 };
 
 var CATALOGOS_POR_COLUMNA_STAGING_ = {
@@ -52,7 +58,11 @@ var CATALOGOS_POR_COLUMNA_STAGING_ = {
   STG_PERSONA: { TIPO: 'CFG_TIPO_RECURSO', ROL: 'CFG_ROL_PERSONA', DISPONIBILIDAD: 'CFG_DISPONIBILIDAD', ESTADO: 'CFG_ESTADO_RECURSO' },
   STG_EQUIPO_MIEMBRO: {},
   STG_TAREA_RESPONSABLE: { ROL_ASIGNADO: 'CFG_ROL_ASIGNACION', ESTADO: 'CFG_ESTADO_ASIGNACION' },
-  STG_TAREA_RECURSO: { TIPO_USO: 'CFG_TIPO_USO_RECURSO', ESTADO: 'CFG_ESTADO_RELACION' }
+  STG_TAREA_RECURSO: { TIPO_USO: 'CFG_TIPO_USO_RECURSO', ESTADO: 'CFG_ESTADO_RELACION' },
+  STG_DECISION: { TIPO: 'CFG_TIPO_DECISION', ESTADO: 'CFG_ESTADO_DECISION' },
+  STG_INCIDENCIA: { NIVEL_INCIDENCIA: 'CFG_NIVEL_INCIDENCIA', TIPO: 'CFG_TIPO_INCIDENCIA', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_INCIDENCIA' },
+  STG_DOCUMENTO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_DOCUMENTO', TIPO_DOCUMENTO: 'CFG_TIPO_DOCUMENTO', ESTADO: 'CFG_ESTADO_DOCUMENTO' },
+  STG_HORARIO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_HORARIO', DIA_SEMANA: 'CFG_DIA_SEMANA', ESTADO: 'CFG_ESTADO_RELACION' }
 };
 
 var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
@@ -64,7 +74,11 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
   STG_PERSONA: 'COORDINADOR_TEMPORAL (opcional, solo si TIPO=Equipo) apunta al ID_TEMPORAL de otra fila de STG_PERSONA con TIPO=Persona.',
   STG_EQUIPO_MIEMBRO: 'EQUIPO_TEMPORAL y MIEMBRO_TEMPORAL apuntan cada uno al ID_TEMPORAL de una fila de STG_PERSONA.',
   STG_TAREA_RESPONSABLE: 'TAREA_TEMPORAL y PERSONA_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/persona en un lote anterior (aunque ya esté importado) -- no hace falta conocer el ID real generado.',
-  STG_TAREA_RECURSO: 'TAREA_TEMPORAL y RECURSO_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/recurso en un lote anterior (aunque ya esté importado).'
+  STG_TAREA_RECURSO: 'TAREA_TEMPORAL y RECURSO_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/recurso en un lote anterior (aunque ya esté importado).',
+  STG_DECISION: 'PROYECTO_TEMPORAL y RESPONSABLE_TEMPORAL (opcional) admiten un ID real o el ID_TEMPORAL de un lote anterior, igual que en Asignaciones.',
+  STG_INCIDENCIA: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a NIVEL_INCIDENCIA (deja las demás vacías) -- todas admiten ID real o ID_TEMPORAL de un lote anterior. RESPONSABLE_TEMPORAL (opcional) igual. Nivel "Cliente" no está soportado por esta plantilla.',
+  STG_DOCUMENTO: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a ENTIDAD_TIPO (deja las demás vacías) -- admite ID real o ID_TEMPORAL de un lote anterior. Otros valores de ENTIDAD_TIPO (Decisión, Incidencia, Recurso, Persona/Equipo, Convocatoria, Cliente) no están soportados por esta plantilla.',
+  STG_HORARIO: 'Rellena PERSONA_TEMPORAL si ENTIDAD_TIPO="Persona/Equipo", o RECURSO_TEMPORAL si ENTIDAD_TIPO="Recurso" (nunca ambas) -- admite ID real o ID_TEMPORAL de un lote anterior.'
 };
 
 /*
@@ -78,7 +92,8 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
 var NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_ = {
   STG_PROYECTO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL son opcionales, pero: ESTADO "Borrador"/"Planificado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL y FECHA_FIN_REAL.',
   STG_PROCESO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
-  STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.'
+  STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
+  STG_DECISION: 'FECHA_LIMITE (si se indica) no puede ser anterior a hoy. RESOLUCION/FECHA_RESOLUCION son opcionales, pero: ESTADO "Aprobada"/"Rechazada"/"Sustituida" EXIGE ambas (con FECHA_RESOLUCION >= hoy); cualquier otro ESTADO NO admite ninguna de las dos.'
 };
 
 /*
@@ -92,30 +107,37 @@ var NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_ = {
  * como título). Adaptado por grupo: la entrevista de RECURSOS_PERSONAS
  * no tiene sentido preguntar por campaña/productos/procesos.
  */
+var BLOQUES_ENTREVISTA_POR_GRUPO_ = {
+  CAMPANA: [
+    '1. **Objetivo general** -- ¿qué campaña/proyecto estamos montando y para qué sirve? Fecha de inicio y fin previstas. Estado inicial.',
+    '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
+    '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
+    '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
+  ],
+  RECURSOS_PERSONAS: [
+    '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
+    '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
+    '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
+  ],
+  ASIGNACIONES: [
+    '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (0-100).',
+    '2. **Recursos** -- para cada tarea, qué recurso(s) físicos hacen falta y con qué tipo de uso.'
+  ],
+  SEGUIMIENTO: [
+    '1. **Decisiones** -- qué decisiones pendientes hay a nivel de proyecto (título, contexto, tipo, quién es responsable, fecha límite si la hay). Si alguna ya está cerrada, con qué resolución y cuándo.',
+    '2. **Incidencias** -- qué incidencias hay, a qué nivel cuelgan (campaña/proyecto/producto/proceso/tarea -- usa el ID_TEMPORAL o real de ese registro), tipo, prioridad, responsable, fecha de detección.',
+    '3. **Documentos** -- qué documentos/enlaces hay que adjuntar, a qué nivel, con qué tipo de documento y URL.'
+  ],
+  HORARIO: [
+    '1. **Horarios** -- qué personas/equipos o recursos tienen un horario declarado, qué días de la semana, en qué franja horaria (HH:MM-HH:MM), y si es permanente o solo vigente en un rango de fechas.'
+  ]
+};
+
 function construirPromptIA_(grupo) {
   var esCampana = grupo === 'CAMPANA';
   var esAsignaciones = grupo === 'ASIGNACIONES';
-
-  var bloques;
-  if (esCampana) {
-    bloques = [
-      '1. **Objetivo general** -- ¿qué campaña/proyecto estamos montando y para qué sirve? Fecha de inicio y fin previstas. Estado inicial.',
-      '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
-      '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
-      '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
-    ];
-  } else if (esAsignaciones) {
-    bloques = [
-      '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (0-100).',
-      '2. **Recursos** -- para cada tarea, qué recurso(s) físicos hacen falta y con qué tipo de uso.'
-    ];
-  } else {
-    bloques = [
-      '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
-      '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
-      '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
-    ];
-  }
+  var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO';
+  var bloques = BLOQUES_ENTREVISTA_POR_GRUPO_[grupo] || [];
 
   var lineas = [
     'PROMPT MASTER -- Importación masiva LaTroballa (uso con IA)',
@@ -141,8 +163,8 @@ function construirPromptIA_(grupo) {
     '',
     'Reglas de generación (una vez cerrada la entrevista):',
     '- ID_TEMPORAL: una clave corta y legible que tú inventas, única dentro de cada CSV (ej. "C1", "PR1", "T1"). No hace falta que sea consecutiva.',
-    esAsignaciones
-      ? '- Las columnas que terminan en _TEMPORAL (TAREA_TEMPORAL, PERSONA_TEMPORAL, RECURSO_TEMPORAL) pueden usar un ID real del Sheet, o el mismo ID_TEMPORAL corto que se usó al crear esa tarea/persona/recurso en un lote anterior (aunque ya esté importado) -- pregúntame esas claves si no las tienes, no inventes IDs.'
+    admiteReferenciaFlexible
+      ? '- Las columnas que terminan en _TEMPORAL pueden usar un ID real del Sheet, o el mismo ID_TEMPORAL corto que se usó al crear esa fila (campaña/proyecto/tarea/persona/recurso/etc.) en un lote anterior (aunque ya esté importada) -- pregúntame esas claves si no las tienes, no inventes IDs.'
       : '- Las columnas que terminan en _TEMPORAL deben apuntar exactamente a un ID_TEMPORAL que exista en el CSV del nivel padre correspondiente, o a un ID real ya existente en el Sheet solo si yo te digo explícitamente que estoy ampliando algo ya creado.',
     '- No rellenes ESTADO_IMPORTACION ni ID_REAL -- quedan vacíos, los escribe el propio proceso de importación al confirmar.',
     '- Usa únicamente los valores de catálogo listados en LEEME.txt para las columnas marcadas como tales. Si necesitas un valor que no aparece en la lista, dímelo en vez de forzar uno parecido.',

@@ -856,6 +856,430 @@ function abrirImportacionMasiva() {
 }
 
 /*
+ * Fase N11 (ver conversación -- "volcar al sheet todos los datos
+ * necesarios para que los informes estén completos"): Decisión,
+ * Incidencia, Documento y Horario, los últimos huecos CORE que
+ * Informes/Excepciones/Calidad de planificación ya leen sin tener
+ * forma de cargarlos masivamente.
+ */
+
+/*
+ * INCIDENCIA/DOCUMENTO son polimórficos -- cuelgan de uno de los 5
+ * niveles de la jerarquía de campaña, indicado por una columna de nivel
+ * (NIVEL_INCIDENCIA/ENTIDAD_TIPO) en vez de una FK fija como el resto.
+ * Encuentra cuál de las 5 columnas *_TEMPORAL trae valor, la resuelve
+ * igual que cualquier otra referencia (temporal del lote o ID real) y
+ * valida que exista. Devuelve null si ninguna columna tiene valor (nivel
+ * no vinculado a nada, válido para Incidencia) o si hay más de una
+ * rellenada (ambiguo, error).
+ */
+var NIVELES_ENTIDAD_POLIMORFICA_ = [
+  { columna: 'CAMPANA_TEMPORAL', hoja: 'STG_CAMPANA', entidad: 'CAMPANA', campoId: 'CAMPANA_ID' },
+  { columna: 'PROYECTO_TEMPORAL', hoja: 'STG_PROYECTO', entidad: 'PROYECTO', campoId: 'PROYECTO_ID' },
+  { columna: 'PRODUCTO_TEMPORAL', hoja: 'STG_PRODUCTO', entidad: 'PRODUCTO', campoId: 'PRODUCTO_ID' },
+  { columna: 'PROCESO_TEMPORAL', hoja: 'STG_PROCESO', entidad: 'PROCESO', campoId: 'PROCESO_ID' },
+  { columna: 'TAREA_TEMPORAL', hoja: 'STG_TAREA', entidad: 'TAREA', campoId: 'TAREA_ID' }
+];
+
+function resolverEntidadPoliformica_(f, hoja, errores) {
+  var rellenas = NIVELES_ENTIDAD_POLIMORFICA_.filter(function (n) {
+    return String(f[n.columna] || '').trim() !== '';
+  });
+
+  if (rellenas.length === 0) return null;
+
+  if (rellenas.length > 1) {
+    errores.push(
+      hoja + ' fila ' + f._fila + ': solo una columna de nivel puede tener valor (' +
+        rellenas.map(function (n) { return n.columna; }).join(', ') + ' están todas rellenas)'
+    );
+    return null;
+  }
+
+  var nivel = rellenas[0];
+  var valorOriginal = String(f[nivel.columna]).trim();
+  var resuelto = resolverReferenciaStaging_(nivel.hoja, valorOriginal);
+
+  if (!obtenerRegistroPorId(nivel.entidad, resuelto)) {
+    errores.push(
+      hoja + ' fila ' + f._fila + ': ' + nivel.columna + ' "' + valorOriginal + '" no corresponde a ningún ' +
+        nivel.entidad + ' real existente ni a un ID_TEMPORAL ya importado de ' + nivel.hoja
+    );
+    return null;
+  }
+
+  var datos = {};
+  datos[nivel.campoId] = resuelto;
+  return datos;
+}
+
+/*
+ * Decisión, Incidencia y Documento en un único lote (ver conversación):
+ * las tres son hojas "de seguimiento" que cuelgan de la jerarquía ya
+ * creada, sin ningún orden de dependencia entre ellas (a diferencia de
+ * Campaña→Tarea), así que se validan y confirman juntas.
+ */
+function procesarImportacionSeguimiento_(confirmar) {
+  var errores = [];
+
+  var filasDecision = leerFilasPendientesImportacion_('STG_DECISION');
+  var filasIncidencia = leerFilasPendientesImportacion_('STG_INCIDENCIA');
+  var filasDocumento = leerFilasPendientesImportacion_('STG_DOCUMENTO');
+
+  function validarObligatorios_(filas, hoja, campos) {
+    filas.forEach(function (f) {
+      campos.forEach(function (c) {
+        if (f[c] === '' || f[c] === null || f[c] === undefined) {
+          errores.push(hoja + ' fila ' + f._fila + ': falta el campo obligatorio ' + c);
+        }
+      });
+    });
+  }
+
+  validarObligatorios_(filasDecision, 'STG_DECISION', ['PROYECTO_TEMPORAL', 'TITULO', 'TIPO', 'ESTADO']);
+  validarObligatorios_(filasIncidencia, 'STG_INCIDENCIA', ['NIVEL_INCIDENCIA', 'TITULO', 'TIPO', 'PRIORIDAD', 'FECHA_DETECCION', 'ESTADO']);
+  validarObligatorios_(filasDocumento, 'STG_DOCUMENTO', ['ENTIDAD_TIPO', 'TIPO_DOCUMENTO', 'TITULO', 'URL', 'ESTADO']);
+
+  function validarCatalogo_(filas, hoja, campo, nombreCatalogo) {
+    var valores = obtenerCatalogo(nombreCatalogo);
+    filas.forEach(function (f) {
+      var v = String(f[campo] || '').trim();
+      if (v && valores.indexOf(v) === -1) {
+        errores.push(
+          hoja + ' fila ' + f._fila + ': ' + campo + ' "' + v + '" no es un valor válido (esperado uno de: ' + valores.join(', ') + ')'
+        );
+      }
+    });
+  }
+
+  validarCatalogo_(filasDecision, 'STG_DECISION', 'TIPO', 'CFG_TIPO_DECISION');
+  validarCatalogo_(filasDecision, 'STG_DECISION', 'ESTADO', 'CFG_ESTADO_DECISION');
+  validarCatalogo_(filasIncidencia, 'STG_INCIDENCIA', 'NIVEL_INCIDENCIA', 'CFG_NIVEL_INCIDENCIA');
+  validarCatalogo_(filasIncidencia, 'STG_INCIDENCIA', 'TIPO', 'CFG_TIPO_INCIDENCIA');
+  validarCatalogo_(filasIncidencia, 'STG_INCIDENCIA', 'PRIORIDAD', 'CFG_PRIORIDAD');
+  validarCatalogo_(filasIncidencia, 'STG_INCIDENCIA', 'ESTADO', 'CFG_ESTADO_INCIDENCIA');
+  validarCatalogo_(filasDocumento, 'STG_DOCUMENTO', 'ENTIDAD_TIPO', 'CFG_ENTIDAD_DOCUMENTO');
+  validarCatalogo_(filasDocumento, 'STG_DOCUMENTO', 'TIPO_DOCUMENTO', 'CFG_TIPO_DOCUMENTO');
+  validarCatalogo_(filasDocumento, 'STG_DOCUMENTO', 'ESTADO', 'CFG_ESTADO_DOCUMENTO');
+
+  /*
+   * Coherencia Decisión (espejo de Repository_InsertarRegistro.js,
+   * mismo criterio que validarCoherenciaFechaReal_ en v54): FECHA_LIMITE
+   * no puede ser anterior a hoy (fecha de creación real); ESTADO de
+   * cierre exige RESOLUCION+FECHA_RESOLUCION (>= hoy); ESTADO abierto no
+   * admite ninguna de las dos.
+   */
+  function validarCoherenciaDecision_(filas) {
+    var hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    var estadosCierre = ['Aprobada', 'Rechazada', 'Sustituida'];
+
+    filas.forEach(function (f) {
+      if (f.FECHA_LIMITE) {
+        var fechaLimite = new Date(f.FECHA_LIMITE);
+        fechaLimite.setHours(0, 0, 0, 0);
+        if (fechaLimite.getTime() < hoy.getTime()) {
+          errores.push('STG_DECISION fila ' + f._fila + ': FECHA_LIMITE no puede ser anterior a hoy (fecha de importación)');
+        }
+      }
+
+      var cerrada = estadosCierre.indexOf(String(f.ESTADO || '').trim()) !== -1;
+      var tieneResolucion = String(f.RESOLUCION || '').trim() !== '';
+      var tieneFechaResolucion = String(f.FECHA_RESOLUCION || '').trim() !== '';
+
+      if (cerrada) {
+        if (!tieneResolucion || !tieneFechaResolucion) {
+          errores.push('STG_DECISION fila ' + f._fila + ': ESTADO ' + f.ESTADO + ' requiere RESOLUCION y FECHA_RESOLUCION');
+          return;
+        }
+        var fechaResolucion = new Date(f.FECHA_RESOLUCION);
+        fechaResolucion.setHours(0, 0, 0, 0);
+        if (fechaResolucion.getTime() < hoy.getTime()) {
+          errores.push('STG_DECISION fila ' + f._fila + ': FECHA_RESOLUCION no puede ser anterior a hoy (fecha de importación)');
+        }
+      } else if (tieneResolucion || tieneFechaResolucion) {
+        errores.push('STG_DECISION fila ' + f._fila + ': una decisión abierta (ESTADO ' + f.ESTADO + ') no puede tener RESOLUCION ni FECHA_RESOLUCION');
+      }
+    });
+  }
+
+  validarCoherenciaDecision_(filasDecision);
+
+  validarReferenciaStaging_(filasDecision, 'STG_DECISION', 'PROYECTO_TEMPORAL', 'STG_PROYECTO', 'PROYECTO', errores);
+  validarReferenciaStaging_(filasDecision, 'STG_DECISION', 'RESPONSABLE_TEMPORAL', 'STG_PERSONA', 'PERSONA_EQUIPO', errores);
+  validarReferenciaStaging_(filasIncidencia, 'STG_INCIDENCIA', 'RESPONSABLE_TEMPORAL', 'STG_PERSONA', 'PERSONA_EQUIPO', errores);
+
+  var nivelesPorFilaIncidencia = filasIncidencia.map(function (f) {
+    return resolverEntidadPoliformica_(f, 'STG_INCIDENCIA', errores);
+  });
+  var nivelesPorFilaDocumento = filasDocumento.map(function (f) {
+    var nivel = resolverEntidadPoliformica_(f, 'STG_DOCUMENTO', errores);
+    if (!nivel) {
+      errores.push(
+        'STG_DOCUMENTO fila ' + f._fila + ': falta rellenar la columna *_TEMPORAL correspondiente a ENTIDAD_TIPO "' +
+          f.ENTIDAD_TIPO + '" (esta plantilla solo admite Campaña/Proyecto/Producto/Proceso/Tarea como destino)'
+      );
+    }
+    return nivel;
+  });
+
+  var resumen = { decisiones: filasDecision.length, incidencias: filasIncidencia.length, documentos: filasDocumento.length };
+
+  if (errores.length > 0 || !confirmar) {
+    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+  }
+
+  var correlationId = Utilities.getUuid();
+
+  filasDecision.forEach(function (f) {
+    var resultado = insertarRegistroTransaccional('DECISION', {
+      PROYECTO_ID: resolverReferenciaStaging_('STG_PROYECTO', f.PROYECTO_TEMPORAL),
+      TITULO: f.TITULO,
+      CONTEXTO: f.CONTEXTO || '',
+      TIPO: f.TIPO,
+      RESPONSABLE_ID: f.RESPONSABLE_TEMPORAL ? resolverReferenciaStaging_('STG_PERSONA', f.RESPONSABLE_TEMPORAL) : '',
+      FECHA_LIMITE: f.FECHA_LIMITE || '',
+      ESTADO: f.ESTADO,
+      RESOLUCION: f.RESOLUCION || '',
+      FECHA_RESOLUCION: f.FECHA_RESOLUCION || ''
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_DECISION', f._fila, resultado.id);
+  });
+
+  filasIncidencia.forEach(function (f, indice) {
+    var datosNivel = nivelesPorFilaIncidencia[indice] || {};
+    var resultado = insertarRegistroTransaccional('INCIDENCIA', Object.assign({
+      NIVEL_INCIDENCIA: f.NIVEL_INCIDENCIA,
+      TITULO: f.TITULO,
+      DESCRIPCION: f.DESCRIPCION || '',
+      TIPO: f.TIPO,
+      PRIORIDAD: f.PRIORIDAD,
+      RESPONSABLE_ID: f.RESPONSABLE_TEMPORAL ? resolverReferenciaStaging_('STG_PERSONA', f.RESPONSABLE_TEMPORAL) : '',
+      FECHA_DETECCION: f.FECHA_DETECCION,
+      FECHA_LIMITE: f.FECHA_LIMITE || '',
+      ESTADO: f.ESTADO
+    }, datosNivel), { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_INCIDENCIA', f._fila, resultado.id);
+  });
+
+  filasDocumento.forEach(function (f, indice) {
+    var datosNivel = nivelesPorFilaDocumento[indice] || {};
+    var entidadIdResuelto = datosNivel[Object.keys(datosNivel)[0]] || '';
+
+    var resultado = insertarRegistroTransaccional('DOCUMENTO', {
+      ENTIDAD_TIPO: f.ENTIDAD_TIPO,
+      ENTIDAD_ID: entidadIdResuelto,
+      TIPO_DOCUMENTO: f.TIPO_DOCUMENTO,
+      TITULO: f.TITULO,
+      DESCRIPCION: f.DESCRIPCION || '',
+      VERSION: f.VERSION || '',
+      URL: f.URL,
+      ESTADO: f.ESTADO,
+      FECHA_DOCUMENTO: f.FECHA_DOCUMENTO || ''
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_DOCUMENTO', f._fila, resultado.id);
+  });
+
+  return { ok: true, errores: [], resumen: resumen };
+}
+
+function abrirImportacionSeguimiento() {
+  var ui = SpreadsheetApp.getUi();
+  var previsualizacion;
+
+  try {
+    previsualizacion = procesarImportacionSeguimiento_(false);
+  } catch (e) {
+    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
+    return;
+  }
+
+  if (previsualizacion.errores.length > 0) {
+    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
+    var extra = previsualizacion.errores.length > 20
+      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
+      : '';
+    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
+    return;
+  }
+
+  var r = previsualizacion.resumen;
+  var total = r.decisiones + r.incidencias + r.documentos;
+
+  if (total === 0) {
+    ui.alert(
+      'Nada que importar',
+      'No hay filas pendientes en STG_DECISION/STG_INCIDENCIA/STG_DOCUMENTO (o ya están todas importadas).',
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  var mensaje =
+    'Se creará:\n' +
+    '- ' + r.decisiones + ' decisión(es)\n' +
+    '- ' + r.incidencias + ' incidencia(s)\n' +
+    '- ' + r.documentos + ' documento(s)\n\n' +
+    '¿Confirmar la importación?';
+
+  var confirmacion = ui.alert('Confirmar importación de Decisiones/Incidencias/Documentos', mensaje, ui.ButtonSet.YES_NO);
+  if (confirmacion !== ui.Button.YES) return;
+
+  try {
+    var resultado = procesarImportacionSeguimiento_(true);
+    var r2 = resultado.resumen;
+    ui.alert(
+      'Importación completada',
+      'Se crearon ' + r2.decisiones + ' decisión(es), ' + r2.incidencias + ' incidencia(s) y ' + r2.documentos + ' documento(s).',
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/*
+ * HORARIO: ENTIDAD_TIPO decide si se resuelve PERSONA_TEMPORAL o
+ * RECURSO_TEMPORAL -- las columnas *_TEMPORAL no usadas para ese
+ * ENTIDAD_TIPO deben quedar vacías (no se validan como referencia).
+ * HORA_INICIO/HORA_FIN: Repository_InsertarRegistro.js no valida su
+ * formato en el commit (esa regla solo vive en el camino del formulario
+ * manual, FormularioValidacionService.js) -- se replica aquí en el
+ * dry-run para no dejar pasar un horario roto en silencio.
+ */
+function procesarImportacionHorario_(confirmar) {
+  var errores = [];
+  var filasHorario = leerFilasPendientesImportacion_('STG_HORARIO');
+
+  filasHorario.forEach(function (f) {
+    ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO'].forEach(function (c) {
+      if (f[c] === '' || f[c] === null || f[c] === undefined) {
+        errores.push('STG_HORARIO fila ' + f._fila + ': falta el campo obligatorio ' + c);
+      }
+    });
+  });
+
+  function validarCatalogo_(filas, campo, nombreCatalogo) {
+    var valores = obtenerCatalogo(nombreCatalogo);
+    filas.forEach(function (f) {
+      var v = String(f[campo] || '').trim();
+      if (v && valores.indexOf(v) === -1) {
+        errores.push('STG_HORARIO fila ' + f._fila + ': ' + campo + ' "' + v + '" no es un valor válido (esperado uno de: ' + valores.join(', ') + ')');
+      }
+    });
+  }
+
+  validarCatalogo_(filasHorario, 'ENTIDAD_TIPO', 'CFG_ENTIDAD_HORARIO');
+  validarCatalogo_(filasHorario, 'DIA_SEMANA', 'CFG_DIA_SEMANA');
+  validarCatalogo_(filasHorario, 'ESTADO', 'CFG_ESTADO_RELACION');
+
+  var formatoHora = /^([01]\d|2[0-3]):[0-5]\d$/;
+  filasHorario.forEach(function (f) {
+    var horaInicio = String(f.HORA_INICIO || '').trim();
+    var horaFin = String(f.HORA_FIN || '').trim();
+    if (horaInicio && !formatoHora.test(horaInicio)) {
+      errores.push('STG_HORARIO fila ' + f._fila + ': HORA_INICIO debe tener formato HH:MM (ej. 09:00)');
+    }
+    if (horaFin && !formatoHora.test(horaFin)) {
+      errores.push('STG_HORARIO fila ' + f._fila + ': HORA_FIN debe tener formato HH:MM (ej. 17:30)');
+    }
+    if (horaInicio && horaFin && formatoHora.test(horaInicio) && formatoHora.test(horaFin) && horaFin <= horaInicio) {
+      errores.push('STG_HORARIO fila ' + f._fila + ': HORA_FIN debe ser posterior a HORA_INICIO');
+    }
+  });
+
+  filasHorario.forEach(function (f) {
+    var tipo = String(f.ENTIDAD_TIPO || '').trim();
+    var tienePersona = String(f.PERSONA_TEMPORAL || '').trim() !== '';
+    var tieneRecurso = String(f.RECURSO_TEMPORAL || '').trim() !== '';
+
+    if (tipo === 'Persona/Equipo' && !tienePersona) {
+      errores.push('STG_HORARIO fila ' + f._fila + ': ENTIDAD_TIPO "Persona/Equipo" requiere PERSONA_TEMPORAL');
+    }
+    if (tipo === 'Recurso' && !tieneRecurso) {
+      errores.push('STG_HORARIO fila ' + f._fila + ': ENTIDAD_TIPO "Recurso" requiere RECURSO_TEMPORAL');
+    }
+  });
+
+  validarReferenciaStaging_(filasHorario.filter(function (f) { return f.ENTIDAD_TIPO === 'Persona/Equipo'; }), 'STG_HORARIO', 'PERSONA_TEMPORAL', 'STG_PERSONA', 'PERSONA_EQUIPO', errores);
+  validarReferenciaStaging_(filasHorario.filter(function (f) { return f.ENTIDAD_TIPO === 'Recurso'; }), 'STG_HORARIO', 'RECURSO_TEMPORAL', 'STG_RECURSO', 'RECURSO', errores);
+
+  var resumen = { horarios: filasHorario.length };
+
+  if (errores.length > 0 || !confirmar) {
+    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+  }
+
+  var correlationId = Utilities.getUuid();
+
+  filasHorario.forEach(function (f) {
+    var entidadId = f.ENTIDAD_TIPO === 'Persona/Equipo'
+      ? resolverReferenciaStaging_('STG_PERSONA', f.PERSONA_TEMPORAL)
+      : resolverReferenciaStaging_('STG_RECURSO', f.RECURSO_TEMPORAL);
+
+    var resultado = insertarRegistroTransaccional('HORARIO', {
+      ENTIDAD_TIPO: f.ENTIDAD_TIPO,
+      ENTIDAD_ID: entidadId,
+      DIA_SEMANA: f.DIA_SEMANA,
+      HORA_INICIO: f.HORA_INICIO,
+      HORA_FIN: f.HORA_FIN,
+      FECHA_INICIO_VIGENCIA: f.FECHA_INICIO_VIGENCIA || '',
+      FECHA_FIN_VIGENCIA: f.FECHA_FIN_VIGENCIA || '',
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_HORARIO', f._fila, resultado.id);
+  });
+
+  return { ok: true, errores: [], resumen: resumen };
+}
+
+function abrirImportacionHorario() {
+  var ui = SpreadsheetApp.getUi();
+  var previsualizacion;
+
+  try {
+    previsualizacion = procesarImportacionHorario_(false);
+  } catch (e) {
+    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
+    return;
+  }
+
+  if (previsualizacion.errores.length > 0) {
+    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
+    var extra = previsualizacion.errores.length > 20
+      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
+      : '';
+    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
+    return;
+  }
+
+  var r = previsualizacion.resumen;
+
+  if (r.horarios === 0) {
+    ui.alert('Nada que importar', 'No hay filas pendientes en STG_HORARIO (o ya están todas importadas).', ui.ButtonSet.OK);
+    return;
+  }
+
+  var confirmacion = ui.alert(
+    'Confirmar importación de Horarios',
+    'Se creará(n) ' + r.horarios + ' franja(s) de horario.\n\n¿Confirmar la importación?',
+    ui.ButtonSet.YES_NO
+  );
+  if (confirmacion !== ui.Button.YES) return;
+
+  try {
+    var resultado = procesarImportacionHorario_(true);
+    ui.alert('Importación completada', 'Se crearon ' + resultado.resumen.horarios + ' franja(s) de horario.', ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/*
  * Punto de entrada desde el Mapa del sheet (ver conversación --
  * "importación masiva ... cheap now: surface the existing staging-
  * sheet importer as una tarjeta con un pequeño diálogo explicando el

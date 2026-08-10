@@ -106,6 +106,57 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
     {
       hoja: 'STG_TAREA_RECURSO',
       cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * Fase N11 (ver conversación -- "necesitamos poder volcar al sheet
+     * todos los datos necesarios para que los informes... estén
+     * completos"). DECISION exige PROYECTO_TEMPORAL (nivel fijo, igual
+     * que Proyecto/Producto/Proceso/Tarea). RESOLUCION/FECHA_RESOLUCION
+     * opcionales pero condicionales -- mismo patrón que FECHA_INICIO_REAL
+     * en v54: Repository_InsertarRegistro.js exige ambas si ESTADO es de
+     * cierre (Aprobada/Rechazada/Sustituida), ver
+     * validarCoherenciaDecision_ (ImportacionMasiva.js).
+     */
+    {
+      hoja: 'STG_DECISION',
+      cabeceras: ['ID_TEMPORAL', 'PROYECTO_TEMPORAL', 'TITULO', 'CONTEXTO', 'TIPO', 'RESPONSABLE_TEMPORAL', 'FECHA_LIMITE', 'ESTADO', 'RESOLUCION', 'FECHA_RESOLUCION', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * INCIDENCIA no tiene un nivel jerárquico fijo (a diferencia de
+     * Decisión): puede colgar de Campaña, Proyecto, Producto, Proceso o
+     * Tarea -- NIVEL_INCIDENCIA indica cuál, y solo esa columna
+     * *_TEMPORAL debe rellenarse (ver resolverEntidadPoliformica_ en
+     * ImportacionMasiva.js). CLIENTE_TEMPORAL queda fuera de esta V1
+     * (módulo CLIENTE, no CORE).
+     */
+    {
+      hoja: 'STG_INCIDENCIA',
+      cabeceras: ['ID_TEMPORAL', 'NIVEL_INCIDENCIA', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TITULO', 'DESCRIPCION', 'TIPO', 'PRIORIDAD', 'RESPONSABLE_TEMPORAL', 'FECHA_DETECCION', 'FECHA_LIMITE', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * DOCUMENTO es igual de polimórfico que INCIDENCIA (ENTIDAD_TIPO en
+     * vez de NIVEL_INCIDENCIA) pero acotado a los 5 niveles de la
+     * jerarquía de campaña -- Decisión/Incidencia/Documento/Recurso/
+     * Persona/Convocatoria/Cliente como destino de un documento son
+     * casos raros, fuera de esta V1.
+     */
+    {
+      hoja: 'STG_DOCUMENTO',
+      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TIPO_DOCUMENTO', 'TITULO', 'DESCRIPCION', 'VERSION', 'URL', 'ESTADO', 'FECHA_DOCUMENTO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * HORARIO: ENTIDAD_TIPO decide si se usa PERSONA_TEMPORAL o
+     * RECURSO_TEMPORAL (mutuamente excluyentes, no genérico como
+     * Documento/Incidencia -- solo dos niveles posibles, más simple
+     * dejarlo explícito). HORA_INICIO/HORA_FIN como texto "HH:MM":
+     * Repository_InsertarRegistro.js NO valida su formato en el commit
+     * (esa regla vive en FormularioValidacionService.js, solo en el
+     * camino del formulario manual) -- el dry-run del importador la
+     * replica igualmente para no dejar pasar horarios rotos en silencio.
+     */
+    {
+      hoja: 'STG_HORARIO',
+      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'PERSONA_TEMPORAL', 'RECURSO_TEMPORAL', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'FECHA_INICIO_VIGENCIA', 'FECHA_FIN_VIGENCIA', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
 ];
 

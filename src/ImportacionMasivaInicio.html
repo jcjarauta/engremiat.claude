@@ -74,6 +74,8 @@
         <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
+        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('SEGUIMIENTO')">Descargar plantilla: Decisiones/Incidencias/Documentos</button>
+        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('HORARIO')">Descargar plantilla: Horarios</button>
       </span>
     </div>
 
@@ -128,6 +130,30 @@
       </span>
     </div>
 
+    <div class="paso">
+      <span class="numero">8</span>
+      <span class="texto">
+        <div class="titulo">Importar Decisiones / Incidencias / Documentos</div>
+        <div class="detalle">
+          Se pueden importar en cualquier momento después de crear la campaña -- cuelgan de un
+          proyecto (Decisión) o de cualquier nivel de la jerarquía (Incidencia/Documento).
+        </div>
+        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionSeguimiento')">Validar e importar</button>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">9</span>
+      <span class="texto">
+        <div class="titulo">Importar Horarios</div>
+        <div class="detalle">
+          Franjas semanales de personas/equipos o recursos. Necesario para que "Calidad de
+          planificación" pueda calcular la utilización de horario.
+        </div>
+        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionHorario')">Validar e importar</button>
+      </span>
+    </div>
+
     <div id="mensaje"></div>
 
     <script>
@@ -170,7 +196,8 @@
       var HOJAS_STAGING_CONOCIDAS_ = [
         'STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA',
         'STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO',
-        'STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'
+        'STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO',
+        'STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO', 'STG_HORARIO'
       ];
 
       /*
@@ -241,6 +268,12 @@
             return;
           case 'abrirImportacionAsignaciones':
             google.script.run.withFailureHandler(mostrarError).abrirImportacionAsignaciones();
+            return;
+          case 'abrirImportacionSeguimiento':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionSeguimiento();
+            return;
+          case 'abrirImportacionHorario':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionHorario();
             return;
         }
         mostrarError({ message: 'Acción desconocida: ' + funcion });
