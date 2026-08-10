@@ -73,6 +73,7 @@
         </div>
         <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
+        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
       </span>
     </div>
 
@@ -110,6 +111,20 @@
           <code>STG_PERSONA</code> y <code>STG_EQUIPO_MIEMBRO</code>.
         </div>
         <button class="boton boton-primario" onclick="ejecutar('abrirImportacionMasivaRecursosPersonas')">Validar e importar</button>
+      </span>
+    </div>
+
+    <div class="paso">
+      <span class="numero">7</span>
+      <span class="texto">
+        <div class="titulo">Importar Asignaciones (Responsable/Recurso a Tarea)</div>
+        <div class="detalle">
+          Pensado para ejecutarse después de crear las tareas (y, si hace falta, las personas/recursos):
+          <code>TAREA_TEMPORAL</code>/<code>PERSONA_TEMPORAL</code>/<code>RECURSO_TEMPORAL</code> admiten
+          un ID real o el mismo <code>ID_TEMPORAL</code> corto de un lote anterior, aunque ya esté
+          importado.
+        </div>
+        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionAsignaciones')">Validar e importar</button>
       </span>
     </div>
 
@@ -154,7 +169,8 @@
 
       var HOJAS_STAGING_CONOCIDAS_ = [
         'STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA',
-        'STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'
+        'STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO',
+        'STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'
       ];
 
       /*
@@ -222,6 +238,9 @@
             return;
           case 'abrirImportacionMasivaRecursosPersonas':
             google.script.run.withFailureHandler(mostrarError).abrirImportacionMasivaRecursosPersonas();
+            return;
+          case 'abrirImportacionAsignaciones':
+            google.script.run.withFailureHandler(mostrarError).abrirImportacionAsignaciones();
             return;
         }
         mostrarError({ message: 'Acción desconocida: ' + funcion });

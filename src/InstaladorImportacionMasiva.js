@@ -75,6 +75,26 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
     {
       hoja: 'STG_EQUIPO_MIEMBRO',
       cabeceras: ['ID_TEMPORAL', 'EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    /*
+     * Fase N10 (ver conversación -- "el cuello de botella mas inmediato":
+     * tras importar una campaña completa, asignar responsables/recursos
+     * tarea a tarea a mano es justo el trabajo manual que este sistema
+     * existe para evitar). TAREA_TEMPORAL/PERSONA_TEMPORAL/RECURSO_TEMPORAL
+     * admiten tanto un ID real ya existente como el propio ID_TEMPORAL
+     * usado al crear la tarea/persona/recurso -- resolverReferenciaStaging_
+     * (ImportacionMasiva.js) lo busca en la hoja STG_* de origen aunque
+     * esa fila ya este importada (ID_REAL relleno), para poder seguir
+     * usando las mismas claves cortas del lote original sin tener que
+     * conocer los IDs reales generados.
+     */
+    {
+      hoja: 'STG_TAREA_RESPONSABLE',
+      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+    },
+    {
+      hoja: 'STG_TAREA_RECURSO',
+      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
 ];
 

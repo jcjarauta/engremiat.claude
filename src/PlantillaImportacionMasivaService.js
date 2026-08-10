@@ -19,7 +19,8 @@
 
 var GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ = {
   CAMPANA: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
-  RECURSOS_PERSONAS: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO']
+  RECURSOS_PERSONAS: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
+  ASIGNACIONES: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO']
 };
 
 /*
@@ -36,7 +37,9 @@ var CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_ = {
   STG_TAREA: ['PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO'],
   STG_RECURSO: ['CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'ESTADO'],
   STG_PERSONA: ['TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO'],
-  STG_EQUIPO_MIEMBRO: ['EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO']
+  STG_EQUIPO_MIEMBRO: ['EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO'],
+  STG_TAREA_RESPONSABLE: ['TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO'],
+  STG_TAREA_RECURSO: ['TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO']
 };
 
 var CATALOGOS_POR_COLUMNA_STAGING_ = {
@@ -47,7 +50,9 @@ var CATALOGOS_POR_COLUMNA_STAGING_ = {
   STG_TAREA: { ESTADO: 'CFG_ESTADO_TAREA' },
   STG_RECURSO: { CLASE_RECURSO: 'CFG_CLASE_RECURSO', CATEGORIA_RECURSO: 'CFG_CATEGORIA_RECURSO', ESTADO: 'CFG_ESTADO_RECURSO_FISICO' },
   STG_PERSONA: { TIPO: 'CFG_TIPO_RECURSO', ROL: 'CFG_ROL_PERSONA', DISPONIBILIDAD: 'CFG_DISPONIBILIDAD', ESTADO: 'CFG_ESTADO_RECURSO' },
-  STG_EQUIPO_MIEMBRO: {}
+  STG_EQUIPO_MIEMBRO: {},
+  STG_TAREA_RESPONSABLE: { ROL_ASIGNADO: 'CFG_ROL_ASIGNACION', ESTADO: 'CFG_ESTADO_ASIGNACION' },
+  STG_TAREA_RECURSO: { TIPO_USO: 'CFG_TIPO_USO_RECURSO', ESTADO: 'CFG_ESTADO_RELACION' }
 };
 
 var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
@@ -57,7 +62,9 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
   STG_TAREA: 'PROCESO_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_PROCESO (o a un ID real de proceso ya existente).',
   STG_RECURSO: 'UBICACION_TEMPORAL (opcional) apunta al ID_TEMPORAL de otra fila de STG_RECURSO que sea su ubicación contenedora.',
   STG_PERSONA: 'COORDINADOR_TEMPORAL (opcional, solo si TIPO=Equipo) apunta al ID_TEMPORAL de otra fila de STG_PERSONA con TIPO=Persona.',
-  STG_EQUIPO_MIEMBRO: 'EQUIPO_TEMPORAL y MIEMBRO_TEMPORAL apuntan cada uno al ID_TEMPORAL de una fila de STG_PERSONA.'
+  STG_EQUIPO_MIEMBRO: 'EQUIPO_TEMPORAL y MIEMBRO_TEMPORAL apuntan cada uno al ID_TEMPORAL de una fila de STG_PERSONA.',
+  STG_TAREA_RESPONSABLE: 'TAREA_TEMPORAL y PERSONA_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/persona en un lote anterior (aunque ya esté importado) -- no hace falta conocer el ID real generado.',
+  STG_TAREA_RECURSO: 'TAREA_TEMPORAL y RECURSO_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/recurso en un lote anterior (aunque ya esté importado).'
 };
 
 /*
@@ -73,19 +80,28 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
  */
 function construirPromptIA_(grupo) {
   var esCampana = grupo === 'CAMPANA';
+  var esAsignaciones = grupo === 'ASIGNACIONES';
 
-  var bloques = esCampana
-    ? [
-        '1. **Objetivo general** -- ¿qué campaña/proyecto estamos montando y para qué sirve? Fecha de inicio y fin previstas. Estado inicial.',
-        '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
-        '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
-        '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
-      ]
-    : [
-        '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
-        '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
-        '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
-      ];
+  var bloques;
+  if (esCampana) {
+    bloques = [
+      '1. **Objetivo general** -- ¿qué campaña/proyecto estamos montando y para qué sirve? Fecha de inicio y fin previstas. Estado inicial.',
+      '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
+      '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
+      '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
+    ];
+  } else if (esAsignaciones) {
+    bloques = [
+      '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (0-100).',
+      '2. **Recursos** -- para cada tarea, qué recurso(s) físicos hacen falta y con qué tipo de uso.'
+    ];
+  } else {
+    bloques = [
+      '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
+      '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
+      '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
+    ];
+  }
 
   var lineas = [
     'PROMPT MASTER -- Importación masiva LaTroballa (uso con IA)',
@@ -111,7 +127,9 @@ function construirPromptIA_(grupo) {
     '',
     'Reglas de generación (una vez cerrada la entrevista):',
     '- ID_TEMPORAL: una clave corta y legible que tú inventas, única dentro de cada CSV (ej. "C1", "PR1", "T1"). No hace falta que sea consecutiva.',
-    '- Las columnas que terminan en _TEMPORAL deben apuntar exactamente a un ID_TEMPORAL que exista en el CSV del nivel padre correspondiente, o a un ID real ya existente en el Sheet solo si yo te digo explícitamente que estoy ampliando algo ya creado.',
+    esAsignaciones
+      ? '- Las columnas que terminan en _TEMPORAL (TAREA_TEMPORAL, PERSONA_TEMPORAL, RECURSO_TEMPORAL) pueden usar un ID real del Sheet, o el mismo ID_TEMPORAL corto que se usó al crear esa tarea/persona/recurso en un lote anterior (aunque ya esté importado) -- pregúntame esas claves si no las tienes, no inventes IDs.'
+      : '- Las columnas que terminan en _TEMPORAL deben apuntar exactamente a un ID_TEMPORAL que exista en el CSV del nivel padre correspondiente, o a un ID real ya existente en el Sheet solo si yo te digo explícitamente que estoy ampliando algo ya creado.',
     '- No rellenes ESTADO_IMPORTACION ni ID_REAL -- quedan vacíos, los escribe el propio proceso de importación al confirmar.',
     '- Usa únicamente los valores de catálogo listados en LEEME.txt para las columnas marcadas como tales. Si necesitas un valor que no aparece en la lista, dímelo en vez de forzar uno parecido.',
     '- Fechas en formato AAAA-MM-DD. Números decimales con punto, no coma.' + (esCampana ? ' El orden de las filas dentro de un mismo padre debe seguir la secuencia lógica de ejecución real -- el sistema deriva automáticamente el orden y el predecesor, no hace falta indicarlo aparte.' : ''),
@@ -218,7 +236,8 @@ function generarPlantillasImportacionMasiva(grupo) {
   blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', 'LEEME.txt'));
   blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', 'PROMPT_IA.txt'));
 
-  var nombreZip = 'plantilla_importacion_' + (grupo === 'CAMPANA' ? 'campana' : 'recursos_personas') + '.zip';
+  var sufijoNombreZip = { CAMPANA: 'campana', RECURSOS_PERSONAS: 'recursos_personas', ASIGNACIONES: 'asignaciones' }[grupo] || grupo.toLowerCase();
+  var nombreZip = 'plantilla_importacion_' + sufijoNombreZip + '.zip';
   var zip = Utilities.zip(blobs, nombreZip);
 
   return {

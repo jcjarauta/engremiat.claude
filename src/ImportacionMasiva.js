@@ -480,6 +480,203 @@ function procesarImportacionRecursosPersonas_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
+/*
+ * Fase N10 (ver conversación): a diferencia de validarReferenciaPadre_/
+ * validarReferenciaOpcional_ (que solo miran el lote pendiente actual),
+ * las asignaciones normalmente se importan en una pasada SEPARADA y
+ * posterior a la creación de la tarea/persona/recurso -- para entonces
+ * esa fila STG_* ya está marcada "Importado" con ID_REAL relleno, así
+ * que ya no aparece en leerFilasPendientesImportacion_. Se busca el
+ * ID_TEMPORAL en TODAS las filas de la hoja de origen (importadas o no)
+ * y se devuelve su ID_REAL si ya lo tiene; si el ID_TEMPORAL no
+ * aparece en absoluto, se asume que el valor ya es un ID real directo.
+ */
+function resolverReferenciaStaging_(nombreHojaOrigen, valorReferencia) {
+  var valor = String(valorReferencia || '').trim();
+  if (!valor) return '';
+
+  var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHojaOrigen);
+  if (!hoja) return valor;
+
+  var ultimaFila = hoja.getLastRow();
+  var ultimaColumna = hoja.getLastColumn();
+  if (ultimaFila < 2) return valor;
+
+  var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0].map(function (c) {
+    return String(c || '').trim();
+  });
+  var colTemporal = cabeceras.indexOf('ID_TEMPORAL');
+  var colIdReal = cabeceras.indexOf('ID_REAL');
+  if (colTemporal === -1 || colIdReal === -1) return valor;
+
+  var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+  for (var i = 0; i < valores.length; i++) {
+    if (String(valores[i][colTemporal] || '').trim() === valor) {
+      var idReal = String(valores[i][colIdReal] || '').trim();
+      return idReal || valor;
+    }
+  }
+
+  return valor;
+}
+
+function validarReferenciaStaging_(filas, hoja, campo, hojaOrigenTemporal, entidadReal, errores) {
+  filas.forEach(function (f) {
+    var valorOriginal = String(f[campo] || '').trim();
+    if (!valorOriginal) return;
+    var resuelto = resolverReferenciaStaging_(hojaOrigenTemporal, valorOriginal);
+    if (!obtenerRegistroPorId(entidadReal, resuelto)) {
+      errores.push(
+        hoja + ' fila ' + f._fila + ': ' + campo + ' "' + valorOriginal + '" no corresponde a ningún ' +
+          entidadReal + ' real existente ni a un ID_TEMPORAL ya importado de ' + hojaOrigenTemporal
+      );
+    }
+  });
+}
+
+/*
+ * Asignaciones de Tarea (Responsable/Recurso): pensado para ejecutarse
+ * DESPUÉS de importar la campaña y/o recursos/personas -- TAREA_TEMPORAL/
+ * PERSONA_TEMPORAL/RECURSO_TEMPORAL pueden seguir usando las mismas
+ * claves cortas del lote original (ver resolverReferenciaStaging_) en
+ * vez de obligar a conocer los IDs reales generados.
+ */
+function procesarImportacionAsignaciones_(confirmar) {
+  var errores = [];
+
+  var filasResponsable = leerFilasPendientesImportacion_('STG_TAREA_RESPONSABLE');
+  var filasRecurso = leerFilasPendientesImportacion_('STG_TAREA_RECURSO');
+
+  function validarObligatorios_(filas, hoja, campos) {
+    filas.forEach(function (f) {
+      campos.forEach(function (c) {
+        if (f[c] === '' || f[c] === null || f[c] === undefined) {
+          errores.push(hoja + ' fila ' + f._fila + ': falta el campo obligatorio ' + c);
+        }
+      });
+    });
+  }
+
+  validarObligatorios_(filasResponsable, 'STG_TAREA_RESPONSABLE', ['TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO']);
+  validarObligatorios_(filasRecurso, 'STG_TAREA_RECURSO', ['TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO']);
+
+  function validarCatalogo_(filas, hoja, campo, nombreCatalogo) {
+    var valores = obtenerCatalogo(nombreCatalogo);
+    filas.forEach(function (f) {
+      var v = String(f[campo] || '').trim();
+      if (v && valores.indexOf(v) === -1) {
+        errores.push(
+          hoja + ' fila ' + f._fila + ': ' + campo + ' "' + v + '" no es un valor válido (esperado uno de: ' + valores.join(', ') + ')'
+        );
+      }
+    });
+  }
+
+  validarCatalogo_(filasResponsable, 'STG_TAREA_RESPONSABLE', 'ROL_ASIGNADO', 'CFG_ROL_ASIGNACION');
+  validarCatalogo_(filasResponsable, 'STG_TAREA_RESPONSABLE', 'ESTADO', 'CFG_ESTADO_ASIGNACION');
+  validarCatalogo_(filasRecurso, 'STG_TAREA_RECURSO', 'TIPO_USO', 'CFG_TIPO_USO_RECURSO');
+  validarCatalogo_(filasRecurso, 'STG_TAREA_RECURSO', 'ESTADO', 'CFG_ESTADO_RELACION');
+
+  filasResponsable.forEach(function (f) {
+    var pct = Number(f.PORCENTAJE_DEDICACION);
+    if (!isFinite(pct) || pct < 0 || pct > 100) {
+      errores.push('STG_TAREA_RESPONSABLE fila ' + f._fila + ': PORCENTAJE_DEDICACION debe ser un número entre 0 y 100');
+    }
+  });
+
+  validarReferenciaStaging_(filasResponsable, 'STG_TAREA_RESPONSABLE', 'TAREA_TEMPORAL', 'STG_TAREA', 'TAREA', errores);
+  validarReferenciaStaging_(filasResponsable, 'STG_TAREA_RESPONSABLE', 'PERSONA_TEMPORAL', 'STG_PERSONA', 'PERSONA_EQUIPO', errores);
+  validarReferenciaStaging_(filasRecurso, 'STG_TAREA_RECURSO', 'TAREA_TEMPORAL', 'STG_TAREA', 'TAREA', errores);
+  validarReferenciaStaging_(filasRecurso, 'STG_TAREA_RECURSO', 'RECURSO_TEMPORAL', 'STG_RECURSO', 'RECURSO', errores);
+
+  var resumen = { responsables: filasResponsable.length, recursos: filasRecurso.length };
+
+  if (errores.length > 0 || !confirmar) {
+    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+  }
+
+  var correlationId = Utilities.getUuid();
+
+  filasResponsable.forEach(function (f) {
+    var resultado = insertarRegistroTransaccional('TAREA_RESPONSABLE', {
+      TAREA_ID: resolverReferenciaStaging_('STG_TAREA', f.TAREA_TEMPORAL),
+      PERSONA_EQUIPO_ID: resolverReferenciaStaging_('STG_PERSONA', f.PERSONA_TEMPORAL),
+      ROL_ASIGNADO: f.ROL_ASIGNADO,
+      PORCENTAJE_DEDICACION: Number(f.PORCENTAJE_DEDICACION),
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_TAREA_RESPONSABLE', f._fila, resultado.id);
+  });
+
+  filasRecurso.forEach(function (f) {
+    var resultado = insertarRegistroTransaccional('TAREA_RECURSO', {
+      TAREA_ID: resolverReferenciaStaging_('STG_TAREA', f.TAREA_TEMPORAL),
+      RECURSO_ID: resolverReferenciaStaging_('STG_RECURSO', f.RECURSO_TEMPORAL),
+      TIPO_USO: f.TIPO_USO,
+      ESTADO: f.ESTADO
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_TAREA_RECURSO', f._fila, resultado.id);
+  });
+
+  return { ok: true, errores: [], resumen: resumen };
+}
+
+function abrirImportacionAsignaciones() {
+  var ui = SpreadsheetApp.getUi();
+  var previsualizacion;
+
+  try {
+    previsualizacion = procesarImportacionAsignaciones_(false);
+  } catch (e) {
+    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
+    return;
+  }
+
+  if (previsualizacion.errores.length > 0) {
+    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
+    var extra = previsualizacion.errores.length > 20
+      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
+      : '';
+    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
+    return;
+  }
+
+  var r = previsualizacion.resumen;
+  var total = r.responsables + r.recursos;
+
+  if (total === 0) {
+    ui.alert(
+      'Nada que importar',
+      'No hay filas pendientes en STG_TAREA_RESPONSABLE/STG_TAREA_RECURSO (o ya están todas importadas).',
+      ui.ButtonSet.OK
+    );
+    return;
+  }
+
+  var mensaje =
+    'Se creará:\n' +
+    '- ' + r.responsables + ' asignación(es) de responsable\n' +
+    '- ' + r.recursos + ' asignación(es) de recurso\n\n' +
+    '¿Confirmar la importación?';
+
+  var confirmacion = ui.alert('Confirmar importación de asignaciones', mensaje, ui.ButtonSet.YES_NO);
+  if (confirmacion !== ui.Button.YES) return;
+
+  try {
+    var resultado = procesarImportacionAsignaciones_(true);
+    var r2 = resultado.resumen;
+    ui.alert(
+      'Importación completada',
+      'Se crearon ' + r2.responsables + ' asignación(es) de responsable y ' + r2.recursos + ' asignación(es) de recurso.',
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
+  }
+}
+
 function abrirImportacionMasivaRecursosPersonas() {
   var ui = SpreadsheetApp.getUi();
   var previsualizacion;

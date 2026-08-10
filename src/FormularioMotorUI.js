@@ -401,6 +401,7 @@ function agregarCatalogosCore_(menu) {
     .addItem('Protección de hojas', 'abrirProteccionHojas')
     .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
     .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
+    .addItem('Importación masiva de Asignaciones (STG_*)', 'abrirImportacionAsignaciones')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
     .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
   // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de
