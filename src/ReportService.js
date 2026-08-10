@@ -174,8 +174,7 @@ function generarInformeExcepciones() {
     productosSinProyecto: listarProductosSinProyecto(),
     procesosSinFechas: listarProcesosSinFechas(),
     relacionesIncompletas: listarRelacionesIncompletas(),
-    materialesStockBajo: listarMaterialesStockBajo(),
-    materialesAgotados: listarMaterialesAgotados(),
+    materiales: obtenerAlertasMaterialesSeguro_(),
     decisionesPendientes: listarDecisionesPendientes(),
     incidenciasAbiertas: listarIncidenciasAbiertas()
   };
@@ -417,10 +416,9 @@ function abrirDialogoExportarPDF(tipo, idOFiltro) {
   SpreadsheetApp.getUi().showModelessDialog(output, 'Informe -- usa Imprimir para guardar como PDF');
 }
 
-function abrirInformes() {
-  var html = HtmlService.createTemplateFromFile('InformeGenerico')
-    .evaluate()
-    .setTitle('Informes')
-    .setWidth(420);
+function abrirInformes(modulosInstalados) {
+  var template = HtmlService.createTemplateFromFile('InformeGenerico');
+  template.modulosInstalados = JSON.stringify(Array.isArray(modulosInstalados) ? modulosInstalados : null);
+  var html = template.evaluate().setTitle('Informes').setWidth(420);
   SpreadsheetApp.getUi().showSidebar(html);
 }

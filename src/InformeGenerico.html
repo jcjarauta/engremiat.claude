@@ -20,10 +20,12 @@
       <option value="CAMPANA">Informe de campaña</option>
       <option value="PROYECTO">Informe de proyecto</option>
       <option value="MEMORIA">Memoria de producción</option>
+      <option value="EXCEPCIONES">Excepciones (calidad de datos)</option>
       <option value="DESVIACION">Desviación de planificación</option>
       <option value="CALIDAD_PLANIFICACION">Calidad de planificación</option>
-      <option value="JUSTIFICACION_ECONOMICA">Justificación económica</option>
-      <option value="EVIDENCIA_SOCIAL">Evidencia de impacto (Por qué)</option>
+      <option value="JUSTIFICACION_ECONOMICA" id="opcion-justificacion">Justificación económica</option>
+      <option value="EVIDENCIA_SOCIAL" id="opcion-evidencia">Evidencia de impacto (Por qué)</option>
+      <option value="CAMBIOS">Cambios (auditoría por fecha)</option>
     </select>
 
     <div id="contenedor-nivel" style="display:none;">
@@ -38,6 +40,13 @@
     <div id="contenedor-registro">
       <label for="registro">Registro</label>
       <select id="registro"></select>
+    </div>
+
+    <div id="contenedor-fechas" style="display:none;">
+      <label for="fecha-desde">Desde</label>
+      <input type="date" id="fecha-desde" style="width:100%; margin-top:4px; padding:5px; box-sizing:border-box;" />
+      <label for="fecha-hasta" style="margin-top:8px; display:block;">Hasta</label>
+      <input type="date" id="fecha-hasta" style="width:100%; margin-top:4px; padding:5px; box-sizing:border-box;" />
     </div>
 
     <button id="btn-generar">Generar informe</button>
@@ -79,9 +88,34 @@
         <h4>Evidencia de impacto</h4>
         <div id="evidencia-social"></div>
       </div>
+      <div class="seccion" id="seccion-excepciones" style="display:none;">
+        <h4>Excepciones</h4>
+        <div id="excepciones"></div>
+      </div>
+      <div class="seccion" id="seccion-cambios" style="display:none;">
+        <h4>Cambios</h4>
+        <div id="cambios"></div>
+      </div>
     </div>
 
     <script>
+      /*
+       * Gating por módulo (ver conversación -- "hay cosas que no
+       * pertenecen al CORE"): Justificación económica necesita ECONOMICO
+       * (CosteService.js/PRESUPUESTO), Evidencia de impacto necesita
+       * IMPACTO (EvidenciaSocialService.js). Mismo patrón MODULOS_INSTALADOS
+       * que MapaSheet.html, inyectado por abrirInformes(modulosInstalados).
+       */
+      var MODULOS_INSTALADOS = <?!= modulosInstalados ?>;
+
+      function moduloInstalado_(nombreModulo) {
+        if (!MODULOS_INSTALADOS) return true;
+        return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
+      }
+
+      if (!moduloInstalado_('ECONOMICO')) document.getElementById('opcion-justificacion').remove();
+      if (!moduloInstalado_('IMPACTO')) document.getElementById('opcion-evidencia').remove();
+
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
         return String(texto)
@@ -134,9 +168,18 @@
         var tipo = document.getElementById('tipo').value;
         var contenedorNivel = document.getElementById('contenedor-nivel');
         var contenedorRegistro = document.getElementById('contenedor-registro');
+        var contenedorFechas = document.getElementById('contenedor-fechas');
         var select = document.getElementById('registro');
 
-        if (tipo === 'MEMORIA' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+        contenedorFechas.style.display = tipo === 'CAMBIOS' ? 'block' : 'none';
+
+        if (tipo === 'CAMBIOS') {
+          contenedorNivel.style.display = 'none';
+          contenedorRegistro.style.display = 'none';
+          return;
+        }
+
+        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
           contenedorNivel.style.display = 'none';
           contenedorRegistro.style.display = 'none';
           return;
@@ -354,6 +397,53 @@
           renderEtiquetasImpacto_(informe.etiquetasImpacto, informe.etiquetasPorCategoria);
       }
 
+      /*
+       * Excepciones (C, ver conversación -- "cosas que podemos añadir"):
+       * ya existía en el backend (generarInformeExcepciones) sin estar
+       * expuesto en el desplegable. materiales llega como {stockBajo,
+       * agotados,...} (obtenerAlertasMaterialesSeguro_, mismo patrón
+       * aislar-y-avisar que Panel operativo) -- listas vacías si COMPRAS
+       * no está instalado, no hace falta ocultar la sección.
+       */
+      function renderExcepciones_(informe) {
+        var materiales = informe.materiales || {};
+        var categorias = [
+          ['Tareas retrasadas', informe.tareasRetrasadas, function (t) { return escapeHtml(t.NOMBRE) + ' — vencía ' + escapeHtml(t.FECHA_FIN_PLAN); }],
+          ['Tareas bloqueadas', informe.tareasBloqueadas, function (t) { return escapeHtml(t.NOMBRE); }],
+          ['Tareas pospuestas', informe.tareasPospuestas, function (t) { return escapeHtml(t.NOMBRE); }],
+          ['Tareas sin responsable', informe.tareasSinResponsable, function (t) { return escapeHtml(t.NOMBRE); }],
+          ['Productos sin proyecto', informe.productosSinProyecto, function (p) { return escapeHtml(p.NOMBRE); }],
+          ['Procesos sin fechas', informe.procesosSinFechas, function (p) { return escapeHtml(p.NOMBRE); }],
+          ['Relaciones incompletas', informe.relacionesIncompletas, function (r) { return escapeHtml(r.NOMBRE || r.ID); }],
+          ['Materiales con stock bajo', materiales.stockBajo, function (m) { return escapeHtml(m.NOMBRE) + ' — stock ' + m.STOCK_ACTUAL; }],
+          ['Materiales agotados', materiales.agotados, function (m) { return escapeHtml(m.NOMBRE); }],
+          ['Decisiones pendientes', informe.decisionesPendientes, function (d) { return escapeHtml(d.TITULO) + ' — ' + escapeHtml(d.ESTADO); }],
+          ['Incidencias abiertas', informe.incidenciasAbiertas, function (i) { return escapeHtml(i.TITULO) + ' — ' + escapeHtml(i.ESTADO); }]
+        ];
+        document.getElementById('excepciones').innerHTML = categorias.map(function (c) {
+          var titulo = c[0], lista = c[1] || [], plantilla = c[2];
+          var badgeClase = lista.length > 0 ? ' style="background:var(--color-peligro);color:#fff;"' : '';
+          var cuerpo = lista.length === 0 ? '' : lista.map(function (r) { return '<div class="item alerta">' + plantilla(r) + '</div>'; }).join('');
+          return '<div class="resumen-linea"><span>' + escapeHtml(titulo) + '</span><span class="badge"' + badgeClase + '>' + lista.length + '</span></div>' + cuerpo;
+        }).join('');
+      }
+
+      /* Cambios (C): auditoría de 91_HISTORIAL por rango de fechas. */
+      function renderCambios_(informe) {
+        var cambios = informe.cambios || [];
+        if (cambios.length === 0) {
+          document.getElementById('cambios').innerHTML = '<div class="vacio">Sin cambios en el rango seleccionado.</div>';
+          return;
+        }
+        document.getElementById('cambios').innerHTML =
+          '<div class="resumen-linea"><span>Total</span><span class="badge">' + cambios.length + '</span></div>' +
+          cambios.slice(0, 200).map(function (c) {
+            return '<div class="item">' + escapeHtml(c.TIMESTAMP) + ' — ' + escapeHtml(c.USUARIO) + ' — ' +
+              escapeHtml(c.ACCION) + ' ' + escapeHtml(c.ENTIDAD) + ' ' + escapeHtml(c.REGISTRO_ID) + '</div>';
+          }).join('') +
+          (cambios.length > 200 ? '<div class="vacio">... y ' + (cambios.length - 200) + ' más. Usa Exportar CSV para verlos todos.</div>' : '');
+      }
+
       function renderInforme(informe) {
         if (!informe) {
           mostrarError({ message: 'El servidor no devolvio datos de informe (respuesta vacia). Prueba de nuevo; si persiste, puede deberse a una extension del navegador interfiriendo con la conexion.' });
@@ -363,15 +453,23 @@
         document.getElementById('estado-carga').textContent = '';
         document.getElementById('resultado').style.display = 'block';
 
-        var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || informe.tipo === 'JUSTIFICACION_ECONOMICA' || informe.tipo === 'EVIDENCIA_SOCIAL';
+        var tiposSinDesviacion = ['JUSTIFICACION_ECONOMICA', 'EVIDENCIA_SOCIAL', 'EXCEPCIONES', 'CAMBIOS'];
+        var sinDesviacion = tiposSinDesviacion.indexOf(informe.tipo) !== -1;
+        var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || sinDesviacion;
         ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
           document.getElementById(id).closest('.seccion').style.display = esInformeSinJerarquia ? 'none' : '';
         });
-        document.getElementById('seccion-desviacion').style.display = (informe.tipo === 'JUSTIFICACION_ECONOMICA' || informe.tipo === 'EVIDENCIA_SOCIAL') ? 'none' : '';
-        if (informe.tipo !== 'JUSTIFICACION_ECONOMICA' && informe.tipo !== 'EVIDENCIA_SOCIAL') renderDesviacion(esInformeSinJerarquia ? informe : informe.desviacionPlanificacion);
+        document.getElementById('seccion-desviacion').style.display = sinDesviacion ? 'none' : '';
+        if (!sinDesviacion) renderDesviacion(informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' ? informe : informe.desviacionPlanificacion);
 
         document.getElementById('seccion-calidad').style.display = informe.tipo === 'CALIDAD_PLANIFICACION' ? '' : 'none';
         if (informe.tipo === 'CALIDAD_PLANIFICACION') renderCalidadPlanificacion_(informe);
+
+        document.getElementById('seccion-excepciones').style.display = informe.tipo === 'EXCEPCIONES' ? '' : 'none';
+        if (informe.tipo === 'EXCEPCIONES') renderExcepciones_(informe);
+
+        document.getElementById('seccion-cambios').style.display = informe.tipo === 'CAMBIOS' ? '' : 'none';
+        if (informe.tipo === 'CAMBIOS') renderCambios_(informe);
 
         document.getElementById('seccion-justificacion').style.display = informe.tipo === 'JUSTIFICACION_ECONOMICA' ? '' : 'none';
         if (informe.tipo === 'JUSTIFICACION_ECONOMICA') renderJustificacionEconomica_(informe);
@@ -423,8 +521,13 @@
         var tipo = document.getElementById('tipo').value;
         var registro = document.getElementById('registro').value;
         tipoActual = tipo;
-        if (tipo === 'MEMORIA' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
+        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION') {
           filtroActual = null;
+        } else if (tipo === 'CAMBIOS') {
+          filtroActual = {
+            fechaDesde: document.getElementById('fecha-desde').value || null,
+            fechaHasta: document.getElementById('fecha-hasta').value || null
+          };
         } else if (tipo === 'JUSTIFICACION_ECONOMICA' || tipo === 'EVIDENCIA_SOCIAL') {
           filtroActual = { entidadTipo: document.getElementById('nivel-economico').value, entidadId: registro };
         } else {
