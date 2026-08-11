@@ -140,11 +140,77 @@ var BLOQUES_ENTREVISTA_POR_GRUPO_ = {
   ]
 };
 
+/*
+ * Motor de escenarios (ver conversación -- "base para personalizar las
+ * experiencias del cliente y previo paso a la gamificación"): lee el
+ * ESCENARIO con ESTADO="Activo" más reciente (si hay varios, no se
+ * fuerza una exclusividad estricta -- el más recientemente modificado
+ * gana) y lo inyecta en el PROMPT_IA.txt de cada grupo. Sin escenario
+ * activo, el comportamiento es exactamente el de antes (datos ideales).
+ * try/catch defensivo: en un Sheet recién actualizado a esta versión,
+ * la hoja 92_ESCENARIOS puede no existir todavía hasta que se re-ejecute
+ * "Instalar estructura inicial" -- ausencia de escenario, no error.
+ */
+function obtenerEscenarioActivo_() {
+  try {
+    var activos = listarRegistros('ESCENARIO', { ACTIVO: 'SÍ', ESTADO: 'Activo' });
+    if (activos.length === 0) return null;
+    activos.sort(function (a, b) { return new Date(b.FECHA_MODIFICACION) - new Date(a.FECHA_MODIFICACION); });
+    return activos[0];
+  } catch (e) {
+    return null;
+  }
+}
+
+/*
+ * Traduce los tres EJE_* del escenario en instrucciones concretas por
+ * grupo -- cada grupo solo recibe las que le afectan (Asignaciones no
+ * tiene nada que ver con horarios, por ejemplo). null si el escenario
+ * no tiene nada relevante que decir para ese grupo en concreto.
+ */
+function construirInstruccionesEscenario_(grupo, escenario) {
+  if (!escenario) return null;
+
+  function intensidad(campo) { return escenario[campo] || 'Ninguna'; }
+  function cuantos(campo) { return intensidad(campo) === 'Frecuente' ? 'varias' : 'alguna'; }
+
+  var lineas = [];
+
+  if (grupo === 'ASIGNACIONES') {
+    if (intensidad('EJE_COMPETENCIA') !== 'Ninguna') {
+      lineas.push('- Deja ' + cuantos('EJE_COMPETENCIA') + ' asignación de responsable con un encaje de competencia imperfecto a propósito (la persona no tiene el nivel exigido por la tarea, o no tiene la competencia en absoluto) -- estamos simulando fricción de encaje humano, no un reparto perfecto.');
+    }
+    if (intensidad('EJE_RECURSO') !== 'Ninguna') {
+      lineas.push('- Deja ' + cuantos('EJE_RECURSO') + ' tarea con menos recursos asignados de los que declaró necesitar, o de una clase/categoría distinta a la ideal -- fricción de capacidad material, no una cobertura perfecta.');
+    }
+  }
+
+  if (grupo === 'HORARIO' && intensidad('EJE_AUSENCIA') !== 'Ninguna') {
+    lineas.push('- No generes disponibilidad perfectamente uniforme semana a semana: deja huecos de horario ' + (intensidad('EJE_AUSENCIA') === 'Frecuente' ? 'frecuentes' : 'puntuales') + ' que reflejen ausencias reales, coherentes con el guion del escenario si lo menciona.');
+  }
+
+  if (grupo === 'EJECUCION') {
+    var algunEje = ['EJE_COMPETENCIA', 'EJE_RECURSO', 'EJE_AUSENCIA'].some(function (e) { return intensidad(e) !== 'Ninguna'; });
+    if (algunEje) {
+      lineas.push('- No marques todas las ejecuciones como RESULTADO "Exitosa": deja algunas como "Con incidencias" o "Fallida", con DURACION_REAL_DIAS por encima de lo planificado, y una OBSERVACIONES que explique el motivo real y concreto (no genérico) -- sobre todo en tareas que ya tengan una asignación con fricción en el lote de Asignaciones/Horario, para que la historia sea coherente de principio a fin.');
+    }
+  }
+
+  if (grupo === 'SEGUIMIENTO' && escenario.PERFIL && escenario.PERFIL !== 'Ideal') {
+    lineas.push('- No cierres todas las incidencias ni apruebes todas las decisiones: deja alguna incidencia abierta o en curso, y alguna decisión con resolución "Rechazada" o "Sustituida" que documente un cambio de planes real, coherente con el guion.');
+  }
+
+  if (lineas.length === 0) return null;
+  return 'Este lote forma parte de un escenario simulado -- instrucciones adicionales (no lo generes todo perfecto):\n' + lineas.join('\n');
+}
+
 function construirPromptIA_(grupo) {
   var esCampana = grupo === 'CAMPANA';
   var esAsignaciones = grupo === 'ASIGNACIONES';
   var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO' || grupo === 'EJECUCION';
   var bloques = BLOQUES_ENTREVISTA_POR_GRUPO_[grupo] || [];
+  var escenario = obtenerEscenarioActivo_();
+  var instruccionesEscenario = construirInstruccionesEscenario_(grupo, escenario);
 
   var lineas = [
     'PROMPT MASTER -- Importación masiva LaTroballa (uso con IA)',
@@ -156,6 +222,8 @@ function construirPromptIA_(grupo) {
     'obligatorios y los valores de catálogo permitidos de cada CSV -- son',
     'una lista cerrada, no te los inventes.',
     '',
+    escenario ? ('CONTEXTO DEL ESCENARIO A SIMULAR "' + escenario.NOMBRE + '" (síguelo en todo momento, en todos los CSV que generes):\n' + escenario.GUION) : null,
+    escenario ? '' : null,
     'No generes ningún CSV todavía. Primero quiero que me entrevistes para',
     'entender qué necesito, por bloques (uno detrás de otro, no todo de',
     'golpe), y que resumas lo entendido antes de pasar al siguiente bloque:',
@@ -181,6 +249,8 @@ function construirPromptIA_(grupo) {
       : null,
     '- No añadas columnas, comentarios ni filas de ejemplo dentro del CSV: solo la fila de cabecera (tal cual viene en la plantilla) y las filas de datos reales.',
     '',
+    instruccionesEscenario,
+    instruccionesEscenario ? '' : null,
     'Autocomprobación obligatoria antes de entregar (hazla tú mismo, no me la pidas a mí):',
     '- Por cada valor que hayas escrito en una columna que termine en _TEMPORAL, repasa que ese' +
       ' mismo ID_TEMPORAL aparece definido en el CSV del nivel superior que le corresponde (o que' +

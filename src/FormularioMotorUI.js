@@ -409,6 +409,8 @@ function agregarCatalogosCore_(menu) {
     .addItem('Importación masiva de Decisiones/Incidencias/Documentos (STG_*)', 'abrirImportacionSeguimiento')
     .addItem('Importación masiva de Horarios (STG_*)', 'abrirImportacionHorario')
     .addItem('Importación masiva de Ejecuciones de tarea (STG_*)', 'abrirImportacionEjecucion')
+    .addItem('Nuevo escenario de simulación', 'abrirFormularioCrearEscenario')
+    .addItem('Editar escenario de simulación', 'abrirEditarEscenario')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
     .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
   // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de
@@ -926,6 +928,7 @@ function abrirEditarEquipoMiembro() { abrirEditarRegistroPorEntidad_('EQUIPO_MIE
 function abrirEditarRecurso() { abrirEditarRegistroPorEntidad_('RECURSO', 'Recurso'); }
 function abrirEditarTareaRecurso() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO', 'Tarea-Recurso'); }
 function abrirEditarTareaRecursoNecesidad() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO_NECESIDAD', 'Tarea-Necesidad de recurso'); }
+function abrirEditarEscenario() { abrirEditarRegistroPorEntidad_('ESCENARIO', 'Escenario de simulación'); }
 function abrirEditarPedidoProveedor() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR', 'Pedido a proveedor'); }
 function abrirEditarPedidoProveedorLinea() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR_LINEA', 'Pedido-Línea'); }
 function abrirEditarRecepcion() { abrirEditarRegistroPorEntidad_('RECEPCION', 'Recepción de pedido'); }
@@ -948,6 +951,7 @@ function abrirFormularioCrearEquipoMiembro() { abrirFormularioCrear_('EQUIPO_MIE
 function abrirFormularioCrearRecurso() { abrirFormularioCrear_('RECURSO', 'Nuevo recurso'); }
 function abrirFormularioCrearTareaRecurso() { abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso'); }
 function abrirFormularioCrearTareaRecursoNecesidad() { abrirFormularioCrear_('TAREA_RECURSO_NECESIDAD', 'Tarea - Necesidad de recurso (nueva)'); }
+function abrirFormularioCrearEscenario() { abrirFormularioCrear_('ESCENARIO', 'Nuevo escenario de simulación'); }
 function abrirFormularioCrearPedidoProveedor() { abrirFormularioCrear_('PEDIDO_PROVEEDOR', 'Nuevo pedido a proveedor'); }
 function abrirFormularioCrearPedidoProveedorLinea() { abrirFormularioCrear_('PEDIDO_PROVEEDOR_LINEA', 'Nueva línea de pedido'); }
 function abrirFormularioCrearRecepcion() { abrirFormularioCrear_('RECEPCION', 'Nueva recepción de pedido'); }

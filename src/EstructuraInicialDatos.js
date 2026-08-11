@@ -55,7 +55,8 @@ var CABECERAS_HOJA_MVP = Object.freeze({
   '45_TAREA_COMPETENCIA': Object.freeze(['ID', 'TAREA_ID', 'COMPETENCIA_ID', 'NIVEL_MINIMO', 'ESTADO', 'FECHA_CREACION', 'CREADO_POR', 'FECHA_MODIFICACION', 'MODIFICADO_POR', 'ACTIVO', 'OBSERVACIONES']),
   '46_TAREA_RECURSO_NECESIDAD': Object.freeze(['ID', 'TAREA_ID', 'CLASE_RECURSO_REQUERIDA', 'CATEGORIA_RECURSO_REQUERIDA', 'CANTIDAD_MINIMA', 'CAPACIDAD_MINIMA', 'CAPACIDAD_UNIDAD', 'ESTADO', 'FECHA_CREACION', 'CREADO_POR', 'FECHA_MODIFICACION', 'MODIFICADO_POR', 'ACTIVO', 'OBSERVACIONES']),
   '90_CONFIGURACION': Object.freeze(['ID', 'CATEGORIA', 'CLAVE', 'VALOR', 'ORDEN', 'DESCRIPCION', 'ACTIVO', 'FECHA_CREACION', 'CREADO_POR', 'FECHA_MODIFICACION', 'MODIFICADO_POR']),
-  '91_HISTORIAL': Object.freeze(['ID_HISTORIAL', 'TIMESTAMP', 'CORRELATION_ID', 'USUARIO', 'ACCION', 'ENTIDAD', 'REGISTRO_ID', 'ORIGEN', 'ANTES_JSON', 'DESPUES_JSON', 'RESULTADO', 'CODIGO', 'ERROR', 'ES_PRUEBA', 'PRUEBA_ID'])
+  '91_HISTORIAL': Object.freeze(['ID_HISTORIAL', 'TIMESTAMP', 'CORRELATION_ID', 'USUARIO', 'ACCION', 'ENTIDAD', 'REGISTRO_ID', 'ORIGEN', 'ANTES_JSON', 'DESPUES_JSON', 'RESULTADO', 'CODIGO', 'ERROR', 'ES_PRUEBA', 'PRUEBA_ID']),
+  '92_ESCENARIOS': Object.freeze(['ID', 'NOMBRE', 'PERFIL', 'GUION', 'EJE_COMPETENCIA', 'EJE_RECURSO', 'EJE_AUSENCIA', 'ESTADO', 'FECHA_CREACION', 'CREADO_POR', 'FECHA_MODIFICACION', 'MODIFICADO_POR', 'ACTIVO', 'OBSERVACIONES'])
 });
 
 /**
@@ -74,7 +75,7 @@ var ORDEN_HOJAS_ESTRUCTURA_INICIAL = Object.freeze([
   '31_FUENTE_FINANCIACION', '32_COSTE', '33_COMPETENCIA', '34_PERSONA_COMPETENCIA', '35_RECURSO_COMPETENCIA',
   '36_CONVOCATORIA', '37_ETIQUETA_IMPACTO', '38_CLIENTE', '39_PEDIDO_CLIENTE', '40_PEDIDO_CLIENTE_LINEA',
   '41_ENTREGA', '42_ENTREGA_LINEA', '43_CONTRATO_SERVICIO', '44_OPORTUNIDAD', '45_TAREA_COMPETENCIA',
-  '46_TAREA_RECURSO_NECESIDAD', '90_CONFIGURACION', '91_HISTORIAL'
+  '46_TAREA_RECURSO_NECESIDAD', '90_CONFIGURACION', '91_HISTORIAL', '92_ESCENARIOS'
 ]);
 
 /**
@@ -510,5 +511,15 @@ var CATALOGO_SEMILLA_MVP = Object.freeze([
   { categoria: 'CATEGORIA_IMPACTO', clave: 'ECONOMICO', valor: 'Económico', orden: null, descripcion: null },
   { categoria: 'NIVEL_DATO', clave: 'OPERATIVO', valor: 'Operativo', orden: null, descripcion: null },
   { categoria: 'NIVEL_DATO', clave: 'PILOTO', valor: 'Piloto', orden: null, descripcion: null },
-  { categoria: 'NIVEL_DATO', clave: 'AUDITORIA', valor: 'Auditoría', orden: null, descripcion: null }
+  { categoria: 'NIVEL_DATO', clave: 'AUDITORIA', valor: 'Auditoría', orden: null, descripcion: null },
+  { categoria: 'PERFIL_ESCENARIO', clave: 'IDEAL', valor: 'Ideal', orden: 1, descripcion: 'Sin fricción deliberada -- comportamiento actual, todo sale según lo previsto.' },
+  { categoria: 'PERFIL_ESCENARIO', clave: 'COMPLICACIONES_TIPICAS', valor: 'Con complicaciones típicas', orden: 2, descripcion: 'Fricción moderada y realista en varios ejes.' },
+  { categoria: 'PERFIL_ESCENARIO', clave: 'CRISIS_CONTROLADA', valor: 'Crisis controlada', orden: 3, descripcion: 'Fricción intensa en varios ejes a la vez.' },
+  { categoria: 'PERFIL_ESCENARIO', clave: 'PERSONALIZADO', valor: 'Personalizado', orden: 4, descripcion: 'La intensidad de cada eje se decide una por una, no sigue un perfil predefinido.' },
+  { categoria: 'INTENSIDAD_ESCENARIO', clave: 'NINGUNA', valor: 'Ninguna', orden: 1, descripcion: null },
+  { categoria: 'INTENSIDAD_ESCENARIO', clave: 'OCASIONAL', valor: 'Ocasional', orden: 2, descripcion: null },
+  { categoria: 'INTENSIDAD_ESCENARIO', clave: 'FRECUENTE', valor: 'Frecuente', orden: 3, descripcion: null },
+  { categoria: 'ESTADO_ESCENARIO', clave: 'BORRADOR', valor: 'Borrador', orden: 1, descripcion: null },
+  { categoria: 'ESTADO_ESCENARIO', clave: 'ACTIVO', valor: 'Activo', orden: 2, descripcion: 'El que se usa para generar los próximos PROMPT_IA.txt de Importación masiva.' },
+  { categoria: 'ESTADO_ESCENARIO', clave: 'ARCHIVADO', valor: 'Archivado', orden: 3, descripcion: null }
 ]);

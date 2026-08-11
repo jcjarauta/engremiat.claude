@@ -74,7 +74,8 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   CONTRATO_SERVICIO: 'contrato de servicio',
   OPORTUNIDAD: 'oportunidad',
   TAREA_COMPETENCIA: 'tarea - competencia',
-  TAREA_RECURSO_NECESIDAD: 'tarea - necesidad de recurso'
+  TAREA_RECURSO_NECESIDAD: 'tarea - necesidad de recurso',
+  ESCENARIO: 'escenario de simulación'
 });
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Campaña': 'CAMPANA',
@@ -1219,6 +1220,28 @@ INCIDENCIA: [
     { campo: 'CAPACIDAD_MINIMA', etiqueta: 'Capacidad mínima exigida', tipo: 'numero', min: 0, ayuda: 'Opcional. Ej. 500 -- exige que el recurso asignado tenga CAPACIDAD >= 500 en la misma unidad.' },
     { campo: 'CAPACIDAD_UNIDAD', etiqueta: 'Unidad de la capacidad exigida', tipo: 'texto', ayuda: 'Debe coincidir con la unidad del recurso (ej. "kg") para poder comparar.' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Motor de escenarios (ver conversación -- "base para personalizar las
+   * experiencias del cliente y previo paso a la gamificación"): GUION es
+   * la historia en prosa libre que se inyecta como contexto compartido
+   * en el PROMPT_IA.txt de cada grupo de Importación masiva. Los tres
+   * EJE_* controlan cuánta fricción de cada tipo debe simular la IA --
+   * "Ninguna" en los tres equivale al comportamiento actual (datos
+   * siempre ideales). Solo debería haber un ESCENARIO con ESTADO="Activo"
+   * a la vez -- si hay varios, se usa el modificado más recientemente
+   * (ver obtenerEscenarioActivo_ en PlantillaImportacionMasivaService.js).
+   */
+  ESCENARIO: [
+    { campo: 'NOMBRE', etiqueta: 'Nombre', tipo: 'texto', requerido: true, ayuda: 'Ej. "Sant Jordi con imprenta tarde".' },
+    { campo: 'PERFIL', etiqueta: 'Perfil', tipo: 'catalogo', catalogo: 'CFG_PERFIL_ESCENARIO', requerido: true, valorPorDefecto: 'Ideal', ayuda: 'Ideal = sin fricción. Los demás perfiles son solo una etiqueta orientativa -- lo que de verdad controla la simulación son los tres ejes de abajo.' },
+    { campo: 'GUION', etiqueta: 'Guion del escenario', tipo: 'texto', ayuda: 'La historia en 3-4 frases (ej. "la imprenta llega 3 días tarde la primera semana, el responsable de logística está de baja del 10 al 12"). Se pega igual en el PROMPT_IA.txt de todos los grupos, para que la IA cuente la misma historia en cada lote aunque los generes en conversaciones separadas.' },
+    { campo: 'EJE_COMPETENCIA', etiqueta: 'Fricción de encaje humano (competencias)', tipo: 'catalogo', catalogo: 'CFG_INTENSIDAD_ESCENARIO', valorPorDefecto: 'Ninguna' },
+    { campo: 'EJE_RECURSO', etiqueta: 'Fricción de capacidad material (recursos)', tipo: 'catalogo', catalogo: 'CFG_INTENSIDAD_ESCENARIO', valorPorDefecto: 'Ninguna' },
+    { campo: 'EJE_AUSENCIA', etiqueta: 'Fricción de disponibilidad (ausencias/horario)', tipo: 'catalogo', catalogo: 'CFG_INTENSIDAD_ESCENARIO', valorPorDefecto: 'Ninguna' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_ESCENARIO', requerido: true, valorPorDefecto: 'Borrador', ayuda: 'Solo un escenario "Activo" gobierna las próximas plantillas -- pon los demás en Borrador/Archivado.' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 

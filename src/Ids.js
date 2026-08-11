@@ -231,6 +231,22 @@ const ENTIDADES_MVP = Object.freeze({
   TAREA_RECURSO_NECESIDAD: Object.freeze({
     hoja: '46_TAREA_RECURSO_NECESIDAD',
     prefijo: 'TRN'
+  }),
+  /*
+   * Motor de escenarios (ver conversación -- "esta parte dará la base
+   * para personalizar las experiencias del cliente y previo paso a la
+   * gamificación y análisis de escenarios posibles"): un escenario
+   * describe una historia narrativa (GUION) más la intensidad de
+   * fricción esperada por eje (competencia/recurso/ausencia) -- se
+   * inyecta en PROMPT_IA.txt de Importación masiva para que la IA deje
+   * de generar datos siempre ideales y simule complicaciones reales de
+   * forma coherente entre grupos. Numerada 92 (después de 90_CONFIGURACION/
+   * 91_HISTORIAL) porque es infraestructura de simulación, no una
+   * entidad de negocio más en la cadena Campaña->Tarea.
+   */
+  ESCENARIO: Object.freeze({
+    hoja: '92_ESCENARIOS',
+    prefijo: 'ESC'
   })
 });
 
