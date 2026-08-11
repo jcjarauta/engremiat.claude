@@ -224,6 +224,58 @@ function listarAsignacionesSinEncajeCompetencia() {
   return alertas;
 }
 
+/*
+ * Track B -- encaje de capacidad material (ver conversación --
+ * "diferenciar entre los desequilibrios de recursos humanos y los
+ * desequilibrios materiales"): mismo espíritu que
+ * listarAsignacionesSinEncajeCompetencia, pero comparando qué clase/
+ * cantidad de recurso exige una tarea (TAREA_RECURSO_NECESIDAD) contra
+ * los recursos realmente asignados (TAREA_RECURSO) -- avisa, no
+ * bloquea, cuando faltan recursos de la clase/categoría exigida o no
+ * llegan a la cantidad mínima.
+ */
+function listarAsignacionesSinEncajeRecurso() {
+  var necesidades = listarRegistros('TAREA_RECURSO_NECESIDAD', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  if (necesidades.length === 0) return [];
+
+  var recursosPorId = {};
+  listarRegistros('RECURSO', {}).forEach(function (r) { recursosPorId[r.ID] = r; });
+
+  var recursosAsignadosPorTarea = {};
+  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (a) {
+    if (!recursosAsignadosPorTarea[a.TAREA_ID]) recursosAsignadosPorTarea[a.TAREA_ID] = [];
+    if (recursosPorId[a.RECURSO_ID]) recursosAsignadosPorTarea[a.TAREA_ID].push(recursosPorId[a.RECURSO_ID]);
+  });
+
+  var tareasPorId = {};
+  listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
+
+  var alertas = [];
+
+  necesidades.forEach(function (necesidad) {
+    var asignados = recursosAsignadosPorTarea[necesidad.TAREA_ID] || [];
+    var coinciden = asignados.filter(function (r) {
+      if (necesidad.CLASE_RECURSO_REQUERIDA && r.CLASE_RECURSO !== necesidad.CLASE_RECURSO_REQUERIDA) return false;
+      if (necesidad.CATEGORIA_RECURSO_REQUERIDA && r.CATEGORIA_RECURSO !== necesidad.CATEGORIA_RECURSO_REQUERIDA) return false;
+      return true;
+    });
+
+    var cantidadMinima = Number(necesidad.CANTIDAD_MINIMA) || 1;
+    if (coinciden.length >= cantidadMinima) return;
+
+    alertas.push({
+      TAREA_ID: necesidad.TAREA_ID,
+      TAREA_NOMBRE: tareasPorId[necesidad.TAREA_ID] ? tareasPorId[necesidad.TAREA_ID].NOMBRE : necesidad.TAREA_ID,
+      CLASE_RECURSO_REQUERIDA: necesidad.CLASE_RECURSO_REQUERIDA || '',
+      CATEGORIA_RECURSO_REQUERIDA: necesidad.CATEGORIA_RECURSO_REQUERIDA || '',
+      CANTIDAD_MINIMA: cantidadMinima,
+      CANTIDAD_ASIGNADA: coinciden.length
+    });
+  });
+
+  return alertas;
+}
+
 function listarTareasSinResponsable() {
   var tareas = listarRegistros('TAREA', { ACTIVO: 'SÍ' });
   var activas = tareas.filter(function (t) {
@@ -335,7 +387,8 @@ function obtenerPanelOperativo() {
         procesosSinFechas: listarProcesosSinFechas(),
         relacionesIncompletas: listarRelacionesIncompletas(),
         recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible(),
-        asignacionesSinEncajeCompetencia: listarAsignacionesSinEncajeCompetencia()
+        asignacionesSinEncajeCompetencia: listarAsignacionesSinEncajeCompetencia(),
+        asignacionesSinEncajeRecurso: listarAsignacionesSinEncajeRecurso()
       },
       materiales: obtenerAlertasMaterialesSeguro_()
     };

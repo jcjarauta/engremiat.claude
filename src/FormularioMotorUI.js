@@ -186,6 +186,7 @@ function construirSubmenuEspaciosYRecursos_(ui) {
     .addItem('Ficha de espacio/recurso (buscar)', 'abrirFichaRecursoBuscar')
     .addItem('Editar recurso', 'abrirEditarRecurso')
     .addItem('Editar Tarea-Recurso', 'abrirEditarTareaRecurso')
+    .addItem('Editar Tarea-Necesidad de recurso', 'abrirEditarTareaRecursoNecesidad')
     .addItem('Editar horario', 'abrirEditarHorario');
 }
 
@@ -307,6 +308,7 @@ function agregarNuevaRelacionCore_(menu) {
     .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
     .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
     .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
+    .addItem('Tarea - Necesidad de recurso (declarar requisito)', 'abrirFormularioCrearTareaRecursoNecesidad')
     .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
     .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
     .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
@@ -923,6 +925,7 @@ function abrirEditarProveedorMaterial() { abrirEditarRegistroPorEntidad_('PROVEE
 function abrirEditarEquipoMiembro() { abrirEditarRegistroPorEntidad_('EQUIPO_MIEMBRO', 'Equipo-Miembro'); }
 function abrirEditarRecurso() { abrirEditarRegistroPorEntidad_('RECURSO', 'Recurso'); }
 function abrirEditarTareaRecurso() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO', 'Tarea-Recurso'); }
+function abrirEditarTareaRecursoNecesidad() { abrirEditarRegistroPorEntidad_('TAREA_RECURSO_NECESIDAD', 'Tarea-Necesidad de recurso'); }
 function abrirEditarPedidoProveedor() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR', 'Pedido a proveedor'); }
 function abrirEditarPedidoProveedorLinea() { abrirEditarRegistroPorEntidad_('PEDIDO_PROVEEDOR_LINEA', 'Pedido-Línea'); }
 function abrirEditarRecepcion() { abrirEditarRegistroPorEntidad_('RECEPCION', 'Recepción de pedido'); }
@@ -944,6 +947,7 @@ function abrirFormularioCrearProveedorMaterial() { abrirFormularioCrear_('PROVEE
 function abrirFormularioCrearEquipoMiembro() { abrirFormularioCrear_('EQUIPO_MIEMBRO', 'Nueva relación equipo-miembro'); }
 function abrirFormularioCrearRecurso() { abrirFormularioCrear_('RECURSO', 'Nuevo recurso'); }
 function abrirFormularioCrearTareaRecurso() { abrirFormularioCrear_('TAREA_RECURSO', 'Nueva relación tarea-recurso'); }
+function abrirFormularioCrearTareaRecursoNecesidad() { abrirFormularioCrear_('TAREA_RECURSO_NECESIDAD', 'Tarea - Necesidad de recurso (nueva)'); }
 function abrirFormularioCrearPedidoProveedor() { abrirFormularioCrear_('PEDIDO_PROVEEDOR', 'Nuevo pedido a proveedor'); }
 function abrirFormularioCrearPedidoProveedorLinea() { abrirFormularioCrear_('PEDIDO_PROVEEDOR_LINEA', 'Nueva línea de pedido'); }
 function abrirFormularioCrearRecepcion() { abrirFormularioCrear_('RECEPCION', 'Nueva recepción de pedido'); }

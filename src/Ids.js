@@ -218,6 +218,19 @@ const ENTIDADES_MVP = Object.freeze({
   TAREA_COMPETENCIA: Object.freeze({
     hoja: '45_TAREA_COMPETENCIA',
     prefijo: 'TCO'
+  }),
+  /*
+   * Track B -- encaje de capacidad material (ver conversación -- "quiero
+   * diferenciar entre los desequilibrios de recursos humanos y los
+   * desequilibrios materiales"): declara qué clase/categoría de recurso
+   * exige una tarea y cuántos hacen falta como mínimo, simétrica a
+   * TAREA_COMPETENCIA pero sobre encaje de tipo/cantidad de recurso en
+   * vez de habilidad de persona -- comparado contra los TAREA_RECURSO
+   * realmente asignados a esa tarea.
+   */
+  TAREA_RECURSO_NECESIDAD: Object.freeze({
+    hoja: '46_TAREA_RECURSO_NECESIDAD',
+    prefijo: 'TRN'
   })
 });
 

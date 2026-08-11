@@ -59,6 +59,9 @@
     <h4>Asignaciones sin encaje de competencia</h4>
     <div id="asignacionesSinEncajeCompetencia"></div>
 
+    <h4>Asignaciones sin encaje de recurso</h4>
+    <div id="asignacionesSinEncajeRecurso"></div>
+
     <h4>Capacidad de recursos</h4>
     <div id="capacidadRecursos"></div>
 
@@ -195,6 +198,14 @@
         var detalle = 'Responsable: ' + escaparHtml(a.PERSONA_NOMBRE) + ' -- exige ' + escaparHtml(a.COMPETENCIA_NOMBRE) +
           (a.NIVEL_EXIGIDO ? ' (' + escaparHtml(a.NIVEL_EXIGIDO) + ')' : '') +
           (a.NIVEL_ACTUAL ? ', tiene nivel ' + escaparHtml(a.NIVEL_ACTUAL) : ', no la tiene');
+        return '<div class="item alerta"><div class="titulo">' + escaparHtml(a.TAREA_NOMBRE) + '</div>' +
+          '<div class="detalle">' + detalle + '</div>' +
+          botonAbrir_('TAREA', a.TAREA_ID) + '</div>';
+      });
+
+      renderLista('asignacionesSinEncajeRecurso', panel.excepciones.asignacionesSinEncajeRecurso, function (a) {
+        var requisito = [a.CLASE_RECURSO_REQUERIDA, a.CATEGORIA_RECURSO_REQUERIDA].filter(Boolean).join(' / ') || 'recurso';
+        var detalle = 'Exige ' + a.CANTIDAD_MINIMA + ' (' + escaparHtml(requisito) + '), asignado(s): ' + a.CANTIDAD_ASIGNADA;
         return '<div class="item alerta"><div class="titulo">' + escaparHtml(a.TAREA_NOMBRE) + '</div>' +
           '<div class="detalle">' + detalle + '</div>' +
           botonAbrir_('TAREA', a.TAREA_ID) + '</div>';

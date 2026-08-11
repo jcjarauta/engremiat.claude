@@ -257,6 +257,11 @@ const CAMPOS_OBLIGATORIOS_MVP = Object.freeze({
     'ESTADO'
   ]),
 
+  TAREA_RECURSO_NECESIDAD: Object.freeze([
+    'TAREA_ID',
+    'ESTADO'
+  ]),
+
   CONVOCATORIA: Object.freeze([
     'NOMBRE',
     'ENTIDAD_CONVOCANTE',

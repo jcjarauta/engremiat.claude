@@ -73,7 +73,8 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   ENTREGA_LINEA: 'línea de entrega',
   CONTRATO_SERVICIO: 'contrato de servicio',
   OPORTUNIDAD: 'oportunidad',
-  TAREA_COMPETENCIA: 'tarea - competencia'
+  TAREA_COMPETENCIA: 'tarea - competencia',
+  TAREA_RECURSO_NECESIDAD: 'tarea - necesidad de recurso'
 });
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Campaña': 'CAMPANA',
@@ -1180,6 +1181,24 @@ INCIDENCIA: [
     { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
     { campo: 'COMPETENCIA_ID', etiqueta: 'Competencia requerida', tipo: 'fk', entidadFk: 'COMPETENCIA', requerido: true },
     { campo: 'NIVEL_MINIMO', etiqueta: 'Nivel mínimo exigido', tipo: 'catalogo', catalogo: 'CFG_NIVEL_COMPETENCIA', ayuda: 'Déjalo vacío si basta con tener la competencia, sin importar el nivel.' },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Track B -- encaje de capacidad material (ver conversación --
+   * "diferenciar entre los desequilibrios de recursos humanos y los
+   * desequilibrios materiales"): simétrico a TAREA_COMPETENCIA pero
+   * sobre tipo/cantidad de recurso en vez de habilidad. CLASE/CATEGORIA
+   * requeridas son ambas opcionales -- puede exigirse solo cantidad
+   * (da igual la clase concreta) o solo clase (cualquier cantidad, con
+   * tal de que exista al menos un recurso de esa clase asignado).
+   */
+  TAREA_RECURSO_NECESIDAD: [
+    { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
+    { campo: 'CLASE_RECURSO_REQUERIDA', etiqueta: 'Clase de recurso exigida', tipo: 'catalogo', catalogo: 'CFG_CLASE_RECURSO', ayuda: 'Déjalo vacío si vale cualquier clase.' },
+    { campo: 'CATEGORIA_RECURSO_REQUERIDA', etiqueta: 'Categoría exigida', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_RECURSO', ayuda: 'Déjalo vacío si vale cualquier categoría dentro de la clase.' },
+    { campo: 'CANTIDAD_MINIMA', etiqueta: 'Cantidad mínima de recursos', tipo: 'numero', min: 1, valorPorDefecto: 1 },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
