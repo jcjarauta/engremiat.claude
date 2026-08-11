@@ -516,7 +516,11 @@ function generarHtmlExcepciones_(informe, nivel) {
     ['Decisiones pendientes', informe.decisionesPendientes, ['Título', 'Estado'], function (d) { return [d.TITULO, d.ESTADO]; }],
     ['Incidencias abiertas', informe.incidenciasAbiertas, ['Título', 'Estado'], function (i) { return [i.TITULO, i.ESTADO]; }],
     ['Asignaciones sin encaje de competencia', informe.asignacionesSinEncajeCompetencia, ['Tarea', 'Responsable', 'Competencia'], function (a) { return [a.TAREA_NOMBRE, a.PERSONA_NOMBRE, a.COMPETENCIA_NOMBRE + (a.NIVEL_EXIGIDO ? ' (' + a.NIVEL_EXIGIDO + ')' : '')]; }],
-    ['Asignaciones sin encaje de recurso', informe.asignacionesSinEncajeRecurso, ['Tarea', 'Requisito', 'Asignados'], function (a) { return [a.TAREA_NOMBRE, [a.CLASE_RECURSO_REQUERIDA, a.CATEGORIA_RECURSO_REQUERIDA].filter(Boolean).join(' / ') || 'recurso', a.CANTIDAD_ASIGNADA + ' / ' + a.CANTIDAD_MINIMA]; }]
+    ['Asignaciones sin encaje de recurso', informe.asignacionesSinEncajeRecurso, ['Tarea', 'Requisito', 'Asignados'], function (a) {
+      var requisito = [a.CLASE_RECURSO_REQUERIDA, a.CATEGORIA_RECURSO_REQUERIDA].filter(Boolean).join(' / ') || 'recurso';
+      if (a.CAPACIDAD_MINIMA) requisito += ', capacidad >= ' + a.CAPACIDAD_MINIMA + ' ' + a.CAPACIDAD_UNIDAD;
+      return [a.TAREA_NOMBRE, requisito, a.CANTIDAD_ASIGNADA + ' / ' + a.CANTIDAD_MINIMA];
+    }]
   ];
 
   var cuerpo =

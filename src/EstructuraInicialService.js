@@ -50,7 +50,7 @@ function instalarEstructuraInicial(modulosInstalados, ssDestino) {
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
 
   var bloqueo = LockService.getScriptLock();
-  var resultado = { hojasCreadas: [], hojasExistentes: [], hojasOmitidasPorModulo: [], catalogoSembrado: false, rangosNombradosAsegurados: 0 };
+  var resultado = { hojasCreadas: [], hojasExistentes: [], hojasOmitidasPorModulo: [], hojasMigradas: [], catalogoSembrado: false, rangosNombradosAsegurados: 0 };
 
   try {
     bloqueo.waitLock(10000);
@@ -77,6 +77,31 @@ function instalarEstructuraInicial(modulosInstalados, ssDestino) {
       } else {
         resultado.hojasExistentes.push(nombreHoja);
         console.log('OK hoja_ya_existente=' + nombreHoja);
+
+        /*
+         * Auto-migración de columnas (ver conversación -- mismo hallazgo
+         * ya resuelto para las hojas STG_* de importación masiva:
+         * añadir un campo nuevo a una entidad existente, como
+         * RECURSO.CAPACIDAD, dejaba las hojas ya provisionadas de
+         * clientes reales desincronizadas para siempre, porque esta
+         * rama nunca tocaba una hoja que ya existía). Añade al final
+         * las columnas que falten, sin reordenar ni tocar las que ya
+         * hay -- el resto del sistema resuelve columnas por nombre de
+         * cabecera, no por posición, así que crecer el esquema de
+         * aquí en adelante no vuelve a romper hojas ya en uso.
+         */
+        var ultimaColumnaHoja = hoja.getLastColumn();
+        var cabecerasActuales = ultimaColumnaHoja > 0
+          ? hoja.getRange(1, 1, 1, ultimaColumnaHoja).getDisplayValues()[0].map(function (v) {
+              return String(v || '').trim();
+            })
+          : [];
+        var columnasFaltantes = cabeceras.filter(function (c) { return cabecerasActuales.indexOf(c) === -1; });
+        if (columnasFaltantes.length > 0) {
+          hoja.getRange(1, ultimaColumnaHoja + 1, 1, columnasFaltantes.length).setValues([columnasFaltantes]);
+          resultado.hojasMigradas.push({ hoja: nombreHoja, columnas: columnasFaltantes });
+          console.log('OK hoja_migrada=' + nombreHoja + ' columnas_anadidas=' + columnasFaltantes.join(', '));
+        }
       }
 
       if (nombreHoja === '90_CONFIGURACION') {
@@ -228,7 +253,8 @@ function abrirInstalarEstructuraInicial(modulosInstalados) {
     'Instalar estructura inicial',
     'Esto crea las hojas de datos que falten (de los módulos instalados en este cliente) + 90_CONFIGURACION + ' +
     '91_HISTORIAL en este Sheet, y asegura los rangos con nombre del catálogo (CFG_*). Las hojas que ya existen ' +
-    'no se tocan. ¿Continuar?',
+    'no se tocan, salvo para añadir columnas nuevas del esquema al final si les faltan (nunca se reordena ni se ' +
+    'toca una columna ya existente). ¿Continuar?',
     ui.ButtonSet.YES_NO
   );
 
@@ -244,6 +270,12 @@ function abrirInstalarEstructuraInicial(modulosInstalados) {
 
     if (resultado.hojasOmitidasPorModulo.length > 0) {
       mensaje += '\n\nOmitidas (módulo no instalado): ' + resultado.hojasOmitidasPorModulo.join(', ');
+    }
+
+    if (resultado.hojasMigradas.length > 0) {
+      mensaje += '\n\nColumnas nuevas añadidas a hojas ya existentes:\n' + resultado.hojasMigradas.map(function (m) {
+        return '- ' + m.hoja + ': ' + m.columnas.join(', ');
+      }).join('\n');
     }
 
     mensaje += '\n\nRangos con nombre asegurados: ' + resultado.rangosNombradosAsegurados;

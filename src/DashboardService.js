@@ -257,6 +257,11 @@ function listarAsignacionesSinEncajeRecurso() {
     var coinciden = asignados.filter(function (r) {
       if (necesidad.CLASE_RECURSO_REQUERIDA && r.CLASE_RECURSO !== necesidad.CLASE_RECURSO_REQUERIDA) return false;
       if (necesidad.CATEGORIA_RECURSO_REQUERIDA && r.CATEGORIA_RECURSO !== necesidad.CATEGORIA_RECURSO_REQUERIDA) return false;
+      if (necesidad.CAPACIDAD_MINIMA) {
+        var mismaUnidad = String(r.CAPACIDAD_UNIDAD || '').trim().toLowerCase() === String(necesidad.CAPACIDAD_UNIDAD || '').trim().toLowerCase();
+        var capacidadSuficiente = mismaUnidad && Number(r.CAPACIDAD) >= Number(necesidad.CAPACIDAD_MINIMA);
+        if (!capacidadSuficiente) return false;
+      }
       return true;
     });
 
@@ -269,7 +274,9 @@ function listarAsignacionesSinEncajeRecurso() {
       CLASE_RECURSO_REQUERIDA: necesidad.CLASE_RECURSO_REQUERIDA || '',
       CATEGORIA_RECURSO_REQUERIDA: necesidad.CATEGORIA_RECURSO_REQUERIDA || '',
       CANTIDAD_MINIMA: cantidadMinima,
-      CANTIDAD_ASIGNADA: coinciden.length
+      CANTIDAD_ASIGNADA: coinciden.length,
+      CAPACIDAD_MINIMA: necesidad.CAPACIDAD_MINIMA || '',
+      CAPACIDAD_UNIDAD: necesidad.CAPACIDAD_UNIDAD || ''
     });
   });
 

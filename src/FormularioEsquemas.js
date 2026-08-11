@@ -545,6 +545,16 @@ PROYECTO: [
     { campo: 'VIDA_UTIL_ANOS', etiqueta: 'Vida útil (años)', tipo: 'numero', min: 1, visibleSi: { campo: 'MODO_COSTE', valores: ['Amortización'] } },
     { campo: 'COSTE_PERIODICO', etiqueta: 'Coste periódico (€)', tipo: 'numero', min: 0, visibleSi: { campo: 'MODO_COSTE', valores: ['Periódico'] } },
     { campo: 'PERIODICIDAD_COSTE', etiqueta: 'Periodicidad', tipo: 'catalogo', catalogo: 'CFG_PERIODICIDAD_COSTE', visibleSi: { campo: 'MODO_COSTE', valores: ['Periódico'] } },
+    /*
+     * Track B, ampliación (ver conversación -- "el caso furgoneta de
+     * 500kg vs 300kg exacto"): atributo numérico opcional, libre de
+     * unidad (CAPACIDAD_UNIDAD es texto libre, no catálogo -- "kg",
+     * "personas", "m²"... varía demasiado por tipo de recurso para
+     * cerrarlo en una lista). Ninguno de los dos es obligatorio, no
+     * afecta a recursos que no lo necesiten.
+     */
+    { campo: 'CAPACIDAD', etiqueta: 'Capacidad', tipo: 'numero', min: 0, ayuda: 'Opcional. Ej. 500 (con unidad "kg" en el campo siguiente).' },
+    { campo: 'CAPACIDAD_UNIDAD', etiqueta: 'Unidad de capacidad', tipo: 'texto', ayuda: 'Ej. "kg", "personas", "m²", "litros".' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
@@ -1199,6 +1209,15 @@ INCIDENCIA: [
     { campo: 'CLASE_RECURSO_REQUERIDA', etiqueta: 'Clase de recurso exigida', tipo: 'catalogo', catalogo: 'CFG_CLASE_RECURSO', ayuda: 'Déjalo vacío si vale cualquier clase.' },
     { campo: 'CATEGORIA_RECURSO_REQUERIDA', etiqueta: 'Categoría exigida', tipo: 'catalogo', catalogo: 'CFG_CATEGORIA_RECURSO', ayuda: 'Déjalo vacío si vale cualquier categoría dentro de la clase.' },
     { campo: 'CANTIDAD_MINIMA', etiqueta: 'Cantidad mínima de recursos', tipo: 'numero', min: 1, valorPorDefecto: 1 },
+    /*
+     * Capacidad mínima exigida (numérica), comparada contra
+     * RECURSO.CAPACIDAD del recurso realmente asignado -- solo cuenta un
+     * recurso como válido si además coincide CAPACIDAD_UNIDAD (mismo
+     * texto, sin distinguir mayúsculas): no tiene sentido comparar "500"
+     * contra un recurso con capacidad en otra unidad sin conversión.
+     */
+    { campo: 'CAPACIDAD_MINIMA', etiqueta: 'Capacidad mínima exigida', tipo: 'numero', min: 0, ayuda: 'Opcional. Ej. 500 -- exige que el recurso asignado tenga CAPACIDAD >= 500 en la misma unidad.' },
+    { campo: 'CAPACIDAD_UNIDAD', etiqueta: 'Unidad de la capacidad exigida', tipo: 'texto', ayuda: 'Debe coincidir con la unidad del recurso (ej. "kg") para poder comparar.' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],

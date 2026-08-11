@@ -205,7 +205,8 @@
 
       renderLista('asignacionesSinEncajeRecurso', panel.excepciones.asignacionesSinEncajeRecurso, function (a) {
         var requisito = [a.CLASE_RECURSO_REQUERIDA, a.CATEGORIA_RECURSO_REQUERIDA].filter(Boolean).join(' / ') || 'recurso';
-        var detalle = 'Exige ' + a.CANTIDAD_MINIMA + ' (' + escaparHtml(requisito) + '), asignado(s): ' + a.CANTIDAD_ASIGNADA;
+        if (a.CAPACIDAD_MINIMA) requisito += ', capacidad >= ' + a.CAPACIDAD_MINIMA + ' ' + a.CAPACIDAD_UNIDAD;
+        var detalle = 'Exige ' + a.CANTIDAD_MINIMA + ' (' + escaparHtml(requisito) + '), asignado(s) que cumplen: ' + a.CANTIDAD_ASIGNADA;
         return '<div class="item alerta"><div class="titulo">' + escaparHtml(a.TAREA_NOMBRE) + '</div>' +
           '<div class="detalle">' + detalle + '</div>' +
           botonAbrir_('TAREA', a.TAREA_ID) + '</div>';
