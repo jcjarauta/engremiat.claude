@@ -1150,9 +1150,30 @@ function abrirImportacionSeguimiento() {
  * manual, FormularioValidacionService.js) -- se replica aquí en el
  * dry-run para no dejar pasar un horario roto en silencio.
  */
+/*
+ * Sheets autoconvierte un valor tecleado o pegado con pinta de hora
+ * ("09:00") a un valor de hora real (Date, con fecha base 1899-12-30) en
+ * cuanto la celda tiene formato Automático -- pasaba en el 100% de las
+ * filas al subir el CSV, y puede seguir pasando en filas ya existentes
+ * de antes de que instalarStagingImportacionMasiva empezara a forzar
+ * esas columnas a texto plano. Se normaliza aquí también (no solo en
+ * origen) para no dejar sin importar filas ya corrompidas en la hoja.
+ */
+function normalizarHora_(valor) {
+  if (valor instanceof Date) {
+    return Utilities.formatDate(valor, Session.getScriptTimeZone(), 'HH:mm');
+  }
+  return String(valor || '').trim();
+}
+
 function procesarImportacionHorario_(confirmar) {
   var errores = [];
   var filasHorario = leerFilasPendientesImportacion_('STG_HORARIO');
+
+  filasHorario.forEach(function (f) {
+    f.HORA_INICIO = normalizarHora_(f.HORA_INICIO);
+    f.HORA_FIN = normalizarHora_(f.HORA_FIN);
+  });
 
   filasHorario.forEach(function (f) {
     ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO'].forEach(function (c) {

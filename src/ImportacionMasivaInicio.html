@@ -59,6 +59,14 @@
       .fila-botones-grupo button { flex: 1; margin-top: 0; }
       .boton-validar.estado-valido { background: #e6f4ea; border-color: var(--color-exito); color: var(--color-exito); }
       .boton-validar.estado-invalido { background: var(--color-peligro-fondo); border-color: var(--color-peligro); color: var(--color-peligro); }
+
+      .separador-plantillas { display: flex; align-items: center; gap: 8px; margin: 10px 0; color: var(--color-texto-secundario); font-size: 11px; }
+      .separador-plantillas::before, .separador-plantillas::after { content: ''; flex: 1; height: 1px; background: var(--color-borde); }
+      .boton-descargar-todo {
+        width: 100%; margin-top: 0; padding: 10px; font-weight: bold; font-size: 13px;
+        background: var(--color-primario); border-color: var(--color-primario); color: #fff;
+      }
+      .boton-descargar-todo:hover { background: var(--color-primario-oscuro); }
       .resultado-grupo { margin-top: 8px; font-size: 12px; white-space: pre-line; }
       .resultado-grupo.ok { color: var(--color-exito); }
       .resultado-grupo.error { color: var(--color-peligro); }
@@ -122,6 +130,8 @@
           entrevista guiada (objetivo, alcance, procesos, tareas...) antes de generar nada, y te
           devuelve cada CSV ya relleno en el formato correcto.
         </div>
+        <button class="boton boton-descargar-todo" onclick="descargarTodasLasPlantillas()">⬇ Descargar TODAS las plantillas (1 solo .zip)</button>
+        <div class="separador-plantillas">o una por una</div>
         <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
@@ -222,27 +232,43 @@
        * servidor devuelve el .zip en base64, el cliente lo convierte en
        * Blob y dispara la descarga con un <a download> temporal.
        */
+      function descargarArchivoBase64_(resultado) {
+        var bytes = atob(resultado.base64);
+        var arr = new Uint8Array(bytes.length);
+        for (var i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+        var blob = new Blob([arr], { type: resultado.mimeType });
+        var url = URL.createObjectURL(blob);
+        var enlace = document.createElement('a');
+        enlace.href = url;
+        enlace.download = resultado.nombreArchivo;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        URL.revokeObjectURL(url);
+      }
+
       function descargarPlantilla(grupo) {
         establecerOcupado_(true, 'Generando plantilla...');
         google.script.run
           .withFailureHandler(mostrarError)
           .withSuccessHandler(function (resultado) {
-            var bytes = atob(resultado.base64);
-            var arr = new Uint8Array(bytes.length);
-            for (var i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-            var blob = new Blob([arr], { type: resultado.mimeType });
-            var url = URL.createObjectURL(blob);
-            var enlace = document.createElement('a');
-            enlace.href = url;
-            enlace.download = resultado.nombreArchivo;
-            document.body.appendChild(enlace);
-            enlace.click();
-            document.body.removeChild(enlace);
-            URL.revokeObjectURL(url);
+            descargarArchivoBase64_(resultado);
             establecerOcupado_(false);
             mostrarOk('Plantilla descargada: ' + resultado.nombreArchivo);
           })
           .generarPlantillasImportacionMasiva(grupo);
+      }
+
+      function descargarTodasLasPlantillas() {
+        establecerOcupado_(true, 'Generando las 5 plantillas...');
+        google.script.run
+          .withFailureHandler(mostrarError)
+          .withSuccessHandler(function (resultado) {
+            descargarArchivoBase64_(resultado);
+            establecerOcupado_(false);
+            mostrarOk('Plantillas descargadas: ' + resultado.nombreArchivo + ' (una carpeta por sección dentro del zip).');
+          })
+          .generarTodasLasPlantillasImportacionMasiva();
       }
 
       var HOJAS_STAGING_CONOCIDAS_ = [

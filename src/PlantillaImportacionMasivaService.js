@@ -288,6 +288,8 @@ function construirInstruccionesPlantilla_(grupo) {
   return lineas.join('\n');
 }
 
+var SUFIJO_ZIP_POR_GRUPO_ = { CAMPANA: 'campana', RECURSOS_PERSONAS: 'recursos_personas', ASIGNACIONES: 'asignaciones' };
+
 function generarPlantillasImportacionMasiva(grupo) {
   var hojas = GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo];
   if (!hojas) throw new Error('PLANTILLA_ERROR: grupo desconocido: ' + grupo);
@@ -301,8 +303,41 @@ function generarPlantillasImportacionMasiva(grupo) {
   blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', 'LEEME.txt'));
   blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', 'PROMPT_IA.txt'));
 
-  var sufijoNombreZip = { CAMPANA: 'campana', RECURSOS_PERSONAS: 'recursos_personas', ASIGNACIONES: 'asignaciones' }[grupo] || grupo.toLowerCase();
+  var sufijoNombreZip = SUFIJO_ZIP_POR_GRUPO_[grupo] || grupo.toLowerCase();
   var nombreZip = 'plantilla_importacion_' + sufijoNombreZip + '.zip';
+  var zip = Utilities.zip(blobs, nombreZip);
+
+  return {
+    nombreArchivo: nombreZip,
+    mimeType: 'application/zip',
+    base64: Utilities.base64Encode(zip.getBytes())
+  };
+}
+
+/*
+ * Descarga combinada (ver conversación -- "un botón para descargar todas
+ * las plantillas de un clic"): un único .zip con una subcarpeta por
+ * grupo, en vez de 5 descargas de archivo disparadas a la vez -- ya
+ * hubo un caso real esta sesión de un CSV que no llegaba a descargarse
+ * por el bloqueo de descargas múltiples de Chrome.
+ */
+function generarTodasLasPlantillasImportacionMasiva() {
+  var blobs = [];
+
+  Object.keys(GRUPOS_PLANTILLA_IMPORTACION_MASIVA_).forEach(function (grupo) {
+    var sufijo = SUFIJO_ZIP_POR_GRUPO_[grupo] || grupo.toLowerCase();
+
+    GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo].forEach(function (nombreHoja) {
+      var definicion = buscarDefinicionStaging_(nombreHoja);
+      var csv = construirLineaCSV_(definicion.cabeceras) + '\n';
+      blobs.push(Utilities.newBlob(csv, 'text/csv', sufijo + '/' + nombreHoja + '.csv'));
+    });
+
+    blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', sufijo + '/LEEME.txt'));
+    blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', sufijo + '/PROMPT_IA.txt'));
+  });
+
+  var nombreZip = 'plantillas_importacion_masiva_completas.zip';
   var zip = Utilities.zip(blobs, nombreZip);
 
   return {

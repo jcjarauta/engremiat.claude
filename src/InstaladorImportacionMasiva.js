@@ -156,7 +156,18 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
      */
     {
       hoja: 'STG_HORARIO',
-      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'PERSONA_TEMPORAL', 'RECURSO_TEMPORAL', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'FECHA_INICIO_VIGENCIA', 'FECHA_FIN_VIGENCIA', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'PERSONA_TEMPORAL', 'RECURSO_TEMPORAL', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'FECHA_INICIO_VIGENCIA', 'FECHA_FIN_VIGENCIA', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL'],
+      /*
+       * Sin esto, Sheets autoconvierte "09:00" escrito en una celda con
+       * formato Automático a un valor de hora (Date) en cuanto se
+       * escribe -- tanto al pegar/escribir a mano como al volcar el CSV
+       * vía escribirFilasCSVEnHojaStaging -- y el dry-run del importador
+       * ve un objeto Date en vez del texto "09:00", fallando la
+       * validación de formato HH:MM en el 100% de las filas (hallazgo
+       * real en vivo). Forzar estas dos columnas a texto plano evita la
+       * autoconversión en origen.
+       */
+      columnasTexto: ['HORA_INICIO', 'HORA_FIN']
     }
 ];
 
@@ -211,6 +222,19 @@ function instalarStagingImportacionMasiva() {
         } else {
           console.log('OK hoja_ya_existente_y_valida=' + definicion.hoja);
         }
+      }
+
+      if (definicion.columnasTexto && definicion.columnasTexto.length > 0) {
+        var cabecerasHojaActual = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getDisplayValues()[0].map(function (v) {
+          return String(v || '').trim();
+        });
+        var filasFormato = Math.max(hoja.getMaxRows() - 1, 1000);
+
+        definicion.columnasTexto.forEach(function (nombreColumna) {
+          var indiceColumna = cabecerasHojaActual.indexOf(nombreColumna);
+          if (indiceColumna === -1) return;
+          hoja.getRange(2, indiceColumna + 1, filasFormato, 1).setNumberFormat('@');
+        });
       }
     });
   } finally {
