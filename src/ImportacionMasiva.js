@@ -1280,6 +1280,69 @@ function abrirImportacionHorario() {
 }
 
 /*
+ * Fase N13 (ver conversación -- "que al validar el botón cambie de
+ * color... separar Validar de Importar"): las funciones abrirImportacionXxx
+ * hacen la validación Y la confirmación DENTRO de diálogos nativos
+ * (ui.alert), así que el HTML del diálogo nunca ve el resultado del
+ * dry-run y no puede pintar nada en el propio botón. Estas 10 funciones
+ * exponen procesarImportacionXxx_(false/true) directamente al cliente,
+ * sin ningún diálogo nativo -- el HTML decide cómo mostrar el resultado.
+ * Las abrirImportacionXxx originales se dejan tal cual (las sigue usando
+ * el menú de Sheets para quien prefiere el flujo clásico).
+ */
+function validarImportacionMasiva() { return procesarImportacionMasiva_(false); }
+function confirmarImportacionMasiva() { return procesarImportacionMasiva_(true); }
+function validarImportacionRecursosPersonas() { return procesarImportacionRecursosPersonas_(false); }
+function confirmarImportacionRecursosPersonas() { return procesarImportacionRecursosPersonas_(true); }
+function validarImportacionAsignaciones() { return procesarImportacionAsignaciones_(false); }
+function confirmarImportacionAsignaciones() { return procesarImportacionAsignaciones_(true); }
+function validarImportacionSeguimiento() { return procesarImportacionSeguimiento_(false); }
+function confirmarImportacionSeguimiento() { return procesarImportacionSeguimiento_(true); }
+function validarImportacionHorario() { return procesarImportacionHorario_(false); }
+function confirmarImportacionHorario() { return procesarImportacionHorario_(true); }
+
+/*
+ * Panel de estado por hoja STG_* (ver conversación -- "así sabes de un
+ * vistazo qué te falta sin acordarte de memoria"): para cada hoja
+ * definida, cuántas filas están pendientes de importar y cuántas ya se
+ * importaron. Distingue por ID_TEMPORAL vacío para no contar filas
+ * totalmente en blanco que a veces quedan tras editar a mano.
+ */
+function obtenerEstadoHojasStaging() {
+  var ss = SpreadsheetApp.getActive();
+
+  return DEFINICIONES_STAGING_IMPORTACION_MASIVA_.map(function (definicion) {
+    var hoja = ss.getSheetByName(definicion.hoja);
+    if (!hoja) return { hoja: definicion.hoja, existe: false, pendientes: 0, importadas: 0 };
+
+    var ultimaFila = hoja.getLastRow();
+    if (ultimaFila < 2) return { hoja: definicion.hoja, existe: true, pendientes: 0, importadas: 0 };
+
+    var ultimaColumna = hoja.getLastColumn();
+    var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0].map(function (c) {
+      return String(c || '').trim();
+    });
+    var colIdTemporal = cabeceras.indexOf('ID_TEMPORAL');
+    var colEstadoImportacion = cabeceras.indexOf('ESTADO_IMPORTACION');
+    if (colIdTemporal === -1 || colEstadoImportacion === -1) {
+      return { hoja: definicion.hoja, existe: true, pendientes: 0, importadas: 0 };
+    }
+
+    var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+    var pendientes = 0;
+    var importadas = 0;
+
+    valores.forEach(function (fila) {
+      if (String(fila[colIdTemporal] || '').trim() === '') return;
+      if (String(fila[colEstadoImportacion] || '').trim() === 'Importado') importadas++;
+      else pendientes++;
+    });
+
+    return { hoja: definicion.hoja, existe: true, pendientes: pendientes, importadas: importadas };
+  });
+}
+
+/*
  * Punto de entrada desde el Mapa del sheet (ver conversación --
  * "importación masiva ... cheap now: surface the existing staging-
  * sheet importer as una tarjeta con un pequeño diálogo explicando el

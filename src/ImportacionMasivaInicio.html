@@ -6,6 +6,7 @@
     <style>
       body { font-size: 14px; }
       h3 { font-size: 16px; }
+      h4 { font-size: 13px; margin-top: 20px; }
       p { line-height: 1.4; }
       ol { padding-left: 20px; line-height: 1.6; }
       .paso {
@@ -22,9 +23,55 @@
       .paso .detalle { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 8px; }
       .paso button { width: 100%; }
       #mensaje { margin-top: 12px; white-space: pre-line; }
+
+      .panel-estado { margin: 8px 0 16px; font-size: 12px; }
+      .panel-estado summary { cursor: pointer; color: var(--color-texto-secundario); }
+      .panel-estado table { margin-top: 6px; }
+
+      .zona-arrastre {
+        border: 2px dashed var(--color-borde); border-radius: 8px; padding: 16px;
+        text-align: center; color: var(--color-texto-secundario); font-size: 12px;
+        cursor: pointer; margin-top: 6px;
+      }
+      .zona-arrastre.sobre { border-color: var(--color-primario); background: #e8f0fe; }
+      .lista-archivos { margin-top: 8px; font-size: 12px; max-height: 140px; overflow-y: auto; }
+      .lista-archivos .fila-archivo {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 3px 0; border-bottom: 1px solid #f0f0f0; gap: 8px;
+      }
+      .lista-archivos .estado-archivo { flex-shrink: 0; }
+      .lista-archivos .estado-archivo.ok { color: var(--color-exito); }
+      .lista-archivos .estado-archivo.error { color: var(--color-peligro); }
+
+      .barra-acciones-globales { display: flex; gap: 8px; margin: 12px 0; }
+      .barra-acciones-globales button { flex: 1; margin-top: 0; }
+
+      .grupo-card {
+        border: 1px solid var(--color-borde); border-radius: 8px; padding: 12px; margin-bottom: 10px;
+        transition: opacity .15s;
+      }
+      .grupo-card.atenuado { opacity: .5; }
+      .grupo-card .titulo { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+      .grupo-card .detalle { color: var(--color-texto-secundario); font-size: 12px; margin-bottom: 6px; }
+      .grupo-card .estado-hojas { color: var(--color-texto-secundario); font-size: 11px; margin-bottom: 8px; }
+      .grupo-card .aviso-dependencia { color: var(--color-peligro); font-size: 11px; margin-bottom: 6px; }
+      .fila-botones-grupo { display: flex; gap: 8px; }
+      .fila-botones-grupo button { flex: 1; margin-top: 0; }
+      .boton-validar.estado-valido { background: #e6f4ea; border-color: var(--color-exito); color: var(--color-exito); }
+      .boton-validar.estado-invalido { background: var(--color-peligro-fondo); border-color: var(--color-peligro); color: var(--color-peligro); }
+      .resultado-grupo { margin-top: 8px; font-size: 12px; white-space: pre-line; }
+      .resultado-grupo.ok { color: var(--color-exito); }
+      .resultado-grupo.error { color: var(--color-peligro); }
+
+      .resumen-sesion {
+        display: none; margin-top: 16px; padding: 10px 12px; background: var(--color-fondo-suave);
+        border-radius: 8px; font-size: 12px; line-height: 1.6;
+      }
     </style>
   </head>
   <body>
+    <?!= include('ModalConfirmar') ?>
+
     <h3>📥 Importación masiva</h3>
     <p style="color:var(--color-texto-secundario); font-size:12px;">
       Para cargar muchos registros de golpe (en vez de uno a uno con "Nuevo X"), se rellenan unas hojas
@@ -36,15 +83,18 @@
       <span class="texto">
         <div class="titulo">Preparar las hojas de trabajo</div>
         <div class="detalle">
-          Crea (si no existen ya) las hojas <code>STG_CAMPANA</code>, <code>STG_PROYECTO</code>,
-          <code>STG_PRODUCTO</code>, <code>STG_PROCESO</code>, <code>STG_TAREA</code>,
-          <code>STG_RECURSO</code>, <code>STG_PERSONA</code> y <code>STG_EQUIPO_MIEMBRO</code>, cada una
-          con sus columnas ya tituladas. No borra ni toca hojas que ya tengas.
+          Crea (si no existen ya) las 14 hojas <code>STG_*</code>, cada una con sus columnas ya
+          tituladas. No borra ni toca hojas que ya tengas.
         </div>
-        <button class="boton" onclick="ejecutar('instalarStagingImportacionMasiva')">Preparar hojas</button>
-        <button class="boton boton-peligro" style="margin-top:6px;" onclick="ejecutar('vaciarHojasStaging')">Vaciar todas las hojas STG_*</button>
+        <button class="boton" onclick="prepararHojas()">Preparar hojas</button>
+        <button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHojas()">Vaciar todas las hojas STG_*</button>
       </span>
     </div>
+
+    <details class="panel-estado">
+      <summary>Estado de las hojas STG_* (clic para ver/ocultar)</summary>
+      <div id="panelEstadoContenido"></div>
+    </details>
 
     <div class="paso">
       <span class="numero">2</span>
@@ -85,79 +135,33 @@
       <span class="texto">
         <div class="titulo">Subir CSV ya rellenado</div>
         <div class="detalle">
-          Sube uno o varios CSV con el mismo nombre que la hoja de destino (p.ej.
-          <code>STG_CAMPANA.csv</code>). Se añaden al final de la hoja correspondiente; no borran ni
-          tocan filas que ya tuvieras.
+          Arrastra uno o varios CSV aquí, o haz clic para elegirlos. El nombre debe coincidir con la
+          hoja de destino (p.ej. <code>STG_CAMPANA.csv</code>). Se añaden al final de la hoja
+          correspondiente; no borran ni tocan filas que ya tuvieras.
         </div>
-        <input type="file" id="inputCsv" accept=".csv" multiple style="width:100%;" />
+        <div class="zona-arrastre" id="zonaArrastre">Suelta los CSV aquí, o haz clic para elegir archivo(s)</div>
+        <input type="file" id="inputCsv" accept=".csv" multiple style="display:none;" />
+        <div class="lista-archivos" id="listaArchivos"></div>
       </span>
     </div>
 
-    <div class="paso">
-      <span class="numero">5</span>
-      <span class="texto">
-        <div class="titulo">Importar Campaña → Proyecto → Producto → Proceso → Tarea</div>
-        <div class="detalle">
-          Valida todo primero (campos obligatorios, catálogos, que cada referencia exista) y te enseña
-          un resumen antes de crear nada. Solo crea registros si confirmas.
-        </div>
-        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionMasiva')">Validar e importar</button>
-      </span>
+    <h4>Validar e importar</h4>
+    <div class="barra-acciones-globales">
+      <button class="boton" onclick="validarTodo()">Validar todo</button>
+      <button class="boton boton-primario" onclick="importarTodoValidado()">Importar todo lo validado</button>
     </div>
+    <div id="gruposImportacion"></div>
 
-    <div class="paso">
-      <span class="numero">6</span>
-      <span class="texto">
-        <div class="titulo">Importar Recursos / Personas y equipos</div>
-        <div class="detalle">
-          Mismo criterio de validar-antes-de-crear, para las hojas <code>STG_RECURSO</code>,
-          <code>STG_PERSONA</code> y <code>STG_EQUIPO_MIEMBRO</code>.
-        </div>
-        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionMasivaRecursosPersonas')">Validar e importar</button>
-      </span>
-    </div>
-
-    <div class="paso">
-      <span class="numero">7</span>
-      <span class="texto">
-        <div class="titulo">Importar Asignaciones (Responsable/Recurso a Tarea)</div>
-        <div class="detalle">
-          Pensado para ejecutarse después de crear las tareas (y, si hace falta, las personas/recursos):
-          <code>TAREA_TEMPORAL</code>/<code>PERSONA_TEMPORAL</code>/<code>RECURSO_TEMPORAL</code> admiten
-          un ID real o el mismo <code>ID_TEMPORAL</code> corto de un lote anterior, aunque ya esté
-          importado.
-        </div>
-        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionAsignaciones')">Validar e importar</button>
-      </span>
-    </div>
-
-    <div class="paso">
-      <span class="numero">8</span>
-      <span class="texto">
-        <div class="titulo">Importar Decisiones / Incidencias / Documentos</div>
-        <div class="detalle">
-          Se pueden importar en cualquier momento después de crear la campaña -- cuelgan de un
-          proyecto (Decisión) o de cualquier nivel de la jerarquía (Incidencia/Documento).
-        </div>
-        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionSeguimiento')">Validar e importar</button>
-      </span>
-    </div>
-
-    <div class="paso">
-      <span class="numero">9</span>
-      <span class="texto">
-        <div class="titulo">Importar Horarios</div>
-        <div class="detalle">
-          Franjas semanales de personas/equipos o recursos. Necesario para que "Calidad de
-          planificación" pueda calcular la utilización de horario.
-        </div>
-        <button class="boton boton-primario" onclick="ejecutar('abrirImportacionHorario')">Validar e importar</button>
-      </span>
-    </div>
+    <div class="resumen-sesion" id="resumenSesion"></div>
 
     <div id="mensaje"></div>
 
     <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
       function mostrarError(error) {
         establecerOcupado_(false);
         document.getElementById('mensaje').className = 'error';
@@ -170,22 +174,47 @@
 
       /*
        * Indicador de "cargando" (ver conversación -- "necesitamos añadirle
-       * algún cargando para no crear confusión"): con lotes grandes (la
-       * validación de 100+ filas, o el commit de una importación real)
-       * pasan varios segundos entre pulsar el botón y que aparezca el
-       * primer diálogo nativo de confirmación/error -- sin esto, ese hueco
-       * parecía que el botón no había hecho nada. Deshabilita todos los
-       * botones mientras hay una operación en curso, para evitar además
-       * un doble clic que dispare el mismo lote dos veces.
+       * algún cargando para no crear confusión"). Deshabilita los botones
+       * globales mientras hay una operación de bloque en curso (preparar/
+       * vaciar/plantilla/subida); las tarjetas de cada sección gestionan
+       * su propio estado por separado (ver establecerEstadoBoton_).
        */
       function establecerOcupado_(ocupado, mensaje) {
-        document.querySelectorAll('.boton').forEach(function (boton) { boton.disabled = ocupado; });
-        var inputCsv = document.getElementById('inputCsv');
-        if (inputCsv) inputCsv.disabled = ocupado;
+        document.querySelectorAll('.paso button, .barra-acciones-globales button').forEach(function (boton) { boton.disabled = ocupado; });
         if (ocupado) {
           document.getElementById('mensaje').className = 'ok';
           document.getElementById('mensaje').textContent = '⏳ ' + mensaje;
         }
+      }
+
+      function prepararHojas() {
+        establecerOcupado_(true, 'Preparando hojas...');
+        google.script.run.withFailureHandler(mostrarError)
+          .withSuccessHandler(function () {
+            establecerOcupado_(false);
+            mostrarOk('Hojas STG_* preparadas. Ya puedes rellenarlas.');
+            actualizarPanelEstado_();
+          })
+          .instalarStagingImportacionMasiva();
+      }
+
+      function vaciarHojas() {
+        confirmarAccion_(
+          'Esto borra TODAS las filas de TODAS las hojas STG_* (rellenadas y ya importadas). No afecta a los datos reales ya creados en el Sheet. ¿Seguro?',
+          function () {
+            establecerOcupado_(true, 'Vaciando hojas STG_*...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function (resultado) {
+                establecerOcupado_(false);
+                mostrarOk('Hojas STG_* vaciadas: ' + resultado.filasBorradas + ' fila(s) en total.');
+                GRUPOS_IMPORTACION_.forEach(function (g) { establecerEstadoBoton_(g.id, 'sin-validar'); });
+                actualizarPanelEstado_();
+              })
+              .vaciarHojasStagingImportacionMasiva();
+          },
+          null,
+          'Vaciar'
+        );
       }
 
       /*
@@ -236,21 +265,35 @@
         return i === -1 ? null : HOJAS_STAGING_CONOCIDAS_[i];
       }
 
-      function subirUnCSV_(archivo) {
+      /*
+       * Lista de archivos subidos (ver conversación -- "que al pegar los
+       * nuevos archivos quede como una lista"): cada archivo se pinta de
+       * inmediato con un ⏳, y se actualiza in situ a ✓/✗ cuando el
+       * servidor responde -- en vez de un único mensaje de texto que se
+       * sobreescribe y no deja rastro de qué se subió y qué falló.
+       */
+      function subirUnCSVConFila_(archivo, idFila) {
         return new Promise(function (resolve) {
+          var span = document.querySelector('#' + idFila + ' .estado-archivo');
           var hojaDestino = detectarHojaDestino_(archivo.name);
           if (!hojaDestino) {
-            resolve(archivo.name + ': nombre no reconocido (debe llamarse igual que una hoja STG_*, ej. STG_CAMPANA.csv)');
+            span.className = 'estado-archivo error';
+            span.textContent = '✗ nombre no reconocido';
+            resolve();
             return;
           }
           var lector = new FileReader();
           lector.onload = function () {
             google.script.run
               .withFailureHandler(function (error) {
-                resolve(archivo.name + ': error -- ' + (error && error.message ? error.message : error));
+                span.className = 'estado-archivo error';
+                span.textContent = '✗ ' + (error && error.message ? error.message : error);
+                resolve();
               })
               .withSuccessHandler(function (resultado) {
-                resolve(archivo.name + ' -> ' + hojaDestino + ': ' + resultado.filasEscritas + ' fila(s) añadida(s).');
+                span.className = 'estado-archivo ok';
+                span.textContent = '✓ ' + resultado.filasEscritas + ' fila(s)';
+                resolve();
               })
               .escribirFilasCSVEnHojaStaging(hojaDestino, lector.result);
           };
@@ -258,77 +301,353 @@
         });
       }
 
+      function procesarArchivosSubidos_(archivos) {
+        var lista = document.getElementById('listaArchivos');
+        var entradas = archivos.map(function (archivo) {
+          var idFila = 'archivo-' + Math.random().toString(36).slice(2);
+          var hojaDestino = detectarHojaDestino_(archivo.name);
+          var fila = document.createElement('div');
+          fila.className = 'fila-archivo';
+          fila.id = idFila;
+          fila.innerHTML = '<span>' + escapeHtml(archivo.name) + (hojaDestino ? ' → ' + hojaDestino : '') + '</span>' +
+            '<span class="estado-archivo">⏳</span>';
+          lista.insertBefore(fila, lista.firstChild);
+          return { archivo: archivo, idFila: idFila };
+        });
+
+        establecerOcupado_(true, 'Subiendo ' + archivos.length + ' archivo(s)...');
+        Promise.all(entradas.map(function (e) { return subirUnCSVConFila_(e.archivo, e.idFila); })).then(function () {
+          establecerOcupado_(false);
+          document.getElementById('mensaje').textContent = '';
+          actualizarPanelEstado_();
+        });
+      }
+
+      var zonaArrastre = document.getElementById('zonaArrastre');
+      zonaArrastre.addEventListener('click', function () { document.getElementById('inputCsv').click(); });
+      ['dragenter', 'dragover'].forEach(function (evt) {
+        zonaArrastre.addEventListener(evt, function (e) { e.preventDefault(); zonaArrastre.classList.add('sobre'); });
+      });
+      ['dragleave', 'drop'].forEach(function (evt) {
+        zonaArrastre.addEventListener(evt, function (e) { e.preventDefault(); zonaArrastre.classList.remove('sobre'); });
+      });
+      zonaArrastre.addEventListener('drop', function (e) {
+        var archivos = Array.prototype.slice.call(e.dataTransfer.files).filter(function (f) { return /\.csv$/i.test(f.name); });
+        if (archivos.length > 0) procesarArchivosSubidos_(archivos);
+      });
+
       document.getElementById('inputCsv').addEventListener('change', function (evento) {
         var archivos = Array.prototype.slice.call(evento.target.files);
         if (archivos.length === 0) return;
-        establecerOcupado_(true, 'Subiendo ' + archivos.length + ' archivo(s)...');
-        Promise.all(archivos.map(subirUnCSV_)).then(function (resultados) {
-          establecerOcupado_(false);
-          mostrarOk(resultados.join('\n'));
-          evento.target.value = '';
-        });
+        procesarArchivosSubidos_(archivos);
+        evento.target.value = '';
       });
+
+      /*
+       * Grupos de importación (ver conversación -- "separar Validar de
+       * Importar... validar todo... importar todo lo validado"). Cada
+       * grupo agrupa las hojas STG_* que se validan/confirman juntas
+       * (mismo criterio que GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ en
+       * PlantillaImportacionMasivaService.js). dependeDe marca qué otro
+       * grupo conviene tener ya importado antes (Asignaciones/Seguimiento
+       * necesitan que la Campaña ya exista con ID real).
+       */
+      var GRUPOS_IMPORTACION_ = [
+        {
+          id: 'campana', titulo: 'Campaña → Proyecto → Producto → Proceso → Tarea',
+          detalle: 'La jerarquía completa de una campaña.',
+          hojas: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
+          dependeDe: null,
+          resumenTexto: function (r) { return r.campanas + ' campaña(s), ' + r.proyectos + ' proyecto(s), ' + r.productos + ' producto(s), ' + r.procesos + ' proceso(s), ' + r.tareas + ' tarea(s)'; }
+        },
+        {
+          id: 'recursos', titulo: 'Recursos / Personas y equipos',
+          detalle: 'Espacios, herramientas, personas y equipos.',
+          hojas: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
+          dependeDe: null,
+          resumenTexto: function (r) { return r.recursos + ' recurso(s), ' + r.personas + ' persona(s)/equipo(s), ' + r.equipoMiembros + ' relación(es) equipo-miembro'; }
+        },
+        {
+          id: 'asignaciones', titulo: 'Asignaciones (Responsable/Recurso a Tarea)',
+          detalle: 'Ejecútalo después de crear las tareas (y, si hace falta, personas/recursos).',
+          hojas: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
+          dependeDe: 'campana',
+          resumenTexto: function (r) { return r.responsables + ' asignación(es) de responsable, ' + r.recursos + ' asignación(es) de recurso'; }
+        },
+        {
+          id: 'seguimiento', titulo: 'Decisiones / Incidencias / Documentos',
+          detalle: 'Cuelgan de un proyecto (Decisión) o de cualquier nivel de la jerarquía.',
+          hojas: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
+          dependeDe: 'campana',
+          resumenTexto: function (r) { return r.decisiones + ' decisión(es), ' + r.incidencias + ' incidencia(s), ' + r.documentos + ' documento(s)'; }
+        },
+        {
+          id: 'horario', titulo: 'Horarios',
+          detalle: 'Franjas semanales de personas/equipos o recursos.',
+          hojas: ['STG_HORARIO'],
+          dependeDe: null,
+          resumenTexto: function (r) { return r.horarios + ' franja(s) de horario'; }
+        }
+      ];
+
+      var ESTADO_GRUPOS_ = {};
+
+      function grupoPorId_(id) {
+        return GRUPOS_IMPORTACION_.filter(function (g) { return g.id === id; })[0];
+      }
+
+      function construirTarjetaGrupo_(g) {
+        return '<div class="grupo-card" id="grupo-' + g.id + '">' +
+          '<div class="titulo">' + escapeHtml(g.titulo) + '</div>' +
+          '<div class="detalle">' + escapeHtml(g.detalle) + '</div>' +
+          (g.dependeDe ? '<div class="aviso-dependencia" id="aviso-' + g.id + '" style="display:none;">Conviene importar antes "' + escapeHtml(grupoPorId_(g.dependeDe) ? grupoPorId_(g.dependeDe).titulo : g.dependeDe) + '".</div>' : '') +
+          '<div class="estado-hojas" id="estado-hojas-' + g.id + '"></div>' +
+          '<div class="fila-botones-grupo">' +
+            '<button class="boton boton-validar" id="btn-validar-' + g.id + '" onclick="validarGrupo(\'' + g.id + '\')">Validar</button>' +
+            '<button class="boton boton-primario" id="btn-importar-' + g.id + '" disabled onclick="importarGrupo(\'' + g.id + '\')">Importar</button>' +
+          '</div>' +
+          '<div class="resultado-grupo" id="resultado-' + g.id + '"></div>' +
+        '</div>';
+      }
+
+      function inicializarGrupos_() {
+        document.getElementById('gruposImportacion').innerHTML = GRUPOS_IMPORTACION_.map(construirTarjetaGrupo_).join('');
+      }
+
+      /*
+       * Estado visual del botón "Validar" (ver conversación -- "que el
+       * botón cambie de color y nos avise de datos validados"): gris sin
+       * validar, verde si el dry-run no tiene errores (y habilita
+       * "Importar"), rojo si tiene errores.
+       */
+      function establecerEstadoBoton_(id, estado) {
+        ESTADO_GRUPOS_[id] = estado;
+        var btnValidar = document.getElementById('btn-validar-' + id);
+        var btnImportar = document.getElementById('btn-importar-' + id);
+        btnValidar.classList.remove('estado-valido', 'estado-invalido');
+        btnImportar.disabled = true;
+
+        if (estado === 'valido') {
+          btnValidar.classList.add('estado-valido');
+          btnValidar.textContent = '✓ Validado';
+          btnImportar.disabled = false;
+        } else if (estado === 'invalido') {
+          btnValidar.classList.add('estado-invalido');
+          btnValidar.textContent = '✗ Con errores';
+        } else if (estado === 'validando') {
+          btnValidar.textContent = 'Validando...';
+        } else {
+          btnValidar.textContent = 'Validar';
+        }
+      }
 
       /*
        * Despacho literal, no dinámico (ver conversación -- hallazgo
        * repetido en este sheet): google.script.run solo expone las
        * funciones que el generador de envoltorios detecta como llamada
-       * LITERAL "google.script.run....nombre(...)" en el fuente.
+       * LITERAL "google.script.run....nombre(...)" en el fuente -- no se
+       * puede indexar dinámicamente aunque GRUPOS_IMPORTACION_ sea una
+       * tabla de datos.
        */
-      function ejecutar(funcion) {
-        switch (funcion) {
-          case 'instalarStagingImportacionMasiva':
-            establecerOcupado_(true, 'Preparando hojas...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () {
-                establecerOcupado_(false);
-                mostrarOk('Hojas STG_* preparadas. Ya puedes rellenarlas.');
-              })
-              .instalarStagingImportacionMasiva();
+      function llamarValidar_(id, exito, error) {
+        switch (id) {
+          case 'campana':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionMasiva();
             return;
-          case 'abrirImportacionMasiva':
-            establecerOcupado_(true, 'Validando Campaña → Tarea...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
-              .abrirImportacionMasiva();
+          case 'recursos':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionRecursosPersonas();
             return;
-          case 'abrirImportacionMasivaRecursosPersonas':
-            establecerOcupado_(true, 'Validando Recursos/Personas...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
-              .abrirImportacionMasivaRecursosPersonas();
+          case 'asignaciones':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionAsignaciones();
             return;
-          case 'abrirImportacionAsignaciones':
-            establecerOcupado_(true, 'Validando Asignaciones...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
-              .abrirImportacionAsignaciones();
+          case 'seguimiento':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionSeguimiento();
             return;
-          case 'abrirImportacionSeguimiento':
-            establecerOcupado_(true, 'Validando Decisiones/Incidencias/Documentos...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
-              .abrirImportacionSeguimiento();
-            return;
-          case 'abrirImportacionHorario':
-            establecerOcupado_(true, 'Validando Horarios...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function () { establecerOcupado_(false); mostrarOk('Listo.'); })
-              .abrirImportacionHorario();
-            return;
-          case 'vaciarHojasStaging':
-            if (!confirm('¿Seguro? Esto borra TODAS las filas de TODAS las hojas STG_* (rellenadas y ya importadas). No afecta a los datos reales ya creados en el Sheet.')) return;
-            establecerOcupado_(true, 'Vaciando hojas STG_*...');
-            google.script.run.withFailureHandler(mostrarError)
-              .withSuccessHandler(function (resultado) {
-                establecerOcupado_(false);
-                mostrarOk('Hojas STG_* vaciadas: ' + resultado.filasBorradas + ' fila(s) en total.');
-              })
-              .vaciarHojasStagingImportacionMasiva();
+          case 'horario':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionHorario();
             return;
         }
-        mostrarError({ message: 'Acción desconocida: ' + funcion });
       }
+
+      function llamarConfirmar_(id, exito, error) {
+        switch (id) {
+          case 'campana':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionMasiva();
+            return;
+          case 'recursos':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionRecursosPersonas();
+            return;
+          case 'asignaciones':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionAsignaciones();
+            return;
+          case 'seguimiento':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionSeguimiento();
+            return;
+          case 'horario':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionHorario();
+            return;
+        }
+      }
+
+      function validarGrupo(id) {
+        var g = grupoPorId_(id);
+        establecerEstadoBoton_(id, 'validando');
+        var resultadoEl = document.getElementById('resultado-' + id);
+        resultadoEl.className = 'resultado-grupo';
+        resultadoEl.textContent = '⏳ Validando...';
+
+        llamarValidar_(id, function (resultado) {
+          var totalFilas = Object.keys(resultado.resumen).reduce(function (a, k) { return a + resultado.resumen[k]; }, 0);
+          if (!resultado.ok) {
+            establecerEstadoBoton_(id, 'invalido');
+            resultadoEl.className = 'resultado-grupo error';
+            var errores = resultado.errores.slice(0, 15).join('\n');
+            var extra = resultado.errores.length > 15 ? '\n... y ' + (resultado.errores.length - 15) + ' más.' : '';
+            resultadoEl.textContent = '✗ ' + resultado.errores.length + ' error(es):\n' + errores + extra;
+          } else if (totalFilas === 0) {
+            establecerEstadoBoton_(id, 'sin-validar');
+            resultadoEl.className = 'resultado-grupo';
+            resultadoEl.textContent = 'Nada pendiente de importar en este grupo.';
+          } else {
+            establecerEstadoBoton_(id, 'valido');
+            resultadoEl.className = 'resultado-grupo ok';
+            resultadoEl.textContent = '✓ Validado: ' + g.resumenTexto(resultado.resumen);
+          }
+        }, function (error) {
+          establecerEstadoBoton_(id, 'invalido');
+          resultadoEl.className = 'resultado-grupo error';
+          resultadoEl.textContent = '✗ Error al validar: ' + (error && error.message ? error.message : error);
+        });
+      }
+
+      function importarGrupo(id) {
+        var g = grupoPorId_(id);
+        document.getElementById('btn-importar-' + id).disabled = true;
+        var resultadoEl = document.getElementById('resultado-' + id);
+        resultadoEl.className = 'resultado-grupo';
+        resultadoEl.textContent = '⏳ Importando...';
+
+        llamarConfirmar_(id, function (resultado) {
+          registrarEnResumenSesion_(g.titulo, resultado.resumen);
+          resultadoEl.className = 'resultado-grupo ok';
+          resultadoEl.textContent = '✓ Importado: ' + g.resumenTexto(resultado.resumen);
+          establecerEstadoBoton_(id, 'sin-validar');
+          actualizarPanelEstado_();
+        }, function (error) {
+          resultadoEl.className = 'resultado-grupo error';
+          resultadoEl.textContent = '✗ Error al importar: ' + (error && error.message ? error.message : error);
+          document.getElementById('btn-importar-' + id).disabled = false;
+        });
+      }
+
+      function validarTodo() {
+        mostrarOk('Validando todas las secciones...');
+        GRUPOS_IMPORTACION_.forEach(function (g) { validarGrupo(g.id); });
+      }
+
+      function importarTodoValidado() {
+        var listos = GRUPOS_IMPORTACION_.filter(function (g) { return ESTADO_GRUPOS_[g.id] === 'valido'; });
+        if (listos.length === 0) {
+          mostrarOk('No hay ninguna sección validada (en verde) lista para importar. Pulsa "Validar todo" primero.');
+          return;
+        }
+        confirmarAccion_(
+          '¿Importar ' + listos.length + ' sección(es) ya validada(s), en el orden correcto?',
+          function () { importarSecuencial_(listos.map(function (g) { return g.id; }), 0); },
+          null,
+          'Importar todo'
+        );
+      }
+
+      function importarSecuencial_(ids, indice) {
+        if (indice >= ids.length) { mostrarOk('Importación completa.'); return; }
+        var id = ids[indice];
+        var g = grupoPorId_(id);
+        document.getElementById('btn-importar-' + id).disabled = true;
+        var resultadoEl = document.getElementById('resultado-' + id);
+        resultadoEl.className = 'resultado-grupo';
+        resultadoEl.textContent = '⏳ Importando...';
+
+        llamarConfirmar_(id, function (resultado) {
+          registrarEnResumenSesion_(g.titulo, resultado.resumen);
+          resultadoEl.className = 'resultado-grupo ok';
+          resultadoEl.textContent = '✓ Importado: ' + g.resumenTexto(resultado.resumen);
+          establecerEstadoBoton_(id, 'sin-validar');
+          actualizarPanelEstado_();
+          importarSecuencial_(ids, indice + 1);
+        }, function (error) {
+          resultadoEl.className = 'resultado-grupo error';
+          resultadoEl.textContent = '✗ Error al importar: ' + (error && error.message ? error.message : error);
+          mostrarError({ message: 'Importación de todo detenida en "' + g.titulo + '": ' + (error && error.message ? error.message : error) });
+        });
+      }
+
+      /* Resumen de sesión (ver conversación -- "confirmar de un vistazo que ya está todo dentro"). */
+      var RESUMEN_SESION_ = {};
+      function registrarEnResumenSesion_(titulo, resumen) {
+        var total = Object.keys(resumen).reduce(function (a, k) { return a + resumen[k]; }, 0);
+        if (total === 0) return;
+        RESUMEN_SESION_[titulo] = (RESUMEN_SESION_[titulo] || 0) + total;
+        pintarResumenSesion_();
+      }
+      function pintarResumenSesion_() {
+        var claves = Object.keys(RESUMEN_SESION_);
+        var contenedor = document.getElementById('resumenSesion');
+        if (claves.length === 0) { contenedor.style.display = 'none'; return; }
+        contenedor.style.display = 'block';
+        contenedor.innerHTML = '<strong>Creado en esta sesión:</strong><br>' + claves.map(function (t) {
+          return escapeHtml(t) + ': ' + RESUMEN_SESION_[t] + ' registro(s)';
+        }).join('<br>');
+      }
+
+      /*
+       * Panel de estado (ver conversación -- "así sabes de un vistazo qué
+       * te falta sin acordarte de memoria") + atenuado de dependencias
+       * (ver conversación -- "evita el error que tuviste al intentar
+       * asignar responsables antes de tiempo"): Asignaciones/Seguimiento
+       * se atenúan mientras STG_CAMPANA no tenga ninguna fila ya
+       * importada -- solo un aviso visual, siguen siendo usables por si
+       * se está ampliando una campaña que ya existía de antes.
+       */
+      function actualizarPanelEstado_() {
+        google.script.run
+          .withFailureHandler(function () {})
+          .withSuccessHandler(function (estados) {
+            var porHoja = {};
+            estados.forEach(function (e) { porHoja[e.hoja] = e; });
+
+            var filasTabla = GRUPOS_IMPORTACION_.map(function (g) {
+              return g.hojas.map(function (h) {
+                var e = porHoja[h] || { existe: false, pendientes: 0, importadas: 0 };
+                var estadoTexto = !e.existe ? 'sin preparar' : (e.pendientes + ' pendiente(s), ' + e.importadas + ' importada(s)');
+                return '<tr><td>' + escapeHtml(h) + '</td><td>' + escapeHtml(estadoTexto) + '</td></tr>';
+              }).join('');
+            }).join('');
+            document.getElementById('panelEstadoContenido').innerHTML =
+              '<table><tr><th>Hoja</th><th>Estado</th></tr>' + filasTabla + '</table>';
+
+            GRUPOS_IMPORTACION_.forEach(function (g) {
+              var resumenTxt = g.hojas.map(function (h) {
+                var e = porHoja[h] || { pendientes: 0, importadas: 0, existe: false };
+                return h + ': ' + (e.existe ? e.pendientes + ' pend., ' + e.importadas + ' import.' : 'sin preparar');
+              }).join(' · ');
+              var el = document.getElementById('estado-hojas-' + g.id);
+              if (el) el.textContent = resumenTxt;
+
+              if (g.dependeDe) {
+                var listo = ((porHoja['STG_CAMPANA'] || {}).importadas || 0) > 0;
+                var card = document.getElementById('grupo-' + g.id);
+                var aviso = document.getElementById('aviso-' + g.id);
+                if (card) card.classList.toggle('atenuado', !listo);
+                if (aviso) aviso.style.display = listo ? 'none' : 'block';
+              }
+            });
+          })
+          .obtenerEstadoHojasStaging();
+      }
+
+      inicializarGrupos_();
+      actualizarPanelEstado_();
     </script>
   </body>
 </html>
