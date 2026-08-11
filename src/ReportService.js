@@ -176,7 +176,8 @@ function generarInformeExcepciones() {
     relacionesIncompletas: listarRelacionesIncompletas(),
     materiales: obtenerAlertasMaterialesSeguro_(),
     decisionesPendientes: listarDecisionesPendientes(),
-    incidenciasAbiertas: listarIncidenciasAbiertas()
+    incidenciasAbiertas: listarIncidenciasAbiertas(),
+    asignacionesSinEncajeCompetencia: listarAsignacionesSinEncajeCompetencia()
   };
 }
 
@@ -512,7 +513,8 @@ function generarHtmlExcepciones_(informe, nivel) {
     ['Materiales con stock bajo', (informe.materiales || {}).stockBajo, ['Material', 'Stock'], function (m) { return [m.NOMBRE, m.STOCK_ACTUAL]; }],
     ['Materiales agotados', (informe.materiales || {}).agotados, ['Material'], function (m) { return [m.NOMBRE]; }],
     ['Decisiones pendientes', informe.decisionesPendientes, ['Título', 'Estado'], function (d) { return [d.TITULO, d.ESTADO]; }],
-    ['Incidencias abiertas', informe.incidenciasAbiertas, ['Título', 'Estado'], function (i) { return [i.TITULO, i.ESTADO]; }]
+    ['Incidencias abiertas', informe.incidenciasAbiertas, ['Título', 'Estado'], function (i) { return [i.TITULO, i.ESTADO]; }],
+    ['Asignaciones sin encaje de competencia', informe.asignacionesSinEncajeCompetencia, ['Tarea', 'Responsable', 'Competencia'], function (a) { return [a.TAREA_NOMBRE, a.PERSONA_NOMBRE, a.COMPETENCIA_NOMBRE + (a.NIVEL_EXIGIDO ? ' (' + a.NIVEL_EXIGIDO + ')' : '')]; }]
   ];
 
   var cuerpo =

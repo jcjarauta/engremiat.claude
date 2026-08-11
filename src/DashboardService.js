@@ -162,6 +162,68 @@ function listarRecursosSinCompetenciaDisponible() {
     });
 }
 
+/*
+ * Track A -- encaje de competencias (ver conversación -- "que la
+ * relación entre tarea y competencia forme parte del éxito de la
+ * campaña"): mismo espíritu que listarRecursosSinCompetenciaDisponible,
+ * pero mirando asignaciones YA HECHAS (TAREA_RESPONSABLE) en vez de
+ * disponibilidad teórica -- avisa, no bloquea, cuando el responsable
+ * asignado a una tarea no tiene la competencia que esa tarea exige, o la
+ * tiene por debajo del nivel mínimo.
+ */
+var RANGO_NIVEL_COMPETENCIA_ = { 'Básico': 1, 'Intermedio': 2, 'Avanzado': 3 };
+
+function listarAsignacionesSinEncajeCompetencia() {
+  var requisitos = listarRegistros('TAREA_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  if (requisitos.length === 0) return [];
+
+  var requisitosPorTarea = {};
+  requisitos.forEach(function (r) {
+    if (!requisitosPorTarea[r.TAREA_ID]) requisitosPorTarea[r.TAREA_ID] = [];
+    requisitosPorTarea[r.TAREA_ID].push(r);
+  });
+
+  var nivelPorPersonaYCompetencia = {};
+  listarRegistros('PERSONA_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (pc) {
+    nivelPorPersonaYCompetencia[pc.PERSONA_EQUIPO_ID + '::' + pc.COMPETENCIA_ID] = pc.NIVEL || '';
+  });
+
+  var tareasPorId = {};
+  listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
+  var personasPorId = {};
+  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { personasPorId[p.ID] = p; });
+  var competenciasPorId = {};
+  listarRegistros('COMPETENCIA', {}).forEach(function (c) { competenciasPorId[c.ID] = c; });
+
+  var alertas = [];
+
+  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' }).forEach(function (asignacion) {
+    var reqs = requisitosPorTarea[asignacion.TAREA_ID];
+    if (!reqs) return;
+
+    reqs.forEach(function (req) {
+      var nivelActual = nivelPorPersonaYCompetencia[asignacion.PERSONA_EQUIPO_ID + '::' + req.COMPETENCIA_ID];
+      var tiene = nivelActual !== undefined;
+      var nivelSuficiente = !req.NIVEL_MINIMO || (tiene && RANGO_NIVEL_COMPETENCIA_[nivelActual] >= RANGO_NIVEL_COMPETENCIA_[req.NIVEL_MINIMO]);
+
+      if (tiene && nivelSuficiente) return;
+
+      alertas.push({
+        TAREA_ID: asignacion.TAREA_ID,
+        TAREA_NOMBRE: tareasPorId[asignacion.TAREA_ID] ? tareasPorId[asignacion.TAREA_ID].NOMBRE : asignacion.TAREA_ID,
+        PERSONA_EQUIPO_ID: asignacion.PERSONA_EQUIPO_ID,
+        PERSONA_NOMBRE: personasPorId[asignacion.PERSONA_EQUIPO_ID] ? personasPorId[asignacion.PERSONA_EQUIPO_ID].NOMBRE : asignacion.PERSONA_EQUIPO_ID,
+        COMPETENCIA_ID: req.COMPETENCIA_ID,
+        COMPETENCIA_NOMBRE: competenciasPorId[req.COMPETENCIA_ID] ? competenciasPorId[req.COMPETENCIA_ID].NOMBRE : req.COMPETENCIA_ID,
+        NIVEL_EXIGIDO: req.NIVEL_MINIMO || '',
+        NIVEL_ACTUAL: tiene ? nivelActual : ''
+      });
+    });
+  });
+
+  return alertas;
+}
+
 function listarTareasSinResponsable() {
   var tareas = listarRegistros('TAREA', { ACTIVO: 'SÍ' });
   var activas = tareas.filter(function (t) {
@@ -272,7 +334,8 @@ function obtenerPanelOperativo() {
         productosSinProyecto: listarProductosSinProyecto(),
         procesosSinFechas: listarProcesosSinFechas(),
         relacionesIncompletas: listarRelacionesIncompletas(),
-        recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible()
+        recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible(),
+        asignacionesSinEncajeCompetencia: listarAsignacionesSinEncajeCompetencia()
       },
       materiales: obtenerAlertasMaterialesSeguro_()
     };

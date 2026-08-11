@@ -206,6 +206,18 @@ const ENTIDADES_MVP = Object.freeze({
   OPORTUNIDAD: Object.freeze({
     hoja: '44_OPORTUNIDAD',
     prefijo: 'OPO'
+  }),
+  /*
+   * Track A -- encaje de competencias (ver conversación -- "que la
+   * relación entre tarea y competencia forme parte del éxito de la
+   * campaña"): declara qué competencia (y nivel mínimo) exige una tarea,
+   * simétrico a RECURSO_COMPETENCIA (que declara qué exige un recurso).
+   * Nada la exigía hasta ahora -- una tarea con requisitos de habilidad
+   * podía asignarse a cualquiera sin ningún aviso.
+   */
+  TAREA_COMPETENCIA: Object.freeze({
+    hoja: '45_TAREA_COMPETENCIA',
+    prefijo: 'TCO'
   })
 });
 

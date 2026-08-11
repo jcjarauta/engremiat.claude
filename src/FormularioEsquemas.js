@@ -72,7 +72,8 @@ var ETIQUETA_ENTIDAD_MVP = Object.freeze({
   ENTREGA: 'entrega',
   ENTREGA_LINEA: 'línea de entrega',
   CONTRATO_SERVICIO: 'contrato de servicio',
-  OPORTUNIDAD: 'oportunidad'
+  OPORTUNIDAD: 'oportunidad',
+  TAREA_COMPETENCIA: 'tarea - competencia'
 });
 var ENTIDAD_DOCUMENTO_A_MVP = Object.freeze({
   'Campaña': 'CAMPANA',
@@ -1162,6 +1163,23 @@ INCIDENCIA: [
   RECURSO_COMPETENCIA: [
     { campo: 'RECURSO_ID', etiqueta: 'Recurso', tipo: 'fk', entidadFk: 'RECURSO', requerido: true, ayuda: 'La competencia requerida para usar este recurso.' },
     { campo: 'COMPETENCIA_ID', etiqueta: 'Competencia requerida', tipo: 'fk', entidadFk: 'COMPETENCIA', requerido: true },
+    { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
+    { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
+  ],
+
+  /*
+   * Track A -- encaje de competencias (ver conversación -- "que la
+   * relación entre tarea y competencia forme parte del éxito de la
+   * campaña"): simétrico a RECURSO_COMPETENCIA, pero declarando qué
+   * exige una TAREA en vez de un RECURSO, y con NIVEL_MINIMO (no basta
+   * con "tener la competencia", puede exigirse un nivel concreto --
+   * comparado luego contra PERSONA_COMPETENCIA.NIVEL de quien se asigne
+   * como responsable, ver aviso de encaje en TAREA_RESPONSABLE).
+   */
+  TAREA_COMPETENCIA: [
+    { campo: 'TAREA_ID', etiqueta: 'Tarea', tipo: 'fk', entidadFk: 'TAREA', requerido: true },
+    { campo: 'COMPETENCIA_ID', etiqueta: 'Competencia requerida', tipo: 'fk', entidadFk: 'COMPETENCIA', requerido: true },
+    { campo: 'NIVEL_MINIMO', etiqueta: 'Nivel mínimo exigido', tipo: 'catalogo', catalogo: 'CFG_NIVEL_COMPETENCIA', ayuda: 'Déjalo vacío si basta con tener la competencia, sin importar el nivel.' },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RELACION', requerido: true, valorPorDefecto: 'Activa' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],

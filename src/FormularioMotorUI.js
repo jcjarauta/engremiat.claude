@@ -364,7 +364,9 @@ function construirSubmenuCompetencias_(ui) {
     .addItem('Persona - Competencia (asignar)', 'abrirFormularioCrearPersonaCompetencia')
     .addItem('Editar Persona-Competencia', 'abrirEditarPersonaCompetencia')
     .addItem('Recurso - Competencia requerida (asignar)', 'abrirFormularioCrearRecursoCompetencia')
-    .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia');
+    .addItem('Editar Recurso-Competencia', 'abrirEditarRecursoCompetencia')
+    .addItem('Tarea - Competencia requerida (asignar)', 'abrirFormularioCrearTareaCompetencia')
+    .addItem('Editar Tarea-Competencia', 'abrirEditarTareaCompetencia');
 }
 
 /* CONVOCATORIAS */
@@ -707,6 +709,7 @@ function abrirFormularioCrearCoste() { abrirFormularioCrear_('COSTE', 'Nuevo cos
 function abrirFormularioCrearCompetencia() { abrirFormularioCrear_('COMPETENCIA', 'Nueva competencia'); }
 function abrirFormularioCrearPersonaCompetencia() { abrirFormularioCrear_('PERSONA_COMPETENCIA', 'Persona - Competencia (nueva)'); }
 function abrirFormularioCrearRecursoCompetencia() { abrirFormularioCrear_('RECURSO_COMPETENCIA', 'Recurso - Competencia requerida (nueva)'); }
+function abrirFormularioCrearTareaCompetencia() { abrirFormularioCrear_('TAREA_COMPETENCIA', 'Tarea - Competencia requerida (nueva)'); }
 function abrirFormularioCrearConvocatoria() { abrirFormularioCrear_('CONVOCATORIA', 'Nueva convocatoria'); }
 function abrirFormularioCrearEtiquetaImpacto() { abrirFormularioCrear_('ETIQUETA_IMPACTO', 'Nueva etiqueta de impacto'); }
 /**
@@ -903,6 +906,7 @@ function abrirEditarCoste() { abrirEditarRegistroPorEntidad_('COSTE', 'coste'); 
 function abrirEditarCompetencia() { abrirEditarRegistroPorEntidad_('COMPETENCIA', 'competencia'); }
 function abrirEditarPersonaCompetencia() { abrirEditarRegistroPorEntidad_('PERSONA_COMPETENCIA', 'persona - competencia'); }
 function abrirEditarRecursoCompetencia() { abrirEditarRegistroPorEntidad_('RECURSO_COMPETENCIA', 'recurso - competencia'); }
+function abrirEditarTareaCompetencia() { abrirEditarRegistroPorEntidad_('TAREA_COMPETENCIA', 'tarea - competencia'); }
 function abrirEditarConvocatoria() { abrirEditarRegistroPorEntidad_('CONVOCATORIA', 'convocatoria'); }
 function abrirEditarEtiquetaImpacto() { abrirEditarRegistroPorEntidad_('ETIQUETA_IMPACTO', 'etiqueta de impacto'); }
 function abrirEditarProyectoProducto() { abrirEditarRegistroPorEntidad_('PROYECTO_PRODUCTO', 'Proyecto-Producto'); }
