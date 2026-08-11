@@ -404,6 +404,7 @@ function agregarCatalogosCore_(menu) {
     .addItem('Importación masiva de Asignaciones (STG_*)', 'abrirImportacionAsignaciones')
     .addItem('Importación masiva de Decisiones/Incidencias/Documentos (STG_*)', 'abrirImportacionSeguimiento')
     .addItem('Importación masiva de Horarios (STG_*)', 'abrirImportacionHorario')
+    .addItem('Importación masiva de Ejecuciones de tarea (STG_*)', 'abrirImportacionEjecucion')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
     .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
   // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de

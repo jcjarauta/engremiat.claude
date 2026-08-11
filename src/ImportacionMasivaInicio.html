@@ -137,6 +137,7 @@
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('SEGUIMIENTO')">Descargar plantilla: Decisiones/Incidencias/Documentos</button>
         <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('HORARIO')">Descargar plantilla: Horarios</button>
+        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('EJECUCION')">Descargar plantilla: Ejecuciones de tarea</button>
       </span>
     </div>
 
@@ -413,6 +414,13 @@
           hojas: ['STG_HORARIO'],
           dependeDe: null,
           resumenTexto: function (r) { return r.horarios + ' franja(s) de horario'; }
+        },
+        {
+          id: 'ejecucion', titulo: 'Ejecuciones de tarea',
+          detalle: 'Registro real de trabajo hecho (quién, cuándo, con qué resultado). Útil para reconstruir el histórico de una campaña ya cerrada.',
+          hojas: ['STG_EJECUCION_TAREA'],
+          dependeDe: 'campana',
+          resumenTexto: function (r) { return r.ejecuciones + ' ejecución(es) de tarea'; }
         }
       ];
 
@@ -492,6 +500,9 @@
           case 'horario':
             google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionHorario();
             return;
+          case 'ejecucion':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).validarImportacionEjecucion();
+            return;
         }
       }
 
@@ -511,6 +522,9 @@
             return;
           case 'horario':
             google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionHorario();
+            return;
+          case 'ejecucion':
+            google.script.run.withFailureHandler(error).withSuccessHandler(exito).confirmarImportacionEjecucion();
             return;
         }
       }

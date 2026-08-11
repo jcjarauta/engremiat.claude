@@ -168,6 +168,19 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
        * autoconversión en origen.
        */
       columnasTexto: ['HORA_INICIO', 'HORA_FIN']
+    },
+    /*
+     * EJECUCION_TAREA: registro real de trabajo hecho sobre una tarea
+     * (quién, cuándo, con qué resultado) -- distinto de TAREA (que solo
+     * tiene la fecha/estado planificados). Sin esta hoja, un cliente que
+     * quisiera reconstruir en bloque el histórico de una campaña ya
+     * cerrada solo podía cargarlo fila a fila desde la Ficha de tarea.
+     * RESULTADO usa el catálogo ya sembrado RESULTADO_EJECUCION (Exitosa/
+     * Con incidencias/Fallida) -- no hace falta crear catálogo nuevo.
+     */
+    {
+      hoja: 'STG_EJECUCION_TAREA',
+      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RESPONSABLE_TEMPORAL', 'FECHA_INICIO', 'FECHA_FIN', 'DURACION_REAL_DIAS', 'ESTADO', 'RESULTADO', 'OBSERVACIONES', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
 ];
 

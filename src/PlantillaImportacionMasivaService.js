@@ -22,7 +22,8 @@ var GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ = {
   RECURSOS_PERSONAS: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
   ASIGNACIONES: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
   SEGUIMIENTO: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
-  HORARIO: ['STG_HORARIO']
+  HORARIO: ['STG_HORARIO'],
+  EJECUCION: ['STG_EJECUCION_TAREA']
 };
 
 /*
@@ -45,7 +46,8 @@ var CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_ = {
   STG_DECISION: ['PROYECTO_TEMPORAL', 'TITULO', 'TIPO', 'ESTADO'],
   STG_INCIDENCIA: ['NIVEL_INCIDENCIA', 'TITULO', 'TIPO', 'PRIORIDAD', 'FECHA_DETECCION', 'ESTADO'],
   STG_DOCUMENTO: ['ENTIDAD_TIPO', 'TIPO_DOCUMENTO', 'TITULO', 'URL', 'ESTADO'],
-  STG_HORARIO: ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO']
+  STG_HORARIO: ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO'],
+  STG_EJECUCION_TAREA: ['TAREA_TEMPORAL', 'ESTADO']
 };
 
 var CATALOGOS_POR_COLUMNA_STAGING_ = {
@@ -62,7 +64,8 @@ var CATALOGOS_POR_COLUMNA_STAGING_ = {
   STG_DECISION: { TIPO: 'CFG_TIPO_DECISION', ESTADO: 'CFG_ESTADO_DECISION' },
   STG_INCIDENCIA: { NIVEL_INCIDENCIA: 'CFG_NIVEL_INCIDENCIA', TIPO: 'CFG_TIPO_INCIDENCIA', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_INCIDENCIA' },
   STG_DOCUMENTO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_DOCUMENTO', TIPO_DOCUMENTO: 'CFG_TIPO_DOCUMENTO', ESTADO: 'CFG_ESTADO_DOCUMENTO' },
-  STG_HORARIO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_HORARIO', DIA_SEMANA: 'CFG_DIA_SEMANA', ESTADO: 'CFG_ESTADO_RELACION' }
+  STG_HORARIO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_HORARIO', DIA_SEMANA: 'CFG_DIA_SEMANA', ESTADO: 'CFG_ESTADO_RELACION' },
+  STG_EJECUCION_TAREA: { ESTADO: 'CFG_ESTADO_RELACION', RESULTADO: 'CFG_RESULTADO_EJECUCION' }
 };
 
 var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
@@ -78,7 +81,8 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
   STG_DECISION: 'PROYECTO_TEMPORAL y RESPONSABLE_TEMPORAL (opcional) admiten un ID real o el ID_TEMPORAL de un lote anterior, igual que en Asignaciones.',
   STG_INCIDENCIA: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a NIVEL_INCIDENCIA (deja las demás vacías) -- todas admiten ID real o ID_TEMPORAL de un lote anterior. RESPONSABLE_TEMPORAL (opcional) igual. Nivel "Cliente" no está soportado por esta plantilla.',
   STG_DOCUMENTO: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a ENTIDAD_TIPO (deja las demás vacías) -- admite ID real o ID_TEMPORAL de un lote anterior. Otros valores de ENTIDAD_TIPO (Decisión, Incidencia, Recurso, Persona/Equipo, Convocatoria, Cliente) no están soportados por esta plantilla.',
-  STG_HORARIO: 'Rellena PERSONA_TEMPORAL si ENTIDAD_TIPO="Persona/Equipo", o RECURSO_TEMPORAL si ENTIDAD_TIPO="Recurso" (nunca ambas) -- admite ID real o ID_TEMPORAL de un lote anterior.'
+  STG_HORARIO: 'Rellena PERSONA_TEMPORAL si ENTIDAD_TIPO="Persona/Equipo", o RECURSO_TEMPORAL si ENTIDAD_TIPO="Recurso" (nunca ambas) -- admite ID real o ID_TEMPORAL de un lote anterior.',
+  STG_EJECUCION_TAREA: 'TAREA_TEMPORAL y RESPONSABLE_TEMPORAL (opcional) admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/persona en un lote anterior (aunque ya esté importada), igual que en Asignaciones.'
 };
 
 /*
@@ -130,13 +134,16 @@ var BLOQUES_ENTREVISTA_POR_GRUPO_ = {
   ],
   HORARIO: [
     '1. **Horarios** -- qué personas/equipos o recursos tienen un horario declarado, qué días de la semana, en qué franja horaria (HH:MM-HH:MM), y si es permanente o solo vigente en un rango de fechas.'
+  ],
+  EJECUCION: [
+    '1. **Ejecuciones** -- para cada tarea que ya se ha trabajado de verdad (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), quién la ejecutó, fecha real de inicio/fin, duración real en días, estado de la ejecución, resultado (Exitosa/Con incidencias/Fallida) y observaciones -- no hace falta que todas las tareas tengan ya una ejecución, solo las que realmente se han trabajado.'
   ]
 };
 
 function construirPromptIA_(grupo) {
   var esCampana = grupo === 'CAMPANA';
   var esAsignaciones = grupo === 'ASIGNACIONES';
-  var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO';
+  var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO' || grupo === 'EJECUCION';
   var bloques = BLOQUES_ENTREVISTA_POR_GRUPO_[grupo] || [];
 
   var lineas = [

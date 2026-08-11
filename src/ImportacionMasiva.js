@@ -1301,6 +1301,122 @@ function abrirImportacionHorario() {
 }
 
 /*
+ * EJECUCION_TAREA: registro real de trabajo hecho sobre una tarea (quién,
+ * cuándo, con qué resultado) -- sin esto, un cliente que quiere
+ * reconstruir en bloque el histórico de una campaña ya cerrada solo
+ * podía cargarlo fila a fila desde la Ficha de tarea. RESPONSABLE_TEMPORAL
+ * es opcional (una ejecución puede registrarse sin responsable nombrado).
+ */
+function procesarImportacionEjecucion_(confirmar) {
+  var errores = [];
+  var filasEjecucion = leerFilasPendientesImportacion_('STG_EJECUCION_TAREA');
+
+  filasEjecucion.forEach(function (f) {
+    ['TAREA_TEMPORAL', 'ESTADO'].forEach(function (c) {
+      if (f[c] === '' || f[c] === null || f[c] === undefined) {
+        errores.push('STG_EJECUCION_TAREA fila ' + f._fila + ': falta el campo obligatorio ' + c);
+      }
+    });
+  });
+
+  function validarCatalogo_(campo, nombreCatalogo) {
+    var valores = obtenerCatalogo(nombreCatalogo);
+    filasEjecucion.forEach(function (f) {
+      var v = String(f[campo] || '').trim();
+      if (v && valores.indexOf(v) === -1) {
+        errores.push('STG_EJECUCION_TAREA fila ' + f._fila + ': ' + campo + ' "' + v + '" no es un valor válido (esperado uno de: ' + valores.join(', ') + ')');
+      }
+    });
+  }
+
+  validarCatalogo_('ESTADO', 'CFG_ESTADO_RELACION');
+  validarCatalogo_('RESULTADO', 'CFG_RESULTADO_EJECUCION');
+
+  filasEjecucion.forEach(function (f) {
+    if (f.DURACION_REAL_DIAS !== '' && f.DURACION_REAL_DIAS !== null && f.DURACION_REAL_DIAS !== undefined) {
+      var duracion = Number(f.DURACION_REAL_DIAS);
+      if (!isFinite(duracion) || duracion < 0) {
+        errores.push('STG_EJECUCION_TAREA fila ' + f._fila + ': DURACION_REAL_DIAS debe ser un número >= 0');
+      }
+    }
+  });
+
+  validarReferenciaStaging_(filasEjecucion, 'STG_EJECUCION_TAREA', 'TAREA_TEMPORAL', 'STG_TAREA', 'TAREA', errores);
+  validarReferenciaStaging_(filasEjecucion.filter(function (f) { return String(f.RESPONSABLE_TEMPORAL || '').trim() !== ''; }), 'STG_EJECUCION_TAREA', 'RESPONSABLE_TEMPORAL', 'STG_PERSONA', 'PERSONA_EQUIPO', errores);
+
+  var resumen = { ejecuciones: filasEjecucion.length };
+
+  if (errores.length > 0 || !confirmar) {
+    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+  }
+
+  var correlationId = Utilities.getUuid();
+
+  filasEjecucion.forEach(function (f) {
+    var responsableId = String(f.RESPONSABLE_TEMPORAL || '').trim() !== ''
+      ? resolverReferenciaStaging_('STG_PERSONA', f.RESPONSABLE_TEMPORAL)
+      : '';
+
+    var resultado = insertarRegistroTransaccional('EJECUCION_TAREA', {
+      TAREA_ID: resolverReferenciaStaging_('STG_TAREA', f.TAREA_TEMPORAL),
+      RESPONSABLE_ID: responsableId,
+      FECHA_INICIO: f.FECHA_INICIO || '',
+      FECHA_FIN: f.FECHA_FIN || '',
+      DURACION_REAL_DIAS: f.DURACION_REAL_DIAS === '' || f.DURACION_REAL_DIAS === null || f.DURACION_REAL_DIAS === undefined ? '' : Number(f.DURACION_REAL_DIAS),
+      ESTADO: f.ESTADO,
+      RESULTADO: f.RESULTADO || '',
+      OBSERVACIONES: f.OBSERVACIONES || ''
+    }, { origen: 'ADMIN', correlationId: correlationId });
+
+    marcarFilaImportacionMasiva_('STG_EJECUCION_TAREA', f._fila, resultado.id);
+  });
+
+  return { ok: true, errores: [], resumen: resumen };
+}
+
+function abrirImportacionEjecucion() {
+  var ui = SpreadsheetApp.getUi();
+  var previsualizacion;
+
+  try {
+    previsualizacion = procesarImportacionEjecucion_(false);
+  } catch (e) {
+    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
+    return;
+  }
+
+  if (previsualizacion.errores.length > 0) {
+    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
+    var extra = previsualizacion.errores.length > 20
+      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
+      : '';
+    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
+    return;
+  }
+
+  var r = previsualizacion.resumen;
+
+  if (r.ejecuciones === 0) {
+    ui.alert('Nada que importar', 'No hay filas pendientes en STG_EJECUCION_TAREA (o ya están todas importadas).', ui.ButtonSet.OK);
+    return;
+  }
+
+  var confirmacion = ui.alert(
+    'Confirmar importación de Ejecuciones',
+    'Se creará(n) ' + r.ejecuciones + ' ejecución(es) de tarea.\n\n¿Confirmar la importación?',
+    ui.ButtonSet.YES_NO
+  );
+  if (confirmacion !== ui.Button.YES) return;
+
+  try {
+    var resultado = procesarImportacionEjecucion_(true);
+    ui.alert('Importación completada', 'Se crearon ' + resultado.resumen.ejecuciones + ' ejecución(es) de tarea.', ui.ButtonSet.OK);
+  } catch (e) {
+    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/*
  * Fase N13 (ver conversación -- "que al validar el botón cambie de
  * color... separar Validar de Importar"): las funciones abrirImportacionXxx
  * hacen la validación Y la confirmación DENTRO de diálogos nativos
@@ -1321,6 +1437,8 @@ function validarImportacionSeguimiento() { return procesarImportacionSeguimiento
 function confirmarImportacionSeguimiento() { return procesarImportacionSeguimiento_(true); }
 function validarImportacionHorario() { return procesarImportacionHorario_(false); }
 function confirmarImportacionHorario() { return procesarImportacionHorario_(true); }
+function validarImportacionEjecucion() { return procesarImportacionEjecucion_(false); }
+function confirmarImportacionEjecucion() { return procesarImportacionEjecucion_(true); }
 
 /*
  * Panel de estado por hoja STG_* (ver conversación -- "así sabes de un
