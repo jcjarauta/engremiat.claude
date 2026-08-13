@@ -3,16 +3,29 @@
  * Reconstruido tras deteccion de regresion via AUD-01 (falta punto de entrada de edicion controlada).
  */
 
-function hojasProtegiblesMVP_() {
-  var hojas = Object.keys(ENTIDADES_MVP).map(function (clave) { return ENTIDADES_MVP[clave].hoja; });
+/*
+ * modulosInstalados (ver conversación -- "revisa la carga de hojas del
+ * core"): sin filtrar, esta lista recorría las 47 entidades sin
+ * importar qué módulos tiene el cliente -- no llegaba a cargar datos de
+ * otro módulo (getSheetByName sobre una hoja que no existe no hace
+ * nada), pero sí llenaba el resultado de "no existe la hoja" para cada
+ * hoja de un módulo no instalado, ruido inútil en clientes CORE-only.
+ * Mismo criterio que hojaInstalable_ (EstructuraInicialService.js):
+ * sin modulosInstalados (Sheet maestro, código en crudo) se protege
+ * todo.
+ */
+function hojasProtegiblesMVP_(modulosInstalados) {
+  var hojas = Object.keys(ENTIDADES_MVP)
+    .map(function (clave) { return ENTIDADES_MVP[clave].hoja; })
+    .filter(function (nombreHoja) { return hojaInstalable_(nombreHoja, modulosInstalados); });
   hojas.push('90_CONFIGURACION', '91_HISTORIAL');
   return hojas;
 }
 
-function protegerHojasDatosMVP() {
+function protegerHojasDatosMVP(modulosInstalados) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var resultado = { protegidas: [], yaProtegidas: [], errores: [] };
-  hojasProtegiblesMVP_().forEach(function (nombreHoja) {
+  hojasProtegiblesMVP_(modulosInstalados).forEach(function (nombreHoja) {
     try {
       var hoja = ss.getSheetByName(nombreHoja);
       if (!hoja) { resultado.errores.push(nombreHoja + ': no existe la hoja'); return; }
@@ -28,8 +41,8 @@ function protegerHojasDatosMVP() {
   return resultado;
 }
 
-function abrirProteccionHojas() {
-  var resultado = protegerHojasDatosMVP();
+function abrirProteccionHojas(modulosInstalados) {
+  var resultado = protegerHojasDatosMVP(modulosInstalados);
   var mensaje = 'Protegidas ahora: ' + resultado.protegidas.length +
     '\nYa protegidas: ' + resultado.yaProtegidas.length +
     (resultado.errores.length ? '\nErrores: ' + resultado.errores.join('; ') : '');
