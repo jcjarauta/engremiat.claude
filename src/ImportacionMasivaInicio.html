@@ -46,6 +46,8 @@
       .barra-acciones-globales { display: flex; gap: 8px; margin: 12px 0; }
       .barra-acciones-globales button { flex: 1; margin-top: 0; }
 
+      .orden-recomendado { font-size: 11px; color: var(--color-texto-secundario); background: var(--color-fondo-suave); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
+
       .grupo-card {
         border: 1px solid var(--color-borde); border-radius: 8px; padding: 12px; margin-bottom: 10px;
         transition: opacity .15s;
@@ -157,6 +159,7 @@
     </div>
 
     <h4>Validar e importar</h4>
+    <div id="ordenRecomendado"></div>
     <div class="barra-acciones-globales">
       <button class="boton" onclick="validarTodo()">Validar todo</button>
       <button class="boton boton-primario" onclick="importarTodoValidado()">Importar todo lo validado</button>
@@ -375,51 +378,56 @@
        * Importar... validar todo... importar todo lo validado"). Cada
        * grupo agrupa las hojas STG_* que se validan/confirman juntas
        * (mismo criterio que GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ en
-       * PlantillaImportacionMasivaService.js). dependeDe marca qué otro
-       * grupo conviene tener ya importado antes (Asignaciones/Seguimiento
-       * necesitan que la Campaña ya exista con ID real).
+       * PlantillaImportacionMasivaService.js). dependeDe es un ARRAY de
+       * ids de otros grupos que conviene tener ya importados antes --
+       * no un único id (hallazgo real: Asignaciones depende de Campaña
+       * Y de Recursos/Personas a la vez porque TAREA_RESPONSABLE/
+       * TAREA_RECURSO referencian ambos; Horario depende de Recursos/
+       * Personas, no de Campaña -- con un solo dependeDe no había forma
+       * de expresar ninguna de las dos cosas, así que el aviso visual y
+       * el orden de "Importar todo" podían ser incorrectos en silencio).
        */
       var GRUPOS_IMPORTACION_ = [
         {
           id: 'campana', titulo: 'Campaña → Proyecto → Producto → Proceso → Tarea',
           detalle: 'La jerarquía completa de una campaña.',
           hojas: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
-          dependeDe: null,
+          dependeDe: [],
           resumenTexto: function (r) { return r.campanas + ' campaña(s), ' + r.proyectos + ' proyecto(s), ' + r.productos + ' producto(s), ' + r.procesos + ' proceso(s), ' + r.tareas + ' tarea(s)'; }
         },
         {
           id: 'recursos', titulo: 'Recursos / Personas y equipos',
           detalle: 'Espacios, herramientas, personas y equipos.',
           hojas: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
-          dependeDe: null,
+          dependeDe: [],
           resumenTexto: function (r) { return r.recursos + ' recurso(s), ' + r.personas + ' persona(s)/equipo(s), ' + r.equipoMiembros + ' relación(es) equipo-miembro'; }
         },
         {
           id: 'asignaciones', titulo: 'Asignaciones (Responsable/Recurso a Tarea)',
-          detalle: 'Ejecútalo después de crear las tareas (y, si hace falta, personas/recursos).',
+          detalle: 'Ejecútalo después de crear las tareas Y los recursos/personas -- referencia a ambos.',
           hojas: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
-          dependeDe: 'campana',
+          dependeDe: ['campana', 'recursos'],
           resumenTexto: function (r) { return r.responsables + ' asignación(es) de responsable, ' + r.recursos + ' asignación(es) de recurso'; }
         },
         {
           id: 'seguimiento', titulo: 'Decisiones / Incidencias / Documentos',
           detalle: 'Cuelgan de un proyecto (Decisión) o de cualquier nivel de la jerarquía.',
           hojas: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
-          dependeDe: 'campana',
+          dependeDe: ['campana'],
           resumenTexto: function (r) { return r.decisiones + ' decisión(es), ' + r.incidencias + ' incidencia(s), ' + r.documentos + ' documento(s)'; }
         },
         {
           id: 'horario', titulo: 'Horarios',
-          detalle: 'Franjas semanales de personas/equipos o recursos.',
+          detalle: 'Franjas semanales de personas/equipos o recursos -- referencia a Recursos/Personas.',
           hojas: ['STG_HORARIO'],
-          dependeDe: null,
+          dependeDe: ['recursos'],
           resumenTexto: function (r) { return r.horarios + ' franja(s) de horario'; }
         },
         {
           id: 'ejecucion', titulo: 'Ejecuciones de tarea',
           detalle: 'Registro real de trabajo hecho (quién, cuándo, con qué resultado). Útil para reconstruir el histórico de una campaña ya cerrada.',
           hojas: ['STG_EJECUCION_TAREA'],
-          dependeDe: 'campana',
+          dependeDe: ['campana'],
           resumenTexto: function (r) { return r.ejecuciones + ' ejecución(es) de tarea'; }
         }
       ];
@@ -430,11 +438,47 @@
         return GRUPOS_IMPORTACION_.filter(function (g) { return g.id === id; })[0];
       }
 
+      /*
+       * Orden topológico calculado del grafo de dependencias (Kahn),
+       * no mantenido a mano -- si se añade un grupo nuevo con su
+       * dependeDe correcto, el orden se recalcula solo, sin arriesgarse
+       * a que alguien lo declare en la posición equivocada del array
+       * (que es justo lo que hacía frágil al botón "Importar todo").
+       */
+      function ordenTopologicoGrupos_() {
+        var pendientes = GRUPOS_IMPORTACION_.slice();
+        var resueltos = {};
+        var orden = [];
+
+        while (pendientes.length > 0) {
+          var listos = pendientes.filter(function (g) {
+            return g.dependeDe.every(function (dep) { return resueltos[dep]; });
+          });
+          if (listos.length === 0) {
+            // Dependencia circular o mal declarada -- no debería pasar, pero
+            // no nos quedamos colgados: metemos el resto en el orden que ya tenían.
+            orden = orden.concat(pendientes);
+            break;
+          }
+          listos.forEach(function (g) {
+            orden.push(g);
+            resueltos[g.id] = true;
+          });
+          pendientes = pendientes.filter(function (g) { return listos.indexOf(g) === -1; });
+        }
+
+        return orden;
+      }
+
       function construirTarjetaGrupo_(g) {
+        var nombresDependencias = g.dependeDe.map(function (id) {
+          var gd = grupoPorId_(id);
+          return gd ? gd.titulo : id;
+        }).join('" y "');
         return '<div class="grupo-card" id="grupo-' + g.id + '">' +
           '<div class="titulo">' + escapeHtml(g.titulo) + '</div>' +
           '<div class="detalle">' + escapeHtml(g.detalle) + '</div>' +
-          (g.dependeDe ? '<div class="aviso-dependencia" id="aviso-' + g.id + '" style="display:none;">Conviene importar antes "' + escapeHtml(grupoPorId_(g.dependeDe) ? grupoPorId_(g.dependeDe).titulo : g.dependeDe) + '".</div>' : '') +
+          (g.dependeDe.length > 0 ? '<div class="aviso-dependencia" id="aviso-' + g.id + '" style="display:none;">Conviene importar antes "' + escapeHtml(nombresDependencias) + '".</div>' : '') +
           '<div class="estado-hojas" id="estado-hojas-' + g.id + '"></div>' +
           '<div class="fila-botones-grupo">' +
             '<button class="boton boton-validar" id="btn-validar-' + g.id + '" onclick="validarGrupo(\'' + g.id + '\')">Validar</button>' +
@@ -445,7 +489,12 @@
       }
 
       function inicializarGrupos_() {
-        document.getElementById('gruposImportacion').innerHTML = GRUPOS_IMPORTACION_.map(construirTarjetaGrupo_).join('');
+        var orden = ordenTopologicoGrupos_();
+        var lineaOrden = '<div class="orden-recomendado">Orden recomendado: ' +
+          orden.map(function (g, i) { return (i + 1) + '. ' + escapeHtml(g.titulo.split(' →')[0].split(' (')[0]); }).join(' → ') +
+          '</div>';
+        document.getElementById('ordenRecomendado').innerHTML = lineaOrden;
+        document.getElementById('gruposImportacion').innerHTML = orden.map(construirTarjetaGrupo_).join('');
       }
 
       /*
@@ -586,7 +635,9 @@
       }
 
       function importarTodoValidado() {
-        var listos = GRUPOS_IMPORTACION_.filter(function (g) { return ESTADO_GRUPOS_[g.id] === 'valido'; });
+        // Orden topológico, no el orden de declaración del array -- ver
+        // ordenTopologicoGrupos_ (mismo motivo que el aviso de dependencias).
+        var listos = ordenTopologicoGrupos_().filter(function (g) { return ESTADO_GRUPOS_[g.id] === 'valido'; });
         if (listos.length === 0) {
           mostrarOk('No hay ninguna sección validada (en verde) lista para importar. Pulsa "Validar todo" primero.');
           return;
@@ -674,8 +725,15 @@
               var el = document.getElementById('estado-hojas-' + g.id);
               if (el) el.textContent = resumenTxt;
 
-              if (g.dependeDe) {
-                var listo = ((porHoja['STG_CAMPANA'] || {}).importadas || 0) > 0;
+              if (g.dependeDe.length > 0) {
+                // "Listo" = la primera hoja de CADA grupo dependiente ya tiene
+                // al menos una fila importada -- comprueba TODAS las
+                // dependencias declaradas, no solo Campaña como antes.
+                var listo = g.dependeDe.every(function (depId) {
+                  var depGrupo = grupoPorId_(depId);
+                  var primeraHoja = depGrupo ? depGrupo.hojas[0] : null;
+                  return ((porHoja[primeraHoja] || {}).importadas || 0) > 0;
+                });
                 var card = document.getElementById('grupo-' + g.id);
                 var aviso = document.getElementById('aviso-' + g.id);
                 if (card) card.classList.toggle('atenuado', !listo);
