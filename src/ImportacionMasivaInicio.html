@@ -98,6 +98,8 @@
         </div>
         <button class="boton" onclick="prepararHojas()">Preparar hojas</button>
         <button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHojas()">Vaciar todas las hojas STG_*</button>
+        <button class="boton" style="margin-top:6px;" onclick="comprobarHuerfanas()">Comprobar filas huérfanas</button>
+        <div id="resultadoHuerfanas"></div>
       </span>
     </div>
 
@@ -228,6 +230,54 @@
           },
           null,
           'Vaciar'
+        );
+      }
+
+      /*
+       * Chequeo previo de huérfanos (ver conversación -- "chequeo
+       * previo, no como error de importación después de esperar 90
+       * segundos"): ejecuta el dry-run de las 6 secciones (ya rápido
+       * desde v67) y muestra solo las filas cuya referencia a un padre
+       * no existe -- sin tocar nada. Si aparece alguna, ofrece un
+       * segundo botón para borrar justo esas filas.
+       */
+      function comprobarHuerfanas() {
+        establecerOcupado_(true, 'Comprobando filas huérfanas...');
+        google.script.run.withFailureHandler(mostrarError)
+          .withSuccessHandler(function (grupos) {
+            establecerOcupado_(false);
+            var contenedor = document.getElementById('resultadoHuerfanas');
+            if (!grupos || grupos.length === 0) {
+              contenedor.innerHTML = '<div class="resultado-grupo ok">✓ Sin filas huérfanas -- todas las referencias a hojas padre resuelven.</div>';
+              return;
+            }
+            var total = grupos.reduce(function (a, g) { return a + g.filas; }, 0);
+            var detalle = grupos.map(function (g) {
+              return '- ' + g.hoja + ': ' + g.filas + ' fila(s) huérfana(s)';
+            }).join('<br>');
+            contenedor.innerHTML =
+              '<div class="resultado-grupo error">✗ ' + total + ' fila(s) huérfana(s) en total:<br>' + detalle + '</div>' +
+              '<button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHuerfanas()">Vaciar solo las ' + total + ' fila(s) huérfana(s)</button>';
+          })
+          .comprobarHuerfanosImportacionMasiva();
+      }
+
+      function vaciarHuerfanas() {
+        confirmarAccion_(
+          'Esto borra solo las filas cuya referencia a una hoja padre no existe (no toca el resto de filas pendientes ni las ya importadas). ¿Seguro?',
+          function () {
+            establecerOcupado_(true, 'Borrando filas huérfanas...');
+            google.script.run.withFailureHandler(mostrarError)
+              .withSuccessHandler(function (resultado) {
+                establecerOcupado_(false);
+                mostrarOk('Filas huérfanas borradas: ' + resultado.filasBorradas + ' en ' + resultado.hojas.join(', ') + '.');
+                document.getElementById('resultadoHuerfanas').innerHTML = '';
+                actualizarPanelEstado_();
+              })
+              .eliminarFilasHuerfanasImportacionMasiva();
+          },
+          null,
+          'Vaciar huérfanas'
         );
       }
 
