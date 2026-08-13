@@ -19,6 +19,68 @@
  * para no reimportarla si se vuelve a ejecutar sobre la misma hoja.
  */
 
+/*
+ * Rendimiento (ver conversación -- hallazgo real en prueba de punta a
+ * punta: un lote con ~90 filas huérfanas tardó más de 90 segundos en
+ * validar): dos causas, dos cachés de alcance "una sola ejecución".
+ *
+ * 1) validarReferenciaPadre_/resolverEntidadPoliformica_ llaman a
+ *    obtenerRegistroPorId/listarRegistros (Repository.js) por cada fila
+ *    -- ya existe un caché para esto (CacheLecturaService.js) pero solo
+ *    se activa entre cacheLecturaIniciarContexto_()/Finalizar(), y el
+ *    importador nunca lo abría, así que cada fila releía la hoja de
+ *    entidad real entera desde cero.
+ * 2) resolverReferenciaStaging_ releía la hoja STG_* de origen entera
+ *    en cada llamada -- no había ningún caché para esto. Se cachea aquí
+ *    mismo, por nombre de hoja, reiniciado al principio de cada
+ *    ejecución (nunca se lee y se escribe la misma hoja STG_* de origen
+ *    dentro de una misma ejecución -- cada grupo solo marca sus propias
+ *    hojas de destino -- así que cachear toda la ejecución es seguro).
+ */
+var CACHE_RESOLUCION_STAGING_ = {};
+
+function reiniciarCacheImportacionMasiva_() {
+  cacheLecturaIniciarContexto_();
+  CACHE_RESOLUCION_STAGING_ = {};
+}
+
+/*
+ * Agrupa errores repetidos con la misma forma (mismo mensaje salvo el
+ * número de fila y el valor concreto) en una sola línea cuando hay más
+ * de `umbral` -- hallazgo real: 90 filas huérfanas por la misma causa
+ * (falta la hoja padre) generaban 90 líneas de error idénticas salvo el
+ * número de fila, un muro de texto inútil para diagnosticar la causa
+ * real. Por debajo del umbral se devuelven tal cual, sin agrupar --
+ * unos pocos errores distintos son más claros uno a uno.
+ */
+function agruparErroresRepetidos_(errores, umbral) {
+  umbral = umbral || 5;
+  if (errores.length <= umbral) return errores;
+
+  var grupos = {};
+  var orden = [];
+
+  errores.forEach(function (mensaje) {
+    var clave = mensaje.replace(/fila \d+/, 'fila #').replace(/"[^"]*"/, '"…"');
+    if (!grupos[clave]) { grupos[clave] = []; orden.push(clave); }
+    grupos[clave].push(mensaje);
+  });
+
+  var resultado = [];
+  orden.forEach(function (clave) {
+    var lista = grupos[clave];
+    if (lista.length <= umbral) {
+      resultado = resultado.concat(lista);
+    } else {
+      resultado.push(
+        lista.length + ' filas con el mismo problema (revisa si falta importar la hoja padre correspondiente): ' + lista[0]
+      );
+    }
+  });
+
+  return resultado;
+}
+
 function leerFilasPendientesImportacion_(nombreHoja) {
   var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHoja);
 
@@ -81,6 +143,15 @@ function marcarFilaImportacionMasiva_(nombreHoja, numeroFila, idReal, idRealSecu
 }
 
 function procesarImportacionMasiva_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionMasiva_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionMasiva_(confirmar) {
   var errores = [];
 
   var filasCampana = leerFilasPendientesImportacion_('STG_CAMPANA');
@@ -226,7 +297,7 @@ function procesarImportacionMasiva_(confirmar) {
   };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
@@ -375,6 +446,15 @@ function procesarImportacionMasiva_(confirmar) {
  * orden de filas para ORDEN_SECUENCIA/predecesor.
  */
 function procesarImportacionRecursosPersonas_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionRecursosPersonas_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionRecursosPersonas_(confirmar) {
   var errores = [];
 
   var filasRecurso = leerFilasPendientesImportacion_('STG_RECURSO');
@@ -465,7 +545,7 @@ function procesarImportacionRecursosPersonas_(confirmar) {
   };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
@@ -548,29 +628,50 @@ function resolverReferenciaStaging_(nombreHojaOrigen, valorReferencia) {
   var valor = String(valorReferencia || '').trim();
   if (!valor) return '';
 
+  var mapa = obtenerMapaResolucionStaging_(nombreHojaOrigen);
+  return Object.prototype.hasOwnProperty.call(mapa, valor) ? mapa[valor] : valor;
+}
+
+/*
+ * Construye ID_TEMPORAL->ID_REAL de una hoja STG_* una sola vez por
+ * ejecución (ver CACHE_RESOLUCION_STAGING_ más arriba). Mismo criterio
+ * de "no encontrado" que la versión anterior: si la fila no está en el
+ * mapa, resolverReferenciaStaging_ devuelve el valor tal cual (puede
+ * ser ya un ID real).
+ */
+function obtenerMapaResolucionStaging_(nombreHojaOrigen) {
+  if (Object.prototype.hasOwnProperty.call(CACHE_RESOLUCION_STAGING_, nombreHojaOrigen)) {
+    return CACHE_RESOLUCION_STAGING_[nombreHojaOrigen];
+  }
+
+  var mapa = {};
   var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHojaOrigen);
-  if (!hoja) return valor;
 
-  var ultimaFila = hoja.getLastRow();
-  var ultimaColumna = hoja.getLastColumn();
-  if (ultimaFila < 2) return valor;
+  if (hoja) {
+    var ultimaFila = hoja.getLastRow();
+    var ultimaColumna = hoja.getLastColumn();
 
-  var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0].map(function (c) {
-    return String(c || '').trim();
-  });
-  var colTemporal = cabeceras.indexOf('ID_TEMPORAL');
-  var colIdReal = cabeceras.indexOf('ID_REAL');
-  if (colTemporal === -1 || colIdReal === -1) return valor;
+    if (ultimaFila >= 2) {
+      var cabeceras = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0].map(function (c) {
+        return String(c || '').trim();
+      });
+      var colTemporal = cabeceras.indexOf('ID_TEMPORAL');
+      var colIdReal = cabeceras.indexOf('ID_REAL');
 
-  var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
-  for (var i = 0; i < valores.length; i++) {
-    if (String(valores[i][colTemporal] || '').trim() === valor) {
-      var idReal = String(valores[i][colIdReal] || '').trim();
-      return idReal || valor;
+      if (colTemporal !== -1 && colIdReal !== -1) {
+        var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+        valores.forEach(function (fila) {
+          var temporal = String(fila[colTemporal] || '').trim();
+          if (!temporal) return;
+          var idReal = String(fila[colIdReal] || '').trim();
+          mapa[temporal] = idReal || temporal;
+        });
+      }
     }
   }
 
-  return valor;
+  CACHE_RESOLUCION_STAGING_[nombreHojaOrigen] = mapa;
+  return mapa;
 }
 
 function validarReferenciaStaging_(filas, hoja, campo, hojaOrigenTemporal, entidadReal, errores) {
@@ -595,6 +696,15 @@ function validarReferenciaStaging_(filas, hoja, campo, hojaOrigenTemporal, entid
  * vez de obligar a conocer los IDs reales generados.
  */
 function procesarImportacionAsignaciones_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionAsignaciones_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionAsignaciones_(confirmar) {
   var errores = [];
 
   var filasResponsable = leerFilasPendientesImportacion_('STG_TAREA_RESPONSABLE');
@@ -645,7 +755,7 @@ function procesarImportacionAsignaciones_(confirmar) {
   var resumen = { responsables: filasResponsable.length, recursos: filasRecurso.length };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
@@ -920,6 +1030,15 @@ function resolverEntidadPoliformica_(f, hoja, errores) {
  * Campaña→Tarea), así que se validan y confirman juntas.
  */
 function procesarImportacionSeguimiento_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionSeguimiento_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionSeguimiento_(confirmar) {
   var errores = [];
 
   var filasDecision = leerFilasPendientesImportacion_('STG_DECISION');
@@ -1026,7 +1145,7 @@ function procesarImportacionSeguimiento_(confirmar) {
   var resumen = { decisiones: filasDecision.length, incidencias: filasIncidencia.length, documentos: filasDocumento.length };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
@@ -1167,6 +1286,15 @@ function normalizarHora_(valor) {
 }
 
 function procesarImportacionHorario_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionHorario_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionHorario_(confirmar) {
   var errores = [];
   var filasHorario = leerFilasPendientesImportacion_('STG_HORARIO');
 
@@ -1231,7 +1359,7 @@ function procesarImportacionHorario_(confirmar) {
   var resumen = { horarios: filasHorario.length };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
@@ -1308,6 +1436,15 @@ function abrirImportacionHorario() {
  * es opcional (una ejecución puede registrarse sin responsable nombrado).
  */
 function procesarImportacionEjecucion_(confirmar) {
+  reiniciarCacheImportacionMasiva_();
+  try {
+    return ejecutarImportacionEjecucion_(confirmar);
+  } finally {
+    cacheLecturaFinalizarContexto_();
+  }
+}
+
+function ejecutarImportacionEjecucion_(confirmar) {
   var errores = [];
   var filasEjecucion = leerFilasPendientesImportacion_('STG_EJECUCION_TAREA');
 
@@ -1347,7 +1484,7 @@ function procesarImportacionEjecucion_(confirmar) {
   var resumen = { ejecuciones: filasEjecucion.length };
 
   if (errores.length > 0 || !confirmar) {
-    return { ok: errores.length === 0, errores: errores, resumen: resumen };
+    return { ok: errores.length === 0, errores: agruparErroresRepetidos_(errores), resumen: resumen };
   }
 
   var correlationId = Utilities.getUuid();
