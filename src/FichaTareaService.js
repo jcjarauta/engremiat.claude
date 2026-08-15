@@ -113,7 +113,7 @@ function obtenerFichaTarea(id) {
 
   var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Tarea' && d.ENTIDAD_ID === id; })
-    .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
+    .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO, url: d.URL }; });
 
   return serializarParaCliente_({
     tarea: tarea,

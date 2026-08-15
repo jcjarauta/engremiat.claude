@@ -15,6 +15,7 @@
       .fila:last-child { border-bottom: none; }
       .fila .info { font-size: 13px; }
       .fila .info .detalle-secundario { color: var(--color-texto-secundario); }
+      .miniatura-documento { width: 32px; height: 32px; object-fit: cover; border-radius: 4px; vertical-align: middle; margin-right: 6px; }
       .btn-mini { font-size: 13px; padding: 5px 9px; }
       .badge { font-size: 12px; padding: 2px 9px; }
       .badge-completado { background: #e6f4ea; color: var(--color-exito); }
@@ -106,6 +107,19 @@
           '<button class="boton btn-mini" onclick="editar(\'' + entidadEditar + '\',\'' + idEditar + '\')">Editar</button></div>';
       }
 
+      function extraerIdDrive_(url) {
+        if (!url) return null;
+        var m = String(url).match(/\/d\/([a-zA-Z0-9_-]{10,})/) || String(url).match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+        return m ? m[1] : null;
+      }
+
+      function filaDocumentoHtml_(d) {
+        var idDrive = d.tipo === 'Imagen' ? extraerIdDrive_(d.url) : null;
+        var miniatura = idDrive ? '<img class="miniatura-documento" src="https://drive.google.com/thumbnail?id=' + idDrive + '&sz=w96" alt="">' : '';
+        var info = miniatura + escapeHtml(d.titulo) + (d.tipo ? ' <span class="detalle-secundario">— ' + escapeHtml(d.tipo) + '</span>' : '') + renderBadge_(d.estado);
+        return filaHtml_(info, 'DOCUMENTO', d.id);
+      }
+
       function render(datos) {
         document.getElementById("estadoCarga").style.display = "none";
         document.getElementById("contenido").style.display = "block";
@@ -171,9 +185,7 @@
           : '<div class="vacio-bloque">Sin incidencias registradas.</div>';
 
         document.getElementById("listaDocumentos").innerHTML = datos.documentos.length
-          ? datos.documentos.map(function (d) {
-              return filaHtml_(escapeHtml(d.titulo) + (d.tipo ? ' <span class="detalle-secundario">— ' + escapeHtml(d.tipo) + '</span>' : '') + renderBadge_(d.estado), 'DOCUMENTO', d.id);
-            }).join("")
+          ? datos.documentos.map(filaDocumentoHtml_).join("")
           : '<div class="vacio-bloque">Sin documentos adjuntos.</div>';
 
         document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("TAREA", t.ID); });
