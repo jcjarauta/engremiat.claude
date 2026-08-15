@@ -97,7 +97,8 @@
           tituladas. No borra ni toca hojas que ya tengas.
         </div>
         <button class="boton" onclick="prepararHojas()">Preparar hojas</button>
-        <button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHojas()">Vaciar todas las hojas STG_*</button>
+        <button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHojas(true)">Vaciar filas pendientes STG_*</button>
+        <button class="boton boton-peligro" style="margin-top:6px;" onclick="vaciarHojas(false)">Vaciado total (incluye ya importadas)</button>
         <button class="boton" style="margin-top:6px;" onclick="comprobarHuerfanas()">Comprobar filas huérfanas</button>
         <div id="resultadoHuerfanas"></div>
       </span>
@@ -151,9 +152,15 @@
         <div class="titulo">Subir CSV ya rellenado</div>
         <div class="detalle">
           Arrastra uno o varios CSV aquí, o haz clic para elegirlos. El nombre debe coincidir con la
-          hoja de destino (p.ej. <code>STG_CAMPANA.csv</code>). Se añaden al final de la hoja
-          correspondiente; no borran ni tocan filas que ya tuvieras.
+          hoja de destino (p.ej. <code>STG_CAMPANA.csv</code>). Por defecto se añaden al final de la
+          hoja correspondiente. Marca "Sustituir" abajo si estás corrigiendo un CSV que ya subiste con
+          errores: borra las filas pendientes de esa hoja antes de escribir las nuevas (las que ya
+          importaste se conservan siempre).
         </div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:12px; margin:6px 0;">
+          <input type="checkbox" id="checkSustituir" />
+          Sustituir filas pendientes de esa hoja en vez de añadir (las ya importadas nunca se tocan)
+        </label>
         <div class="zona-arrastre" id="zonaArrastre">Suelta los CSV aquí, o haz clic para elegir archivo(s)</div>
         <input type="file" id="inputCsv" accept=".csv" multiple style="display:none;" />
         <div class="lista-archivos" id="listaArchivos"></div>
@@ -214,22 +221,38 @@
           .instalarStagingImportacionMasiva();
       }
 
-      function vaciarHojas() {
+      /*
+       * soloPendientes=true (botón normal) solo borra filas nunca
+       * importadas (ESTADO_IMPORTACION vacío); las ya importadas se
+       * conservan porque son la única copia del mapeo ID_TEMPORAL->
+       * ID_REAL que usan los lotes futuros (STG_TAREA_RESPONSABLE,
+       * STG_HORARIO... referenciando una tarea/persona de una
+       * importación anterior). soloPendientes=false es el vaciado
+       * total de antes, con una confirmación más explícita porque
+       * rompe esa posibilidad para cualquier lote futuro.
+       */
+      function vaciarHojas(soloPendientes) {
+        var mensaje = soloPendientes
+          ? 'Esto borra las filas pendientes (nunca importadas) de TODAS las hojas STG_*. Las filas ya importadas se conservan -- no afecta a los datos reales ya creados en el Sheet. ¿Seguro?'
+          : 'Esto borra TODAS las filas de TODAS las hojas STG_*, incluidas las YA IMPORTADAS. Perderás la posibilidad de referenciar esos registros por su ID_TEMPORAL corto en futuras importaciones (tendrás que usar su ID real). No afecta a los datos reales ya creados en el Sheet. ¿Seguro?';
+
         confirmarAccion_(
-          'Esto borra TODAS las filas de TODAS las hojas STG_* (rellenadas y ya importadas). No afecta a los datos reales ya creados en el Sheet. ¿Seguro?',
+          mensaje,
           function () {
             establecerOcupado_(true, 'Vaciando hojas STG_*...');
             google.script.run.withFailureHandler(mostrarError)
               .withSuccessHandler(function (resultado) {
                 establecerOcupado_(false);
-                mostrarOk('Hojas STG_* vaciadas: ' + resultado.filasBorradas + ' fila(s) en total.');
+                var texto = 'Hojas STG_* vaciadas: ' + resultado.filasBorradas + ' fila(s) borrada(s)';
+                if (resultado.soloPendientes) texto += ', ' + resultado.filasConservadas + ' fila(s) ya importada(s) conservada(s)';
+                mostrarOk(texto + '.');
                 GRUPOS_IMPORTACION_.forEach(function (g) { establecerEstadoBoton_(g.id, 'sin-validar'); });
                 actualizarPanelEstado_();
               })
-              .vaciarHojasStagingImportacionMasiva();
+              .vaciarHojasStagingImportacionMasiva(soloPendientes);
           },
           null,
-          'Vaciar'
+          soloPendientes ? 'Vaciar pendientes' : 'Vaciar todo'
         );
       }
 
@@ -352,7 +375,7 @@
        * servidor responde -- en vez de un único mensaje de texto que se
        * sobreescribe y no deja rastro de qué se subió y qué falló.
        */
-      function subirUnCSVConFila_(archivo, idFila) {
+      function subirUnCSVConFila_(archivo, idFila, sustituir) {
         return new Promise(function (resolve) {
           var span = document.querySelector('#' + idFila + ' .estado-archivo');
           var hojaDestino = detectarHojaDestino_(archivo.name);
@@ -372,10 +395,12 @@
               })
               .withSuccessHandler(function (resultado) {
                 span.className = 'estado-archivo ok';
-                span.textContent = '✓ ' + resultado.filasEscritas + ' fila(s)';
+                var texto = '✓ ' + resultado.filasEscritas + ' fila(s)';
+                if (resultado.filasPendientesSustituidas > 0) texto += ' (' + resultado.filasPendientesSustituidas + ' pendiente(s) anterior(es) sustituida(s))';
+                span.textContent = texto;
                 resolve();
               })
-              .escribirFilasCSVEnHojaStaging(hojaDestino, lector.result);
+              .escribirFilasCSVEnHojaStaging(hojaDestino, lector.result, sustituir);
           };
           lector.readAsText(archivo);
         });
@@ -383,6 +408,7 @@
 
       function procesarArchivosSubidos_(archivos) {
         var lista = document.getElementById('listaArchivos');
+        var sustituir = document.getElementById('checkSustituir').checked;
         var entradas = archivos.map(function (archivo) {
           var idFila = 'archivo-' + Math.random().toString(36).slice(2);
           var hojaDestino = detectarHojaDestino_(archivo.name);
@@ -396,7 +422,7 @@
         });
 
         establecerOcupado_(true, 'Subiendo ' + archivos.length + ' archivo(s)...');
-        Promise.all(entradas.map(function (e) { return subirUnCSVConFila_(e.archivo, e.idFila); })).then(function () {
+        Promise.all(entradas.map(function (e) { return subirUnCSVConFila_(e.archivo, e.idFila, sustituir); })).then(function () {
           establecerOcupado_(false);
           document.getElementById('mensaje').textContent = '';
           actualizarPanelEstado_();

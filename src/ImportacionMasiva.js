@@ -120,7 +120,7 @@ function leerFilasPendientesImportacion_(nombreHoja) {
   return filas;
 }
 
-function marcarFilaImportacionMasiva_(nombreHoja, numeroFila, idReal, idRealSecundario) {
+function marcarFilaImportacionMasiva_(nombreHoja, numeroFila, idReal, idRealSecundario, correlationId) {
   var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHoja);
   var ultimaColumna = hoja.getLastColumn();
 
@@ -130,6 +130,7 @@ function marcarFilaImportacionMasiva_(nombreHoja, numeroFila, idReal, idRealSecu
 
   var colEstado = cabeceras.indexOf('ESTADO_IMPORTACION') + 1;
   var colIdReal = cabeceras.indexOf('ID_REAL') + 1;
+  var colIdTemporal = cabeceras.indexOf('ID_TEMPORAL') + 1;
 
   hoja.getRange(numeroFila, colEstado).setValue('Importado');
   hoja.getRange(numeroFila, colIdReal).setValue(idReal);
@@ -138,6 +139,24 @@ function marcarFilaImportacionMasiva_(nombreHoja, numeroFila, idReal, idRealSecu
     var colIdRealSecundario = cabeceras.indexOf('PROYECTO_PRODUCTO_ID_REAL') + 1;
     if (colIdRealSecundario > 0) {
       hoja.getRange(numeroFila, colIdRealSecundario).setValue(idRealSecundario);
+    }
+  }
+
+  /*
+   * Registra el par ID_TEMPORAL->ID_REAL en 93_MAPEO_IDS_TEMPORALES (ver
+   * conversación -- fricción real: un "vaciado total" de las hojas STG_*
+   * destruía la única copia de este mapeo, que hasta ahora vivía solo en
+   * las propias columnas ID_TEMPORAL/ID_REAL de la fila STG_* de origen).
+   * Best-effort: si la hoja de mapeo aún no existe (cliente sin
+   * regenerar su instalación desde este cambio), no bloquea la
+   * importación -- obtenerMapaResolucionStaging_ sigue funcionando con
+   * el fallback de releer la hoja STG_* de origen, igual que antes.
+   */
+  if (colIdTemporal > 0) {
+    var idTemporal = hoja.getRange(numeroFila, colIdTemporal).getValue();
+    var hojaMapeo = SpreadsheetApp.getActive().getSheetByName('93_MAPEO_IDS_TEMPORALES');
+    if (hojaMapeo) {
+      hojaMapeo.appendRow([String(idTemporal || '').trim(), nombreHoja, idReal, correlationId || '', new Date()]);
     }
   }
 }
@@ -201,6 +220,60 @@ function ejecutarImportacionMasiva_(confirmar) {
   validarCatalogo_(filasProducto, 'STG_PRODUCTO', 'ESTADO', 'CFG_ESTADO_PRODUCTO');
   validarCatalogo_(filasProceso, 'STG_PROCESO', 'ESTADO', 'CFG_ESTADO_PROCESO');
   validarCatalogo_(filasTarea, 'STG_TAREA', 'ESTADO', 'CFG_ESTADO_TAREA');
+
+  /*
+   * Estas dos comprobaciones ya existían en el commit real
+   * (Repository_InsertarRegistro.js) pero no en este dry-run, así que
+   * "Validar" podía dar verde y "Importar" fallar a mitad de lote sin
+   * rollback (ver conversación -- prueba de punta a punta). Se replican
+   * aquí para que el dry-run sea un espejo fiel del commit.
+   */
+  function validarDuracionPositiva_(filas, hoja) {
+    filas.forEach(function (f) {
+      if (f.DURACION_PREVISTA_DIAS === '' || f.DURACION_PREVISTA_DIAS === null || f.DURACION_PREVISTA_DIAS === undefined) return;
+      var duracion = Number(f.DURACION_PREVISTA_DIAS);
+      if (!isFinite(duracion) || duracion <= 0) {
+        errores.push(hoja + ' fila ' + f._fila + ': DURACION_PREVISTA_DIAS debe ser un número mayor que 0');
+      }
+    });
+  }
+
+  validarDuracionPositiva_(filasProceso, 'STG_PROCESO');
+  validarDuracionPositiva_(filasTarea, 'STG_TAREA');
+
+  function validarCodigoProductoUnico_(filas) {
+    var codigosExistentes = {};
+    var hojaProductos = SpreadsheetApp.getActive().getSheetByName('03_PRODUCTOS');
+
+    if (hojaProductos) {
+      var ultimaFilaProductos = hojaProductos.getLastRow();
+      if (ultimaFilaProductos >= 2) {
+        var cabecerasProductos = hojaProductos.getRange(1, 1, 1, hojaProductos.getLastColumn()).getValues()[0];
+        var indiceCodigo = cabecerasProductos.indexOf('CODIGO');
+        if (indiceCodigo !== -1) {
+          hojaProductos.getRange(2, indiceCodigo + 1, ultimaFilaProductos - 1, 1).getDisplayValues().forEach(function (fila) {
+            var codigo = String(fila[0] || '').trim().toUpperCase();
+            if (codigo) codigosExistentes[codigo] = true;
+          });
+        }
+      }
+    }
+
+    var codigosEnLote = {};
+    filas.forEach(function (f) {
+      var codigo = String(f.CODIGO || '').trim().toUpperCase();
+      if (!codigo) return;
+
+      if (codigosExistentes[codigo]) {
+        errores.push('STG_PRODUCTO fila ' + f._fila + ': CODIGO "' + f.CODIGO + '" ya existe en un producto real existente');
+      } else if (codigosEnLote[codigo]) {
+        errores.push('STG_PRODUCTO fila ' + f._fila + ': CODIGO "' + f.CODIGO + '" duplicado en el mismo lote');
+      }
+      codigosEnLote[codigo] = true;
+    });
+  }
+
+  validarCodigoProductoUnico_(filasProducto);
 
   function validarTemporalesUnicos_(filas, hoja) {
     var vistos = {};
@@ -316,10 +389,10 @@ function ejecutarImportacionMasiva_(confirmar) {
       FECHA_INICIO_PLAN: f.FECHA_INICIO_PLAN,
       FECHA_FIN_PLAN: f.FECHA_FIN_PLAN,
       ESTADO: f.ESTADO
-    }, {origen: 'ADMIN', correlationId: correlationId});
+    }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
     mapaCampana[String(f.ID_TEMPORAL).trim()] = resultado.id;
-    marcarFilaImportacionMasiva_('STG_CAMPANA', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_CAMPANA', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasProyecto.forEach(function (f) {
@@ -333,10 +406,10 @@ function ejecutarImportacionMasiva_(confirmar) {
       ESTADO: f.ESTADO,
       FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
       FECHA_FIN_REAL: f.FECHA_FIN_REAL || ''
-    }, {origen: 'ADMIN', correlationId: correlationId});
+    }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
     mapaProyecto[String(f.ID_TEMPORAL).trim()] = resultado.id;
-    marcarFilaImportacionMasiva_('STG_PROYECTO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_PROYECTO', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasProducto.forEach(function (f) {
@@ -351,7 +424,7 @@ function ejecutarImportacionMasiva_(confirmar) {
       CANTIDAD_PREVISTA: cantidadPrevista,
       PRIORIDAD: f.PRIORIDAD,
       ESTADO: f.ESTADO
-    }, {origen: 'ADMIN', correlationId: correlationId});
+    }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
     var resultadoProyectoProducto = insertarRegistroTransaccional('PROYECTO_PRODUCTO', {
       PROYECTO_ID: proyectoId,
@@ -359,11 +432,11 @@ function ejecutarImportacionMasiva_(confirmar) {
       CANTIDAD_ASIGNADA: cantidadPrevista,
       PRIORIDAD: f.PRIORIDAD,
       ESTADO: 'Activa'
-    }, {origen: 'ADMIN', correlationId: correlationId});
+    }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
     mapaProducto[String(f.ID_TEMPORAL).trim()] = resultadoProducto.id;
     mapaProyectoProducto[String(f.ID_TEMPORAL).trim()] = resultadoProyectoProducto.id;
-    marcarFilaImportacionMasiva_('STG_PRODUCTO', f._fila, resultadoProducto.id, resultadoProyectoProducto.id);
+    marcarFilaImportacionMasiva_('STG_PRODUCTO', f._fila, resultadoProducto.id, resultadoProyectoProducto.id, correlationId);
   });
 
   var gruposProceso = {};
@@ -392,11 +465,11 @@ function ejecutarImportacionMasiva_(confirmar) {
         FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
         FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
         DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''
-      }, {origen: 'ADMIN', correlationId: correlationId});
+      }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
       mapaProceso[String(f.ID_TEMPORAL).trim()] = resultado.id;
       predecesorId = resultado.id;
-      marcarFilaImportacionMasiva_('STG_PROCESO', f._fila, resultado.id);
+      marcarFilaImportacionMasiva_('STG_PROCESO', f._fila, resultado.id, undefined, correlationId);
     });
   });
 
@@ -424,10 +497,10 @@ function ejecutarImportacionMasiva_(confirmar) {
         FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
         FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
         DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''
-      }, {origen: 'ADMIN', correlationId: correlationId});
+      }, {origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId});
 
       predecesoraId = resultado.id;
-      marcarFilaImportacionMasiva_('STG_TAREA', f._fila, resultado.id);
+      marcarFilaImportacionMasiva_('STG_TAREA', f._fila, resultado.id, undefined, correlationId);
     });
   });
 
@@ -563,10 +636,10 @@ function ejecutarImportacionRecursosPersonas_(confirmar) {
       CLASE_RECURSO: f.CLASE_RECURSO,
       CATEGORIA_RECURSO: f.CATEGORIA_RECURSO,
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
     mapaRecurso[String(f.ID_TEMPORAL).trim()] = resultado.id;
-    marcarFilaImportacionMasiva_('STG_RECURSO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_RECURSO', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasRecurso.forEach(function (f) {
@@ -585,10 +658,10 @@ function ejecutarImportacionRecursosPersonas_(confirmar) {
       CAPACIDAD_SEMANAL_DIAS: f.CAPACIDAD_SEMANAL_DIAS,
       DISPONIBILIDAD: f.DISPONIBILIDAD,
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
     mapaPersona[String(f.ID_TEMPORAL).trim()] = resultado.id;
-    marcarFilaImportacionMasiva_('STG_PERSONA', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_PERSONA', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasPersona.forEach(function (f) {
@@ -609,9 +682,9 @@ function ejecutarImportacionRecursosPersonas_(confirmar) {
       EQUIPO_ID: equipoId,
       MIEMBRO_ID: miembroId,
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_EQUIPO_MIEMBRO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_EQUIPO_MIEMBRO', f._fila, resultado.id, undefined, correlationId);
   });
 
   return { ok: true, errores: [], resumen: resumen };
@@ -642,6 +715,20 @@ function resolverReferenciaStaging_(nombreHojaOrigen, valorReferencia) {
  * de "no encontrado" que la versión anterior: si la fila no está en el
  * mapa, resolverReferenciaStaging_ devuelve el valor tal cual (puede
  * ser ya un ID real).
+ *
+ * Fuente primaria: 93_MAPEO_IDS_TEMPORALES (ver conversación -- fricción
+ * real: un "vaciado total" de las hojas STG_* destruía el mapeo para
+ * cualquier lote futuro, porque hasta ahora la única copia vivía en las
+ * columnas ID_TEMPORAL/ID_REAL de la propia fila STG_* de origen). Esa
+ * hoja sobrevive a cualquier vaciado de STG_* porque no está en
+ * DEFINICIONES_STAGING_IMPORTACION_MASIVA_.
+ *
+ * Fallback: relectura de la hoja STG_* de origen (comportamiento
+ * anterior a este cambio), para (a) clientes con lotes importados antes
+ * de que existiera 93_MAPEO_IDS_TEMPORALES, y (b) por si esa hoja
+ * todavía no se ha creado en este cliente (instalación antigua sin
+ * regenerar). El mapeo nunca se sobrescribe: si un ID_TEMPORAL ya
+ * resolvió desde 93_MAPEO_IDS_TEMPORALES, la relectura no lo toca.
  */
 function obtenerMapaResolucionStaging_(nombreHojaOrigen) {
   if (Object.prototype.hasOwnProperty.call(CACHE_RESOLUCION_STAGING_, nombreHojaOrigen)) {
@@ -649,7 +736,32 @@ function obtenerMapaResolucionStaging_(nombreHojaOrigen) {
   }
 
   var mapa = {};
-  var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHojaOrigen);
+  var ss = SpreadsheetApp.getActive();
+
+  var hojaMapeo = ss.getSheetByName('93_MAPEO_IDS_TEMPORALES');
+  if (hojaMapeo) {
+    var ultimaFilaMapeo = hojaMapeo.getLastRow();
+    if (ultimaFilaMapeo >= 2) {
+      var cabecerasMapeo = hojaMapeo.getRange(1, 1, 1, hojaMapeo.getLastColumn()).getValues()[0].map(function (c) {
+        return String(c || '').trim();
+      });
+      var colHojaOrigen = cabecerasMapeo.indexOf('HOJA_ORIGEN');
+      var colTemporalMapeo = cabecerasMapeo.indexOf('ID_TEMPORAL');
+      var colIdRealMapeo = cabecerasMapeo.indexOf('ID_REAL');
+
+      if (colHojaOrigen !== -1 && colTemporalMapeo !== -1 && colIdRealMapeo !== -1) {
+        hojaMapeo.getRange(2, 1, ultimaFilaMapeo - 1, hojaMapeo.getLastColumn()).getValues().forEach(function (fila) {
+          if (String(fila[colHojaOrigen] || '').trim() !== nombreHojaOrigen) return;
+          var temporal = String(fila[colTemporalMapeo] || '').trim();
+          if (!temporal) return;
+          var idReal = String(fila[colIdRealMapeo] || '').trim();
+          if (idReal) mapa[temporal] = idReal;
+        });
+      }
+    }
+  }
+
+  var hoja = ss.getSheetByName(nombreHojaOrigen);
 
   if (hoja) {
     var ultimaFila = hoja.getLastRow();
@@ -666,7 +778,7 @@ function obtenerMapaResolucionStaging_(nombreHojaOrigen) {
         var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
         valores.forEach(function (fila) {
           var temporal = String(fila[colTemporal] || '').trim();
-          if (!temporal) return;
+          if (!temporal || Object.prototype.hasOwnProperty.call(mapa, temporal)) return;
           var idReal = String(fila[colIdReal] || '').trim();
           mapa[temporal] = idReal || temporal;
         });
@@ -748,8 +860,8 @@ function ejecutarImportacionAsignaciones_(confirmar) {
 
   filasResponsable.forEach(function (f) {
     var pct = Number(f.PORCENTAJE_DEDICACION);
-    if (!isFinite(pct) || pct < 0 || pct > 100) {
-      errores.push('STG_TAREA_RESPONSABLE fila ' + f._fila + ': PORCENTAJE_DEDICACION debe ser un número entre 0 y 100');
+    if (!isFinite(pct) || pct <= 0 || pct > 100) {
+      errores.push('STG_TAREA_RESPONSABLE fila ' + f._fila + ': PORCENTAJE_DEDICACION debe ser un número entre 1 y 100');
     }
   });
 
@@ -773,9 +885,9 @@ function ejecutarImportacionAsignaciones_(confirmar) {
       ROL_ASIGNADO: f.ROL_ASIGNADO,
       PORCENTAJE_DEDICACION: Number(f.PORCENTAJE_DEDICACION),
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_TAREA_RESPONSABLE', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_TAREA_RESPONSABLE', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasRecurso.forEach(function (f) {
@@ -784,9 +896,9 @@ function ejecutarImportacionAsignaciones_(confirmar) {
       RECURSO_ID: resolverReferenciaStaging_('STG_RECURSO', f.RECURSO_TEMPORAL),
       TIPO_USO: f.TIPO_USO,
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_TAREA_RECURSO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_TAREA_RECURSO', f._fila, resultado.id, undefined, correlationId);
   });
 
   return { ok: true, errores: [], resumen: resumen };
@@ -990,9 +1102,9 @@ function ejecutarImportacionSeguimiento_(confirmar) {
       ESTADO: f.ESTADO,
       RESOLUCION: f.RESOLUCION || '',
       FECHA_RESOLUCION: f.FECHA_RESOLUCION || ''
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_DECISION', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_DECISION', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasIncidencia.forEach(function (f, indice) {
@@ -1007,9 +1119,9 @@ function ejecutarImportacionSeguimiento_(confirmar) {
       FECHA_DETECCION: f.FECHA_DETECCION,
       FECHA_LIMITE: f.FECHA_LIMITE || '',
       ESTADO: f.ESTADO
-    }, datosNivel), { origen: 'ADMIN', correlationId: correlationId });
+    }, datosNivel), { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_INCIDENCIA', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_INCIDENCIA', f._fila, resultado.id, undefined, correlationId);
   });
 
   filasDocumento.forEach(function (f, indice) {
@@ -1026,9 +1138,9 @@ function ejecutarImportacionSeguimiento_(confirmar) {
       URL: f.URL,
       ESTADO: f.ESTADO,
       FECHA_DOCUMENTO: f.FECHA_DOCUMENTO || ''
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_DOCUMENTO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_DOCUMENTO', f._fila, resultado.id, undefined, correlationId);
   });
 
   return { ok: true, errores: [], resumen: resumen };
@@ -1154,9 +1266,9 @@ function ejecutarImportacionHorario_(confirmar) {
       FECHA_INICIO_VIGENCIA: f.FECHA_INICIO_VIGENCIA || '',
       FECHA_FIN_VIGENCIA: f.FECHA_FIN_VIGENCIA || '',
       ESTADO: f.ESTADO
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_HORARIO', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_HORARIO', f._fila, resultado.id, undefined, correlationId);
   });
 
   return { ok: true, errores: [], resumen: resumen };
@@ -1239,9 +1351,9 @@ function ejecutarImportacionEjecucion_(confirmar) {
       ESTADO: f.ESTADO,
       RESULTADO: f.RESULTADO || '',
       OBSERVACIONES: f.OBSERVACIONES || ''
-    }, { origen: 'ADMIN', correlationId: correlationId });
+    }, { origen: 'ADMIN', origenImportacionMasiva: true, correlationId: correlationId });
 
-    marcarFilaImportacionMasiva_('STG_EJECUCION_TAREA', f._fila, resultado.id);
+    marcarFilaImportacionMasiva_('STG_EJECUCION_TAREA', f._fila, resultado.id, undefined, correlationId);
   });
 
   return { ok: true, errores: [], resumen: resumen };

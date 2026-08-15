@@ -86,7 +86,8 @@ function insertarRegistroTransaccional(claveEntidad, datos, opciones) {
       origen: 'SCRIPT',
       correlationId: null,
       esPrueba: false,
-      pruebaId: ''
+      pruebaId: '',
+      origenImportacionMasiva: false
     },
     opciones || {}
   );
@@ -150,7 +151,8 @@ function insertarRegistroTransaccional(claveEntidad, datos, opciones) {
       'FECHA_CREACION',
       'CREADO_POR',
       'FECHA_MODIFICACION',
-      'MODIFICADO_POR'
+      'MODIFICADO_POR',
+      'ORIGEN_CREACION'
     ];
 
     const camposSistemaRecibidos = Object.keys(datos)
@@ -3422,12 +3424,29 @@ if (clave === 'DOCUMENTO') {
       Session.getEffectiveUser().getEmail() ||
       'USUARIO_NO_IDENTIFICADO';
 
+    /*
+     * ORIGEN_CREACION (ver conversación -- "no está claro cuándo estos
+     * datos masivos pasan de borrador a activos"): no resuelve esa pregunta
+     * de lifecycle (ESTADO sigue siendo el único marcador de estado del
+     * registro, ver conversación), pero al menos deja trazable qué
+     * registros nacieron de un lote de importación masiva frente a
+     * creados a mano, sin tener que cruzar contra 91_HISTORIAL. origen:
+     * 'ADMIN' NO es una señal fiable por sí sola (PedidoRecepcionService.js
+     * también inserta con origen:'ADMIN' al confirmar una recepción, y no
+     * es la importación masiva) -- por eso se usa el flag explícito
+     * origenImportacionMasiva que solo pasa ImportacionMasiva.js.
+     */
+    const origenCreacion = configuracion.origenImportacionMasiva
+      ? 'Importación masiva'
+      : (configuracion.origen === 'UI' ? 'Manual' : '');
+
     const datosSistema = {
       ID: id,
       FECHA_CREACION: ahora,
       CREADO_POR: usuario,
       FECHA_MODIFICACION: ahora,
       MODIFICADO_POR: usuario,
+      ORIGEN_CREACION: origenCreacion,
       ACTIVO: 'SÍ'
     };
 

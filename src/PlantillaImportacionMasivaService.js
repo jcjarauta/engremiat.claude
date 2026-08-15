@@ -97,7 +97,43 @@ var NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_ = {
   STG_PROYECTO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL son opcionales, pero: ESTADO "Borrador"/"Planificado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL y FECHA_FIN_REAL.',
   STG_PROCESO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
   STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
-  STG_DECISION: 'FECHA_LIMITE (si se indica) no puede ser anterior a hoy. RESOLUCION/FECHA_RESOLUCION son opcionales, pero: ESTADO "Aprobada"/"Rechazada"/"Sustituida" EXIGE ambas (con FECHA_RESOLUCION >= hoy); cualquier otro ESTADO NO admite ninguna de las dos.'
+  STG_DECISION: 'FECHA_LIMITE (si se indica) no puede ser anterior a hoy. RESOLUCION/FECHA_RESOLUCION son opcionales, pero: ESTADO "Aprobada"/"Rechazada"/"Sustituida" EXIGE ambas (con FECHA_RESOLUCION >= hoy); cualquier otro ESTADO NO admite ninguna de las dos. IMPORTANTE: "hoy" se evalúa en el momento de pulsar "Importar", no cuando generaste el CSV -- si dejas pasar días entre generar el CSV y subirlo, revisa que estas fechas sigan siendo válidas.'
+};
+
+/*
+ * Constraints de formato/rango/unicidad que el commit real exige (algunos
+ * ya replicados en el dry-run, otros no -- ver ImportacionMasiva.js y
+ * Repository_InsertarRegistro.js) pero que hasta ahora NO aparecían en
+ * LEEME.txt, así que quien rellena el CSV a ciegas (una IA o una persona)
+ * no tenía forma de saberlo hasta que el import fallaba. Una sola fuente
+ * de verdad más, igual que CATALOGOS_POR_COLUMNA_STAGING_.
+ */
+var CONSTRAINTS_ADICIONALES_POR_COLUMNA_ = {
+  STG_CAMPANA: {
+    FECHA_FIN_PLAN: 'debe ser igual o posterior a FECHA_INICIO_PLAN.'
+  },
+  STG_PROCESO: {
+    DURACION_PREVISTA_DIAS: 'número mayor que 0.'
+  },
+  STG_TAREA: {
+    DURACION_PREVISTA_DIAS: 'número mayor que 0.'
+  },
+  STG_PRODUCTO: {
+    CODIGO: 'debe ser único entre todos los productos ya existentes en el Sheet (no distingue mayúsculas/minúsculas).'
+  },
+  STG_PERSONA: {
+    CAPACIDAD_SEMANAL_DIAS: 'número entero mayor que 0 y menor o igual que 7 (días laborables por semana).'
+  },
+  STG_TAREA_RESPONSABLE: {
+    PORCENTAJE_DEDICACION: 'número entre 1 y 100 (0 no es un valor válido).'
+  },
+  STG_HORARIO: {
+    HORA_INICIO: 'formato HH:MM en 24h (ej. "09:00"). Debe ser anterior a HORA_FIN.',
+    HORA_FIN: 'formato HH:MM en 24h (ej. "17:00"). Debe ser posterior a HORA_INICIO.'
+  },
+  STG_EJECUCION_TAREA: {
+    DURACION_REAL_DIAS: 'número mayor o igual que 0, si se indica.'
+  }
 };
 
 /*
@@ -124,7 +160,7 @@ var BLOQUES_ENTREVISTA_POR_GRUPO_ = {
     '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
   ],
   ASIGNACIONES: [
-    '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (0-100).',
+    '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (1-100, no puede ser 0).',
     '2. **Recursos** -- para cada tarea, qué recurso(s) físicos hacen falta y con qué tipo de uso.'
   ],
   SEGUIMIENTO: [
@@ -330,6 +366,7 @@ function construirInstruccionesPlantilla_(grupo) {
     var definicion = buscarDefinicionStaging_(nombreHoja);
     var obligatorios = CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_[nombreHoja] || [];
     var catalogos = CATALOGOS_POR_COLUMNA_STAGING_[nombreHoja] || {};
+    var constraintsAdicionales = CONSTRAINTS_ADICIONALES_POR_COLUMNA_[nombreHoja] || {};
 
     lineas.push('== ' + nombreHoja + '.csv ==');
 
@@ -348,6 +385,9 @@ function construirInstruccionesPlantilla_(grupo) {
         if (valoresPermitidos.length > 0) {
           detalle += ' -- valores permitidos: ' + valoresPermitidos.join(' | ');
         }
+      }
+      if (constraintsAdicionales[columna]) {
+        detalle += ' -- ' + constraintsAdicionales[columna];
       }
       lineas.push('  - ' + detalle);
     });
@@ -467,13 +507,28 @@ function analizarCSV_(texto) {
  * cabecera (no por posición) para tolerar que la IA reordene columnas;
  * si falta o sobra alguna cabecera obligatoria de la hoja real, falla
  * con un mensaje claro en vez de escribir datos a medias.
+ *
+ * sustituirPendientes (ver conversación -- fricción real: "no tengo
+ * forma de eliminar un archivo subido, tendría que eliminarlo todo y
+ * volver a empezar"): si es true, antes de escribir las filas nuevas se
+ * borran las filas PENDIENTES (ESTADO_IMPORTACION vacío) que ya hubiera
+ * en esta hoja concreta -- las ya importadas se conservan siempre,
+ * porque son la única copia del mapeo ID_TEMPORAL->ID_REAL para lotes
+ * futuros (ver vaciarHojasStagingImportacionMasiva). Así, volver a subir
+ * un CSV corregido para un solo grupo ya no obliga a vaciar todo el
+ * área de trabajo.
  */
-function escribirFilasCSVEnHojaStaging(nombreHoja, textoCSV) {
+function escribirFilasCSVEnHojaStaging(nombreHoja, textoCSV, sustituirPendientes) {
   var definicion = buscarDefinicionStaging_(nombreHoja);
   var hoja = SpreadsheetApp.getActive().getSheetByName(nombreHoja);
 
   if (!hoja) {
     throw new Error('No existe la hoja ' + nombreHoja + '. Ejecuta primero "Preparar hojas".');
+  }
+
+  var filasPendientesSustituidas = 0;
+  if (sustituirPendientes) {
+    filasPendientesSustituidas = eliminarFilasPendientesDeHoja_(hoja);
   }
 
   var filasCSV = analizarCSV_(textoCSV);
@@ -525,5 +580,46 @@ function escribirFilasCSVEnHojaStaging(nombreHoja, textoCSV) {
   var ultimaFila = hoja.getLastRow();
   hoja.getRange(ultimaFila + 1, 1, filasParaEscribir.length, cabecerasHoja.length).setValues(filasParaEscribir);
 
-  return { filasEscritas: filasParaEscribir.length };
+  return { filasEscritas: filasParaEscribir.length, filasPendientesSustituidas: filasPendientesSustituidas };
+}
+
+/*
+ * Borra de `hoja` solo las filas pendientes (columna ESTADO_IMPORTACION
+ * vacía), conservando las ya importadas y compactando el resto hacia
+ * arriba -- mismo criterio que vaciarHojasStagingImportacionMasiva
+ * (InstaladorImportacionMasiva.js) pero acotado a una sola hoja, para
+ * el botón "Sustituir" de la subida de CSV.
+ */
+function eliminarFilasPendientesDeHoja_(hoja) {
+  var ultimaFila = hoja.getLastRow();
+  var ultimaColumna = hoja.getLastColumn();
+  if (ultimaFila < 2 || ultimaColumna < 1) return 0;
+
+  var cabecerasHoja = hoja.getRange(1, 1, 1, ultimaColumna).getValues()[0].map(function (c) {
+    return String(c || '').trim();
+  });
+  var indiceEstadoImportacion = cabecerasHoja.indexOf('ESTADO_IMPORTACION');
+  if (indiceEstadoImportacion === -1) return 0;
+
+  var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+  var filasAConservar = [];
+  var filasBorradas = 0;
+
+  valores.forEach(function (fila) {
+    var importada = String(fila[indiceEstadoImportacion] || '').trim() !== '';
+    if (importada) {
+      filasAConservar.push(fila);
+    } else {
+      filasBorradas++;
+    }
+  });
+
+  if (filasBorradas === 0) return 0;
+
+  hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).clearContent();
+  if (filasAConservar.length > 0) {
+    hoja.getRange(2, 1, filasAConservar.length, ultimaColumna).setValues(filasAConservar);
+  }
+
+  return filasBorradas;
 }

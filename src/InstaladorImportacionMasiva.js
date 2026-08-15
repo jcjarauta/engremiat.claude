@@ -261,18 +261,34 @@ function instalarStagingImportacionMasiva() {
 
 /*
  * Vaciar de un clic (ver conversación -- "necesitamos poder borrar todos
- * los datos del stg de un clic"): borra todas las filas de datos (todo
- * lo que no sea la fila de cabecera) de cada hoja STG_* existente, tanto
- * pendientes como ya importadas -- para volver a empezar una prueba
- * limpia sin arrastrar restos de lotes anteriores (el hallazgo real de
- * esta sesión: filas STG_PROYECTO duplicadas y filas STG_PRODUCTO
- * huérfanas de un lote abandonado, mezcladas con el lote nuevo). NO
- * toca los datos ya importados a las hojas reales (CAMPANA, PROYECTO...)
- * -- solo limpia el área de trabajo.
+ * los datos del stg de un clic"): borra filas de datos de cada hoja
+ * STG_* existente, para volver a empezar una prueba limpia sin arrastrar
+ * restos de lotes anteriores (el hallazgo real de esta sesión: filas
+ * STG_PROYECTO duplicadas y filas STG_PRODUCTO huérfanas de un lote
+ * abandonado, mezcladas con el lote nuevo). NO toca los datos ya
+ * importados a las hojas reales (CAMPANA, PROYECTO...) -- solo limpia el
+ * área de trabajo STG_*.
+ *
+ * soloPendientes (por defecto true, ver conversación -- hallazgo real:
+ * un vaciado total borraba también las filas YA importadas, que son la
+ * única copia que existe del mapeo ID_TEMPORAL->ID_REAL usado por
+ * resolverReferenciaStaging_/obtenerMapaResolucionStaging_
+ * (ImportacionMasiva.js) para resolver referencias en lotes futuros
+ * -- p.ej. importar "campana" hoy y "asignaciones" la semana que viene
+ * reusando los mismos ID_TEMPORAL cortos. Vaciar esas filas rompía esa
+ * posibilidad sin avisar). Con soloPendientes=true solo se borran las
+ * filas cuyo ESTADO_IMPORTACION está vacío (nunca importadas); las que
+ * ya tienen ESTADO_IMPORTACION="Importado" se conservan siempre. El
+ * vaciado total (soloPendientes=false) sigue disponible para quien de
+ * verdad quiera perder ese historial, pero ya no es el comportamiento
+ * por defecto del botón.
  */
-function vaciarHojasStagingImportacionMasiva() {
+function vaciarHojasStagingImportacionMasiva(soloPendientes) {
+  if (soloPendientes === undefined || soloPendientes === null) soloPendientes = true;
+
   var ss = SpreadsheetApp.getActive();
   var filasBorradas = 0;
+  var filasConservadas = 0;
   var hojasVaciadas = 0;
 
   var bloqueo = LockService.getScriptLock();
@@ -287,13 +303,42 @@ function vaciarHojasStagingImportacionMasiva() {
       var ultimaColumna = hoja.getLastColumn();
       if (ultimaFila < 2 || ultimaColumna < 1) return;
 
-      filasBorradas += ultimaFila - 1;
-      hojasVaciadas++;
+      if (!soloPendientes) {
+        filasBorradas += ultimaFila - 1;
+        hojasVaciadas++;
+        hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).clearContent();
+        return;
+      }
+
+      var indiceEstadoImportacion = definicion.cabeceras.indexOf('ESTADO_IMPORTACION');
+      if (indiceEstadoImportacion === -1) return;
+
+      var valores = hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).getValues();
+      var filasAConservar = [];
+      var huboBorrado = false;
+
+      valores.forEach(function (fila) {
+        var importada = String(fila[indiceEstadoImportacion] || '').trim() !== '';
+        if (importada) {
+          filasAConservar.push(fila);
+          filasConservadas++;
+        } else {
+          filasBorradas++;
+          huboBorrado = true;
+        }
+      });
+
+      if (!huboBorrado) return;
+
       hoja.getRange(2, 1, ultimaFila - 1, ultimaColumna).clearContent();
+      if (filasAConservar.length > 0) {
+        hoja.getRange(2, 1, filasAConservar.length, ultimaColumna).setValues(filasAConservar);
+      }
+      hojasVaciadas++;
     });
   } finally {
     bloqueo.releaseLock();
   }
 
-  return { filasBorradas: filasBorradas, hojasVaciadas: hojasVaciadas };
+  return { filasBorradas: filasBorradas, filasConservadas: filasConservadas, hojasVaciadas: hojasVaciadas, soloPendientes: soloPendientes };
 }
