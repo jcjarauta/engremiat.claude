@@ -393,7 +393,14 @@ function construirSubmenuCatalogosYAdministracion_(ui) {
   if (moduloInstalado_('CLIENTE')) menu = agregarCatalogosCliente_(menu);
   if (moduloInstalado_('VENTAS')) menu = agregarCatalogosVentas_(menu);
   if (moduloInstalado_('OPORTUNIDAD')) menu = agregarCatalogosOportunidad_(menu);
+  if (moduloInstalado_('ESCENARIOS')) menu = agregarCatalogosEscenarios_(menu);
   return menu;
+}
+
+function agregarCatalogosEscenarios_(menu) {
+  return menu
+    .addItem('Nuevo escenario de simulación', 'abrirFormularioCrearEscenario')
+    .addItem('Editar escenario de simulación', 'abrirEditarEscenario');
 }
 
 function agregarCatalogosCore_(menu) {
@@ -403,14 +410,7 @@ function agregarCatalogosCore_(menu) {
   if (moduloInstalado_('COMPRAS')) menu = menu.addItem('Proveedores (hoja)', 'abrirProveedoresAdmin');
   menu = menu
     .addItem('Protección de hojas', 'abrirProteccionHojas')
-    .addItem('Importación masiva de campaña (STG_*)', 'abrirImportacionMasiva')
-    .addItem('Importación masiva de Recursos/Personas (STG_*)', 'abrirImportacionMasivaRecursosPersonas')
-    .addItem('Importación masiva de Asignaciones (STG_*)', 'abrirImportacionAsignaciones')
-    .addItem('Importación masiva de Decisiones/Incidencias/Documentos (STG_*)', 'abrirImportacionSeguimiento')
-    .addItem('Importación masiva de Horarios (STG_*)', 'abrirImportacionHorario')
-    .addItem('Importación masiva de Ejecuciones de tarea (STG_*)', 'abrirImportacionEjecucion')
-    .addItem('Nuevo escenario de simulación', 'abrirFormularioCrearEscenario')
-    .addItem('Editar escenario de simulación', 'abrirEditarEscenario')
+    .addItem('Importación masiva (STG_*)', 'abrirImportacionMasivaInicio')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
     .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
   // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de

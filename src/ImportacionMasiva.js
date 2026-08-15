@@ -792,185 +792,6 @@ function ejecutarImportacionAsignaciones_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
-function abrirImportacionAsignaciones() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionAsignaciones_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-  var total = r.responsables + r.recursos;
-
-  if (total === 0) {
-    ui.alert(
-      'Nada que importar',
-      'No hay filas pendientes en STG_TAREA_RESPONSABLE/STG_TAREA_RECURSO (o ya están todas importadas).',
-      ui.ButtonSet.OK
-    );
-    return;
-  }
-
-  var mensaje =
-    'Se creará:\n' +
-    '- ' + r.responsables + ' asignación(es) de responsable\n' +
-    '- ' + r.recursos + ' asignación(es) de recurso\n\n' +
-    '¿Confirmar la importación?';
-
-  var confirmacion = ui.alert('Confirmar importación de asignaciones', mensaje, ui.ButtonSet.YES_NO);
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionAsignaciones_(true);
-    var r2 = resultado.resumen;
-    ui.alert(
-      'Importación completada',
-      'Se crearon ' + r2.responsables + ' asignación(es) de responsable y ' + r2.recursos + ' asignación(es) de recurso.',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
-function abrirImportacionMasivaRecursosPersonas() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionRecursosPersonas_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-
-    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-  var total = r.recursos + r.personas + r.equipoMiembros;
-
-  if (total === 0) {
-    ui.alert(
-      'Nada que importar',
-      'No hay filas pendientes en STG_RECURSO/STG_PERSONA/STG_EQUIPO_MIEMBRO (o ya están todas importadas).',
-      ui.ButtonSet.OK
-    );
-    return;
-  }
-
-  var mensaje =
-    'Se creará:\n' +
-    '- ' + r.recursos + ' recurso(s)\n' +
-    '- ' + r.personas + ' persona(s)/equipo(s)\n' +
-    '- ' + r.equipoMiembros + ' relación(es) equipo-miembro\n\n' +
-    'UBICACION_ID y COORDINADOR_ID (si se indicaron) se completan en una segunda pasada, una vez creados todos los registros.\n\n' +
-    '¿Confirmar la importación?';
-
-  var confirmacion = ui.alert('Confirmar importación de Recursos/Personas', mensaje, ui.ButtonSet.YES_NO);
-
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionRecursosPersonas_(true);
-    var r2 = resultado.resumen;
-
-    ui.alert(
-      'Importación completada',
-      'Se crearon ' + r2.recursos + ' recurso(s), ' + r2.personas + ' persona(s)/equipo(s) y ' + r2.equipoMiembros + ' relación(es) equipo-miembro.',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
-function abrirImportacionMasiva() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionMasiva_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-
-    ui.alert(
-      'No se puede importar: hay errores',
-      listaErrores + extra,
-      ui.ButtonSet.OK
-    );
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-  var total = r.campanas + r.proyectos + r.productos + r.procesos + r.tareas;
-
-  if (total === 0) {
-    ui.alert(
-      'Nada que importar',
-      'No hay filas pendientes en las hojas STG_* (o ya están todas importadas).',
-      ui.ButtonSet.OK
-    );
-    return;
-  }
-
-  var mensaje =
-    'Se creará:\n' +
-    '- ' + r.campanas + ' campaña(s)\n' +
-    '- ' + r.proyectos + ' proyecto(s)\n' +
-    '- ' + r.productos + ' producto(s) (+ su relación proyecto-producto)\n' +
-    '- ' + r.procesos + ' proceso(s)\n' +
-    '- ' + r.tareas + ' tarea(s)\n\n' +
-    'El orden de secuencia y el predecesor de procesos/tareas se asignan automáticamente según el orden de las filas.\n\n' +
-    '¿Confirmar la importación?';
-
-  var confirmacion = ui.alert('Confirmar importación masiva', mensaje, ui.ButtonSet.YES_NO);
-
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionMasiva_(true);
-    var r2 = resultado.resumen;
-
-    ui.alert(
-      'Importación completada',
-      'Se crearon ' + r2.campanas + ' campaña(s), ' + r2.proyectos + ' proyecto(s), ' +
-        r2.productos + ' producto(s), ' + r2.procesos + ' proceso(s) y ' + r2.tareas + ' tarea(s).',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
 /*
  * Fase N11 (ver conversación -- "volcar al sheet todos los datos
  * necesarios para que los informes estén completos"): Decisión,
@@ -1213,61 +1034,6 @@ function ejecutarImportacionSeguimiento_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
-function abrirImportacionSeguimiento() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionSeguimiento_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-  var total = r.decisiones + r.incidencias + r.documentos;
-
-  if (total === 0) {
-    ui.alert(
-      'Nada que importar',
-      'No hay filas pendientes en STG_DECISION/STG_INCIDENCIA/STG_DOCUMENTO (o ya están todas importadas).',
-      ui.ButtonSet.OK
-    );
-    return;
-  }
-
-  var mensaje =
-    'Se creará:\n' +
-    '- ' + r.decisiones + ' decisión(es)\n' +
-    '- ' + r.incidencias + ' incidencia(s)\n' +
-    '- ' + r.documentos + ' documento(s)\n\n' +
-    '¿Confirmar la importación?';
-
-  var confirmacion = ui.alert('Confirmar importación de Decisiones/Incidencias/Documentos', mensaje, ui.ButtonSet.YES_NO);
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionSeguimiento_(true);
-    var r2 = resultado.resumen;
-    ui.alert(
-      'Importación completada',
-      'Se crearon ' + r2.decisiones + ' decisión(es), ' + r2.incidencias + ' incidencia(s) y ' + r2.documentos + ' documento(s).',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
 /*
  * HORARIO: ENTIDAD_TIPO decide si se resuelve PERSONA_TEMPORAL o
  * RECURSO_TEMPORAL -- las columnas *_TEMPORAL no usadas para ese
@@ -1396,48 +1162,6 @@ function ejecutarImportacionHorario_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
-function abrirImportacionHorario() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionHorario_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-
-  if (r.horarios === 0) {
-    ui.alert('Nada que importar', 'No hay filas pendientes en STG_HORARIO (o ya están todas importadas).', ui.ButtonSet.OK);
-    return;
-  }
-
-  var confirmacion = ui.alert(
-    'Confirmar importación de Horarios',
-    'Se creará(n) ' + r.horarios + ' franja(s) de horario.\n\n¿Confirmar la importación?',
-    ui.ButtonSet.YES_NO
-  );
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionHorario_(true);
-    ui.alert('Importación completada', 'Se crearon ' + resultado.resumen.horarios + ' franja(s) de horario.', ui.ButtonSet.OK);
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
 /*
  * EJECUCION_TAREA: registro real de trabajo hecho sobre una tarea (quién,
  * cuándo, con qué resultado) -- sin esto, un cliente que quiere
@@ -1523,58 +1247,19 @@ function ejecutarImportacionEjecucion_(confirmar) {
   return { ok: true, errores: [], resumen: resumen };
 }
 
-function abrirImportacionEjecucion() {
-  var ui = SpreadsheetApp.getUi();
-  var previsualizacion;
-
-  try {
-    previsualizacion = procesarImportacionEjecucion_(false);
-  } catch (e) {
-    ui.alert('Error al validar', e.message, ui.ButtonSet.OK);
-    return;
-  }
-
-  if (previsualizacion.errores.length > 0) {
-    var listaErrores = previsualizacion.errores.slice(0, 20).join('\n');
-    var extra = previsualizacion.errores.length > 20
-      ? '\n... y ' + (previsualizacion.errores.length - 20) + ' más.'
-      : '';
-    ui.alert('No se puede importar: hay errores', listaErrores + extra, ui.ButtonSet.OK);
-    return;
-  }
-
-  var r = previsualizacion.resumen;
-
-  if (r.ejecuciones === 0) {
-    ui.alert('Nada que importar', 'No hay filas pendientes en STG_EJECUCION_TAREA (o ya están todas importadas).', ui.ButtonSet.OK);
-    return;
-  }
-
-  var confirmacion = ui.alert(
-    'Confirmar importación de Ejecuciones',
-    'Se creará(n) ' + r.ejecuciones + ' ejecución(es) de tarea.\n\n¿Confirmar la importación?',
-    ui.ButtonSet.YES_NO
-  );
-  if (confirmacion !== ui.Button.YES) return;
-
-  try {
-    var resultado = procesarImportacionEjecucion_(true);
-    ui.alert('Importación completada', 'Se crearon ' + resultado.resumen.ejecuciones + ' ejecución(es) de tarea.', ui.ButtonSet.OK);
-  } catch (e) {
-    ui.alert('Error al importar', e.message, ui.ButtonSet.OK);
-  }
-}
-
 /*
  * Fase N13 (ver conversación -- "que al validar el botón cambie de
- * color... separar Validar de Importar"): las funciones abrirImportacionXxx
- * hacen la validación Y la confirmación DENTRO de diálogos nativos
- * (ui.alert), así que el HTML del diálogo nunca ve el resultado del
- * dry-run y no puede pintar nada en el propio botón. Estas 10 funciones
- * exponen procesarImportacionXxx_(false/true) directamente al cliente,
- * sin ningún diálogo nativo -- el HTML decide cómo mostrar el resultado.
- * Las abrirImportacionXxx originales se dejan tal cual (las sigue usando
- * el menú de Sheets para quien prefiere el flujo clásico).
+ * color... separar Validar de Importar"): las antiguas funciones
+ * abrirImportacionXxx hacían la validación Y la confirmación DENTRO de
+ * diálogos nativos (ui.alert), así que el HTML del diálogo unificado
+ * nunca veía el resultado del dry-run y no podía pintar nada en el
+ * propio botón. Estas 10 funciones exponen procesarImportacionXxx_
+ * (false/true) directamente al cliente, sin ningún diálogo nativo -- el
+ * HTML decide cómo mostrar el resultado.
+ * Las abrirImportacionXxx originales (ui.alert) se eliminaron en v70 --
+ * ver conversación "revisa la carga de hojas del core" / reconciliación
+ * menú clásico↔diálogo unificado: el menú de Sheets también abre
+ * abrirImportacionMasivaInicio() ahora, así que ya no tenían caller.
  */
 function validarImportacionMasiva() { return procesarImportacionMasiva_(false); }
 function confirmarImportacionMasiva() { return procesarImportacionMasiva_(true); }
