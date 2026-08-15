@@ -97,21 +97,22 @@ const expectedTests = [
   'src/Tests_ImportacionRecursosPersonas.js',
   'src/Tests_IntegridadGapReglasFuncional.js',
   'src/Tests_LecturaBatch.js',
+  'src/Tests_ModulosInstalados.js',
   'src/Tests_Repository.js',
   'src/Tests_Repository2.js',
 ];
 
 const expectedMixed = [];
 
-test('01 universo de 141 entradas', () => {
+test('01 universo de 175 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 141);
-  assertEqual(map.universeExpected, 141);
+  assertEqual(map.entries.length, 175);
+  assertEqual(map.universeExpected, 175);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 141);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 175);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -167,7 +168,7 @@ test('09 exclusión de siete tests en A', () => {
   assert(expectedTests.every((item) => !aPaths.has(item)));
 });
 
-test('10 inclusión individual de siete tests en B', () => {
+test('10 inclusión individual de nueve tests en B', () => {
   const map = readPackageMap(MAP_PATH);
   const bPaths = map.entries.filter((entry) => entry.package === 'B').map((entry) => entry.path).sort();
   assertDeepEqual(bPaths, [...expectedTests].sort());
@@ -180,9 +181,9 @@ test('11 repositorios de tests separados', () => {
   assert(first && second && first !== second && first.expectedSha256 !== second.expectedSha256);
 });
 
-test('12 inclusión de 21 HTML en A', () => {
+test('12 inclusión de 31 HTML en A', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html')).length, 21);
+  assertEqual(map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html')).length, 31);
 });
 
 test('13 inclusión de appsscript.json en A', () => {
@@ -464,15 +465,15 @@ test('49 matriz clasifica Código.js como auxiliary C', () => {
 test('50 hashes nuevos de archivos de integridad', () => {
   const integrity = readFileSync(path.join(PROJECT_ROOT, 'src', 'IntegrityService.js'));
   const testsIntegrity = readFileSync(path.join(PROJECT_ROOT, 'src', 'Tests_IntegridadGapReglasFuncional.js'));
-  assertEqual(crypto.createHash('sha256').update(integrity).digest('hex'), '9ea74302397f0b79f520589694b936d8eedbd25ab9c88970b60f30ce7b672c36');
+  assertEqual(crypto.createHash('sha256').update(integrity).digest('hex'), '4b577520a22c6c76398a45cbf8718dd4afb84bd3e8c5a42def33e74557194fd1');
   assertEqual(crypto.createHash('sha256').update(testsIntegrity).digest('hex'), 'cb3f158d590be214e875d00a8585e4a8db278be577a321cb261a3f345c2576de');
 });
 
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [69, 8, 37, 27, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [69, 8, 37, 27]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [101, 9, 37, 28, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [101, 9, 37, 28]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -875,8 +876,18 @@ test('114 recuento de módulos en package A', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (moduleName) => map.entries.filter((entry) => entry.package === 'A' && entry.module === moduleName).length;
   assertDeepEqual(
-    { CORE: count('CORE'), GANTT: count('GANTT'), ECONOMICO: count('ECONOMICO'), IMPACTO: count('IMPACTO'), COMPRAS: count('COMPRAS'), CONVOCATORIAS: count('CONVOCATORIAS') },
-    { CORE: 56, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 6, CONVOCATORIAS: 2 },
+    {
+      CORE: count('CORE'),
+      GANTT: count('GANTT'),
+      ECONOMICO: count('ECONOMICO'),
+      IMPACTO: count('IMPACTO'),
+      COMPRAS: count('COMPRAS'),
+      CONVOCATORIAS: count('CONVOCATORIAS'),
+      CLIENTE: count('CLIENTE'),
+      VENTAS: count('VENTAS'),
+      OPORTUNIDAD: count('OPORTUNIDAD'),
+    },
+    { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 },
   );
 });
 
@@ -885,9 +896,12 @@ test('115 entradas fuera de package A no declaran módulo', () => {
   assert(map.entries.filter((entry) => entry.package !== 'A').every((entry) => entry.module === null));
 });
 
-test('116 moduleDependencies declara exactamente los seis módulos válidos', () => {
+test('116 moduleDependencies declara exactamente los nueve módulos válidos', () => {
   const map = readPackageMap(MAP_PATH);
-  assertDeepEqual(Object.keys(map.moduleDependencies).sort(), ['COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'GANTT', 'IMPACTO']);
+  assertDeepEqual(
+    Object.keys(map.moduleDependencies).sort(),
+    ['CLIENTE', 'COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'GANTT', 'IMPACTO', 'OPORTUNIDAD', 'VENTAS'],
+  );
 });
 
 test('117 resolveModuleClosure resuelve cierre transitivo', () => {
