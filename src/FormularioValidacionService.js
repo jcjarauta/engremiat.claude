@@ -311,6 +311,16 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
   return campos;
 }
 function validarDuplicidadFormulario_(clave, datos, idExcluir) {
+  /*
+   * Imagen/Vídeo (ver conversación -- "necesitamos poder incluir los
+   * tres tipos, que no sean excluyentes"): DOCUMENTO es una galería de
+   * adjuntos, no una relación 1:1 -- la clave de duplicado
+   * (entidad+tipo+version) tiene sentido para un documento controlado
+   * (Manual/Protocolo, una versión vigente a la vez) pero bloqueaba por
+   * error una segunda foto o vídeo del mismo tipo en el mismo registro,
+   * ya que VERSION normalmente se deja en blanco en fotos/vídeos.
+   */
+  if (clave === 'DOCUMENTO' && (datos.TIPO_DOCUMENTO === 'Imagen' || datos.TIPO_DOCUMENTO === 'Vídeo')) return;
   var camposClave = CLAVES_DUPLICADO_MVP[clave];
   if (!camposClave) return;
   var registros = listarRegistros(clave, { ACTIVO: 'SÍ' });
@@ -992,7 +1002,7 @@ function validarReglasNegocioDocumento_(datos, idExcluir) {
   if (datos.VERSION && !/^[vV]?\d+(\.\d+){0,3}$/.test(datos.VERSION)) {
     throw new Error('La versión debe tener un formato como 1, 1.0 o v1.2.3.');
   }
-  if (datos.ESTADO === ESTADO_DOCUMENTO_VIGENTE_) {
+  if (datos.ESTADO === ESTADO_DOCUMENTO_VIGENTE_ && datos.TIPO_DOCUMENTO !== 'Imagen' && datos.TIPO_DOCUMENTO !== 'Vídeo') {
     var vigentes = listarRegistros('DOCUMENTO', {
       ACTIVO: 'SÍ',
       ENTIDAD_TIPO: datos.ENTIDAD_TIPO,

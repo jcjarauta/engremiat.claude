@@ -7590,3 +7590,59 @@ function ejecutarSuitePaso305a310() {
   pruebaPaso310_NuevoRegistroMaterialYPersonaEquipoDisponibles();
   Logger.log('SUITE PASO 305-310 (RECONSTRUCCION FASE 1 -- PROTECCION, EDICION DIRECTA, REVERSION, NUEVO REGISTRO MATERIAL/PERSONA) COMPLETADA CON EXITO');
 }
+
+/*
+ * PASO 311 (ver conversación -- "necesitamos poder incluir los tres
+ * tipos, que no sean excluyentes"): PASO 297/298 ya prueban que
+ * DOCUMENTO rechaza duplicados (mismo tipo+version) y un segundo
+ * vigente del mismo tipo -- correcto para Manual/Protocolo, pero
+ * Imagen/Vídeo son una galería de adjuntos, no una relación 1:1. Esta
+ * prueba confirma que ambas reglas quedan exentas para esos dos tipos:
+ * se pueden crear varias imágenes vigentes con VERSION en blanco sobre
+ * el mismo registro sin que salte ningún rechazo.
+ */
+function pruebaPaso311_DocumentoImagenVideoNoExcluyentes() {
+  Logger.log('=== PASO 311: DOCUMENTO - Imagen/Vídeo no son excluyentes entre sí ni consigo mismos ===');
+  var cadena = construirCadenaTareaPrueba_('P311');
+  try {
+    var primeraImagen = guardarFormulario('DOCUMENTO', null, {
+      ENTIDAD_TIPO: 'Tarea',
+      ENTIDAD_ID: cadena.tareaId,
+      TIPO_DOCUMENTO: 'Imagen',
+      TITULO: 'Foto P311 uno',
+      URL: 'https://drive.google.com/file/d/foto-p311-uno/view',
+      ESTADO: 'Vigente'
+    });
+    if (primeraImagen !== true) throw new Error('PASO 311 FALLO: no se pudo guardar la primera imagen vigente');
+
+    var segundaImagen = guardarFormulario('DOCUMENTO', null, {
+      ENTIDAD_TIPO: 'Tarea',
+      ENTIDAD_ID: cadena.tareaId,
+      TIPO_DOCUMENTO: 'Imagen',
+      TITULO: 'Foto P311 dos',
+      URL: 'https://drive.google.com/file/d/foto-p311-dos/view',
+      ESTADO: 'Vigente'
+    });
+    if (segundaImagen !== true) throw new Error('PASO 311 FALLO: se rechazo una segunda imagen vigente del mismo tipo (deberian poder coexistir)');
+    Logger.log('OK PASO 311a: dos imágenes vigentes del mismo tipo coexisten en el mismo registro');
+
+    var video = guardarFormulario('DOCUMENTO', null, {
+      ENTIDAD_TIPO: 'Tarea',
+      ENTIDAD_ID: cadena.tareaId,
+      TIPO_DOCUMENTO: 'Vídeo',
+      TITULO: 'Vídeo P311',
+      URL: 'https://drive.google.com/file/d/video-p311/view',
+      ESTADO: 'Vigente'
+    });
+    if (video !== true) throw new Error('PASO 311 FALLO: se rechazo un vídeo vigente coexistiendo con imágenes vigentes del mismo registro');
+    Logger.log('OK PASO 311b: imagen y vídeo coexisten como vigentes en el mismo registro');
+  } finally {
+    limpiarCadenaTareaPrueba_(cadena);
+    limpiarResiduosPruebaPorTexto_('P311');
+  }
+}
+
+function ejecutarSuitePaso311() {
+  pruebaPaso311_DocumentoImagenVideoNoExcluyentes();
+  Logger.log('SUITE PASO 311 (DOCUMENTO -- IMAGEN/VIDEO NO EXCLUYENTES) COMPLETADA CON EXITO');
+}
