@@ -24,6 +24,21 @@ function contarPorEstado_(entidad) {
   return conteo;
 }
 
+/*
+ * DECISION/INCIDENCIA son del módulo SEGUIMIENTO (v78) -- contarPorEstado_
+ * usa listarRegistros directo, así que se cuentan aquí sobre
+ * listarRegistrosSeguro_ en vez de duplicar la lógica de conteo.
+ */
+function contarPorEstadoSeguro_(entidad) {
+  var registros = listarRegistrosSeguro_(entidad, { ACTIVO: 'SÍ' });
+  var conteo = {};
+  registros.forEach(function (registro) {
+    var estado = registro.ESTADO || '(sin estado)';
+    conteo[estado] = (conteo[estado] || 0) + 1;
+  });
+  return conteo;
+}
+
 function obtenerResumenGlobal() {
   return {
     CAMPANA: contarPorEstado_('CAMPANA'),
@@ -31,8 +46,8 @@ function obtenerResumenGlobal() {
     PRODUCTO: contarPorEstado_('PRODUCTO'),
     PROCESO: contarPorEstado_('PROCESO'),
     TAREA: contarPorEstado_('TAREA'),
-    DECISION: contarPorEstado_('DECISION'),
-    INCIDENCIA: contarPorEstado_('INCIDENCIA')
+    DECISION: contarPorEstadoSeguro_('DECISION'),
+    INCIDENCIA: contarPorEstadoSeguro_('INCIDENCIA')
   };
 }
 
@@ -58,7 +73,7 @@ function listarTareasPospuestas() {
 function listarDecisionesPendientes() {
   var hoy = new Date();
   hoy.setHours(0, 0, 0, 0);
-  var decisiones = listarRegistros('DECISION', { ACTIVO: 'SÍ' });
+  var decisiones = listarRegistrosSeguro_('DECISION', { ACTIVO: 'SÍ' });
   return decisiones
     .filter(function (decision) {
       return ESTADOS_CERRADOS_MVP.DECISION.indexOf(decision.ESTADO) === -1;
@@ -74,7 +89,7 @@ function listarDecisionesPendientes() {
 }
 
 function listarIncidenciasAbiertas() {
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' });
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' });
   return incidencias.filter(function (incidencia) {
     return ESTADOS_CERRADOS_MVP.INCIDENCIA.indexOf(incidencia.ESTADO) === -1;
   });
@@ -82,11 +97,11 @@ function listarIncidenciasAbiertas() {
 
 
 function listarRecursosNoDisponibles() {
-  return listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ', DISPONIBILIDAD: 'No disponible' });
+  return listarRegistrosSeguro_('PERSONA_EQUIPO', { ACTIVO: 'SÍ', DISPONIBILIDAD: 'No disponible' });
 }
 
 function listarSobreasignaciones() {
-  var asignaciones = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var asignaciones = listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   var totales = {};
   asignaciones.forEach(function (a) {
     var pct = Number(a.PORCENTAJE_DEDICACION) || 0;
@@ -132,7 +147,7 @@ function listarRelacionesIncompletas() {
  * excepciones del Panel operativo, no como informe aislado.
  */
 function listarRecursosSinCompetenciaDisponible() {
-  var recursosCompetencia = listarRegistros('RECURSO_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var recursosCompetencia = listarRegistrosSeguro_('RECURSO_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   if (recursosCompetencia.length === 0) return [];
 
   var personasPorId = {};
@@ -174,7 +189,7 @@ function listarRecursosSinCompetenciaDisponible() {
 var RANGO_NIVEL_COMPETENCIA_ = { 'Básico': 1, 'Intermedio': 2, 'Avanzado': 3 };
 
 function listarAsignacionesSinEncajeCompetencia() {
-  var requisitos = listarRegistros('TAREA_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var requisitos = listarRegistrosSeguro_('TAREA_COMPETENCIA', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   if (requisitos.length === 0) return [];
 
   var requisitosPorTarea = {};
@@ -235,7 +250,7 @@ function listarAsignacionesSinEncajeCompetencia() {
  * llegan a la cantidad mínima.
  */
 function listarAsignacionesSinEncajeRecurso() {
-  var necesidades = listarRegistros('TAREA_RECURSO_NECESIDAD', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var necesidades = listarRegistrosSeguro_('TAREA_RECURSO_NECESIDAD', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   if (necesidades.length === 0) return [];
 
   var recursosPorId = {};
@@ -288,15 +303,15 @@ function listarTareasSinResponsable() {
   var activas = tareas.filter(function (t) {
     return ESTADOS_CERRADOS_MVP.TAREA.indexOf(t.ESTADO) === -1;
   });
-  var asignaciones = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var asignaciones = listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   var tareasConResponsable = {};
   asignaciones.forEach(function (a) { tareasConResponsable[a.TAREA_ID] = true; });
   return activas.filter(function (t) { return !tareasConResponsable[t.ID]; });
 }
 
 function listarCapacidadRecursos() {
-  var personas = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' });
-  var asignaciones = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
+  var personas = listarRegistrosSeguro_('PERSONA_EQUIPO', { ACTIVO: 'SÍ' });
+  var asignaciones = listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ', ESTADO: 'Activa' });
   return personas.map(function (p) {
     var dedicacion = 0;
     asignaciones.forEach(function (a) {

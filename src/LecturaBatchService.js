@@ -73,22 +73,46 @@ function loteConvertirValor_(valor, esColumnaFecha) {
  * cada entidad -- para que el codigo que consume el resultado no tenga
  * que distinguir si vino por lote o por listarRegistros normal.
  */
+/*
+ * Módulos opcionales (ver conversación -- "los informes/vistas también
+ * deberían ser dinámicos... un sheet core no necesita algún dato que
+ * esté en los módulos superiores"): Sheets.Spreadsheets.Values.batchGet
+ * falla ENTERO si un solo rango de la petición referencia una hoja
+ * inexistente -- a diferencia de listarRegistros/listarRegistrosSeguro_
+ * (Repository.js, por entidad), no es resiliente por rango. Sin este
+ * filtro, pedir en el mismo lote una entidad CORE (TAREA) y una
+ * opcional ausente (TAREA_RESPONSABLE sin OPERATIVA) tumbaba también la
+ * CORE -- Kanban/Gantt/Vista del día quedaban colgados enteros en
+ * clientes CORE-only. Las hojas ausentes se excluyen del batch y
+ * resuelven a [] directamente, igual que listarRegistrosSeguro_.
+ */
 function leerVariasEntidadesBatch_(entidades) {
-  var rangos = entidades.map(function (entidad) {
+  var ss = SpreadsheetApp.getActive();
+  var resultado = {};
+  var entidadesDisponibles = [];
+  var rangos = [];
+
+  entidades.forEach(function (entidad) {
     var config = ENTIDADES_MVP[entidad];
     if (!config) throw new Error('ERROR_LOTE: entidad no reconocida: ' + entidad);
-    return config.hoja;
+    if (!ss.getSheetByName(config.hoja)) {
+      console.warn('LECTURA_LOTE_OMITIDA ' + entidad + ': hoja ' + config.hoja + ' no encontrada.');
+      resultado[entidad] = [];
+      return;
+    }
+    entidadesDisponibles.push(entidad);
+    rangos.push(config.hoja);
   });
 
-  var idHoja = SpreadsheetApp.getActive().getId();
-  var respuesta = Sheets.Spreadsheets.Values.batchGet(idHoja, {
+  if (rangos.length === 0) return resultado;
+
+  var respuesta = Sheets.Spreadsheets.Values.batchGet(ss.getId(), {
     ranges: rangos,
     valueRenderOption: 'UNFORMATTED_VALUE',
     dateTimeRenderOption: 'SERIAL_NUMBER'
   });
 
-  var resultado = {};
-  entidades.forEach(function (entidad, indice) {
+  entidadesDisponibles.forEach(function (entidad, indice) {
     var filasCrudas = (respuesta.valueRanges[indice] && respuesta.valueRanges[indice].values) || [];
     if (filasCrudas.length < 2) {
       resultado[entidad] = [];

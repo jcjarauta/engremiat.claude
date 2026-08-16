@@ -54,11 +54,11 @@ function obtenerFichaPersonaEquipo(id) {
   var esEquipo = persona.TIPO === 'Equipo';
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) {
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) {
     nombresPersona[p.ID] = p.NOMBRE;
   });
 
-  var equipoMiembro = listarRegistros('EQUIPO_MIEMBRO', { ACTIVO: 'SÍ' });
+  var equipoMiembro = listarRegistrosSeguro_('EQUIPO_MIEMBRO', { ACTIVO: 'SÍ' });
 
   var miembros = !esEquipo ? [] : equipoMiembro
     .filter(function (em) { return em.EQUIPO_ID === id; })
@@ -82,11 +82,11 @@ function obtenerFichaPersonaEquipo(id) {
     ? { id: persona.COORDINADOR_ID, nombre: nombresPersona[persona.COORDINADOR_ID] || persona.COORDINADOR_ID }
     : null;
 
-  var equiposQueCoordina = esEquipo ? [] : listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ', TIPO: 'Equipo' })
+  var equiposQueCoordina = esEquipo ? [] : listarRegistrosSeguro_('PERSONA_EQUIPO', { ACTIVO: 'SÍ', TIPO: 'Equipo' })
     .filter(function (e) { return e.COORDINADOR_ID === id; })
     .map(function (e) { return { id: e.ID, nombre: e.NOMBRE, estado: e.ESTADO }; });
 
-  var horarios = listarRegistros('HORARIO', { ACTIVO: 'SÍ' })
+  var horarios = listarRegistrosSeguro_('HORARIO', { ACTIVO: 'SÍ' })
     .filter(function (h) { return h.ENTIDAD_TIPO === 'Persona/Equipo' && h.ENTIDAD_ID === id; })
     .map(function (h) {
       return {
@@ -99,7 +99,7 @@ function obtenerFichaPersonaEquipo(id) {
   var procesosPorId = {};
   listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
 
-  var tareasResponsable = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
+  var tareasResponsable = listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tr.PERSONA_EQUIPO_ID === id; })
     .map(function (tr) {
       var tarea = obtenerRegistroPorId('TAREA', tr.TAREA_ID);
@@ -155,11 +155,11 @@ function obtenerFichaPersonaEquipo(id) {
   });
   var proyectosInvolucrado = Object.keys(proyectosMapa).map(function (k) { return proyectosMapa[k]; });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Persona/Equipo' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 
-  var vinculos = listarRegistros('VINCULO', { ACTIVO: 'SÍ' })
+  var vinculos = listarRegistrosSeguro_('VINCULO', { ACTIVO: 'SÍ' })
     .filter(function (v) {
       return (v.ENTIDAD_ORIGEN_TIPO === 'Persona/Equipo' && v.ENTIDAD_ORIGEN_ID === id) ||
              (v.ENTIDAD_DESTINO_TIPO === 'Persona/Equipo' && v.ENTIDAD_DESTINO_ID === id);

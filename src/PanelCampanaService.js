@@ -28,12 +28,12 @@ function obtenerArbolCampana(campanaId) {
   }
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (persona) {
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (persona) {
     nombresPersona[persona.ID] = persona.NOMBRE;
   });
 
   var responsablesPorTarea = {};
-  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (asignacion) {
+  listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (asignacion) {
     var nombre = nombresPersona[asignacion.PERSONA_EQUIPO_ID] || asignacion.PERSONA_EQUIPO_ID;
     if (!responsablesPorTarea[asignacion.TAREA_ID]) responsablesPorTarea[asignacion.TAREA_ID] = [];
     responsablesPorTarea[asignacion.TAREA_ID].push({ id: asignacion.PERSONA_EQUIPO_ID, nombre: nombre });
@@ -49,9 +49,9 @@ function obtenerArbolCampana(campanaId) {
    * un "Editar X" suelto del menu sin contexto.
    */
   var nombresRecurso_ = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso_[r.ID] = r.NOMBRE; });
+  listarRegistrosSeguro_('RECURSO', {}).forEach(function (r) { nombresRecurso_[r.ID] = r.NOMBRE; });
   var recursosPorTarea = {};
-  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+  listarRegistrosSeguro_('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
     if (!recursosPorTarea[tr.TAREA_ID]) recursosPorTarea[tr.TAREA_ID] = [];
     recursosPorTarea[tr.TAREA_ID].push({ id: tr.RECURSO_ID, nombre: nombresRecurso_[tr.RECURSO_ID] || tr.RECURSO_ID, tipoUso: tr.TIPO_USO });
   });
@@ -76,7 +76,7 @@ function obtenerArbolCampana(campanaId) {
   } catch (eMaterial_) { /* modulo COMPRAS no instalado en este cliente */ }
 
   var ejecucionesPorTarea = {};
-  listarRegistros('EJECUCION_TAREA', { ACTIVO: 'SÍ' }).forEach(function (ej) {
+  listarRegistrosSeguro_('EJECUCION_TAREA', { ACTIVO: 'SÍ' }).forEach(function (ej) {
     if (!ejecucionesPorTarea[ej.TAREA_ID]) ejecucionesPorTarea[ej.TAREA_ID] = [];
     ejecucionesPorTarea[ej.TAREA_ID].push({
       id: ej.ID, responsableNombre: nombresPersona[ej.RESPONSABLE_ID] || '',
@@ -85,7 +85,7 @@ function obtenerArbolCampana(campanaId) {
   });
 
   var decisionesPorProyecto = {};
-  listarRegistros('DECISION', { ACTIVO: 'SÍ' }).forEach(function (d) {
+  listarRegistrosSeguro_('DECISION', { ACTIVO: 'SÍ' }).forEach(function (d) {
     if (!decisionesPorProyecto[d.PROYECTO_ID]) decisionesPorProyecto[d.PROYECTO_ID] = [];
     decisionesPorProyecto[d.PROYECTO_ID].push({ id: d.ID, titulo: d.TITULO, estado: d.ESTADO });
   });
@@ -98,7 +98,7 @@ function obtenerArbolCampana(campanaId) {
    * NIVEL_INCIDENCIA.
    */
   var incidenciasPorNivelId_ = { CAMPANA_ID: {}, PROYECTO_ID: {}, PRODUCTO_ID: {}, PROCESO_ID: {}, TAREA_ID: {} };
-  listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' }).forEach(function (inc) {
+  listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' }).forEach(function (inc) {
     var campoNivel = ['TAREA_ID', 'PROCESO_ID', 'PRODUCTO_ID', 'PROYECTO_ID', 'CAMPANA_ID'].filter(function (c) { return inc[c]; })[0];
     if (!campoNivel) return;
     var mapa = incidenciasPorNivelId_[campoNivel];

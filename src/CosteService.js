@@ -119,7 +119,7 @@ function calcularCosteRecursosAtribuido_(productosIds) {
   var tareasIds = resolverTareasIdsDeAmbito_(productosIds);
 
   var diasPorRecurso = {};
-  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' })
+  listarRegistrosSeguro_('TAREA_RECURSO', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tareasIds.indexOf(tr.TAREA_ID) !== -1; })
     .forEach(function (tr) {
       if (!tr.FECHA_INICIO || !tr.FECHA_FIN) return;
@@ -233,12 +233,12 @@ function calcularImpactoSocialAmbito_(productosIds) {
   if (tareasIds.length === 0) return { personasVoluntariado: 0, diasVoluntariado: 0, personasAtendidas: 0, diasPersonasAtendidas: 0 };
 
   var personasPorId = {};
-  listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).forEach(function (p) { personasPorId[p.ID] = p; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', { ACTIVO: 'SÍ' }).forEach(function (p) { personasPorId[p.ID] = p; });
 
   var voluntarios = {}, atendidas = {};
   var diasVoluntariado = 0, diasAtendidas = 0;
 
-  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
+  listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tareasIds.indexOf(tr.TAREA_ID) !== -1; })
     .forEach(function (tr) {
       var persona = personasPorId[tr.PERSONA_EQUIPO_ID];

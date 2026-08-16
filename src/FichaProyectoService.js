@@ -16,7 +16,7 @@ function obtenerFichaProyecto(id) {
   }
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var campana = obtenerRegistroPorId('CAMPANA', proyecto.CAMPANA_ID);
 
@@ -71,7 +71,7 @@ function obtenerFichaProyecto(id) {
     diasDesviacionMedia: procesosConFinReal.length > 0 ? Math.round((sumaDesviacion / procesosConFinReal.length) * 10) / 10 : null
   };
 
-  var decisiones = listarRegistros('DECISION', { ACTIVO: 'SÍ' })
+  var decisiones = listarRegistrosSeguro_('DECISION', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.PROYECTO_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, estado: d.ESTADO, tipo: d.TIPO }; });
 
@@ -82,11 +82,11 @@ function obtenerFichaProyecto(id) {
    * aparece en la ficha de ese registro más específico, no se duplica
    * aquí.
    */
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' })
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
     .filter(function (inc) { return inc.PROYECTO_ID === id && !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Proyecto' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO, url: d.URL }; });
 

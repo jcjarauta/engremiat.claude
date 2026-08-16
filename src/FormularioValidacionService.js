@@ -19,7 +19,7 @@ function obtenerVinculosDeEntidad(entidad, id) {
   var etiqueta = MVP_A_ENTIDAD_DOCUMENTO_[entidad];
   if (!etiqueta || !id) return [];
 
-  return listarRegistros('VINCULO', { ACTIVO: 'SÍ' })
+  return listarRegistrosSeguro_('VINCULO', { ACTIVO: 'SÍ' })
     .filter(function (v) {
       return (v.ENTIDAD_ORIGEN_TIPO === etiqueta && v.ENTIDAD_ORIGEN_ID === id) ||
              (v.ENTIDAD_DESTINO_TIPO === etiqueta && v.ENTIDAD_DESTINO_ID === id);

@@ -67,7 +67,7 @@ function obtenerFichaConvocatoria(id) {
       };
     });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Convocatoria' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 

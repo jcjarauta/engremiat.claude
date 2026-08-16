@@ -160,7 +160,7 @@ function listarDesviacionesTareas_(filtro) {
  */
 function enriquecerConNombreResponsableProceso_(procesosConDesviacion) {
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
   return procesosConDesviacion.map(function (proceso) {
     return Object.assign({}, proceso, {
       RESPONSABLE_NOMBRE: proceso.RESPONSABLE_ID ? (nombresPersona[proceso.RESPONSABLE_ID] || proceso.RESPONSABLE_ID) : '(sin responsable)'
@@ -179,10 +179,10 @@ function enriquecerConNombreResponsableProceso_(procesosConDesviacion) {
  */
 function expandirTareasPorResponsable_(tareasConDesviacion) {
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var responsablesPorTarea = {};
-  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+  listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (tr) {
     if (!responsablesPorTarea[tr.TAREA_ID]) responsablesPorTarea[tr.TAREA_ID] = [];
     responsablesPorTarea[tr.TAREA_ID].push(tr.PERSONA_EQUIPO_ID);
   });
@@ -245,11 +245,11 @@ function calcularDesviacionPorRecurso_(procesosConDesviacion) {
   listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) { procesoIdPorTarea[t.ID] = t.PROCESO_ID; });
 
   var nombresRecurso = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
+  listarRegistrosSeguro_('RECURSO', {}).forEach(function (r) { nombresRecurso[r.ID] = r.NOMBRE; });
 
   var vistoPorRecurso_ = {};
   var registrosPlanos = [];
-  listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+  listarRegistrosSeguro_('TAREA_RECURSO', { ACTIVO: 'SÍ' }).forEach(function (tr) {
     var procesoId = procesoIdPorTarea[tr.TAREA_ID];
     var proceso = procesoId && procesoPorId[procesoId];
     if (!proceso) return;

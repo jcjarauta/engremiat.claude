@@ -14,15 +14,15 @@ function obtenerFichaRecurso(id) {
   }
 
   var recursosPorId = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { recursosPorId[r.ID] = r; });
+  listarRegistrosSeguro_('RECURSO', {}).forEach(function (r) { recursosPorId[r.ID] = r; });
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var ubicacion = recurso.UBICACION_ID && recursosPorId[recurso.UBICACION_ID]
     ? { id: recurso.UBICACION_ID, nombre: recursosPorId[recurso.UBICACION_ID].NOMBRE }
     : null;
 
-  var contenidos = listarRegistros('RECURSO', { ACTIVO: 'SÍ' })
+  var contenidos = listarRegistrosSeguro_('RECURSO', { ACTIVO: 'SÍ' })
     .filter(function (r) { return r.UBICACION_ID === id; })
     .map(function (r) { return { id: r.ID, nombre: r.NOMBRE, clase: r.CLASE_RECURSO, estado: r.ESTADO }; });
 
@@ -32,7 +32,7 @@ function obtenerFichaRecurso(id) {
   listarRegistros('PROCESO', {}).forEach(function (p) { procesosPorId[p.ID] = p; });
   var contextoPorProducto = construirMapaContextoPorProducto_();
 
-  var usos = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' })
+  var usos = listarRegistrosSeguro_('TAREA_RECURSO', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tr.RECURSO_ID === id; })
     .map(function (tr) {
       var tarea = nombresTarea[tr.TAREA_ID];
@@ -46,7 +46,7 @@ function obtenerFichaRecurso(id) {
     })
     .sort(function (a, b) { return new Date(a.fechaInicio || 0) - new Date(b.fechaInicio || 0); });
 
-  var horarios = listarRegistros('HORARIO', { ACTIVO: 'SÍ' })
+  var horarios = listarRegistrosSeguro_('HORARIO', { ACTIVO: 'SÍ' })
     .filter(function (h) { return h.ENTIDAD_TIPO === 'Recurso' && h.ENTIDAD_ID === id; })
     .map(function (h) {
       return {
@@ -55,7 +55,7 @@ function obtenerFichaRecurso(id) {
       };
     });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Recurso' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 
@@ -67,9 +67,9 @@ function obtenerFichaRecurso(id) {
    * direcciones.
    */
   var incidenciasPorId = {};
-  listarRegistros('INCIDENCIA', {}).forEach(function (i) { incidenciasPorId[i.ID] = i; });
+  listarRegistrosSeguro_('INCIDENCIA', {}).forEach(function (i) { incidenciasPorId[i.ID] = i; });
 
-  var incidenciasVinculadas = listarRegistros('VINCULO', { ACTIVO: 'SÍ' })
+  var incidenciasVinculadas = listarRegistrosSeguro_('VINCULO', { ACTIVO: 'SÍ' })
     .filter(function (v) {
       return (v.ENTIDAD_ORIGEN_TIPO === 'Recurso' && v.ENTIDAD_ORIGEN_ID === id && v.ENTIDAD_DESTINO_TIPO === 'Incidencia') ||
              (v.ENTIDAD_DESTINO_TIPO === 'Recurso' && v.ENTIDAD_DESTINO_ID === id && v.ENTIDAD_ORIGEN_TIPO === 'Incidencia');

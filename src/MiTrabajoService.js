@@ -10,7 +10,7 @@ function obtenerMiTrabajo() {
   var miEmail = String(Session.getEffectiveUser().getEmail() || '').trim().toLowerCase();
   if (!miEmail) return serializarParaCliente_({ sinPersona: true });
 
-  var yo = listarRegistros('PERSONA_EQUIPO', { ACTIVO: 'SÍ' })
+  var yo = listarRegistrosSeguro_('PERSONA_EQUIPO', { ACTIVO: 'SÍ' })
     .filter(function (p) { return String(p.EMAIL || '').trim().toLowerCase() === miEmail; })[0];
   if (!yo) return serializarParaCliente_({ sinPersona: true });
 
@@ -26,14 +26,14 @@ function obtenerMiTrabajo() {
     .sort(function (a, b) { return new Date(a.fechaFinPlan || 0) - new Date(b.fechaFinPlan || 0); });
 
   var ESTADOS_INCIDENCIA_CIERRE = ['Resuelta', 'Cerrada', 'Cancelada'];
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' })
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
     .filter(function (i) { return i.RESPONSABLE_ID === yo.ID && ESTADOS_INCIDENCIA_CIERRE.indexOf(i.ESTADO) === -1; })
     .map(function (i) { return { id: i.ID, titulo: i.TITULO, estado: i.ESTADO, prioridad: i.PRIORIDAD }; });
 
   var proyectosPorId = {};
   listarRegistros('PROYECTO', {}).forEach(function (p) { proyectosPorId[p.ID] = p; });
   var ESTADOS_DECISION_CIERRE = ['Aprobada', 'Rechazada', 'Sustituida'];
-  var decisiones = listarRegistros('DECISION', { ACTIVO: 'SÍ' })
+  var decisiones = listarRegistrosSeguro_('DECISION', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.RESPONSABLE_ID === yo.ID && ESTADOS_DECISION_CIERRE.indexOf(d.ESTADO) === -1; })
     .map(function (d) {
       var proyecto = proyectosPorId[d.PROYECTO_ID];

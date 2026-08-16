@@ -262,10 +262,10 @@ function generarInformeCierreCampana(campanaId) {
   var base = generarInformeCampania(campanaId);
   var idsProyectos = base.proyectos.map(function (p) { return p.ID; });
 
-  var todasDecisiones = listarRegistros('DECISION', { ACTIVO: 'SÍ' }).filter(function (d) {
+  var todasDecisiones = listarRegistrosSeguro_('DECISION', { ACTIVO: 'SÍ' }).filter(function (d) {
     return idsProyectos.indexOf(d.PROYECTO_ID) !== -1;
   });
-  var todasIncidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' }).filter(function (i) {
+  var todasIncidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' }).filter(function (i) {
     return i.CAMPANA_ID === campanaId || idsProyectos.indexOf(i.PROYECTO_ID) !== -1;
   });
 

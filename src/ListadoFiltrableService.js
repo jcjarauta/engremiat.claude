@@ -59,7 +59,7 @@ function obtenerListadoDecisionesPendientes_() {
  * nombre visible de a qué está vinculado cada documento.
  */
 function obtenerListadoDocumentosVigentes_() {
-  return listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ', ESTADO: 'Vigente' }).map(function (doc) {
+  return listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ', ESTADO: 'Vigente' }).map(function (doc) {
     var entidadKey = ENTIDAD_DOCUMENTO_A_MVP[doc.ENTIDAD_TIPO];
     var registro = entidadKey && doc.ENTIDAD_ID ? obtenerRegistroPorId(entidadKey, doc.ENTIDAD_ID) : null;
     var nombreEntidad = registro ? (registro.TITULO || registro.NOMBRE || doc.ENTIDAD_ID) : doc.ENTIDAD_ID;

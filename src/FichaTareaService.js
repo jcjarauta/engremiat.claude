@@ -16,7 +16,7 @@ function obtenerFichaTarea(id) {
   }
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var proceso = obtenerRegistroPorId('PROCESO', tarea.PROCESO_ID);
   var producto = proceso ? obtenerRegistroPorId('PRODUCTO', proceso.PRODUCTO_ID) : null;
@@ -39,7 +39,7 @@ function obtenerFichaTarea(id) {
     }
   }
 
-  var responsables = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
+  var responsables = listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })
     .filter(function (a) { return a.TAREA_ID === id; })
     .map(function (a) {
       return {
@@ -53,8 +53,8 @@ function obtenerFichaTarea(id) {
     });
 
   var nombresRecurso_ = {};
-  listarRegistros('RECURSO', {}).forEach(function (r) { nombresRecurso_[r.ID] = r.NOMBRE; });
-  var recursos = listarRegistros('TAREA_RECURSO', { ACTIVO: 'SÍ' })
+  listarRegistrosSeguro_('RECURSO', {}).forEach(function (r) { nombresRecurso_[r.ID] = r.NOMBRE; });
+  var recursos = listarRegistrosSeguro_('TAREA_RECURSO', { ACTIVO: 'SÍ' })
     .filter(function (tr) { return tr.TAREA_ID === id; })
     .map(function (tr) {
       return {
@@ -91,7 +91,7 @@ function obtenerFichaTarea(id) {
       });
   } catch (eCompras) { /* módulo COMPRAS no instalado */ }
 
-  var ejecuciones = listarRegistros('EJECUCION_TAREA', { ACTIVO: 'SÍ' })
+  var ejecuciones = listarRegistrosSeguro_('EJECUCION_TAREA', { ACTIVO: 'SÍ' })
     .filter(function (ej) { return ej.TAREA_ID === id; })
     .map(function (ej) {
       return {
@@ -107,11 +107,11 @@ function obtenerFichaTarea(id) {
    * incidencia con TAREA_ID relleno pertenece a esta ficha (no hace
    * falta excluir subniveles, a diferencia de Proyecto/Proceso).
    */
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' })
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
     .filter(function (inc) { return inc.TAREA_ID === id; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Tarea' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO, url: d.URL }; });
 

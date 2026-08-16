@@ -37,7 +37,7 @@ function obtenerFichaIncidencia(id) {
     tareaNombre: incidencia.TAREA_ID ? (nombresPorEntidad_.TAREA[incidencia.TAREA_ID] || incidencia.TAREA_ID) : null
   };
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Incidencia' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 

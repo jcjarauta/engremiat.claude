@@ -493,6 +493,28 @@ function listarRegistros(entidad, filtros) {
   });
 }
 
+/*
+ * listarRegistrosSeguro_ (ver conversación -- "revisa las hojas que se
+ * siembran... simplifica" / módulos OPERATIVA/SEGUIMIENTO/EJECUCION,
+ * v78): mismo criterio ya usado en obtenerAlertasMaterialesSeguro_
+ * (DashboardService.js, COMPRAS) e IntegrityService.js -- una llamada
+ * de solo lectura a una entidad de un módulo opcional no debe reventar
+ * toda una Ficha/Panel/Informe si ese módulo no está instalado (hoja
+ * inexistente = ERROR_CONSULTA de obtenerHojaEntidad_). Generalizado
+ * aquí en vez de repetir try/catch en cada llamador porque, tras
+ * separar OPERATIVA/SEGUIMIENTO/EJECUCION del CORE, la superficie de
+ * llamadas a entidades opcionales pasó a ser mucho mayor que solo
+ * COMPRAS (Fichas, Panel de campaña, Informes, Desviación/Gantt).
+ */
+function listarRegistrosSeguro_(entidad, filtros) {
+  try {
+    return listarRegistros(entidad, filtros);
+  } catch (e) {
+    console.warn('LECTURA_OMITIDA ' + entidad + ': ' + e.message);
+    return [];
+  }
+}
+
 /**
  * Busqueda de texto libre (subcadena, sin distinguir mayusculas)
  * dentro de un unico campo. criterio: {campo: 'NOMBRE', texto: 'foo'}.

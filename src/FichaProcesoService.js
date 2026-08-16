@@ -14,7 +14,7 @@ function obtenerFichaProceso(id) {
   }
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var producto = obtenerRegistroPorId('PRODUCTO', proceso.PRODUCTO_ID);
 
@@ -42,7 +42,7 @@ function obtenerFichaProceso(id) {
   }
 
   var responsablesPorTarea = {};
-  listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (a) {
+  listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (a) {
     if (!responsablesPorTarea[a.TAREA_ID]) responsablesPorTarea[a.TAREA_ID] = [];
     responsablesPorTarea[a.TAREA_ID].push(nombresPersona[a.PERSONA_EQUIPO_ID] || a.PERSONA_EQUIPO_ID);
   });
@@ -84,11 +84,11 @@ function obtenerFichaProceso(id) {
    * incidencia de una Tarea de este proceso ya aparece en la ficha de
    * esa tarea, no se duplica aquí.
    */
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' })
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
     .filter(function (inc) { return inc.PROCESO_ID === id && !inc.TAREA_ID; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Proceso' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 

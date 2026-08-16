@@ -53,7 +53,7 @@ function obtenerFichaMaterial(id) {
     .sort(function (a, b) { return (Number(a.precioUnitario) || 0) - (Number(b.precioUnitario) || 0); });
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   var movimientos = listarRegistros('MOVIMIENTO_MATERIAL', { ACTIVO: 'SÍ' })
     .filter(function (m) { return m.MATERIAL_ID === id; })

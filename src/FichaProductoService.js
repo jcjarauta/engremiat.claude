@@ -15,7 +15,7 @@ function obtenerFichaProducto(id) {
   }
 
   var nombresPersona = {};
-  listarRegistros('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
 
   /*
    * Proyectos vinculados: se muestran TODAS las relaciones (no solo la
@@ -151,7 +151,7 @@ function obtenerFichaProducto(id) {
       });
   } catch (eCompras) { /* módulo COMPRAS no instalado */ }
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Producto' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO, url: d.URL }; });
 

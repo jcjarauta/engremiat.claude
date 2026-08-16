@@ -12,7 +12,7 @@ function obtenerListaClientes() {
   var clientes = listarRegistros('CLIENTE', { ACTIVO: 'SÍ' });
 
   var incidenciasPorCliente_ = {};
-  listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ', NIVEL_INCIDENCIA: 'Cliente' }).forEach(function (inc) {
+  listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ', NIVEL_INCIDENCIA: 'Cliente' }).forEach(function (inc) {
     if (!inc.CLIENTE_ID) return;
     if (!incidenciasPorCliente_[inc.CLIENTE_ID]) incidenciasPorCliente_[inc.CLIENTE_ID] = [];
     incidenciasPorCliente_[inc.CLIENTE_ID].push(inc);

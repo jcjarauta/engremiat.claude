@@ -52,11 +52,11 @@ function obtenerFichaCampana(id) {
    * aparece en la ficha de ese registro más específico, no se duplica
    * aquí.
    */
-  var incidencias = listarRegistros('INCIDENCIA', { ACTIVO: 'SÍ' })
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
     .filter(function (inc) { return inc.CAMPANA_ID === id && !inc.PROYECTO_ID && !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
 
-  var documentos = listarRegistros('DOCUMENTO', { ACTIVO: 'SÍ' })
+  var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Campaña' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO }; });
 
