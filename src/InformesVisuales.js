@@ -218,3 +218,65 @@ function tablaSimpleHtml_(encabezados, filas) {
       return '<tr>' + fila.map(function (v) { return '<td>' + escaparHtmlServer_(v) + '</td>'; }).join('') + '</tr>';
     }).join('') + '</table>';
 }
+
+/*
+ * Detalle operativo (ver conversación -- "los informes serán la forma
+ * en la que el sistema se comunica con el operador... me siguen
+ * faltando los detalles operativos"): tabla de casos individuales de
+ * desviacionPlanificacion.procesosDetalle/tareasDetalle
+ * (DesviacionService.js) -- nombre concreto, previsto/real, desviación
+ * coloreada (rojo si hay retraso, verde si se adelantó) y responsable.
+ * El agregado (graficoBarrasApiladasHtml_/tablaSimpleHtml_ de
+ * "por fase"/"por responsable") sigue estando para el pulso rápido;
+ * esto es para poder actuar sobre un caso concreto.
+ */
+function tablaDesviacionDetalleHtml_(detalle, incluirFase) {
+  if (!detalle || detalle.length === 0) return '<div class="vacio">Sin casos con desviación medible.</div>';
+  var encabezados = ['Nombre'].concat(incluirFase ? ['Fase'] : []).concat(['Previsto (d)', 'Real (d)', 'Desviación', 'Responsable']);
+  var filas = detalle.map(function (d) {
+    var colorDesv = d.desviacion > 0 ? 'color:#b00020;font-weight:bold;' : (d.desviacion < 0 ? 'color:#1e8e3e;' : '');
+    return '<tr><td>' + escaparHtmlServer_(d.nombre) + '</td>' +
+      (incluirFase ? '<td>' + escaparHtmlServer_(d.fase || '—') + '</td>' : '') +
+      '<td>' + (d.previsto === null ? '—' : d.previsto) + '</td>' +
+      '<td>' + (d.real === null ? '—' : d.real) + '</td>' +
+      '<td style="' + colorDesv + '">' + (d.desviacion > 0 ? '+' : '') + d.desviacion + '</td>' +
+      '<td>' + escaparHtmlServer_(d.responsable) + '</td></tr>';
+  }).join('');
+  return '<table><tr>' + encabezados.map(function (e) { return '<th>' + escaparHtmlServer_(e) + '</th>'; }).join('') + '</tr>' + filas + '</table>';
+}
+
+/* Tabla de proyectos con nombre real (ver misma conversación). proyectos: registros PROYECTO tal cual. */
+function tablaProyectosHtml_(proyectos) {
+  if (!proyectos || proyectos.length === 0) return '<div class="vacio">Ninguno.</div>';
+  return tablaSimpleHtml_(
+    ['Nombre', 'Tipo', 'Prioridad', 'Estado', 'Inicio real', 'Fin real'],
+    proyectos.map(function (p) { return [p.NOMBRE, p.TIPO_PROYECTO, p.PRIORIDAD, p.ESTADO, p.FECHA_INICIO_REAL || '—', p.FECHA_FIN_REAL || '—']; })
+  );
+}
+
+/* Tabla de productos con nombre real, incluye el % avance ya calculado (calcularAvanceProducto_). */
+function tablaProductosHtml_(productos) {
+  if (!productos || productos.length === 0) return '<div class="vacio">Ninguno.</div>';
+  return tablaSimpleHtml_(
+    ['Nombre', 'Código', '% avance', 'Cantidad prevista', 'Cantidad producida', 'Estado'],
+    productos.map(function (p) {
+      return [p.NOMBRE, p.CODIGO, p.PORCENTAJE_AVANCE_CALCULADO + '%', p.CANTIDAD_PREVISTA || 0, p.CANTIDAD_PRODUCIDA || 0, p.ESTADO];
+    })
+  );
+}
+
+/*
+ * Envoltorio compartido para el bloque "Casos individuales" (procesos +
+ * tareas) que aparece en cualquier informe con desviacionPlanificacion
+ * -- Campaña, Proyecto, Desviación, Calidad de planificación. nivel
+ * 'resumen' recorta a los 10 peores casos de cada lista (ya vienen
+ * ordenados peor-primero desde construirDetalleDesviacion_).
+ */
+function renderizarDetalleDesviacion_(d, nivel) {
+  var procesos = limitarSiResumen_(d.procesosDetalle, nivel, 10);
+  var tareas = limitarSiResumen_(d.tareasDetalle, nivel, 10);
+  return '<h2>Casos individuales — procesos</h2>' +
+    tablaDesviacionDetalleHtml_(procesos.filas, true) + avisoOcultasHtml_(procesos.ocultas) +
+    '<h2>Casos individuales — tareas</h2>' +
+    tablaDesviacionDetalleHtml_(tareas.filas, false) + avisoOcultasHtml_(tareas.ocultas);
+}

@@ -223,13 +223,67 @@ function expandirTareasPorResponsable_(tareasConDesviacion) {
   return registrosPlanos;
 }
 
+/*
+ * Igual que expandirTareasPorResponsable_ pero sin duplicar fila por
+ * responsable -- para una tabla de detalle "qué pasó en esta tarea"
+ * duplicar la misma desviación una vez por responsable sería confuso
+ * (la duplicación sí tiene sentido para agrupar "por responsable", no
+ * aquí). Varios responsables se listan juntos en la misma celda.
+ */
+function resolverNombresResponsablesTarea_(tareasConDesviacion) {
+  var nombresPersona = {};
+  listarRegistrosSeguro_('PERSONA_EQUIPO', {}).forEach(function (p) { nombresPersona[p.ID] = p.NOMBRE; });
+
+  var responsablesPorTarea = {};
+  listarRegistrosSeguro_('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' }).forEach(function (tr) {
+    if (!responsablesPorTarea[tr.TAREA_ID]) responsablesPorTarea[tr.TAREA_ID] = [];
+    responsablesPorTarea[tr.TAREA_ID].push(nombresPersona[tr.PERSONA_EQUIPO_ID] || tr.PERSONA_EQUIPO_ID);
+  });
+
+  return tareasConDesviacion.map(function (tarea) {
+    var nombres = responsablesPorTarea[tarea.ID] || [];
+    return Object.assign({}, tarea, { RESPONSABLE_NOMBRE: nombres.length > 0 ? nombres.join(', ') : '(sin responsable)' });
+  });
+}
+
+/*
+ * Detalle operativo caso a caso (ver conversación -- "los informes
+ * serán la forma en la que el sistema se comunica con el operador...
+ * me siguen faltando los detalles operativos"): el agregado
+ * (calcularDesviacionAgregada_) dice "0.7 días de media", esto dice
+ * "Grabado láser -- previsto 6, real 8, +2 días, responsable X". Mismo
+ * criterio de fallback fecha/duración que calcularDesviacionAgregada_
+ * -- ver diferenciaDiasDuracion_. Solo incluye casos con desviación
+ * medible (registros sin FECHA_FIN_REAL ya se filtraron en
+ * enriquecerConDesviacion_; aquí además se excluyen los que ni
+ * siquiera tienen duración comparable), ordenados peor primero.
+ */
+function construirDetalleDesviacion_(listaConNombreResponsable, incluirFase) {
+  return listaConNombreResponsable
+    .map(function (r) {
+      var dias = r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN !== undefined ? r.DIAS_DESVIACION_FIN : r.DIAS_DESVIACION_DURACION;
+      return {
+        nombre: r.NOMBRE,
+        fase: incluirFase ? (r.FASE_PRODUCCION || '') : undefined,
+        previsto: r.DURACION_PREVISTA_DIAS === undefined || r.DURACION_PREVISTA_DIAS === '' ? null : Number(r.DURACION_PREVISTA_DIAS),
+        real: r.DURACION_REAL_DIAS === undefined || r.DURACION_REAL_DIAS === '' ? null : Number(r.DURACION_REAL_DIAS),
+        desviacion: dias === null || dias === undefined ? null : dias,
+        responsable: r.RESPONSABLE_NOMBRE || '(sin responsable)'
+      };
+    })
+    .filter(function (r) { return r.desviacion !== null; })
+    .sort(function (a, b) { return b.desviacion - a.desviacion; });
+}
+
 function construirBloqueDesviacion_(procesosConDesviacion, tareasConDesviacion) {
   return {
     procesosMedidos: procesosConDesviacion.length,
     tareasMedidas: tareasConDesviacion.length,
     procesosPorFase: calcularDesviacionAgregada_(procesosConDesviacion, 'FASE_PRODUCCION'),
     procesosPorResponsable: calcularDesviacionAgregada_(enriquecerConNombreResponsableProceso_(procesosConDesviacion), 'RESPONSABLE_NOMBRE'),
-    tareasPorResponsable: calcularDesviacionAgregada_(expandirTareasPorResponsable_(tareasConDesviacion), 'RESPONSABLE_NOMBRE')
+    tareasPorResponsable: calcularDesviacionAgregada_(expandirTareasPorResponsable_(tareasConDesviacion), 'RESPONSABLE_NOMBRE'),
+    procesosDetalle: construirDetalleDesviacion_(enriquecerConNombreResponsableProceso_(procesosConDesviacion), true),
+    tareasDetalle: construirDetalleDesviacion_(resolverNombresResponsablesTarea_(tareasConDesviacion), false)
   };
 }
 

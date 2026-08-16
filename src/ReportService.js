@@ -588,10 +588,12 @@ function generarHtmlCampana_(informe, nivel, modulosInstalados) {
     ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Proyectos por estado</h2>' +
     graficoBarrasApiladasHtml_(Object.keys(informe.proyectosPorEstado).map(function (k) { return { etiqueta: k, valor: informe.proyectosPorEstado[k] }; })) +
+    tablaProyectosHtml_(informe.proyectos) +
     '<h2>Tareas por estado</h2>' +
     graficoBarrasApiladasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    renderizarDetalleDesviacion_(d, nivel) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
     bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);
@@ -613,10 +615,12 @@ function generarHtmlProyecto_(informe, nivel, modulosInstalados) {
     ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Productos (% avance)</h2>' +
     graficoBarrasHtml_(informe.productos.map(function (pr) { return { etiqueta: pr.NOMBRE, valor: pr.PORCENTAJE_AVANCE_CALCULADO }; }), { max: 100 }) +
+    tablaProductosHtml_(informe.productos) +
     '<h2>Tareas por estado</h2>' +
     graficoBarrasApiladasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    renderizarDetalleDesviacion_(d, nivel) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
     bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);
@@ -702,7 +706,8 @@ function generarHtmlDesviacion_(informe, nivel) {
     '<h2>Tareas por responsable (días de desviación media)</h2>' +
     graficoBarrasHtml_(informe.tareasPorResponsable.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     (informe.procesosPorCampana ? '<h2>Por campaña (días de desviación media)</h2>' +
-      graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) : '');
+      graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) : '') +
+    renderizarDetalleDesviacion_(informe, nivel);
 
   return construirDocumentoInformeImprimible_('Desviación de planificación', 'Real vs. plan', cuerpo);
 }
@@ -730,7 +735,8 @@ function generarHtmlCalidad_(informe, nivel, modulosInstalados) {
         graficoBarrasHtml_(informe.procesosPorRecurso.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } })
       : '') +
     '<h2>Por campaña (días de desviación media)</h2>' +
-    graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } });
+    graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    renderizarDetalleDesviacion_(informe, nivel);
 
   return construirDocumentoInformeImprimible_('Calidad de planificación', '', cuerpo);
 }
@@ -822,8 +828,11 @@ function generarHtmlCierreCampana_(informe, nivel, modulosInstalados) {
       { valor: informe.todasDecisiones.length, etiqueta: 'Decisiones tomadas' },
       { valor: informe.todasIncidencias.length, etiqueta: 'Incidencias registradas' }
     ] : [])) +
+    '<h2>Proyectos</h2>' +
+    tablaProyectosHtml_(informe.proyectos) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(informe.desviacionPlanificacion.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    renderizarDetalleDesviacion_(informe.desviacionPlanificacion, nivel) +
     (haySeguimiento
       ? '<h2>Decisiones por estado</h2>' +
         graficoBarrasApiladasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
