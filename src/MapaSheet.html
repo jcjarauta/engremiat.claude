@@ -82,7 +82,7 @@
       <span class="icono">📥</span>
       <span class="texto">
         <div class="titulo">Importación masiva</div>
-        <div class="detalle">Cargar muchos registros de golpe (Campaña→Tarea, Recursos, Personas)</div>
+        <div class="detalle" id="detalleImportacionMasiva">Cargar muchos registros de golpe (Campaña→Tarea)</div>
       </span>
     </button>
 
@@ -163,6 +163,10 @@
 
       if (!moduloInstalado_('COMPRAS')) {
         document.getElementById('tarjetaOperativo').style.display = 'none';
+      }
+      if (moduloInstalado_('IMPORTACION_AVANZADA')) {
+        document.getElementById('detalleImportacionMasiva').textContent =
+          'Cargar muchos registros de golpe (Campaña→Tarea, Recursos, Personas)';
       }
       var hayComercial = moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS');
       if (hayComercial) {

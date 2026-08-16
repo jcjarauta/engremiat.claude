@@ -224,7 +224,7 @@ function construirInstruccionesEscenario_(grupo, escenario) {
   return 'Este lote forma parte de un escenario simulado -- instrucciones adicionales (no lo generes todo perfecto):\n' + lineas.join('\n');
 }
 
-function construirPromptIA_(grupo) {
+function construirPromptIA_(grupo, modulosInstalados) {
   var esCampana = grupo === 'CAMPANA';
   var esAsignaciones = grupo === 'ASIGNACIONES';
   var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO' || grupo === 'EJECUCION';
@@ -295,7 +295,7 @@ function construirPromptIA_(grupo) {
     'masiva" del Sheet (paso "Subir CSV ya rellenado"), con el mismo nombre',
     'de archivo que la hoja de destino.',
     '',
-    esCampana
+    esCampana && grupoInstalable_('ASIGNACIONES', modulosInstalados)
       ? 'Importante para el final de la conversación: esta plantilla NO asigna responsables ni ' +
         'recursos a las tareas -- eso es un lote aparte (grupo "Asignaciones", plantilla ' +
         'STG_TAREA_RESPONSABLE/STG_TAREA_RECURSO). Cuando terminemos de generar y confirmar este ' +
@@ -393,7 +393,7 @@ function construirInstruccionesPlantilla_(grupo) {
 
 var SUFIJO_ZIP_POR_GRUPO_ = { CAMPANA: 'campana' };
 
-function generarPlantillasImportacionMasiva(grupo) {
+function generarPlantillasImportacionMasiva(grupo, modulosInstalados) {
   var hojas = obtenerHojasDeGrupo_(grupo);
   if (!hojas) throw new Error('PLANTILLA_ERROR: grupo desconocido: ' + grupo);
 
@@ -404,7 +404,7 @@ function generarPlantillasImportacionMasiva(grupo) {
   });
 
   blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', 'LEEME.txt'));
-  blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', 'PROMPT_IA.txt'));
+  blobs.push(Utilities.newBlob(construirPromptIA_(grupo, modulosInstalados), 'text/plain', 'PROMPT_IA.txt'));
 
   var sufijoNombreZip = SUFIJO_ZIP_POR_GRUPO_[grupo] || grupo.toLowerCase();
   var nombreZip = 'plantilla_importacion_' + sufijoNombreZip + '.zip';
@@ -439,7 +439,7 @@ function generarTodasLasPlantillasImportacionMasiva(modulosInstalados) {
     });
 
     blobs.push(Utilities.newBlob(construirInstruccionesPlantilla_(grupo), 'text/plain', sufijo + '/LEEME.txt'));
-    blobs.push(Utilities.newBlob(construirPromptIA_(grupo), 'text/plain', sufijo + '/PROMPT_IA.txt'));
+    blobs.push(Utilities.newBlob(construirPromptIA_(grupo, modulosInstalados), 'text/plain', sufijo + '/PROMPT_IA.txt'));
   });
 
   var nombreZip = 'plantillas_importacion_masiva_completas.zip';
