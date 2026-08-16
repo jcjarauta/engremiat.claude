@@ -239,18 +239,22 @@ function generarInformeCambios(fechaDesde, fechaHasta) {
   return { tipo: 'CAMBIOS', fechaDesde: fechaDesde || null, fechaHasta: fechaHasta || null, cambios: filas };
 }
 
+/*
+ * Genérico vía REGISTRO_INFORMES_ (ver conversación -- "modelo
+ * replicable y ampliable"): un informe de módulo futuro en modo
+ * REGISTRO solo declara entidadRegistro, no hace falta tocar esta
+ * función. Requiere buscarEntradaRegistroInforme_(tipo) definido más
+ * abajo en el mismo fichero -- se resuelve en tiempo de llamada, no de
+ * carga, así que el orden de declaración no importa.
+ */
 function obtenerOpcionesInforme(tipo) {
-  if (tipo === 'CAMPANA' || tipo === 'CIERRE_CAMPANA') {
-    return listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (campana) {
-      return { id: campana.ID, etiqueta: campana.ID + ' - ' + campana.NOMBRE };
-    });
+  var entrada = buscarEntradaRegistroInforme_(tipo);
+  if (entrada.modoFormulario !== 'REGISTRO') {
+    throw new Error('ERROR_INFORME: tipo de informe no soportado para opciones: ' + tipo);
   }
-  if (tipo === 'PROYECTO') {
-    return listarRegistros('PROYECTO', { ACTIVO: 'SÍ' }).map(function (proyecto) {
-      return { id: proyecto.ID, etiqueta: proyecto.ID + ' - ' + proyecto.NOMBRE };
-    });
-  }
-  throw new Error('ERROR_INFORME: tipo de informe no soportado para opciones: ' + tipo);
+  return listarRegistros(entrada.entidadRegistro, { ACTIVO: 'SÍ' }).map(function (registro) {
+    return { id: registro.ID, etiqueta: registro.ID + ' - ' + registro.NOMBRE };
+  });
 }
 
 /*
@@ -315,25 +319,128 @@ function generarInformeCierreCampana(campanaId) {
   });
 }
 
+/**
+ * REGISTRO_INFORMES_ (ver conversación -- "hacerlo dinámico... modelo
+ * replicable y ampliable cuando en otro sheet tengamos otros módulos"):
+ * antes, qué tipos de informe existen vivía repetido en tres sitios --
+ * el if/else de generarInforme(), el if/else de generarHtmlInformeVisual_()
+ * y la lista de <option> a mano en InformeGenerico.html (con dos
+ * excepciones de módulo puestas aparte a mano). Añadir un informe de un
+ * módulo futuro (ej. embudo de ventas de VENTAS) tocaba los tres sitios.
+ * Con el registro, es una entrada aquí -- el desplegable del cliente
+ * (obtenerRegistroInformesDisponibles) y ambos despachadores se derivan
+ * de la misma fuente, filtrada por moduloInstalado_() igual que el menú
+ * y el Mapa del sheet.
+ *
+ * modoFormulario:
+ *   NINGUNO       -- sin selección, se genera directo (MEMORIA, EJECUTIVO...).
+ *   REGISTRO      -- desplegable de un registro concreto; entidadRegistro
+ *                     dice de qué entidad (obtenerOpcionesInforme lo usa).
+ *   NIVEL_REGISTRO -- primero nivel (Campaña/Proyecto/Producto), luego
+ *                     registro dependiente (justificación económica, evidencia).
+ *   RANGO_FECHAS  -- selector de fecha desde/hasta (Cambios).
+ *
+ * generador(id): siempre recibe UN argumento (el id o el objeto de
+ * filtro tal cual llega del cliente) y devuelve el informe -- las
+ * funciones con firma distinta (más de un argumento) se envuelven aquí
+ * mismo para no tocar su implementación original.
+ * render(informe, nivel, modulosInstalados): idem, siempre la misma
+ * firma; cada envoltorio reenvía solo lo que su generarHtmlXxx_
+ * original necesita.
+ */
+var REGISTRO_INFORMES_ = [
+  {
+    id: 'CAMPANA', etiqueta: 'Informe de campaña', modulo: 'CORE',
+    modoFormulario: 'REGISTRO', entidadRegistro: 'CAMPANA',
+    generador: function (id) { return generarInformeCampania(id); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlCampana_(informe, nivel, modulosInstalados); }
+  },
+  {
+    id: 'PROYECTO', etiqueta: 'Informe de proyecto', modulo: 'CORE',
+    modoFormulario: 'REGISTRO', entidadRegistro: 'PROYECTO',
+    generador: function (id) { return generarInformeProyecto(id); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlProyecto_(informe, nivel, modulosInstalados); }
+  },
+  {
+    id: 'MEMORIA', etiqueta: 'Memoria de producción', modulo: 'CORE',
+    modoFormulario: 'NINGUNO',
+    generador: function () { return generarMemoriaProduccion(); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlMemoria_(informe, nivel, modulosInstalados); }
+  },
+  {
+    id: 'EXCEPCIONES', etiqueta: 'Excepciones (calidad de datos)', modulo: 'CORE',
+    modoFormulario: 'NINGUNO',
+    generador: function () { return generarInformeExcepciones(); },
+    render: function (informe, nivel) { return generarHtmlExcepciones_(informe, nivel); }
+  },
+  {
+    id: 'DESVIACION', etiqueta: 'Desviación de planificación', modulo: 'CORE',
+    modoFormulario: 'NINGUNO',
+    generador: function () { return generarInformeDesviacion(); },
+    render: function (informe, nivel) { return generarHtmlDesviacion_(informe, nivel); }
+  },
+  {
+    id: 'CALIDAD_PLANIFICACION', etiqueta: 'Calidad de planificación', modulo: 'CORE',
+    modoFormulario: 'NINGUNO',
+    generador: function () { return generarInformeCalidadPlanificacion(); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlCalidad_(informe, nivel, modulosInstalados); }
+  },
+  {
+    id: 'JUSTIFICACION_ECONOMICA', etiqueta: 'Justificación económica', modulo: 'ECONOMICO',
+    modoFormulario: 'NIVEL_REGISTRO',
+    generador: function (id) { return generarInformeJustificacionEconomica(id && id.entidadTipo, id && id.entidadId); },
+    render: function (informe) { return generarHtmlMemoriaEconomica_(informe); }
+  },
+  {
+    id: 'EVIDENCIA_SOCIAL', etiqueta: 'Evidencia de impacto (Por qué)', modulo: 'IMPACTO',
+    modoFormulario: 'NIVEL_REGISTRO',
+    generador: function (id) { return generarInformeEvidenciaSocial(id && id.entidadTipo, id && id.entidadId); },
+    render: function (informe, nivel) { return generarHtmlEvidenciaSocial_(informe, nivel); }
+  },
+  {
+    id: 'CAMBIOS', etiqueta: 'Cambios (auditoría por fecha)', modulo: 'CORE',
+    modoFormulario: 'RANGO_FECHAS',
+    generador: function (id) { return generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta); },
+    render: function (informe, nivel) { return generarHtmlCambios_(informe, nivel); }
+  },
+  {
+    id: 'EJECUTIVO', etiqueta: 'Ejecutivo (todas las campañas activas)', modulo: 'CORE',
+    modoFormulario: 'NINGUNO',
+    generador: function () { return generarInformeEjecutivo(); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlEjecutivo_(informe, modulosInstalados); }
+  },
+  {
+    id: 'CIERRE_CAMPANA', etiqueta: 'Cierre de campaña (post-mortem)', modulo: 'CORE',
+    modoFormulario: 'REGISTRO', entidadRegistro: 'CAMPANA',
+    generador: function (id) { return generarInformeCierreCampana(id); },
+    render: function (informe, nivel, modulosInstalados) { return generarHtmlCierreCampana_(informe, nivel, modulosInstalados); }
+  }
+];
+
+function buscarEntradaRegistroInforme_(tipo) {
+  var entrada = REGISTRO_INFORMES_.filter(function (e) { return e.id === tipo; })[0];
+  if (!entrada) throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
+  return entrada;
+}
+
+/*
+ * Punto de entrada del cliente para construir el desplegable (ver
+ * InformeGenerico.html): mismo criterio moduloInstalado_() que el resto
+ * del sistema, así que un informe de un módulo no instalado nunca
+ * aparece -- no hace falta lista de exclusión a mano en el HTML.
+ */
+function obtenerRegistroInformesDisponibles(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
+  return REGISTRO_INFORMES_
+    .filter(function (entrada) { return moduloInstaladoEnLista_(modulosInstalados, entrada.modulo); })
+    .map(function (entrada) { return { id: entrada.id, etiqueta: entrada.etiqueta, modoFormulario: entrada.modoFormulario }; });
+}
+
 function generarInforme(tipo, id) {
   cacheLecturaIniciarContexto_();
 
   try {
-    var informe;
-
-    if (tipo === 'CAMPANA') informe = generarInformeCampania(id);
-    else if (tipo === 'PROYECTO') informe = generarInformeProyecto(id);
-    else if (tipo === 'MEMORIA') informe = generarMemoriaProduccion();
-    else if (tipo === 'EXCEPCIONES') informe = generarInformeExcepciones();
-    else if (tipo === 'CAMBIOS') informe = generarInformeCambios(id && id.fechaDesde, id && id.fechaHasta);
-    else if (tipo === 'DESVIACION') informe = generarInformeDesviacion();
-    else if (tipo === 'CALIDAD_PLANIFICACION') informe = generarInformeCalidadPlanificacion();
-    else if (tipo === 'JUSTIFICACION_ECONOMICA') informe = generarInformeJustificacionEconomica(id && id.entidadTipo, id && id.entidadId);
-    else if (tipo === 'EVIDENCIA_SOCIAL') informe = generarInformeEvidenciaSocial(id && id.entidadTipo, id && id.entidadId);
-    else if (tipo === 'EJECUTIVO') informe = generarInformeEjecutivo();
-    else if (tipo === 'CIERRE_CAMPANA') informe = generarInformeCierreCampana(id);
-    else throw new Error('ERROR_INFORME: tipo de informe no soportado: ' + tipo);
-
+    var informe = buscarEntradaRegistroInforme_(tipo).generador(id);
     return serializarParaCliente_(informe);
   } finally {
     cacheLecturaFinalizarContexto_();
@@ -728,18 +835,12 @@ function generarHtmlCierreCampana_(informe, nivel, modulosInstalados) {
  */
 function generarHtmlInformeVisual_(informe, nivel, modulosInstalados) {
   nivel = nivel === 'resumen' ? 'resumen' : 'completo';
-  if (informe.tipo === 'JUSTIFICACION_ECONOMICA') return generarHtmlMemoriaEconomica_(informe);
-  if (informe.tipo === 'CAMPANA') return generarHtmlCampana_(informe, nivel, modulosInstalados);
-  if (informe.tipo === 'PROYECTO') return generarHtmlProyecto_(informe, nivel, modulosInstalados);
-  if (informe.tipo === 'MEMORIA') return generarHtmlMemoria_(informe, nivel, modulosInstalados);
-  if (informe.tipo === 'EXCEPCIONES') return generarHtmlExcepciones_(informe, nivel);
-  if (informe.tipo === 'DESVIACION') return generarHtmlDesviacion_(informe, nivel);
-  if (informe.tipo === 'CALIDAD_PLANIFICACION') return generarHtmlCalidad_(informe, nivel, modulosInstalados);
-  if (informe.tipo === 'EVIDENCIA_SOCIAL') return generarHtmlEvidenciaSocial_(informe, nivel);
-  if (informe.tipo === 'CAMBIOS') return generarHtmlCambios_(informe, nivel);
-  if (informe.tipo === 'EJECUTIVO') return generarHtmlEjecutivo_(informe, modulosInstalados);
-  if (informe.tipo === 'CIERRE_CAMPANA') return generarHtmlCierreCampana_(informe, nivel, modulosInstalados);
-  return generarHtmlParaImprimir_(informe);
+  var entrada = REGISTRO_INFORMES_.filter(function (e) { return e.id === informe.tipo; })[0];
+  // Sin fallback silencioso a un tipo desconocido -- si algún día se
+  // rompe la sincronía entre generarInforme() y este despachador (no
+  // debería, comparten el mismo registro), mejor un volcado plano que
+  // fingir que hay plantilla visual cuando no la hay.
+  return entrada ? entrada.render(informe, nivel, modulosInstalados) : generarHtmlParaImprimir_(informe);
 }
 
 /*

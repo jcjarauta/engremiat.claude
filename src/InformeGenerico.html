@@ -16,19 +16,7 @@
     <h3>Informes</h3>
 
     <label for="tipo">Tipo de informe</label>
-    <select id="tipo">
-      <option value="CAMPANA">Informe de campaña</option>
-      <option value="PROYECTO">Informe de proyecto</option>
-      <option value="MEMORIA">Memoria de producción</option>
-      <option value="EXCEPCIONES">Excepciones (calidad de datos)</option>
-      <option value="DESVIACION">Desviación de planificación</option>
-      <option value="CALIDAD_PLANIFICACION">Calidad de planificación</option>
-      <option value="JUSTIFICACION_ECONOMICA" id="opcion-justificacion">Justificación económica</option>
-      <option value="EVIDENCIA_SOCIAL" id="opcion-evidencia">Evidencia de impacto (Por qué)</option>
-      <option value="CAMBIOS">Cambios (auditoría por fecha)</option>
-      <option value="EJECUTIVO">Ejecutivo (todas las campañas activas)</option>
-      <option value="CIERRE_CAMPANA">Cierre de campaña (post-mortem)</option>
-    </select>
+    <select id="tipo"><option>Cargando...</option></select>
 
     <div id="contenedor-nivel-detalle" style="margin-top:8px;">
       <label style="display:flex; align-items:center; gap:6px; font-weight:normal;">
@@ -117,13 +105,26 @@
        */
       var MODULOS_INSTALADOS = <?!= modulosInstalados ?>;
 
-      function moduloInstalado_(nombreModulo) {
-        if (!MODULOS_INSTALADOS) return true;
-        return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
-      }
+      /*
+       * REGISTRO_INFORMES_CLIENTE_ (ver conversación -- "modelo
+       * replicable y ampliable... hacerlo dinámico"): se pinta desde
+       * obtenerRegistroInformesDisponibles (ReportService.js, mismo
+       * REGISTRO_INFORMES_ que usan los despachadores del servidor), ya
+       * filtrado por módulo instalado -- no hay que tocar este HTML
+       * para añadir/quitar un tipo de informe ni para ocultarlo según
+       * el módulo del sheet.
+       */
+      var REGISTRO_INFORMES_CLIENTE_ = {};
 
-      if (!moduloInstalado_('ECONOMICO')) document.getElementById('opcion-justificacion').remove();
-      if (!moduloInstalado_('IMPACTO')) document.getElementById('opcion-evidencia').remove();
+      function pintarTiposInforme_(lista) {
+        var select = document.getElementById('tipo');
+        REGISTRO_INFORMES_CLIENTE_ = {};
+        lista.forEach(function (entrada) { REGISTRO_INFORMES_CLIENTE_[entrada.id] = entrada.modoFormulario; });
+        select.innerHTML = lista.map(function (entrada) {
+          return '<option value="' + escapeHtml(entrada.id) + '">' + escapeHtml(entrada.etiqueta) + '</option>';
+        }).join('');
+        cargarOpcionesRegistro();
+      }
 
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
@@ -173,28 +174,30 @@
           .obtenerOpcionesRegistroPorNivel(nivel);
       }
 
+      /*
+       * Antes: un if/else por tipo de informe para decidir qué controles
+       * mostrar. Ahora: modoFormulario (REGISTRO_INFORMES_CLIENTE_, ver
+       * arriba) lo dice, así que un informe de módulo futuro con el
+       * mismo modoFormulario que uno existente no necesita ningún
+       * cambio aquí.
+       */
       function cargarOpcionesRegistro() {
         var tipo = document.getElementById('tipo').value;
+        var modo = REGISTRO_INFORMES_CLIENTE_[tipo];
         var contenedorNivel = document.getElementById('contenedor-nivel');
         var contenedorRegistro = document.getElementById('contenedor-registro');
         var contenedorFechas = document.getElementById('contenedor-fechas');
         var select = document.getElementById('registro');
 
-        contenedorFechas.style.display = tipo === 'CAMBIOS' ? 'block' : 'none';
+        contenedorFechas.style.display = modo === 'RANGO_FECHAS' ? 'block' : 'none';
 
-        if (tipo === 'CAMBIOS') {
+        if (modo === 'RANGO_FECHAS' || modo === 'NINGUNO') {
           contenedorNivel.style.display = 'none';
           contenedorRegistro.style.display = 'none';
           return;
         }
 
-        if (tipo === 'MEMORIA' || tipo === 'EXCEPCIONES' || tipo === 'DESVIACION' || tipo === 'CALIDAD_PLANIFICACION' || tipo === 'EJECUTIVO') {
-          contenedorNivel.style.display = 'none';
-          contenedorRegistro.style.display = 'none';
-          return;
-        }
-
-        if (tipo === 'JUSTIFICACION_ECONOMICA' || tipo === 'EVIDENCIA_SOCIAL') {
+        if (modo === 'NIVEL_REGISTRO') {
           contenedorNivel.style.display = 'block';
           contenedorRegistro.style.display = 'block';
           cargarOpcionesRegistroPorNivel_();
@@ -577,7 +580,10 @@
       document.getElementById('nivel-economico').addEventListener('change', cargarOpcionesRegistroPorNivel_);
       document.getElementById('btn-generar').addEventListener('click', generarInformeActual);
 
-      cargarOpcionesRegistro();
+      google.script.run
+        .withSuccessHandler(pintarTiposInforme_)
+        .withFailureHandler(mostrarError)
+        .obtenerRegistroInformesDisponibles(MODULOS_INSTALADOS);
     </script>
   </body>
 </html>
