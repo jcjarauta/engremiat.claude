@@ -213,7 +213,13 @@ function abrirConfigurarAprovisionamiento() {
   var resp = ui.alert(
     'Configurar Aprovisionamiento',
     'Esto crea (si falta) la hoja SOLICITUDES_MONTAJE protegida y activa el trigger que reacciona ' +
-    'al aprobar una fila. Requiere una lista de correos autorizados. ¿Continuar?',
+    'al aprobar una fila. Requiere una lista de correos autorizados.\n\n' +
+    'IMPORTANTE, una sola vez por proyecto: aprobar una solicitud llama a la Apps Script API ' +
+    '(script.googleapis.com) para crear el proyecto nuevo, y eso exige que ESTE proyecto (no los ' +
+    'sheets que se creen) tenga enlazado un proyecto de Google Cloud ESTANDAR con esa API habilitada ' +
+    '-- el proyecto de Cloud automatico que Apps Script asigna por defecto suele dar error de permisos. ' +
+    'Configuralo en Configuracion del proyecto (engranaje, editor de Apps Script) -> Proyecto de Google ' +
+    'Cloud Platform -> Cambiar proyecto, y habilita ahi la Apps Script API. ¿Continuar?',
     ui.ButtonSet.YES_NO
   );
   if (resp !== ui.Button.YES) return;

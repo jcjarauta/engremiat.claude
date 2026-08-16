@@ -20,6 +20,8 @@
       .tarjeta .detalle { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
       .separador { font-size: 11px; font-weight: bold; color: var(--color-texto-secundario); text-transform: uppercase; letter-spacing: .03em; margin: 16px 0 6px 2px; }
       .separador:first-of-type { margin-top: 0; }
+      .subseparador { font-size: 10px; color: var(--color-texto-secundario); margin: 10px 0 4px 2px; }
+      .subseparador:first-of-type { margin-top: 4px; }
       .fila-busqueda { display: flex; gap: 6px; margin-bottom: 4px; }
       .fila-busqueda input { flex: 1; margin-top: 0; }
       .resultado-busqueda {
@@ -47,31 +49,35 @@
 
     <div id="seccionAprovisionamiento" style="display:none;">
       <div class="separador">Aprovisionamiento</div>
+
+      <div class="subseparador">Flujo de montaje (1 → 2)</div>
       <button class="tarjeta" onclick="abrir('abrirSolicitudMontaje')">
         <span class="icono">🆕</span>
         <span class="texto">
-          <div class="titulo">Nueva solicitud de montaje</div>
-          <div class="detalle">Elige los módulos y crea la solicitud -- la aprobación sigue siendo manual</div>
+          <div class="titulo">1. Solicitar montaje</div>
+          <div class="detalle">Elige los módulos y crea la solicitud -- todavía no crea nada</div>
         </span>
       </button>
       <button class="tarjeta" onclick="abrir('abrirAprobarSolicitudMontaje')">
         <span class="icono">✅</span>
         <span class="texto">
-          <div class="titulo">Aprobar solicitud de montaje</div>
-          <div class="detalle">Crea el sheet de verdad, con progreso visible -- no hace falta escribir "Aprobado" a mano</div>
+          <div class="titulo">2. Aprobar y crear</div>
+          <div class="detalle">Crea el sheet de verdad, con progreso visible</div>
         </span>
       </button>
+
+      <div class="subseparador">Configuración y seguimiento</div>
       <button class="tarjeta" onclick="abrir('abrirHojaSolicitudesMontaje')">
         <span class="icono">📋</span>
         <span class="texto">
-          <div class="titulo">Solicitudes en curso</div>
-          <div class="detalle">Ir a la hoja SOLICITUDES_MONTAJE -- estado, URL y errores de cada una</div>
+          <div class="titulo">Historial de solicitudes</div>
+          <div class="detalle">Consulta estado, URL y errores -- la aprobación se hace en el paso 2, no editando esta hoja</div>
         </span>
       </button>
       <button class="tarjeta" onclick="abrir('abrirActualizarVersionLibreria')">
         <span class="icono">📦</span>
         <span class="texto">
-          <div class="titulo">Actualizar versión de librería</div>
+          <div class="titulo">Versión de librería para nuevos montajes</div>
           <div class="detalle">Fija qué versión de la librería CORE usan los sheets que se monten a partir de ahora</div>
         </span>
       </button>
