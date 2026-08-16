@@ -30,8 +30,8 @@
     <label for="nombre">Nombre del sheet</label>
     <input type="text" id="nombre" placeholder="p.ej. LaTroballa CORE" />
 
-    <label>Módulos</label>
-    <div class="ayuda-campo">Al aprobar la solicitud se instalan también las dependencias automáticamente.</div>
+    <label>Módulos adicionales</label>
+    <div class="ayuda-campo">CORE se instala siempre -- no aparece en la lista. Al aprobar la solicitud se instalan también las dependencias de lo que marques.</div>
     <div class="lista-modulos" id="listaModulos"><em>Cargando módulos disponibles...</em></div>
 
     <div class="resumen-cierre" id="resumenCierre"></div>
@@ -100,15 +100,14 @@
       function actualizarResumenCierre_() {
         var seleccionados = modulosSeleccionados_();
         var resumen = document.getElementById('resumenCierre');
-        if (seleccionados.length === 0) {
-          resumen.style.display = 'none';
-          return;
-        }
-        var cierre = resolverCierreLocal_(seleccionados);
+        // CORE se instala siempre (ver conversación -- "no tiene sentido
+        // dejarlo en el listado de opciones modulares"), aunque no esté
+        // en MODULOS_DISPONIBLES_ ni se pueda marcar.
+        var cierre = resolverCierreLocal_(seleccionados.concat(['CORE']));
         var extras = cierre.filter(function (m) { return seleccionados.indexOf(m) === -1; });
         resumen.style.display = 'block';
         resumen.innerHTML = '<strong>Se instalarán ' + cierre.length + ' módulo(s):</strong>' + escapeHtml(cierre.join(', ')) +
-          (extras.length > 0 ? '<br><span style="color:var(--color-texto-secundario);">(' + escapeHtml(extras.join(', ')) + ' añadido(s) automáticamente por dependencia)</span>' : '');
+          (extras.length > 0 ? '<br><span style="color:var(--color-texto-secundario);">(' + escapeHtml(extras.join(', ')) + ' añadido(s) automáticamente -- CORE siempre, el resto por dependencia)</span>' : '');
       }
 
       function enviarSolicitud() {
@@ -117,7 +116,6 @@
         document.getElementById('mensaje').textContent = '';
 
         if (!nombre) { mostrarError({ message: 'Falta el nombre del sheet.' }); return; }
-        if (seleccionados.length === 0) { mostrarError({ message: 'Selecciona al menos un módulo.' }); return; }
 
         document.getElementById('btnEnviar').disabled = true;
         document.getElementById('mensaje').style.color = 'var(--color-texto-secundario)';
@@ -139,6 +137,7 @@
         .withSuccessHandler(function (modulos) {
           MODULOS_DISPONIBLES_ = modulos;
           pintarModulos_();
+          actualizarResumenCierre_();
         })
         .obtenerModulosDisponiblesParaSolicitud();
     </script>

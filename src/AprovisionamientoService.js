@@ -85,13 +85,18 @@ function obtenerEmailsAutorizadosMontaje_() {
  * dependencias) por un diálogo con checklist. La lista de módulos se
  * lee en vivo de PACKAGE_MAP_EMBEBIDO.moduleDependencies -- nunca
  * hardcodeada aquí, así que un módulo nuevo aparece solo, sin tocar
- * este fichero ni el HTML. APROVISIONAMIENTO se excluye a propósito:
- * es la función que ofrece este mismo formulario, no algo para dar a
- * un sheet cliente sin una decisión explícita aparte.
+ * este fichero ni el HTML. Se excluyen a propósito dos módulos que no
+ * tiene sentido ofertar como opción marcable: APROVISIONAMIENTO (es la
+ * función que ofrece este mismo formulario, no algo para dar a un
+ * sheet cliente sin una decisión explícita aparte) y CORE (ver
+ * conversación -- "el core siempre tiene que estar preseleccionado,
+ * no tiene sentido dejarlo en el listado de opciones modulares": todo
+ * sheet lo lleva siempre, crearSolicitudMontaje lo añade sin
+ * preguntar).
  */
 function obtenerModulosDisponiblesParaSolicitud() {
   return Object.keys(PACKAGE_MAP_EMBEBIDO.moduleDependencies)
-    .filter(function (m) { return m !== 'APROVISIONAMIENTO'; })
+    .filter(function (m) { return m !== 'APROVISIONAMIENTO' && m !== 'CORE'; })
     .sort()
     .map(function (m) {
       return { nombre: m, dependencias: PACKAGE_MAP_EMBEBIDO.moduleDependencies[m] };
@@ -147,14 +152,20 @@ function siguienteIdTemporalSolicitud_(hoja) {
 function crearSolicitudMontaje(nombre, modulosSeleccionados) {
   nombre = String(nombre || '').trim();
   if (!nombre) throw new Error('CREAR_SOLICITUD_MONTAJE_ERROR: falta el nombre.');
-  if (!Array.isArray(modulosSeleccionados) || modulosSeleccionados.length === 0) {
-    throw new Error('CREAR_SOLICITUD_MONTAJE_ERROR: selecciona al menos un módulo.');
-  }
+  // Sin ningún módulo marcado es válido -- CORE (siempre incluido, ver
+  // más abajo) ya es un sheet completo por sí mismo.
+  if (!Array.isArray(modulosSeleccionados)) modulosSeleccionados = [];
 
   var resultadoHoja = instalarHojaSolicitudesMontaje_();
   var hoja = resultadoHoja.hoja;
 
-  var cierre = resolverCierreModulos_(modulosSeleccionados, PACKAGE_MAP_EMBEBIDO.moduleDependencies);
+  // CORE siempre va, aunque el llamador no lo pida explícitamente (ver
+  // conversación -- "no tiene sentido dejarlo en el listado de
+  // opciones modulares"). En la práctica ya lo arrastraba
+  // resolverCierreModulos_ como dependencia transitiva de casi
+  // cualquier otro módulo, pero se añade explícito para no depender
+  // de que siga siendo así si algún módulo futuro no dependiera de él.
+  var cierre = resolverCierreModulos_(modulosSeleccionados.concat(['CORE']), PACKAGE_MAP_EMBEBIDO.moduleDependencies);
   var modulosResueltos = Object.keys(cierre).sort();
 
   var idTemporal = siguienteIdTemporalSolicitud_(hoja);
