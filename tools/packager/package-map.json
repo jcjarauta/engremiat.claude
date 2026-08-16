@@ -948,7 +948,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "67f0277d34204fcb7d4159c2de925ac8a564c99c16735759cee2ca7657855f84",
+      "expectedSha256": "812b52692bf538516036cb2b241406f900e17ae40badcc23ac9d42fb535a3c7f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

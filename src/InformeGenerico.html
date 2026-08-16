@@ -116,6 +116,17 @@
        */
       var REGISTRO_INFORMES_CLIENTE_ = {};
 
+      /*
+       * Sigue haciendo falta aunque el desplegable ya no se filtre a
+       * mano aquí -- otras secciones del propio informe (OPERATIVA,
+       * SEGUIMIENTO) todavía se ocultan por módulo dentro del cuerpo
+       * ya generado.
+       */
+      function moduloInstalado_(nombreModulo) {
+        if (!MODULOS_INSTALADOS) return true;
+        return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
+      }
+
       function pintarTiposInforme_(lista) {
         var select = document.getElementById('tipo');
         REGISTRO_INFORMES_CLIENTE_ = {};
