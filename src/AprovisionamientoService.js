@@ -263,24 +263,27 @@ function abrirConfigurarAprovisionamiento() {
 
 /**
  * subirContenidoScript_ necesita saber que version de la libreria CORE
- * poner en el appsscript.json de cada cliente nuevo. Como esa version
- * cambia en cada 'clasp version' (ver tools/constructor/libreria.json,
- * que es Node y no esta disponible en tiempo de ejecucion), se guarda
- * aqui como Script Property y hay que actualizarla a mano tras publicar.
+ * poner en el appsscript.json de cada cliente nuevo. En vez de guardarla
+ * a mano en una Script Property (ver conversacion -- "¿no es algo que
+ * tengamos que automatizar para evitar este error?", olvidarse de
+ * actualizarla tras cada 'clasp version' rompia el montaje con un error
+ * evitable), se pregunta a la propia libreria cual es su version
+ * publicada mas alta justo antes de montar -- mismo token/scope
+ * (script.projects) que ya usa crearProyectoScript_/subirContenidoScript_,
+ * sin credenciales ni pasos manuales adicionales.
  */
-function abrirActualizarVersionLibreria() {
-  var ui = SpreadsheetApp.getUi();
-  var actual = PropertiesService.getScriptProperties().getProperty('LIBRERIA_VERSION_ACTUAL');
-  var resp = ui.prompt(
-    'Version actual de la libreria CORE',
-    'Version publicada mas reciente (ver tools/constructor/libreria.json), actual: ' + (actual || '(sin definir)') + ':',
-    ui.ButtonSet.OK_CANCEL
+function obtenerVersionLibreriaMasReciente_() {
+  var token = ScriptApp.getOAuthToken();
+  var resp = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + LIBRERIA_ID_ + '/versions?pageSize=200',
+    { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }
   );
-  if (resp.getSelectedButton() !== ui.Button.OK) return;
-  var version = resp.getResponseText().trim();
-  if (!version) { ui.alert('Version vacia, no se guarda.'); return; }
-  PropertiesService.getScriptProperties().setProperty('LIBRERIA_VERSION_ACTUAL', version);
-  ui.alert('Version guardada', 'LIBRERIA_VERSION_ACTUAL = ' + version, ui.ButtonSet.OK);
+  if (resp.getResponseCode() !== 200) {
+    throw new Error('OBTENER_VERSION_LIBRERIA_ERROR: ' + resp.getResponseCode() + ' ' + resp.getContentText());
+  }
+  var versiones = (JSON.parse(resp.getContentText()).versions || []).map(function (v) { return v.versionNumber; });
+  if (versiones.length === 0) throw new Error('OBTENER_VERSION_LIBRERIA_ERROR: la libreria CORE no tiene ninguna version publicada.');
+  return Math.max.apply(null, versiones);
 }
 
 /**
@@ -488,35 +491,56 @@ function crearProyectoScript_(nombre, modulos) {
 }
 
 /**
- * Lee el codigo fuente del propio proyecto maestro (script.projects.getContent
- * sobre ScriptApp.getScriptId()), genera los envoltorios para los modulos
- * pedidos con GeneradorEnvoltoriosEmbebido.js, y sube Codigo.js + appsscript.json
- * al proyecto nuevo con script.projects.updateContent.
+ * Lee el codigo fuente de la LIBRERIA CORE (script.projects.getContent
+ * sobre LIBRERIA_ID_, no sobre ScriptApp.getScriptId()), genera los
+ * envoltorios para los modulos pedidos con GeneradorEnvoltoriosEmbebido.js,
+ * y sube Codigo.js + appsscript.json al proyecto nuevo con
+ * script.projects.updateContent.
+ *
+ * Antes leia ScriptApp.getScriptId() (el proyecto que hace la llamada),
+ * asumiendo que ese proyecto tenia el codigo fuente completo en crudo --
+ * cierto solo para el Master (que recibe 'clasp push --force' del mismo
+ * src/ que la libreria). Desde que APROVISIONAMIENTO se promovio a modulo
+ * real de la libreria para poder usarse tambien desde clientes delgados
+ * como Gestor de Proyectos (que solo tiene Codigo.js, sin fuente), esa
+ * asuncion rompia en silencio: fuentePorNombre no encontraba coincidencias,
+ * cada fichero quedaba con content: '', y el Codigo.gs generado salia
+ * practicamente vacio (solo la cabecera y MODULOS_INSTALADOS_CLIENTE,
+ * ninguna funcion) -- descubierto en vivo montando LaTroballa CORE desde
+ * Gestor de Proyectos. La libreria SI tiene siempre el fuente completo
+ * (es su unico proposito), asi que es la fuente correcta sin importar
+ * desde que cliente se apruebe la solicitud.
  */
 function subirContenidoScript_(scriptId, modulos) {
   var token = ScriptApp.getOAuthToken();
 
-  var respPropio = UrlFetchApp.fetch(
-    'https://script.googleapis.com/v1/projects/' + ScriptApp.getScriptId() + '/content',
+  var respLibreria = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + LIBRERIA_ID_ + '/content',
     { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }
   );
-  if (respPropio.getResponseCode() !== 200) {
-    throw new Error('SUBIR_CONTENIDO_SCRIPT_ERROR: no se pudo leer el proyecto propio -- ' + respPropio.getContentText());
+  if (respLibreria.getResponseCode() !== 200) {
+    throw new Error('SUBIR_CONTENIDO_SCRIPT_ERROR: no se pudo leer el codigo fuente de la libreria -- ' + respLibreria.getContentText());
   }
 
-  var contenidoPropio = JSON.parse(respPropio.getContentText());
+  var contenidoLibreria = JSON.parse(respLibreria.getContentText());
   var fuentePorNombre = {};
-  contenidoPropio.files.forEach(function (file) { fuentePorNombre[file.name] = file.source; });
+  contenidoLibreria.files.forEach(function (file) { fuentePorNombre[file.name] = file.source; });
 
   var aFiles = PACKAGE_MAP_EMBEBIDO.entriesPackageA.map(function (entrada) {
     var nombreArchivo = entrada.path.replace(/^src\//, '').replace(/\.(js|html)$/, '');
     return { path: entrada.path, module: entrada.module, content: fuentePorNombre[nombreArchivo] || '' };
   });
 
-  var generado = generarEnvoltoriosParaModulos_(aFiles, modulos, 'Core');
+  // Blindaje contra el bug ya visto: si el lookup por nombre falla (p.ej.
+  // el proyecto leido no es realmente la libreria), mejor un error claro
+  // aqui que un Codigo.js casi vacio sin ninguna funcion.
+  var sinContenido = aFiles.filter(function (f) { return !f.content; }).map(function (f) { return f.path; });
+  if (sinContenido.length > 0) {
+    throw new Error('SUBIR_CONTENIDO_SCRIPT_ERROR: ' + sinContenido.length + ' fichero(s) sin contenido al leer la libreria -- ' + sinContenido.slice(0, 5).join(', '));
+  }
 
-  var versionLibreria = PropertiesService.getScriptProperties().getProperty('LIBRERIA_VERSION_ACTUAL');
-  if (!versionLibreria) throw new Error('SUBIR_CONTENIDO_SCRIPT_ERROR: falta la Script Property LIBRERIA_VERSION_ACTUAL.');
+  var generado = generarEnvoltoriosParaModulos_(aFiles, modulos, 'Core');
+  var versionLibreria = obtenerVersionLibreriaMasReciente_();
 
   var manifiesto = {
     timeZone: 'Europe/Madrid',

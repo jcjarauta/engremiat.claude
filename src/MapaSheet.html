@@ -74,13 +74,6 @@
           <div class="detalle">Consulta estado, URL y errores -- la aprobación se hace en el paso 2, no editando esta hoja</div>
         </span>
       </button>
-      <button class="tarjeta" onclick="abrir('abrirActualizarVersionLibreria')">
-        <span class="icono">📦</span>
-        <span class="texto">
-          <div class="titulo">Versión de librería para nuevos montajes</div>
-          <div class="detalle">Fija qué versión de la librería CORE usan los sheets que se monten a partir de ahora</div>
-        </span>
-      </button>
     </div>
 
     <div class="separador">Personal</div>
@@ -338,9 +331,6 @@
             return;
           case 'abrirHojaSolicitudesMontaje':
             google.script.run.withFailureHandler(mostrarError).abrirHojaSolicitudesMontaje();
-            return;
-          case 'abrirActualizarVersionLibreria':
-            google.script.run.withFailureHandler(mostrarError).abrirActualizarVersionLibreria();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });

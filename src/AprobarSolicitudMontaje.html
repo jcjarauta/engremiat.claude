@@ -89,7 +89,9 @@
             document.getElementById('mensaje').textContent = '';
             var caja = document.getElementById('resultadoOk');
             caja.style.display = 'block';
-            caja.innerHTML = '<strong>Montado correctamente.</strong><br><a href="' + escapeHtml(resultado.spreadsheetUrl) + '" target="_blank">Abrir el sheet nuevo</a>';
+            caja.innerHTML = '<strong>Montado correctamente.</strong><br><a href="' + escapeHtml(resultado.spreadsheetUrl) + '" target="_blank">Abrir el sheet nuevo</a>' +
+              '<br><br><strong>Paso obligatorio, una sola vez:</strong> en el sheet nuevo, Extensiones → Apps Script → elige <code>onOpen</code> → ▶ Ejecutar → acepta los permisos. ' +
+              'Google exige esa autorización manual la primera vez que un proyecto creado por API se ejecuta -- hasta entonces el menú no aparece. Después, el menú aparece solo al abrir el sheet.';
             SOLICITUDES_ = SOLICITUDES_.filter(function (s) { return s.idTemporal !== idTemporal; });
             pintarSelect_();
             document.getElementById('btnAprobar').disabled = SOLICITUDES_.length === 0;

@@ -479,8 +479,7 @@ function agregarCatalogosCore_(menu) {
     menu = menu
       .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
       .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
-      .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
-      .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
+      .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento');
   }
   return menu;
 }
