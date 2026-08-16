@@ -55,6 +55,24 @@ function calcularAvanceProducto_(producto) {
   return producto;
 }
 
+/*
+ * Informes dinámicos por módulo (ver conversación -- "los informes
+ * también deberían ser dinámicos y ofrecer los outputs necesarios para
+ * cada cliente... un sheet core no necesita algún dato que esté en los
+ * módulos superiores"): v79 ya evita que generarInforme* reviente si
+ * falta una hoja opcional (listarRegistrosSeguro_ devuelve []), pero el
+ * PDF/HTML imprimible seguía mostrando la sección entera (cabecera +
+ * tabla vacía) igual que si el módulo estuviera instalado y sin datos
+ * -- confuso, no comunica "esto no aplica a tu Sheet". Mismo criterio
+ * null-safe que moduloInstalado_() (FormularioMotorUI.js): sin
+ * información de módulos (Sheet maestro en crudo) se asume todo
+ * instalado.
+ */
+function moduloInstaladoEnLista_(modulosInstalados, nombreModulo) {
+  if (!modulosInstalados) return true;
+  return modulosInstalados.indexOf(nombreModulo) !== -1;
+}
+
 function generarInformeCampania(campanaId) {
   var campana = obtenerCampana(campanaId);
   if (!campana) {
@@ -407,11 +425,33 @@ function generarHtmlParaImprimir_(informe) {
   return construirDocumentoInformeImprimible_('Informe: ' + informe.tipo, '', tablaSimpleHtml_(['Campo', 'Valor'], filas));
 }
 
-function generarHtmlCampana_(informe, nivel) {
-  var c = informe.campana;
-  var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
+/*
+ * Bloque Incidencias/Decisiones (módulo SEGUIMIENTO) reutilizado por
+ * Campaña/Proyecto/Memoria/Ejecutivo/Cierre de campaña -- idéntico en
+ * los 5, solo cambiaba el informe de origen. Vacío si SEGUIMIENTO no
+ * está instalado, en vez de una cabecera con tabla vacía.
+ */
+function tarjetasSeguimiento_(informe, modulosInstalados) {
+  if (!moduloInstaladoEnLista_(modulosInstalados, 'SEGUIMIENTO')) return [];
+  return [
+    { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
+    { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
+  ];
+}
+
+function bloqueSeguimientoHtml_(informe, nivel, modulosInstalados) {
+  if (!moduloInstaladoEnLista_(modulosInstalados, 'SEGUIMIENTO')) return '';
   var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
   var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
+  return '<h2>Incidencias abiertas</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
+    '<h2>Decisiones pendientes</h2>' +
+    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+}
+
+function generarHtmlCampana_(informe, nivel, modulosInstalados) {
+  var c = informe.campana;
+  var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
   var d = informe.desviacionPlanificacion;
 
   var cuerpo =
@@ -420,10 +460,8 @@ function generarHtmlCampana_(informe, nivel) {
       { valor: informe.totales.productos, etiqueta: 'Productos' },
       { valor: informe.totales.procesos, etiqueta: 'Procesos' },
       { valor: informe.totales.tareas, etiqueta: 'Tareas' },
-      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
-      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
-      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
-    ]) +
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
+    ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Proyectos por estado</h2>' +
     graficoBarrasHtml_(Object.keys(informe.proyectosPorEstado).map(function (k) { return { etiqueta: k, valor: informe.proyectosPorEstado[k] }; })) +
     '<h2>Tareas por estado</h2>' +
@@ -432,19 +470,14 @@ function generarHtmlCampana_(informe, nivel) {
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
-    '<h2>Incidencias abiertas</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
-    '<h2>Decisiones pendientes</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+    bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);
 
   return construirDocumentoInformeImprimible_('Informe de campaña — ' + c.NOMBRE, c.ESTADO + ' · ' + c.FECHA_INICIO_PLAN + ' a ' + c.FECHA_FIN_PLAN, cuerpo);
 }
 
-function generarHtmlProyecto_(informe, nivel) {
+function generarHtmlProyecto_(informe, nivel, modulosInstalados) {
   var p = informe.proyecto;
   var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
-  var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
-  var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
   var d = informe.desviacionPlanificacion;
 
   var cuerpo =
@@ -452,10 +485,8 @@ function generarHtmlProyecto_(informe, nivel) {
       { valor: informe.totales.productos, etiqueta: 'Productos' },
       { valor: informe.totales.procesos, etiqueta: 'Procesos' },
       { valor: informe.totales.tareas, etiqueta: 'Tareas' },
-      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
-      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
-      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
-    ]) +
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
+    ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Productos (% avance)</h2>' +
     graficoBarrasHtml_(informe.productos.map(function (pr) { return { etiqueta: pr.NOMBRE, valor: pr.PORCENTAJE_AVANCE_CALCULADO }; }), { max: 100 }) +
     '<h2>Tareas por estado</h2>' +
@@ -464,28 +495,21 @@ function generarHtmlProyecto_(informe, nivel) {
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
-    '<h2>Incidencias abiertas</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
-    '<h2>Decisiones pendientes</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+    bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);
 
   return construirDocumentoInformeImprimible_('Informe de proyecto — ' + p.NOMBRE, p.ESTADO, cuerpo);
 }
 
-function generarHtmlMemoria_(informe, nivel) {
+function generarHtmlMemoria_(informe, nivel, modulosInstalados) {
   var retrasadas = limitarSiResumen_(informe.tareasRetrasadas, nivel, 8);
-  var incidencias = limitarSiResumen_(informe.incidenciasAbiertas, nivel, 8);
-  var decisiones = limitarSiResumen_(informe.decisionesPendientes, nivel, 8);
   var d = informe.desviacionPlanificacion;
 
   var cuerpo =
     tarjetasResumenHtml_([
       { valor: informe.campanas.length, etiqueta: 'Campañas' },
       { valor: informe.resumenGlobal.PROYECTO ? Object.keys(informe.resumenGlobal.PROYECTO).reduce(function (a, k) { return a + informe.resumenGlobal.PROYECTO[k]; }, 0) : 0, etiqueta: 'Proyectos' },
-      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
-      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
-      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' }
-    ]) +
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
+    ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Tareas por estado (global)</h2>' +
     graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
     '<h2>Campañas</h2>' +
@@ -494,10 +518,7 @@ function generarHtmlMemoria_(informe, nivel) {
     graficoBarrasHtml_(d.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
-    '<h2>Incidencias abiertas</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Prioridad'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO, i.PRIORIDAD]; })) + avisoOcultasHtml_(incidencias.ocultas) +
-    '<h2>Decisiones pendientes</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado', 'Fecha límite'], decisiones.filas.map(function (d2) { return [d2.TITULO, d2.ESTADO, d2.FECHA_LIMITE]; })) + avisoOcultasHtml_(decisiones.ocultas);
+    bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);
 
   return construirDocumentoInformeImprimible_('Memoria de producción', '', cuerpo);
 }
@@ -554,7 +575,9 @@ function generarHtmlDesviacion_(informe, nivel) {
   return construirDocumentoInformeImprimible_('Desviación de planificación', 'Real vs. plan', cuerpo);
 }
 
-function generarHtmlCalidad_(informe, nivel) {
+function generarHtmlCalidad_(informe, nivel, modulosInstalados) {
+  var hayOperativa = moduloInstaladoEnLista_(modulosInstalados, 'OPERATIVA');
+
   var cuerpo =
     '<div class="fila-donuts">' +
       donutProgresoSvg_(informe.porcentajeProcesosATiempo, 'Procesos a tiempo') +
@@ -564,12 +587,16 @@ function generarHtmlCalidad_(informe, nivel) {
       { valor: informe.procesosMedidos, etiqueta: 'Procesos medidos' },
       { valor: informe.tareasMedidas, etiqueta: 'Tareas medidas' }
     ]) +
-    '<h2>Utilización de horario por responsable</h2>' +
-    graficoBarrasHtml_(informe.utilizacionHorarioPorResponsable.map(function (u) { return { etiqueta: u.responsable, valor: u.porcentajeUtilizacion || 0 }; }), { max: 100, alertaSi: function (i) { return i.valor < 70; } }) +
+    (hayOperativa
+      ? '<h2>Utilización de horario por responsable</h2>' +
+        graficoBarrasHtml_(informe.utilizacionHorarioPorResponsable.map(function (u) { return { etiqueta: u.responsable, valor: u.porcentajeUtilizacion || 0 }; }), { max: 100, alertaSi: function (i) { return i.valor < 70; } })
+      : '') +
     '<h2>Por fase (días de desviación media)</h2>' +
     graficoBarrasHtml_(informe.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
-    '<h2>Por recurso (días de desviación media)</h2>' +
-    graficoBarrasHtml_(informe.procesosPorRecurso.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    (hayOperativa
+      ? '<h2>Por recurso (días de desviación media)</h2>' +
+        graficoBarrasHtml_(informe.procesosPorRecurso.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } })
+      : '') +
     '<h2>Por campaña (días de desviación media)</h2>' +
     graficoBarrasHtml_(informe.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } });
 
@@ -616,7 +643,10 @@ function generarHtmlCambios_(informe, nivel) {
   return construirDocumentoInformeImprimible_('Cambios (auditoría)', subtitulo, cuerpo);
 }
 
-function generarHtmlEjecutivo_(informe) {
+function generarHtmlEjecutivo_(informe, modulosInstalados) {
+  var hayOperativa = moduloInstaladoEnLista_(modulosInstalados, 'OPERATIVA');
+  var haySeguimiento = moduloInstaladoEnLista_(modulosInstalados, 'SEGUIMIENTO');
+
   var cuerpo =
     '<div class="fila-donuts">' +
       (informe.avanceMedioProcesos !== null ? donutProgresoSvg_(informe.avanceMedioProcesos, 'Avance medio de procesos') : '') +
@@ -624,25 +654,26 @@ function generarHtmlEjecutivo_(informe) {
     tarjetasResumenHtml_([
       { valor: informe.totalCampanasActivas, etiqueta: 'Campañas activas' },
       { valor: informe.totalCampanas, etiqueta: 'Campañas totales' },
-      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 },
-      { valor: informe.incidenciasAbiertas.length, etiqueta: 'Incidencias abiertas', alerta: informe.incidenciasAbiertas.length > 0 },
-      { valor: informe.decisionesPendientes.length, etiqueta: 'Decisiones pendientes' },
-      { valor: informe.sobreasignaciones.length, etiqueta: 'Sobreasignaciones', alerta: informe.sobreasignaciones.length > 0 }
-    ]) +
+      { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
+    ].concat(tarjetasSeguimiento_(informe, modulosInstalados))
+      .concat(hayOperativa ? [{ valor: informe.sobreasignaciones.length, etiqueta: 'Sobreasignaciones', alerta: informe.sobreasignaciones.length > 0 }] : [])) +
     '<h2>Tareas por estado (global)</h2>' +
     graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
     '<h2>Tareas retrasadas (top 8)</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], informe.tareasRetrasadas.slice(0, 8).map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) +
-    '<h2>Incidencias abiertas (top 8)</h2>' +
-    tablaSimpleHtml_(['Título', 'Prioridad'], informe.incidenciasAbiertas.slice(0, 8).map(function (i) { return [i.TITULO, i.PRIORIDAD]; })) +
-    '<h2>Decisiones pendientes (top 8)</h2>' +
-    tablaSimpleHtml_(['Título', 'Fecha límite'], informe.decisionesPendientes.slice(0, 8).map(function (d) { return [d.TITULO, d.FECHA_LIMITE]; }));
+    (haySeguimiento
+      ? '<h2>Incidencias abiertas (top 8)</h2>' +
+        tablaSimpleHtml_(['Título', 'Prioridad'], informe.incidenciasAbiertas.slice(0, 8).map(function (i) { return [i.TITULO, i.PRIORIDAD]; })) +
+        '<h2>Decisiones pendientes (top 8)</h2>' +
+        tablaSimpleHtml_(['Título', 'Fecha límite'], informe.decisionesPendientes.slice(0, 8).map(function (d) { return [d.TITULO, d.FECHA_LIMITE]; }))
+      : '');
 
   return construirDocumentoInformeImprimible_('Informe ejecutivo', Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Europe/Madrid', 'yyyy-MM-dd'), cuerpo);
 }
 
-function generarHtmlCierreCampana_(informe, nivel) {
+function generarHtmlCierreCampana_(informe, nivel, modulosInstalados) {
   var c = informe.campana;
+  var haySeguimiento = moduloInstaladoEnLista_(modulosInstalados, 'SEGUIMIENTO');
   var decisiones = limitarSiResumen_(informe.todasDecisiones, nivel, 10);
   var incidencias = limitarSiResumen_(informe.todasIncidencias, nivel, 10);
 
@@ -654,20 +685,23 @@ function generarHtmlCierreCampana_(informe, nivel) {
     tarjetasResumenHtml_([
       { valor: informe.totales.proyectos, etiqueta: 'Proyectos' },
       { valor: informe.totales.productos, etiqueta: 'Productos' },
-      { valor: informe.totales.tareas, etiqueta: 'Tareas' },
+      { valor: informe.totales.tareas, etiqueta: 'Tareas' }
+    ].concat(haySeguimiento ? [
       { valor: informe.todasDecisiones.length, etiqueta: 'Decisiones tomadas' },
       { valor: informe.todasIncidencias.length, etiqueta: 'Incidencias registradas' }
-    ]) +
-    '<h2>Decisiones por estado</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
-    '<h2>Incidencias por estado</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.incidenciasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.incidenciasPorEstado[k] }; })) +
+    ] : [])) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(informe.desviacionPlanificacion.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
-    '<h2>Decisiones</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado'], decisiones.filas.map(function (d) { return [d.TITULO, d.ESTADO]; })) + avisoOcultasHtml_(decisiones.ocultas) +
-    '<h2>Incidencias</h2>' +
-    tablaSimpleHtml_(['Título', 'Estado'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO]; })) + avisoOcultasHtml_(incidencias.ocultas);
+    (haySeguimiento
+      ? '<h2>Decisiones por estado</h2>' +
+        graficoBarrasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
+        '<h2>Incidencias por estado</h2>' +
+        graficoBarrasHtml_(Object.keys(informe.incidenciasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.incidenciasPorEstado[k] }; })) +
+        '<h2>Decisiones</h2>' +
+        tablaSimpleHtml_(['Título', 'Estado'], decisiones.filas.map(function (d) { return [d.TITULO, d.ESTADO]; })) + avisoOcultasHtml_(decisiones.ocultas) +
+        '<h2>Incidencias</h2>' +
+        tablaSimpleHtml_(['Título', 'Estado'], incidencias.filas.map(function (i) { return [i.TITULO, i.ESTADO]; })) + avisoOcultasHtml_(incidencias.ocultas)
+      : '');
 
   return construirDocumentoInformeImprimible_('Cierre de campaña — ' + c.NOMBRE, c.ESTADO, cuerpo);
 }
@@ -679,19 +713,19 @@ function generarHtmlCierreCampana_(informe, nivel) {
  * genérico. nivel: 'resumen' (listas largas recortadas a los primeros
  * elementos) o 'completo' (todo, por defecto).
  */
-function generarHtmlInformeVisual_(informe, nivel) {
+function generarHtmlInformeVisual_(informe, nivel, modulosInstalados) {
   nivel = nivel === 'resumen' ? 'resumen' : 'completo';
   if (informe.tipo === 'JUSTIFICACION_ECONOMICA') return generarHtmlMemoriaEconomica_(informe);
-  if (informe.tipo === 'CAMPANA') return generarHtmlCampana_(informe, nivel);
-  if (informe.tipo === 'PROYECTO') return generarHtmlProyecto_(informe, nivel);
-  if (informe.tipo === 'MEMORIA') return generarHtmlMemoria_(informe, nivel);
+  if (informe.tipo === 'CAMPANA') return generarHtmlCampana_(informe, nivel, modulosInstalados);
+  if (informe.tipo === 'PROYECTO') return generarHtmlProyecto_(informe, nivel, modulosInstalados);
+  if (informe.tipo === 'MEMORIA') return generarHtmlMemoria_(informe, nivel, modulosInstalados);
   if (informe.tipo === 'EXCEPCIONES') return generarHtmlExcepciones_(informe, nivel);
   if (informe.tipo === 'DESVIACION') return generarHtmlDesviacion_(informe, nivel);
-  if (informe.tipo === 'CALIDAD_PLANIFICACION') return generarHtmlCalidad_(informe, nivel);
+  if (informe.tipo === 'CALIDAD_PLANIFICACION') return generarHtmlCalidad_(informe, nivel, modulosInstalados);
   if (informe.tipo === 'EVIDENCIA_SOCIAL') return generarHtmlEvidenciaSocial_(informe, nivel);
   if (informe.tipo === 'CAMBIOS') return generarHtmlCambios_(informe, nivel);
-  if (informe.tipo === 'EJECUTIVO') return generarHtmlEjecutivo_(informe);
-  if (informe.tipo === 'CIERRE_CAMPANA') return generarHtmlCierreCampana_(informe, nivel);
+  if (informe.tipo === 'EJECUTIVO') return generarHtmlEjecutivo_(informe, modulosInstalados);
+  if (informe.tipo === 'CIERRE_CAMPANA') return generarHtmlCierreCampana_(informe, nivel, modulosInstalados);
   return generarHtmlParaImprimir_(informe);
 }
 
@@ -736,16 +770,16 @@ function generarHtmlMemoriaEconomica_(informe) {
   return construirDocumentoInformeImprimible_('Memoria económica', informe.entidadTipo + ': ' + informe.entidadNombre, cuerpo);
 }
 
-function exportarInformePDF(tipo, idOFiltro, nivel, opcionesPrueba) {
+function exportarInformePDF(tipo, idOFiltro, nivel, opcionesPrueba, modulosInstalados) {
   var informe = generarInforme(tipo, idOFiltro);
-  var html = generarHtmlInformeVisual_(informe, nivel);
+  var html = generarHtmlInformeVisual_(informe, nivel, modulosInstalados);
   var nombre = nombreArchivoInforme_(tipo, 'html');
   registrarHistorial('INFORME', nombre, 'EXPORTAR_INFORME', [], Object.assign({ origen: (opcionesPrueba && opcionesPrueba.origen) || 'UI', formato: 'PDF_IMPRESION' }, opcionesPrueba || {}));
   return { nombreArchivo: nombre, contenidoHtml: html };
 }
 
-function abrirDialogoExportarPDF(tipo, idOFiltro, nivel) {
-  var resultado = exportarInformePDF(tipo, idOFiltro, nivel, {});
+function abrirDialogoExportarPDF(tipo, idOFiltro, nivel, modulosInstalados) {
+  var resultado = exportarInformePDF(tipo, idOFiltro, nivel, {}, modulosInstalados);
   var output = HtmlService.createHtmlOutput(resultado.contenidoHtml).setWidth(820).setHeight(600);
   SpreadsheetApp.getUi().showModelessDialog(output, 'Informe -- usa Imprimir para guardar como PDF');
 }

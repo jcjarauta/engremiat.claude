@@ -275,10 +275,12 @@
         contenedor.innerHTML =
           '<div class="resumen-linea"><span>Procesos a tiempo</span><span class="badge">' + (informe.porcentajeProcesosATiempo === null ? '—' : informe.porcentajeProcesosATiempo + '%') + '</span></div>' +
           '<div class="resumen-linea"><span>Tareas a tiempo</span><span class="badge">' + (informe.porcentajeTareasATiempo === null ? '—' : informe.porcentajeTareasATiempo + '%') + '</span></div>' +
-          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por recurso usado</strong></p>' +
-          renderDesviacionAgregada_(informe.procesosPorRecurso) +
-          '<p style="margin-bottom:2px;margin-top:8px;"><strong>Utilización del horario declarado por responsable</strong></p>' +
-          renderUtilizacionHorario_(informe.utilizacionHorarioPorResponsable);
+          (moduloInstalado_('OPERATIVA')
+            ? '<p style="margin-bottom:2px;margin-top:8px;"><strong>Procesos por recurso usado</strong></p>' +
+              renderDesviacionAgregada_(informe.procesosPorRecurso) +
+              '<p style="margin-bottom:2px;margin-top:8px;"><strong>Utilización del horario declarado por responsable</strong></p>' +
+              renderUtilizacionHorario_(informe.utilizacionHorarioPorResponsable)
+            : '');
       }
 
       /*
@@ -465,8 +467,18 @@
         var tiposSinDesviacion = ['JUSTIFICACION_ECONOMICA', 'EVIDENCIA_SOCIAL', 'EXCEPCIONES', 'CAMBIOS', 'EJECUTIVO'];
         var sinDesviacion = tiposSinDesviacion.indexOf(informe.tipo) !== -1;
         var esInformeSinJerarquia = informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' || sinDesviacion;
-        ['resumen', 'tareas-retrasadas', 'decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
+        ['resumen', 'tareas-retrasadas'].forEach(function (id) {
           document.getElementById(id).closest('.seccion').style.display = esInformeSinJerarquia ? 'none' : '';
+        });
+        /*
+         * Decisiones/Incidencias son del módulo SEGUIMIENTO (v78) -- sin
+         * ese módulo instalado, ocultarlas en vez de mostrar la sección
+         * con una tabla vacía (ver conversación -- "los informes
+         * también deberían ser dinámicos... un sheet core no necesita
+         * algún dato que esté en los módulos superiores").
+         */
+        ['decisiones-pendientes', 'incidencias-abiertas'].forEach(function (id) {
+          document.getElementById(id).closest('.seccion').style.display = (esInformeSinJerarquia || !moduloInstalado_('SEGUIMIENTO')) ? 'none' : '';
         });
         document.getElementById('seccion-desviacion').style.display = sinDesviacion ? 'none' : '';
         if (!sinDesviacion) renderDesviacion(informe.tipo === 'DESVIACION' || informe.tipo === 'CALIDAD_PLANIFICACION' ? informe : informe.desviacionPlanificacion);
@@ -559,7 +571,7 @@
       document.getElementById('btn-exportar-pdf').addEventListener('click', function () {
         if (!tipoActual) return;
         var nivel = document.getElementById('nivel-detalle-resumen').checked ? 'resumen' : 'completo';
-        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual, nivel);
+        google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarPDF(tipoActual, filtroActual, nivel, MODULOS_INSTALADOS);
       });
       document.getElementById('tipo').addEventListener('change', cargarOpcionesRegistro);
       document.getElementById('nivel-economico').addEventListener('change', cargarOpcionesRegistroPorNivel_);
