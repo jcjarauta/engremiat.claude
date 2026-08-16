@@ -173,7 +173,11 @@ function generarInformeProyecto(proyectoId) {
 }
 
 function generarMemoriaProduccion() {
-  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' });
+  // Orden cronológico (ver conversación -- "gráficos, diagramas"): la
+  // línea de tendencia de desviación por campaña necesita un eje
+  // temporal con sentido, no el orden de fila de la hoja.
+  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' })
+    .sort(function (a, b) { return new Date(a.FECHA_INICIO_PLAN) - new Date(b.FECHA_INICIO_PLAN); });
   var resumenCampanas = campanas.map(function (campana) {
     var proyectos = listarProyectosDeCampana(campana.ID);
     return {
@@ -583,9 +587,9 @@ function generarHtmlCampana_(informe, nivel, modulosInstalados) {
       { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
     ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Proyectos por estado</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.proyectosPorEstado).map(function (k) { return { etiqueta: k, valor: informe.proyectosPorEstado[k] }; })) +
+    graficoBarrasApiladasHtml_(Object.keys(informe.proyectosPorEstado).map(function (k) { return { etiqueta: k, valor: informe.proyectosPorEstado[k] }; })) +
     '<h2>Tareas por estado</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
+    graficoBarrasApiladasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
@@ -610,7 +614,7 @@ function generarHtmlProyecto_(informe, nivel, modulosInstalados) {
     '<h2>Productos (% avance)</h2>' +
     graficoBarrasHtml_(informe.productos.map(function (pr) { return { etiqueta: pr.NOMBRE, valor: pr.PORCENTAJE_AVANCE_CALCULADO }; }), { max: 100 }) +
     '<h2>Tareas por estado</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
+    graficoBarrasApiladasHtml_(Object.keys(informe.tareasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.tareasPorEstado[k] }; })) +
     '<h2>Desviación de planificación (días de media por fase)</h2>' +
     graficoBarrasHtml_(d.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
@@ -631,10 +635,18 @@ function generarHtmlMemoria_(informe, nivel, modulosInstalados) {
       { valor: informe.tareasRetrasadas.length, etiqueta: 'Tareas retrasadas', alerta: informe.tareasRetrasadas.length > 0 }
     ].concat(tarjetasSeguimiento_(informe, modulosInstalados))) +
     '<h2>Tareas por estado (global)</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
+    graficoBarrasApiladasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
     '<h2>Campañas</h2>' +
     tablaSimpleHtml_(['Campaña', 'Estado', 'Proyectos'], informe.campanas.map(function (c) { return [c.campana.NOMBRE, c.campana.ESTADO, c.totalProyectos]; })) +
     '<h2>Desviación de planificación (días de media por campaña)</h2>' +
+    // Línea de tendencia en orden cronológico (informe.campanas ya viene
+    // ordenado por FECHA_INICIO_PLAN) -- procesosPorCampana en cambio
+    // viene ordenado por desviación (calcularDesviacionAgregada_), así
+    // que se reordena por nombre de campaña antes de dibujar la línea.
+    lineaTendenciaSvg_(informe.campanas.map(function (c) {
+      var grupo = d.procesosPorCampana.filter(function (g) { return g.grupo === c.campana.NOMBRE; })[0];
+      return { etiqueta: c.campana.NOMBRE, valor: grupo ? grupo.diasDesviacionMedia : 0 };
+    })) +
     graficoBarrasHtml_(d.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
@@ -778,7 +790,7 @@ function generarHtmlEjecutivo_(informe, modulosInstalados) {
     ].concat(tarjetasSeguimiento_(informe, modulosInstalados))
       .concat(hayOperativa ? [{ valor: informe.sobreasignaciones.length, etiqueta: 'Sobreasignaciones', alerta: informe.sobreasignaciones.length > 0 }] : [])) +
     '<h2>Tareas por estado (global)</h2>' +
-    graficoBarrasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
+    graficoBarrasApiladasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
     '<h2>Tareas retrasadas (top 8)</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], informe.tareasRetrasadas.slice(0, 8).map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) +
     (haySeguimiento
@@ -814,9 +826,9 @@ function generarHtmlCierreCampana_(informe, nivel, modulosInstalados) {
     graficoBarrasHtml_(informe.desviacionPlanificacion.procesosPorFase.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
     (haySeguimiento
       ? '<h2>Decisiones por estado</h2>' +
-        graficoBarrasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
+        graficoBarrasApiladasHtml_(Object.keys(informe.decisionesPorEstado).map(function (k) { return { etiqueta: k, valor: informe.decisionesPorEstado[k] }; })) +
         '<h2>Incidencias por estado</h2>' +
-        graficoBarrasHtml_(Object.keys(informe.incidenciasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.incidenciasPorEstado[k] }; })) +
+        graficoBarrasApiladasHtml_(Object.keys(informe.incidenciasPorEstado).map(function (k) { return { etiqueta: k, valor: informe.incidenciasPorEstado[k] }; })) +
         '<h2>Decisiones</h2>' +
         tablaSimpleHtml_(['Título', 'Estado'], decisiones.filas.map(function (d) { return [d.TITULO, d.ESTADO]; })) + avisoOcultasHtml_(decisiones.ocultas) +
         '<h2>Incidencias</h2>' +

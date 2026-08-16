@@ -36,7 +36,101 @@ var ESTILO_INFORME_COMPARTIDO_ =
   '.fila-donuts{display:flex;gap:24px;flex-wrap:wrap;margin:12px 0;align-items:center;}' +
   '.donut-item{text-align:center;}' +
   '.donut-item .etiqueta{font-size:11px;color:#5f6368;margin-top:4px;}' +
+  '.barra-apilada{display:flex;height:22px;border-radius:4px;overflow:hidden;margin:8px 0;}' +
+  '.barra-apilada .segmento{height:100%;}' +
+  '.leyenda-apilada{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:4px;font-size:11px;color:#5f6368;}' +
+  '.leyenda-apilada .punto{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle;}' +
+  '.tendencia-etiqueta{font-size:10px;fill:#5f6368;}' +
+  '.tendencia-valor{font-size:11px;font-weight:bold;fill:#202124;}' +
   '@media print{button{display:none;}}';
+
+/*
+ * Clasificación de estado por palabras clave (ver conversación --
+ * "gráficos... esto tendría que ser replicable"): mismo criterio que
+ * claseBadgeEstado_ en PanelCampana.html, portado aquí server-side para
+ * que las barras apiladas de los informes usen el mismo lenguaje de
+ * color en todo el sistema. Los estados varían por entidad
+ * (Completado/Terminada/Confirmada, Bloqueado/Cancelada/Rechazada...)
+ * así que no hay un mapa 1:1, pero las palabras clave se repiten.
+ */
+function colorPorPalabraClaveEstado_(estado) {
+  var texto = String(estado || '').toLowerCase();
+  if (texto.indexOf('bloque') !== -1 || texto.indexOf('cancel') !== -1 || texto.indexOf('rechaz') !== -1) return '#b00020';
+  if (texto.indexOf('complet') !== -1 || texto.indexOf('termin') !== -1 || texto.indexOf('confirm') !== -1 || texto.indexOf('aprob') !== -1) return '#1e8e3e';
+  if (texto.indexOf('proceso') !== -1 || texto.indexOf('activ') !== -1) return '#1a73e8';
+  return '#9aa0a6';
+}
+
+/*
+ * Barra apilada con leyenda: una sola barra horizontal dividida en
+ * segmentos proporcionales, color por colorPorPalabraClaveEstado_ salvo
+ * que opciones.color(item) diga otra cosa. items: [{etiqueta, valor}].
+ * Pensada para "X por estado" -- cuenta la misma historia que
+ * graficoBarrasHtml_ pero de un vistazo, sin recorrer una lista de
+ * barras separadas.
+ */
+function graficoBarrasApiladasHtml_(items, opciones) {
+  opciones = opciones || {};
+  items = (items || []).filter(function (i) { return i.valor > 0; });
+  if (items.length === 0) return '<div class="vacio">Sin datos.</div>';
+  var total = items.reduce(function (acc, i) { return acc + i.valor; }, 0);
+  var color = opciones.color || function (i) { return colorPorPalabraClaveEstado_(i.etiqueta); };
+
+  var segmentos = items.map(function (i) {
+    var pct = total > 0 ? (i.valor / total) * 100 : 0;
+    return '<span class="segmento" style="width:' + pct + '%;background:' + color(i) + ';" title="' + escaparHtmlServer_(i.etiqueta) + ': ' + i.valor + '"></span>';
+  }).join('');
+
+  var leyenda = items.map(function (i) {
+    return '<span><span class="punto" style="background:' + color(i) + ';"></span>' + escaparHtmlServer_(i.etiqueta) + ' (' + i.valor + ')</span>';
+  }).join('');
+
+  return '<div class="barra-apilada">' + segmentos + '</div><div class="leyenda-apilada">' + leyenda + '</div>';
+}
+
+/*
+ * Línea de tendencia en SVG puro: puntos en el orden dado (el llamador
+ * decide el orden -- normalmente cronológico) conectados por una
+ * polilínea, con eje cero de referencia si hay valores negativos.
+ * puntos: [{etiqueta, valor}]. Pensada para comparar una métrica entre
+ * campañas/periodos, no para series muy largas (por encima de ~8-10
+ * puntos las etiquetas se solapan -- no hace falta más para el uso
+ * previsto: comparar campañas de una temporada).
+ */
+function lineaTendenciaSvg_(puntos, opciones) {
+  opciones = opciones || {};
+  if (!puntos || puntos.length === 0) return '<div class="vacio">Sin datos.</div>';
+
+  var ancho = 560, alto = 140, margenIzq = 30, margenDer = 20, margenSup = 20, margenInf = 30;
+  var zonaAncho = ancho - margenIzq - margenDer, zonaAlto = alto - margenSup - margenInf;
+  var valores = puntos.map(function (p) { return p.valor; });
+  var max = Math.max.apply(null, valores.concat([0]));
+  var min = Math.min.apply(null, valores.concat([0]));
+  var rango = max - min || 1;
+
+  function x_(i) { return puntos.length > 1 ? margenIzq + (i / (puntos.length - 1)) * zonaAncho : margenIzq + zonaAncho / 2; }
+  function y_(v) { return margenSup + zonaAlto - ((v - min) / rango) * zonaAlto; }
+
+  var yCero = y_(0);
+  var lineaCero = min < 0 && max > 0
+    ? '<line x1="' + margenIzq + '" y1="' + yCero + '" x2="' + (ancho - margenDer) + '" y2="' + yCero + '" stroke="#dadce0" stroke-dasharray="3,3"/>'
+    : '';
+
+  var puntosPolilinea = puntos.map(function (p, i) { return x_(i) + ',' + y_(p.valor); }).join(' ');
+  var color = opciones.color || '#1a73e8';
+
+  var marcas = puntos.map(function (p, i) {
+    return '<circle cx="' + x_(i) + '" cy="' + y_(p.valor) + '" r="3.5" fill="' + color + '"/>' +
+      '<text x="' + x_(i) + '" y="' + (y_(p.valor) - 8) + '" text-anchor="middle" class="tendencia-valor">' + p.valor + '</text>' +
+      '<text x="' + x_(i) + '" y="' + (alto - 8) + '" text-anchor="middle" class="tendencia-etiqueta">' + escaparHtmlServer_(p.etiqueta) + '</text>';
+  }).join('');
+
+  return '<svg width="' + ancho + '" height="' + alto + '" viewBox="0 0 ' + ancho + ' ' + alto + '">' +
+    lineaCero +
+    '<polyline points="' + puntosPolilinea + '" fill="none" stroke="' + color + '" stroke-width="2"/>' +
+    marcas +
+    '</svg>';
+}
 
 /*
  * Envoltorio común: cabecera (título + subtítulo + fecha de generación),
