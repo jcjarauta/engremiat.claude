@@ -204,8 +204,12 @@ test('20 renderWrapperStubs genera envoltorios genéricos con apply/arguments', 
   const stub = renderWrapperStubs(plan, 'Core');
   assert(stub.includes('function abrirX() {'));
   assert(stub.includes('return Core.abrirX.apply(null, arguments);'));
+  // onOpen es uno de los FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS (ver
+  // conversación -- moduloInstalado_() en la librería no puede leer
+  // MODULOS_INSTALADOS_CLIENTE del cliente directamente): su envoltorio
+  // recibe la constante como argumento explícito, no apply/arguments.
   assert(stub.includes('function onOpen() {'));
-  assert(stub.includes('return Core.onOpen.apply(null, arguments);'));
+  assert(stub.includes('return Core.onOpen(MODULOS_INSTALADOS_CLIENTE);'));
 });
 
 test('21 parseArgs exige --modules', () => {
@@ -222,7 +226,10 @@ test('23 proyecto real: selección de todos los módulos no deja huecos', () => 
   const map = readPackageMap();
   const validated = validateAndReadFiles(PROJECT_ROOT, map);
   const aFiles = validated.validatedFiles.filter((entry) => entry.package === 'A');
-  const plan = resolveWrapperPlan({ map, aFiles, modules: ['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS'] });
+  const plan = resolveWrapperPlan({
+    map, aFiles,
+    modules: ['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO']
+  });
   assertDeepEqual(plan.gaps, []);
   assert(plan.wrappers.includes('onOpen'));
   assert(plan.wrappers.includes('onEdit'));
