@@ -31,7 +31,7 @@ const SIMPLE_TRIGGER_NAMES = new Set(['onOpen', 'onEdit']);
 // proyecto que la invoca, así que no puede leer esa constante directamente
 // (definida en el Codigo.js del cliente). Ver moduloInstalado_ en
 // FormularioMotorUI.js.
-const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstalarEstructuraInicial', 'moduloGanttInstalado', 'abrirMapaSheet', 'abrirInformes', 'abrirProteccionHojas']);
+const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstalarEstructuraInicial', 'moduloGanttInstalado', 'abrirMapaSheet', 'abrirInformes', 'abrirProteccionHojas', 'abrirImportacionMasivaInicio', 'instalarStagingImportacionMasiva', 'generarTodasLasPlantillasImportacionMasiva']);
 
 /**
  * A diferencia de maskNonCode (build-packages.mjs), que también blanquea el

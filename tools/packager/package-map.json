@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 175,
+  "universeExpected": 178,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -860,7 +860,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "925a81d02c00d380c66fbd2a1894b79f6613f476465f91bb8dda1abbd32213bf",
+      "expectedSha256": "c3bcd83686fdc6de0041da3c8a0f091555c8d269d342d70b1cc247b0584ed375",
       "required": true,
       "reason": "operación/UI/config -- puerto de generate-shell-wrappers.mjs para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -915,7 +915,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "9a59aecc95361423b78b8f03bad7768739404ad4401034a429d5079e43770d18",
+      "expectedSha256": "b5ffc1d20b446ed2aa7ace2215e74ca0826c35029ce3f489ee4f53d3b7c739cc",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -937,7 +937,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "0fb5a553c56b7bf8a1e412b013492479077c423d48620c43a97db72df1c6ec6a",
+      "expectedSha256": "89d5dcd3613e9a41336c0a1679c3665a50ad9c7926e8a0f70dacbc80c86bbe6d",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1168,7 +1168,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "413f16c34561d29026d418bbede6d715426b8bbb00814c48237278e70291f5dc",
+      "expectedSha256": "d113867a23f67c34b9bface21424e6b4b031692e5fa08292792a0192cbd8068f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1674,7 +1674,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "35c9ffd0f2883628793206aba10581aac41e615edb49173a2ae4aec7f511869b",
+      "expectedSha256": "05ed429e2b313768504494c21b579eb5cdd896252e36109d5a3d6da44ae5a273",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1932,6 +1932,39 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/ImportacionMasivaAvanzada.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "f9ff9157fb66ae11455d8f037def03e00e6aa723c439c8f99966b6ed4c3adb5a",
+      "required": true,
+      "reason": "operación/UI/config -- módulo IMPORTACION_AVANZADA (Recursos/Personas, Asignaciones, Seguimiento, Horario, Ejecución), separado de CORE (solo Campaña->Tarea)",
+      "mixed": false,
+      "module": "IMPORTACION_AVANZADA"
+    },
+    {
+      "path": "src/InstaladorImportacionMasivaAvanzada.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "c683f6743d30421e10c1c34132ae48c1eceda80546147b42a849fd9145727f45",
+      "required": true,
+      "reason": "operación/UI/config -- módulo IMPORTACION_AVANZADA (Recursos/Personas, Asignaciones, Seguimiento, Horario, Ejecución), separado de CORE (solo Campaña->Tarea)",
+      "mixed": false,
+      "module": "IMPORTACION_AVANZADA"
+    },
+    {
+      "path": "src/PlantillaImportacionMasivaAvanzadaService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "b0be4f5d045f47d1340b37371c6d6dba749e382d906617f453864347b781beac",
+      "required": true,
+      "reason": "operación/UI/config -- módulo IMPORTACION_AVANZADA (Recursos/Personas, Asignaciones, Seguimiento, Horario, Ejecución), separado de CORE (solo Campaña->Tarea)",
+      "mixed": false,
+      "module": "IMPORTACION_AVANZADA"
     }
   ],
   "moduleDependencies": {
@@ -1963,6 +1996,9 @@
     "OPORTUNIDAD": [
       "CORE",
       "CLIENTE"
+    ],
+    "IMPORTACION_AVANZADA": [
+      "CORE"
     ]
   }
 }

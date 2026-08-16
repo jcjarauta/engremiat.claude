@@ -17,14 +17,38 @@
  * cabeceras coinciden antes de escribir nada.
  */
 
+/*
+ * Grupo CORE (Campaña→Tarea) -- ver conversación "dejar el CORE limpio
+ * para acoplar módulos a demanda del cliente": los otros 5 grupos
+ * (Recursos/Personas, Asignaciones, Seguimiento, Horario, Ejecución)
+ * viven en PlantillaImportacionMasivaAvanzadaService.js, módulo
+ * IMPORTACION_AVANZADA. Los helpers obtenerXxx_() de más abajo combinan
+ * ambos conjuntos en tiempo de ejecución -- nunca a nivel de fichero,
+ * porque el orden de carga entre los .js de un proyecto de Apps Script
+ * no está garantizado.
+ */
 var GRUPOS_PLANTILLA_IMPORTACION_MASIVA_ = {
-  CAMPANA: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
-  RECURSOS_PERSONAS: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
-  ASIGNACIONES: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
-  SEGUIMIENTO: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
-  HORARIO: ['STG_HORARIO'],
-  EJECUCION: ['STG_EJECUCION_TAREA']
+  CAMPANA: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA']
 };
+
+var MODULO_POR_GRUPO_IMPORTACION_MASIVA_ = {
+  CAMPANA: 'CORE'
+};
+
+function obtenerHojasDeGrupo_(grupo) {
+  return GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo] || GRUPOS_PLANTILLA_IMPORTACION_MASIVA_AVANZADA_[grupo];
+}
+
+function obtenerTodosLosGruposPlantilla_() {
+  return Object.keys(GRUPOS_PLANTILLA_IMPORTACION_MASIVA_).concat(Object.keys(GRUPOS_PLANTILLA_IMPORTACION_MASIVA_AVANZADA_));
+}
+
+function grupoInstalable_(grupo, modulosInstalados) {
+  if (!modulosInstalados) return true;
+  var modulo = MODULO_POR_GRUPO_IMPORTACION_MASIVA_[grupo] || MODULO_POR_GRUPO_IMPORTACION_MASIVA_AVANZADA_[grupo];
+  if (!modulo) return true;
+  return modulosInstalados.indexOf(modulo) !== -1;
+}
 
 /*
  * Mismos pares campo->catálogo y campos obligatorios que valida
@@ -37,53 +61,35 @@ var CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_ = {
   STG_PROYECTO: ['CAMPANA_TEMPORAL', 'NOMBRE', 'TIPO_PROYECTO', 'PRIORIDAD', 'ESTADO'],
   STG_PRODUCTO: ['PROYECTO_TEMPORAL', 'CODIGO', 'NOMBRE', 'ORIGEN', 'UNIDAD', 'ESTADO'],
   STG_PROCESO: ['PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO'],
-  STG_TAREA: ['PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO'],
-  STG_RECURSO: ['CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'ESTADO'],
-  STG_PERSONA: ['TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO'],
-  STG_EQUIPO_MIEMBRO: ['EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO'],
-  STG_TAREA_RESPONSABLE: ['TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO'],
-  STG_TAREA_RECURSO: ['TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO'],
-  STG_DECISION: ['PROYECTO_TEMPORAL', 'TITULO', 'TIPO', 'ESTADO'],
-  STG_INCIDENCIA: ['NIVEL_INCIDENCIA', 'TITULO', 'TIPO', 'PRIORIDAD', 'FECHA_DETECCION', 'ESTADO'],
-  STG_DOCUMENTO: ['ENTIDAD_TIPO', 'TIPO_DOCUMENTO', 'TITULO', 'URL', 'ESTADO'],
-  STG_HORARIO: ['ENTIDAD_TIPO', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'ESTADO'],
-  STG_EJECUCION_TAREA: ['TAREA_TEMPORAL', 'ESTADO']
+  STG_TAREA: ['PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO']
 };
+
+function obtenerCamposObligatoriosDeHoja_(nombreHoja) {
+  return CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_[nombreHoja] || CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_AVANZADA_[nombreHoja] || [];
+}
 
 var CATALOGOS_POR_COLUMNA_STAGING_ = {
   STG_CAMPANA: { ESTADO: 'CFG_ESTADO_CAMPANA' },
   STG_PROYECTO: { TIPO_PROYECTO: 'CFG_TIPO_PROYECTO', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_PROYECTO' },
   STG_PRODUCTO: { ORIGEN: 'CFG_ORIGEN_PRODUCTO', UNIDAD: 'CFG_UNIDAD', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_PRODUCTO' },
   STG_PROCESO: { ESTADO: 'CFG_ESTADO_PROCESO' },
-  STG_TAREA: { ESTADO: 'CFG_ESTADO_TAREA' },
-  STG_RECURSO: { CLASE_RECURSO: 'CFG_CLASE_RECURSO', CATEGORIA_RECURSO: 'CFG_CATEGORIA_RECURSO', ESTADO: 'CFG_ESTADO_RECURSO_FISICO' },
-  STG_PERSONA: { TIPO: 'CFG_TIPO_RECURSO', ROL: 'CFG_ROL_PERSONA', DISPONIBILIDAD: 'CFG_DISPONIBILIDAD', ESTADO: 'CFG_ESTADO_RECURSO' },
-  STG_EQUIPO_MIEMBRO: {},
-  STG_TAREA_RESPONSABLE: { ROL_ASIGNADO: 'CFG_ROL_ASIGNACION', ESTADO: 'CFG_ESTADO_ASIGNACION' },
-  STG_TAREA_RECURSO: { TIPO_USO: 'CFG_TIPO_USO_RECURSO', ESTADO: 'CFG_ESTADO_RELACION' },
-  STG_DECISION: { TIPO: 'CFG_TIPO_DECISION', ESTADO: 'CFG_ESTADO_DECISION' },
-  STG_INCIDENCIA: { NIVEL_INCIDENCIA: 'CFG_NIVEL_INCIDENCIA', TIPO: 'CFG_TIPO_INCIDENCIA', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_INCIDENCIA' },
-  STG_DOCUMENTO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_DOCUMENTO', TIPO_DOCUMENTO: 'CFG_TIPO_DOCUMENTO', ESTADO: 'CFG_ESTADO_DOCUMENTO' },
-  STG_HORARIO: { ENTIDAD_TIPO: 'CFG_ENTIDAD_HORARIO', DIA_SEMANA: 'CFG_DIA_SEMANA', ESTADO: 'CFG_ESTADO_RELACION' },
-  STG_EJECUCION_TAREA: { ESTADO: 'CFG_ESTADO_RELACION', RESULTADO: 'CFG_RESULTADO_EJECUCION' }
+  STG_TAREA: { ESTADO: 'CFG_ESTADO_TAREA' }
 };
+
+function obtenerCatalogosDeHoja_(nombreHoja) {
+  return CATALOGOS_POR_COLUMNA_STAGING_[nombreHoja] || CATALOGOS_POR_COLUMNA_STAGING_AVANZADA_[nombreHoja] || {};
+}
 
 var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
   STG_PROYECTO: 'CAMPANA_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_CAMPANA (o a un ID real de campaña ya existente).',
   STG_PRODUCTO: 'PROYECTO_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_PROYECTO (o a un ID real de proyecto ya existente).',
   STG_PROCESO: 'PRODUCTO_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_PRODUCTO (o a un ID real de producto ya existente).',
-  STG_TAREA: 'PROCESO_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_PROCESO (o a un ID real de proceso ya existente).',
-  STG_RECURSO: 'UBICACION_TEMPORAL (opcional) apunta al ID_TEMPORAL de otra fila de STG_RECURSO que sea su ubicación contenedora.',
-  STG_PERSONA: 'COORDINADOR_TEMPORAL (opcional, solo si TIPO=Equipo) apunta al ID_TEMPORAL de otra fila de STG_PERSONA con TIPO=Persona.',
-  STG_EQUIPO_MIEMBRO: 'EQUIPO_TEMPORAL y MIEMBRO_TEMPORAL apuntan cada uno al ID_TEMPORAL de una fila de STG_PERSONA.',
-  STG_TAREA_RESPONSABLE: 'TAREA_TEMPORAL y PERSONA_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/persona en un lote anterior (aunque ya esté importado) -- no hace falta conocer el ID real generado.',
-  STG_TAREA_RECURSO: 'TAREA_TEMPORAL y RECURSO_TEMPORAL admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/recurso en un lote anterior (aunque ya esté importado).',
-  STG_DECISION: 'PROYECTO_TEMPORAL y RESPONSABLE_TEMPORAL (opcional) admiten un ID real o el ID_TEMPORAL de un lote anterior, igual que en Asignaciones.',
-  STG_INCIDENCIA: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a NIVEL_INCIDENCIA (deja las demás vacías) -- todas admiten ID real o ID_TEMPORAL de un lote anterior. RESPONSABLE_TEMPORAL (opcional) igual. Nivel "Cliente" no está soportado por esta plantilla.',
-  STG_DOCUMENTO: 'Rellena SOLO UNA de CAMPANA_TEMPORAL/PROYECTO_TEMPORAL/PRODUCTO_TEMPORAL/PROCESO_TEMPORAL/TAREA_TEMPORAL, la que corresponda a ENTIDAD_TIPO (deja las demás vacías) -- admite ID real o ID_TEMPORAL de un lote anterior. Otros valores de ENTIDAD_TIPO (Decisión, Incidencia, Recurso, Persona/Equipo, Convocatoria, Cliente) no están soportados por esta plantilla.',
-  STG_HORARIO: 'Rellena PERSONA_TEMPORAL si ENTIDAD_TIPO="Persona/Equipo", o RECURSO_TEMPORAL si ENTIDAD_TIPO="Recurso" (nunca ambas) -- admite ID real o ID_TEMPORAL de un lote anterior.',
-  STG_EJECUCION_TAREA: 'TAREA_TEMPORAL y RESPONSABLE_TEMPORAL (opcional) admiten un ID real ya existente, o el ID_TEMPORAL que se usó al crear esa tarea/persona en un lote anterior (aunque ya esté importada), igual que en Asignaciones.'
+  STG_TAREA: 'PROCESO_TEMPORAL apunta al ID_TEMPORAL de una fila de STG_PROCESO (o a un ID real de proceso ya existente).'
 };
+
+function obtenerTemporalExplicadoDeHoja_(nombreHoja) {
+  return TEMPORALES_EXPLICADOS_POR_HOJA_[nombreHoja] || TEMPORALES_EXPLICADOS_POR_HOJA_AVANZADA_[nombreHoja];
+}
 
 /*
  * Regla de coherencia ESTADO/fecha-real (ver conversación -- hallazgo
@@ -96,9 +102,12 @@ var TEMPORALES_EXPLICADOS_POR_HOJA_ = {
 var NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_ = {
   STG_PROYECTO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL son opcionales, pero: ESTADO "Borrador"/"Planificado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL y FECHA_FIN_REAL.',
   STG_PROCESO: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparado" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Completado" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
-  STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.',
-  STG_DECISION: 'FECHA_LIMITE (si se indica) no puede ser anterior a hoy. RESOLUCION/FECHA_RESOLUCION son opcionales, pero: ESTADO "Aprobada"/"Rechazada"/"Sustituida" EXIGE ambas (con FECHA_RESOLUCION >= hoy); cualquier otro ESTADO NO admite ninguna de las dos. IMPORTANTE: "hoy" se evalúa en el momento de pulsar "Importar", no cuando generaste el CSV -- si dejas pasar días entre generar el CSV y subirlo, revisa que estas fechas sigan siendo válidas.'
+  STG_TAREA: 'FECHA_INICIO_REAL/FECHA_FIN_REAL/DURACION_REAL_DIAS son opcionales, pero: ESTADO "Pendiente"/"Preparada" NO admite FECHA_INICIO_REAL; ESTADO "En proceso" EXIGE FECHA_INICIO_REAL; ESTADO "Terminada" EXIGE FECHA_INICIO_REAL, FECHA_FIN_REAL y DURACION_REAL_DIAS.'
 };
+
+function obtenerNotaCoherenciaDeHoja_(nombreHoja) {
+  return NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_[nombreHoja] || NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_AVANZADA_[nombreHoja];
+}
 
 /*
  * Constraints de formato/rango/unicidad que el commit real exige (algunos
@@ -120,21 +129,12 @@ var CONSTRAINTS_ADICIONALES_POR_COLUMNA_ = {
   },
   STG_PRODUCTO: {
     CODIGO: 'debe ser único entre todos los productos ya existentes en el Sheet (no distingue mayúsculas/minúsculas).'
-  },
-  STG_PERSONA: {
-    CAPACIDAD_SEMANAL_DIAS: 'número entero mayor que 0 y menor o igual que 7 (días laborables por semana).'
-  },
-  STG_TAREA_RESPONSABLE: {
-    PORCENTAJE_DEDICACION: 'número entre 1 y 100 (0 no es un valor válido).'
-  },
-  STG_HORARIO: {
-    HORA_INICIO: 'formato HH:MM en 24h (ej. "09:00"). Debe ser anterior a HORA_FIN.',
-    HORA_FIN: 'formato HH:MM en 24h (ej. "17:00"). Debe ser posterior a HORA_INICIO.'
-  },
-  STG_EJECUCION_TAREA: {
-    DURACION_REAL_DIAS: 'número mayor o igual que 0, si se indica.'
   }
 };
+
+function obtenerConstraintsDeHoja_(nombreHoja) {
+  return CONSTRAINTS_ADICIONALES_POR_COLUMNA_[nombreHoja] || CONSTRAINTS_ADICIONALES_POR_COLUMNA_AVANZADA_[nombreHoja] || {};
+}
 
 /*
  * PROMPT_IA.txt del .zip (ver conversación -- "redacta un prompt master
@@ -153,28 +153,12 @@ var BLOQUES_ENTREVISTA_POR_GRUPO_ = {
     '2. **Alcance** -- cuántos proyectos entran en la campaña, de qué tipo, prioridad, y qué productos tiene cada uno (código, nombre, origen, unidad, cantidad prevista).',
     '3. **Producción** -- qué procesos (fases) necesita cada producto, en qué orden lógico de ejecución, duración prevista de cada uno en días.',
     '4. **Tareas** -- qué tareas concretas componen cada proceso, en qué orden, duración prevista en días.'
-  ],
-  RECURSOS_PERSONAS: [
-    '1. **Espacios y recursos** -- qué recursos físicos hacen falta (código, nombre, clase, categoría), y si alguno contiene a otro (ubicación).',
-    '2. **Personas y equipos** -- qué personas o equipos, con qué rol, capacidad semanal (días) y disponibilidad, y quién coordina a quién.',
-    '3. **Composición de equipos** -- qué personas pertenecen a qué equipo.'
-  ],
-  ASIGNACIONES: [
-    '1. **Responsables** -- para cada tarea (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), qué persona(s) o equipo(s) son responsables, con qué rol asignado y qué porcentaje de dedicación (1-100, no puede ser 0).',
-    '2. **Recursos** -- para cada tarea, qué recurso(s) físicos hacen falta y con qué tipo de uso.'
-  ],
-  SEGUIMIENTO: [
-    '1. **Decisiones** -- qué decisiones pendientes hay a nivel de proyecto (título, contexto, tipo, quién es responsable, fecha límite si la hay). Si alguna ya está cerrada, con qué resolución y cuándo.',
-    '2. **Incidencias** -- qué incidencias hay, a qué nivel cuelgan (campaña/proyecto/producto/proceso/tarea -- usa el ID_TEMPORAL o real de ese registro), tipo, prioridad, responsable, fecha de detección.',
-    '3. **Documentos** -- qué documentos/enlaces hay que adjuntar, a qué nivel, con qué tipo de documento y URL.'
-  ],
-  HORARIO: [
-    '1. **Horarios** -- qué personas/equipos o recursos tienen un horario declarado, qué días de la semana, en qué franja horaria (HH:MM-HH:MM), y si es permanente o solo vigente en un rango de fechas.'
-  ],
-  EJECUCION: [
-    '1. **Ejecuciones** -- para cada tarea que ya se ha trabajado de verdad (usa el mismo ID_TEMPORAL o ID real que ya tiene la tarea), quién la ejecutó, fecha real de inicio/fin, duración real en días, estado de la ejecución, resultado (Exitosa/Con incidencias/Fallida) y observaciones -- no hace falta que todas las tareas tengan ya una ejecución, solo las que realmente se han trabajado.'
   ]
 };
+
+function obtenerBloquesEntrevistaDeGrupo_(grupo) {
+  return BLOQUES_ENTREVISTA_POR_GRUPO_[grupo] || BLOQUES_ENTREVISTA_POR_GRUPO_AVANZADA_[grupo] || [];
+}
 
 /*
  * Motor de escenarios (ver conversación -- "base para personalizar las
@@ -244,7 +228,7 @@ function construirPromptIA_(grupo) {
   var esCampana = grupo === 'CAMPANA';
   var esAsignaciones = grupo === 'ASIGNACIONES';
   var admiteReferenciaFlexible = grupo === 'ASIGNACIONES' || grupo === 'SEGUIMIENTO' || grupo === 'HORARIO' || grupo === 'EJECUCION';
-  var bloques = BLOQUES_ENTREVISTA_POR_GRUPO_[grupo] || [];
+  var bloques = obtenerBloquesEntrevistaDeGrupo_(grupo);
   var escenario = obtenerEscenarioActivo_();
   var instruccionesEscenario = construirInstruccionesEscenario_(grupo, escenario);
 
@@ -304,7 +288,7 @@ function construirPromptIA_(grupo) {
     '',
     'Formato de entrega:',
     '- Antes de los CSV, dame un resumen breve de lo que vas a crear, para que lo revise de un vistazo antes de descargar o pegar nada.',
-    '- Devuélveme el contenido completo de cada CSV en su propio bloque de código, con el nombre exacto del fichero como título justo encima (ej. "' + GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo][0] + '.csv"), listo para guardar tal cual.',
+    '- Devuélveme el contenido completo de cada CSV en su propio bloque de código, con el nombre exacto del fichero como título justo encima (ej. "' + obtenerHojasDeGrupo_(grupo)[0] + '.csv"), listo para guardar tal cual.',
     '- Si algo queda "PENDIENTE DE CONFIRMAR", resúmelo también aparte al final, en una lista corta.',
     '',
     'Cuando tenga los CSV, los subiré desde el diálogo de "Importación',
@@ -326,7 +310,7 @@ function construirPromptIA_(grupo) {
 }
 
 function buscarDefinicionStaging_(nombreHoja) {
-  var definicion = DEFINICIONES_STAGING_IMPORTACION_MASIVA_.filter(function (d) {
+  var definicion = obtenerDefinicionesStagingCompletas_().filter(function (d) {
     return d.hoja === nombreHoja;
   })[0];
   if (!definicion) throw new Error('PLANTILLA_ERROR: hoja de staging desconocida: ' + nombreHoja);
@@ -344,7 +328,7 @@ function construirLineaCSV_(valores) {
 }
 
 function construirInstruccionesPlantilla_(grupo) {
-  var hojas = GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo];
+  var hojas = obtenerHojasDeGrupo_(grupo);
   var lineas = [];
 
   lineas.push('Plantilla de importación masiva -- LaTroballa');
@@ -364,9 +348,9 @@ function construirInstruccionesPlantilla_(grupo) {
 
   hojas.forEach(function (nombreHoja) {
     var definicion = buscarDefinicionStaging_(nombreHoja);
-    var obligatorios = CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_[nombreHoja] || [];
-    var catalogos = CATALOGOS_POR_COLUMNA_STAGING_[nombreHoja] || {};
-    var constraintsAdicionales = CONSTRAINTS_ADICIONALES_POR_COLUMNA_[nombreHoja] || {};
+    var obligatorios = obtenerCamposObligatoriosDeHoja_(nombreHoja);
+    var catalogos = obtenerCatalogosDeHoja_(nombreHoja);
+    var constraintsAdicionales = obtenerConstraintsDeHoja_(nombreHoja);
 
     lineas.push('== ' + nombreHoja + '.csv ==');
 
@@ -392,11 +376,13 @@ function construirInstruccionesPlantilla_(grupo) {
       lineas.push('  - ' + detalle);
     });
 
-    if (TEMPORALES_EXPLICADOS_POR_HOJA_[nombreHoja]) {
-      lineas.push('  ' + TEMPORALES_EXPLICADOS_POR_HOJA_[nombreHoja]);
+    var temporalExplicado = obtenerTemporalExplicadoDeHoja_(nombreHoja);
+    if (temporalExplicado) {
+      lineas.push('  ' + temporalExplicado);
     }
-    if (NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_[nombreHoja]) {
-      lineas.push('  ' + NOTA_COHERENCIA_FECHA_REAL_POR_HOJA_[nombreHoja]);
+    var notaCoherencia = obtenerNotaCoherenciaDeHoja_(nombreHoja);
+    if (notaCoherencia) {
+      lineas.push('  ' + notaCoherencia);
     }
 
     lineas.push('');
@@ -405,10 +391,10 @@ function construirInstruccionesPlantilla_(grupo) {
   return lineas.join('\n');
 }
 
-var SUFIJO_ZIP_POR_GRUPO_ = { CAMPANA: 'campana', RECURSOS_PERSONAS: 'recursos_personas', ASIGNACIONES: 'asignaciones' };
+var SUFIJO_ZIP_POR_GRUPO_ = { CAMPANA: 'campana' };
 
 function generarPlantillasImportacionMasiva(grupo) {
-  var hojas = GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo];
+  var hojas = obtenerHojasDeGrupo_(grupo);
   if (!hojas) throw new Error('PLANTILLA_ERROR: grupo desconocido: ' + grupo);
 
   var blobs = hojas.map(function (nombreHoja) {
@@ -438,13 +424,15 @@ function generarPlantillasImportacionMasiva(grupo) {
  * hubo un caso real esta sesión de un CSV que no llegaba a descargarse
  * por el bloqueo de descargas múltiples de Chrome.
  */
-function generarTodasLasPlantillasImportacionMasiva() {
+function generarTodasLasPlantillasImportacionMasiva(modulosInstalados) {
   var blobs = [];
 
-  Object.keys(GRUPOS_PLANTILLA_IMPORTACION_MASIVA_).forEach(function (grupo) {
+  obtenerTodosLosGruposPlantilla_().forEach(function (grupo) {
+    if (!grupoInstalable_(grupo, modulosInstalados)) return;
+
     var sufijo = SUFIJO_ZIP_POR_GRUPO_[grupo] || grupo.toLowerCase();
 
-    GRUPOS_PLANTILLA_IMPORTACION_MASIVA_[grupo].forEach(function (nombreHoja) {
+    obtenerHojasDeGrupo_(grupo).forEach(function (nombreHoja) {
       var definicion = buscarDefinicionStaging_(nombreHoja);
       var csv = construirLineaCSV_(definicion.cabeceras) + '\n';
       blobs.push(Utilities.newBlob(csv, 'text/csv', sufijo + '/' + nombreHoja + '.csv'));

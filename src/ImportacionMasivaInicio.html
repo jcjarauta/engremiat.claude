@@ -42,6 +42,14 @@
       .lista-archivos .estado-archivo { flex-shrink: 0; }
       .lista-archivos .estado-archivo.ok { color: var(--color-exito); }
       .lista-archivos .estado-archivo.error { color: var(--color-peligro); }
+      .lista-archivos .quitar-archivo {
+        flex-shrink: 0; border: none; background: none; color: var(--color-texto-secundario);
+        cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1;
+      }
+      .lista-archivos .quitar-archivo:hover { color: var(--color-peligro); }
+
+      .barra-cola-archivos { display: none; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+      .barra-cola-archivos button { flex: 1; margin-top: 0; font-size: 12px; padding: 6px; min-width: 120px; }
 
       .barra-acciones-globales { display: flex; gap: 8px; margin: 12px 0; }
       .barra-acciones-globales button { flex: 1; margin-top: 0; }
@@ -138,11 +146,13 @@
         <button class="boton boton-descargar-todo" onclick="descargarTodasLasPlantillas()">⬇ Descargar TODAS las plantillas (1 solo .zip)</button>
         <div class="separador-plantillas">o una por una</div>
         <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
-        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
-        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
-        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('SEGUIMIENTO')">Descargar plantilla: Decisiones/Incidencias/Documentos</button>
-        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('HORARIO')">Descargar plantilla: Horarios</button>
-        <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('EJECUCION')">Descargar plantilla: Ejecuciones de tarea</button>
+        <div id="plantillasAvanzadas">
+          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
+          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
+          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('SEGUIMIENTO')">Descargar plantilla: Decisiones/Incidencias/Documentos</button>
+          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('HORARIO')">Descargar plantilla: Horarios</button>
+          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('EJECUCION')">Descargar plantilla: Ejecuciones de tarea</button>
+        </div>
       </span>
     </div>
 
@@ -164,6 +174,7 @@
         <div class="zona-arrastre" id="zonaArrastre">Suelta los CSV aquí, o haz clic para elegir archivo(s)</div>
         <input type="file" id="inputCsv" accept=".csv" multiple style="display:none;" />
         <div class="lista-archivos" id="listaArchivos"></div>
+        <div class="barra-cola-archivos" id="barraColaArchivos"></div>
       </span>
     </div>
 
@@ -180,6 +191,25 @@
     <div id="mensaje"></div>
 
     <script>
+      /*
+       * Módulo IMPORTACION_AVANZADA (ver conversación -- "dejar el CORE
+       * limpio para acoplar módulos a demanda del cliente"): mismo patrón
+       * que MapaSheet.html -- null = sin información de módulos (Sheet
+       * maestro en crudo, sin envoltorio) => se asume todo instalado.
+       */
+      var MODULOS_INSTALADOS = <?!= modulosInstalados ?>;
+
+      function moduloInstalado_(nombreModulo) {
+        if (!MODULOS_INSTALADOS) return true;
+        return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
+      }
+
+      var IMPORTACION_AVANZADA_INSTALADA = moduloInstalado_('IMPORTACION_AVANZADA');
+
+      if (!IMPORTACION_AVANZADA_INSTALADA) {
+        document.getElementById('plantillasAvanzadas').style.display = 'none';
+      }
+
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
         return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -337,7 +367,7 @@
       }
 
       function descargarTodasLasPlantillas() {
-        establecerOcupado_(true, 'Generando las 5 plantillas...');
+        establecerOcupado_(true, IMPORTACION_AVANZADA_INSTALADA ? 'Generando las 6 plantillas...' : 'Generando la plantilla...');
         google.script.run
           .withFailureHandler(mostrarError)
           .withSuccessHandler(function (resultado) {
@@ -369,62 +399,136 @@
       }
 
       /*
-       * Lista de archivos subidos (ver conversación -- "que al pegar los
-       * nuevos archivos quede como una lista"): cada archivo se pinta de
-       * inmediato con un ⏳, y se actualiza in situ a ✓/✗ cuando el
-       * servidor responde -- en vez de un único mensaje de texto que se
-       * sobreescribe y no deja rastro de qué se subió y qué falló.
+       * Cola de archivos (ver conversación -- prueba real del importador:
+       * "no hay forma de quitar un archivo añadido por error, ni de
+       * limpiar los que ya se importaron"). Al soltar/elegir CSV ya NO se
+       * suben al momento: entran en COLA_ARCHIVOS_ en estado 'cola', con
+       * un botón ✕ para quitarlos sin haber tocado el servidor. La subida
+       * real la dispara el propio operador con "Subir N archivo(s)", y
+       * una vez subidos (ok/error) puede quitar filas sueltas o vaciar de
+       * un golpe las que ya se importaron con "Limpiar importados".
        */
-      function subirUnCSVConFila_(archivo, idFila, sustituir) {
+      var COLA_ARCHIVOS_ = [];
+
+      function pintarFilaArchivo_(fila, entrada, hojaDestino) {
+        var estadoHtml;
+        if (entrada.estado === 'cola') estadoHtml = '<span class="estado-archivo">en cola</span>';
+        else if (entrada.estado === 'subiendo') estadoHtml = '<span class="estado-archivo">⏳</span>';
+        else estadoHtml = '<span class="estado-archivo ' + (entrada.estado === 'ok' ? 'ok' : 'error') + '">' + escapeHtml(entrada.textoEstado) + '</span>';
+
+        var permiteQuitar = entrada.estado !== 'subiendo';
+        fila.innerHTML = '<span>' + escapeHtml(entrada.archivo.name) + (hojaDestino ? ' → ' + hojaDestino : '') + '</span>' +
+          estadoHtml +
+          (permiteQuitar ? '<button type="button" class="quitar-archivo" title="Quitar de la lista" onclick="quitarArchivoDeLista_(\'' + entrada.id + '\')">✕</button>' : '');
+      }
+
+      function quitarArchivoDeLista_(id) {
+        COLA_ARCHIVOS_ = COLA_ARCHIVOS_.filter(function (e) { return e.id !== id; });
+        var fila = document.getElementById(id);
+        if (fila) fila.remove();
+        actualizarBarraColaArchivos_();
+      }
+
+      function limpiarImportadosDeLista_() {
+        COLA_ARCHIVOS_.filter(function (e) { return e.estado === 'ok'; }).forEach(function (e) {
+          var fila = document.getElementById(e.id);
+          if (fila) fila.remove();
+        });
+        COLA_ARCHIVOS_ = COLA_ARCHIVOS_.filter(function (e) { return e.estado !== 'ok'; });
+        actualizarBarraColaArchivos_();
+      }
+
+      function vaciarColaPendiente_() {
+        COLA_ARCHIVOS_.filter(function (e) { return e.estado === 'cola'; }).forEach(function (e) {
+          var fila = document.getElementById(e.id);
+          if (fila) fila.remove();
+        });
+        COLA_ARCHIVOS_ = COLA_ARCHIVOS_.filter(function (e) { return e.estado !== 'cola'; });
+        actualizarBarraColaArchivos_();
+      }
+
+      function actualizarBarraColaArchivos_() {
+        var barra = document.getElementById('barraColaArchivos');
+        var enCola = COLA_ARCHIVOS_.filter(function (e) { return e.estado === 'cola'; }).length;
+        var importados = COLA_ARCHIVOS_.filter(function (e) { return e.estado === 'ok'; }).length;
+        var botones = [];
+        if (enCola > 0) {
+          botones.push('<button class="boton boton-primario" onclick="subirColaArchivos_()">⬆ Subir ' + enCola + ' archivo(s)</button>');
+          botones.push('<button class="boton" onclick="vaciarColaPendiente_()">Vaciar cola</button>');
+        }
+        if (importados > 0) {
+          botones.push('<button class="boton" onclick="limpiarImportadosDeLista_()">Limpiar ' + importados + ' importado(s) de la lista</button>');
+        }
+        barra.innerHTML = botones.join('');
+        barra.style.display = botones.length > 0 ? 'flex' : 'none';
+      }
+
+      function agregarArchivosACola_(archivos) {
+        var lista = document.getElementById('listaArchivos');
+        archivos.forEach(function (archivo) {
+          var entrada = { id: 'archivo-' + Math.random().toString(36).slice(2), archivo: archivo, estado: 'cola' };
+          COLA_ARCHIVOS_.push(entrada);
+          var fila = document.createElement('div');
+          fila.className = 'fila-archivo';
+          fila.id = entrada.id;
+          pintarFilaArchivo_(fila, entrada, detectarHojaDestino_(archivo.name));
+          lista.insertBefore(fila, lista.firstChild);
+        });
+        actualizarBarraColaArchivos_();
+      }
+
+      function subirUnaEntradaCola_(entrada, sustituir) {
         return new Promise(function (resolve) {
-          var span = document.querySelector('#' + idFila + ' .estado-archivo');
-          var hojaDestino = detectarHojaDestino_(archivo.name);
+          var hojaDestino = detectarHojaDestino_(entrada.archivo.name);
           if (!hojaDestino) {
-            span.className = 'estado-archivo error';
-            span.textContent = '✗ nombre no reconocido';
+            entrada.estado = 'error';
+            entrada.textoEstado = '✗ nombre no reconocido';
+            var filaSinHoja = document.getElementById(entrada.id);
+            if (filaSinHoja) pintarFilaArchivo_(filaSinHoja, entrada, hojaDestino);
             resolve();
             return;
           }
+
+          entrada.estado = 'subiendo';
+          var filaSubiendo = document.getElementById(entrada.id);
+          if (filaSubiendo) pintarFilaArchivo_(filaSubiendo, entrada, hojaDestino);
+
           var lector = new FileReader();
           lector.onload = function () {
             google.script.run
               .withFailureHandler(function (error) {
-                span.className = 'estado-archivo error';
-                span.textContent = '✗ ' + (error && error.message ? error.message : error);
+                entrada.estado = 'error';
+                entrada.textoEstado = '✗ ' + (error && error.message ? error.message : error);
+                var fila = document.getElementById(entrada.id);
+                if (fila) pintarFilaArchivo_(fila, entrada, hojaDestino);
                 resolve();
               })
               .withSuccessHandler(function (resultado) {
-                span.className = 'estado-archivo ok';
+                entrada.estado = 'ok';
                 var texto = '✓ ' + resultado.filasEscritas + ' fila(s)';
                 if (resultado.filasPendientesSustituidas > 0) texto += ' (' + resultado.filasPendientesSustituidas + ' pendiente(s) anterior(es) sustituida(s))';
-                span.textContent = texto;
+                entrada.textoEstado = texto;
+                var fila = document.getElementById(entrada.id);
+                if (fila) pintarFilaArchivo_(fila, entrada, hojaDestino);
                 resolve();
               })
               .escribirFilasCSVEnHojaStaging(hojaDestino, lector.result, sustituir);
           };
-          lector.readAsText(archivo);
+          lector.readAsText(entrada.archivo);
         });
       }
 
-      function procesarArchivosSubidos_(archivos) {
-        var lista = document.getElementById('listaArchivos');
+      function subirColaArchivos_() {
         var sustituir = document.getElementById('checkSustituir').checked;
-        var entradas = archivos.map(function (archivo) {
-          var idFila = 'archivo-' + Math.random().toString(36).slice(2);
-          var hojaDestino = detectarHojaDestino_(archivo.name);
-          var fila = document.createElement('div');
-          fila.className = 'fila-archivo';
-          fila.id = idFila;
-          fila.innerHTML = '<span>' + escapeHtml(archivo.name) + (hojaDestino ? ' → ' + hojaDestino : '') + '</span>' +
-            '<span class="estado-archivo">⏳</span>';
-          lista.insertBefore(fila, lista.firstChild);
-          return { archivo: archivo, idFila: idFila };
-        });
+        var pendientes = COLA_ARCHIVOS_.filter(function (e) { return e.estado === 'cola'; });
+        if (pendientes.length === 0) return;
 
-        establecerOcupado_(true, 'Subiendo ' + archivos.length + ' archivo(s)...');
-        Promise.all(entradas.map(function (e) { return subirUnCSVConFila_(e.archivo, e.idFila, sustituir); })).then(function () {
+        establecerOcupado_(true, 'Subiendo ' + pendientes.length + ' archivo(s)...');
+        actualizarBarraColaArchivos_();
+        Promise.all(pendientes.map(function (e) { return subirUnaEntradaCola_(e, sustituir); })).then(function () {
           establecerOcupado_(false);
           document.getElementById('mensaje').textContent = '';
+          actualizarBarraColaArchivos_();
           actualizarPanelEstado_();
         });
       }
@@ -439,13 +543,13 @@
       });
       zonaArrastre.addEventListener('drop', function (e) {
         var archivos = Array.prototype.slice.call(e.dataTransfer.files).filter(function (f) { return /\.csv$/i.test(f.name); });
-        if (archivos.length > 0) procesarArchivosSubidos_(archivos);
+        if (archivos.length > 0) agregarArchivosACola_(archivos);
       });
 
       document.getElementById('inputCsv').addEventListener('change', function (evento) {
         var archivos = Array.prototype.slice.call(evento.target.files);
         if (archivos.length === 0) return;
-        procesarArchivosSubidos_(archivos);
+        agregarArchivosACola_(archivos);
         evento.target.value = '';
       });
 
@@ -468,45 +572,45 @@
           id: 'campana', titulo: 'Campaña → Proyecto → Producto → Proceso → Tarea',
           detalle: 'La jerarquía completa de una campaña.',
           hojas: ['STG_CAMPANA', 'STG_PROYECTO', 'STG_PRODUCTO', 'STG_PROCESO', 'STG_TAREA'],
-          dependeDe: [],
+          dependeDe: [], modulo: 'CORE',
           resumenTexto: function (r) { return r.campanas + ' campaña(s), ' + r.proyectos + ' proyecto(s), ' + r.productos + ' producto(s), ' + r.procesos + ' proceso(s), ' + r.tareas + ' tarea(s)'; }
         },
         {
           id: 'recursos', titulo: 'Recursos / Personas y equipos',
           detalle: 'Espacios, herramientas, personas y equipos.',
           hojas: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
-          dependeDe: [],
+          dependeDe: [], modulo: 'IMPORTACION_AVANZADA',
           resumenTexto: function (r) { return r.recursos + ' recurso(s), ' + r.personas + ' persona(s)/equipo(s), ' + r.equipoMiembros + ' relación(es) equipo-miembro'; }
         },
         {
           id: 'asignaciones', titulo: 'Asignaciones (Responsable/Recurso a Tarea)',
           detalle: 'Ejecútalo después de crear las tareas Y los recursos/personas -- referencia a ambos.',
           hojas: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
-          dependeDe: ['campana', 'recursos'],
+          dependeDe: ['campana', 'recursos'], modulo: 'IMPORTACION_AVANZADA',
           resumenTexto: function (r) { return r.responsables + ' asignación(es) de responsable, ' + r.recursos + ' asignación(es) de recurso'; }
         },
         {
           id: 'seguimiento', titulo: 'Decisiones / Incidencias / Documentos',
           detalle: 'Cuelgan de un proyecto (Decisión) o de cualquier nivel de la jerarquía.',
           hojas: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
-          dependeDe: ['campana'],
+          dependeDe: ['campana'], modulo: 'IMPORTACION_AVANZADA',
           resumenTexto: function (r) { return r.decisiones + ' decisión(es), ' + r.incidencias + ' incidencia(s), ' + r.documentos + ' documento(s)'; }
         },
         {
           id: 'horario', titulo: 'Horarios',
           detalle: 'Franjas semanales de personas/equipos o recursos -- referencia a Recursos/Personas.',
           hojas: ['STG_HORARIO'],
-          dependeDe: ['recursos'],
+          dependeDe: ['recursos'], modulo: 'IMPORTACION_AVANZADA',
           resumenTexto: function (r) { return r.horarios + ' franja(s) de horario'; }
         },
         {
           id: 'ejecucion', titulo: 'Ejecuciones de tarea',
           detalle: 'Registro real de trabajo hecho (quién, cuándo, con qué resultado). Útil para reconstruir el histórico de una campaña ya cerrada.',
           hojas: ['STG_EJECUCION_TAREA'],
-          dependeDe: ['campana'],
+          dependeDe: ['campana'], modulo: 'IMPORTACION_AVANZADA',
           resumenTexto: function (r) { return r.ejecuciones + ' ejecución(es) de tarea'; }
         }
-      ];
+      ].filter(function (g) { return moduloInstalado_(g.modulo); });
 
       var ESTADO_GRUPOS_ = {};
 

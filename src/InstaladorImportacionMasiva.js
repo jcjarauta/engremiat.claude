@@ -24,9 +24,20 @@
  * cabeceras de cada hoja STG_*, para que ambos ficheros no puedan
  * divergir.
  */
+/*
+ * modulo (ver conversación -- "dejar el CORE limpio para acoplar módulos
+ * a demanda del cliente"): CORE es la única cadena siempre presente
+ * (Campaña->Proyecto->Producto->Proceso->Tarea); el resto (Recursos/
+ * Personas, Asignaciones, Seguimiento, Horario, Ejecución) vive detrás
+ * del módulo IMPORTACION_AVANZADA, mismo criterio que GANTT/COMPRAS/
+ * CLIENTE -- ver hojaInstalable_ (EstructuraInicialService.js) para el
+ * mecanismo gemelo aplicado a hojas de entidad. instalarStagingImportacionMasiva
+ * filtra por este campo.
+ */
 var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
     {
       hoja: 'STG_CAMPANA',
+      modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'NOMBRE', 'FECHA_INICIO_PLAN', 'FECHA_FIN_PLAN', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -42,161 +53,71 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
      */
     {
       hoja: 'STG_PROYECTO',
+      modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'CAMPANA_TEMPORAL', 'NOMBRE', 'TIPO_PROYECTO', 'PRIORIDAD', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_PRODUCTO',
+      modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'PROYECTO_TEMPORAL', 'CODIGO', 'NOMBRE', 'ORIGEN', 'UNIDAD', 'CANTIDAD_PREVISTA', 'PRIORIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL', 'PROYECTO_PRODUCTO_ID_REAL']
     },
     {
       hoja: 'STG_PROCESO',
+      modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_TAREA',
+      modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
-    /*
-     * Fase N8 (ver conversación): extiende el patrón STG_* a Recursos y
-     * Personas -- a diferencia de la jerarquía de campaña (profundidad
-     * fija de 5 niveles), RECURSO es un árbol de profundidad variable
-     * (UBICACION_ID autorreferenciado). En vez de exigir que cada fila
-     * padre aparezca antes que sus hijas en la hoja, se importa en dos
-     * pasadas (ver ImportacionMasiva.js): 1) todas las filas sin
-     * UBICACION_ID, 2) actualiza UBICACION_ID ya con todos los IDs
-     * reales resueltos -- sin restricción de orden de filas.
-     */
-    {
-      hoja: 'STG_RECURSO',
-      cabeceras: ['ID_TEMPORAL', 'UBICACION_TEMPORAL', 'CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'CATEGORIA_RECURSO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * PERSONA/EQUIPO: mismo criterio de dos pasadas para COORDINADOR_ID
-     * (solo válido en filas TIPO=Equipo, apuntando a una fila
-     * TIPO=Persona -- la propia regla de negocio ya existente en
-     * Repository_InsertarRegistro.js se aplica igual en la segunda
-     * pasada, vía actualizarRegistroTransaccional, sin duplicarla aquí).
-     * EQUIPO_MIEMBRO (desglose N:M, L4) en hoja aparte, procesada
-     * después de que todas las personas/equipos ya tengan ID real.
-     */
-    {
-      hoja: 'STG_PERSONA',
-      cabeceras: ['ID_TEMPORAL', 'COORDINADOR_TEMPORAL', 'TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    {
-      hoja: 'STG_EQUIPO_MIEMBRO',
-      cabeceras: ['ID_TEMPORAL', 'EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * Fase N10 (ver conversación -- "el cuello de botella mas inmediato":
-     * tras importar una campaña completa, asignar responsables/recursos
-     * tarea a tarea a mano es justo el trabajo manual que este sistema
-     * existe para evitar). TAREA_TEMPORAL/PERSONA_TEMPORAL/RECURSO_TEMPORAL
-     * admiten tanto un ID real ya existente como el propio ID_TEMPORAL
-     * usado al crear la tarea/persona/recurso -- resolverReferenciaStaging_
-     * (ImportacionMasiva.js) lo busca en la hoja STG_* de origen aunque
-     * esa fila ya este importada (ID_REAL relleno), para poder seguir
-     * usando las mismas claves cortas del lote original sin tener que
-     * conocer los IDs reales generados.
-     */
-    {
-      hoja: 'STG_TAREA_RESPONSABLE',
-      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    {
-      hoja: 'STG_TAREA_RECURSO',
-      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * Fase N11 (ver conversación -- "necesitamos poder volcar al sheet
-     * todos los datos necesarios para que los informes... estén
-     * completos"). DECISION exige PROYECTO_TEMPORAL (nivel fijo, igual
-     * que Proyecto/Producto/Proceso/Tarea). RESOLUCION/FECHA_RESOLUCION
-     * opcionales pero condicionales -- mismo patrón que FECHA_INICIO_REAL
-     * en v54: Repository_InsertarRegistro.js exige ambas si ESTADO es de
-     * cierre (Aprobada/Rechazada/Sustituida), ver
-     * validarCoherenciaDecision_ (ImportacionMasiva.js).
-     */
-    {
-      hoja: 'STG_DECISION',
-      cabeceras: ['ID_TEMPORAL', 'PROYECTO_TEMPORAL', 'TITULO', 'CONTEXTO', 'TIPO', 'RESPONSABLE_TEMPORAL', 'FECHA_LIMITE', 'ESTADO', 'RESOLUCION', 'FECHA_RESOLUCION', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * INCIDENCIA no tiene un nivel jerárquico fijo (a diferencia de
-     * Decisión): puede colgar de Campaña, Proyecto, Producto, Proceso o
-     * Tarea -- NIVEL_INCIDENCIA indica cuál, y solo esa columna
-     * *_TEMPORAL debe rellenarse (ver resolverEntidadPoliformica_ en
-     * ImportacionMasiva.js). CLIENTE_TEMPORAL queda fuera de esta V1
-     * (módulo CLIENTE, no CORE).
-     */
-    {
-      hoja: 'STG_INCIDENCIA',
-      cabeceras: ['ID_TEMPORAL', 'NIVEL_INCIDENCIA', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TITULO', 'DESCRIPCION', 'TIPO', 'PRIORIDAD', 'RESPONSABLE_TEMPORAL', 'FECHA_DETECCION', 'FECHA_LIMITE', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * DOCUMENTO es igual de polimórfico que INCIDENCIA (ENTIDAD_TIPO en
-     * vez de NIVEL_INCIDENCIA) pero acotado a los 5 niveles de la
-     * jerarquía de campaña -- Decisión/Incidencia/Documento/Recurso/
-     * Persona/Convocatoria/Cliente como destino de un documento son
-     * casos raros, fuera de esta V1.
-     */
-    {
-      hoja: 'STG_DOCUMENTO',
-      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TIPO_DOCUMENTO', 'TITULO', 'DESCRIPCION', 'VERSION', 'URL', 'ESTADO', 'FECHA_DOCUMENTO', 'ESTADO_IMPORTACION', 'ID_REAL']
-    },
-    /*
-     * HORARIO: ENTIDAD_TIPO decide si se usa PERSONA_TEMPORAL o
-     * RECURSO_TEMPORAL (mutuamente excluyentes, no genérico como
-     * Documento/Incidencia -- solo dos niveles posibles, más simple
-     * dejarlo explícito). HORA_INICIO/HORA_FIN como texto "HH:MM":
-     * Repository_InsertarRegistro.js NO valida su formato en el commit
-     * (esa regla vive en FormularioValidacionService.js, solo en el
-     * camino del formulario manual) -- el dry-run del importador la
-     * replica igualmente para no dejar pasar horarios rotos en silencio.
-     */
-    {
-      hoja: 'STG_HORARIO',
-      cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'PERSONA_TEMPORAL', 'RECURSO_TEMPORAL', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'FECHA_INICIO_VIGENCIA', 'FECHA_FIN_VIGENCIA', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL'],
-      /*
-       * Sin esto, Sheets autoconvierte "09:00" escrito en una celda con
-       * formato Automático a un valor de hora (Date) en cuanto se
-       * escribe -- tanto al pegar/escribir a mano como al volcar el CSV
-       * vía escribirFilasCSVEnHojaStaging -- y el dry-run del importador
-       * ve un objeto Date en vez del texto "09:00", fallando la
-       * validación de formato HH:MM en el 100% de las filas (hallazgo
-       * real en vivo). Forzar estas dos columnas a texto plano evita la
-       * autoconversión en origen.
-       */
-      columnasTexto: ['HORA_INICIO', 'HORA_FIN']
-    },
-    /*
-     * EJECUCION_TAREA: registro real de trabajo hecho sobre una tarea
-     * (quién, cuándo, con qué resultado) -- distinto de TAREA (que solo
-     * tiene la fecha/estado planificados). Sin esta hoja, un cliente que
-     * quisiera reconstruir en bloque el histórico de una campaña ya
-     * cerrada solo podía cargarlo fila a fila desde la Ficha de tarea.
-     * RESULTADO usa el catálogo ya sembrado RESULTADO_EJECUCION (Exitosa/
-     * Con incidencias/Fallida) -- no hace falta crear catálogo nuevo.
-     */
-    {
-      hoja: 'STG_EJECUCION_TAREA',
-      cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RESPONSABLE_TEMPORAL', 'FECHA_INICIO', 'FECHA_FIN', 'DURACION_REAL_DIAS', 'ESTADO', 'RESULTADO', 'OBSERVACIONES', 'ESTADO_IMPORTACION', 'ID_REAL']
-    }
 ];
 
-function instalarStagingImportacionMasiva() {
+/*
+ * Combina las definiciones CORE (arriba) con las del módulo
+ * IMPORTACION_AVANZADA (InstaladorImportacionMasivaAvanzada.js) en
+ * tiempo de ejecución -- nunca a nivel de fichero, porque el orden de
+ * carga entre los .js de un proyecto de Apps Script no está garantizado.
+ * Único punto que instalarStagingImportacionMasiva/
+ * vaciarHojasStagingImportacionMasiva/buscarDefinicionStaging_/
+ * obtenerEstadoHojasStaging deben usar en vez de referenciar
+ * directamente ninguno de los dos arrays.
+ */
+function obtenerDefinicionesStagingCompletas_() {
+  return DEFINICIONES_STAGING_IMPORTACION_MASIVA_.concat(DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_);
+}
+
+/*
+ * true si la hoja de staging corresponde a un módulo instalado -- mismo
+ * criterio y misma firma que hojaInstalable_ (EstructuraInicialService.js):
+ * sin lista (null/undefined, cliente antiguo sin regenerar Codigo.js, o
+ * el propio Sheet maestro) instala todo, por compatibilidad.
+ */
+function hojaStagingInstalable_(definicion, modulosInstalados) {
+  if (!modulosInstalados) return true;
+  if (!definicion.modulo) return true;
+  return modulosInstalados.indexOf(definicion.modulo) !== -1;
+}
+
+function instalarStagingImportacionMasiva(modulosInstalados) {
   var packageName = 'INSTALAR_STAGING_IMPORTACION_MASIVA';
 
   console.log('ENGREMIAT_PACKAGE_BEGIN package=' + packageName);
 
   var bloqueo = LockService.getScriptLock();
+  var hojasOmitidasPorModulo = [];
 
   try {
     bloqueo.waitLock(10000);
 
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    DEFINICIONES_STAGING_IMPORTACION_MASIVA_.forEach(function (definicion) {
+    obtenerDefinicionesStagingCompletas_().forEach(function (definicion) {
+      if (!hojaStagingInstalable_(definicion, modulosInstalados)) {
+        hojasOmitidasPorModulo.push(definicion.hoja);
+        return;
+      }
+
       var hoja = ss.getSheetByName(definicion.hoja);
 
       if (!hoja) {
@@ -254,9 +175,9 @@ function instalarStagingImportacionMasiva() {
     bloqueo.releaseLock();
   }
 
-  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK');
+  console.log('ENGREMIAT_PACKAGE_END package=' + packageName + ' status=OK hojas_omitidas_por_modulo=' + hojasOmitidasPorModulo.length);
 
-  return true;
+  return { ok: true, hojasOmitidasPorModulo: hojasOmitidasPorModulo };
 }
 
 /*
@@ -295,7 +216,7 @@ function vaciarHojasStagingImportacionMasiva(soloPendientes) {
   try {
     bloqueo.waitLock(10000);
 
-    DEFINICIONES_STAGING_IMPORTACION_MASIVA_.forEach(function (definicion) {
+    obtenerDefinicionesStagingCompletas_().forEach(function (definicion) {
       var hoja = ss.getSheetByName(definicion.hoja);
       if (!hoja) return;
 
