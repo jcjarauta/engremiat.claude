@@ -263,6 +263,7 @@ function construirDetalleDesviacion_(listaConNombreResponsable, incluirFase) {
     .map(function (r) {
       var dias = r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN !== undefined ? r.DIAS_DESVIACION_FIN : r.DIAS_DESVIACION_DURACION;
       return {
+        id: r.ID,
         nombre: r.NOMBRE,
         fase: incluirFase ? (r.FASE_PRODUCCION || '') : undefined,
         previsto: r.DURACION_PREVISTA_DIAS === undefined || r.DURACION_PREVISTA_DIAS === '' ? null : Number(r.DURACION_PREVISTA_DIAS),

@@ -42,7 +42,41 @@ var ESTILO_INFORME_COMPARTIDO_ =
   '.leyenda-apilada .punto{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:middle;}' +
   '.tendencia-etiqueta{font-size:10px;fill:#5f6368;}' +
   '.tendencia-valor{font-size:11px;font-weight:bold;fill:#202124;}' +
-  '@media print{button{display:none;}}';
+  '.enlace-edicion{color:#1a73e8;text-decoration:none;}' +
+  '.enlace-edicion:hover{text-decoration:underline;}' +
+  '@media print{button{display:none;}.enlace-edicion{color:inherit;text-decoration:none;}}';
+
+/*
+ * Enlace de edición desde una tabla de informe (ver conversación --
+ * "ver 'Grabado láser +2 días' no lleva todavía a editar esa fila"):
+ * mismo mecanismo que ya usan los "dependientes bloqueantes"
+ * (FormularioGenerico.html) -- abrirFormularioEditarPorId ya es
+ * público y corre bien invocado directamente vía google.script.run
+ * desde cualquier HtmlOutput mostrado con showModal/ModelessDialog,
+ * incluido este (construido como string, no como plantilla, pero el
+ * sandbox de Apps Script inyecta google.script.run igual). Sin id no
+ * hay enlace -- texto plano (agregados que no vienen de un registro
+ * real, o el registro no tenía ID por lo que sea).
+ */
+var SCRIPT_EDICION_INFORME_ =
+  '<script>function editarDesdeInforme_(entidad,id){' +
+  'google.script.run.withFailureHandler(function(e){alert("No se pudo abrir: "+(e&&e.message?e.message:e));})' +
+  '.abrirFormularioEditarPorId(entidad,id,null);}</script>';
+
+// Escapado específico para un literal JS de comilla simple embebido en
+// un atributo HTML -- escaparHtmlServer_ protege el HTML, no el JS
+// dentro del onclick, y los ID nunca deberían llevar comilla simple,
+// pero son generados por el propio sistema (XXX-0001), no texto libre
+// de usuario -- esto es defensa adicional, no la única barrera.
+function escaparJsComillaSimple_(s) {
+  return String(s === undefined || s === null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+function enlaceEdicion_(entidad, id, texto) {
+  var textoSeguro = escaparHtmlServer_(texto);
+  if (!id) return textoSeguro;
+  return '<a class="enlace-edicion" href="#" onclick="editarDesdeInforme_(\'' + escaparJsComillaSimple_(entidad) + '\',\'' + escaparJsComillaSimple_(id) + '\');return false;">' + textoSeguro + '</a>';
+}
 
 /*
  * Clasificación de estado por palabras clave (ver conversación --
@@ -140,6 +174,7 @@ function lineaTendenciaSvg_(puntos, opciones) {
 function construirDocumentoInformeImprimible_(titulo, subtitulo, cuerpoHtml) {
   return '<html><head><meta charset="utf-8"><title>' + escaparHtmlServer_(titulo) + '</title>' +
     '<style>' + ESTILO_INFORME_COMPARTIDO_ + '</style></head><body>' +
+    SCRIPT_EDICION_INFORME_ +
     '<button onclick="window.print()">Imprimir / Guardar como PDF</button>' +
     '<h1>' + escaparHtmlServer_(titulo) + '</h1>' +
     (subtitulo ? '<div class="subtitulo">' + escaparHtmlServer_(subtitulo) + '</div>' : '') +
@@ -230,12 +265,18 @@ function tablaSimpleHtml_(encabezados, filas) {
  * "por fase"/"por responsable") sigue estando para el pulso rápido;
  * esto es para poder actuar sobre un caso concreto.
  */
+// tablaSimpleHtml_ escapa cada celda como texto plano -- no vale para
+// filas con el enlace de edición (HTML de verdad) en la celda de
+// nombre, así que estas tres tablas construyen la fila a mano en vez
+// de pasar por tablaSimpleHtml_ (que sigue siendo el camino correcto
+// para tablas sin enlaces).
 function tablaDesviacionDetalleHtml_(detalle, incluirFase) {
   if (!detalle || detalle.length === 0) return '<div class="vacio">Sin casos con desviación medible.</div>';
+  var entidad = incluirFase ? 'PROCESO' : 'TAREA';
   var encabezados = ['Nombre'].concat(incluirFase ? ['Fase'] : []).concat(['Previsto (d)', 'Real (d)', 'Desviación', 'Responsable']);
   var filas = detalle.map(function (d) {
     var colorDesv = d.desviacion > 0 ? 'color:#b00020;font-weight:bold;' : (d.desviacion < 0 ? 'color:#1e8e3e;' : '');
-    return '<tr><td>' + escaparHtmlServer_(d.nombre) + '</td>' +
+    return '<tr><td>' + enlaceEdicion_(entidad, d.id, d.nombre) + '</td>' +
       (incluirFase ? '<td>' + escaparHtmlServer_(d.fase || '—') + '</td>' : '') +
       '<td>' + (d.previsto === null ? '—' : d.previsto) + '</td>' +
       '<td>' + (d.real === null ? '—' : d.real) + '</td>' +
@@ -255,21 +296,23 @@ function tablaProyectosHtml_(proyectos, incluirCampana) {
   if (!proyectos || proyectos.length === 0) return '<div class="vacio">Ninguno.</div>';
   var encabezados = ['Nombre'].concat(incluirCampana ? ['Campaña'] : []).concat(['Tipo', 'Prioridad', 'Estado', 'Inicio real', 'Fin real']);
   var filas = proyectos.map(function (p) {
-    return [p.NOMBRE].concat(incluirCampana ? [p.CAMPANA_NOMBRE || '—'] : [])
-      .concat([p.TIPO_PROYECTO, p.PRIORIDAD, p.ESTADO, p.FECHA_INICIO_REAL || '—', p.FECHA_FIN_REAL || '—']);
-  });
-  return tablaSimpleHtml_(encabezados, filas);
+    return '<tr><td>' + enlaceEdicion_('PROYECTO', p.ID, p.NOMBRE) + '</td>' +
+      (incluirCampana ? '<td>' + escaparHtmlServer_(p.CAMPANA_NOMBRE || '—') + '</td>' : '') +
+      '<td>' + escaparHtmlServer_(p.TIPO_PROYECTO) + '</td><td>' + escaparHtmlServer_(p.PRIORIDAD) + '</td><td>' + escaparHtmlServer_(p.ESTADO) + '</td>' +
+      '<td>' + escaparHtmlServer_(p.FECHA_INICIO_REAL || '—') + '</td><td>' + escaparHtmlServer_(p.FECHA_FIN_REAL || '—') + '</td></tr>';
+  }).join('');
+  return '<table><tr>' + encabezados.map(function (e) { return '<th>' + escaparHtmlServer_(e) + '</th>'; }).join('') + '</tr>' + filas + '</table>';
 }
 
 /* Tabla de productos con nombre real, incluye el % avance ya calculado (calcularAvanceProducto_). */
 function tablaProductosHtml_(productos) {
   if (!productos || productos.length === 0) return '<div class="vacio">Ninguno.</div>';
-  return tablaSimpleHtml_(
-    ['Nombre', 'Código', '% avance', 'Cantidad prevista', 'Cantidad producida', 'Estado'],
-    productos.map(function (p) {
-      return [p.NOMBRE, p.CODIGO, p.PORCENTAJE_AVANCE_CALCULADO + '%', p.CANTIDAD_PREVISTA || 0, p.CANTIDAD_PRODUCIDA || 0, p.ESTADO];
-    })
-  );
+  var filas = productos.map(function (p) {
+    return '<tr><td>' + enlaceEdicion_('PRODUCTO', p.ID, p.NOMBRE) + '</td>' +
+      '<td>' + escaparHtmlServer_(p.CODIGO) + '</td><td>' + p.PORCENTAJE_AVANCE_CALCULADO + '%</td>' +
+      '<td>' + (p.CANTIDAD_PREVISTA || 0) + '</td><td>' + (p.CANTIDAD_PRODUCIDA || 0) + '</td><td>' + escaparHtmlServer_(p.ESTADO) + '</td></tr>';
+  }).join('');
+  return '<table><tr><th>Nombre</th><th>Código</th><th>% avance</th><th>Cantidad prevista</th><th>Cantidad producida</th><th>Estado</th></tr>' + filas + '</table>';
 }
 
 /*
