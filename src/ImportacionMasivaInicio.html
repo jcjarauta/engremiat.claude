@@ -171,7 +171,7 @@
 
     <h4>Validar e importar</h4>
     <div id="ordenRecomendado"></div>
-    <div class="barra-acciones-globales">
+    <div class="barra-acciones-globales" id="barraAccionesGlobales">
       <button class="boton" onclick="validarTodo()">Validar todo</button>
       <button class="boton boton-primario" onclick="importarTodoValidado()">Importar todo lo validado</button>
     </div>
@@ -689,12 +689,29 @@
         '</div>';
       }
 
+      /*
+       * Con un solo grupo instalado (ver conversación -- "esto sigue
+       * pareciendo repetitivo", tras colapsar ya el bloque de plantillas)
+       * tanto el "Orden recomendado" como "Validar todo"/"Importar todo
+       * lo validado" son ruido puro: no hay nada que ordenar entre un
+       * único grupo, y esos dos botones globales hacen exactamente lo
+       * mismo que "Validar"/"Importar" de la única tarjeta de abajo. Se
+       * ocultan solo en ese caso -- con 2+ grupos siguen aportando (saber
+       * el orden entre secciones, disparar todas de una).
+       */
       function inicializarGrupos_() {
         var orden = ordenTopologicoGrupos_();
-        var lineaOrden = '<div class="orden-recomendado">Orden recomendado: ' +
-          orden.map(function (g, i) { return (i + 1) + '. ' + escapeHtml(g.titulo.split(' →')[0].split(' (')[0]); }).join(' → ') +
-          '</div>';
-        document.getElementById('ordenRecomendado').innerHTML = lineaOrden;
+
+        if (orden.length <= 1) {
+          document.getElementById('ordenRecomendado').innerHTML = '';
+          document.getElementById('barraAccionesGlobales').style.display = 'none';
+        } else {
+          var lineaOrden = '<div class="orden-recomendado">Orden recomendado: ' +
+            orden.map(function (g, i) { return (i + 1) + '. ' + escapeHtml(g.titulo.split(' →')[0].split(' (')[0]); }).join(' → ') +
+            '</div>';
+          document.getElementById('ordenRecomendado').innerHTML = lineaOrden;
+        }
+
         document.getElementById('gruposImportacion').innerHTML = orden.map(construirTarjetaGrupo_).join('');
       }
 
