@@ -143,16 +143,7 @@
           entrevista guiada (objetivo, alcance, procesos, tareas...) antes de generar nada, y te
           devuelve cada CSV ya relleno en el formato correcto.
         </div>
-        <button class="boton boton-descargar-todo" onclick="descargarTodasLasPlantillas()">⬇ Descargar TODAS las plantillas (1 solo .zip)</button>
-        <div class="separador-plantillas">o una por una</div>
-        <button class="boton" onclick="descargarPlantilla('CAMPANA')">Descargar plantilla: Campaña→Tarea</button>
-        <div id="plantillasAvanzadas">
-          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('RECURSOS_PERSONAS')">Descargar plantilla: Recursos/Personas</button>
-          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('ASIGNACIONES')">Descargar plantilla: Asignaciones (Responsable/Recurso)</button>
-          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('SEGUIMIENTO')">Descargar plantilla: Decisiones/Incidencias/Documentos</button>
-          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('HORARIO')">Descargar plantilla: Horarios</button>
-          <button class="boton" style="margin-top:6px;" onclick="descargarPlantilla('EJECUCION')">Descargar plantilla: Ejecuciones de tarea</button>
-        </div>
+        <div id="botonesPlantillas"></div>
       </span>
     </div>
 
@@ -204,11 +195,41 @@
         return MODULOS_INSTALADOS.indexOf(nombreModulo) !== -1;
       }
 
-      var IMPORTACION_AVANZADA_INSTALADA = moduloInstalado_('IMPORTACION_AVANZADA');
+      /*
+       * El importador se adapta a los módulos reales del cliente, no solo
+       * a "CORE vs todo" (ver conversación -- "el importador masivo tiene
+       * que adaptarse a los módulos del cliente de forma dinámica"): con
+       * un único grupo de plantillas instalado (p.ej. un cliente
+       * CORE-only, solo Campaña→Tarea) no tiene sentido ofrecer "Descargar
+       * TODAS" y luego "o una por una" con la misma única opción debajo
+       * -- duplicación pura. El bloque de descarga se construye a partir
+       * de qué grupos están realmente instalados, no de una plantilla
+       * estática con partes ocultas.
+       */
+      var GRUPOS_PLANTILLA_ = [
+        { id: 'CAMPANA', etiqueta: 'Campaña→Tarea', modulo: 'CORE' },
+        { id: 'RECURSOS_PERSONAS', etiqueta: 'Recursos/Personas', modulo: 'IMPORTACION_AVANZADA' },
+        { id: 'ASIGNACIONES', etiqueta: 'Asignaciones (Responsable/Recurso)', modulo: 'IMPORTACION_AVANZADA' },
+        { id: 'SEGUIMIENTO', etiqueta: 'Decisiones/Incidencias/Documentos', modulo: 'IMPORTACION_AVANZADA' },
+        { id: 'HORARIO', etiqueta: 'Horarios', modulo: 'IMPORTACION_AVANZADA' },
+        { id: 'EJECUCION', etiqueta: 'Ejecuciones de tarea', modulo: 'IMPORTACION_AVANZADA' }
+      ].filter(function (g) { return moduloInstalado_(g.modulo); });
 
-      if (!IMPORTACION_AVANZADA_INSTALADA) {
-        document.getElementById('plantillasAvanzadas').style.display = 'none';
+      function inicializarBotonesPlantillas_() {
+        var contenedor = document.getElementById('botonesPlantillas');
+        if (GRUPOS_PLANTILLA_.length <= 1) {
+          contenedor.innerHTML = '<button class="boton boton-descargar-todo" onclick="descargarTodasLasPlantillas()">⬇ Descargar plantilla (1 solo .zip)</button>';
+          return;
+        }
+        var html = '<button class="boton boton-descargar-todo" onclick="descargarTodasLasPlantillas()">⬇ Descargar TODAS las plantillas (1 solo .zip)</button>' +
+          '<div class="separador-plantillas">o una por una</div>';
+        html += GRUPOS_PLANTILLA_.map(function (g, i) {
+          return '<button class="boton"' + (i > 0 ? ' style="margin-top:6px;"' : '') +
+            ' onclick="descargarPlantilla(\'' + g.id + '\')">Descargar plantilla: ' + escapeHtml(g.etiqueta) + '</button>';
+        }).join('');
+        contenedor.innerHTML = html;
       }
+      inicializarBotonesPlantillas_();
 
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
@@ -367,7 +388,7 @@
       }
 
       function descargarTodasLasPlantillas() {
-        establecerOcupado_(true, IMPORTACION_AVANZADA_INSTALADA ? 'Generando las 6 plantillas...' : 'Generando la plantilla...');
+        establecerOcupado_(true, GRUPOS_PLANTILLA_.length > 1 ? 'Generando las ' + GRUPOS_PLANTILLA_.length + ' plantillas...' : 'Generando la plantilla...');
         google.script.run
           .withFailureHandler(mostrarError)
           .withSuccessHandler(function (resultado) {
