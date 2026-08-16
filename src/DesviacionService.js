@@ -22,10 +22,27 @@ function diferenciaDiasFechas_(fechaPlan, fechaReal) {
   return Math.round((real - plan) / msPorDia);
 }
 
+/*
+ * FECHA_INICIO_PLAN/FECHA_FIN_PLAN son opcionales en PROCESO/TAREA (a
+ * diferencia de DURACION_PREVISTA_DIAS, que es obligatoria) -- exigen
+ * planificar fechas exactas de calendario, algo que en la practica casi
+ * nadie rellena (ni siquiera la importacion masiva las ofrece). Sin
+ * ellas, DIAS_DESVIACION_FIN queda siempre null y toda desviacion
+ * agregada sale en 0, aunque DURACION_PREVISTA_DIAS/DURACION_REAL_DIAS
+ * (casi siempre presentes en un registro terminado) ya dicen lo mismo
+ * de otra forma. DIAS_DESVIACION_DURACION es ese calculo alternativo.
+ */
+function diferenciaDiasDuracion_(duracionPrevista, duracionReal) {
+  if (duracionPrevista === null || duracionPrevista === undefined || duracionPrevista === '') return null;
+  if (duracionReal === null || duracionReal === undefined || duracionReal === '') return null;
+  return Number(duracionReal) - Number(duracionPrevista);
+}
+
 function calcularDesviacionRegistro_(registro) {
   return {
     DIAS_DESVIACION_INICIO: diferenciaDiasFechas_(registro.FECHA_INICIO_PLAN, registro.FECHA_INICIO_REAL),
-    DIAS_DESVIACION_FIN: diferenciaDiasFechas_(registro.FECHA_FIN_PLAN, registro.FECHA_FIN_REAL)
+    DIAS_DESVIACION_FIN: diferenciaDiasFechas_(registro.FECHA_FIN_PLAN, registro.FECHA_FIN_REAL),
+    DIAS_DESVIACION_DURACION: diferenciaDiasDuracion_(registro.DURACION_PREVISTA_DIAS, registro.DURACION_REAL_DIAS)
   };
 }
 
@@ -47,12 +64,17 @@ function calcularDesviacionAgregada_(listaConDesviacion, agruparPorCampo) {
     }
     var g = grupos[clave];
     g.casos++;
-    if (registro.DIAS_DESVIACION_FIN !== null) {
-      g.sumaDesviacionFin += registro.DIAS_DESVIACION_FIN;
-      g.maxDesviacionFin = g.maxDesviacionFin === null
-        ? registro.DIAS_DESVIACION_FIN
-        : Math.max(g.maxDesviacionFin, registro.DIAS_DESVIACION_FIN);
-      if (registro.DIAS_DESVIACION_FIN > 0) g.casosConRetraso++;
+    // Preferimos la desviacion por fecha exacta si existe; si no, la
+    // desviacion por duracion (ver diferenciaDiasDuracion_) -- casi
+    // siempre disponible, evita que el agregado salga en 0 solo porque
+    // nadie planifico fechas exactas de calendario.
+    var dias = registro.DIAS_DESVIACION_FIN !== null && registro.DIAS_DESVIACION_FIN !== undefined
+      ? registro.DIAS_DESVIACION_FIN
+      : registro.DIAS_DESVIACION_DURACION;
+    if (dias !== null && dias !== undefined) {
+      g.sumaDesviacionFin += dias;
+      g.maxDesviacionFin = g.maxDesviacionFin === null ? dias : Math.max(g.maxDesviacionFin, dias);
+      if (dias > 0) g.casosConRetraso++;
     }
   });
 
@@ -311,7 +333,10 @@ function generarInformeCalidadPlanificacion(filtro) {
 
   function porcentajeATiempo_(lista) {
     if (lista.length === 0) return null;
-    var aTiempo = lista.filter(function (r) { return r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN <= 0; }).length;
+    var aTiempo = lista.filter(function (r) {
+      var dias = r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN !== undefined ? r.DIAS_DESVIACION_FIN : r.DIAS_DESVIACION_DURACION;
+      return dias !== null && dias !== undefined && dias <= 0;
+    }).length;
     return Math.round((aTiempo / lista.length) * 100);
   }
 

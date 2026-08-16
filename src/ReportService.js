@@ -46,12 +46,25 @@ function contarPorEstadoLista_(lista) {
   return conteo;
 }
 
+/*
+ * ESTADO_ES_TERMINAL_PRODUCTO_: si el producto ya está Completado o
+ * Cancelado, el avance calculado por cantidad puede quedar en 0
+ * (CANTIDAD_PRODUCIDA es opcional -- muchos flujos, sobre todo
+ * importación masiva, nunca la rellenan) aunque el estado diga que ya
+ * terminó. Descubierto probando informes con datos importados: un
+ * producto Completado salía con "0" de avance porque nadie tocó
+ * CANTIDAD_PRODUCIDA. El estado manda sobre el cálculo por cantidad,
+ * no al revés.
+ */
+var ESTADO_ES_TERMINAL_PRODUCTO_ = { Completado: true, Cancelado: true };
+
 function calcularAvanceProducto_(producto) {
   var previstas = Number(producto.CANTIDAD_PREVISTA) || 0;
   var producidas = Number(producto.CANTIDAD_PRODUCIDA) || 0;
-  producto.PORCENTAJE_AVANCE_CALCULADO = previstas > 0
-    ? Math.round((producidas / previstas) * 100)
-    : 0;
+  var porCantidad = previstas > 0 ? Math.round((producidas / previstas) * 100) : 0;
+  producto.PORCENTAJE_AVANCE_CALCULADO = ESTADO_ES_TERMINAL_PRODUCTO_[producto.ESTADO]
+    ? (producto.ESTADO === 'Completado' ? 100 : porCantidad)
+    : porCantidad;
   return producto;
 }
 
