@@ -624,11 +624,19 @@ function subirContenidoScript_(scriptId, modulos) {
   var generado = generarEnvoltoriosParaModulos_(aFiles, modulos, 'Core');
   var versionLibreria = obtenerVersionLibreriaMasReciente_();
 
+  // enabledAdvancedServices: Sheets v4 (ver conversación -- "Calidad de
+  // planificación" fallaba en vivo con "no se ha activado el servicio
+  // avanzado de Google Sheets"). LecturaBatchService.js lo usa para
+  // Gantt/Vista del día/Calidad de planificación
+  // (Sheets.Spreadsheets.Values.batchGet) -- informes disponibles para
+  // cualquier cliente CORE, no solo con GANTT instalado, así que se
+  // declara siempre, igual que ya lo tiene Gestor de Proyectos.
   var manifiesto = {
     timeZone: 'Europe/Madrid',
     dependencies: { libraries: [{ userSymbol: 'Core', libraryId: LIBRERIA_ID_, version: versionLibreria }] },
     exceptionLogging: 'STACKDRIVER',
-    runtimeVersion: 'V8'
+    runtimeVersion: 'V8',
+    enabledAdvancedServices: [{ userSymbol: 'Sheets', serviceId: 'sheets', version: 'v4' }]
   };
 
   var respSubir = UrlFetchApp.fetch(
