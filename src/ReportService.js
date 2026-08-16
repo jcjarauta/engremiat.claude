@@ -178,8 +178,17 @@ function generarMemoriaProduccion() {
   // temporal con sentido, no el orden de fila de la hoja.
   var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' })
     .sort(function (a, b) { return new Date(a.FECHA_INICIO_PLAN) - new Date(b.FECHA_INICIO_PLAN); });
+  // proyectosDetalle (ver conversación -- "me siguen faltando los
+  // detalles operativos", destapado con Memoria de producción
+  // concretamente): antes solo se contaba totalProyectos/proyectosPorEstado
+  // por campaña, nunca salía el proyecto con nombre propio. Se aplana
+  // aquí, con CAMPANA_NOMBRE, para una tabla única de todos los
+  // proyectos del informe (mismo criterio de tablaProyectosHtml_ que
+  // ya usan Campaña/Cierre de campaña).
+  var proyectosDetalle = [];
   var resumenCampanas = campanas.map(function (campana) {
     var proyectos = listarProyectosDeCampana(campana.ID);
+    proyectos.forEach(function (p) { proyectosDetalle.push(Object.assign({}, p, { CAMPANA_NOMBRE: campana.NOMBRE })); });
     return {
       campana: campana,
       totalProyectos: proyectos.length,
@@ -191,6 +200,7 @@ function generarMemoriaProduccion() {
     tipo: 'MEMORIA',
     resumenGlobal: obtenerResumenGlobal(),
     campanas: resumenCampanas,
+    proyectosDetalle: proyectosDetalle,
     tareasRetrasadas: listarTareasRetrasadas(),
     decisionesPendientes: listarDecisionesPendientes(),
     incidenciasAbiertas: listarIncidenciasAbiertas(),
@@ -642,6 +652,8 @@ function generarHtmlMemoria_(informe, nivel, modulosInstalados) {
     graficoBarrasApiladasHtml_(Object.keys(informe.resumenGlobal.TAREA || {}).map(function (k) { return { etiqueta: k, valor: informe.resumenGlobal.TAREA[k] }; })) +
     '<h2>Campañas</h2>' +
     tablaSimpleHtml_(['Campaña', 'Estado', 'Proyectos'], informe.campanas.map(function (c) { return [c.campana.NOMBRE, c.campana.ESTADO, c.totalProyectos]; })) +
+    '<h2>Proyectos</h2>' +
+    tablaProyectosHtml_(informe.proyectosDetalle, true) +
     '<h2>Desviación de planificación (días de media por campaña)</h2>' +
     // Línea de tendencia en orden cronológico (informe.campanas ya viene
     // ordenado por FECHA_INICIO_PLAN) -- procesosPorCampana en cambio
@@ -652,6 +664,7 @@ function generarHtmlMemoria_(informe, nivel, modulosInstalados) {
       return { etiqueta: c.campana.NOMBRE, valor: grupo ? grupo.diasDesviacionMedia : 0 };
     })) +
     graficoBarrasHtml_(d.procesosPorCampana.map(function (g) { return { etiqueta: g.grupo, valor: g.diasDesviacionMedia }; }), { alertaSi: function (i) { return i.valor > 0; } }) +
+    renderizarDetalleDesviacion_(d, nivel) +
     '<h2>Tareas retrasadas</h2>' +
     tablaSimpleHtml_(['Tarea', 'Vencía'], retrasadas.filas.map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })) + avisoOcultasHtml_(retrasadas.ocultas) +
     bloqueSeguimientoHtml_(informe, nivel, modulosInstalados);

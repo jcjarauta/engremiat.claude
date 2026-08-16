@@ -245,13 +245,20 @@ function tablaDesviacionDetalleHtml_(detalle, incluirFase) {
   return '<table><tr>' + encabezados.map(function (e) { return '<th>' + escaparHtmlServer_(e) + '</th>'; }).join('') + '</tr>' + filas + '</table>';
 }
 
-/* Tabla de proyectos con nombre real (ver misma conversación). proyectos: registros PROYECTO tal cual. */
-function tablaProyectosHtml_(proyectos) {
+/*
+ * Tabla de proyectos con nombre real (ver misma conversación).
+ * proyectos: registros PROYECTO tal cual. incluirCampana (Memoria de
+ * producción cruza varias campañas, el resto de informes ya están
+ * acotados a una) añade la columna CAMPANA_NOMBRE.
+ */
+function tablaProyectosHtml_(proyectos, incluirCampana) {
   if (!proyectos || proyectos.length === 0) return '<div class="vacio">Ninguno.</div>';
-  return tablaSimpleHtml_(
-    ['Nombre', 'Tipo', 'Prioridad', 'Estado', 'Inicio real', 'Fin real'],
-    proyectos.map(function (p) { return [p.NOMBRE, p.TIPO_PROYECTO, p.PRIORIDAD, p.ESTADO, p.FECHA_INICIO_REAL || '—', p.FECHA_FIN_REAL || '—']; })
-  );
+  var encabezados = ['Nombre'].concat(incluirCampana ? ['Campaña'] : []).concat(['Tipo', 'Prioridad', 'Estado', 'Inicio real', 'Fin real']);
+  var filas = proyectos.map(function (p) {
+    return [p.NOMBRE].concat(incluirCampana ? [p.CAMPANA_NOMBRE || '—'] : [])
+      .concat([p.TIPO_PROYECTO, p.PRIORIDAD, p.ESTADO, p.FECHA_INICIO_REAL || '—', p.FECHA_FIN_REAL || '—']);
+  });
+  return tablaSimpleHtml_(encabezados, filas);
 }
 
 /* Tabla de productos con nombre real, incluye el % avance ya calculado (calcularAvanceProducto_). */
