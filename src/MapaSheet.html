@@ -74,6 +74,13 @@
           <div class="detalle">Consulta estado, URL y errores -- la aprobación se hace en el paso 2, no editando esta hoja</div>
         </span>
       </button>
+      <button class="tarjeta" onclick="abrir('abrirActualizarMiLibreria')">
+        <span class="icono">🔄</span>
+        <span class="texto">
+          <div class="titulo">Actualizar mi librería</div>
+          <div class="detalle">Pone este sheet en la última versión publicada de CORE, sin ir al editor a mano</div>
+        </span>
+      </button>
     </div>
 
     <div class="separador">Personal</div>
@@ -331,6 +338,9 @@
             return;
           case 'abrirHojaSolicitudesMontaje':
             google.script.run.withFailureHandler(mostrarError).abrirHojaSolicitudesMontaje();
+            return;
+          case 'abrirActualizarMiLibreria':
+            google.script.run.withFailureHandler(mostrarError).abrirActualizarMiLibreria();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });

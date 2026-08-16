@@ -261,6 +261,88 @@ function abrirConfigurarAprovisionamiento() {
   }
 }
 
+/*
+ * Autoactualizacion de version de libreria (ver conversacion -- "como
+ * evitamos esta friccion?" al tener que ir a mano a Extensiones > Apps
+ * Script > Bibliotecas > Core > cambiar version en cada sheet interno
+ * cada vez que se publica una version nueva). Deliberadamente NO se
+ * ofrece a clientes de pago: exige el scope script.projects en su
+ * propio manifiesto, que da acceso de lectura/escritura a cualquier
+ * proyecto de Apps Script al que la cuenta tenga acceso -- mas potencia
+ * de la que un sheet de produccion normal necesita. Se gatea igual que
+ * el resto de Aprovisionamiento (moduloInstalado_('INTERNO') ||
+ * moduloInstalado_('APROVISIONAMIENTO')), asi que solo aparece en
+ * herramientas internas como Gestor de Proyectos.
+ */
+function abrirActualizarMiLibreria() {
+  var ui = SpreadsheetApp.getUi();
+  try {
+    var resultado = actualizarLibreriaPropia_();
+    if (resultado.sinCambios) {
+      ui.alert('Ya está actualizado', 'Este proyecto ya usa la última versión publicada (' + resultado.versionActual + ').', ui.ButtonSet.OK);
+    } else {
+      ui.alert('Librería actualizada', 'Versión anterior: ' + resultado.versionAnterior + '\nVersión nueva: ' + resultado.versionNueva + '\n\nRecarga el sheet para que el código nuevo tenga efecto.', ui.ButtonSet.OK);
+    }
+  } catch (e) {
+    ui.alert('No se pudo actualizar', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/*
+ * Lee el propio appsscript.json (script.projects.getContent sobre
+ * ScriptApp.getScriptId(), no un scriptId ajeno), le cambia solo la
+ * version de la dependencia LIBRERIA_ID_ a la ultima publicada
+ * (obtenerVersionLibreriaMasReciente_, mismo helper que usa
+ * subirContenidoScript_ al montar clientes nuevos), y reescribe el
+ * proyecto entero via script.projects.updateContent -- la API exige
+ * mandar todos los ficheros juntos, no solo el que cambia.
+ */
+function actualizarLibreriaPropia_() {
+  var token = ScriptApp.getOAuthToken();
+  var scriptId = ScriptApp.getScriptId();
+
+  var respLeer = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + scriptId + '/content',
+    { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }
+  );
+  if (respLeer.getResponseCode() !== 200) {
+    throw new Error('ACTUALIZAR_LIBRERIA_PROPIA_ERROR: no se pudo leer el proyecto propio -- ' + respLeer.getContentText());
+  }
+
+  var contenido = JSON.parse(respLeer.getContentText());
+  var archivoManifiesto = contenido.files.filter(function (f) { return f.name === 'appsscript'; })[0];
+  if (!archivoManifiesto) throw new Error('ACTUALIZAR_LIBRERIA_PROPIA_ERROR: no se encontro appsscript.json en el proyecto propio.');
+
+  var manifiesto = JSON.parse(archivoManifiesto.source);
+  var libreria = ((manifiesto.dependencies && manifiesto.dependencies.libraries) || []).filter(function (l) { return l.libraryId === LIBRERIA_ID_; })[0];
+  if (!libreria) throw new Error('ACTUALIZAR_LIBRERIA_PROPIA_ERROR: este proyecto no depende de la libreria CORE.');
+
+  var versionAnterior = String(libreria.version);
+  var versionNueva = String(obtenerVersionLibreriaMasReciente_());
+  if (versionAnterior === versionNueva) {
+    return { sinCambios: true, versionActual: versionAnterior };
+  }
+
+  libreria.version = versionNueva;
+  archivoManifiesto.source = JSON.stringify(manifiesto);
+
+  var respSubir = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + scriptId + '/content',
+    {
+      method: 'put',
+      contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ files: contenido.files }),
+      muteHttpExceptions: true
+    }
+  );
+  if (respSubir.getResponseCode() !== 200) {
+    throw new Error('ACTUALIZAR_LIBRERIA_PROPIA_ERROR: ' + respSubir.getResponseCode() + ' ' + respSubir.getContentText());
+  }
+
+  return { sinCambios: false, versionAnterior: versionAnterior, versionNueva: versionNueva };
+}
+
 /**
  * subirContenidoScript_ necesita saber que version de la libreria CORE
  * poner en el appsscript.json de cada cliente nuevo. En vez de guardarla
