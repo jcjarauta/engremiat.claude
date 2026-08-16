@@ -79,9 +79,22 @@ function obtenerEmailsAutorizadosMontaje_() {
 
 /**
  * Punto de entrada de menu para dejar Aprovisionamiento operativo:
- * crea/asegura la hoja SOLICITUDES_MONTAJE, pide (si falta) la lista de
- * correos autorizados, y activa el trigger de aprobacion. Pide
- * confirmacion explicita porque instala un trigger persistente.
+ * crea/asegura la hoja SOLICITUDES_MONTAJE y pide (si falta) la lista
+ * de correos autorizados.
+ *
+ * NO activa el trigger de aprobación en este mismo paso (ver
+ * conversación -- módulo APROVISIONAMIENTO promovido a la librería
+ * para que clientes internos como Gestor de Proyectos puedan usarlo,
+ * no solo el Master en crudo): ScriptApp.newTrigger(...).create() es
+ * ambiguo cuando se invoca a través de una llamada de librería -- no
+ * hay garantía documentada de que el trigger quede asociado al
+ * proyecto del CLIENTE que llamó en vez de al de la propia librería.
+ * Para no arriesgar un trigger persistente mal registrado (silencioso
+ * de detectar: simplemente nunca se dispararía), esa única llamada se
+ * deja fuera de la librería -- ver el mensaje que devuelve este alert
+ * y configurarTriggerAprobacionMontaje() más abajo para el camino
+ * directo (Master, sin indirección de librería, donde no hay
+ * ambigüedad posible).
  */
 function abrirConfigurarAprovisionamiento() {
   var ui = SpreadsheetApp.getUi();
@@ -116,12 +129,13 @@ function abrirConfigurarAprovisionamiento() {
     var yaExiste = ScriptApp.getProjectTriggers().some(function (trigger) {
       return trigger.getHandlerFunction() === 'alAprobarMontaje_';
     });
-    if (!yaExiste) configurarTriggerAprobacionMontaje();
 
     ui.alert(
       'Aprovisionamiento configurado',
       'Hoja: ' + (resultadoHoja.creadaAhora ? 'creada ahora' : 'ya existia') +
-      '\nTrigger: ' + (yaExiste ? 'ya estaba activo' : 'activado ahora') +
+      '\nTrigger: ' + (yaExiste
+        ? 'ya estaba activo'
+        : 'AÚN NO ACTIVADO -- ejecuta configurarTriggerAprobacionMontaje() una vez, a mano, desde el editor de Apps Script de este proyecto (▶ Ejecutar)') +
       '\nCorreos autorizados: ' + obtenerEmailsAutorizadosMontaje_().join(', '),
       ui.ButtonSet.OK
     );

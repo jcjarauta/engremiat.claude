@@ -472,8 +472,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [104, 9, 37, 28, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [104, 9, 37, 28]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [105, 9, 36, 28, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [105, 9, 36, 28]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -896,11 +896,11 @@ test('115 entradas fuera de package A no declaran módulo', () => {
   assert(map.entries.filter((entry) => entry.package !== 'A').every((entry) => entry.module === null));
 });
 
-test('116 moduleDependencies declara exactamente los trece módulos válidos', () => {
+test('116 moduleDependencies declara exactamente los catorce módulos válidos', () => {
   const map = readPackageMap(MAP_PATH);
   assertDeepEqual(
     Object.keys(map.moduleDependencies).sort(),
-    ['CLIENTE', 'COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'EJECUCION', 'ESCENARIOS', 'GANTT', 'IMPACTO', 'OPERATIVA', 'OPORTUNIDAD', 'SEGUIMIENTO', 'VENTAS'],
+    ['APROVISIONAMIENTO', 'CLIENTE', 'COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'EJECUCION', 'ESCENARIOS', 'GANTT', 'IMPACTO', 'OPERATIVA', 'OPORTUNIDAD', 'SEGUIMIENTO', 'VENTAS'],
   );
 });
 

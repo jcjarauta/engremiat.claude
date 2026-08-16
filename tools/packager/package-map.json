@@ -319,13 +319,13 @@
     {
       "path": "src/AprovisionamientoService.js",
       "type": "js",
-      "category": "auxiliary",
-      "package": "C",
-      "expectedSha256": "05b2174ca4da09ff8452c460b3d768f1d8c1cd5848f00eccfaa5288d68f2d466",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "46f0b418a866a4330d827785475b2f37faf691442d55501c41fcc01166462791",
       "required": true,
-      "reason": "operación interna (montaje de clientes) -- solo maestro/proyectos internos, fuera de la librería a propósito",
+      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (ver conversacion: seguimos con B -- promovido de package C/auxiliar a modulo real de la libreria para que un cliente interno como Gestor de Proyectos pueda montar sheets nuevos el mismo, sin exponerlo a clientes de pago via MODULOS_INSTALADOS_CLIENTE).",
       "mixed": false,
-      "module": null
+      "module": "APROVISIONAMIENTO"
     },
     {
       "path": "src/AvanceYSecuencia.js",
@@ -816,7 +816,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "268c2493b0d4b0a25a3336185f43c3f119ed531c6e0bf1591869a1c34b139b40",
+      "expectedSha256": "1f76d61b743c9d21e0d323575d07306dc7496d81edb61b65c8bb3cf3815a7c54",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1531,7 +1531,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "b33d0b76c5a521df4c678f20963902a23c959a1e4d2c41eee9ac418e0942c177",
+      "expectedSha256": "4e7a9c41a094206ceb75fe8e296c521d91958339c30379a3a490b47d576c4673",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -2007,6 +2007,9 @@
       "CORE"
     ],
     "EJECUCION": [
+      "CORE"
+    ],
+    "APROVISIONAMIENTO": [
       "CORE"
     ]
   }

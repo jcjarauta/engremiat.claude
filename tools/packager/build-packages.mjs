@@ -39,8 +39,8 @@ const DEFAULT_MAP = path.join(HERE, 'package-map.json');
 const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
-const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION']);
-const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0 };
+const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO']);
+const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0, APROVISIONAMIENTO: 1 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -240,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 104, test: 9, auxiliary: 37, excluded: 28, mixed: 0 };
+  const expectedCounts = { production: 105, test: 9, auxiliary: 36, excluded: 28, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }

@@ -35,11 +35,42 @@ var PACKAGE_MAP_EMBEBIDO = {
     "OPORTUNIDAD": [
       "CORE",
       "CLIENTE"
+    ],
+    "ESCENARIOS": [
+      "CORE"
+    ],
+    "OPERATIVA": [
+      "CORE"
+    ],
+    "SEGUIMIENTO": [
+      "CORE"
+    ],
+    "EJECUCION": [
+      "CORE"
+    ],
+    "APROVISIONAMIENTO": [
+      "CORE"
     ]
   },
   "entriesPackageA": [
     {
+      "path": "src/AprovisionamientoService.js",
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/AvanceYSecuencia.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/Biblioteca.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/BibliotecaService.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/BusquedaGlobalService.js",
       "module": "CORE"
     },
     {
@@ -91,6 +122,14 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "IMPACTO"
     },
     {
+      "path": "src/FichaCampana.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaCampanaService.js",
+      "module": "CORE"
+    },
+    {
       "path": "src/FichaConvocatoria.html",
       "module": "CONVOCATORIAS"
     },
@@ -123,6 +162,14 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/FichaProceso.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaProcesoService.js",
+      "module": "CORE"
+    },
+    {
       "path": "src/FichaProducto.html",
       "module": "CORE"
     },
@@ -139,11 +186,27 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "COMPRAS"
     },
     {
+      "path": "src/FichaProyecto.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaProyectoService.js",
+      "module": "CORE"
+    },
+    {
       "path": "src/FichaRecurso.html",
       "module": "CORE"
     },
     {
       "path": "src/FichaRecursoService.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaTarea.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaTareaService.js",
       "module": "CORE"
     },
     {
@@ -195,11 +258,23 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/ImportacionMasivaAvanzada.js",
+      "module": "OPERATIVA"
+    },
+    {
+      "path": "src/ImportacionMasivaInicio.html",
+      "module": "CORE"
+    },
+    {
       "path": "src/Includes.js",
       "module": "CORE"
     },
     {
       "path": "src/InformeGenerico.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/InformesVisuales.js",
       "module": "CORE"
     },
     {
@@ -209,6 +284,14 @@ var PACKAGE_MAP_EMBEBIDO = {
     {
       "path": "src/InstaladorComprasL4.js",
       "module": "COMPRAS"
+    },
+    {
+      "path": "src/InstaladorImportacionMasiva.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/InstaladorImportacionMasivaAvanzada.js",
+      "module": "OPERATIVA"
     },
     {
       "path": "src/InstaladorOportunidadL4.js",
@@ -248,6 +331,22 @@ var PACKAGE_MAP_EMBEBIDO = {
     },
     {
       "path": "src/ListadoFiltrableService.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheet.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheetService.js",
+      "module": "CORE"
+    },
+    {
+      "path": "src/MiTrabajo.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/MiTrabajoService.js",
       "module": "CORE"
     },
     {
@@ -313,6 +412,14 @@ var PACKAGE_MAP_EMBEBIDO = {
     {
       "path": "src/PedidoRecepcionService.js",
       "module": "COMPRAS"
+    },
+    {
+      "path": "src/PlantillaImportacionMasivaAvanzadaService.js",
+      "module": "OPERATIVA"
+    },
+    {
+      "path": "src/PlantillaImportacionMasivaService.js",
+      "module": "CORE"
     },
     {
       "path": "src/ProcesoService.js",
