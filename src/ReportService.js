@@ -535,12 +535,105 @@ function escaparHtmlServer_(s) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+/*
+ * CSV tabular por bloques (ver conversación -- "valorar los datos que
+ * llegan a la exportación por CSV" / "propuesta generosa... modelo
+ * replicable"): el volcado plano campo/valor (aplanarInformeParaExportar_)
+ * sigue siendo el camino genérico -- se mantiene como fallback para
+ * cualquier tipo de informe sin csvTabular propio -- pero para los
+ * tipos que ya tienen tablas de detalle en el HTML (proyectos,
+ * productos, casos de desviación) el CSV ahora reproduce esas mismas
+ * tablas, una detrás de otra con su propio encabezado, en vez de
+ * aplanar la jerarquía del objeto. Bloques: [{titulo, encabezados, filas}].
+ */
+function celdaCsv_(v) {
+  return '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"';
+}
+
+function bloquesACsv_(bloques) {
+  return bloques.map(function (b) {
+    if (!b.filas || b.filas.length === 0) return celdaCsv_(b.titulo) + '\n' + celdaCsv_('(sin datos)');
+    return celdaCsv_(b.titulo) + '\n' +
+      b.encabezados.map(celdaCsv_).join(',') + '\n' +
+      b.filas.map(function (fila) { return fila.map(celdaCsv_).join(','); }).join('\n');
+  }).join('\n\n');
+}
+
+/* proyectos: registros PROYECTO (con o sin CAMPANA_NOMBRE, ver incluirCampana). */
+function bloqueProyectosCsv_(proyectos, incluirCampana) {
+  var encabezados = ['Nombre'].concat(incluirCampana ? ['Campaña'] : []).concat(['Tipo', 'Prioridad', 'Estado', 'Inicio real', 'Fin real']);
+  var filas = (proyectos || []).map(function (p) {
+    return [p.NOMBRE].concat(incluirCampana ? [p.CAMPANA_NOMBRE || ''] : [])
+      .concat([p.TIPO_PROYECTO, p.PRIORIDAD, p.ESTADO, p.FECHA_INICIO_REAL || '', p.FECHA_FIN_REAL || '']);
+  });
+  return { titulo: 'Proyectos', encabezados: encabezados, filas: filas };
+}
+
+function bloqueProductosCsv_(productos) {
+  return {
+    titulo: 'Productos',
+    encabezados: ['Nombre', 'Código', '% avance', 'Cantidad prevista', 'Cantidad producida', 'Estado'],
+    filas: (productos || []).map(function (p) {
+      return [p.NOMBRE, p.CODIGO, p.PORCENTAJE_AVANCE_CALCULADO, p.CANTIDAD_PREVISTA || 0, p.CANTIDAD_PRODUCIDA || 0, p.ESTADO];
+    })
+  };
+}
+
+/* d: objeto con procesosDetalle/tareasDetalle (construirBloqueDesviacion_, DesviacionService.js). */
+function bloquesDesviacionDetalleCsv_(d) {
+  var encabezadosProceso = ['Nombre', 'Fase', 'Previsto (d)', 'Real (d)', 'Desviación', 'Responsable'];
+  var encabezadosTarea = ['Nombre', 'Previsto (d)', 'Real (d)', 'Desviación', 'Responsable'];
+  return [
+    {
+      titulo: 'Casos individuales — procesos',
+      encabezados: encabezadosProceso,
+      filas: (d.procesosDetalle || []).map(function (r) { return [r.nombre, r.fase || '', r.previsto, r.real, r.desviacion, r.responsable]; })
+    },
+    {
+      titulo: 'Casos individuales — tareas',
+      encabezados: encabezadosTarea,
+      filas: (d.tareasDetalle || []).map(function (r) { return [r.nombre, r.previsto, r.real, r.desviacion, r.responsable]; })
+    }
+  ];
+}
+
+function bloqueTareasRetrasadasCsv_(tareasRetrasadas) {
+  return {
+    titulo: 'Tareas retrasadas',
+    encabezados: ['Tarea', 'Vencía'],
+    filas: (tareasRetrasadas || []).map(function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; })
+  };
+}
+
+var CSV_TABULAR_POR_TIPO_ = {
+  CAMPANA: function (informe) {
+    return [bloqueProyectosCsv_(informe.proyectos, false)]
+      .concat(bloquesDesviacionDetalleCsv_(informe.desviacionPlanificacion))
+      .concat([bloqueTareasRetrasadasCsv_(informe.tareasRetrasadas)]);
+  },
+  PROYECTO: function (informe) {
+    return [bloqueProductosCsv_(informe.productos)]
+      .concat(bloquesDesviacionDetalleCsv_(informe.desviacionPlanificacion))
+      .concat([bloqueTareasRetrasadasCsv_(informe.tareasRetrasadas)]);
+  },
+  MEMORIA: function (informe) {
+    return [bloqueProyectosCsv_(informe.proyectosDetalle, true)]
+      .concat(bloquesDesviacionDetalleCsv_(informe.desviacionPlanificacion))
+      .concat([bloqueTareasRetrasadasCsv_(informe.tareasRetrasadas)]);
+  },
+  CIERRE_CAMPANA: function (informe) {
+    return [bloqueProyectosCsv_(informe.proyectos, false)].concat(bloquesDesviacionDetalleCsv_(informe.desviacionPlanificacion));
+  },
+  DESVIACION: function (informe) { return bloquesDesviacionDetalleCsv_(informe); },
+  CALIDAD_PLANIFICACION: function (informe) { return bloquesDesviacionDetalleCsv_(informe); }
+};
+
 function exportarInformeCSV(tipo, idOFiltro, opcionesPrueba) {
   var informe = generarInforme(tipo, idOFiltro);
-  var filas = aplanarInformeParaExportar_(informe);
-  var csv = 'campo,valor\n' + filas.map(function (f) {
-    return f.map(function (v) { return '"' + String(v === undefined || v === null ? '' : v).replace(/"/g, '""') + '"'; }).join(',');
-  }).join('\n');
+  var generadorTabular = CSV_TABULAR_POR_TIPO_[tipo];
+  var csv = generadorTabular
+    ? bloquesACsv_(generadorTabular(informe))
+    : 'campo,valor\n' + aplanarInformeParaExportar_(informe).map(function (f) { return f.map(celdaCsv_).join(','); }).join('\n');
   // BOM UTF-8 (ver construirCsvConBom_ en DesviacionService.js): sin
   // el, Excel interpreta los acentos con la codificacion regional.
   var csvConBom = String.fromCharCode(0xFEFF) + csv;
