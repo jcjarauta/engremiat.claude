@@ -39,8 +39,8 @@ const DEFAULT_MAP = path.join(HERE, 'package-map.json');
 const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
-const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD']);
-const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 };
+const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION']);
+const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -195,11 +195,13 @@ export function readPackageMap(mapPath = DEFAULT_MAP) {
 
 export function validatePackageMap(map) {
   const errors = [];
-  if (!map || map.schemaVersion !== 1 || map.universeExpected !== 175 || !Array.isArray(map.entries)) {
+  if (!map || map.schemaVersion !== 1 || typeof map.universeExpected !== 'number' || !Array.isArray(map.entries)) {
     errors.push('CABECERA_MATRIZ_INVALIDA');
     return errors;
   }
-  if (map.entries.length !== 175) errors.push(`UNIVERSO_ESPERADO_175 actual=${map.entries.length}`);
+  if (map.entries.length !== map.universeExpected) {
+    errors.push(`UNIVERSO_ESPERADO_DESAJUSTADO esperado=${map.universeExpected} actual=${map.entries.length}`);
+  }
   if (!Array.isArray(map.toolingExclusions) || !map.toolingExclusions.includes(TOOLING_PREFIX)) errors.push('FALTA_EXCLUSION_TOOLING');
   try {
     errors.push(...validateCanonicalPathSet(map.entries.map((entry) => entry.path)).errors);
@@ -238,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 101, test: 9, auxiliary: 37, excluded: 28, mixed: 0 };
+  const expectedCounts = { production: 104, test: 9, auxiliary: 37, excluded: 28, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
