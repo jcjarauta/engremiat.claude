@@ -77,7 +77,24 @@ function moduloInstalado_(nombreModulo) {
  * (DesviacionService.js), así que sin ese módulo el diálogo se queda
  * colgado en "Cargando..." en vez de fallar con un error claro.
  */
+/*
+ * Mismo hook MODULOS_INSTALADOS_CLIENTE_MAESTRO_ que onOpen() (ver
+ * conversación -- "construimos el core en el gestor de proyectos"):
+ * los puntos de entrada llamados directamente desde el menú del propio
+ * Sheet maestro (sin envoltorio Codigo.js de por medio) reciben
+ * modulosInstalados=undefined en cada clic -- a diferencia de un
+ * cliente real, donde el envoltorio siempre inyecta
+ * MODULOS_INSTALADOS_CLIENTE explícitamente. Sin el hook definido
+ * (librería, cualquier cliente real), esto no cambia nada: sigue
+ * devolviendo el valor recibido tal cual.
+ */
+function resolverModulosInstalados_(modulosInstalados) {
+  if (Array.isArray(modulosInstalados)) return modulosInstalados;
+  return typeof MODULOS_INSTALADOS_CLIENTE_MAESTRO_ !== 'undefined' ? MODULOS_INSTALADOS_CLIENTE_MAESTRO_ : modulosInstalados;
+}
+
 function moduloGanttInstalado(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   return Array.isArray(modulosInstalados) ? modulosInstalados.indexOf('GANTT') !== -1 : true;
 }
 
@@ -99,7 +116,17 @@ function onOpen(modulosInstalados) {
   // Core.onOpen(MODULOS_INSTALADOS_CLIENTE), una llamada normal, no un
   // disparo de trigger. Array.isArray descarta cualquier objeto de
   // evento/argumento inesperado sin tocar el caso real (array de módulos).
-  modulosInstaladosClienteActual_ = Array.isArray(modulosInstalados) ? modulosInstalados : null;
+  //
+  // MODULOS_INSTALADOS_CLIENTE_MAESTRO_ (ver conversación -- "construimos
+  // el core en el gestor de proyectos"): hook opcional resuelto por
+  // resolverModulosInstalados_(), indefinido en la librería y en todo
+  // cliente real -- solo existe si alguien lo añade a mano como fichero
+  // suelto en ESTE proyecto de Apps Script concreto (nunca vía git/clasp
+  // push, no es parte del código compartido). Sin él, el comportamiento
+  // no cambia: se sigue asumiendo todo instalado cuando no llega un
+  // array real, exactamente como antes.
+  var resuelto = resolverModulosInstalados_(modulosInstalados);
+  modulosInstaladosClienteActual_ = Array.isArray(resuelto) ? resuelto : null;
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Taller de Producción')
     .addItem('🗺️ Mapa del sheet (inicio)', 'abrirMapaSheet')

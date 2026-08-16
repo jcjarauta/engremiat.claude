@@ -42,6 +42,7 @@ function protegerHojasDatosMVP(modulosInstalados) {
 }
 
 function abrirProteccionHojas(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   var resultado = protegerHojasDatosMVP(modulosInstalados);
   var mensaje = 'Protegidas ahora: ' + resultado.protegidas.length +
     '\nYa protegidas: ' + resultado.yaProtegidas.length +

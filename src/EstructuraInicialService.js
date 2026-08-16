@@ -247,6 +247,7 @@ function asegurarRangosNombradosCatalogo_(ss, hojaConfig) {
  * especial que onOpen().
  */
 function abrirInstalarEstructuraInicial(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   var ui = SpreadsheetApp.getUi();
 
   var resp = ui.alert(

@@ -823,6 +823,7 @@ function obtenerEstadoHojasStaging() {
  * campaña→tarea, importar recursos/personas.
  */
 function abrirImportacionMasivaInicio(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   var template = HtmlService.createTemplateFromFile('ImportacionMasivaInicio');
   template.modulosInstalados = JSON.stringify(Array.isArray(modulosInstalados) ? modulosInstalados : null);
   var html = template.evaluate()

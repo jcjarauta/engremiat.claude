@@ -15,6 +15,7 @@
  * salvo que se reciba como argumento explícito en cada llamada.
  */
 function abrirMapaSheet(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   var template = HtmlService.createTemplateFromFile('MapaSheet');
   template.modulosInstalados = JSON.stringify(Array.isArray(modulosInstalados) ? modulosInstalados : null);
   var html = template.evaluate().setTitle('Mapa del sheet').setWidth(420);

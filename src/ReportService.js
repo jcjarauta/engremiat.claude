@@ -785,6 +785,7 @@ function abrirDialogoExportarPDF(tipo, idOFiltro, nivel, modulosInstalados) {
 }
 
 function abrirInformes(modulosInstalados) {
+  modulosInstalados = resolverModulosInstalados_(modulosInstalados);
   var template = HtmlService.createTemplateFromFile('InformeGenerico');
   template.modulosInstalados = JSON.stringify(Array.isArray(modulosInstalados) ? modulosInstalados : null);
   var html = template.evaluate().setTitle('Informes').setWidth(420);
