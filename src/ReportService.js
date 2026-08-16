@@ -581,18 +581,18 @@ function bloqueProductosCsv_(productos) {
 
 /* d: objeto con procesosDetalle/tareasDetalle (construirBloqueDesviacion_, DesviacionService.js). */
 function bloquesDesviacionDetalleCsv_(d) {
-  var encabezadosProceso = ['Nombre', 'Fase', 'Previsto (d)', 'Real (d)', 'Desviación', 'Responsable'];
-  var encabezadosTarea = ['Nombre', 'Previsto (d)', 'Real (d)', 'Desviación', 'Responsable'];
+  var encabezadosProceso = ['Nombre', 'Fase', 'Previsto (d)', 'Real (d)', 'Desviación (d)', 'Desviación (%)', 'Responsable'];
+  var encabezadosTarea = ['Nombre', 'Previsto (d)', 'Real (d)', 'Desviación (d)', 'Desviación (%)', 'Responsable'];
   return [
     {
       titulo: 'Casos individuales — procesos',
       encabezados: encabezadosProceso,
-      filas: (d.procesosDetalle || []).map(function (r) { return [r.nombre, r.fase || '', r.previsto, r.real, r.desviacion, r.responsable]; })
+      filas: (d.procesosDetalle || []).map(function (r) { return [r.nombre, r.fase || '', r.previsto, r.real, r.desviacion, r.pctDesviacion === null || r.pctDesviacion === undefined ? '' : r.pctDesviacion, r.responsable]; })
     },
     {
       titulo: 'Casos individuales — tareas',
       encabezados: encabezadosTarea,
-      filas: (d.tareasDetalle || []).map(function (r) { return [r.nombre, r.previsto, r.real, r.desviacion, r.responsable]; })
+      filas: (d.tareasDetalle || []).map(function (r) { return [r.nombre, r.previsto, r.real, r.desviacion, r.pctDesviacion === null || r.pctDesviacion === undefined ? '' : r.pctDesviacion, r.responsable]; })
     }
   ];
 }

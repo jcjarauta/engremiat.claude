@@ -276,11 +276,12 @@ function tablaDesviacionDetalleHtml_(detalle, incluirFase) {
   var encabezados = ['Nombre'].concat(incluirFase ? ['Fase'] : []).concat(['Previsto (d)', 'Real (d)', 'Desviación', 'Responsable']);
   var filas = detalle.map(function (d) {
     var colorDesv = d.desviacion > 0 ? 'color:#b00020;font-weight:bold;' : (d.desviacion < 0 ? 'color:#1e8e3e;' : '');
+    var textoPct = d.pctDesviacion === null || d.pctDesviacion === undefined ? '' : ' (' + (d.pctDesviacion > 0 ? '+' : '') + d.pctDesviacion + '%)';
     return '<tr><td>' + enlaceEdicion_(entidad, d.id, d.nombre) + '</td>' +
       (incluirFase ? '<td>' + escaparHtmlServer_(d.fase || '—') + '</td>' : '') +
       '<td>' + (d.previsto === null ? '—' : d.previsto) + '</td>' +
       '<td>' + (d.real === null ? '—' : d.real) + '</td>' +
-      '<td style="' + colorDesv + '">' + (d.desviacion > 0 ? '+' : '') + d.desviacion + '</td>' +
+      '<td style="' + colorDesv + '">' + (d.desviacion > 0 ? '+' : '') + d.desviacion + escaparHtmlServer_(textoPct) + '</td>' +
       '<td>' + escaparHtmlServer_(d.responsable) + '</td></tr>';
   }).join('');
   return '<table><tr>' + encabezados.map(function (e) { return '<th>' + escaparHtmlServer_(e) + '</th>'; }).join('') + '</tr>' + filas + '</table>';

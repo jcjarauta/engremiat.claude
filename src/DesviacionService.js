@@ -262,13 +262,22 @@ function construirDetalleDesviacion_(listaConNombreResponsable, incluirFase) {
   return listaConNombreResponsable
     .map(function (r) {
       var dias = r.DIAS_DESVIACION_FIN !== null && r.DIAS_DESVIACION_FIN !== undefined ? r.DIAS_DESVIACION_FIN : r.DIAS_DESVIACION_DURACION;
+      var previsto = r.DURACION_PREVISTA_DIAS === undefined || r.DURACION_PREVISTA_DIAS === '' ? null : Number(r.DURACION_PREVISTA_DIAS);
+      // % relativo a lo previsto (ver conversación -- "desviación en %
+      // además de en días absolutos"): +2 días sobre 6 previstos (33%)
+      // no cuenta la misma historia que +2 sobre 20 (10%) -- el
+      // absoluto solo no da contexto de gravedad entre casos de
+      // tamaños distintos. Referencia siempre DURACION_PREVISTA_DIAS
+      // (el plan), sea la desviación de fecha o de duración.
+      var pct = (dias !== null && dias !== undefined && previsto) ? Math.round((dias / previsto) * 100) : null;
       return {
         id: r.ID,
         nombre: r.NOMBRE,
         fase: incluirFase ? (r.FASE_PRODUCCION || '') : undefined,
-        previsto: r.DURACION_PREVISTA_DIAS === undefined || r.DURACION_PREVISTA_DIAS === '' ? null : Number(r.DURACION_PREVISTA_DIAS),
+        previsto: previsto,
         real: r.DURACION_REAL_DIAS === undefined || r.DURACION_REAL_DIAS === '' ? null : Number(r.DURACION_REAL_DIAS),
         desviacion: dias === null || dias === undefined ? null : dias,
+        pctDesviacion: pct,
         responsable: r.RESPONSABLE_NOMBRE || '(sin responsable)'
       };
     })
