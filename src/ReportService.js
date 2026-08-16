@@ -69,6 +69,18 @@ function calcularAvanceProducto_(producto) {
 }
 
 /*
+ * Mismo hallazgo que calcularAvanceProducto_, pero en PROCESO/TAREA
+ * (ver conversación -- "avanceMedioProcesos sale en 0"): PORCENTAJE_AVANCE
+ * es un campo manual opcional, independiente del que calcula
+ * calcularAvanceProducto_ por cantidad -- un proceso Completado sin
+ * nadie tocando ese campo a mano sigue en 0. El estado manda igual que
+ * en producto.
+ */
+function avanceEfectivo_(registro) {
+  return (registro.ESTADO === 'Completado' || registro.ESTADO === 'Terminada') ? 100 : (Number(registro.PORCENTAJE_AVANCE) || 0);
+}
+
+/*
  * Informes dinámicos por módulo (ver conversación -- "los informes
  * también deberían ser dinámicos y ofrecer los outputs necesarios para
  * cada cliente... un sheet core no necesita algún dato que esté en los
@@ -285,7 +297,7 @@ function generarInformeEjecutivo() {
   var campanasActivas = campanas.filter(function (c) { return c.ESTADO === 'Activa'; });
   var procesosActivos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' });
   var avanceMedioProcesos = procesosActivos.length > 0
-    ? Math.round(procesosActivos.reduce(function (acc, p) { return acc + (Number(p.PORCENTAJE_AVANCE) || 0); }, 0) / procesosActivos.length)
+    ? Math.round(procesosActivos.reduce(function (acc, p) { return acc + avanceEfectivo_(p); }, 0) / procesosActivos.length)
     : null;
 
   return {
