@@ -605,6 +605,84 @@ function bloqueTareasRetrasadasCsv_(tareasRetrasadas) {
   };
 }
 
+/* Excepciones: mismas categorías que generarHtmlExcepciones_, un bloque por categoría con datos. */
+function bloquesExcepcionesCsv_(informe) {
+  var categorias = [
+    ['Tareas retrasadas', informe.tareasRetrasadas, ['Tarea', 'Vencía'], function (t) { return [t.NOMBRE, t.FECHA_FIN_PLAN]; }],
+    ['Tareas bloqueadas', informe.tareasBloqueadas, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Tareas pospuestas', informe.tareasPospuestas, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Tareas sin responsable', informe.tareasSinResponsable, ['Tarea'], function (t) { return [t.NOMBRE]; }],
+    ['Productos sin proyecto', informe.productosSinProyecto, ['Producto'], function (p) { return [p.NOMBRE]; }],
+    ['Procesos sin fechas', informe.procesosSinFechas, ['Proceso'], function (p) { return [p.NOMBRE]; }],
+    ['Relaciones incompletas', informe.relacionesIncompletas, ['Registro'], function (r) { return [r.NOMBRE || r.ID]; }],
+    ['Materiales con stock bajo', (informe.materiales || {}).stockBajo, ['Material', 'Stock'], function (m) { return [m.NOMBRE, m.STOCK_ACTUAL]; }],
+    ['Materiales agotados', (informe.materiales || {}).agotados, ['Material'], function (m) { return [m.NOMBRE]; }],
+    ['Decisiones pendientes', informe.decisionesPendientes, ['Título', 'Estado'], function (d) { return [d.TITULO, d.ESTADO]; }],
+    ['Incidencias abiertas', informe.incidenciasAbiertas, ['Título', 'Estado'], function (i) { return [i.TITULO, i.ESTADO]; }],
+    ['Asignaciones sin encaje de competencia', informe.asignacionesSinEncajeCompetencia, ['Tarea', 'Responsable', 'Competencia'], function (a) { return [a.TAREA_NOMBRE, a.PERSONA_NOMBRE, a.COMPETENCIA_NOMBRE + (a.NIVEL_EXIGIDO ? ' (' + a.NIVEL_EXIGIDO + ')' : '')]; }],
+    ['Asignaciones sin encaje de recurso', informe.asignacionesSinEncajeRecurso, ['Tarea', 'Requisito', 'Asignados'], function (a) {
+      var requisito = [a.CLASE_RECURSO_REQUERIDA, a.CATEGORIA_RECURSO_REQUERIDA].filter(Boolean).join(' / ') || 'recurso';
+      if (a.CAPACIDAD_MINIMA) requisito += ', capacidad >= ' + a.CAPACIDAD_MINIMA + ' ' + a.CAPACIDAD_UNIDAD;
+      return [a.TAREA_NOMBRE, requisito, a.CANTIDAD_ASIGNADA + ' / ' + a.CANTIDAD_MINIMA];
+    }]
+  ];
+  return categorias
+    .filter(function (c) { return (c[1] || []).length > 0; })
+    .map(function (c) { return { titulo: c[0], encabezados: c[2], filas: (c[1] || []).map(c[3]) }; });
+}
+
+function bloqueCambiosCsv_(informe) {
+  return {
+    titulo: 'Cambios',
+    encabezados: ['Fecha', 'Usuario', 'Acción', 'Entidad', 'Registro'],
+    filas: (informe.cambios || []).map(function (c) { return [c.TIMESTAMP, c.USUARIO, c.ACCION, c.ENTIDAD, c.REGISTRO_ID]; })
+  };
+}
+
+/*
+ * Ejecutivo: no recibe modulosInstalados en exportarInformeCSV (a
+ * diferencia del HTML) -- se exportan siempre los bloques de
+ * seguimiento/operativa, vacíos si el módulo no está instalado
+ * (mismo dato inocuo que ya devuelve listarRegistrosSeguro_).
+ */
+function bloquesEjecutivoCsv_(informe) {
+  var resumen = informe.resumenGlobal || {};
+  var bloquesResumen = Object.keys(resumen).map(function (entidad) {
+    return {
+      titulo: 'Resumen — ' + entidad,
+      encabezados: ['Estado', 'Casos'],
+      filas: Object.keys(resumen[entidad] || {}).map(function (estado) { return [estado, resumen[entidad][estado]]; })
+    };
+  });
+  return bloquesResumen.concat([
+    bloqueTareasRetrasadasCsv_(informe.tareasRetrasadas),
+    { titulo: 'Incidencias abiertas', encabezados: ['Título', 'Prioridad'], filas: (informe.incidenciasAbiertas || []).map(function (i) { return [i.TITULO, i.PRIORIDAD]; }) },
+    { titulo: 'Decisiones pendientes', encabezados: ['Título', 'Fecha límite'], filas: (informe.decisionesPendientes || []).map(function (d) { return [d.TITULO, d.FECHA_LIMITE]; }) },
+    { titulo: 'Sobreasignaciones', encabezados: ['Persona/equipo', '% total asignado'], filas: (informe.sobreasignaciones || []).map(function (s) { return [s.PERSONA_EQUIPO_ID, s.PORCENTAJE_TOTAL]; }) }
+  ]);
+}
+
+function bloquesJustificacionEconomicaCsv_(informe) {
+  return [
+    { titulo: 'Coste por categoría', encabezados: ['Categoría', 'Previsto (€)', 'Real (€)', 'Desviación (€)'], filas: (informe.categorias || []).map(function (c) { return [c.categoria, c.previsto, c.real, c.desviacion]; }) },
+    { titulo: 'Fuentes de financiación', encabezados: ['Nombre', 'Tipo', 'Importe (€)', 'Estado'], filas: (informe.fuentesFinanciacion || []).map(function (f) { return [f.nombre, f.tipo, f.importe, f.estado]; }) },
+    { titulo: 'Comparativa entre campañas', encabezados: ['Campaña', 'Previsto (€)', 'Real (€)', 'Financiación (%)', 'Voluntariado', 'Personas atendidas'], filas: (informe.comparativaCampanas || []).map(function (c) { return [c.campanaNombre, c.totalPrevisto, c.totalReal, c.coberturaFinanciacion === null ? '' : c.coberturaFinanciacion, c.personasVoluntariado, c.personasAtendidas]; }) }
+  ];
+}
+
+function bloquesEvidenciaSocialCsv_(informe) {
+  var reutilizacion = informe.reutilizacion || { relacionesReutilizadas: [], procesosReutilizados: [] };
+  return [
+    { titulo: 'Etiquetas de impacto', encabezados: ['Categoría', 'Tipo', 'Registro', 'Descripción'], filas: (informe.etiquetasImpacto || []).map(function (e) { return [e.categoria, e.entidadTipo, e.entidadNombre, e.descripcion]; }) },
+    {
+      titulo: 'Reutilización (vía "Modo de uso")',
+      encabezados: ['Producto/Proceso', 'Proyecto', 'Modo de uso'],
+      filas: reutilizacion.relacionesReutilizadas.map(function (r) { return [r.productoNombre, r.proyectoNombre, r.modoUso]; })
+        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.productoNombre, p.modoUso]; }))
+    }
+  ];
+}
+
 var CSV_TABULAR_POR_TIPO_ = {
   CAMPANA: function (informe) {
     return [bloqueProyectosCsv_(informe.proyectos, false)]
@@ -625,7 +703,12 @@ var CSV_TABULAR_POR_TIPO_ = {
     return [bloqueProyectosCsv_(informe.proyectos, false)].concat(bloquesDesviacionDetalleCsv_(informe.desviacionPlanificacion));
   },
   DESVIACION: function (informe) { return bloquesDesviacionDetalleCsv_(informe); },
-  CALIDAD_PLANIFICACION: function (informe) { return bloquesDesviacionDetalleCsv_(informe); }
+  CALIDAD_PLANIFICACION: function (informe) { return bloquesDesviacionDetalleCsv_(informe); },
+  EXCEPCIONES: function (informe) { return bloquesExcepcionesCsv_(informe); },
+  CAMBIOS: function (informe) { return [bloqueCambiosCsv_(informe)]; },
+  EJECUTIVO: function (informe) { return bloquesEjecutivoCsv_(informe); },
+  JUSTIFICACION_ECONOMICA: function (informe) { return bloquesJustificacionEconomicaCsv_(informe); },
+  EVIDENCIA_SOCIAL: function (informe) { return bloquesEvidenciaSocialCsv_(informe); }
 };
 
 function exportarInformeCSV(tipo, idOFiltro, opcionesPrueba) {

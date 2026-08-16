@@ -1729,7 +1729,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "d3459d4c5a8e9aa214fb6ec9f06b6119f68bef263c593ae49e08df2f572618ca",
+      "expectedSha256": "b13a55efec1710120681ce99a256666894ec10349218edf3545d5155dcf8df03",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
