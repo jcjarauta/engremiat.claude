@@ -20,12 +20,20 @@ var GRUPOS_PLANTILLA_IMPORTACION_MASIVA_AVANZADA_ = {
   EJECUCION: ['STG_EJECUCION_TAREA']
 };
 
+/*
+ * Alineado con MODULO_POR_ENTIDAD_MVP (Ids.js, ver conversación
+ * "revisa las hojas que se siembran en la instalación inicial del
+ * core, simplifica"): un mismo interruptor de módulo controla ahora
+ * tanto si la hoja de entidad real existe como si su grupo de
+ * importación masiva está disponible -- antes los 5 grupos colgaban
+ * de un único IMPORTACION_AVANZADA que ya no existe como tal.
+ */
 var MODULO_POR_GRUPO_IMPORTACION_MASIVA_AVANZADA_ = {
-  RECURSOS_PERSONAS: 'IMPORTACION_AVANZADA',
-  ASIGNACIONES: 'IMPORTACION_AVANZADA',
-  SEGUIMIENTO: 'IMPORTACION_AVANZADA',
-  HORARIO: 'IMPORTACION_AVANZADA',
-  EJECUCION: 'IMPORTACION_AVANZADA'
+  RECURSOS_PERSONAS: 'OPERATIVA',
+  ASIGNACIONES: 'OPERATIVA',
+  SEGUIMIENTO: 'SEGUIMIENTO',
+  HORARIO: 'OPERATIVA',
+  EJECUCION: 'EJECUCION'
 };
 
 var CAMPOS_OBLIGATORIOS_POR_HOJA_STAGING_AVANZADA_ = {

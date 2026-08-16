@@ -143,10 +143,13 @@ function agregarAnalizarComercial_(menu) {
 
 function construirSubmenuNavegarYEditar_(ui) {
   var menu = ui.createMenu('🌳 Navegar y editar')
-    .addSubMenu(construirSubmenuCampanaProyecto_(ui))
-    .addSubMenu(construirSubmenuPersonasYEquipos_(ui))
-    .addSubMenu(construirSubmenuEspaciosYRecursos_(ui))
-    .addSubMenu(construirSubmenuSeguimientoYDecisiones_(ui));
+    .addSubMenu(construirSubmenuCampanaProyecto_(ui));
+  if (moduloInstalado_('OPERATIVA')) {
+    menu = menu
+      .addSubMenu(construirSubmenuPersonasYEquipos_(ui))
+      .addSubMenu(construirSubmenuEspaciosYRecursos_(ui));
+  }
+  menu = menu.addSubMenu(construirSubmenuSeguimientoYDecisiones_(ui));
   if (moduloInstalado_('COMPRAS')) menu = menu.addSubMenu(construirSubmenuMaterialesYProveedores_(ui));
   if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS') || moduloInstalado_('OPORTUNIDAD')) menu = menu.addSubMenu(construirSubmenuClientesYVentas_(ui));
   return menu;
@@ -169,7 +172,7 @@ function construirSubmenuCampanaProyecto_(ui) {
     .addItem('Editar tarea', 'abrirEditarTarea');
 }
 
-/* CORE */
+/* OPERATIVA */
 function construirSubmenuPersonasYEquipos_(ui) {
   return ui.createMenu('Personas y equipos')
     .addItem('Ver personas y equipo (jerarquía)', 'abrirPanelPersonas')
@@ -179,7 +182,7 @@ function construirSubmenuPersonasYEquipos_(ui) {
     .addItem('Editar Tarea-Responsable', 'abrirEditarTareaResponsable');
 }
 
-/* CORE */
+/* OPERATIVA */
 function construirSubmenuEspaciosYRecursos_(ui) {
   return ui.createMenu('Espacios y recursos')
     .addItem('Ver espacios y recursos (jerarquía)', 'abrirPanelRecursos')
@@ -207,17 +210,25 @@ function construirSubmenuMaterialesYProveedores_(ui) {
     .addItem('Editar Movimiento de material', 'abrirEditarMovimientoMaterial');
 }
 
-/* CORE */
+/* Mixto: CORE (Relación/Asignación, plumbing genérico) + SEGUIMIENTO
+ * (Incidencia/Decisión/Documento/Vínculo) + EJECUCION -- ver conversación
+ * "revisa las hojas que se siembran en la instalación inicial del
+ * core, simplifica". Relación y Asignación se quedan siempre porque
+ * son la entidad genérica de predecesor/sucesor y de asignación
+ * polimórfica que usa el propio CORE, no algo desactivable. */
 function construirSubmenuSeguimientoYDecisiones_(ui) {
-  return ui.createMenu('Seguimiento y decisiones')
-    .addItem('Ficha de incidencia (buscar)', 'abrirFichaIncidenciaBuscar')
-    .addItem('Editar incidencia', 'abrirEditarIncidencia')
-    .addItem('Editar decisión', 'abrirEditarDecision')
-    .addItem('Editar documento', 'abrirEditarDocumento')
-    .addItem('Editar Relación', 'abrirEditarRelacion')
-    .addItem('Editar Vínculo', 'abrirEditarVinculo')
-    .addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea')
-    .addItem('Editar Asignación', 'abrirEditarAsignacion');
+  var menu = ui.createMenu('Seguimiento y decisiones');
+  if (moduloInstalado_('SEGUIMIENTO')) {
+    menu = menu
+      .addItem('Ficha de incidencia (buscar)', 'abrirFichaIncidenciaBuscar')
+      .addItem('Editar incidencia', 'abrirEditarIncidencia')
+      .addItem('Editar decisión', 'abrirEditarDecision')
+      .addItem('Editar documento', 'abrirEditarDocumento')
+      .addItem('Editar Vínculo', 'abrirEditarVinculo');
+  }
+  menu = menu.addItem('Editar Relación', 'abrirEditarRelacion');
+  if (moduloInstalado_('EJECUCION')) menu = menu.addItem('Editar Ejecución de tarea', 'abrirEditarEjecucionTarea');
+  return menu.addItem('Editar Asignación', 'abrirEditarAsignacion');
 }
 
 /* Comercial: CLIENTE + VENTAS */
@@ -246,7 +257,7 @@ function construirSubmenuCrearYGestionar_(ui) {
   } else {
     menu = menu.addItem('Recalcular avance de proceso', 'abrirRecalcularAvanceProceso');
   }
-  menu = menu.addSubMenu(construirSubmenuCompetencias_(ui));
+  if (moduloInstalado_('OPERATIVA')) menu = menu.addSubMenu(construirSubmenuCompetencias_(ui));
   if (moduloInstalado_('ECONOMICO')) menu = menu.addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui));
   if (moduloInstalado_('CONVOCATORIAS')) menu = menu.addSubMenu(construirSubmenuConvocatorias_(ui));
   if (moduloInstalado_('IMPACTO')) menu = menu.addSubMenu(construirSubmenuImpacto_(ui));
@@ -257,6 +268,8 @@ function construirSubmenuCrearYGestionar_(ui) {
 function construirSubmenuNuevoRegistro_(ui) {
   var menu = ui.createMenu('Nuevo registro');
   menu = agregarNuevoRegistroCore_(menu);
+  if (moduloInstalado_('OPERATIVA')) menu = agregarNuevoRegistroOperativa_(menu);
+  if (moduloInstalado_('SEGUIMIENTO')) menu = agregarNuevoRegistroSeguimiento_(menu);
   if (moduloInstalado_('COMPRAS')) menu = agregarNuevoRegistroCompras_(menu);
   if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS') || moduloInstalado_('OPORTUNIDAD')) menu = agregarNuevoRegistroComercial_(menu);
   return menu;
@@ -268,10 +281,18 @@ function agregarNuevoRegistroCore_(menu) {
     .addItem('Nuevo proyecto', 'abrirFormularioCrearProyecto')
     .addItem('Nuevo producto', 'abrirFormularioCrearProducto')
     .addItem('Nuevo proceso', 'abrirFormularioCrearProceso')
-    .addItem('Nueva tarea', 'abrirFormularioCrearTarea')
+    .addItem('Nueva tarea', 'abrirFormularioCrearTarea');
+}
+
+function agregarNuevoRegistroOperativa_(menu) {
+  return menu
     .addItem('Nueva persona/equipo', 'abrirFormularioCrearPersonaEquipo')
     .addItem('Nuevo recurso (herramienta/maquinaria/equipo/espacio)', 'abrirFormularioCrearRecurso')
-    .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario')
+    .addItem('Nuevo horario (franja semanal)', 'abrirFormularioCrearHorario');
+}
+
+function agregarNuevoRegistroSeguimiento_(menu) {
+  return menu
     .addItem('Nueva incidencia', 'abrirFormularioCrearIncidencia')
     .addItem('Nueva decisión', 'abrirFormularioCrearDecision')
     .addItem('Nuevo documento', 'abrirFormularioCrearDocumento');
@@ -297,22 +318,26 @@ function agregarNuevoRegistroComercial_(menu) {
 function construirSubmenuNuevaRelacion_(ui) {
   var menu = ui.createMenu('Nueva relación / vínculo');
   menu = agregarNuevaRelacionCore_(menu);
+  if (moduloInstalado_('OPERATIVA')) menu = agregarNuevaRelacionOperativa_(menu);
+  menu = menu.addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion');
+  if (moduloInstalado_('SEGUIMIENTO')) menu = menu.addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo');
+  if (moduloInstalado_('EJECUCION')) menu = menu.addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea');
+  menu = menu.addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion');
   if (moduloInstalado_('COMPRAS')) menu = agregarNuevaRelacionCompras_(menu);
   if (moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS')) menu = agregarNuevaRelacionComercial_(menu);
   return menu;
 }
 
 function agregarNuevaRelacionCore_(menu) {
+  return menu.addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto');
+}
+
+function agregarNuevaRelacionOperativa_(menu) {
   return menu
-    .addItem('Proyecto - Producto (nueva relación)', 'abrirFormularioCrearProyectoProducto')
     .addItem('Equipo - Miembro (nueva relación)', 'abrirFormularioCrearEquipoMiembro')
     .addItem('Tarea - Responsable (asignar)', 'abrirFormularioCrearTareaResponsable')
     .addItem('Tarea - Recurso (asignar)', 'abrirFormularioCrearTareaRecurso')
-    .addItem('Tarea - Necesidad de recurso (declarar requisito)', 'abrirFormularioCrearTareaRecursoNecesidad')
-    .addItem('Relación / dependencia (grafo, nueva)', 'abrirFormularioCrearRelacion')
-    .addItem('Vínculo genérico (nuevo)', 'abrirFormularioCrearVinculo')
-    .addItem('Ejecución de tarea (nueva)', 'abrirFormularioCrearEjecucionTarea')
-    .addItem('Asignación (Campaña/Proyecto/Producto/Proceso/Decisión/Incidencia)', 'abrirFormularioCrearAsignacion');
+    .addItem('Tarea - Necesidad de recurso (declarar requisito)', 'abrirFormularioCrearTareaRecursoNecesidad');
 }
 
 function agregarNuevaRelacionCompras_(menu) {
@@ -358,7 +383,7 @@ function construirSubmenuPresupuestoYFinanciacion_(ui) {
     .addItem('Editar coste', 'abrirEditarCoste');
 }
 
-/* CORE */
+/* OPERATIVA */
 function construirSubmenuCompetencias_(ui) {
   return ui.createMenu('Competencias')
     .addItem('Nueva competencia', 'abrirFormularioCrearCompetencia')
@@ -404,9 +429,8 @@ function agregarCatalogosEscenarios_(menu) {
 }
 
 function agregarCatalogosCore_(menu) {
-  menu = menu
-    .addItem('Catálogos', 'abrirCatalogosAdmin')
-    .addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin');
+  menu = menu.addItem('Catálogos', 'abrirCatalogosAdmin');
+  if (moduloInstalado_('OPERATIVA')) menu = menu.addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin');
   if (moduloInstalado_('COMPRAS')) menu = menu.addItem('Proveedores (hoja)', 'abrirProveedoresAdmin');
   menu = menu
     .addItem('Protección de hojas', 'abrirProteccionHojas')

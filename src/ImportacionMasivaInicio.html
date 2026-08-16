@@ -208,11 +208,11 @@
        */
       var GRUPOS_PLANTILLA_ = [
         { id: 'CAMPANA', etiqueta: 'Campaña→Tarea', modulo: 'CORE' },
-        { id: 'RECURSOS_PERSONAS', etiqueta: 'Recursos/Personas', modulo: 'IMPORTACION_AVANZADA' },
-        { id: 'ASIGNACIONES', etiqueta: 'Asignaciones (Responsable/Recurso)', modulo: 'IMPORTACION_AVANZADA' },
-        { id: 'SEGUIMIENTO', etiqueta: 'Decisiones/Incidencias/Documentos', modulo: 'IMPORTACION_AVANZADA' },
-        { id: 'HORARIO', etiqueta: 'Horarios', modulo: 'IMPORTACION_AVANZADA' },
-        { id: 'EJECUCION', etiqueta: 'Ejecuciones de tarea', modulo: 'IMPORTACION_AVANZADA' }
+        { id: 'RECURSOS_PERSONAS', etiqueta: 'Recursos/Personas', modulo: 'OPERATIVA' },
+        { id: 'ASIGNACIONES', etiqueta: 'Asignaciones (Responsable/Recurso)', modulo: 'OPERATIVA' },
+        { id: 'SEGUIMIENTO', etiqueta: 'Decisiones/Incidencias/Documentos', modulo: 'SEGUIMIENTO' },
+        { id: 'HORARIO', etiqueta: 'Horarios', modulo: 'OPERATIVA' },
+        { id: 'EJECUCION', etiqueta: 'Ejecuciones de tarea', modulo: 'EJECUCION' }
       ].filter(function (g) { return moduloInstalado_(g.modulo); });
 
       function inicializarBotonesPlantillas_() {
@@ -600,35 +600,35 @@
           id: 'recursos', titulo: 'Recursos / Personas y equipos',
           detalle: 'Espacios, herramientas, personas y equipos.',
           hojas: ['STG_RECURSO', 'STG_PERSONA', 'STG_EQUIPO_MIEMBRO'],
-          dependeDe: [], modulo: 'IMPORTACION_AVANZADA',
+          dependeDe: [], modulo: 'OPERATIVA',
           resumenTexto: function (r) { return r.recursos + ' recurso(s), ' + r.personas + ' persona(s)/equipo(s), ' + r.equipoMiembros + ' relación(es) equipo-miembro'; }
         },
         {
           id: 'asignaciones', titulo: 'Asignaciones (Responsable/Recurso a Tarea)',
           detalle: 'Ejecútalo después de crear las tareas Y los recursos/personas -- referencia a ambos.',
           hojas: ['STG_TAREA_RESPONSABLE', 'STG_TAREA_RECURSO'],
-          dependeDe: ['campana', 'recursos'], modulo: 'IMPORTACION_AVANZADA',
+          dependeDe: ['campana', 'recursos'], modulo: 'OPERATIVA',
           resumenTexto: function (r) { return r.responsables + ' asignación(es) de responsable, ' + r.recursos + ' asignación(es) de recurso'; }
         },
         {
           id: 'seguimiento', titulo: 'Decisiones / Incidencias / Documentos',
           detalle: 'Cuelgan de un proyecto (Decisión) o de cualquier nivel de la jerarquía.',
           hojas: ['STG_DECISION', 'STG_INCIDENCIA', 'STG_DOCUMENTO'],
-          dependeDe: ['campana'], modulo: 'IMPORTACION_AVANZADA',
+          dependeDe: ['campana'], modulo: 'SEGUIMIENTO',
           resumenTexto: function (r) { return r.decisiones + ' decisión(es), ' + r.incidencias + ' incidencia(s), ' + r.documentos + ' documento(s)'; }
         },
         {
           id: 'horario', titulo: 'Horarios',
           detalle: 'Franjas semanales de personas/equipos o recursos -- referencia a Recursos/Personas.',
           hojas: ['STG_HORARIO'],
-          dependeDe: ['recursos'], modulo: 'IMPORTACION_AVANZADA',
+          dependeDe: ['recursos'], modulo: 'OPERATIVA',
           resumenTexto: function (r) { return r.horarios + ' franja(s) de horario'; }
         },
         {
           id: 'ejecucion', titulo: 'Ejecuciones de tarea',
           detalle: 'Registro real de trabajo hecho (quién, cuándo, con qué resultado). Útil para reconstruir el histórico de una campaña ya cerrada.',
           hojas: ['STG_EJECUCION_TAREA'],
-          dependeDe: ['campana'], modulo: 'IMPORTACION_AVANZADA',
+          dependeDe: ['campana'], modulo: 'EJECUCION',
           resumenTexto: function (r) { return r.ejecuciones + ' ejecución(es) de tarea'; }
         }
       ].filter(function (g) { return moduloInstalado_(g.modulo); });

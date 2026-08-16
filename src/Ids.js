@@ -28,7 +28,40 @@ const MODULO_POR_ENTIDAD_MVP = Object.freeze({
   ENTREGA_LINEA: 'VENTAS',
   CONTRATO_SERVICIO: 'VENTAS',
   OPORTUNIDAD: 'OPORTUNIDAD',
-  ESCENARIO: 'ESCENARIOS'
+  ESCENARIO: 'ESCENARIOS',
+  /*
+   * OPERATIVA/SEGUIMIENTO/EJECUCION (ver conversación -- "siguen
+   * apareciendo hojas que no tocan... revisa las hojas que se siembran
+   * en la instalación inicial del core, simplifica"): estas entidades
+   * ya eran opcionales para el importador masivo (módulo
+   * IMPORTACION_AVANZADA, v74) pero seguían sembrándose siempre en un
+   * cliente CORE-only porque MODULO_POR_ENTIDAD_MVP nunca las etiquetó
+   * -- toda entidad sin entrada aquí se considera CORE. Un CORE-only
+   * real (solo Campaña→Proyecto→Producto→Proceso→Tarea) no debería
+   * crear 13_INCIDENCIAS, 29_HORARIO, etc. OPERATIVA fusiona Recursos/
+   * Personas + Asignaciones + Horario + Encaje de competencias en un
+   * único interruptor (decisión explícita: menos módulos que activar
+   * uno a uno). RELACION (predecesor/sucesor, motor de secuenciación
+   * de AvanceYSecuencia.js) y ASIGNACION (genérica, polimórfica) se
+   * dejan deliberadamente sin entrada aquí -- son plumbing que usa el
+   * propio CORE, no algo desactivable.
+   */
+  PERSONA_EQUIPO: 'OPERATIVA',
+  EQUIPO_MIEMBRO: 'OPERATIVA',
+  RECURSO: 'OPERATIVA',
+  TAREA_RESPONSABLE: 'OPERATIVA',
+  TAREA_RECURSO: 'OPERATIVA',
+  HORARIO: 'OPERATIVA',
+  COMPETENCIA: 'OPERATIVA',
+  PERSONA_COMPETENCIA: 'OPERATIVA',
+  RECURSO_COMPETENCIA: 'OPERATIVA',
+  TAREA_COMPETENCIA: 'OPERATIVA',
+  TAREA_RECURSO_NECESIDAD: 'OPERATIVA',
+  DECISION: 'SEGUIMIENTO',
+  INCIDENCIA: 'SEGUIMIENTO',
+  DOCUMENTO: 'SEGUIMIENTO',
+  VINCULO: 'SEGUIMIENTO',
+  EJECUCION_TAREA: 'EJECUCION'
 });
 
 const ENTIDADES_MVP = Object.freeze({

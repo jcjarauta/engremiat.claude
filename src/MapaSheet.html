@@ -86,15 +86,15 @@
       </span>
     </button>
 
-    <div class="separador">Equipo</div>
-    <button class="tarjeta" onclick="abrir('abrirPanelPersonas')">
+    <div class="separador" id="separadorEquipo">Equipo</div>
+    <button class="tarjeta" id="tarjetaPersonas" onclick="abrir('abrirPanelPersonas')">
       <span class="icono">👥</span>
       <span class="texto">
         <div class="titulo">Personas y equipos</div>
         <div class="detalle">Coordinador → equipo → miembros</div>
       </span>
     </button>
-    <button class="tarjeta" onclick="abrir('abrirPanelRecursos')">
+    <button class="tarjeta" id="tarjetaRecursos" onclick="abrir('abrirPanelRecursos')">
       <span class="icono">🛠️</span>
       <span class="texto">
         <div class="titulo">Espacios y recursos</div>
@@ -164,9 +164,13 @@
       if (!moduloInstalado_('COMPRAS')) {
         document.getElementById('tarjetaOperativo').style.display = 'none';
       }
-      if (moduloInstalado_('IMPORTACION_AVANZADA')) {
+      if (moduloInstalado_('OPERATIVA')) {
         document.getElementById('detalleImportacionMasiva').textContent =
           'Cargar muchos registros de golpe (Campaña→Tarea, Recursos, Personas)';
+      } else {
+        document.getElementById('separadorEquipo').style.display = 'none';
+        document.getElementById('tarjetaPersonas').style.display = 'none';
+        document.getElementById('tarjetaRecursos').style.display = 'none';
       }
       var hayComercial = moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS');
       if (hayComercial) {

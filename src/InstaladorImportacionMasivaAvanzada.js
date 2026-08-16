@@ -1,10 +1,12 @@
 /**
- * Definiciones de las hojas STG_* del módulo IMPORTACION_AVANZADA (ver
- * conversación -- "dejar el CORE limpio para acoplar módulos a demanda
- * del cliente"): Recursos/Personas, Asignaciones, Seguimiento (Decisión/
- * Incidencia/Documento), Horario y Ejecución -- las 5 hojas de la
- * jerarquía básica de campaña (STG_CAMPANA/PROYECTO/PRODUCTO/PROCESO/
- * TAREA) se quedan en InstaladorImportacionMasiva.js/CORE.
+ * Definiciones de las hojas STG_* de los módulos OPERATIVA/SEGUIMIENTO/
+ * EJECUCION (ver conversación -- "dejar el CORE limpio para acoplar
+ * módulos a demanda del cliente" / "simplifica y construimos un core
+ * optimizado"): Recursos/Personas/Asignaciones/Horario (OPERATIVA),
+ * Seguimiento (Decisión/Incidencia/Documento, módulo SEGUIMIENTO) y
+ * Ejecución (módulo EJECUCION) -- las 5 hojas de la jerarquía básica de
+ * campaña (STG_CAMPANA/PROYECTO/PRODUCTO/PROCESO/TAREA) se quedan en
+ * InstaladorImportacionMasiva.js/CORE.
  *
  * obtenerDefinicionesStagingCompletas_() (InstaladorImportacionMasiva.js)
  * combina este array con el de CORE en tiempo de ejecución -- nunca a
@@ -24,7 +26,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_RECURSO',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'UBICACION_TEMPORAL', 'CODIGO', 'NOMBRE', 'CLASE_RECURSO', 'CATEGORIA_RECURSO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -38,12 +40,12 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_PERSONA',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'COORDINADOR_TEMPORAL', 'TIPO', 'NOMBRE', 'ROL', 'CAPACIDAD_SEMANAL_DIAS', 'DISPONIBILIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_EQUIPO_MIEMBRO',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'EQUIPO_TEMPORAL', 'MIEMBRO_TEMPORAL', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -60,12 +62,12 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_TAREA_RESPONSABLE',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'PERSONA_TEMPORAL', 'ROL_ASIGNADO', 'PORCENTAJE_DEDICACION', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_TAREA_RECURSO',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RECURSO_TEMPORAL', 'TIPO_USO', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -80,7 +82,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_DECISION',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'SEGUIMIENTO',
       cabeceras: ['ID_TEMPORAL', 'PROYECTO_TEMPORAL', 'TITULO', 'CONTEXTO', 'TIPO', 'RESPONSABLE_TEMPORAL', 'FECHA_LIMITE', 'ESTADO', 'RESOLUCION', 'FECHA_RESOLUCION', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -93,7 +95,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_INCIDENCIA',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'SEGUIMIENTO',
       cabeceras: ['ID_TEMPORAL', 'NIVEL_INCIDENCIA', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TITULO', 'DESCRIPCION', 'TIPO', 'PRIORIDAD', 'RESPONSABLE_TEMPORAL', 'FECHA_DETECCION', 'FECHA_LIMITE', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -105,7 +107,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_DOCUMENTO',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'SEGUIMIENTO',
       cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'CAMPANA_TEMPORAL', 'PROYECTO_TEMPORAL', 'PRODUCTO_TEMPORAL', 'PROCESO_TEMPORAL', 'TAREA_TEMPORAL', 'TIPO_DOCUMENTO', 'TITULO', 'DESCRIPCION', 'VERSION', 'URL', 'ESTADO', 'FECHA_DOCUMENTO', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     /*
@@ -120,7 +122,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_HORARIO',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'OPERATIVA',
       cabeceras: ['ID_TEMPORAL', 'ENTIDAD_TIPO', 'PERSONA_TEMPORAL', 'RECURSO_TEMPORAL', 'DIA_SEMANA', 'HORA_INICIO', 'HORA_FIN', 'FECHA_INICIO_VIGENCIA', 'FECHA_FIN_VIGENCIA', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL'],
       /*
        * Sin esto, Sheets autoconvierte "09:00" escrito en una celda con
@@ -145,7 +147,7 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_AVANZADA_ = [
      */
     {
       hoja: 'STG_EJECUCION_TAREA',
-      modulo: 'IMPORTACION_AVANZADA',
+      modulo: 'EJECUCION',
       cabeceras: ['ID_TEMPORAL', 'TAREA_TEMPORAL', 'RESPONSABLE_TEMPORAL', 'FECHA_INICIO', 'FECHA_FIN', 'DURACION_REAL_DIAS', 'ESTADO', 'RESULTADO', 'OBSERVACIONES', 'ESTADO_IMPORTACION', 'ID_REAL']
     }
 ];
