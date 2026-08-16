@@ -121,6 +121,12 @@ function abrirSolicitudMontaje() {
   SpreadsheetApp.getUi().showModalDialog(html, 'Nueva solicitud de montaje');
 }
 
+function abrirAprobarSolicitudMontaje() {
+  var template = HtmlService.createTemplateFromFile('AprobarSolicitudMontaje');
+  var html = template.evaluate().setWidth(420).setHeight(420);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Aprobar solicitud de montaje');
+}
+
 /*
  * ID_TEMPORAL corto y legible (mismo criterio que el resto del
  * sistema, ej. STG_* del importador) -- SOL-001, SOL-002... a partir
@@ -296,15 +302,21 @@ function configurarTriggerAprobacionMontaje() {
  * ESTADO a "Aprobado" en la hoja SOLICITUDES_MONTAJE, y solo si quien
  * edito esta en la lista blanca -- doble comprobacion ademas de la
  * proteccion nativa de la hoja sobre esa columna.
+ *
+ * Via silenciosa y sin garantias: un trigger instalable corre con la
+ * autorizacion que tenia quien lo configuro en su momento, y si el
+ * manifiesto pide un scope nuevo despues (ver oauthScopes en
+ * appsscript.json) el trigger falla ANTES de entrar aqui -- ni
+ * siquiera llega al try/catch, no se escribe nada en ERROR. Por eso
+ * existe tambien aprobarSolicitudMontaje() mas abajo: la via principal
+ * pensada para usarse desde un dialogo, sincrona, que siempre informa
+ * de exito o error porque corre con la autorizacion de quien la pulsa
+ * en ese momento, no con una autorizacion congelada de un trigger.
  */
 function alAprobarMontaje_(e) {
   var hoja = null;
   var fila = 0;
   var colError = 0;
-  var colIdReal = 0;
-  var colUrl = 0;
-  var colFechaAprobacion = 0;
-  var colAprobadoPor = 0;
 
   try {
     if (!e || !e.range) return;
@@ -319,38 +331,121 @@ function alAprobarMontaje_(e) {
 
     fila = e.range.getRow();
     colError = cabeceras.indexOf('ERROR') + 1;
-    colIdReal = cabeceras.indexOf('ID_REAL') + 1;
-    colUrl = cabeceras.indexOf('URL') + 1;
-    colFechaAprobacion = cabeceras.indexOf('FECHA_APROBACION') + 1;
-    colAprobadoPor = cabeceras.indexOf('APROBADO_POR') + 1;
 
-    var emailEditor = Session.getEffectiveUser().getEmail();
-    var autorizados = obtenerEmailsAutorizadosMontaje_();
-
-    if (autorizados.indexOf(emailEditor) === -1) {
-      throw new Error('AL_APROBAR_MONTAJE_ERROR: ' + emailEditor + ' no esta autorizado para aprobar montajes.');
-    }
-
-    var datosFila = hoja.getRange(fila, 1, 1, cabeceras.length).getValues()[0];
-    var colNombre = cabeceras.indexOf('NOMBRE');
-    var colModulos = cabeceras.indexOf('MODULOS');
-    var nombre = String(datosFila[colNombre] || '').trim();
-    var modulos = String(datosFila[colModulos] || '').split(',').map(function (m) { return m.trim(); }).filter(Boolean);
-
-    if (!nombre) throw new Error('AL_APROBAR_MONTAJE_ERROR: falta NOMBRE en la fila ' + fila + '.');
-    if (modulos.length === 0) throw new Error('AL_APROBAR_MONTAJE_ERROR: falta MODULOS en la fila ' + fila + '.');
-
-    var resultado = crearProyectoScript_(nombre, modulos);
-
-    if (colIdReal) hoja.getRange(fila, colIdReal).setValue(resultado.scriptId);
-    if (colUrl) hoja.getRange(fila, colUrl).setValue(resultado.spreadsheetUrl);
-    if (colFechaAprobacion) hoja.getRange(fila, colFechaAprobacion).setValue(new Date());
-    if (colAprobadoPor) hoja.getRange(fila, colAprobadoPor).setValue(emailEditor);
-    if (colError) hoja.getRange(fila, colError).setValue('');
+    ejecutarAprobacionMontaje_(hoja, fila, cabeceras, Session.getEffectiveUser().getEmail());
   } catch (err) {
     console.error('alAprobarMontaje_: ' + err.message);
     if (hoja && fila && colError) hoja.getRange(fila, colError).setValue(err.message);
   }
+}
+
+/*
+ * Trabajo real de aprobar una fila: crea el proyecto y escribe
+ * ID_REAL/URL/FECHA_APROBACION/APROBADO_POR/ERROR. Compartido entre el
+ * trigger onEdit (alAprobarMontaje_) y la aprobacion manual sincrona
+ * (aprobarSolicitudMontaje) para no duplicar la logica de columnas.
+ * Lanza en vez de tragarse el error -- cada llamador decide que hacer
+ * con el (el trigger lo escribe en ERROR y sigue, el dialogo lo
+ * propaga al withFailureHandler del cliente).
+ */
+function ejecutarAprobacionMontaje_(hoja, fila, cabeceras, emailAprobador) {
+  var colIdReal = cabeceras.indexOf('ID_REAL') + 1;
+  var colUrl = cabeceras.indexOf('URL') + 1;
+  var colFechaAprobacion = cabeceras.indexOf('FECHA_APROBACION') + 1;
+  var colAprobadoPor = cabeceras.indexOf('APROBADO_POR') + 1;
+  var colError = cabeceras.indexOf('ERROR') + 1;
+
+  var autorizados = obtenerEmailsAutorizadosMontaje_();
+  if (autorizados.indexOf(emailAprobador) === -1) {
+    throw new Error('AL_APROBAR_MONTAJE_ERROR: ' + emailAprobador + ' no esta autorizado para aprobar montajes.');
+  }
+
+  var datosFila = hoja.getRange(fila, 1, 1, cabeceras.length).getValues()[0];
+  var colNombre = cabeceras.indexOf('NOMBRE');
+  var colModulos = cabeceras.indexOf('MODULOS');
+  var nombre = String(datosFila[colNombre] || '').trim();
+  var modulos = String(datosFila[colModulos] || '').split(',').map(function (m) { return m.trim(); }).filter(Boolean);
+
+  if (!nombre) throw new Error('AL_APROBAR_MONTAJE_ERROR: falta NOMBRE en la fila ' + fila + '.');
+  if (modulos.length === 0) throw new Error('AL_APROBAR_MONTAJE_ERROR: falta MODULOS en la fila ' + fila + '.');
+
+  var resultado = crearProyectoScript_(nombre, modulos);
+
+  if (colIdReal) hoja.getRange(fila, colIdReal).setValue(resultado.scriptId);
+  if (colUrl) hoja.getRange(fila, colUrl).setValue(resultado.spreadsheetUrl);
+  if (colFechaAprobacion) hoja.getRange(fila, colFechaAprobacion).setValue(new Date());
+  if (colAprobadoPor) hoja.getRange(fila, colAprobadoPor).setValue(emailAprobador);
+  if (colError) hoja.getRange(fila, colError).setValue('');
+
+  return resultado;
+}
+
+/*
+ * Lista de solicitudes aun sin montar (ID_REAL vacio) para el
+ * desplegable del dialogo de aprobacion manual.
+ */
+function obtenerSolicitudesPendientesMontaje() {
+  var resultadoHoja = instalarHojaSolicitudesMontaje_();
+  var hoja = resultadoHoja.hoja;
+  var ultimaFila = hoja.getLastRow();
+  if (ultimaFila < 2) return [];
+
+  var cabeceras = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  var colIdTemporal = cabeceras.indexOf('ID_TEMPORAL');
+  var colNombre = cabeceras.indexOf('NOMBRE');
+  var colModulos = cabeceras.indexOf('MODULOS');
+  var colIdReal = cabeceras.indexOf('ID_REAL');
+
+  var filas = hoja.getRange(2, 1, ultimaFila - 1, cabeceras.length).getValues();
+  return filas
+    .filter(function (fila) { return !String(fila[colIdReal] || '').trim(); })
+    .map(function (fila) {
+      return {
+        idTemporal: String(fila[colIdTemporal] || ''),
+        nombre: String(fila[colNombre] || ''),
+        modulos: String(fila[colModulos] || '')
+      };
+    });
+}
+
+/*
+ * Via principal de aprobacion (ver conversacion -- "no podemos
+ * depender de escribir a mano el Aprobado"): se llama desde un
+ * dialogo, corre de forma sincrona con la autorizacion de quien lo
+ * pulsa en ese momento (no la de un trigger con autorizacion
+ * congelada), y siempre devuelve exito o lanza un error que el
+ * cliente puede mostrar -- nunca falla en silencio.
+ */
+function aprobarSolicitudMontaje(idTemporal) {
+  idTemporal = String(idTemporal || '').trim();
+  if (!idTemporal) throw new Error('APROBAR_SOLICITUD_MONTAJE_ERROR: falta idTemporal.');
+
+  var resultadoHoja = instalarHojaSolicitudesMontaje_();
+  var hoja = resultadoHoja.hoja;
+  var ultimaFila = hoja.getLastRow();
+  if (ultimaFila < 2) throw new Error('APROBAR_SOLICITUD_MONTAJE_ERROR: no hay solicitudes en ' + SOLICITUDES_MONTAJE_HOJA_ + '.');
+
+  var cabeceras = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+  var colIdTemporal = cabeceras.indexOf('ID_TEMPORAL');
+  var colIdReal = cabeceras.indexOf('ID_REAL');
+  var colEstado = cabeceras.indexOf('ESTADO') + 1;
+
+  var filas = hoja.getRange(2, 1, ultimaFila - 1, cabeceras.length).getValues();
+  var indiceFila = -1;
+  for (var i = 0; i < filas.length; i++) {
+    if (String(filas[i][colIdTemporal] || '').trim() === idTemporal) { indiceFila = i; break; }
+  }
+  if (indiceFila === -1) throw new Error('APROBAR_SOLICITUD_MONTAJE_ERROR: no se encontro ' + idTemporal + '.');
+  if (String(filas[indiceFila][colIdReal] || '').trim()) {
+    throw new Error('APROBAR_SOLICITUD_MONTAJE_ERROR: ' + idTemporal + ' ya tiene ID_REAL, no se vuelve a montar.');
+  }
+
+  var fila = indiceFila + 2;
+  var emailAprobador = Session.getEffectiveUser().getEmail();
+  var resultado = ejecutarAprobacionMontaje_(hoja, fila, cabeceras, emailAprobador);
+  if (colEstado) hoja.getRange(fila, colEstado).setValue('Aprobado');
+
+  return { spreadsheetUrl: resultado.spreadsheetUrl, scriptId: resultado.scriptId };
 }
 
 /**

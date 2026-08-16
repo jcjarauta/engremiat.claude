@@ -54,6 +54,10 @@ var PACKAGE_MAP_EMBEBIDO = {
   },
   "entriesPackageA": [
     {
+      "path": "src/AprobarSolicitudMontaje.html",
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/AprovisionamientoService.js",
       "module": "APROVISIONAMIENTO"
     },

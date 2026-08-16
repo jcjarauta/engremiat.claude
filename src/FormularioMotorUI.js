@@ -478,6 +478,7 @@ function agregarCatalogosCore_(menu) {
   if (moduloInstalado_('INTERNO') || moduloInstalado_('APROVISIONAMIENTO')) {
     menu = menu
       .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
+      .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
       .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
       .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
   }

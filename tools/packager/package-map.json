@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 179,
+  "universeExpected": 180,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -321,7 +321,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "a49549c7d6d5bdbfd37eedadae1ddccb773c4a988a32b1ae766dace8fec9e611",
+      "expectedSha256": "3f0eb55701ab0ef7245dbce193f8d098dd948af5348c564aabf285d064c8856e",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (ver conversacion: seguimos con B -- promovido de package C/auxiliar a modulo real de la libreria para que un cliente interno como Gestor de Proyectos pueda montar sheets nuevos el mismo, sin exponerlo a clientes de pago via MODULOS_INSTALADOS_CLIENTE).",
       "mixed": false,
@@ -816,7 +816,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "f3222a8f08b2576b53e0a496948648b1ed218ad1cdc17f78e6efb9777895e556",
+      "expectedSha256": "e13ef6fdc7d5b604618f9f828fdaa937f682b170f384d9455c4ea03bf0085af7",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1432,7 +1432,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "698b4cab535fe21e83aa9144419e26b8103fdddfb77bae0f033a0291747f4222",
+      "expectedSha256": "5eefcbd42e72cbe0a7aba4523b14a6806c045fa5e5f534c9b340208a03bf34da",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1531,7 +1531,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "65acaec00dce2c0aba571f81503eea3aedc026400bdb50ce16df28a92f13020d",
+      "expectedSha256": "98a4ab4a797a0d32a48fb71f4b2d47540a8007330f846c67d1367218d674d1a7",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -1974,6 +1974,17 @@
       "expectedSha256": "4e045cb4d30c524c92d2f2ab9a8aab3c50ab6c21ea837ae2609dc8a374d852c5",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (formulario dinamico de solicitud de montaje, ver conversacion: evitar el paso humano de escribir a mano).",
+      "mixed": false,
+      "module": "APROVISIONAMIENTO"
+    },
+    {
+      "path": "src/AprobarSolicitudMontaje.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "c7da7dffb7c850dc13e8531d20154da5b341830e47125ebba5904eb84eaadec2",
+      "required": true,
+      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (aprobacion manual sincrona con progreso visible, alternativa al trigger onEdit silencioso, ver conversacion: no depender de escribir Aprobado a mano).",
       "mixed": false,
       "module": "APROVISIONAMIENTO"
     }

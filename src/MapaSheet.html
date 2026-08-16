@@ -54,6 +54,13 @@
           <div class="detalle">Elige los módulos y crea la solicitud -- la aprobación sigue siendo manual</div>
         </span>
       </button>
+      <button class="tarjeta" onclick="abrir('abrirAprobarSolicitudMontaje')">
+        <span class="icono">✅</span>
+        <span class="texto">
+          <div class="titulo">Aprobar solicitud de montaje</div>
+          <div class="detalle">Crea el sheet de verdad, con progreso visible -- no hace falta escribir "Aprobado" a mano</div>
+        </span>
+      </button>
       <button class="tarjeta" onclick="abrir('abrirHojaSolicitudesMontaje')">
         <span class="icono">📋</span>
         <span class="texto">
@@ -319,6 +326,9 @@
             return;
           case 'abrirSolicitudMontaje':
             google.script.run.withFailureHandler(mostrarError).abrirSolicitudMontaje();
+            return;
+          case 'abrirAprobarSolicitudMontaje':
+            google.script.run.withFailureHandler(mostrarError).abrirAprobarSolicitudMontaje();
             return;
           case 'abrirHojaSolicitudesMontaje':
             google.script.run.withFailureHandler(mostrarError).abrirHojaSolicitudesMontaje();
