@@ -460,8 +460,12 @@ function ejecutarImportacionMasiva_(confirmar) {
         ORDEN_SECUENCIA: indice + 1,
         PROCESO_PREDECESOR_ID: predecesorId,
         DURACION_PREVISTA_DIAS: f.DURACION_PREVISTA_DIAS,
+        RESPONSABLE_ID: f.RESPONSABLE_ID || '',
+        FASE_PRODUCCION: f.FASE_PRODUCCION || '',
         PORCENTAJE_AVANCE: 0,
         ESTADO: f.ESTADO,
+        FECHA_INICIO_PLAN: f.FECHA_INICIO_PLAN || '',
+        FECHA_FIN_PLAN: f.FECHA_FIN_PLAN || '',
         FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
         FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
         DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''
@@ -494,6 +498,8 @@ function ejecutarImportacionMasiva_(confirmar) {
         DURACION_PREVISTA_DIAS: f.DURACION_PREVISTA_DIAS,
         PORCENTAJE_AVANCE: 0,
         ESTADO: f.ESTADO,
+        FECHA_INICIO_PLAN: f.FECHA_INICIO_PLAN || '',
+        FECHA_FIN_PLAN: f.FECHA_FIN_PLAN || '',
         FECHA_INICIO_REAL: f.FECHA_INICIO_REAL || '',
         FECHA_FIN_REAL: f.FECHA_FIN_REAL || '',
         DURACION_REAL_DIAS: f.DURACION_REAL_DIAS || ''

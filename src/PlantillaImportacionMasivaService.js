@@ -72,7 +72,7 @@ var CATALOGOS_POR_COLUMNA_STAGING_ = {
   STG_CAMPANA: { ESTADO: 'CFG_ESTADO_CAMPANA' },
   STG_PROYECTO: { TIPO_PROYECTO: 'CFG_TIPO_PROYECTO', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_PROYECTO' },
   STG_PRODUCTO: { ORIGEN: 'CFG_ORIGEN_PRODUCTO', UNIDAD: 'CFG_UNIDAD', PRIORIDAD: 'CFG_PRIORIDAD', ESTADO: 'CFG_ESTADO_PRODUCTO' },
-  STG_PROCESO: { ESTADO: 'CFG_ESTADO_PROCESO' },
+  STG_PROCESO: { ESTADO: 'CFG_ESTADO_PROCESO', FASE_PRODUCCION: 'CFG_FASE_PRODUCCION' },
   STG_TAREA: { ESTADO: 'CFG_ESTADO_TAREA' }
 };
 
@@ -122,10 +122,16 @@ var CONSTRAINTS_ADICIONALES_POR_COLUMNA_ = {
     FECHA_FIN_PLAN: 'debe ser igual o posterior a FECHA_INICIO_PLAN.'
   },
   STG_PROCESO: {
-    DURACION_PREVISTA_DIAS: 'número mayor que 0.'
+    DURACION_PREVISTA_DIAS: 'número mayor que 0.',
+    RESPONSABLE_ID: 'opcional -- ID real de una persona/equipo ya existente en el Sheet (esta importación no crea personas). Sin él, los informes de desviación agrupan el proceso como "(sin responsable)".',
+    FASE_PRODUCCION: 'opcional -- sin ella, los informes de desviación agrupan el proceso en "(sin FASE_PRODUCCION)".',
+    FECHA_INICIO_PLAN: 'opcional, independiente de FECHA_INICIO_REAL -- fecha de calendario planificada (no solo la duración en días), la usan el Gantt y el cálculo de desviación por fecha exacta en vez de por duración.',
+    FECHA_FIN_PLAN: 'opcional, independiente de FECHA_FIN_REAL -- mismo criterio que FECHA_INICIO_PLAN; si se rellena, debe ser igual o posterior a FECHA_INICIO_PLAN.'
   },
   STG_TAREA: {
-    DURACION_PREVISTA_DIAS: 'número mayor que 0.'
+    DURACION_PREVISTA_DIAS: 'número mayor que 0.',
+    FECHA_INICIO_PLAN: 'opcional, independiente de FECHA_INICIO_REAL -- fecha de calendario planificada (no solo la duración en días), la usan el Gantt y el cálculo de desviación por fecha exacta en vez de por duración.',
+    FECHA_FIN_PLAN: 'opcional, independiente de FECHA_FIN_REAL -- mismo criterio que FECHA_INICIO_PLAN; si se rellena, debe ser igual o posterior a FECHA_INICIO_PLAN.'
   },
   STG_PRODUCTO: {
     CODIGO: 'debe ser único entre todos los productos ya existentes en el Sheet (no distingue mayúsculas/minúsculas).'

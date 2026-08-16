@@ -61,15 +61,29 @@ var DEFINICIONES_STAGING_IMPORTACION_MASIVA_ = [
       modulo: 'CORE',
       cabeceras: ['ID_TEMPORAL', 'PROYECTO_TEMPORAL', 'CODIGO', 'NOMBRE', 'ORIGEN', 'UNIDAD', 'CANTIDAD_PREVISTA', 'PRIORIDAD', 'ESTADO', 'ESTADO_IMPORTACION', 'ID_REAL', 'PROYECTO_PRODUCTO_ID_REAL']
     },
+    /*
+     * RESPONSABLE_ID/FASE_PRODUCCION/FECHA_INICIO_PLAN/FECHA_FIN_PLAN
+     * (ver conversación -- "la plantilla no ofrece RESPONSABLE_ID,
+     * FASE_PRODUCCION ni FECHA_INICIO_PLAN/FECHA_FIN_PLAN, de ahí el
+     * '(sin responsable)' y '(sin FASE_PRODUCCION)' en todos los
+     * informes"): los tres existen en el esquema real de PROCESO desde
+     * hace tiempo (FormularioEsquemas.js), pero la importación masiva
+     * nunca los ofrecía -- cualquier lote importado quedaba sin poder
+     * agruparse por fase ni atribuirse a un responsable en los
+     * informes de desviación. TAREA no tiene RESPONSABLE_ID propio (va
+     * vía TAREA_RESPONSABLE N:M, fuera de alcance de este lote) ni
+     * FASE_PRODUCCION (solo existe en PROCESO), pero sí
+     * FECHA_INICIO_PLAN/FECHA_FIN_PLAN.
+     */
     {
       hoja: 'STG_PROCESO',
       modulo: 'CORE',
-      cabeceras: ['ID_TEMPORAL', 'PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'PRODUCTO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'RESPONSABLE_ID', 'FASE_PRODUCCION', 'ESTADO', 'FECHA_INICIO_PLAN', 'FECHA_FIN_PLAN', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
     {
       hoja: 'STG_TAREA',
       modulo: 'CORE',
-      cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
+      cabeceras: ['ID_TEMPORAL', 'PROCESO_TEMPORAL', 'NOMBRE', 'DURACION_PREVISTA_DIAS', 'ESTADO', 'FECHA_INICIO_PLAN', 'FECHA_FIN_PLAN', 'FECHA_INICIO_REAL', 'FECHA_FIN_REAL', 'DURACION_REAL_DIAS', 'ESTADO_IMPORTACION', 'ID_REAL']
     },
 ];
 
