@@ -527,7 +527,7 @@ function subirContenidoScript_(scriptId, modulos) {
   contenidoLibreria.files.forEach(function (file) { fuentePorNombre[file.name] = file.source; });
 
   var aFiles = PACKAGE_MAP_EMBEBIDO.entriesPackageA.map(function (entrada) {
-    var nombreArchivo = entrada.path.replace(/^src\//, '').replace(/\.(js|html)$/, '');
+    var nombreArchivo = entrada.path.replace(/^src\//, '').replace(/\.(js|html|json)$/, '');
     return { path: entrada.path, module: entrada.module, content: fuentePorNombre[nombreArchivo] || '' };
   });
 
