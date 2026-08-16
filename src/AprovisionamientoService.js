@@ -633,10 +633,12 @@ function subirContenidoScript_(scriptId, modulos) {
   // declara siempre, igual que ya lo tiene Gestor de Proyectos.
   var manifiesto = {
     timeZone: 'Europe/Madrid',
-    dependencies: { libraries: [{ userSymbol: 'Core', libraryId: LIBRERIA_ID_, version: versionLibreria }] },
+    dependencies: {
+      libraries: [{ userSymbol: 'Core', libraryId: LIBRERIA_ID_, version: versionLibreria }],
+      enabledAdvancedServices: [{ userSymbol: 'Sheets', serviceId: 'sheets', version: 'v4' }]
+    },
     exceptionLogging: 'STACKDRIVER',
-    runtimeVersion: 'V8',
-    enabledAdvancedServices: [{ userSymbol: 'Sheets', serviceId: 'sheets', version: 'v4' }]
+    runtimeVersion: 'V8'
   };
 
   var respSubir = UrlFetchApp.fetch(

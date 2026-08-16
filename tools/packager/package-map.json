@@ -321,7 +321,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "9bac4aa47cd3b3b53ada770eeea2415763efb74c012f2b202c2cb23e3b613f16",
+      "expectedSha256": "f527c24d973458f3a0480e921bdbe464bdba71bb4c70330edb5029b6e6d34f94",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (ver conversacion: seguimos con B -- promovido de package C/auxiliar a modulo real de la libreria para que un cliente interno como Gestor de Proyectos pueda montar sheets nuevos el mismo, sin exponerlo a clientes de pago via MODULOS_INSTALADOS_CLIENTE).",
       "mixed": false,
