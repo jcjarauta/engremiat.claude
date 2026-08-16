@@ -45,6 +45,31 @@
     </div>
     <div id="resultadosBusqueda"></div>
 
+    <div id="seccionAprovisionamiento" style="display:none;">
+      <div class="separador">Aprovisionamiento</div>
+      <button class="tarjeta" onclick="abrir('abrirSolicitudMontaje')">
+        <span class="icono">🆕</span>
+        <span class="texto">
+          <div class="titulo">Nueva solicitud de montaje</div>
+          <div class="detalle">Elige los módulos y crea la solicitud -- la aprobación sigue siendo manual</div>
+        </span>
+      </button>
+      <button class="tarjeta" onclick="abrir('abrirHojaSolicitudesMontaje')">
+        <span class="icono">📋</span>
+        <span class="texto">
+          <div class="titulo">Solicitudes en curso</div>
+          <div class="detalle">Ir a la hoja SOLICITUDES_MONTAJE -- estado, URL y errores de cada una</div>
+        </span>
+      </button>
+      <button class="tarjeta" onclick="abrir('abrirActualizarVersionLibreria')">
+        <span class="icono">📦</span>
+        <span class="texto">
+          <div class="titulo">Actualizar versión de librería</div>
+          <div class="detalle">Fija qué versión de la librería CORE usan los sheets que se monten a partir de ahora</div>
+        </span>
+      </button>
+    </div>
+
     <div class="separador">Personal</div>
     <button class="tarjeta" onclick="abrir('abrirMiTrabajo')">
       <span class="icono">🙋</span>
@@ -163,6 +188,9 @@
 
       if (!moduloInstalado_('COMPRAS')) {
         document.getElementById('tarjetaOperativo').style.display = 'none';
+      }
+      if (moduloInstalado_('APROVISIONAMIENTO')) {
+        document.getElementById('seccionAprovisionamiento').style.display = '';
       }
       if (moduloInstalado_('OPERATIVA')) {
         document.getElementById('detalleImportacionMasiva').textContent =
@@ -288,6 +316,15 @@
             return;
           case 'abrirInstalarEstructuraInicial':
             google.script.run.withFailureHandler(mostrarError).abrirInstalarEstructuraInicial();
+            return;
+          case 'abrirSolicitudMontaje':
+            google.script.run.withFailureHandler(mostrarError).abrirSolicitudMontaje();
+            return;
+          case 'abrirHojaSolicitudesMontaje':
+            google.script.run.withFailureHandler(mostrarError).abrirHojaSolicitudesMontaje();
+            return;
+          case 'abrirActualizarVersionLibreria':
+            google.script.run.withFailureHandler(mostrarError).abrirActualizarVersionLibreria();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });

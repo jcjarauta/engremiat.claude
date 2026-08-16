@@ -77,6 +77,100 @@ function obtenerEmailsAutorizadosMontaje_() {
   return (valor || '').split(',').map(function (correo) { return correo.trim(); }).filter(Boolean);
 }
 
+/*
+ * Formulario dinámico de solicitud de montaje (ver conversación --
+ * "evitar el paso humano de escribir a mano... nos dé las opciones
+ * posibles de montaje modular"): sustituye escribir NOMBRE/MODULOS a
+ * mano en SOLICITUDES_MONTAJE (propenso a typos y a olvidar
+ * dependencias) por un diálogo con checklist. La lista de módulos se
+ * lee en vivo de PACKAGE_MAP_EMBEBIDO.moduleDependencies -- nunca
+ * hardcodeada aquí, así que un módulo nuevo aparece solo, sin tocar
+ * este fichero ni el HTML. APROVISIONAMIENTO se excluye a propósito:
+ * es la función que ofrece este mismo formulario, no algo para dar a
+ * un sheet cliente sin una decisión explícita aparte.
+ */
+function obtenerModulosDisponiblesParaSolicitud() {
+  return Object.keys(PACKAGE_MAP_EMBEBIDO.moduleDependencies)
+    .filter(function (m) { return m !== 'APROVISIONAMIENTO'; })
+    .sort()
+    .map(function (m) {
+      return { nombre: m, dependencias: PACKAGE_MAP_EMBEBIDO.moduleDependencies[m] };
+    });
+}
+
+/*
+ * "Solicitudes en curso" (Mapa del sheet): en vez de construir una
+ * vista de solo lectura que duplica SOLICITUDES_MONTAJE, salta
+ * directamente a la hoja real -- es la fuente de la verdad (ESTADO,
+ * URL, ERROR ya están ahí), una vista aparte solo añadiría otro sitio
+ * que desincronizar.
+ */
+function abrirHojaSolicitudesMontaje() {
+  var resultado = instalarHojaSolicitudesMontaje_();
+  resultado.hoja.activate();
+}
+
+function abrirSolicitudMontaje() {
+  var template = HtmlService.createTemplateFromFile('SolicitudMontaje');
+  var html = template.evaluate().setWidth(420).setHeight(520);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Nueva solicitud de montaje');
+}
+
+/*
+ * ID_TEMPORAL corto y legible (mismo criterio que el resto del
+ * sistema, ej. STG_* del importador) -- SOL-001, SOL-002... a partir
+ * del máximo ya usado, no del número de filas (evita colisión si
+ * alguna fila se borró).
+ */
+function siguienteIdTemporalSolicitud_(hoja) {
+  var ultimaFila = hoja.getLastRow();
+  if (ultimaFila < 2) return 'SOL-001';
+  var colId = SOLICITUDES_MONTAJE_CABECERAS_.indexOf('ID_TEMPORAL') + 1;
+  var valores = hoja.getRange(2, colId, ultimaFila - 1, 1).getValues();
+  var maximo = 0;
+  valores.forEach(function (fila) {
+    var m = /^SOL-(\d+)$/.exec(String(fila[0] || '').trim());
+    if (m) maximo = Math.max(maximo, Number(m[1]));
+  });
+  return 'SOL-' + String(maximo + 1).padStart(3, '0');
+}
+
+/*
+ * Crea la fila de solicitud con ESTADO vacío -- la aprobación sigue
+ * siendo un paso humano deliberado (ver alAprobarMontaje_), esto solo
+ * automatiza la escritura propensa a error. Resuelve el cierre
+ * transitivo real de módulos (resolverCierreModulos_, el mismo código
+ * que usa subirContenidoScript_) para que la fila ya refleje los
+ * módulos que se instalarán de verdad, no solo lo que el operador
+ * marcó -- si marca VENTAS sin CLIENTE, la fila queda con ambos.
+ */
+function crearSolicitudMontaje(nombre, modulosSeleccionados) {
+  nombre = String(nombre || '').trim();
+  if (!nombre) throw new Error('CREAR_SOLICITUD_MONTAJE_ERROR: falta el nombre.');
+  if (!Array.isArray(modulosSeleccionados) || modulosSeleccionados.length === 0) {
+    throw new Error('CREAR_SOLICITUD_MONTAJE_ERROR: selecciona al menos un módulo.');
+  }
+
+  var resultadoHoja = instalarHojaSolicitudesMontaje_();
+  var hoja = resultadoHoja.hoja;
+
+  var cierre = resolverCierreModulos_(modulosSeleccionados, PACKAGE_MAP_EMBEBIDO.moduleDependencies);
+  var modulosResueltos = Object.keys(cierre).sort();
+
+  var idTemporal = siguienteIdTemporalSolicitud_(hoja);
+  var fila = SOLICITUDES_MONTAJE_CABECERAS_.map(function (cabecera) {
+    if (cabecera === 'ID_TEMPORAL') return idTemporal;
+    if (cabecera === 'NOMBRE') return nombre;
+    if (cabecera === 'MODULOS') return modulosResueltos.join(', ');
+    if (cabecera === 'FECHA_CREACION') return new Date();
+    if (cabecera === 'CREADO_POR') return Session.getEffectiveUser().getEmail();
+    return '';
+  });
+  hoja.appendRow(fila);
+
+  return { idTemporal: idTemporal, modulosResueltos: modulosResueltos };
+}
+
 /**
  * Punto de entrada de menu para dejar Aprovisionamiento operativo:
  * crea/asegura la hoja SOLICITUDES_MONTAJE y pide (si falta) la lista

@@ -477,6 +477,7 @@ function agregarCatalogosCore_(menu) {
   // es true, así que sigue viendo estos items sin necesitar el módulo.
   if (moduloInstalado_('INTERNO') || moduloInstalado_('APROVISIONAMIENTO')) {
     menu = menu
+      .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
       .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
       .addItem('Actualizar versión de librería (aprovisionamiento)', 'abrirActualizarVersionLibreria');
   }

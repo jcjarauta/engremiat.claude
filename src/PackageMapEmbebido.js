@@ -462,6 +462,10 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/SolicitudMontaje.html",
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/StockMaterialService.js",
       "module": "COMPRAS"
     },

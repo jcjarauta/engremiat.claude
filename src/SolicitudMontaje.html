@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      .lista-modulos { margin-top: 6px; }
+      .fila-modulo {
+        display: flex; align-items: flex-start; gap: 8px; padding: 6px 0;
+        border-bottom: 1px solid var(--color-borde);
+      }
+      .fila-modulo input[type="checkbox"] { width: auto; margin-top: 2px; }
+      .fila-modulo .texto { flex: 1; }
+      .fila-modulo .nombre { font-weight: bold; font-size: 12px; }
+      .fila-modulo .dependencias { font-size: 11px; color: var(--color-texto-secundario); }
+      .resumen-cierre {
+        margin-top: 10px; padding: 8px 10px; background: var(--color-fondo-suave);
+        border-radius: var(--radio-borde); font-size: 12px; display: none;
+      }
+      .resumen-cierre strong { display: block; margin-bottom: 2px; }
+    </style>
+  </head>
+  <body>
+    <h3>Nueva solicitud de montaje</h3>
+    <p style="color:var(--color-texto-secundario); font-size:12px; margin-top:0;">
+      Escribe una fila en SOLICITUDES_MONTAJE con los módulos ya resueltos (dependencias incluidas). No
+      aprueba nada -- eso lo sigue haciendo a mano una persona autorizada marcando ESTADO=Aprobado.
+    </p>
+
+    <label for="nombre">Nombre del sheet</label>
+    <input type="text" id="nombre" placeholder="p.ej. LaTroballa CORE" />
+
+    <label>Módulos</label>
+    <div class="ayuda-campo">Al aprobar la solicitud se instalan también las dependencias automáticamente.</div>
+    <div class="lista-modulos" id="listaModulos"><em>Cargando módulos disponibles...</em></div>
+
+    <div class="resumen-cierre" id="resumenCierre"></div>
+
+    <div id="mensaje"></div>
+
+    <div style="display:flex; gap:8px; margin-top:16px;">
+      <button class="boton boton-primario" id="btnEnviar" onclick="enviarSolicitud()">Crear solicitud</button>
+    </div>
+
+    <script>
+      var MODULOS_DISPONIBLES_ = [];
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function mostrarError(error) {
+        document.getElementById('btnEnviar').disabled = false;
+        document.getElementById('mensaje').style.color = 'var(--color-peligro)';
+        document.getElementById('mensaje').textContent = 'Error: ' + (error && error.message ? error.message : error);
+      }
+
+      function pintarModulos_() {
+        var contenedor = document.getElementById('listaModulos');
+        if (MODULOS_DISPONIBLES_.length === 0) {
+          contenedor.innerHTML = '<em>No hay módulos disponibles.</em>';
+          return;
+        }
+        contenedor.innerHTML = MODULOS_DISPONIBLES_.map(function (m) {
+          var dependenciasTexto = m.dependencias.length > 0 ? 'Requiere: ' + m.dependencias.join(', ') : 'Sin dependencias';
+          return '<label class="fila-modulo" style="display:flex;">' +
+            '<input type="checkbox" value="' + escapeHtml(m.nombre) + '" onchange="actualizarResumenCierre_()" />' +
+            '<span class="texto"><span class="nombre">' + escapeHtml(m.nombre) + '</span>' +
+            '<div class="dependencias">' + escapeHtml(dependenciasTexto) + '</div></span>' +
+            '</label>';
+        }).join('');
+      }
+
+      /*
+       * Resolución de dependencias en cliente, en espejo de
+       * resolverCierreModulos_ (GeneradorEnvoltoriosEmbebido.js) -- solo
+       * para avisar de un vistazo antes de enviar; el servidor vuelve a
+       * resolver el cierre real al escribir la fila, esto no sustituye
+       * esa resolución, solo evita sorpresas.
+       */
+      function resolverCierreLocal_(seleccionados) {
+        var porNombre = {};
+        MODULOS_DISPONIBLES_.forEach(function (m) { porNombre[m.nombre] = m.dependencias; });
+        var cierre = {};
+        function visitar(nombre) {
+          if (cierre[nombre]) return;
+          cierre[nombre] = true;
+          (porNombre[nombre] || []).forEach(visitar);
+        }
+        seleccionados.forEach(visitar);
+        return Object.keys(cierre).sort();
+      }
+
+      function modulosSeleccionados_() {
+        return Array.prototype.slice.call(document.querySelectorAll('#listaModulos input[type="checkbox"]:checked'))
+          .map(function (el) { return el.value; });
+      }
+
+      function actualizarResumenCierre_() {
+        var seleccionados = modulosSeleccionados_();
+        var resumen = document.getElementById('resumenCierre');
+        if (seleccionados.length === 0) {
+          resumen.style.display = 'none';
+          return;
+        }
+        var cierre = resolverCierreLocal_(seleccionados);
+        var extras = cierre.filter(function (m) { return seleccionados.indexOf(m) === -1; });
+        resumen.style.display = 'block';
+        resumen.innerHTML = '<strong>Se instalarán ' + cierre.length + ' módulo(s):</strong>' + escapeHtml(cierre.join(', ')) +
+          (extras.length > 0 ? '<br><span style="color:var(--color-texto-secundario);">(' + escapeHtml(extras.join(', ')) + ' añadido(s) automáticamente por dependencia)</span>' : '');
+      }
+
+      function enviarSolicitud() {
+        var nombre = document.getElementById('nombre').value.trim();
+        var seleccionados = modulosSeleccionados_();
+        document.getElementById('mensaje').textContent = '';
+
+        if (!nombre) { mostrarError({ message: 'Falta el nombre del sheet.' }); return; }
+        if (seleccionados.length === 0) { mostrarError({ message: 'Selecciona al menos un módulo.' }); return; }
+
+        document.getElementById('btnEnviar').disabled = true;
+        document.getElementById('mensaje').style.color = 'var(--color-texto-secundario)';
+        document.getElementById('mensaje').textContent = 'Creando solicitud...';
+
+        google.script.run
+          .withFailureHandler(mostrarError)
+          .withSuccessHandler(function (resultado) {
+            document.getElementById('mensaje').style.color = 'var(--color-exito)';
+            document.getElementById('mensaje').textContent =
+              'Solicitud ' + resultado.idTemporal + ' creada con ' + resultado.modulosResueltos.length + ' módulo(s): ' +
+              resultado.modulosResueltos.join(', ') + '. Pendiente de aprobación en SOLICITUDES_MONTAJE.';
+          })
+          .crearSolicitudMontaje(nombre, seleccionados);
+      }
+
+      google.script.run
+        .withFailureHandler(mostrarError)
+        .withSuccessHandler(function (modulos) {
+          MODULOS_DISPONIBLES_ = modulos;
+          pintarModulos_();
+        })
+        .obtenerModulosDisponiblesParaSolicitud();
+    </script>
+  </body>
+</html>

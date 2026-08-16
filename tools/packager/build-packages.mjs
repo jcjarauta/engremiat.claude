@@ -40,7 +40,7 @@ const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
 const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO']);
-const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0, APROVISIONAMIENTO: 1 };
+const EXPECTED_MODULE_COUNTS = { CORE: 79, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0, APROVISIONAMIENTO: 2 };
 const TEST_FILES = Object.freeze([
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
@@ -240,7 +240,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 105, test: 9, auxiliary: 36, excluded: 28, mixed: 0 };
+  const expectedCounts = { production: 106, test: 9, auxiliary: 36, excluded: 28, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
@@ -263,7 +263,7 @@ export function validatePackageMap(map) {
   const mixed = map.entries.filter((entry) => entry.mixed).map((entry) => canonicalPath(entry.path)).sort(compareCanonicalPaths);
   if (JSON.stringify(mixed) !== JSON.stringify([...MIXED_FILES].map(canonicalPath).sort(compareCanonicalPaths))) errors.push('CINCO_MIXTOS_NO_COINCIDEN');
   const htmlA = map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html'));
-  if (htmlA.length !== 31) errors.push(`HTML_A_ESPERADOS_31 actual=${htmlA.length}`);
+  if (htmlA.length !== 32) errors.push(`HTML_A_ESPERADOS_32 actual=${htmlA.length}`);
   if (!map.entries.some((entry) => entry.path === 'src/appsscript.json' && entry.package === 'A')) errors.push('APPSSCRIPT_JSON_FALTA_EN_A');
   return errors;
 }
