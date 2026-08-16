@@ -309,6 +309,14 @@ function resolverPlanEnvoltorios_(aFiles, modulos) {
   };
 }
 
+function pushWrapperBody_(lines, name, userSymbol) {
+  lines.push('function ' + name + '() {');
+  if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_[name]) lines.push('  return ' + userSymbol + '.' + name + '(MODULOS_INSTALADOS_CLIENTE);');
+  else lines.push('  return ' + userSymbol + '.' + name + '.apply(null, arguments);');
+  lines.push('}');
+  lines.push('');
+}
+
 function renderizarEnvoltorios_(plan, userSymbol) {
   var lines = [
     '/**',
@@ -324,13 +332,20 @@ function renderizarEnvoltorios_(plan, userSymbol) {
     'var MODULOS_INSTALADOS_CLIENTE = ' + JSON.stringify(plan.resolvedModules) + ';',
     ''
   ];
-  plan.wrappers.forEach(function (name) {
-    lines.push('function ' + name + '() {');
-    if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_[name]) lines.push('  return ' + userSymbol + '.' + name + '(MODULOS_INSTALADOS_CLIENTE);');
-    else lines.push('  return ' + userSymbol + '.' + name + '.apply(null, arguments);');
-    lines.push('}');
-    lines.push('');
-  });
+
+  // Triggers simples (onOpen/onEdit) primero y aparte del resto -- ver
+  // conversación: al abrir un sheet recién montado, son lo primero que
+  // hay que localizar (onOpen construye el menú), y enterrados por orden
+  // alfabético entre 300+ envoltorios cuesta encontrarlos.
+  var triggers = plan.wrappers.filter(function (name) { return SIMPLE_TRIGGER_NAMES_EMBEBIDO_[name]; });
+  var resto = plan.wrappers.filter(function (name) { return !SIMPLE_TRIGGER_NAMES_EMBEBIDO_[name]; });
+  if (triggers.length > 0) {
+    lines.push('// --- Triggers simples (onOpen/onEdit) ---', '');
+    triggers.forEach(function (name) { pushWrapperBody_(lines, name, userSymbol); });
+    lines.push('// --- Resto de envoltorios (orden alfabético) ---', '');
+  }
+  resto.forEach(function (name) { pushWrapperBody_(lines, name, userSymbol); });
+
   return (lines.join('\n')).replace(/\n+$/u, '\n');
 }
 

@@ -860,7 +860,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c3bcd83686fdc6de0041da3c8a0f091555c8d269d342d70b1cc247b0584ed375",
+      "expectedSha256": "0165d322e01483c9a7187d1a28fde6e7dcf64baa8cf42e1781bb6ea57d1ccd22",
       "required": true,
       "reason": "operación/UI/config -- puerto de generate-shell-wrappers.mjs para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,

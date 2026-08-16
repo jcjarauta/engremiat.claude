@@ -314,6 +314,14 @@ export function resolveWrapperPlan({ map, aFiles, modules }) {
   };
 }
 
+function pushWrapperBody(lines, name, userSymbol) {
+  lines.push(`function ${name}() {`);
+  if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS.has(name)) lines.push(`  return ${userSymbol}.${name}(MODULOS_INSTALADOS_CLIENTE);`);
+  else lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
+  lines.push('}');
+  lines.push('');
+}
+
 export function renderWrapperStubs(plan, userSymbol) {
   const lines = [
     '/**',
@@ -329,13 +337,20 @@ export function renderWrapperStubs(plan, userSymbol) {
     `var MODULOS_INSTALADOS_CLIENTE = ${JSON.stringify(plan.resolvedModules)};`,
     '',
   ];
-  for (const name of plan.wrappers) {
-    lines.push(`function ${name}() {`);
-    if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS.has(name)) lines.push(`  return ${userSymbol}.${name}(MODULOS_INSTALADOS_CLIENTE);`);
-    else lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
-    lines.push('}');
-    lines.push('');
+
+  // Triggers simples (onOpen/onEdit) primero y aparte del resto -- ver
+  // conversación: al abrir un sheet recién montado, son lo primero que
+  // hay que localizar (onOpen construye el menú), y enterrados por orden
+  // alfabético entre 300+ envoltorios cuesta encontrarlos.
+  const triggers = plan.wrappers.filter((name) => SIMPLE_TRIGGER_NAMES.has(name));
+  const resto = plan.wrappers.filter((name) => !SIMPLE_TRIGGER_NAMES.has(name));
+  if (triggers.length > 0) {
+    lines.push('// --- Triggers simples (onOpen/onEdit) ---', '');
+    for (const name of triggers) pushWrapperBody(lines, name, userSymbol);
+    lines.push('// --- Resto de envoltorios (orden alfabético) ---', '');
   }
+  for (const name of resto) pushWrapperBody(lines, name, userSymbol);
+
   return `${lines.join('\n')}`.replace(/\n+$/u, '\n');
 }
 
