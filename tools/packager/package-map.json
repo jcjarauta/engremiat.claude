@@ -1993,7 +1993,7 @@
       "type": "js",
       "category": "test",
       "package": "B",
-      "expectedSha256": "c0ba5b56b1a0fc5b4f838ee39fac6b182bba807ca1a3b9e13a73759f1e383f3f",
+      "expectedSha256": "500cd432a2681ff98435626d7a3818c868bda0a8886bb87271250275eaf49ca9",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,

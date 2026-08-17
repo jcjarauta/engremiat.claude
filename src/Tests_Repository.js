@@ -7361,8 +7361,40 @@ function pruebaPaso302_ExportarInformeCsv() {
   if (!resultado || !resultado.nombreArchivo || !resultado.contenidoCsv) {
     throw new Error('PASO 302 FALLO: exportarInformeCSV no devolvio un resultado valido');
   }
-  if (resultado.contenidoCsv.indexOf('campo,valor') === -1) {
-    throw new Error('PASO 302 FALLO: el CSV exportado no tiene la cabecera esperada');
+  /*
+   * EXCEPCIONES tiene su propio generador tabular (bloquesExcepcionesCsv_,
+   * via CSV_TABULAR_POR_TIPO_) desde que se anadio -- ya no cae en el
+   * fallback generico 'campo,valor'. Las categorias vacias se filtran del
+   * todo (no aparecen ni como '(sin datos)'), asi que un titulo fijo tipo
+   * 'Tareas retrasadas' no es fiable contra datos reales que cambian.
+   * Se compara contra el propio generarInformeExcepciones() en vez de
+   * contra un literal: si hay alguna excepcion, su titulo debe aparecer;
+   * si no hay ninguna, el CSV es solo el BOM.
+   */
+  var informeExcepciones = generarInformeExcepciones();
+  var categoriasExcepciones = [
+    ['Tareas retrasadas', informeExcepciones.tareasRetrasadas],
+    ['Tareas bloqueadas', informeExcepciones.tareasBloqueadas],
+    ['Tareas pospuestas', informeExcepciones.tareasPospuestas],
+    ['Tareas sin responsable', informeExcepciones.tareasSinResponsable],
+    ['Productos sin proyecto', informeExcepciones.productosSinProyecto],
+    ['Procesos sin fechas', informeExcepciones.procesosSinFechas],
+    ['Relaciones incompletas', informeExcepciones.relacionesIncompletas],
+    ['Materiales con stock bajo', (informeExcepciones.materiales || {}).stockBajo],
+    ['Materiales agotados', (informeExcepciones.materiales || {}).agotados],
+    ['Decisiones pendientes', informeExcepciones.decisionesPendientes],
+    ['Incidencias abiertas', informeExcepciones.incidenciasAbiertas],
+    ['Asignaciones sin encaje de competencia', informeExcepciones.asignacionesSinEncajeCompetencia],
+    ['Asignaciones sin encaje de recurso', informeExcepciones.asignacionesSinEncajeRecurso]
+  ];
+  var conDatos = categoriasExcepciones.filter(function (c) { return (c[1] || []).length > 0; });
+  var cuerpoCsv = resultado.contenidoCsv.replace(/^﻿/, '');
+  if (conDatos.length === 0) {
+    if (cuerpoCsv !== '') {
+      throw new Error('PASO 302 FALLO: sin excepciones el CSV deberia quedar vacio (solo BOM)');
+    }
+  } else if (cuerpoCsv.indexOf(conDatos[0][0]) === -1) {
+    throw new Error('PASO 302 FALLO: el CSV exportado no contiene el bloque esperado (' + conDatos[0][0] + ')');
   }
   var historial = listarHistorialPorOrigen(null, true).filter(function (h) {
     return h.ACCION === 'EXPORTAR_INFORME' && h.REGISTRO_ID === resultado.nombreArchivo;
@@ -7375,12 +7407,38 @@ function pruebaPaso302_ExportarInformeCsv() {
 
 function pruebaPaso303_ExportarInformePdf() {
   Logger.log('=== PASO 303: exportarInformePDF genera HTML de impresion real y registra EXPORTAR_INFORME ===');
-  var resultado = exportarInformePDF('EXCEPCIONES', null, { esPrueba: true, pruebaId: 'P303' });
+  /*
+   * exportarInformePDF(tipo, idOFiltro, nivel, opcionesPrueba, modulosInstalados):
+   * la llamada anterior pasaba { esPrueba, pruebaId } como 'nivel' (3er
+   * parametro) por desplazamiento posicional -- opcionesPrueba se quedaba
+   * undefined. Inofensivo en la practica (generarHtmlInformeVisual_ trata
+   * cualquier nivel distinto de 'resumen' como 'completo'), pero incorrecto.
+   * Ademas EXCEPCIONES tiene su propio render (generarHtmlExcepciones_,
+   * via REGISTRO_INFORMES_) desde que se anadio: titulo real 'Excepciones
+   * (calidad de datos)', no el generico 'Informe: EXCEPCIONES' del
+   * fallback. Y <table> solo aparece si hay al menos una categoria con
+   * datos (tablaSimpleHtml_ devuelve un <div> cuando esta vacia) -- mismo
+   * criterio de comparar contra datos reales que en el PASO 302.
+   */
+  var resultado = exportarInformePDF('EXCEPCIONES', null, 'completo', { esPrueba: true, pruebaId: 'P303' });
   if (!resultado || !resultado.nombreArchivo || !resultado.contenidoHtml) {
     throw new Error('PASO 303 FALLO: exportarInformePDF no devolvio un resultado valido');
   }
-  if (resultado.contenidoHtml.indexOf('<table>') === -1 || resultado.contenidoHtml.indexOf('Informe: EXCEPCIONES') === -1) {
-    throw new Error('PASO 303 FALLO: el HTML de impresion no tiene el contenido esperado');
+  if (resultado.contenidoHtml.indexOf('Excepciones (calidad de datos)') === -1) {
+    throw new Error('PASO 303 FALLO: el HTML de impresion no tiene el titulo esperado');
+  }
+  var informeExcepcionesHtml = generarInformeExcepciones();
+  var hayAlgunaExcepcion = [
+    informeExcepcionesHtml.tareasRetrasadas, informeExcepcionesHtml.tareasBloqueadas,
+    informeExcepcionesHtml.tareasPospuestas, informeExcepcionesHtml.tareasSinResponsable,
+    informeExcepcionesHtml.productosSinProyecto, informeExcepcionesHtml.procesosSinFechas,
+    informeExcepcionesHtml.relacionesIncompletas, (informeExcepcionesHtml.materiales || {}).stockBajo,
+    (informeExcepcionesHtml.materiales || {}).agotados, informeExcepcionesHtml.decisionesPendientes,
+    informeExcepcionesHtml.incidenciasAbiertas, informeExcepcionesHtml.asignacionesSinEncajeCompetencia,
+    informeExcepcionesHtml.asignacionesSinEncajeRecurso
+  ].some(function (lista) { return (lista || []).length > 0; });
+  if (hayAlgunaExcepcion && resultado.contenidoHtml.indexOf('<table>') === -1) {
+    throw new Error('PASO 303 FALLO: hay excepciones pero el HTML no incluye ninguna tabla');
   }
   var historial = listarHistorialPorOrigen(null, true).filter(function (h) {
     return h.ACCION === 'EXPORTAR_INFORME' && h.REGISTRO_ID === resultado.nombreArchivo;
