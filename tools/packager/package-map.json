@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 182,
+  "universeExpected": 184,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -838,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "9a4815f2bea6f058101be5bc2b858c87a676636be022a7cde7a542339f040a09",
+      "expectedSha256": "6dcdd49d674d73f9bca1b2af35f566ac5d5ae8ca6cb79465f43114dc268baa4b",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1575,7 +1575,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "98a4ab4a797a0d32a48fb71f4b2d47540a8007330f846c67d1367218d674d1a7",
+      "expectedSha256": "04b0f7dfdfaec925da07f2e195abb75f9c4e6d0744a4bd2dc4b8f37772b0fdfb",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -1675,6 +1675,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "2d221cb0491cde34c1d371736959a69f138eedfaec1ab5dba24b36dfd9119ac7",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/PanelTemporal.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "53b1d999bcd13157bed278d1cbfc234836495b442985e37f150f6218c2ed88e9",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/PanelTemporalService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "83d634d2bbf173e75313635ff3cf0bd796eca2b412711b26131c91b669d24ac8",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,

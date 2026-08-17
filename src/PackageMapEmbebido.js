@@ -406,6 +406,14 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/PanelTemporal.html",
+      "module": "CORE"
+    },
+    {
+      "path": "src/PanelTemporalService.js",
+      "module": "CORE"
+    },
+    {
       "path": "src/PanelVentas.html",
       "module": "VENTAS"
     },

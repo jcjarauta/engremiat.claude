@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      .accesos-directos { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+      .accesos-directos button { flex: 1; font-size: 13px; padding: 8px 6px; }
+      .accesos-directos button.activo { background: var(--color-acento); color: #fff; }
+      .rango-libre { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+      .rango-libre input[type="date"] { flex: 1; font-size: 13px; padding: 6px; }
+      .rango-mostrado { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 10px; }
+      .acciones-export { display: flex; gap: 6px; margin-bottom: 12px; }
+      .acciones-export button { flex: 1; font-size: 13px; padding: 7px; }
+      .alertas-panel { background: var(--color-peligro-fondo); color: var(--color-peligro); padding: 8px 10px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
+      .bloque-entidad { margin-bottom: 16px; }
+      .bloque-entidad h3 { margin: 10px 0 4px; font-size: 14px; }
+      .seccion-titulo { font-weight: bold; font-size: 13px; margin: 6px 0 2px; color: var(--color-texto-secundario); }
+      .grupo-responsable { margin-bottom: 6px; }
+      .nombre-responsable { font-weight: bold; font-size: 13px; }
+      .fila-item { padding: 4px 0 4px 12px; display: flex; justify-content: space-between; gap: 6px; cursor: pointer; }
+      .fila-item:hover { background: var(--color-fondo-suave); }
+      .fila-item .fecha-item { color: var(--color-texto-secundario); font-size: 12px; white-space: nowrap; }
+      .vacio-seccion { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 2px 0 8px 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="accesos-directos">
+      <button id="btnHoy" onclick="cargarPreset_('HOY')">Hoy</button>
+      <button id="btnEstaSemana" onclick="cargarPreset_('ESTA_SEMANA')">Esta semana</button>
+      <button id="btnSemanaSiguiente" onclick="cargarPreset_('SEMANA_SIGUIENTE')">Semana que viene</button>
+    </div>
+    <div class="rango-libre">
+      <input type="date" id="fechaInicioRango">
+      <input type="date" id="fechaFinRango">
+      <button onclick="cargarRangoLibre_()">Cargar</button>
+    </div>
+
+    <div id="estadoCarga">Cargando...</div>
+    <div class="rango-mostrado" id="rangoMostrado"></div>
+    <div id="alertasPanel"></div>
+    <div id="resultado"></div>
+
+    <div class="acciones-export">
+      <button onclick="exportarCSV_()">Exportar CSV</button>
+      <button onclick="exportarPDF_()">Exportar PDF</button>
+    </div>
+
+    <script>
+      var MODO_ACTUAL = 'HOY';
+      var FECHA_INICIO_ACTUAL = '';
+      var FECHA_FIN_ACTUAL = '';
+
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return '';
+        return String(texto).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function formatearFecha_(fecha) {
+        if (!fecha) return '';
+        var d = new Date(fecha);
+        if (isNaN(d.getTime())) return '';
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        return dd + '/' + mm + '/' + d.getFullYear();
+      }
+
+      function mostrarError(error) {
+        var el = document.getElementById('estadoCarga');
+        el.textContent = 'Error: ' + (error && error.message ? error.message : error);
+        el.style.display = 'block';
+      }
+
+      function marcarBotonActivo_(modo) {
+        ['btnHoy', 'btnEstaSemana', 'btnSemanaSiguiente'].forEach(function (id) {
+          document.getElementById(id).classList.remove('activo');
+        });
+        var mapa = { HOY: 'btnHoy', ESTA_SEMANA: 'btnEstaSemana', SEMANA_SIGUIENTE: 'btnSemanaSiguiente' };
+        if (mapa[modo]) document.getElementById(mapa[modo]).classList.add('activo');
+      }
+
+      function cargarPreset_(modo) {
+        MODO_ACTUAL = modo;
+        FECHA_INICIO_ACTUAL = '';
+        FECHA_FIN_ACTUAL = '';
+        marcarBotonActivo_(modo);
+        cargar_();
+      }
+
+      function cargarRangoLibre_() {
+        var inicio = document.getElementById('fechaInicioRango').value;
+        var fin = document.getElementById('fechaFinRango').value;
+        if (!inicio || !fin) { mostrarError('Elige fecha de inicio y de fin.'); return; }
+        MODO_ACTUAL = 'RANGO';
+        FECHA_INICIO_ACTUAL = inicio;
+        FECHA_FIN_ACTUAL = fin;
+        marcarBotonActivo_('RANGO');
+        cargar_();
+      }
+
+      function cargar_() {
+        document.getElementById('estadoCarga').style.display = 'block';
+        document.getElementById('estadoCarga').textContent = 'Cargando...';
+        google.script.run
+          .withSuccessHandler(renderizarPanel_)
+          .withFailureHandler(mostrarError)
+          .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+      }
+
+      function renderizarPanel_(datos) {
+        document.getElementById('estadoCarga').style.display = 'none';
+        document.getElementById('rangoMostrado').textContent =
+          formatearFecha_(datos.rangoInicio) + ' — ' + formatearFecha_(datos.rangoFin);
+
+        var alertas = datos.alertas || { sobreasignaciones: [], recursosSinCompetenciaDisponible: [] };
+        var elAlertas = document.getElementById('alertasPanel');
+        if (alertas.sobreasignaciones.length > 0 || alertas.recursosSinCompetenciaDisponible.length > 0) {
+          elAlertas.innerHTML = '<div class="alertas-panel">⚠ ' +
+            alertas.sobreasignaciones.length + ' persona(s) sobreasignada(s) · ' +
+            alertas.recursosSinCompetenciaDisponible.length + ' recurso(s) sin técnico disponible.</div>';
+        } else {
+          elAlertas.innerHTML = '';
+        }
+
+        var html = (datos.bloques || []).map(renderBloque_).join('');
+        document.getElementById('resultado').innerHTML = html || '<p class="vacio-seccion">Sin datos.</p>';
+      }
+
+      function renderBloque_(bloque) {
+        return '<div class="bloque-entidad">' +
+          '<h3>' + escapeHtml(bloque.etiqueta) + '</h3>' +
+          '<div class="seccion-titulo">Pendiente</div>' + renderGrupos_(bloque, bloque.pendientes) +
+          '<div class="seccion-titulo">Hecho</div>' + renderGrupos_(bloque, bloque.hechos) +
+          '</div>';
+      }
+
+      function renderGrupos_(bloque, grupos) {
+        if (!grupos || grupos.length === 0) return '<div class="vacio-seccion">(sin elementos)</div>';
+        return grupos.map(function (grupo) {
+          var filas = grupo.items.map(function (item) {
+            return renderItem_(bloque, item);
+          }).join('');
+          return '<div class="grupo-responsable"><div class="nombre-responsable">' +
+            escapeHtml(grupo.responsable) + '</div>' + filas + '</div>';
+        }).join('');
+      }
+
+      function renderItem_(bloque, item) {
+        var nombre = item[bloque.campoNombre] || item.ID;
+        var fecha = formatearFecha_(item.FECHA_FIN_PLAN || item.FECHA_LIMITE || item.FECHA_FIN_REAL || item.FECHA_RESOLUCION);
+        return '<div class="fila-item" onclick="abrirEdicion_(\'' + bloque.entidad + '\',\'' + item.ID + '\')">' +
+          '<span>' + escapeHtml(nombre) + '</span>' +
+          '<span class="fecha-item">' + escapeHtml(item.ESTADO) + (fecha ? ' · ' + fecha : '') + '</span>' +
+          '</div>';
+      }
+
+      function abrirEdicion_(entidad, id) {
+        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+      }
+
+      function exportarCSV_() {
+        google.script.run.withFailureHandler(mostrarError)
+          .abrirDialogoExportarPanelTemporalCSV(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+      }
+
+      function exportarPDF_() {
+        google.script.run.withFailureHandler(mostrarError)
+          .abrirDialogoExportarPanelTemporalPDF(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+      }
+
+      marcarBotonActivo_('HOY');
+      cargar_();
+    </script>
+  </body>
+</html>
