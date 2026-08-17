@@ -6002,7 +6002,7 @@ function construirCadenaCompletaPrueba_(sufijo) {
 
   var persona = insertarRegistroTransaccional('PERSONA_EQUIPO', {
     TIPO: 'Persona', NOMBRE: 'Persona prueba ' + sufijo, ROL: 'Operario',
-    CAPACIDAD_SEMANAL_DIAS: 5, DISPONIBILIDAD: 'Disponible', ESTADO: 'Disponible'
+    CAPACIDAD_SEMANAL_DIAS: 5, DISPONIBILIDAD: 'Completa', ESTADO: 'Disponible'
   }, {dryRun: false});
 
   var tareaResponsable = insertarRegistroTransaccional('TAREA_RESPONSABLE', {

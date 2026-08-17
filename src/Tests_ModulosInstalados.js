@@ -168,11 +168,11 @@ function pruebaHojaInstalableCubreTodasLasHojasDeEntructuraInicial() {
   // esperado para que un cambio de conteo se note en el diff de la prueba.
   var total = ORDEN_HOJAS_ESTRUCTURA_INICIAL.length;
 
-  if (total !== 49) {
-    throw new Error('PRUEBA_HOJA_INSTALABLE_COBERTURA_ERROR: se esperaban 49 hojas en ORDEN_HOJAS_ESTRUCTURA_INICIAL, hay ' + total);
+  if (total !== 50) {
+    throw new Error('PRUEBA_HOJA_INSTALABLE_COBERTURA_ERROR: se esperaban 50 hojas en ORDEN_HOJAS_ESTRUCTURA_INICIAL, hay ' + total);
   }
 
-  console.log('OK: ORDEN_HOJAS_ESTRUCTURA_INICIAL tiene las 49 hojas esperadas');
+  console.log('OK: ORDEN_HOJAS_ESTRUCTURA_INICIAL tiene las 50 hojas esperadas');
   return true;
 }
 

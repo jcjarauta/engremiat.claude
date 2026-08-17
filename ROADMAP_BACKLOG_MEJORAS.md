@@ -451,6 +451,51 @@ Comportamiento: oculto por defecto en `obtenerOpcionesEntidadParaSelector` (usad
 
 **Pendiente natural, no abordado**: extender el mismo criterio a `PRODUCTO`/`PROCESO`/`TAREA` si aparece evidencia real de que hace falta; badge visual en fichas (hoy solo aplica a listas/selectores, no a la cabecera de una ficha abierta directamente por ID).
 
+## Fase O — Agenda Operativa + consolidación de pruebas reactivas (en curso, 2026-08-17)
+
+### O0 — Construido y publicado hoy ✅
+
+- **Runner de pruebas reactivas maduro**: registro dinámico (`generate-test-registry.mjs` re-escanea `Tests_*.js`, 346 funciones), ejecución por lotes con presupuesto de tiempo (evita el timeout de Apps Script visto en el primer intento real), **mecanismo de reanudación** que no repite pruebas ya escritas en `RESULTADOS_PRUEBAS_REACTIVAS`, y **ejecución en segundo plano** (trigger cada 5min, se autodestruye y avisa por `MailApp` al terminar) — cierra la fricción humana que el usuario señaló ("esto está siendo muy pesado").
+- **Agenda Operativa** (`PanelTemporalService.js`/`PanelTemporal.html`, módulo CORE): sidebar con Hoy/Semana actual/Semana que viene + rango libre, secciones Pendiente/Hecho/Sin fecha planificada/Bloqueos, export CSV y PDF, **buscador por campaña/proyecto** (resolutor de contexto autocontenido en CORE, sin reutilizar código de módulo GANTT — evita reabrir la clase de bug "gaps cruzados de módulo"). Integrada en Mapa del sheet junto con Kanban operativo y Listado filtrable.
+- **Primera pasada real de las 346 pruebas reactivas** contra el sheet de referencia: root-cause de la mayoría de fallos identificado (no todos corregidos aún, ver O1-O3).
+- **Dos gaps estructurales corregidos directamente en el sheet** (vía MCP de Sheets, sin pasar por Apps Script): 3 hojas que el código ya esperaba pero nunca se habían creado (`45_TAREA_COMPETENCIA`, `46_TAREA_RECURSO_NECESIDAD`, `92_ESCENARIOS`) y la columna `CLIENTE_ID` que faltaba en `02_PROYECTOS` (esquema ampliado en la Fase 2 de Ventas, nunca migrado a la hoja real). Deuda técnica anotada en O-deuda.
+
+### O1 — Verificar que los dos gaps estructurales quedan resueltos (bloqueante, en curso)
+
+Relanzada la suite completa tras el fix (arrancó desde cero, no reanudación parcial — sin pérdida de información, el resultado anterior ya quedó documentado en esta conversación). Al terminar: confirmar que desaparecen `Tests_Ids.js` (hoja inexistente), `pruebaHojaInstalableConjuntoCoreOnlyCoincideConElReal`, `pruebaHojaInstalableCubreTodasLasHojasDeEstructuraInicial` (constante hardcodeada 49→50, arreglo de una línea si el hueco persiste), `probarProtegerHojasDatosMVP*`, `pruebaPaso235/272_GuardarFormularioProyecto*`.
+
+### O2 — Triage de los fallos NO estructurales de la primera pasada
+
+Del primer run completo quedan por decidir, uno a uno (regresión real vs. dato/test desactualizado):
+- Validaciones de fecha que deberían aceptar un caso válido y lo rechazan (`pruebaPaso240/241_Decision*`, `probarIntegridadCampanaCerradaConProyectoActivo` y similares con "fecha límite/resolución anterior a creación").
+- `NIVEL_INCIDENCIA` ahora obligatorio pero varias pruebas antiguas no lo setean (`pruebaPaso291-295`) — probable esquema evolucionado sin actualizar los tests, no bug de producto.
+- Export CSV/PDF de informe de excepciones (`pruebaPaso302/303`) — aserción de contenido desactualizada o regresión real, sin diagnosticar todavía.
+- Confirmado ya (no requiere acción): el clúster "se esperaba ID-0001, se obtuvo ID-00NN" es contaminación de datos por el sembrado de la sesión (no bug), y `DISPONIBILIDAD: 'Disponible'` en `Tests_Repository.js:6005` es un valor de catálogo erróneo copiado del patrón de `ESTADO` (bug del test, no del producto).
+
+### O3 — Rendimiento de integridad (diferido explícitamente hasta que O1 termine)
+
+El fix Set (`detectarReferenciasHuerfanas`, ya publicado) y la instrumentación por entidad (`reporte.instrumentacion.porEntidad`, ya publicada) siguen sin medirse en real — pendiente ejecutar "Verificar integridad" y leer los `INSTR etiqueta=estructural_entidad_XXX` en Ejecuciones.
+
+### O4 — Alertas de bloqueo ampliadas (propuesta ya valorada con el usuario, no construida)
+
+Extender el concepto de "Bloqueos" de Agenda Operativa más allá de dependientes activos: decisión pendiente que bloquea un proyecto, material insuficiente para una tarea (necesita join nuevo `TAREA_MATERIAL`/stock), espacio/recurso no disponible, competencia requerida ausente. Es la pieza que más valor operativo añadiría, pero depende de que O1-O2 cierren primero (mismo criterio de no construir sobre una red de regresión con huecos conocidos).
+
+### O5 — Extender Piloto/Auditoría a Agenda Operativa
+
+Badge/filtro Piloto/Auditoría (criterio ya cerrado en Fase M para selectores y Panel de Campaña) replicado en Agenda Operativa — pendiente natural señalado ya en esa fase, reforzado por el propio uso de Agenda Operativa como "foto global del taller".
+
+### O6 — Ampliar Agenda Operativa a módulos no-CORE
+
+Hoy limitada a CORE+SEGUIMIENTO por decisión explícita del usuario ("esto lo tendremos que ampliar a todas las funciones disponibles de los módulos acoplables"). Ejemplo concreto ya identificado: COMPRAS (entregas de proveedor pendientes). Sin evidencia de urgencia todavía — no empezar antes de O4.
+
+### O-deuda — Migración de columnas nuevas a hojas existentes
+
+`instalarEstructuraInicial()` es idempotente para **hojas** (crea las que faltan) pero no para **columnas** (no añade una columna nueva a una hoja que ya existe). Hoy se resolvió a mano una vez para `02_PROYECTOS`/`CLIENTE_ID`; sin un mecanismo, el próximo campo nuevo en una entidad ya desplegada repetirá el mismo fallo silencioso en cualquier sheet que no se re-provisione desde cero. No es bloqueante hoy (bajo volumen de clientes reales), pero conviene construirlo antes de la Fase 2 de Ventas/Oportunidad si esas entidades siguen evolucionando.
+
+---
+
+**Orden recomendado**: O1 (verificación, ya en marcha, sin coste de trabajo humano) → O2 (triage, se puede hacer en paralelo mientras corre O1) → O3 (medición, 5 minutos) → O4 (la pieza de mayor valor nueva) → O5/O6 (extensiones, sin urgencia). O-deuda se aborda de forma oportunista la próxima vez que una entidad existente reciba un campo nuevo.
+
 ## Principios de gobierno (heredados, sin cambios)
 - Git local, sin remoto. `clasp push` solo con autorización explícita.
 - Ninguna IA colaboradora despliega o cierra fase por sí misma.
