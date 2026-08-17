@@ -33,6 +33,12 @@
       .acciones-export { display: flex; gap: 6px; margin-bottom: 12px; }
       .acciones-export button { flex: 1; font-size: 13px; padding: 7px; }
       .alertas-panel { background: var(--color-peligro-fondo); color: var(--color-peligro); padding: 8px 10px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
+      .bloqueos-panel { margin-bottom: 12px; }
+      .bloqueos-panel h4 { font-size: 13px; margin: 0 0 4px; color: var(--color-peligro); }
+      .bloqueo-item { padding: 4px 0 4px 12px; cursor: pointer; font-size: 13px; border-left: 2px solid var(--color-peligro); margin-bottom: 2px; }
+      .bloqueo-item:hover { background: var(--color-fondo-suave); }
+      .bloqueo-item .bloqueo-tarea { font-weight: bold; }
+      .bloqueo-item .bloqueo-detalle { color: var(--color-texto-secundario); font-size: 12px; }
       .bloque-entidad { margin-bottom: 10px; }
       .bloque-entidad summary { cursor: pointer; padding: 6px 4px; font-size: 14px; font-weight: bold; }
       .bloque-entidad summary::-webkit-details-marker { color: var(--color-texto-secundario); }
@@ -69,6 +75,7 @@
     <div class="rango-mostrado" id="rangoMostrado"></div>
     <div class="resumen-numerico" id="resumenNumerico"></div>
     <div id="alertasPanel"></div>
+    <div id="bloqueosPanel"></div>
     <div id="resultado"></div>
 
     <div class="acciones-export">
@@ -169,6 +176,9 @@
         if (alertas.totalSinFechaPlanificada > 0) lineasAlerta.push(alertas.totalSinFechaPlanificada + ' registro(s) abierto(s) sin fecha planificada');
         elAlertas.innerHTML = lineasAlerta.length ? '<div class="alertas-panel">⚠ ' + lineasAlerta.join(' · ') + '.</div>' : '';
 
+        var bloqueos = datos.bloqueos || [];
+        document.getElementById('bloqueosPanel').innerHTML = bloqueos.length ? renderBloqueos_(bloqueos) : '';
+
         var bloques = (datos.bloques || []).filter(function (b) {
           return contarItems_(b.pendientes) > 0 || contarItems_(b.hechos) > 0 || contarItems_(b.sinFecha) > 0;
         });
@@ -240,6 +250,16 @@
 
       function abrirEdicion_(entidad, id) {
         google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
+      }
+
+      function renderBloqueos_(bloqueos) {
+        var filas = bloqueos.map(function (b) {
+          return '<div class="bloqueo-item" onclick="abrirEdicion_(\'TAREA\',\'' + b.tareaId + '\')">' +
+            '<div class="bloqueo-tarea">' + escapeHtml(b.tareaNombre) + '</div>' +
+            '<div class="bloqueo-detalle">' + escapeHtml(b.detalle) + '</div>' +
+            '</div>';
+        }).join('');
+        return '<div class="bloqueos-panel"><h4>⛔ Bloqueos (' + bloqueos.length + ')</h4>' + filas + '</div>';
       }
 
       function exportarCSV_() {

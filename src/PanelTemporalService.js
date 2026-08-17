@@ -84,6 +84,7 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
     rangoInicio: rango.inicio,
     rangoFin: rango.fin,
     bloques: bloques,
+    bloqueos: obtenerBloqueosPanelTemporal_(),
     alertas: {
       sobreasignaciones: listarSobreasignaciones(),
       recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible(),
@@ -126,6 +127,45 @@ function obtenerResumenPanelTemporal() {
     resumen[modo] = total;
   });
   return resumen;
+}
+
+/*
+ * Bloqueos (ver conversación -- "hace falta esta competencia para
+ * este proceso", "hace falta este espacio para esta tarea"): a
+ * diferencia del resto del panel (organizado por fecha), esto no
+ * depende del rango consultado -- una tarea sin la competencia o el
+ * recurso que exige está bloqueada hoy, mañana y la semana que viene
+ * por igual. Reutiliza tal cual listarAsignacionesSinEncajeCompetencia_/
+ * Recurso (DashboardService.js), que ya devuelven TAREA_ID/TAREA_NOMBRE
+ * -- no hace falta ninguna resolución nueva, solo reformatear como
+ * bloqueo con enlace de edición a la tarea.
+ */
+function obtenerBloqueosPanelTemporal_() {
+  if (!moduloInstalado_('OPERATIVA')) return [];
+
+  var bloqueos = [];
+
+  listarAsignacionesSinEncajeCompetencia().forEach(function (a) {
+    bloqueos.push({
+      tipo: 'competencia',
+      tareaId: a.TAREA_ID,
+      tareaNombre: a.TAREA_NOMBRE,
+      detalle: (a.PERSONA_NOMBRE || '(sin persona)') + ' no tiene la competencia "' + a.COMPETENCIA_NOMBRE + '"' +
+        (a.NIVEL_EXIGIDO ? ' (nivel mínimo ' + a.NIVEL_EXIGIDO + ')' : '')
+    });
+  });
+
+  listarAsignacionesSinEncajeRecurso().forEach(function (n) {
+    var requisito = [n.CLASE_RECURSO_REQUERIDA, n.CATEGORIA_RECURSO_REQUERIDA].filter(function (v) { return v; }).join(' / ') || 'recurso';
+    bloqueos.push({
+      tipo: 'recurso',
+      tareaId: n.TAREA_ID,
+      tareaNombre: n.TAREA_NOMBRE,
+      detalle: 'Faltan ' + requisito + ' (' + n.CANTIDAD_ASIGNADA + '/' + n.CANTIDAD_MINIMA + ' asignado(s))'
+    });
+  });
+
+  return bloqueos;
 }
 
 var PROPIEDAD_ULTIMO_MODO_PANEL_TEMPORAL_ = 'PANEL_TEMPORAL_ULTIMO_MODO';
@@ -361,6 +401,14 @@ function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO) {
     });
   });
 
+  if (datos.bloqueos.length > 0) {
+    bloquesCsv.push({
+      titulo: 'Bloqueos',
+      encabezados: ['Tipo', 'Tarea', 'Detalle'],
+      filas: datos.bloqueos.map(function (b) { return [b.tipo, b.tareaNombre, b.detalle]; })
+    });
+  }
+
   var nombre = 'AGENDA_OPERATIVA_' + (ETIQUETAS_MODO_PANEL_TEMPORAL_[modo] || modo).replace(/\s+/g, '_') + '_' +
     Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
   registrarHistorial('INFORME', nombre, 'EXPORTAR_PANEL_TEMPORAL', [], { origen: 'UI', formato: 'CSV' });
@@ -413,7 +461,15 @@ function generarHtmlPanelTemporalImprimible_(datos) {
       datos.alertas.totalSinFechaPlanificada + ' registro(s) abierto(s) sin fecha planificada.</p>';
   }
 
-  return construirDocumentoInformeImprimible_('Agenda operativa: ' + etiquetaModo, subtitulo, alertas + cuerpo);
+  var bloqueosHtml = '';
+  if (datos.bloqueos.length > 0) {
+    bloqueosHtml = '<h2>Bloqueos</h2><table><tr><th>Tarea</th><th>Bloqueo</th></tr>' +
+      datos.bloqueos.map(function (b) {
+        return '<tr><td>' + enlaceEdicion_('TAREA', b.tareaId, b.tareaNombre) + '</td><td>' + escaparHtmlServer_(b.detalle) + '</td></tr>';
+      }).join('') + '</table>';
+  }
+
+  return construirDocumentoInformeImprimible_('Agenda operativa: ' + etiquetaModo, subtitulo, alertas + bloqueosHtml + cuerpo);
 }
 
 /*
