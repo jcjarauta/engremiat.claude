@@ -65,12 +65,14 @@ function abrirPanelTemporal() {
 function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
   var rango = calcularRangoPanelTemporal_(modo, fechaInicioISO, fechaFinISO);
   var incluirAtrasadasSiempre = (modo === 'HOY');
+  var hoy = new Date();
+  hoy.setHours(0, 0, 0, 0);
 
   var entidades = ['TAREA', 'PROCESO'];
   if (moduloInstalado_('SEGUIMIENTO')) entidades = entidades.concat(['INCIDENCIA', 'DECISION']);
 
   var bloques = entidades.map(function (entidad) {
-    return construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre);
+    return construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy);
   });
 
   var resultado = {
@@ -84,15 +86,71 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
     }
   };
 
+  // Ver conversación -- "recordar el último modo usado": mismo patrón que
+  // guardarUltimaCampanaPanel (PanelCampanaService.js), por usuario.
+  guardarUltimoModoPanelTemporal_(modo, fechaInicioISO, fechaFinISO);
+
   return serializarParaCliente_(resultado);
 }
 
-function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre) {
+/*
+ * Recuentos ligeros de pendientes para los 3 accesos directos (ver
+ * conversación -- "contador en los botones, Hoy (3)"): lee cada hoja
+ * una sola vez y reutiliza el array en memoria para los 3 modos, en vez
+ * de 3 pasadas de obtenerPanelTemporal completas (que releerían y
+ * volverían a resolver responsables 3 veces).
+ */
+function obtenerResumenPanelTemporal() {
+  var entidades = ['TAREA', 'PROCESO'];
+  if (moduloInstalado_('SEGUIMIENTO')) entidades = entidades.concat(['INCIDENCIA', 'DECISION']);
+
+  var registrosPorEntidad = {};
+  entidades.forEach(function (entidad) {
+    registrosPorEntidad[entidad] = listarRegistrosSeguro_(entidad, { ACTIVO: 'SÍ' });
+  });
+
+  var resumen = {};
+  ['HOY', 'ESTA_SEMANA', 'SEMANA_SIGUIENTE'].forEach(function (modo) {
+    var rango = calcularRangoPanelTemporal_(modo, null, null);
+    var incluirAtrasadasSiempre = (modo === 'HOY');
+    var total = 0;
+    entidades.forEach(function (entidad) {
+      var config = CONFIG_PANEL_TEMPORAL_[entidad];
+      total += filtrarPendientesEnRango_(registrosPorEntidad[entidad], config, rango, incluirAtrasadasSiempre).length;
+    });
+    resumen[modo] = total;
+  });
+  return resumen;
+}
+
+var PROPIEDAD_ULTIMO_MODO_PANEL_TEMPORAL_ = 'PANEL_TEMPORAL_ULTIMO_MODO';
+
+function guardarUltimoModoPanelTemporal_(modo, fechaInicioISO, fechaFinISO) {
+  PropertiesService.getUserProperties().setProperty(
+    PROPIEDAD_ULTIMO_MODO_PANEL_TEMPORAL_,
+    JSON.stringify({ modo: modo, fechaInicioISO: fechaInicioISO || '', fechaFinISO: fechaFinISO || '' })
+  );
+}
+
+function obtenerUltimoModoPanelTemporal() {
+  var guardado = PropertiesService.getUserProperties().getProperty(PROPIEDAD_ULTIMO_MODO_PANEL_TEMPORAL_);
+  if (!guardado) return { modo: 'HOY', fechaInicioISO: '', fechaFinISO: '' };
+  try {
+    return JSON.parse(guardado);
+  } catch (e) {
+    return { modo: 'HOY', fechaInicioISO: '', fechaFinISO: '' };
+  }
+}
+
+function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy) {
   var config = CONFIG_PANEL_TEMPORAL_[entidad];
   var registros = listarRegistrosSeguro_(entidad, { ACTIVO: 'SÍ' });
 
   var pendientes = config.enriquecerResponsable(
-    ordenarPanelTemporalPorFecha_(filtrarPendientesEnRango_(registros, config, rango, incluirAtrasadasSiempre), config, false)
+    anadirDiasAtrasoPanelTemporal_(
+      ordenarPanelTemporalPorFecha_(filtrarPendientesEnRango_(registros, config, rango, incluirAtrasadasSiempre), config, false),
+      config, hoy
+    )
   );
   var hechos = config.enriquecerResponsable(
     ordenarPanelTemporalPorFecha_(filtrarHechosEnRango_(registros, config, rango), config, true)
@@ -105,6 +163,15 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre) 
     pendientes: agruparPorResponsablePanelTemporal_(pendientes),
     hechos: agruparPorResponsablePanelTemporal_(hechos)
   };
+}
+
+/* DIAS_ATRASO > 0 si finPlan ya pasó y el registro sigue sin cerrar -- ver "badge de urgencia en atrasadas". */
+function anadirDiasAtrasoPanelTemporal_(lista, config, hoy) {
+  return lista.map(function (item) {
+    var finPlan = parsearFechaPanelTemporal_(item[config.finPlan]);
+    var diasAtraso = (finPlan && finPlan < hoy) ? Math.floor((hoy - finPlan) / 86400000) : null;
+    return Object.assign({}, item, { DIAS_ATRASO: diasAtraso });
+  });
 }
 
 function calcularRangoPanelTemporal_(modo, fechaInicioISO, fechaFinISO) {

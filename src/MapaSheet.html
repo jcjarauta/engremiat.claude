@@ -100,11 +100,39 @@
         <div class="detalle">Campaña → Proyecto → Producto → Proceso → Tarea</div>
       </span>
     </button>
+    <button class="tarjeta" onclick="abrir('abrirPanelTemporal')">
+      <span class="icono">📅</span>
+      <span class="texto">
+        <div class="titulo">¿Qué toca?</div>
+        <div class="detalle">Hoy, esta semana, semana que viene -- con exportación</div>
+      </span>
+    </button>
     <button class="tarjeta" id="tarjetaOperativo" onclick="abrir('abrirPanelOperativo')">
       <span class="icono">📊</span>
       <span class="texto">
         <div class="titulo">Panel operativo</div>
         <div class="detalle">Alertas y avisos del taller de un vistazo</div>
+      </span>
+    </button>
+    <button class="tarjeta" onclick="abrir('abrirKanban')">
+      <span class="icono">🗂️</span>
+      <span class="texto">
+        <div class="titulo">Kanban operativo</div>
+        <div class="detalle">Tarea, proceso e incidencia por estado</div>
+      </span>
+    </button>
+    <button class="tarjeta" onclick="abrir('abrirListadoFiltrable')">
+      <span class="icono">📃</span>
+      <span class="texto">
+        <div class="titulo">Listado filtrable</div>
+        <div class="detalle">Incidencias, decisiones y documentos</div>
+      </span>
+    </button>
+    <button class="tarjeta" id="tarjetaGantt" style="display:none;" onclick="abrir('abrirGanttPlanReal')">
+      <span class="icono">📈</span>
+      <span class="texto">
+        <div class="titulo">Gantt: plan vs. real</div>
+        <div class="detalle">Planificación con desviación visible</div>
       </span>
     </button>
     <button class="tarjeta" onclick="abrir('abrirInformes')">
@@ -201,6 +229,9 @@
 
       if (!moduloInstalado_('COMPRAS')) {
         document.getElementById('tarjetaOperativo').style.display = 'none';
+      }
+      if (moduloInstalado_('GANTT')) {
+        document.getElementById('tarjetaGantt').style.display = '';
       }
       if (moduloInstalado_('APROVISIONAMIENTO')) {
         document.getElementById('seccionAprovisionamiento').style.display = '';
@@ -299,6 +330,18 @@
             return;
           case 'abrirPanelOperativo':
             google.script.run.withFailureHandler(mostrarError).abrirPanelOperativo();
+            return;
+          case 'abrirPanelTemporal':
+            google.script.run.withFailureHandler(mostrarError).abrirPanelTemporal();
+            return;
+          case 'abrirKanban':
+            google.script.run.withFailureHandler(mostrarError).abrirKanban();
+            return;
+          case 'abrirListadoFiltrable':
+            google.script.run.withFailureHandler(mostrarError).abrirListadoFiltrable();
+            return;
+          case 'abrirGanttPlanReal':
+            google.script.run.withFailureHandler(mostrarError).abrirGanttPlanReal();
             return;
           case 'abrirPanelPersonas':
             google.script.run.withFailureHandler(mostrarError).abrirPanelPersonas();

@@ -10,19 +10,24 @@
       .accesos-directos button.activo { background: var(--color-acento); color: #fff; }
       .rango-libre { display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
       .rango-libre input[type="date"] { flex: 1; font-size: 13px; padding: 6px; }
-      .rango-mostrado { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 10px; }
+      .rango-mostrado { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 6px; }
+      .resumen-numerico { font-size: 13px; margin-bottom: 10px; color: var(--color-texto); }
       .acciones-export { display: flex; gap: 6px; margin-bottom: 12px; }
       .acciones-export button { flex: 1; font-size: 13px; padding: 7px; }
       .alertas-panel { background: var(--color-peligro-fondo); color: var(--color-peligro); padding: 8px 10px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
-      .bloque-entidad { margin-bottom: 16px; }
-      .bloque-entidad h3 { margin: 10px 0 4px; font-size: 14px; }
+      .bloque-entidad { margin-bottom: 10px; }
+      .bloque-entidad summary { cursor: pointer; padding: 6px 4px; font-size: 14px; font-weight: bold; }
+      .bloque-entidad summary::-webkit-details-marker { color: var(--color-texto-secundario); }
+      .bloque-entidad > div { margin-left: 8px; }
       .seccion-titulo { font-weight: bold; font-size: 13px; margin: 6px 0 2px; color: var(--color-texto-secundario); }
       .grupo-responsable { margin-bottom: 6px; }
       .nombre-responsable { font-weight: bold; font-size: 13px; }
       .fila-item { padding: 4px 0 4px 12px; display: flex; justify-content: space-between; gap: 6px; cursor: pointer; }
       .fila-item:hover { background: var(--color-fondo-suave); }
       .fila-item .fecha-item { color: var(--color-texto-secundario); font-size: 12px; white-space: nowrap; }
-      .vacio-seccion { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; margin: 2px 0 8px 12px; }
+      .badge-atraso { color: var(--color-peligro); font-weight: bold; }
+      .vacio-seccion { color: var(--color-texto-secundario); font-style: italic; font-size: 12px; margin: 2px 0 8px 12px; }
+      .vacio-global { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; text-align: center; padding: 20px 0; }
     </style>
   </head>
   <body>
@@ -39,6 +44,7 @@
 
     <div id="estadoCarga">Cargando...</div>
     <div class="rango-mostrado" id="rangoMostrado"></div>
+    <div class="resumen-numerico" id="resumenNumerico"></div>
     <div id="alertasPanel"></div>
     <div id="resultado"></div>
 
@@ -51,6 +57,7 @@
       var MODO_ACTUAL = 'HOY';
       var FECHA_INICIO_ACTUAL = '';
       var FECHA_FIN_ACTUAL = '';
+      var TEXTO_BOTON_ = { HOY: 'Hoy', ESTA_SEMANA: 'Esta semana', SEMANA_SIGUIENTE: 'Semana que viene' };
 
       function escapeHtml(texto) {
         if (texto === null || texto === undefined) return '';
@@ -108,6 +115,19 @@
           .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
       }
 
+      function cargarResumenBotones_() {
+        google.script.run
+          .withFailureHandler(function () {})
+          .withSuccessHandler(function (resumen) {
+            Object.keys(TEXTO_BOTON_).forEach(function (modo) {
+              var mapa = { HOY: 'btnHoy', ESTA_SEMANA: 'btnEstaSemana', SEMANA_SIGUIENTE: 'btnSemanaSiguiente' };
+              var n = resumen[modo] || 0;
+              document.getElementById(mapa[modo]).textContent = TEXTO_BOTON_[modo] + (n > 0 ? ' (' + n + ')' : '');
+            });
+          })
+          .obtenerResumenPanelTemporal();
+      }
+
       function renderizarPanel_(datos) {
         document.getElementById('estadoCarga').style.display = 'none';
         document.getElementById('rangoMostrado').textContent =
@@ -123,35 +143,53 @@
           elAlertas.innerHTML = '';
         }
 
-        var html = (datos.bloques || []).map(renderBloque_).join('');
-        document.getElementById('resultado').innerHTML = html || '<p class="vacio-seccion">Sin datos.</p>';
+        var bloques = (datos.bloques || []).filter(function (b) {
+          return contarItems_(b.pendientes) > 0 || contarItems_(b.hechos) > 0;
+        });
+
+        var resumen = bloques.map(function (b) {
+          return contarItems_(b.pendientes) + ' ' + b.etiqueta.toLowerCase();
+        }).join(' · ');
+        document.getElementById('resumenNumerico').textContent = resumen ? resumen + ' pendiente(s)' : '';
+
+        document.getElementById('resultado').innerHTML = bloques.length
+          ? bloques.map(renderBloque_).join('')
+          : '<div class="vacio-global">Nada que reportar en este rango.</div>';
+      }
+
+      function contarItems_(grupos) {
+        return (grupos || []).reduce(function (acc, g) { return acc + g.items.length; }, 0);
       }
 
       function renderBloque_(bloque) {
-        return '<div class="bloque-entidad">' +
-          '<h3>' + escapeHtml(bloque.etiqueta) + '</h3>' +
-          '<div class="seccion-titulo">Pendiente</div>' + renderGrupos_(bloque, bloque.pendientes) +
-          '<div class="seccion-titulo">Hecho</div>' + renderGrupos_(bloque, bloque.hechos) +
-          '</div>';
+        var totalPendientes = contarItems_(bloque.pendientes);
+        var totalHechos = contarItems_(bloque.hechos);
+        return '<details class="bloque-entidad" open>' +
+          '<summary>' + escapeHtml(bloque.etiqueta) + ' (' + totalPendientes + ' pendiente' + (totalPendientes === 1 ? '' : 's') + ', ' + totalHechos + ' hecho' + (totalHechos === 1 ? '' : 's') + ')</summary>' +
+          '<div>' +
+          (totalPendientes > 0 ? '<div class="seccion-titulo">Pendiente</div>' + renderGrupos_(bloque, bloque.pendientes, false) : '') +
+          (totalHechos > 0 ? '<div class="seccion-titulo">Hecho</div>' + renderGrupos_(bloque, bloque.hechos, true) : '') +
+          '</div></details>';
       }
 
-      function renderGrupos_(bloque, grupos) {
-        if (!grupos || grupos.length === 0) return '<div class="vacio-seccion">(sin elementos)</div>';
+      function renderGrupos_(bloque, grupos, esHecho) {
         return grupos.map(function (grupo) {
           var filas = grupo.items.map(function (item) {
-            return renderItem_(bloque, item);
+            return renderItem_(bloque, item, esHecho);
           }).join('');
           return '<div class="grupo-responsable"><div class="nombre-responsable">' +
             escapeHtml(grupo.responsable) + '</div>' + filas + '</div>';
         }).join('');
       }
 
-      function renderItem_(bloque, item) {
+      function renderItem_(bloque, item, esHecho) {
         var nombre = item[bloque.campoNombre] || item.ID;
         var fecha = formatearFecha_(item.FECHA_FIN_PLAN || item.FECHA_LIMITE || item.FECHA_FIN_REAL || item.FECHA_RESOLUCION);
+        var atraso = (!esHecho && item.DIAS_ATRASO !== null && item.DIAS_ATRASO !== undefined && item.DIAS_ATRASO > 0)
+          ? ' <span class="badge-atraso">+' + item.DIAS_ATRASO + 'd</span>' : '';
         return '<div class="fila-item" onclick="abrirEdicion_(\'' + bloque.entidad + '\',\'' + item.ID + '\')">' +
           '<span>' + escapeHtml(nombre) + '</span>' +
-          '<span class="fecha-item">' + escapeHtml(item.ESTADO) + (fecha ? ' · ' + fecha : '') + '</span>' +
+          '<span class="fecha-item">' + escapeHtml(item.ESTADO) + (fecha ? ' · ' + fecha : '') + atraso + '</span>' +
           '</div>';
       }
 
@@ -169,8 +207,26 @@
           .abrirDialogoExportarPanelTemporalPDF(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
       }
 
-      marcarBotonActivo_('HOY');
-      cargar_();
+      /* Recuerda el último modo usado (por usuario) -- ver conversación "recordar el último modo usado entre aperturas". */
+      google.script.run
+        .withFailureHandler(function () { marcarBotonActivo_('HOY'); cargar_(); })
+        .withSuccessHandler(function (ultimo) {
+          if (ultimo.modo === 'RANGO' && ultimo.fechaInicioISO && ultimo.fechaFinISO) {
+            document.getElementById('fechaInicioRango').value = ultimo.fechaInicioISO;
+            document.getElementById('fechaFinRango').value = ultimo.fechaFinISO;
+            MODO_ACTUAL = 'RANGO';
+            FECHA_INICIO_ACTUAL = ultimo.fechaInicioISO;
+            FECHA_FIN_ACTUAL = ultimo.fechaFinISO;
+            marcarBotonActivo_('RANGO');
+          } else {
+            MODO_ACTUAL = ultimo.modo || 'HOY';
+            marcarBotonActivo_(MODO_ACTUAL);
+          }
+          cargar_();
+        })
+        .obtenerUltimoModoPanelTemporal();
+
+      cargarResumenBotones_();
     </script>
   </body>
 </html>
