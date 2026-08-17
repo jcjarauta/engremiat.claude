@@ -6982,6 +6982,7 @@ function pruebaPaso293_IncidenciaExigeRelacion() {
   var cadena = construirCadenaTareaPrueba_('P293');
   try {
     var resultado = guardarFormulario('INCIDENCIA', null, {
+      NIVEL_INCIDENCIA: 'Campaña',
       CAMPANA_ID: cadena.campanaId,
       TITULO: 'Incidencia prueba P293 con relacion',
       TIPO: 'Calidad',
@@ -7006,6 +7007,7 @@ function pruebaPaso294_IncidenciaCoherenciaJerarquia() {
     var errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Proyecto',
         CAMPANA_ID: cadenaB.campanaId,
         PROYECTO_ID: cadenaA.proyectoId,
         TITULO: 'Incidencia P294 proyecto-campana incoherente',
@@ -7020,6 +7022,8 @@ function pruebaPaso294_IncidenciaCoherenciaJerarquia() {
     errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Producto',
+        CAMPANA_ID: cadenaB.campanaId,
         PROYECTO_ID: cadenaB.proyectoId,
         PRODUCTO_ID: cadenaA.productoId,
         TITULO: 'Incidencia P294 producto-proyecto incoherente',
@@ -7034,6 +7038,9 @@ function pruebaPaso294_IncidenciaCoherenciaJerarquia() {
     errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Proceso',
+        CAMPANA_ID: cadenaB.campanaId,
+        PROYECTO_ID: cadenaB.proyectoId,
         PRODUCTO_ID: cadenaB.productoId,
         PROCESO_ID: cadenaA.procesoId,
         TITULO: 'Incidencia P294 proceso-producto incoherente',
@@ -7048,6 +7055,10 @@ function pruebaPaso294_IncidenciaCoherenciaJerarquia() {
     errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Tarea',
+        CAMPANA_ID: cadenaB.campanaId,
+        PROYECTO_ID: cadenaB.proyectoId,
+        PRODUCTO_ID: cadenaB.productoId,
         PROCESO_ID: cadenaB.procesoId,
         TAREA_ID: cadenaA.tareaId,
         TITULO: 'Incidencia P294 tarea-proceso incoherente',
@@ -7060,6 +7071,7 @@ function pruebaPaso294_IncidenciaCoherenciaJerarquia() {
     Logger.log('OK PASO 294d: tarea-proceso incoherente rechazado -- ' + errorCapturado.message);
 
     var resultado = guardarFormulario('INCIDENCIA', null, {
+      NIVEL_INCIDENCIA: 'Tarea',
       CAMPANA_ID: cadenaA.campanaId,
       PROYECTO_ID: cadenaA.proyectoId,
       PRODUCTO_ID: cadenaA.productoId,
@@ -7086,6 +7098,7 @@ function pruebaPaso295_IncidenciaCierreYAccionCorrectora() {
     var errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Campaña',
         CAMPANA_ID: cadena.campanaId,
         TITULO: 'Incidencia P295 cierre sin fecha resolucion',
         TIPO: 'Calidad',
@@ -7099,12 +7112,13 @@ function pruebaPaso295_IncidenciaCierreYAccionCorrectora() {
     errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Campaña',
         CAMPANA_ID: cadena.campanaId,
         TITULO: 'Incidencia P295 alta prioridad sin accion correctora',
         TIPO: 'Calidad',
         PRIORIDAD: 'Alta',
         ESTADO: 'Resuelta',
-        FECHA_RESOLUCION: '2026-07-25'
+        FECHA_RESOLUCION: new Date()
       });
     } catch (e) { errorCapturado = e; }
     if (!errorCapturado) throw new Error('PASO 295 FALLO: se permitio cerrar una incidencia de prioridad alta sin accion correctora');
@@ -7113,24 +7127,26 @@ function pruebaPaso295_IncidenciaCierreYAccionCorrectora() {
     errorCapturado = null;
     try {
       guardarFormulario('INCIDENCIA', null, {
+        NIVEL_INCIDENCIA: 'Campaña',
         CAMPANA_ID: cadena.campanaId,
         TITULO: 'Incidencia P295 seguridad sin accion correctora',
         TIPO: 'Seguridad',
         PRIORIDAD: 'Baja',
         ESTADO: 'Cerrada',
-        FECHA_RESOLUCION: '2026-07-25'
+        FECHA_RESOLUCION: new Date()
       });
     } catch (e) { errorCapturado = e; }
     if (!errorCapturado) throw new Error('PASO 295 FALLO: se permitio cerrar una incidencia de seguridad sin accion correctora');
     Logger.log('OK PASO 295c: cierre tipo seguridad sin accion correctora rechazado -- ' + errorCapturado.message);
 
     var resultado = guardarFormulario('INCIDENCIA', null, {
+      NIVEL_INCIDENCIA: 'Campaña',
       CAMPANA_ID: cadena.campanaId,
       TITULO: 'Incidencia P295 cierre completo',
       TIPO: 'Seguridad',
       PRIORIDAD: 'Alta',
       ESTADO: 'Cerrada',
-      FECHA_RESOLUCION: '2026-07-25',
+      FECHA_RESOLUCION: new Date(),
       ACCION_CORRECTORA: 'Se reviso el protocolo de seguridad y se reforzo la senalizacion'
     });
     if (resultado !== true) throw new Error('PASO 295 FALLO: no se pudo cerrar una incidencia critica con fecha y accion correctora');
