@@ -955,6 +955,35 @@ test('122 buildPackages filtra archivos por cierre de módulos', () => {
   }
 });
 
+/*
+ * Guardia permanente para el gap de cobertura de reglas FUNC-* -- ver
+ * "asesor técnico, item C del backlog": el roadmap registró que ese gap
+ * creció de 9 a 21 reglas sin prueba entre dos mediciones, simplemente
+ * porque el sistema creció entre medias (L0-N8 añadieron ~28 reglas
+ * nuevas). La reconciliación de esa vez fue manual y puntual; esto la
+ * convierte en un test que corre en cada publicación (no depende de que
+ * alguien se acuerde de auditar). Cualquier código FUNC-XXX-000 usado en
+ * IntegrityService.js (con o sin comillas -- basta con que aparezca como
+ * literal) debe aparecer también en algún Tests_*.js; si no, el test
+ * falla nombrando exactamente qué código quedó sin prueba emparejada.
+ */
+test('123 cobertura de pruebas reactivas para todas las reglas FUNC-*', () => {
+  const integrity = readFileSync(path.join(PROJECT_ROOT, 'src', 'IntegrityService.js'), 'utf8');
+  const codigosDeclarados = new Set([...integrity.matchAll(/FUNC-[A-Z]+-\d{3}/gu)].map((m) => m[0]));
+  assert(codigosDeclarados.size > 0, 'SIN_CODIGOS_FUNC_DETECTADOS -- ¿cambió el formato del código de regla?');
+
+  const srcDir = path.join(PROJECT_ROOT, 'src');
+  const testFiles = readdirSync(srcDir).filter((name) => /^Tests_.*\.js$/u.test(name));
+  const codigosCubiertos = new Set();
+  for (const file of testFiles) {
+    const source = readFileSync(path.join(srcDir, file), 'utf8');
+    for (const match of source.matchAll(/FUNC-[A-Z]+-\d{3}/gu)) codigosCubiertos.add(match[0]);
+  }
+
+  const sinCobertura = [...codigosDeclarados].filter((codigo) => !codigosCubiertos.has(codigo)).sort();
+  assertDeepEqual(sinCobertura, [], `REGLAS_FUNC_SIN_PRUEBA ${sinCobertura.join(', ')}`);
+});
+
 async function main() {
   console.log(`ENGREMIAT_PACKAGE_BEGIN tests=${tests.length}`);
   let failures = 0;
