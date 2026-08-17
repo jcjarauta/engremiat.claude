@@ -75,6 +75,10 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
     return construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy);
   });
 
+  var totalSinFecha = bloques.reduce(function (acc, b) {
+    return acc + b.sinFecha.reduce(function (a, g) { return a + g.items.length; }, 0);
+  }, 0);
+
   var resultado = {
     modo: modo,
     rangoInicio: rango.inicio,
@@ -82,7 +86,8 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
     bloques: bloques,
     alertas: {
       sobreasignaciones: listarSobreasignaciones(),
-      recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible()
+      recursosSinCompetenciaDisponible: listarRecursosSinCompetenciaDisponible(),
+      totalSinFechaPlanificada: totalSinFecha
     }
   };
 
@@ -155,6 +160,7 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, 
   var hechos = config.enriquecerResponsable(
     ordenarPanelTemporalPorFecha_(filtrarHechosEnRango_(registros, config, rango), config, true)
   );
+  var sinFecha = config.enriquecerResponsable(filtrarSinFechaAbiertos_(registros, config));
 
   return {
     entidad: entidad,
@@ -162,8 +168,29 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, 
     campoNombre: config.campoNombre,
     pendientes: agruparPorResponsablePanelTemporal_(pendientes),
     hechos: agruparPorResponsablePanelTemporal_(hechos),
+    sinFecha: agruparPorResponsablePanelTemporal_(sinFecha),
     diagnostico: diagnosticarPanelTemporal_(registros, config)
   };
+}
+
+/*
+ * Ver conversación -- "salen datos pero son poco valiosos": con 0/16
+ * tareas y 0/8 procesos con fecha planificada, el panel por rango
+ * quedaba vacío de verdad -- no por un bug, sino porque no hay con qué
+ * situarlos en el tiempo. En vez de dejarlos invisibles para siempre
+ * (el mismo hueco que ya detecta listarProcesosSinFechas() en
+ * DashboardService.js, pero sin agrupar por responsable ni permitir
+ * editar desde ahí), se listan aparte como acción pendiente real:
+ * "esto sigue abierto y nadie le ha puesto fecha". No depende del
+ * rango consultado -- un registro sin fecha lo está en cualquier modo.
+ */
+function filtrarSinFechaAbiertos_(registros, config) {
+  return registros.filter(function (r) {
+    if (config.estadosCerrados.indexOf(r.ESTADO) !== -1) return false;
+    var finPlan = parsearFechaPanelTemporal_(r[config.finPlan]);
+    var inicioPlan = config.inicioPlan ? parsearFechaPanelTemporal_(r[config.inicioPlan]) : null;
+    return !finPlan && !inicioPlan;
+  });
 }
 
 /*
@@ -327,6 +354,11 @@ function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO) {
       encabezados: ['Responsable', 'Nombre', 'Estado', 'Fecha de cierre'],
       filas: aplanarGrupoPanelTemporalCsv_(bloque.hechos, config, config.finReal)
     });
+    bloquesCsv.push({
+      titulo: bloque.etiqueta + ' -- sin fecha planificada',
+      encabezados: ['Responsable', 'Nombre', 'Estado'],
+      filas: aplanarGrupoPanelTemporalCsv_(bloque.sinFecha, config, null)
+    });
   });
 
   var nombre = 'PANEL_TEMPORAL_' + (ETIQUETAS_MODO_PANEL_TEMPORAL_[modo] || modo).replace(/\s+/g, '_') + '_' +
@@ -339,7 +371,9 @@ function aplanarGrupoPanelTemporalCsv_(grupos, config, campoFecha) {
   var filas = [];
   grupos.forEach(function (grupo) {
     grupo.items.forEach(function (item) {
-      filas.push([grupo.responsable, item[config.campoNombre] || item.ID, item.ESTADO, formatearFechaCsv_(item[campoFecha])]);
+      var fila = [grupo.responsable, item[config.campoNombre] || item.ID, item.ESTADO];
+      if (campoFecha) fila.push(formatearFechaCsv_(item[campoFecha]));
+      filas.push(fila);
     });
   });
   return filas;
@@ -366,31 +400,33 @@ function generarHtmlPanelTemporalImprimible_(datos) {
 
   var cuerpo = datos.bloques.map(function (bloque) {
     return '<h2>' + escaparHtmlServer_(bloque.etiqueta) + '</h2>' +
-      '<h3>Pendiente</h3>' + tablaGrupoPanelTemporalHtml_(bloque, bloque.pendientes, false) +
-      '<h3>Hecho</h3>' + tablaGrupoPanelTemporalHtml_(bloque, bloque.hechos, true);
+      '<h3>Pendiente</h3>' + tablaGrupoPanelTemporalHtml_(bloque, bloque.pendientes, 'plan') +
+      '<h3>Hecho</h3>' + tablaGrupoPanelTemporalHtml_(bloque, bloque.hechos, 'real') +
+      '<h3>Sin fecha planificada</h3>' + tablaGrupoPanelTemporalHtml_(bloque, bloque.sinFecha, 'sinfecha');
   }).join('');
 
   var alertas = '';
-  if (datos.alertas.sobreasignaciones.length > 0 || datos.alertas.recursosSinCompetenciaDisponible.length > 0) {
+  if (datos.alertas.sobreasignaciones.length > 0 || datos.alertas.recursosSinCompetenciaDisponible.length > 0 || datos.alertas.totalSinFechaPlanificada > 0) {
     alertas = '<h2>Alertas</h2><p>' +
       datos.alertas.sobreasignaciones.length + ' persona(s) sobreasignada(s) · ' +
-      datos.alertas.recursosSinCompetenciaDisponible.length + ' recurso(s) sin técnico disponible.</p>';
+      datos.alertas.recursosSinCompetenciaDisponible.length + ' recurso(s) sin técnico disponible · ' +
+      datos.alertas.totalSinFechaPlanificada + ' registro(s) abierto(s) sin fecha planificada.</p>';
   }
 
   return construirDocumentoInformeImprimible_('Panel temporal: ' + etiquetaModo, subtitulo, alertas + cuerpo);
 }
 
-function tablaGrupoPanelTemporalHtml_(bloque, grupos, esFechaReal) {
+function tablaGrupoPanelTemporalHtml_(bloque, grupos, modoFecha) {
   if (!grupos || grupos.length === 0) return '<p>(sin elementos)</p>';
   var config = CONFIG_PANEL_TEMPORAL_[bloque.entidad];
-  var campoFecha = esFechaReal ? config.finReal : config.finPlan;
+  var campoFecha = (modoFecha === 'real') ? config.finReal : (modoFecha === 'plan') ? config.finPlan : null;
   var filas = '';
   grupos.forEach(function (grupo) {
     grupo.items.forEach(function (item) {
       filas += '<tr><td>' + escaparHtmlServer_(grupo.responsable) + '</td>' +
         '<td>' + enlaceEdicion_(bloque.entidad, item.ID, item[bloque.campoNombre] || item.ID) + '</td>' +
         '<td>' + escaparHtmlServer_(item.ESTADO) + '</td>' +
-        '<td>' + formatearFechaCsv_(item[campoFecha]) + '</td></tr>';
+        '<td>' + (campoFecha ? formatearFechaCsv_(item[campoFecha]) : '(sin fecha)') + '</td></tr>';
     });
   });
   return '<table><tr><th>Responsable</th><th>Nombre</th><th>Estado</th><th>Fecha</th></tr>' + filas + '</table>';

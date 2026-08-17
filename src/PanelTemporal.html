@@ -38,6 +38,7 @@
       .bloque-entidad summary::-webkit-details-marker { color: var(--color-texto-secundario); }
       .bloque-entidad > div { margin-left: 8px; }
       .seccion-titulo { font-weight: bold; font-size: 13px; margin: 6px 0 2px; color: var(--color-texto-secundario); }
+      .seccion-titulo-alerta { color: var(--color-peligro); }
       .grupo-responsable { margin-bottom: 6px; }
       .nombre-responsable { font-weight: bold; font-size: 13px; }
       .fila-item { padding: 4px 0 4px 12px; display: flex; justify-content: space-between; gap: 6px; cursor: pointer; }
@@ -160,18 +161,16 @@
         document.getElementById('rangoMostrado').textContent =
           formatearFecha_(datos.rangoInicio) + ' — ' + formatearFecha_(datos.rangoFin);
 
-        var alertas = datos.alertas || { sobreasignaciones: [], recursosSinCompetenciaDisponible: [] };
+        var alertas = datos.alertas || { sobreasignaciones: [], recursosSinCompetenciaDisponible: [], totalSinFechaPlanificada: 0 };
         var elAlertas = document.getElementById('alertasPanel');
-        if (alertas.sobreasignaciones.length > 0 || alertas.recursosSinCompetenciaDisponible.length > 0) {
-          elAlertas.innerHTML = '<div class="alertas-panel">⚠ ' +
-            alertas.sobreasignaciones.length + ' persona(s) sobreasignada(s) · ' +
-            alertas.recursosSinCompetenciaDisponible.length + ' recurso(s) sin técnico disponible.</div>';
-        } else {
-          elAlertas.innerHTML = '';
-        }
+        var lineasAlerta = [];
+        if (alertas.sobreasignaciones.length > 0) lineasAlerta.push(alertas.sobreasignaciones.length + ' persona(s) sobreasignada(s)');
+        if (alertas.recursosSinCompetenciaDisponible.length > 0) lineasAlerta.push(alertas.recursosSinCompetenciaDisponible.length + ' recurso(s) sin técnico disponible');
+        if (alertas.totalSinFechaPlanificada > 0) lineasAlerta.push(alertas.totalSinFechaPlanificada + ' registro(s) abierto(s) sin fecha planificada');
+        elAlertas.innerHTML = lineasAlerta.length ? '<div class="alertas-panel">⚠ ' + lineasAlerta.join(' · ') + '.</div>' : '';
 
         var bloques = (datos.bloques || []).filter(function (b) {
-          return contarItems_(b.pendientes) > 0 || contarItems_(b.hechos) > 0;
+          return contarItems_(b.pendientes) > 0 || contarItems_(b.hechos) > 0 || contarItems_(b.sinFecha) > 0;
         });
 
         var resumen = bloques.map(function (b) {
@@ -206,11 +205,15 @@
       function renderBloque_(bloque) {
         var totalPendientes = contarItems_(bloque.pendientes);
         var totalHechos = contarItems_(bloque.hechos);
+        var totalSinFecha = contarItems_(bloque.sinFecha);
+        var resumenTitulo = totalPendientes + ' pendiente' + (totalPendientes === 1 ? '' : 's') + ', ' + totalHechos + ' hecho' + (totalHechos === 1 ? '' : 's') +
+          (totalSinFecha > 0 ? ', ' + totalSinFecha + ' sin fecha' : '');
         return '<details class="bloque-entidad" open>' +
-          '<summary>' + escapeHtml(bloque.etiqueta) + ' (' + totalPendientes + ' pendiente' + (totalPendientes === 1 ? '' : 's') + ', ' + totalHechos + ' hecho' + (totalHechos === 1 ? '' : 's') + ')</summary>' +
+          '<summary>' + escapeHtml(bloque.etiqueta) + ' (' + resumenTitulo + ')</summary>' +
           '<div>' +
           (totalPendientes > 0 ? '<div class="seccion-titulo">Pendiente</div>' + renderGrupos_(bloque, bloque.pendientes, false) : '') +
           (totalHechos > 0 ? '<div class="seccion-titulo">Hecho</div>' + renderGrupos_(bloque, bloque.hechos, true) : '') +
+          (totalSinFecha > 0 ? '<div class="seccion-titulo seccion-titulo-alerta">Sin fecha planificada</div>' + renderGrupos_(bloque, bloque.sinFecha, false) : '') +
           '</div></details>';
       }
 
