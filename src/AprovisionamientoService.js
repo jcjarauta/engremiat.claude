@@ -357,6 +357,55 @@ function abrirEjecutorPruebasReactivas() {
 }
 
 /*
+ * Ver conversación -- "esto está siendo muy pesado", "mejorar la
+ * fricción humana": alternativa a abrirEjecutorPruebasReactivas() que
+ * no exige reabrir el menú cada pocos minutos. Instala un trigger por
+ * tiempo (EjecutorPruebasReactivas.js) que se ejecuta solo hasta
+ * terminar y avisa por correo (MailApp, sin depender de n8n -- el
+ * webhook n8n existente es de otro proyecto y en localhost, inalcanzable
+ * desde Apps Script de todos modos). Mismo guard/gate que la versión
+ * interactiva.
+ */
+function abrirEjecutorPruebasReactivasSegundoPlano() {
+  var ui = SpreadsheetApp.getUi();
+  if (typeof iniciarEjecucionEnSegundoPlanoPruebasReactivas_ !== 'function') {
+    ui.alert('No disponible', 'Las pruebas reactivas (Tests_*.js) solo existen en el proyecto maestro -- no se distribuyen a ningún cliente.', ui.ButtonSet.OK);
+    return;
+  }
+
+  var estado = obtenerEstadoPruebasReactivas_();
+
+  if (haySegundoPlanoActivoPruebasReactivas_()) {
+    var detener = ui.alert(
+      'Ejecución en segundo plano ya activa',
+      'Quedan ' + estado.pendientes + '/' + estado.total + ' pendientes. ¿Detener la ejecución automática?',
+      ui.ButtonSet.YES_NO
+    );
+    if (detener === ui.Button.YES) {
+      detenerEjecucionEnSegundoPlanoPruebasReactivas_();
+      ui.alert('Detenida', 'Los resultados ya escritos se conservan en "RESULTADOS_PRUEBAS_REACTIVAS". Puedes reanudar cuando quieras desde este mismo menú.', ui.ButtonSet.OK);
+    }
+    return;
+  }
+
+  if (estado.pendientes === 0) {
+    ui.alert('Ya completo', 'Las ' + estado.total + ' pruebas reactivas ya están completas. Para repetir todas, usa "Ejecutar pruebas reactivas" y elige empezar de cero.', ui.ButtonSet.OK);
+    return;
+  }
+
+  var destinatario = Session.getEffectiveUser().getEmail() || '(tu correo de Google)';
+  var confirmacion = ui.alert(
+    'Ejecutar en segundo plano',
+    'Quedan ' + estado.pendientes + '/' + estado.total + ' pendientes. Se ejecutarán solas en tandas automáticas cada ' + MINUTOS_ENTRE_TANDAS_PRUEBAS_REACTIVAS_ + ' minutos, sin que tengas que volver a abrir este menú. Aviso por correo a ' + destinatario + ' cuando termine. ¿Continuar?',
+    ui.ButtonSet.YES_NO
+  );
+  if (confirmacion !== ui.Button.YES) return;
+
+  iniciarEjecucionEnSegundoPlanoPruebasReactivas_();
+  ui.alert('En marcha', 'Ejecutándose en segundo plano. Puedes cerrar este Sheet -- recibirás un correo cuando termine.', ui.ButtonSet.OK);
+}
+
+/*
  * Lee el propio appsscript.json (script.projects.getContent sobre
  * ScriptApp.getScriptId(), no un scriptId ajeno), le cambia solo la
  * version de la dependencia LIBRERIA_ID_ a la ultima publicada

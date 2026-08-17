@@ -144,3 +144,89 @@ function leerFuncionesYaEjecutadas_(hoja) {
 function escribirFilaResultadoPruebaReactiva_(hoja, fila) {
   hoja.appendRow([new Date(), fila.archivo, fila.funcion, fila.resultado, fila.ms, fila.mensaje]);
 }
+
+/*
+ * Ejecución en segundo plano (ver conversación -- "esto está siendo muy
+ * pesado", "mejorar la fricción humana"): un trigger por tiempo llama a
+ * ejecutarTriggerLotePruebasReactivas_ cada 5 minutos (el mínimo válido
+ * de ScriptApp.everyMinutes por debajo del presupuesto de 4.5min de
+ * cada tanda), sin que nadie tenga que reabrir el menú. Se autodestruye
+ * y avisa por correo (MailApp, no depende de n8n) en cuanto no queda
+ * nada pendiente.
+ */
+var NOMBRE_TRIGGER_LOTE_PRUEBAS_REACTIVAS_ = 'ejecutarTriggerLotePruebasReactivas_';
+var MINUTOS_ENTRE_TANDAS_PRUEBAS_REACTIVAS_ = 5;
+
+function haySegundoPlanoActivoPruebasReactivas_() {
+  return ScriptApp.getProjectTriggers().some(function (t) {
+    return t.getHandlerFunction() === NOMBRE_TRIGGER_LOTE_PRUEBAS_REACTIVAS_;
+  });
+}
+
+function iniciarEjecucionEnSegundoPlanoPruebasReactivas_() {
+  if (haySegundoPlanoActivoPruebasReactivas_()) return;
+  ScriptApp.newTrigger(NOMBRE_TRIGGER_LOTE_PRUEBAS_REACTIVAS_)
+    .timeBased()
+    .everyMinutes(MINUTOS_ENTRE_TANDAS_PRUEBAS_REACTIVAS_)
+    .create();
+}
+
+function detenerEjecucionEnSegundoPlanoPruebasReactivas_() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === NOMBRE_TRIGGER_LOTE_PRUEBAS_REACTIVAS_) {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+}
+
+/*
+ * LockService evita solapes si una tanda tarda más de lo previsto y el
+ * siguiente disparo (cada 5min) llega antes de que termine la anterior
+ * (presupuesto de 4.5min, margen corto a propósito). tryLock con
+ * timeout corto: si ya hay una tanda en curso, este disparo se salta
+ * sin más -- el siguiente, 5min después, lo retoma.
+ */
+function ejecutarTriggerLotePruebasReactivas_() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) return;
+
+  try {
+    var resumen = ejecutarLotePruebasReactivas_(true);
+    if (resumen.pendientesRestantes === 0) {
+      detenerEjecucionEnSegundoPlanoPruebasReactivas_();
+      notificarFinPruebasReactivasPorCorreo_();
+    }
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/* Recuenta OK/FALLO leyendo la hoja completa -- ejecutarLotePruebasReactivas_ solo informa de la última tanda, no del acumulado. */
+function notificarFinPruebasReactivasPorCorreo_() {
+  var hoja = obtenerHojaResultadosSiExiste_();
+  var total = REGISTRO_PRUEBAS_REACTIVAS_.length;
+  var ok = 0;
+  var fallo = 0;
+  var nombresFallo = [];
+
+  if (hoja && hoja.getLastRow() >= 2) {
+    var valores = hoja.getRange(2, 3, hoja.getLastRow() - 1, 4).getValues(); // FUNCION, RESULTADO, MS, MENSAJE
+    valores.forEach(function (fila) {
+      if (fila[1] === 'OK') ok++;
+      else if (fila[1] === 'FALLO') { fallo++; nombresFallo.push(fila[0]); }
+    });
+  }
+
+  var destinatario = Session.getEffectiveUser().getEmail();
+  var asunto = 'Pruebas reactivas completadas: ' + ok + '/' + total + ' OK, ' + fallo + ' fallo(s)';
+  var cuerpo = 'Se completaron las ' + total + ' pruebas reactivas en segundo plano.\n\n' +
+    ok + ' OK\n' + fallo + ' fallo(s)' +
+    (nombresFallo.length ? '\n\nFallos:\n- ' + nombresFallo.join('\n- ') : '') +
+    '\n\nDetalle fila a fila en la hoja "RESULTADOS_PRUEBAS_REACTIVAS" del Sheet maestro.';
+
+  try {
+    if (destinatario) MailApp.sendEmail(destinatario, asunto, cuerpo);
+  } catch (e) {
+    Logger.log('NOTIFICACION_PRUEBAS_REACTIVAS_ERROR: ' + e.message);
+  }
+}

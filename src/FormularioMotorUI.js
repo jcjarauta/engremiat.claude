@@ -489,7 +489,9 @@ function agregarCatalogosCore_(menu) {
   // que nunca se distribuye a ningún cliente -- ver
   // abrirEjecutorPruebasReactivas en AprovisionamientoService.js.
   if (moduloInstalado_('INTERNO')) {
-    menu = menu.addItem('Ejecutar pruebas reactivas (346)', 'abrirEjecutorPruebasReactivas');
+    menu = menu
+      .addItem('Ejecutar pruebas reactivas (346)', 'abrirEjecutorPruebasReactivas')
+      .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano');
   }
   return menu;
 }
