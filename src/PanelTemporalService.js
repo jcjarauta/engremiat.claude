@@ -52,7 +52,7 @@ var ETIQUETAS_MODO_PANEL_TEMPORAL_ = {
 function abrirPanelTemporal() {
   var html = HtmlService.createTemplateFromFile('PanelTemporal')
     .evaluate()
-    .setTitle('¿Qué toca?')
+    .setTitle('Agenda operativa')
     .setWidth(440);
   SpreadsheetApp.getUi().showSidebar(html);
 }
@@ -169,7 +169,9 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, 
 function anadirDiasAtrasoPanelTemporal_(lista, config, hoy) {
   return lista.map(function (item) {
     var finPlan = parsearFechaPanelTemporal_(item[config.finPlan]);
-    var diasAtraso = (finPlan && finPlan < hoy) ? Math.floor((hoy - finPlan) / 86400000) : null;
+    var inicioPlan = config.inicioPlan ? parsearFechaPanelTemporal_(item[config.inicioPlan]) : null;
+    var ventanaFin = finPlan || inicioPlan;
+    var diasAtraso = (ventanaFin && ventanaFin < hoy) ? Math.floor((hoy - ventanaFin) / 86400000) : null;
     return Object.assign({}, item, { DIAS_ATRASO: diasAtraso });
   });
 }
@@ -220,6 +222,14 @@ function rangoSemanaPanelTemporal_(hoy, offsetDias) {
  * día (FECHA_LIMITE). Un registro sin ninguna fecha usable no se puede
  * situar en el tiempo y se omite (mismo criterio que el resto de
  * paneles/informes ante datos incompletos).
+ *
+ * "Atrasada" se evalúa sobre ventanaFin, no sobre finPlan directamente
+ * (ver conversación -- "Hoy no arroja resultados" con datos reales):
+ * un PROCESO/TAREA "En proceso" con FECHA_INICIO_PLAN en el pasado pero
+ * FECHA_FIN_PLAN todavía sin rellenar tenía finPlan vacío -> nunca
+ * contaba como atrasada aunque llevara días abierta. ventanaFin ya cae
+ * de vuelta a inicioPlan cuando finPlan falta, así que reutilizarla
+ * cubre ese caso sin duplicar el fallback.
  */
 function filtrarPendientesEnRango_(registros, config, rango, incluirAtrasadasSiempre) {
   return registros.filter(function (r) {
@@ -232,7 +242,7 @@ function filtrarPendientesEnRango_(registros, config, rango, incluirAtrasadasSie
     if (!ventanaInicio || !ventanaFin) return false;
 
     var seSolapaConRango = ventanaInicio <= rango.fin && ventanaFin >= rango.inicio;
-    var estaAtrasada = incluirAtrasadasSiempre && finPlan && finPlan < rango.inicio;
+    var estaAtrasada = incluirAtrasadasSiempre && ventanaFin < rango.inicio;
 
     return seSolapaConRango || estaAtrasada;
   });

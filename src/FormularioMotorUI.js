@@ -149,7 +149,7 @@ function construirSubmenuAnalizar_(ui) {
 function agregarAnalizarCore_(menu) {
   return menu
     .addItem('Panel operativo', 'abrirPanelOperativo')
-    .addItem('¿Qué toca? (hoy / esta semana / semana que viene)', 'abrirPanelTemporal')
+    .addItem('Agenda operativa (hoy / esta semana / semana que viene)', 'abrirPanelTemporal')
     .addItem('Informes', 'abrirInformes')
     .addItem('Kanban operativo (Tarea/Proceso/Incidencia)', 'abrirKanban')
     .addItem('Listado filtrable (Incidencias/Decisiones/Documentos)', 'abrirListadoFiltrable')
