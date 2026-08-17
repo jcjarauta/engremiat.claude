@@ -1685,7 +1685,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "d2d74fb8471921c09a33bc5859da575c44bd1d3db1f117c0ca6b31fde347cfe8",
+      "expectedSha256": "0c4d3506ad31c31eb2faa71f029cdb74c00f98207b755cfa470258eca6a03470",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
