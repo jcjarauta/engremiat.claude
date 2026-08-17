@@ -467,7 +467,7 @@ test('49 matriz clasifica Código.js como auxiliary C', () => {
 test('50 hashes nuevos de archivos de integridad', () => {
   const integrity = readFileSync(path.join(PROJECT_ROOT, 'src', 'IntegrityService.js'));
   const testsIntegrity = readFileSync(path.join(PROJECT_ROOT, 'src', 'Tests_IntegridadGapReglasFuncional.js'));
-  assertEqual(crypto.createHash('sha256').update(integrity).digest('hex'), 'dfaa3d71488a61d52fe3911fe182492cab93cf749e5119e3a4401fbcd2f3168f');
+  assertEqual(crypto.createHash('sha256').update(integrity).digest('hex'), '09cf0323769c428aa1c1fe684a22063c0b7be571f8e400f75794c5c377dc2766');
   assertEqual(crypto.createHash('sha256').update(testsIntegrity).digest('hex'), 'cb3f158d590be214e875d00a8585e4a8db278be577a321cb261a3f345c2576de');
 });
 

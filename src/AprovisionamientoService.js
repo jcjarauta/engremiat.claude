@@ -290,7 +290,7 @@ function abrirActualizarMiLibreria() {
 
 /*
  * Este handler vive en package A (módulo APROVISIONAMIENTO) a propósito,
- * aunque la lógica real que invoca (ejecutarTodasLasPruebasReactivas,
+ * aunque la lógica real que invoca (ejecutarLotePruebasReactivas_,
  * EjecutorPruebasReactivas.js) es package B -- nunca se distribuye a
  * ningún cliente, ni siquiera a uno interno como Gestor de Proyectos,
  * porque depende de RegistroPruebasReactivas.js y de los 346 Tests_*.js,
@@ -303,31 +303,54 @@ function abrirActualizarMiLibreria() {
  * pueda tener instalado, así que el ítem de menú nunca llega a mostrarse
  * fuera del maestro -- y el guard de abajo es la segunda red de
  * seguridad si esa condición cambiase algún día.
+ *
+ * Por lotes con reanudación (ver primera ejecución real: 11/346 antes de
+ * "Se ha superado el tiempo máximo de ejecución"): si queda una tanda a
+ * medias, pregunta si continuar donde se quedó o empezar de cero, en vez
+ * de asumir uno de los dos.
  */
 function abrirEjecutorPruebasReactivas() {
   var ui = SpreadsheetApp.getUi();
-  if (typeof ejecutarTodasLasPruebasReactivas !== 'function') {
+  if (typeof ejecutarLotePruebasReactivas_ !== 'function') {
     ui.alert('No disponible', 'Las pruebas reactivas (Tests_*.js) solo existen en el proyecto maestro -- no se distribuyen a ningún cliente.', ui.ButtonSet.OK);
     return;
   }
-  var total = (typeof REGISTRO_PRUEBAS_REACTIVAS_ !== 'undefined') ? REGISTRO_PRUEBAS_REACTIVAS_.length : 0;
-  var confirmacion = ui.alert(
-    'Ejecutar pruebas reactivas',
-    'Se van a ejecutar ' + total + ' pruebas reactivas (Tests_*.js). Algunas mutan datos reales del Sheet (con su propia restauración) y la tanda completa puede tardar varios minutos. ¿Continuar?',
-    ui.ButtonSet.YES_NO
-  );
-  if (confirmacion !== ui.Button.YES) return;
 
-  var resumen = ejecutarTodasLasPruebasReactivas();
+  var estado = obtenerEstadoPruebasReactivas_();
+  var reanudar = false;
 
-  var mensaje = resumen.ok + '/' + resumen.total + ' OK, ' + resumen.fallo + ' fallo(s).\n' +
-    'Detalle fila a fila en la hoja "' + HOJA_RESULTADOS_PRUEBAS_REACTIVAS_ + '".';
+  if (estado.completadas > 0 && estado.pendientes > 0) {
+    var eleccion = ui.alert(
+      'Ejecutar pruebas reactivas',
+      'Hay una tanda anterior sin terminar: ' + estado.completadas + '/' + estado.total + ' completadas, ' + estado.pendientes + ' pendientes.\n\n' +
+      'Sí = continuar donde se quedó.\nNo = empezar de cero (borra los resultados anteriores).',
+      ui.ButtonSet.YES_NO_CANCEL
+    );
+    if (eleccion === ui.Button.CANCEL) return;
+    reanudar = (eleccion === ui.Button.YES);
+  } else {
+    var confirmacion = ui.alert(
+      'Ejecutar pruebas reactivas',
+      'Se van a ejecutar hasta ' + estado.total + ' pruebas reactivas (Tests_*.js), en tandas de unos minutos cada una (límite de ejecución de Apps Script -- algunas pruebas individuales tardan 60-100s montando un escenario real). Algunas mutan datos reales del Sheet (con su propia restauración). ¿Continuar?',
+      ui.ButtonSet.YES_NO
+    );
+    if (confirmacion !== ui.Button.YES) return;
+  }
+
+  var resumen = ejecutarLotePruebasReactivas_(reanudar);
+
+  var mensaje = 'Esta tanda: ' + resumen.procesadasEnEstaTanda + ' ejecutadas (' + resumen.ok + ' OK, ' + resumen.fallo + ' fallo).\n';
+  mensaje += (resumen.pendientesRestantes > 0)
+    ? 'Quedan ' + resumen.pendientesRestantes + '/' + resumen.total + ' pendientes -- vuelve a abrir este menú para continuar.'
+    : 'Completado: ' + resumen.total + '/' + resumen.total + '.';
+  mensaje += '\nDetalle fila a fila en la hoja "RESULTADOS_PRUEBAS_REACTIVAS".';
+
   if (resumen.fallo > 0) {
     var nombresFallo = resumen.resultados
       .filter(function (fila) { return fila.resultado === 'FALLO'; })
       .map(function (fila) { return fila.funcion; });
     var listados = nombresFallo.slice(0, 20).join('\n- ');
-    mensaje += '\n\nFallos:\n- ' + listados;
+    mensaje += '\n\nFallos en esta tanda:\n- ' + listados;
     if (nombresFallo.length > 20) mensaje += '\n... y ' + (nombresFallo.length - 20) + ' más.';
   }
   ui.alert('Pruebas reactivas: resultado', mensaje, ui.ButtonSet.OK);

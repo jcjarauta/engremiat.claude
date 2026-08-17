@@ -3445,6 +3445,17 @@ function obtenerReporteIntegridad() {
 
   var medicionEstructural;
   var medicionFuncional;
+  /*
+   * Desglose por entidad -- ver "asesor técnico, dónde se va el tiempo
+   * de obtenerReporteIntegridad": el fix de idsDestino.indexOf()->Set no
+   * bajó el ~32s medido en un sheet real, así que en vez de seguir
+   * adivinando se instrumenta cada entidad por separado (misma
+   * instrumentacionMedirFuncion_ ya usada para las fases, sin coste
+   * añadido más allá de un Date.now() por entidad). Queda en
+   * reporte.instrumentacion.porEntidad Y en el log (INSTR etiqueta=...)
+   * para poder leerlo directamente en Ejecuciones sin tocar código.
+   */
+  var medicionesPorEntidad = [];
 
   try {
     medicionEstructural =
@@ -3462,21 +3473,27 @@ function obtenerReporteIntegridad() {
                * caso ya corregido en Fichas/Panel para MATERIAL).
                */
               try {
-                var duplicados =
-                  detectarIdsDuplicados(entidad);
+                var medicionEntidad = instrumentacionMedirFuncion_(
+                  'estructural_entidad_' + entidad,
+                  function () {
+                    var duplicados =
+                      detectarIdsDuplicados(entidad);
 
-                if (duplicados.length > 0) {
-                  reporte.idsDuplicados[entidad] =
-                    duplicados;
-                }
+                    if (duplicados.length > 0) {
+                      reporte.idsDuplicados[entidad] =
+                        duplicados;
+                    }
 
-                var huerfanas =
-                  detectarReferenciasHuerfanas(entidad);
+                    var huerfanas =
+                      detectarReferenciasHuerfanas(entidad);
 
-                if (huerfanas.length > 0) {
-                  reporte.referenciasHuerfanas[entidad] =
-                    huerfanas;
-                }
+                    if (huerfanas.length > 0) {
+                      reporte.referenciasHuerfanas[entidad] =
+                        huerfanas;
+                    }
+                  }
+                );
+                medicionesPorEntidad.push(medicionEntidad.medicion);
               } catch (eEntidadOpcional_) {
                 console.warn('INTEGRIDAD_ENTIDAD_OMITIDA ' + entidad + ': ' + eEntidadOpcional_.message);
               }
@@ -3499,7 +3516,10 @@ function obtenerReporteIntegridad() {
   reporte.instrumentacion = {
     duracionTotalMs: Date.now() - inicioTotal,
     estructural: medicionEstructural.medicion,
-    funcional: medicionFuncional.medicion
+    funcional: medicionFuncional.medicion,
+    porEntidad: medicionesPorEntidad
+      .slice()
+      .sort(function (a, b) { return b.duracionMs - a.duracionMs; })
   };
 
   console.log(
