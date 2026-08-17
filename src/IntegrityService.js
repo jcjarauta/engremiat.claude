@@ -128,12 +128,20 @@ function detectarReferenciasHuerfanas(entidad) {
   var idxId = encabezados.indexOf('ID');
   var idxActivo = encabezados.indexOf('ACTIVO');
 
+  /*
+   * Set, no array: con MAPA_FK_MVP creciendo (RECURSO, HORARIO,
+   * CONVOCATORIA...) y más datos de piloto sembrados, idsDestino.indexOf()
+   * escaneaba linealmente todos los IDs destino por cada fila de origen y
+   * cada regla -- O(filas_origen × reglas × filas_destino). Set.has() es
+   * O(1) amortizado; ver "asesor técnico, hallazgo de rendimiento en
+   * obtenerReporteIntegridad (14.7s -> 32s)".
+   */
   var idsPorEntidadDestino = {};
 
   reglas.forEach(function (regla) {
     if (!idsPorEntidadDestino[regla.entidad]) {
       idsPorEntidadDestino[regla.entidad] =
-        obtenerIdsDeEntidad_(regla.entidad);
+        new Set(obtenerIdsDeEntidad_(regla.entidad));
     }
   });
 
@@ -167,9 +175,9 @@ function detectarReferenciasHuerfanas(entidad) {
       }
 
       var idsDestino =
-        idsPorEntidadDestino[regla.entidad] || [];
+        idsPorEntidadDestino[regla.entidad] || new Set();
 
-      if (idsDestino.indexOf(valorFk) === -1) {
+      if (!idsDestino.has(valorFk)) {
         huerfanas.push({
           registroId:
             idxId !== -1
