@@ -289,6 +289,51 @@ function abrirActualizarMiLibreria() {
 }
 
 /*
+ * Este handler vive en package A (módulo APROVISIONAMIENTO) a propósito,
+ * aunque la lógica real que invoca (ejecutarTodasLasPruebasReactivas,
+ * EjecutorPruebasReactivas.js) es package B -- nunca se distribuye a
+ * ningún cliente, ni siquiera a uno interno como Gestor de Proyectos,
+ * porque depende de RegistroPruebasReactivas.js y de los 346 Tests_*.js,
+ * que solo existen en el proyecto maestro. Si el handler viviera también
+ * en package B, el generador de envoltorios (resolveWrapperPlan) marcaría
+ * su entrada de menú como UNRESOLVED en cuanto un cliente instalase todos
+ * los módulos -- ver "runner mínimo para las pruebas reactivas". Por eso
+ * se gatea solo por moduloInstalado_('INTERNO') (nunca por
+ * APROVISIONAMIENTO): 'INTERNO' no es un módulo real que ningún cliente
+ * pueda tener instalado, así que el ítem de menú nunca llega a mostrarse
+ * fuera del maestro -- y el guard de abajo es la segunda red de
+ * seguridad si esa condición cambiase algún día.
+ */
+function abrirEjecutorPruebasReactivas() {
+  var ui = SpreadsheetApp.getUi();
+  if (typeof ejecutarTodasLasPruebasReactivas !== 'function') {
+    ui.alert('No disponible', 'Las pruebas reactivas (Tests_*.js) solo existen en el proyecto maestro -- no se distribuyen a ningún cliente.', ui.ButtonSet.OK);
+    return;
+  }
+  var total = (typeof REGISTRO_PRUEBAS_REACTIVAS_ !== 'undefined') ? REGISTRO_PRUEBAS_REACTIVAS_.length : 0;
+  var confirmacion = ui.alert(
+    'Ejecutar pruebas reactivas',
+    'Se van a ejecutar ' + total + ' pruebas reactivas (Tests_*.js). Algunas mutan datos reales del Sheet (con su propia restauración) y la tanda completa puede tardar varios minutos. ¿Continuar?',
+    ui.ButtonSet.YES_NO
+  );
+  if (confirmacion !== ui.Button.YES) return;
+
+  var resumen = ejecutarTodasLasPruebasReactivas();
+
+  var mensaje = resumen.ok + '/' + resumen.total + ' OK, ' + resumen.fallo + ' fallo(s).\n' +
+    'Detalle fila a fila en la hoja "' + HOJA_RESULTADOS_PRUEBAS_REACTIVAS_ + '".';
+  if (resumen.fallo > 0) {
+    var nombresFallo = resumen.resultados
+      .filter(function (fila) { return fila.resultado === 'FALLO'; })
+      .map(function (fila) { return fila.funcion; });
+    var listados = nombresFallo.slice(0, 20).join('\n- ');
+    mensaje += '\n\nFallos:\n- ' + listados;
+    if (nombresFallo.length > 20) mensaje += '\n... y ' + (nombresFallo.length - 20) + ' más.';
+  }
+  ui.alert('Pruebas reactivas: resultado', mensaje, ui.ButtonSet.OK);
+}
+
+/*
  * Lee el propio appsscript.json (script.projects.getContent sobre
  * ScriptApp.getScriptId(), no un scriptId ajeno), le cambia solo la
  * version de la dependencia LIBRERIA_ID_ a la ultima publicada

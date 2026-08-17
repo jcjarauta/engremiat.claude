@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 180,
+  "universeExpected": 182,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -317,11 +317,22 @@
       "module": null
     },
     {
+      "path": "src/AprobarSolicitudMontaje.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "136aba206ac53220cc646c6248b16423d4238ced8f674847505340e3a49d8b0f",
+      "required": true,
+      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (aprobacion manual sincrona con progreso visible, alternativa al trigger onEdit silencioso, ver conversacion: no depender de escribir Aprobado a mano).",
+      "mixed": false,
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/AprovisionamientoService.js",
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "f527c24d973458f3a0480e921bdbe464bdba71bb4c70330edb5029b6e6d34f94",
+      "expectedSha256": "2ccb3baf2be2c9641cda6c6e6d012b396a0d14d02b9751b46b6f17fa30625b70",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (ver conversacion: seguimos con B -- promovido de package C/auxiliar a modulo real de la libreria para que un cliente interno como Gestor de Proyectos pueda montar sheets nuevos el mismo, sin exponerlo a clientes de pago via MODULOS_INSTALADOS_CLIENTE).",
       "mixed": false,
@@ -491,6 +502,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/EjecutorPruebasReactivas.js",
+      "type": "js",
+      "category": "test",
+      "package": "B",
+      "expectedSha256": "17f915cdd05fd3a2b6af54e368bc3282c271c6be12537388f0bfc65a22060782",
+      "required": true,
+      "reason": "prueba explícita",
+      "mixed": false,
+      "module": null
     },
     {
       "path": "src/Estilos.html",
@@ -702,28 +724,6 @@
       "module": "CORE"
     },
     {
-      "path": "src/FichaProyecto.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "9139ee1d7736235ecf0b53f84887e49682a451227fde91311c853be854b089d8",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/FichaProyectoService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "21b0094c80ba260d0b6e828e6cfb51f83953c1e251509eeb4f35a57f64f852bc",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
       "path": "src/FichaProveedor.html",
       "type": "html",
       "category": "production",
@@ -744,6 +744,28 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "COMPRAS"
+    },
+    {
+      "path": "src/FichaProyecto.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "9139ee1d7736235ecf0b53f84887e49682a451227fde91311c853be854b089d8",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/FichaProyectoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "21b0094c80ba260d0b6e828e6cfb51f83953c1e251509eeb4f35a57f64f852bc",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
     },
     {
       "path": "src/FichaRecurso.html",
@@ -816,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "325726ffa1a59d9d1284c24e6764821a6059c0fc2d74d044f543942494c33018",
+      "expectedSha256": "9a4815f2bea6f058101be5bc2b858c87a676636be022a7cde7a542339f040a09",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -922,15 +944,15 @@
       "module": "CORE"
     },
     {
-      "path": "src/Includes.js",
+      "path": "src/ImportacionMasivaAvanzada.js",
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "bb3ba83d64e0b31954a0fa03a7ee28c27a065a716dd7b99c18976b42a03617e8",
+      "expectedSha256": "f9ff9157fb66ae11455d8f037def03e00e6aa723c439c8f99966b6ed4c3adb5a",
       "required": true,
-      "reason": "operación/UI/config",
+      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
       "mixed": false,
-      "module": "CORE"
+      "module": "OPERATIVA"
     },
     {
       "path": "src/ImportacionMasivaInicio.html",
@@ -938,6 +960,17 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "08b62f5521cf3950befc039dcdd03204d54253e084795bad7c4d190c2f334fe5",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/Includes.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "bb3ba83d64e0b31954a0fa03a7ee28c27a065a716dd7b99c18976b42a03617e8",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1173,6 +1206,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/InstaladorImportacionMasivaAvanzada.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "26a4e77b47db66982f6768968dcbcc290ac276d01645ac918f37273bc3b0c04e",
+      "required": true,
+      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
+      "mixed": false,
+      "module": "OPERATIVA"
     },
     {
       "path": "src/InstaladorJerarquiaFisica.js",
@@ -1428,28 +1472,6 @@
       "module": "CORE"
     },
     {
-      "path": "src/MapaSheet.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "713b220500c609fc02bdff542b11fe5042891d0cafdb6a0d220fa531f5b14eee",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
-      "path": "src/MapaSheetService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "83938d4cb36cbb69668de8f48e67527ae4b3b52ef660d3fd27212ef9eea892df",
-      "required": true,
-      "reason": "operación/UI/config",
-      "mixed": false,
-      "module": "CORE"
-    },
-    {
       "path": "src/ListadoFiltrable.html",
       "type": "html",
       "category": "production",
@@ -1466,6 +1488,28 @@
       "category": "production",
       "package": "A",
       "expectedSha256": "ba1f0190fdc94610e532261763e405a3454c9ac9c988e16526d96a7a0ff1b582",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheet.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "713b220500c609fc02bdff542b11fe5042891d0cafdb6a0d220fa531f5b14eee",
+      "required": true,
+      "reason": "operación/UI/config",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/MapaSheetService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "83938d4cb36cbb69668de8f48e67527ae4b3b52ef660d3fd27212ef9eea892df",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1670,6 +1714,17 @@
       "module": "COMPRAS"
     },
     {
+      "path": "src/PlantillaImportacionMasivaAvanzadaService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "f4111f0979fd26d20b9cd61e21f5df9ce71e109bf0dc8dca3f86027229f13737",
+      "required": true,
+      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
+      "mixed": false,
+      "module": "OPERATIVA"
+    },
+    {
       "path": "src/PlantillaImportacionMasivaService.js",
       "type": "js",
       "category": "production",
@@ -1723,6 +1778,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/RegistroPruebasReactivas.js",
+      "type": "js",
+      "category": "test",
+      "package": "B",
+      "expectedSha256": "563c95e336af263fb051cb743002b8ee345b352baaa808523aa6eab3f35eef23",
+      "required": true,
+      "reason": "prueba explícita",
+      "mixed": false,
+      "module": null
     },
     {
       "path": "src/ReportService.js",
@@ -1789,6 +1855,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "src/SolicitudMontaje.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "4e045cb4d30c524c92d2f2ab9a8aab3c50ab6c21ea837ae2609dc8a374d852c5",
+      "required": true,
+      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (formulario dinamico de solicitud de montaje, ver conversacion: evitar el paso humano de escribir a mano).",
+      "mixed": false,
+      "module": "APROVISIONAMIENTO"
     },
     {
       "path": "src/StockMaterialService.js",
@@ -1932,61 +2009,6 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
-    },
-    {
-      "path": "src/ImportacionMasivaAvanzada.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "f9ff9157fb66ae11455d8f037def03e00e6aa723c439c8f99966b6ed4c3adb5a",
-      "required": true,
-      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
-      "mixed": false,
-      "module": "OPERATIVA"
-    },
-    {
-      "path": "src/InstaladorImportacionMasivaAvanzada.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "26a4e77b47db66982f6768968dcbcc290ac276d01645ac918f37273bc3b0c04e",
-      "required": true,
-      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
-      "mixed": false,
-      "module": "OPERATIVA"
-    },
-    {
-      "path": "src/PlantillaImportacionMasivaAvanzadaService.js",
-      "type": "js",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "f4111f0979fd26d20b9cd61e21f5df9ce71e109bf0dc8dca3f86027229f13737",
-      "required": true,
-      "reason": "operacion/UI/config -- v78 sustituyo IMPORTACION_AVANZADA por OPERATIVA/SEGUIMIENTO/EJECUCION; este fichero fisico mezcla codigo de los 3 (Recursos/Personas+Asignaciones+Horario=OPERATIVA, Seguimiento=SEGUIMIENTO, Ejecucion=EJECUCION) sin separacion fisica todavia -- etiquetado OPERATIVA por ser el modulo dominante (3 de 5 grupos). Pendiente: separar fisicamente por modulo para que un cliente que pida SEGUIMIENTO o EJECUCION sin OPERATIVA no se quede sin estas funciones (el generador ya avisa con EXCLUDED_MODULE_GAP si eso ocurre).",
-      "mixed": false,
-      "module": "OPERATIVA"
-    },
-    {
-      "path": "src/SolicitudMontaje.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "4e045cb4d30c524c92d2f2ab9a8aab3c50ab6c21ea837ae2609dc8a374d852c5",
-      "required": true,
-      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (formulario dinamico de solicitud de montaje, ver conversacion: evitar el paso humano de escribir a mano).",
-      "mixed": false,
-      "module": "APROVISIONAMIENTO"
-    },
-    {
-      "path": "src/AprobarSolicitudMontaje.html",
-      "type": "html",
-      "category": "production",
-      "package": "A",
-      "expectedSha256": "136aba206ac53220cc646c6248b16423d4238ced8f674847505340e3a49d8b0f",
-      "required": true,
-      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (aprobacion manual sincrona con progreso visible, alternativa al trigger onEdit silencioso, ver conversacion: no depender de escribir Aprobado a mano).",
-      "mixed": false,
-      "module": "APROVISIONAMIENTO"
     }
   ],
   "moduleDependencies": {

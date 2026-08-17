@@ -482,6 +482,14 @@ function agregarCatalogosCore_(menu) {
       .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
       .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria');
   }
+  // A diferencia del bloque de arriba (INTERNO || APROVISIONAMIENTO,
+  // visible también en clientes internos reales como Gestor de
+  // Proyectos), esto se gatea solo por INTERNO: depende de Tests_*.js,
+  // que nunca se distribuye a ningún cliente -- ver
+  // abrirEjecutorPruebasReactivas en AprovisionamientoService.js.
+  if (moduloInstalado_('INTERNO')) {
+    menu = menu.addItem('Ejecutar pruebas reactivas (346)', 'abrirEjecutorPruebasReactivas');
+  }
   return menu;
 }
 

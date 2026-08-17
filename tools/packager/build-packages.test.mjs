@@ -91,6 +91,8 @@ function removeOwnTemp(tempPath) {
 }
 
 const expectedTests = [
+  'src/EjecutorPruebasReactivas.js',
+  'src/RegistroPruebasReactivas.js',
   'src/Tests_AvanceYSecuencia.js',
   'src/Tests_CosteService.js',
   'src/Tests_Ids.js',
@@ -104,15 +106,15 @@ const expectedTests = [
 
 const expectedMixed = [];
 
-test('01 universo de 180 entradas', () => {
+test('01 universo de 182 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 180);
-  assertEqual(map.universeExpected, 180);
+  assertEqual(map.entries.length, 182);
+  assertEqual(map.universeExpected, 182);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 180);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 182);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -162,13 +164,13 @@ test('08 rechazo de hash modificado', () => {
   }
 });
 
-test('09 exclusión de siete tests en A', () => {
+test('09 exclusión de once tests en A', () => {
   const map = readPackageMap(MAP_PATH);
   const aPaths = new Set(map.entries.filter((entry) => entry.package === 'A').map((entry) => entry.path));
   assert(expectedTests.every((item) => !aPaths.has(item)));
 });
 
-test('10 inclusión individual de nueve tests en B', () => {
+test('10 inclusión individual de once tests en B', () => {
   const map = readPackageMap(MAP_PATH);
   const bPaths = map.entries.filter((entry) => entry.package === 'B').map((entry) => entry.path).sort();
   assertDeepEqual(bPaths, [...expectedTests].sort());
@@ -472,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [107, 9, 36, 28, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [107, 9, 36, 28]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [107, 11, 36, 28, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [107, 11, 36, 28]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
