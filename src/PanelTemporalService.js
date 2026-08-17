@@ -161,8 +161,30 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, 
     etiqueta: config.etiqueta,
     campoNombre: config.campoNombre,
     pendientes: agruparPorResponsablePanelTemporal_(pendientes),
-    hechos: agruparPorResponsablePanelTemporal_(hechos)
+    hechos: agruparPorResponsablePanelTemporal_(hechos),
+    diagnostico: diagnosticarPanelTemporal_(registros, config)
   };
+}
+
+/*
+ * Ver conversación -- "siguen sin aparecer datos": sin esto, un "Nada
+ * que reportar" es indistinguible entre "no hay ninguna tarea activa"
+ * y "hay tareas activas pero sin fecha utilizable/estado inesperado" --
+ * el operador (y quien depura) no puede saber cuál es sin mirar la
+ * hoja directamente. No cambia ningún filtro, solo cuenta antes de
+ * aplicarlos para poder mostrarlo cuando el bloque queda vacío.
+ */
+function diagnosticarPanelTemporal_(registros, config) {
+  var totalActivos = registros.length;
+  var conFechaUsable = registros.filter(function (r) {
+    var finPlan = parsearFechaPanelTemporal_(r[config.finPlan]);
+    var inicioPlan = config.inicioPlan ? parsearFechaPanelTemporal_(r[config.inicioPlan]) : null;
+    return !!(finPlan || inicioPlan);
+  }).length;
+  var abiertos = registros.filter(function (r) {
+    return config.estadosCerrados.indexOf(r.ESTADO) === -1;
+  }).length;
+  return { totalActivos: totalActivos, abiertos: abiertos, conFechaUsable: conFechaUsable };
 }
 
 /* DIAS_ATRASO > 0 si finPlan ya pasó y el registro sigue sin cerrar -- ver "badge de urgencia en atrasadas". */

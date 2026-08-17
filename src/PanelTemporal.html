@@ -45,7 +45,8 @@
       .fila-item .fecha-item { color: var(--color-texto-secundario); font-size: 12px; white-space: nowrap; }
       .badge-atraso { color: var(--color-peligro); font-weight: bold; }
       .vacio-seccion { color: var(--color-texto-secundario); font-style: italic; font-size: 12px; margin: 2px 0 8px 12px; }
-      .vacio-global { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; text-align: center; padding: 20px 0; }
+      .vacio-global { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; text-align: center; padding: 20px 0 4px; }
+      .diagnostico-vacio { color: var(--color-texto-secundario); font-size: 11px; text-align: center; padding: 0 12px 16px; line-height: 1.6; }
     </style>
   </head>
   <body>
@@ -180,7 +181,22 @@
 
         document.getElementById('resultado').innerHTML = bloques.length
           ? bloques.map(renderBloque_).join('')
-          : '<div class="vacio-global">Nada que reportar en este rango.</div>';
+          : renderVacioConDiagnostico_(datos.bloques);
+      }
+
+      /*
+       * Ver conversación -- "siguen sin aparecer datos": distingue "no
+       * hay ninguna tarea activa" de "hay activas pero sin fecha
+       * utilizable" en vez de dejar un "nada que reportar" mudo que no
+       * dice si el problema es de datos o de formato de fecha.
+       */
+      function renderVacioConDiagnostico_(bloquesSinFiltrar) {
+        var lineas = (bloquesSinFiltrar || []).map(function (b) {
+          var d = b.diagnostico || { totalActivos: 0, abiertos: 0, conFechaUsable: 0 };
+          return escapeHtml(b.etiqueta) + ': ' + d.totalActivos + ' activa(s), ' + d.abiertos + ' sin cerrar, ' + d.conFechaUsable + ' con fecha utilizable';
+        });
+        return '<div class="vacio-global">Nada que reportar en este rango.</div>' +
+          (lineas.length ? '<div class="diagnostico-vacio">' + lineas.join('<br>') + '</div>' : '');
       }
 
       function contarItems_(grupos) {
