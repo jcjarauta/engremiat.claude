@@ -61,8 +61,11 @@ function abrirPanelTemporal() {
  * modo: 'HOY' | 'ESTA_SEMANA' | 'SEMANA_SIGUIENTE' | 'RANGO'.
  * fechaInicioISO/fechaFinISO: solo se usan (y son obligatorios) en modo
  * 'RANGO' -- 'yyyy-MM-dd', tal cual los da un <input type="date">.
+ * filtroCampanaId/filtroProyectoId: opcionales, mutuamente excluyentes
+ * (si hay proyecto, gana sobre campaña) -- ver "buscador por campaña o
+ * proyecto".
  */
-function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
+function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId) {
   var rango = calcularRangoPanelTemporal_(modo, fechaInicioISO, fechaFinISO);
   var incluirAtrasadasSiempre = (modo === 'HOY');
   var hoy = new Date();
@@ -71,8 +74,13 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO) {
   var entidades = ['TAREA', 'PROCESO'];
   if (moduloInstalado_('SEGUIMIENTO')) entidades = entidades.concat(['INCIDENCIA', 'DECISION']);
 
+  var resolutorContexto = (filtroCampanaId || filtroProyectoId) ? construirResolutorContextoPanelTemporal_() : null;
+
   var bloques = entidades.map(function (entidad) {
-    return construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy);
+    return construirBloquePanelTemporal_(
+      entidad, rango, incluirAtrasadasSiempre, hoy,
+      resolutorContexto ? resolutorContexto[entidad] : null, filtroCampanaId, filtroProyectoId
+    );
   });
 
   var totalSinFecha = bloques.reduce(function (acc, b) {
@@ -127,6 +135,68 @@ function obtenerResumenPanelTemporal() {
     resumen[modo] = total;
   });
   return resumen;
+}
+
+/* Campañas/proyectos activos, para el selector del buscador (ver conversación -- "buscador por campaña o proyecto"). */
+function obtenerOpcionesFiltroPanelTemporal() {
+  return {
+    campanas: listarRegistrosSeguro_('CAMPANA', { ACTIVO: 'SÍ' }).map(function (c) { return { id: c.ID, etiqueta: c.NOMBRE }; }),
+    proyectos: listarRegistrosSeguro_('PROYECTO', { ACTIVO: 'SÍ' }).map(function (p) { return { id: p.ID, etiqueta: p.NOMBRE }; })
+  };
+}
+
+/*
+ * Resolución de contexto (campaña/proyecto) por entidad -- ver
+ * "buscador por campaña o proyecto". Deliberadamente NO reutiliza
+ * obtenerOpcionesFiltroGantt()/construirMapaContextoPorProducto_
+ * (DesviacionService.js): son módulo GANTT, y Agenda Operativa es
+ * módulo CORE (siempre instalado) -- llamarlas crearía una dependencia
+ * cruzada que rompería en cualquier cliente sin GANTT instalado (mismo
+ * tipo de gap ya corregido una vez, ver "limpiar gaps cruzados de
+ * módulo"). Versión propia, autocontenida en CORE.
+ *
+ * TAREA/PROCESO llegan vía PRODUCTO (PRODUCTO_ID -> PROYECTO_PRODUCTO
+ * activa -> PROYECTO_ID -> CAMPANA_ID; TAREA necesita un salto extra
+ * TAREA.PROCESO_ID -> PROCESO.PRODUCTO_ID). INCIDENCIA/DECISION ya
+ * guardan PROYECTO_ID directo en el propio registro -- más simple, sin
+ * pasar por PRODUCTO.
+ */
+function construirResolutorContextoPanelTemporal_() {
+  var proyectoPorProducto = {};
+  listarRegistros('PROYECTO_PRODUCTO', { ACTIVO: 'SÍ' }).forEach(function (rel) {
+    if (!proyectoPorProducto[rel.PRODUCTO_ID]) proyectoPorProducto[rel.PRODUCTO_ID] = rel.PROYECTO_ID;
+  });
+
+  var productoPorProceso = {};
+  listarRegistros('PROCESO', {}).forEach(function (p) { productoPorProceso[p.ID] = p.PRODUCTO_ID; });
+
+  var proyectosPorId = {};
+  listarRegistros('PROYECTO', {}).forEach(function (p) { proyectosPorId[p.ID] = p; });
+
+  function contextoVacio_() {
+    return { proyectoId: '', campanaId: '' };
+  }
+
+  function contextoDesdeProyectoId_(proyectoId) {
+    var proyecto = proyectosPorId[proyectoId];
+    if (!proyecto) return contextoVacio_();
+    return { proyectoId: proyecto.ID, campanaId: proyecto.CAMPANA_ID || '' };
+  }
+
+  return {
+    TAREA: function (registro) {
+      return contextoDesdeProyectoId_(proyectoPorProducto[productoPorProceso[registro.PROCESO_ID]]);
+    },
+    PROCESO: function (registro) {
+      return contextoDesdeProyectoId_(proyectoPorProducto[registro.PRODUCTO_ID]);
+    },
+    INCIDENCIA: function (registro) {
+      return contextoDesdeProyectoId_(registro.PROYECTO_ID);
+    },
+    DECISION: function (registro) {
+      return contextoDesdeProyectoId_(registro.PROYECTO_ID);
+    }
+  };
 }
 
 /*
@@ -187,9 +257,16 @@ function obtenerUltimoModoPanelTemporal() {
   }
 }
 
-function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy) {
+function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy, resolverContexto, filtroCampanaId, filtroProyectoId) {
   var config = CONFIG_PANEL_TEMPORAL_[entidad];
   var registros = listarRegistrosSeguro_(entidad, { ACTIVO: 'SÍ' });
+
+  if (resolverContexto && (filtroCampanaId || filtroProyectoId)) {
+    registros = registros.filter(function (r) {
+      var contexto = resolverContexto(r);
+      return filtroProyectoId ? contexto.proyectoId === filtroProyectoId : contexto.campanaId === filtroCampanaId;
+    });
+  }
 
   var pendientes = config.enriquecerResponsable(
     anadirDiasAtrasoPanelTemporal_(
@@ -378,8 +455,8 @@ function agruparPorResponsablePanelTemporal_(lista) {
 
 /* === Exportación CSV (mismo patrón que exportarGanttCSV) === */
 
-function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO) {
-  var datos = obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO);
+function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId) {
+  var datos = obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId);
   var bloquesCsv = [];
 
   datos.bloques.forEach(function (bloque) {
@@ -427,15 +504,15 @@ function aplanarGrupoPanelTemporalCsv_(grupos, config, campoFecha) {
   return filas;
 }
 
-function abrirDialogoExportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO) {
-  var resultado = exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO);
+function abrirDialogoExportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId) {
+  var resultado = exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId);
   abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
 }
 
 /* === Exportación PDF (mismo patrón que abrirDialogoExportarPDF -- imprimir/guardar desde el navegador) === */
 
-function abrirDialogoExportarPanelTemporalPDF(modo, fechaInicioISO, fechaFinISO) {
-  var datos = obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO);
+function abrirDialogoExportarPanelTemporalPDF(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId) {
+  var datos = obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId);
   var html = generarHtmlPanelTemporalImprimible_(datos);
   registrarHistorial('INFORME', 'PANEL_TEMPORAL_' + modo, 'EXPORTAR_PANEL_TEMPORAL', [], { origen: 'UI', formato: 'PDF_IMPRESION' });
   var output = HtmlService.createHtmlOutput(html).setWidth(820).setHeight(600);

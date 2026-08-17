@@ -54,6 +54,8 @@
       .vacio-seccion { color: var(--color-texto-secundario); font-style: italic; font-size: 12px; margin: 2px 0 8px 12px; }
       .vacio-global { color: var(--color-texto-secundario); font-style: italic; font-size: 13px; text-align: center; padding: 20px 0 4px; }
       .diagnostico-vacio { color: var(--color-texto-secundario); font-size: 11px; text-align: center; padding: 0 12px 16px; line-height: 1.6; }
+      .filtro-campana-proyecto { margin-bottom: 10px; }
+      .filtro-campana-proyecto select { width: 100%; font-size: 13px; padding: 6px; }
     </style>
   </head>
   <body>
@@ -69,6 +71,15 @@
       <input type="date" id="fechaInicioRango">
       <input type="date" id="fechaFinRango">
       <button onclick="cargarRangoLibre_()">Cargar</button>
+    </div>
+
+    <div class="rango-toggle" onclick="toggleFiltroCampanaProyecto_()">Filtrar por campaña o proyecto ▾</div>
+    <div class="filtro-campana-proyecto" id="filtroCampanaProyectoContenedor" style="display:none;">
+      <select id="selectFiltroCampanaProyecto" onchange="cambiarFiltroCampanaProyecto_()">
+        <option value="">Todas las campañas y proyectos</option>
+        <optgroup label="Campañas" id="optgroupCampanas"></optgroup>
+        <optgroup label="Proyectos" id="optgroupProyectos"></optgroup>
+      </select>
     </div>
 
     <div id="estadoCarga">Cargando...</div>
@@ -87,6 +98,8 @@
       var MODO_ACTUAL = 'HOY';
       var FECHA_INICIO_ACTUAL = '';
       var FECHA_FIN_ACTUAL = '';
+      var FILTRO_CAMPANA_ACTUAL = '';
+      var FILTRO_PROYECTO_ACTUAL = '';
       var TEXTO_BOTON_ = { HOY: 'Hoy', ESTA_SEMANA: 'Esta semana', SEMANA_SIGUIENTE: 'Semana que viene' };
 
       function escapeHtml(texto) {
@@ -122,6 +135,42 @@
         el.style.display = (el.style.display === 'none') ? 'flex' : 'none';
       }
 
+      function toggleFiltroCampanaProyecto_() {
+        var el = document.getElementById('filtroCampanaProyectoContenedor');
+        el.style.display = (el.style.display === 'none') ? 'block' : 'none';
+      }
+
+      function cambiarFiltroCampanaProyecto_() {
+        var valor = document.getElementById('selectFiltroCampanaProyecto').value;
+        FILTRO_CAMPANA_ACTUAL = '';
+        FILTRO_PROYECTO_ACTUAL = '';
+        if (valor.indexOf('CAMPANA:') === 0) FILTRO_CAMPANA_ACTUAL = valor.slice('CAMPANA:'.length);
+        else if (valor.indexOf('PROYECTO:') === 0) FILTRO_PROYECTO_ACTUAL = valor.slice('PROYECTO:'.length);
+        cargar_();
+      }
+
+      function cargarOpcionesFiltroCampanaProyecto_() {
+        google.script.run
+          .withFailureHandler(function () {})
+          .withSuccessHandler(function (opciones) {
+            var elCampanas = document.getElementById('optgroupCampanas');
+            var elProyectos = document.getElementById('optgroupProyectos');
+            (opciones.campanas || []).forEach(function (c) {
+              var opt = document.createElement('option');
+              opt.value = 'CAMPANA:' + c.id;
+              opt.textContent = c.etiqueta;
+              elCampanas.appendChild(opt);
+            });
+            (opciones.proyectos || []).forEach(function (p) {
+              var opt = document.createElement('option');
+              opt.value = 'PROYECTO:' + p.id;
+              opt.textContent = p.etiqueta;
+              elProyectos.appendChild(opt);
+            });
+          })
+          .obtenerOpcionesFiltroPanelTemporal();
+      }
+
       function cargarPreset_(modo) {
         MODO_ACTUAL = modo;
         FECHA_INICIO_ACTUAL = '';
@@ -147,7 +196,7 @@
         google.script.run
           .withSuccessHandler(renderizarPanel_)
           .withFailureHandler(mostrarError)
-          .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+          .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL, FILTRO_CAMPANA_ACTUAL, FILTRO_PROYECTO_ACTUAL);
       }
 
       function cargarResumenBotones_() {
@@ -264,12 +313,12 @@
 
       function exportarCSV_() {
         google.script.run.withFailureHandler(mostrarError)
-          .abrirDialogoExportarPanelTemporalCSV(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+          .abrirDialogoExportarPanelTemporalCSV(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL, FILTRO_CAMPANA_ACTUAL, FILTRO_PROYECTO_ACTUAL);
       }
 
       function exportarPDF_() {
         google.script.run.withFailureHandler(mostrarError)
-          .abrirDialogoExportarPanelTemporalPDF(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL);
+          .abrirDialogoExportarPanelTemporalPDF(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL, FILTRO_CAMPANA_ACTUAL, FILTRO_PROYECTO_ACTUAL);
       }
 
       /* Recuerda el último modo usado (por usuario) -- ver conversación "recordar el último modo usado entre aperturas". */
@@ -293,6 +342,7 @@
         .obtenerUltimoModoPanelTemporal();
 
       cargarResumenBotones_();
+      cargarOpcionesFiltroCampanaProyecto_();
     </script>
   </body>
 </html>
