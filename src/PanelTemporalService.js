@@ -361,7 +361,7 @@ function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO) {
     });
   });
 
-  var nombre = 'PANEL_TEMPORAL_' + (ETIQUETAS_MODO_PANEL_TEMPORAL_[modo] || modo).replace(/\s+/g, '_') + '_' +
+  var nombre = 'AGENDA_OPERATIVA_' + (ETIQUETAS_MODO_PANEL_TEMPORAL_[modo] || modo).replace(/\s+/g, '_') + '_' +
     Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
   registrarHistorial('INFORME', nombre, 'EXPORTAR_PANEL_TEMPORAL', [], { origen: 'UI', formato: 'CSV' });
   return { nombreArchivo: nombre, contenidoCsv: String.fromCharCode(0xFEFF) + bloquesACsv_(bloquesCsv) };
@@ -413,9 +413,16 @@ function generarHtmlPanelTemporalImprimible_(datos) {
       datos.alertas.totalSinFechaPlanificada + ' registro(s) abierto(s) sin fecha planificada.</p>';
   }
 
-  return construirDocumentoInformeImprimible_('Panel temporal: ' + etiquetaModo, subtitulo, alertas + cuerpo);
+  return construirDocumentoInformeImprimible_('Agenda operativa: ' + etiquetaModo, subtitulo, alertas + cuerpo);
 }
 
+/*
+ * Sin columna Fecha en la tabla "sin fecha" (ver conversación --
+ * "analiza los resultados, qué mejoramos": el CSV ya omitía esa
+ * columna porque no aporta nada repetir "(sin fecha)" en cada fila de
+ * una tabla que ya se titula así -- el PDF la mostraba siempre,
+ * inconsistente con el CSV. Ahora ambos coinciden.
+ */
 function tablaGrupoPanelTemporalHtml_(bloque, grupos, modoFecha) {
   if (!grupos || grupos.length === 0) return '<p>(sin elementos)</p>';
   var config = CONFIG_PANEL_TEMPORAL_[bloque.entidad];
@@ -426,8 +433,10 @@ function tablaGrupoPanelTemporalHtml_(bloque, grupos, modoFecha) {
       filas += '<tr><td>' + escaparHtmlServer_(grupo.responsable) + '</td>' +
         '<td>' + enlaceEdicion_(bloque.entidad, item.ID, item[bloque.campoNombre] || item.ID) + '</td>' +
         '<td>' + escaparHtmlServer_(item.ESTADO) + '</td>' +
-        '<td>' + (campoFecha ? formatearFechaCsv_(item[campoFecha]) : '(sin fecha)') + '</td></tr>';
+        (campoFecha ? '<td>' + formatearFechaCsv_(item[campoFecha]) + '</td>' : '') +
+        '</tr>';
     });
   });
-  return '<table><tr><th>Responsable</th><th>Nombre</th><th>Estado</th><th>Fecha</th></tr>' + filas + '</table>';
+  var encabezadoFecha = campoFecha ? '<th>Fecha</th>' : '';
+  return '<table><tr><th>Responsable</th><th>Nombre</th><th>Estado</th>' + encabezadoFecha + '</tr>' + filas + '</table>';
 }
