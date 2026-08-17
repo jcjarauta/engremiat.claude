@@ -5109,6 +5109,8 @@ function pruebaPaso241_DecisionesPendientesMarcaVencida() {
   var cadena = construirProyectoDePrueba_('P241');
   var decisionId = null;
   try {
+    var fechaFutura = new Date();
+    fechaFutura.setDate(fechaFutura.getDate() + 2);
     var fechaPasada = new Date();
     fechaPasada.setDate(fechaPasada.getDate() - 5);
 
@@ -5118,9 +5120,13 @@ function pruebaPaso241_DecisionesPendientesMarcaVencida() {
       TIPO: 'Técnica',
       ESTADO: 'Pendiente de aprobación',
       IMPACTO: 'Medio',
-      FECHA_LIMITE: fechaPasada
+      FECHA_LIMITE: fechaFutura
     }, { dryRun: false });
     decisionId = decision.id;
+    // FECHA_LIMITE anterior a FECHA_CREACION se rechaza al insertar (regla
+    // intencional, ver forzarFechaLimiteDecision_) -- se envejece la
+    // decision despues, simulando que el plazo ya paso.
+    forzarFechaLimiteDecision_(decisionId, fechaPasada);
 
     var pendientes = listarDecisionesPendientes();
     var encontrada = pendientes.filter(function (d) { return d.ID === decisionId; })[0];
@@ -5265,6 +5271,31 @@ function pruebaPaso239_TareaRetrasadaYBloqueadaAparecenEnPanel() {
   Logger.log('PASO239 COMPLETADA CON EXITO: retrasadas y bloqueadas detectadas correctamente.');
 }
 
+/*
+ * Escribe FECHA_LIMITE directamente en la hoja, sin pasar por
+ * insertarRegistroTransaccional/actualizarRegistro -- esas rutas
+ * rechazan FECHA_LIMITE anterior a FECHA_CREACION (regla de validacion
+ * intencional, ver FormularioValidacionService.js/Repository_InsertarRegistro.js
+ * y probarRechazoFechaLimiteAnterior en Tests_Repository2.js). Simula el
+ * escenario real de "una decision con plazo futuro que el tiempo deja
+ * atras" en vez de una que nace ya vencida (eso si esta bien rechazado).
+ */
+function forzarFechaLimiteDecision_(id, fecha) {
+  var hoja = obtenerHojaEntidad_('DECISION');
+  var cabeceras = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getDisplayValues()[0].map(function (v) { return String(v).trim(); });
+  var indiceId = cabeceras.indexOf('ID');
+  var indiceFecha = cabeceras.indexOf('FECHA_LIMITE');
+  var valores = hoja.getRange(2, indiceId + 1, hoja.getLastRow() - 1, 1).getDisplayValues();
+  for (var i = 0; i < valores.length; i++) {
+    if (String(valores[i][0]).trim() === id) {
+      hoja.getRange(i + 2, indiceFecha + 1).setValue(fecha);
+      SpreadsheetApp.flush();
+      return;
+    }
+  }
+  throw new Error('forzarFechaLimiteDecision_: no se encontro DECISION ' + id);
+}
+
 function pruebaPaso240_DecisionPendienteMarcaVencida() {
   Logger.log('=== PASO 240: decision pendiente vencida ===');
   var campana = crearCampana({
@@ -5288,8 +5319,9 @@ function pruebaPaso240_DecisionPendienteMarcaVencida() {
     TIPO: 'Técnica',
     ESTADO: 'Pendiente de aprobación',
     IMPACTO: 'Medio',
-    FECHA_LIMITE: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000)
+    FECHA_LIMITE: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
   }, { dryRun: false });
+  forzarFechaLimiteDecision_(decisionVencida.id, new Date(Date.now() - 5 * 24 * 60 * 60 * 1000));
 
   var decisionAlDia = insertarRegistroTransaccional('DECISION', {
     PROYECTO_ID: proyecto.id,
@@ -5389,7 +5421,8 @@ function pruebaPaso243_GenerarInformeCampaniaTieneEstructuraYAlertas() {
     NOMBRE: 'Proyecto informe P243',
     TIPO_PROYECTO: 'Importante',
     PRIORIDAD: 'Alta',
-    ESTADO: 'En proceso'
+    ESTADO: 'En proceso',
+    FECHA_INICIO_REAL: haceCinco
   }, { dryRun: false });
 
   var producto = crearProducto({
@@ -6907,6 +6940,9 @@ function pruebaPaso292_DecisionCierreExigeResolucion() {
     }
     Logger.log('OK PASO 292a: cierre sin resolucion/fecha rechazado -- ' + errorCapturado.message);
 
+    // FECHA_RESOLUCION debe ser >= fecha de creacion (hoy, ya que la
+    // decision se crea en esta misma llamada) -- fecha fija en vez de
+    // relativa quedaba en el pasado segun avanzaba el calendario real.
     var resultado = guardarFormulario('DECISION', null, {
       PROYECTO_ID: cadena.proyectoId,
       TITULO: 'Decision prueba P292 con resolucion',
@@ -6914,7 +6950,7 @@ function pruebaPaso292_DecisionCierreExigeResolucion() {
       RESPONSABLE_ID: persona.id,
       ESTADO: 'Aprobada',
       RESOLUCION: 'Se aprueba el cambio de proveedor',
-      FECHA_RESOLUCION: '2026-07-25',
+      FECHA_RESOLUCION: new Date(),
       IMPACTO: 'Medio'
     });
     if (resultado !== true) {
