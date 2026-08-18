@@ -583,7 +583,8 @@ function validarReglasNegocioIncidencia_(datos) {
     'Proyecto',
     'Producto',
     'Proceso',
-    'Tarea'
+    'Tarea',
+    'Cliente'
   ];
 
   var jerarquia = [
@@ -594,6 +595,12 @@ function validarReglasNegocioIncidencia_(datos) {
     'TAREA_ID'
   ];
 
+  /*
+   * 'Cliente' (ver conversación -- bot de soporte, Fase 1a) no pasa por
+   * CAMPANA_ID/PROYECTO_ID/... como el resto (sin proyecto activo
+   * asociado), exige CLIENTE_ID directo -- fuera de 'jerarquia' porque
+   * ese array solo gobierna la cadena CAMPANA->TAREA, no CLIENTE.
+   */
   var camposObligatoriosPorNivel = {
     'General': [],
     'Campaña': [
@@ -620,6 +627,9 @@ function validarReglasNegocioIncidencia_(datos) {
       'PRODUCTO_ID',
       'PROCESO_ID',
       'TAREA_ID'
+    ],
+    'Cliente': [
+      'CLIENTE_ID'
     ]
   };
 
@@ -649,7 +659,8 @@ function validarReglasNegocioIncidencia_(datos) {
       'PRODUCTO_ID',
       'PROCESO_ID',
       'TAREA_ID'
-    ]
+    ],
+    'Cliente': []
   };
 
   /*

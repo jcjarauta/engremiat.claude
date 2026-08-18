@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 185,
+  "universeExpected": 186,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -838,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "196fa4a9d8a81a49bd59729a1f48e59648492047a60e087e85dcf8a529afb44d",
+      "expectedSha256": "354bd47a0a27845a4e4c7fe85025dfe630d8f37a18e14b220c23cb1d7cc004ef",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -849,7 +849,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "182a4c1794c6eaf04864737837a422a0a89a0a70176d303a4bacaaa0c6ca3b1a",
+      "expectedSha256": "c65df92c2bfd24b8ebbd9d46cecf9ec72ffcd1712aa2f71709853a6a18cf62a9",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1575,7 +1575,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "04b0f7dfdfaec925da07f2e195abb75f9c4e6d0744a4bd2dc4b8f37772b0fdfb",
+      "expectedSha256": "a13af168e88eb907b346fe6bfe124383f3650b57769b8e84caa518ada9846a0a",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -2042,6 +2042,17 @@
       "reason": "no desplegable",
       "mixed": false,
       "module": null
+    },
+    {
+      "path": "src/TelegramSoporteService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "0c3c235246a78ed1a8d243f512c0eae335e560efa398eb659783586099b18d3c",
+      "required": true,
+      "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (bot de soporte Nexo, Fase 1a, gestado ademas por moduloInstalado_(INTERNO) en runtime para que solo actue en el maestro).",
+      "mixed": false,
+      "module": "APROVISIONAMIENTO"
     }
   ],
   "moduleDependencies": {

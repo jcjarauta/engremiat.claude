@@ -40,7 +40,7 @@ const TOOLING_PREFIX = 'tools/packager/';
 const VALID_CATEGORIES = new Set(['production', 'test', 'auxiliary', 'excluded', 'mixed']);
 const VALID_PACKAGES = new Set(['A', 'B', 'C', 'NONE']);
 const VALID_MODULES = new Set(['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO']);
-const EXPECTED_MODULE_COUNTS = { CORE: 81, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0, APROVISIONAMIENTO: 3 };
+const EXPECTED_MODULE_COUNTS = { CORE: 81, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2, OPERATIVA: 3, SEGUIMIENTO: 0, EJECUCION: 0, ESCENARIOS: 0, APROVISIONAMIENTO: 4 };
 const TEST_FILES = Object.freeze([
   'src/EjecutorPruebasReactivas.js',
   'src/RegistroPruebasReactivas.js',
@@ -242,7 +242,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 109, test: 11, auxiliary: 36, excluded: 29, mixed: 0 };
+  const expectedCounts = { production: 110, test: 11, auxiliary: 36, excluded: 29, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }

@@ -491,7 +491,8 @@ function agregarCatalogosCore_(menu) {
   if (moduloInstalado_('INTERNO')) {
     menu = menu
       .addItem('Ejecutar pruebas reactivas (342)', 'abrirEjecutorPruebasReactivas')
-      .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano');
+      .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano')
+      .addItem('Configurar webhook del bot de soporte (Nexo)', 'configurarWebhookTelegramSoporte');
   }
   return menu;
 }

@@ -486,6 +486,10 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/TelegramSoporteService.js",
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/appsscript.json",
       "module": "CORE"
     }
