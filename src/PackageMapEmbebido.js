@@ -257,6 +257,10 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/GestionRemotaClientes.html",
+      "module": "APROVISIONAMIENTO"
+    },
+    {
       "path": "src/HistorialService.js",
       "module": "CORE"
     },

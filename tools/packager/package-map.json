@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 189,
+  "universeExpected": 190,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -332,7 +332,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "0d3ba21ae63714a26c1995732092379e6f074a1d48f47af097dfa388f6986ba4",
+      "expectedSha256": "6437f70be739d39ab0b176cd2c1fb5de324bef1d05f33d8c72be4aea6c34691d",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (ver conversacion: seguimos con B -- promovido de package C/auxiliar a modulo real de la libreria para que un cliente interno como Gestor de Proyectos pueda montar sheets nuevos el mismo, sin exponerlo a clientes de pago via MODULOS_INSTALADOS_CLIENTE).",
       "mixed": false,
@@ -838,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "8ad1ba85fc925ab8b6f834710f983dfa18bf3647d708325638bd0442012ffd66",
+      "expectedSha256": "4b8d5f093d6a92d37bab9f86f72c25a910601aceb110247146e38e99dc1d3294",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1498,7 +1498,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "0c1918511349b87f96997d9c28c1c6acf8cec75ece5ddf04de07656788569e70",
+      "expectedSha256": "4e76391abea8e8d5f514a5fd08184c7b99027b6d10dc56da60b09db1dfd550ae",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1575,7 +1575,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "2784314173509d7f284ce7b366479fabf5e817785ba7af8203c12ecab76eb860",
+      "expectedSha256": "4c376fdd7733f9b1053e7f6cf692db116a37f2d1b21d94a26fa536dda0624556",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -2086,6 +2086,17 @@
       "reason": "Incidencia aprobada -> Tarea (Fase 1a, pieza disenada pero nunca construida): al pasar una INCIDENCIA de cliente a En resolucion, crea/reutiliza CAMPANA/PROYECTO/PRODUCTO/PROCESO de Mantenimiento del cliente y una TAREA real, enlazada via VINCULO.",
       "mixed": false,
       "module": "CLIENTE"
+    },
+    {
+      "path": "src/GestionRemotaClientes.html",
+      "type": "html",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "39f37c4078761c5b045a9bceb988d1f39934936c339b589be84c8677ed9548b0",
+      "required": true,
+      "reason": "Dialogo con desplegables dinamicos (cliente por CLIENTE.SCRIPT_ID, modulo por PACKAGE_MAP_EMBEBIDO.moduleDependencies) para actualizar version de libreria o anadir modulo a un cliente remoto -- reemplaza los prompts de texto libre de version anterior.",
+      "mixed": false,
+      "module": "APROVISIONAMIENTO"
     }
   ],
   "moduleDependencies": {

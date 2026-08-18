@@ -482,8 +482,7 @@ function agregarCatalogosCore_(menu) {
       .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
       .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
       .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria')
-      .addItem('Actualizar librería de un cliente (por Script ID)', 'abrirActualizarLibreriaCliente')
-      .addItem('Añadir módulo a un cliente (por Script ID)', 'abrirAgregarModuloCliente');
+      .addItem('Gestión remota de clientes (versión / módulos)', 'abrirGestionRemotaClientes');
   }
   // A diferencia del bloque de arriba (INTERNO || APROVISIONAMIENTO,
   // visible también en clientes internos reales como Gestor de

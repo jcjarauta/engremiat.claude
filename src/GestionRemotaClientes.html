@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <?!= include('Estilos') ?>
+    <style>
+      body { font-size: 14px; }
+      label { display: block; font-weight: bold; margin-bottom: 4px; margin-top: 12px; }
+      select { width: 100%; padding: 6px; font-size: 14px; }
+      .fila-accion { display: flex; gap: 8px; margin-top: 14px; }
+      .detalle-cliente { color: var(--color-texto-secundario); font-size: 13px; margin-top: 4px; }
+      #mensaje { margin-top: 12px; }
+      #mensaje.error { color: var(--color-peligro); }
+      #mensaje.exito { color: var(--color-exito); }
+      .vacio { color: var(--color-texto-secundario); font-style: italic; padding: 12px 0; }
+    </style>
+  </head>
+  <body>
+    <div id="estadoCarga" class="vacio">Cargando clientes...</div>
+    <div id="contenido" style="display:none;">
+      <label for="selectorCliente">Cliente</label>
+      <select id="selectorCliente"></select>
+      <div class="detalle-cliente" id="detalleCliente"></div>
+
+      <div class="fila-accion">
+        <button id="btnActualizar" class="boton btn-mini">Actualizar a la última versión</button>
+      </div>
+
+      <label for="selectorModulo">Añadir módulo</label>
+      <select id="selectorModulo"></select>
+      <div class="fila-accion">
+        <button id="btnAgregarModulo" class="boton boton-primario btn-mini">Añadir módulo al cliente</button>
+      </div>
+
+      <div id="mensaje"></div>
+    </div>
+
+    <script>
+      function escapeHtml(texto) {
+        if (texto === null || texto === undefined) return "";
+        return String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      }
+
+      var CLIENTES = [];
+
+      function mostrarError(error) {
+        var el = document.getElementById("mensaje");
+        el.className = "error";
+        el.textContent = (error && error.message) ? error.message : String(error);
+      }
+
+      function mostrarExito(texto) {
+        var el = document.getElementById("mensaje");
+        el.className = "exito";
+        el.textContent = texto;
+      }
+
+      function clienteSeleccionado_() {
+        var scriptId = document.getElementById("selectorCliente").value;
+        return CLIENTES.filter(function (c) { return c.scriptId === scriptId; })[0];
+      }
+
+      function renderDetalleCliente_() {
+        var c = clienteSeleccionado_();
+        document.getElementById("detalleCliente").textContent = c
+          ? "Versión de librería actual: " + c.libreriaVersion
+          : "";
+      }
+
+      function render(datos) {
+        document.getElementById("estadoCarga").style.display = "none";
+
+        if (!datos.clientes.length) {
+          document.getElementById("estadoCarga").className = "vacio";
+          document.getElementById("estadoCarga").textContent = "Ningún cliente tiene todavía Script ID registrado en su ficha (CLIENTE.SCRIPT_ID) -- no hay nada que gestionar remotamente.";
+          document.getElementById("estadoCarga").style.display = "block";
+          return;
+        }
+
+        document.getElementById("contenido").style.display = "block";
+        CLIENTES = datos.clientes;
+
+        document.getElementById("selectorCliente").innerHTML = datos.clientes.map(function (c) {
+          return '<option value="' + escapeHtml(c.scriptId) + '">' + escapeHtml(c.nombre) + (c.codigo ? ' (' + escapeHtml(c.codigo) + ')' : '') + '</option>';
+        }).join("");
+
+        document.getElementById("selectorModulo").innerHTML = datos.modulos.map(function (m) {
+          return '<option value="' + escapeHtml(m) + '">' + escapeHtml(m) + '</option>';
+        }).join("");
+
+        renderDetalleCliente_();
+        document.getElementById("selectorCliente").addEventListener("change", renderDetalleCliente_);
+      }
+
+      document.getElementById("btnActualizar").addEventListener("click", function () {
+        var c = clienteSeleccionado_();
+        if (!c) return;
+        var boton = document.getElementById("btnActualizar");
+        boton.disabled = true;
+        document.getElementById("mensaje").className = "";
+        document.getElementById("mensaje").textContent = "Actualizando...";
+        google.script.run
+          .withSuccessHandler(function (resultado) {
+            boton.disabled = false;
+            c.libreriaVersion = resultado.versionNueva;
+            renderDetalleCliente_();
+            mostrarExito("Actualizado: versión anterior " + (resultado.versionAnterior || "(desconocida)") + " -> nueva " + resultado.versionNueva + ".");
+          })
+          .withFailureHandler(function (error) { boton.disabled = false; mostrarError(error); })
+          .actualizarLibreriaClienteDesdeDialogo(c.scriptId);
+      });
+
+      document.getElementById("btnAgregarModulo").addEventListener("click", function () {
+        var c = clienteSeleccionado_();
+        var modulo = document.getElementById("selectorModulo").value;
+        if (!c || !modulo) return;
+        var boton = document.getElementById("btnAgregarModulo");
+        boton.disabled = true;
+        document.getElementById("mensaje").className = "";
+        document.getElementById("mensaje").textContent = "Añadiendo módulo...";
+        google.script.run
+          .withSuccessHandler(function (resultado) {
+            boton.disabled = false;
+            c.libreriaVersion = resultado.versionNueva;
+            renderDetalleCliente_();
+            mostrarExito("Módulos del cliente: " + resultado.modulos.join(", ") + ". Si el módulo nuevo necesita hojas/catálogo, ejecuta \"Instalar estructura inicial\" desde el propio Sheet del cliente.");
+          })
+          .withFailureHandler(function (error) { boton.disabled = false; mostrarError(error); })
+          .agregarModuloClienteDesdeDialogo(c.scriptId, modulo);
+      });
+
+      google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).obtenerDatosGestionRemotaClientes();
+    </script>
+  </body>
+</html>

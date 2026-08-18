@@ -391,63 +391,61 @@ function agregarModuloClienteRemoto_(scriptId, moduloNuevo) {
   return { modulos: modulos, versionNueva: versionNueva };
 }
 
-function abrirAgregarModuloCliente() {
-  var ui = SpreadsheetApp.getUi();
-  var respId = ui.prompt(
-    'Añadir módulo a un cliente',
-    'Pega el Script ID del proyecto de Apps Script del cliente:',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (respId.getSelectedButton() !== ui.Button.OK) return;
-  var scriptId = respId.getResponseText().trim();
-  if (!scriptId) return;
-
-  var respMod = ui.prompt(
-    'Añadir módulo a un cliente',
-    'Nombre del módulo a añadir (p.ej. COMUNICACION):',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (respMod.getSelectedButton() !== ui.Button.OK) return;
-  var modulo = respMod.getResponseText().trim().toUpperCase();
-  if (!modulo) return;
-
-  try {
-    var resultado = agregarModuloClienteRemoto_(scriptId, modulo);
-    actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
-    ui.alert(
-      'Cliente actualizado',
-      'Módulos: ' + resultado.modulos.join(', ') + '\nVersión: ' + resultado.versionNueva + '\n\nRecuerda: si el módulo añadido necesita hojas/catálogo nuevos, ejecuta también "Instalar estructura inicial" desde el propio Sheet del cliente.',
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('No se pudo actualizar', e.message, ui.ButtonSet.OK);
-  }
+/*
+ * Diálogo con desplegables en vez de ui.prompt() de texto libre (ver
+ * conversación -- "esto debería ser un desplegable dinámico" / "el
+ * script id... el sistema debería poder leer los sheets de clientes").
+ * Ambas listas se leen en vivo, nada hardcodeado a mano:
+ * - Clientes: CLIENTE.SCRIPT_ID ya guardado en el Sheet (Fase 0) -- no
+ *   hay que copiar/pegar IDs ni arriesgarse a pegar el del Sheet en vez
+ *   del del Script.
+ * - Módulos: claves de PACKAGE_MAP_EMBEBIDO.moduleDependencies, que se
+ *   regenera en cada publicación de la librería -- se actualiza sola a
+ *   medida que se construyen módulos nuevos, sin tocar este código.
+ */
+function obtenerModulosDisponibles_() {
+  return Object.keys(PACKAGE_MAP_EMBEBIDO.moduleDependencies || {}).sort();
 }
 
-function abrirActualizarLibreriaCliente() {
-  var ui = SpreadsheetApp.getUi();
-  var respuesta = ui.prompt(
-    'Actualizar librería de un cliente',
-    'Pega el Script ID del proyecto de Apps Script del cliente (no el ID del Sheet):',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (respuesta.getSelectedButton() !== ui.Button.OK) return;
-  var scriptId = respuesta.getResponseText().trim();
-  if (!scriptId) return;
+function obtenerClientesConScriptId_() {
+  return listarRegistrosSeguro_('CLIENTE', { ACTIVO: 'SÍ' })
+    .filter(function (c) { return String(c.SCRIPT_ID || '').trim(); })
+    .map(function (c) {
+      return {
+        id: c.ID,
+        nombre: c.NOMBRE,
+        codigo: c.CODIGO,
+        scriptId: String(c.SCRIPT_ID).trim(),
+        libreriaVersion: c.LIBRERIA_VERSION || '(desconocida)'
+      };
+    });
+}
 
-  try {
-    var resultado = actualizarLibreriaClienteRemoto_(scriptId);
-    actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
-    ui.alert(
-      'Cliente actualizado',
-      'Módulos: ' + resultado.modulos.join(', ') +
-        '\nVersión anterior: ' + (resultado.versionAnterior || '(desconocida)') +
-        '\nVersión nueva: ' + resultado.versionNueva,
-      ui.ButtonSet.OK
-    );
-  } catch (e) {
-    ui.alert('No se pudo actualizar', e.message, ui.ButtonSet.OK);
-  }
+function obtenerDatosGestionRemotaClientes() {
+  return serializarParaCliente_({
+    clientes: obtenerClientesConScriptId_(),
+    modulos: obtenerModulosDisponibles_()
+  });
+}
+
+function agregarModuloClienteDesdeDialogo(scriptId, modulo) {
+  var resultado = agregarModuloClienteRemoto_(scriptId, modulo);
+  actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+  return resultado;
+}
+
+function actualizarLibreriaClienteDesdeDialogo(scriptId) {
+  var resultado = actualizarLibreriaClienteRemoto_(scriptId);
+  actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+  return resultado;
+}
+
+function abrirGestionRemotaClientes() {
+  var html = HtmlService.createTemplateFromFile('GestionRemotaClientes')
+    .evaluate()
+    .setWidth(460)
+    .setHeight(420);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Gestión remota de clientes');
 }
 
 /*
