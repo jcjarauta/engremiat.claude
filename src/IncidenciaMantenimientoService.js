@@ -83,7 +83,8 @@ function obtenerOCrearProcesoSoporteCliente_(cliente, correlationId) {
     NOMBRE: NOMBRE_PROCESO_SOPORTE_CLIENTE_,
     ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 1,
-    ESTADO: 'En proceso'
+    ESTADO: 'En proceso',
+    FECHA_INICIO_REAL: formatoFechaISO_(new Date())
   }, correlationId);
   return resultado.id;
 }
@@ -124,7 +125,8 @@ function obtenerOCrearProyectoMantenimientoCliente_(cliente, correlationId) {
     CLIENTE_ID: cliente.ID,
     FECHA_INICIO_PLAN: hoy,
     FECHA_FIN_PLAN: enCincoAnios,
-    ESTADO: 'En proceso'
+    ESTADO: 'En proceso',
+    FECHA_INICIO_REAL: hoy
   }, correlationId);
   return resultado.id;
 }

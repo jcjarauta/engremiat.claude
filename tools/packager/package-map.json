@@ -2081,7 +2081,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "796ac4b1e1d8aaa56997aae86ba3b83cb222c7643adc89a4b8f9d4cd9e5d8285",
+      "expectedSha256": "86fd7d44b2af14241d29d69b948cc41c0cece3e2678560da5563a87c3c7146d7",
       "required": true,
       "reason": "Incidencia aprobada -> Tarea (Fase 1a, pieza disenada pero nunca construida): al pasar una INCIDENCIA de cliente a En resolucion, crea/reutiliza CAMPANA/PROYECTO/PRODUCTO/PROCESO de Mantenimiento del cliente y una TAREA real, enlazada via VINCULO.",
       "mixed": false,
