@@ -916,6 +916,17 @@ function subirContenidoScript_(scriptId, modulos) {
   // (Sheets.Spreadsheets.Values.batchGet) -- informes disponibles para
   // cualquier cliente CORE, no solo con GANTT instalado, así que se
   // declara siempre, igual que ya lo tiene Gestor de Proyectos.
+  /*
+   * webapp (ver conversación -- verificación en vivo del bot operativo,
+   * despliegue devolviendo 404): sin este bloque el manifiesto no
+   * declara ningún entryPoint de aplicación web, así que
+   * Implementar > Nueva implementación crea un despliegue sin /exec
+   * funcional -- 404 aunque la implementación "se complete". Todo
+   * cliente montado por este generador puede necesitar exponer doPost
+   * (WebhookTelegramService.js, bot operativo/COMUNICACION), así que se
+   * declara siempre, no solo para clientes con ese módulo -- no tiene
+   * coste si nunca se despliega como app web.
+   */
   var manifiesto = {
     timeZone: 'Europe/Madrid',
     dependencies: {
@@ -923,7 +934,11 @@ function subirContenidoScript_(scriptId, modulos) {
       enabledAdvancedServices: [{ userSymbol: 'Sheets', serviceId: 'sheets', version: 'v4' }]
     },
     exceptionLogging: 'STACKDRIVER',
-    runtimeVersion: 'V8'
+    runtimeVersion: 'V8',
+    webapp: {
+      access: 'ANYONE',
+      executeAs: 'USER_DEPLOYING'
+    }
   };
 
   var respSubir = UrlFetchApp.fetch(
