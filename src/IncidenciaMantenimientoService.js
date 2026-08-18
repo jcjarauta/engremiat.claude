@@ -44,15 +44,27 @@ function gestionarCreacionTareaMantenimientoDesdeIncidencia_(idIncidencia, datos
     DESCRIPCION: datos.DESCRIPCION || datos.OBSERVACIONES || '',
     ORDEN_SECUENCIA: siguienteOrden,
     DURACION_PREVISTA_DIAS: 1,
-    ESTADO: 'Pendiente'
+    ESTADO: 'Pendiente',
+    PORCENTAJE_AVANCE: 0
   }, correlationId);
 
+  /*
+   * ESTADO explícito (ver conversación -- bug real encontrado probando
+   * en vivo): VINCULO.ESTADO tiene valorPorDefecto='Activa' en el
+   * esquema, pero ese default solo lo aplica el JS de
+   * FormularioGenerico.html al rellenar el formulario visual -- nunca
+   * cuando se llama a guardarFormulario directamente desde código de
+   * servidor como aquí. CAMPOS_OBLIGATORIOS_MVP.VINCULO exige ESTADO,
+   * así que sin esto la creación fallaba siempre con "Campos
+   * obligatorios ausentes o vacíos: ESTADO".
+   */
   guardarFormulario('VINCULO', null, {
     ENTIDAD_ORIGEN_TIPO: 'Incidencia',
     ENTIDAD_ORIGEN_ID: idIncidencia,
     ENTIDAD_DESTINO_TIPO: 'Tarea',
     ENTIDAD_DESTINO_ID: resultadoTarea.id,
-    TIPO_VINCULO: 'Corrige'
+    TIPO_VINCULO: 'Corrige',
+    ESTADO: 'Activa'
   }, correlationId);
 }
 
@@ -84,7 +96,8 @@ function obtenerOCrearProcesoSoporteCliente_(cliente, correlationId) {
     ORDEN_SECUENCIA: 1,
     DURACION_PREVISTA_DIAS: 1,
     ESTADO: 'En proceso',
-    FECHA_INICIO_REAL: formatoFechaISO_(new Date())
+    FECHA_INICIO_REAL: formatoFechaISO_(new Date()),
+    PORCENTAJE_AVANCE: 0
   }, correlationId);
   return resultado.id;
 }
