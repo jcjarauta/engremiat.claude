@@ -351,7 +351,15 @@ function actualizarLibreriaVersionEnFichaCliente_(scriptId, versionNueva) {
     return String(c.SCRIPT_ID || '').trim() === scriptId;
   })[0];
   if (!cliente) return;
-  actualizarRegistroTransaccional('CLIENTE', cliente.ID, { LIBRERIA_VERSION: versionNueva }, { origen: 'Sistema (actualizarLibreriaClienteRemoto_)' });
+  /*
+   * ORIGEN tiene una lista cerrada de valores válidos
+   * (ORIGENES_HISTORIAL_VALIDOS en HistorialService.js) -- un texto
+   * libre aquí rompía el registro de historial con ERROR_HISTORIAL.
+   * 'ADMIN' es el que mejor encaja: acción administrativa remota
+   * disparada por una persona autorizada, no una escritura de formulario
+   * normal (UI) ni una prueba (TEST).
+   */
+  actualizarRegistroTransaccional('CLIENTE', cliente.ID, { LIBRERIA_VERSION: versionNueva }, { origen: 'ADMIN' });
 }
 
 /*
