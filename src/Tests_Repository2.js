@@ -18626,7 +18626,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
       'OK material_id=' + material.ID
     );
 
-    probarCasoB05_(
+    ejecutarCasoB05_(
       'consumida_negativa',
       datosBase,
       {
@@ -18636,7 +18636,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
       'CANTIDAD_CONSUMIDA'
     );
 
-    probarCasoB05_(
+    ejecutarCasoB05_(
       'desperdiciada_negativa',
       datosBase,
       {
@@ -18646,7 +18646,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
       'CANTIDAD_DESPERDICIADA'
     );
 
-    probarCasoB05_(
+    ejecutarCasoB05_(
       'desviacion_sin_motivo',
       datosBase,
       {
@@ -18658,7 +18658,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
       'MOTIVO_DESVIACION'
     );
 
-    probarCasoB05_(
+    ejecutarCasoB05_(
       'desviacion_con_motivo',
       datosBase,
       {
@@ -18671,7 +18671,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
       ''
     );
 
-    probarCasoB05_(
+    ejecutarCasoB05_(
       'cantidades_dentro_prevision',
       datosBase,
       {
@@ -18716,7 +18716,7 @@ function auditarFaseB05_MatrizPreventivaCantidadesTareaMaterial() {
 }
 
 
-function probarCasoB05_(
+function ejecutarCasoB05_(
   nombre,
   datosBase,
   cambios,
@@ -19275,7 +19275,7 @@ function auditarFaseB07_RelacionesConRegistrosInactivos() {
     console.log('OK material_pm_id=' + seleccionPM.material.ID);
     console.log('OK material_tm_id=' + seleccionTM.material.ID);
 
-    probarRelacionConPadreInactivoB07_(
+    ejecutarRelacionConPadreInactivoB07_(
       ss,
       restauraciones,
       {
@@ -19294,7 +19294,7 @@ function auditarFaseB07_RelacionesConRegistrosInactivos() {
       }
     );
 
-    probarRelacionConPadreInactivoB07_(
+    ejecutarRelacionConPadreInactivoB07_(
       ss,
       restauraciones,
       {
@@ -19313,7 +19313,7 @@ function auditarFaseB07_RelacionesConRegistrosInactivos() {
       }
     );
 
-    probarRelacionConPadreInactivoB07_(
+    ejecutarRelacionConPadreInactivoB07_(
       ss,
       restauraciones,
       {
@@ -19336,7 +19336,7 @@ function auditarFaseB07_RelacionesConRegistrosInactivos() {
       }
     );
 
-    probarRelacionConPadreInactivoB07_(
+    ejecutarRelacionConPadreInactivoB07_(
       ss,
       restauraciones,
       {
@@ -19428,7 +19428,7 @@ function buscarCombinacionLibreB07_(
 }
 
 
-function probarRelacionConPadreInactivoB07_(
+function ejecutarRelacionConPadreInactivoB07_(
   ss,
   restauraciones,
   configuracionPrueba
@@ -19637,7 +19637,7 @@ function auditarFaseB08_IntegridadHistoricaRegistrosInactivos() {
       relacionTM.ID
     );
 
-    probarIntegridadPadreInactivoB08_({
+    ejecutarIntegridadPadreInactivoB08_({
       nombreCaso:
         'producto_inactivo_producto_material',
 
@@ -19660,7 +19660,7 @@ function auditarFaseB08_IntegridadHistoricaRegistrosInactivos() {
         'PRODUCTO'
     });
 
-    probarIntegridadPadreInactivoB08_({
+    ejecutarIntegridadPadreInactivoB08_({
       nombreCaso:
         'material_inactivo_producto_material',
 
@@ -19683,7 +19683,7 @@ function auditarFaseB08_IntegridadHistoricaRegistrosInactivos() {
         'MATERIAL'
     });
 
-    probarIntegridadPadreInactivoB08_({
+    ejecutarIntegridadPadreInactivoB08_({
       nombreCaso:
         'tarea_inactiva_tarea_material',
 
@@ -19706,7 +19706,7 @@ function auditarFaseB08_IntegridadHistoricaRegistrosInactivos() {
         'TAREA'
     });
 
-    probarIntegridadPadreInactivoB08_({
+    ejecutarIntegridadPadreInactivoB08_({
       nombreCaso:
         'material_inactivo_tarea_material',
 
@@ -19762,7 +19762,7 @@ function auditarFaseB08_IntegridadHistoricaRegistrosInactivos() {
 }
 
 
-function probarIntegridadPadreInactivoB08_(
+function ejecutarIntegridadPadreInactivoB08_(
   configuracionPrueba
 ) {
   var ss =
@@ -20053,7 +20053,7 @@ function auditarFaseB09_DuplicidadesHistoricasMateriales() {
   );
 
   try {
-    probarDuplicidadHistoricaMaterialB09_({
+    ejecutarDuplicidadHistoricaMaterialB09_({
       nombreCaso:
         'producto_material_duplicado',
 
@@ -20072,7 +20072,7 @@ function auditarFaseB09_DuplicidadesHistoricasMateriales() {
         'PMA-B09-'
     });
 
-    probarDuplicidadHistoricaMaterialB09_({
+    ejecutarDuplicidadHistoricaMaterialB09_({
       nombreCaso:
         'tarea_material_duplicado',
 
@@ -20124,7 +20124,7 @@ function auditarFaseB09_DuplicidadesHistoricasMateriales() {
 }
 
 
-function probarDuplicidadHistoricaMaterialB09_(
+function ejecutarDuplicidadHistoricaMaterialB09_(
   configuracionPrueba
 ) {
   var ss =

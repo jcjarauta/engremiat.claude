@@ -45,21 +45,71 @@ es `PROVEEDOR`, mismo patrón de ficha).
   accesos directos a "Nueva incidencia" / "Ver Sheet real"
   (`CLIENTE.SHEET_URL`). Reutiliza el exportador CSV compartido
   (`construirCsvConBom_`/`abrirDialogoDescargaCSV_`).
-- **No bloqueante, pendiente de definir**: comunicación y acceso para
-  actualizar el Sheet de un cliente ya entregado. Verificado esta sesión
-  (ver conversación) que actualizar la librería (`1fRR...`, siempre
-  nuestra) NO basta -- cada cliente tiene su `appsscript.json` fijado a
-  un número de versión concreto, y hace falta editar SU proyecto de
-  Apps Script (`clasp push` del `Codigo.js` regenerado + bump de
-  versión) para que reciba el cambio. Si al entregar el Sheet se
-  transfiere la propiedad de Drive o se nos retira como editores del
-  proyecto de script, perdemos esa capacidad -- distinto del acceso al
-  Sheet como documento. Falta definir: (a) qué nivel de acceso técnico
-  se conserva al entregar un cliente, (b) un `CLIENTE.LIBRERIA_VERSION`
-  visible en la ficha para saber quién está desactualizado sin mirar
-  `clientes.json`, (c) una rutina de aviso/actualización (¿el cliente
-  ejecuta él mismo "Actualizar" desde su menú? ¿se lo pedimos por
-  email?) -- encaja como parte de Mantenimiento, no como módulo aparte.
+- **Reclasificada de "no bloqueante" a siguiente paso confirmado**
+  (asesoría estratégica 2026-08-17, ver `VISION_MISION.md`): comunicación
+  y acceso para actualizar el Sheet de un cliente ya entregado. Verificado
+  esta sesión que actualizar la librería (`1fRR...`, siempre nuestra) NO
+  basta -- cada cliente tiene su `appsscript.json` fijado a un número de
+  versión concreto, y hace falta editar SU proyecto de Apps Script
+  (`clasp push` del `Codigo.js` regenerado + bump de versión) para que
+  reciba el cambio. Si al entregar el Sheet se transfiere la propiedad de
+  Drive o se nos retira como editores del proyecto de script, perdemos esa
+  capacidad -- distinto del acceso al Sheet como documento. Falta definir:
+  (a) qué nivel de acceso técnico se conserva al entregar un cliente,
+  (b) un `CLIENTE.LIBRERIA_VERSION` visible en la ficha para saber quién
+  está desactualizado sin mirar `clientes.json`, (c) una rutina de
+  aviso/actualización (¿el cliente ejecuta él mismo "Actualizar" desde su
+  menú? ¿se lo pedimos por email?) -- encaja como parte de Mantenimiento,
+  no como módulo aparte.
+
+### El canal de comunicación: bot de Telegram como relé (Fase 1a)
+
+Diseño acordado (asesoría estratégica 2026-08-17, ver `VISION_MISION.md`
+capa "Comunicación" del ecosistema): un bot de Telegram como entrada de
+acceso sencilla y segura, **relé, no ejecutor** -- el cliente escribe,
+se registra una `INCIDENCIA`, se avisa por correo. Nadie ejecuta nada en
+el Sheet del cliente automáticamente en esta fase.
+
+- **Autenticación gratis**: cada `chat_id` de Telegram es una identidad ya
+  verificada -- mismo patrón de seguridad que `EMAILS_AUTORIZADOS_MONTAJE`
+  (Fase 3 Aprovisionamiento), aplicado a `chat_id` en vez de email. No hace
+  falta login propio.
+- **Sin infraestructura externa**: Apps Script puede desplegarse como Web
+  App (`doPost`) y recibir el webhook de Telegram directamente;
+  `UrlFetchApp` para responder. Todo dentro del mismo stack técnico ya
+  usado en el resto del proyecto (sin n8n, sin servidor propio).
+- **Modelo del bot, estandarizado pero dinámico**: `REGISTRO_COMANDOS_BOT_`
+  -- registro declarativo (comando, módulo del que depende, handler),
+  mismo idioma que `REGISTRO_INFORMES_` y el filtrado de menú por
+  `moduloInstalado_()`/`MODULOS_INSTALADOS_CLIENTE` ya construidos. El
+  motor del bot filtra qué comandos anuncia/responde según los módulos
+  reales del cliente que escribe -- no hay que inventar una segunda forma
+  de "esto depende del módulo X".
+- **Bots y grupos son lo mismo estructuralmente**: un `chat_id` (privado o
+  de grupo) se resuelve contra un `CLIENTE`; quien reporta se identifica
+  por nombre/usuario de Telegram en texto libre, sin necesidad de que cada
+  persona del cliente tenga su propio `PERSONA_EQUIPO`.
+- **Incidencia aprobada -> Tarea**: cuando una `INCIDENCIA` pasa a
+  `ESTADO='Aprobada'`, se crea una `TAREA` bajo el `PROYECTO` tipo
+  `Mantenimiento` de ese cliente (opción A de arriba), enlazada vía
+  `VINCULO` (18_VINCULO, ya existe -- enlace polimórfico genérico, no hace
+  falta una relación nueva). Cierra el círculo con "Proyecto 0": una tarea
+  nacida de soporte es indistinguible de cualquier otra, así que si algún
+  día una IA interna ejecuta tareas, esta cola ya encaja sin cambios.
+- **Huecos para personalizar por cliente**: campo `CLIENTE.CONFIG_BOT`
+  (JSON libre), consultado como capa de overrides sobre el registro
+  estándar -- mismo espíritu que `InstaladorClienteL4.js`/
+  `InstaladorComprasL4.js` (instalación incremental sobre una base común,
+  no un fork por cliente).
+- **Piezas nuevas reales** (todo lo demás reutiliza mecanismos ya
+  construidos): `REGISTRO_COMANDOS_BOT_`, `CLIENTE.TELEGRAM_CHAT_ID`,
+  `CLIENTE.CONFIG_BOT`, lógica de creación perezosa del `PROYECTO`
+  `Mantenimiento` por cliente.
+- **Deliberadamente fuera de esta fase**: ejecución remota de acciones
+  contra el Sheet del cliente desde el bot (reinstalar módulo, regenerar
+  `Codigo.js`...) -- superficie de riesgo distinta, se aborda cuando el
+  módulo `COMUNICACION` completo esté en marcha, no hace falta para
+  desbloquear el voluntariado tecnológico.
 
 ## Fase 2 -- Ventas (prioridad económica alta: cierra el margen real)
 
@@ -212,8 +262,23 @@ activos con datos reales (evitar diseñar contra un vacío).
 3. **Fase 4 nivel básico -- Oportunidad** -- hecho.
 4. **Fase 3 -- Aprovisionamiento** -- hecho (activada, probada de
    extremo a extremo, y de paso cerró `COMPRAS` como módulo real).
-5. Fase 1 -- Mantenimiento (UI, `PanelClientes.html` ya construido en
-   Fase 0/2 -- queda pendiente lo no bloqueante: comunicación/acceso
-   para actualizar el Sheet de un cliente ya entregado).
+5. **Fase 1 -- Mantenimiento** (UI, `PanelClientes.html` ya construido en
+   Fase 0/2 -- queda pendiente comunicación/acceso para actualizar el
+   Sheet de un cliente ya entregado). **Reclasificada de "no bloqueante"
+   a siguiente paso confirmado** (asesoría estratégica 2026-08-17, ver
+   `VISION_MISION.md`): el primer movimiento comercial real -- voluntariado
+   tecnológico en Workaway/Worldpackers, cambiar implementación y
+   personalización por recursos del host -- depende directamente de poder
+   dar soporte a un cliente externo después de entregado. Deja de ser una
+   mejora de conveniencia y pasa a ser requisito del primer plan comercial.
 6. Fase 4 nivel avanzado -- scraping, sin fecha fija, se retoma cuando
    aporte valor inmediato.
+7. **"Proyecto 0" -- Gestor de Proyectos como orquestador de una IA
+   interna** (ver `VISION_MISION.md`): antes que cualquier módulo
+   "comercial" (`FORMACION`, `GAMIFICACION`, `COMUNICACION`, `BOVEDA`),
+   formalizar como `PROYECTO`/`TAREA` el propio patrón de desarrollo que
+   ya se sigue hoy a mano (backlog en roadmap -> IA ejecuta -> commit ->
+   gate humano). Condición que `ROADMAP_IMPLEMENTACION.md` ya exigía antes
+   de construir esto ("fase posterior a un runner interno maduro") ya
+   está cumplida -- el runner de pruebas reactivas con heartbeat es
+   exactamente ese runner maduro.

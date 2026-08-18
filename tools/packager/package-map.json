@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 184,
+  "universeExpected": 185,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -288,7 +288,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "fabc3b24bfed6495308672736dbb9daf5af38db2a9b81d7ddbe13be5023f3504",
+      "expectedSha256": "5b43a16537ea9a59132eb34a85fab91e26ae73c7deb49a12b26d0b5d25bb9127",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -838,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "8f2940f3c31df145922ba36fcc7a80d9c751312a23325da7af3ef35fa4eaecf7",
+      "expectedSha256": "196fa4a9d8a81a49bd59729a1f48e59648492047a60e087e85dcf8a529afb44d",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1806,7 +1806,7 @@
       "type": "js",
       "category": "test",
       "package": "B",
-      "expectedSha256": "563c95e336af263fb051cb743002b8ee345b352baaa808523aa6eab3f35eef23",
+      "expectedSha256": "01505bb59364be9924b8c85a48d745a3f316c8b83d2a8edc39f8cab3318dd19f",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,
@@ -2004,7 +2004,7 @@
       "type": "js",
       "category": "test",
       "package": "B",
-      "expectedSha256": "d046b45a915aee07553a8a6efd4532beb7eacc5f3b6e721dc3ce672692a37e19",
+      "expectedSha256": "f40779bb848bc9f885d85c3578f3e2440acc14e83bc7689e165d0ab446d7fdf1",
       "required": true,
       "reason": "prueba explícita",
       "mixed": false,
@@ -2031,6 +2031,17 @@
       "reason": "operación/UI/config",
       "mixed": false,
       "module": "CORE"
+    },
+    {
+      "path": "VISION_MISION.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "07c9888aff5b809ad7fae063b57a7250972d43bb626097a6072598d79d9576ca",
+      "required": true,
+      "reason": "no desplegable",
+      "mixed": false,
+      "module": null
     }
   ],
   "moduleDependencies": {
