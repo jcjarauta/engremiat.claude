@@ -354,6 +354,76 @@ function actualizarLibreriaVersionEnFichaCliente_(scriptId, versionNueva) {
   actualizarRegistroTransaccional('CLIENTE', cliente.ID, { LIBRERIA_VERSION: versionNueva }, { origen: 'Sistema (actualizarLibreriaClienteRemoto_)' });
 }
 
+/*
+ * Añadir un módulo nuevo a un cliente ya montado (ver conversación --
+ * "no lo tendríamos que crear en Gestor de Proyectos?" en vez de montar
+ * un cliente de prueba desde cero para verificar el bot operativo).
+ * Mismo patrón de lectura que actualizarLibreriaClienteRemoto_, pero en
+ * vez de reenviar los módulos tal cual, añade uno nuevo a la lista antes
+ * de llamar a subirContenidoScript_ -- que también instala/actualiza sin
+ * volver a tocar datos existentes (idempotente, ya probado en
+ * subirContenidoScript_/instalarEstructuraInicial).
+ */
+function agregarModuloClienteRemoto_(scriptId, moduloNuevo) {
+  var token = ScriptApp.getOAuthToken();
+
+  var respLeer = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + scriptId + '/content',
+    { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }
+  );
+  if (respLeer.getResponseCode() !== 200) {
+    throw new Error('AGREGAR_MODULO_CLIENTE_ERROR: no se pudo leer el proyecto del cliente -- ' + respLeer.getContentText());
+  }
+
+  var contenido = JSON.parse(respLeer.getContentText());
+  var archivoCodigo = contenido.files.filter(function (f) { return f.name === 'Codigo'; })[0];
+  if (!archivoCodigo) throw new Error('AGREGAR_MODULO_CLIENTE_ERROR: no se encontró Codigo.js en el proyecto del cliente.');
+
+  var coincidencia = archivoCodigo.source.match(/var\s+MODULOS_INSTALADOS_CLIENTE\s*=\s*(\[[^\]]*\])/);
+  if (!coincidencia) throw new Error('AGREGAR_MODULO_CLIENTE_ERROR: no se encontró MODULOS_INSTALADOS_CLIENTE en el Codigo.js del cliente.');
+  var modulos = JSON.parse(coincidencia[1]);
+
+  if (modulos.indexOf(moduloNuevo) === -1) modulos.push(moduloNuevo);
+
+  subirContenidoScript_(scriptId, modulos);
+  var versionNueva = String(obtenerVersionLibreriaMasReciente_());
+
+  return { modulos: modulos, versionNueva: versionNueva };
+}
+
+function abrirAgregarModuloCliente() {
+  var ui = SpreadsheetApp.getUi();
+  var respId = ui.prompt(
+    'Añadir módulo a un cliente',
+    'Pega el Script ID del proyecto de Apps Script del cliente:',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (respId.getSelectedButton() !== ui.Button.OK) return;
+  var scriptId = respId.getResponseText().trim();
+  if (!scriptId) return;
+
+  var respMod = ui.prompt(
+    'Añadir módulo a un cliente',
+    'Nombre del módulo a añadir (p.ej. COMUNICACION):',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (respMod.getSelectedButton() !== ui.Button.OK) return;
+  var modulo = respMod.getResponseText().trim().toUpperCase();
+  if (!modulo) return;
+
+  try {
+    var resultado = agregarModuloClienteRemoto_(scriptId, modulo);
+    actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+    ui.alert(
+      'Cliente actualizado',
+      'Módulos: ' + resultado.modulos.join(', ') + '\nVersión: ' + resultado.versionNueva + '\n\nRecuerda: si el módulo añadido necesita hojas/catálogo nuevos, ejecuta también "Instalar estructura inicial" desde el propio Sheet del cliente.',
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('No se pudo actualizar', e.message, ui.ButtonSet.OK);
+  }
+}
+
 function abrirActualizarLibreriaCliente() {
   var ui = SpreadsheetApp.getUi();
   var respuesta = ui.prompt(
