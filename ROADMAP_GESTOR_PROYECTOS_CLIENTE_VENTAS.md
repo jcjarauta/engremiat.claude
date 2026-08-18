@@ -111,6 +111,72 @@ el Sheet del cliente automáticamente en esta fase.
   módulo `COMUNICACION` completo esté en marcha, no hace falta para
   desbloquear el voluntariado tecnológico.
 
+### Dos bots distintos, no uno (asesoría estratégica 2026-08-18)
+
+Corrección importante antes de normalizar la construcción de bots: hay
+**dos bots con propósito y alcance distintos**, que comparten tecnología
+pero no esquema:
+
+1. **Bot de soporte** (Fase 1a, ya con esquema) -- La Troballa ↔ cada
+   cliente como cuenta. Un solo `CLIENTE.TELEGRAM_CHAT_ID` porque solo
+   hay una relación: nosotros y ellos.
+2. **Bot operativo del cliente** -- el equipo de cada cliente ↔ su propia
+   instancia. Vive *dentro* de cada Sheet de cliente, no en el maestro.
+   Aquí sí hace falta administrador/usuario, porque dentro de una misma
+   organización cliente hay varias personas con distinto nivel de
+   confianza.
+
+### Modelo de permisos del bot operativo
+
+Reutiliza catálogos ya existentes en vez de inventar un sistema de roles
+nuevo:
+
+- Cada `PERSONA_EQUIPO` del cliente (no `CLIENTE` -- esto vive dentro de
+  la instancia de cada cliente) lleva su propio `TELEGRAM_CHAT_ID`, para
+  identificar a la persona exacta que escribe, no solo "alguien del
+  cliente X".
+- El rol organizativo (`ROL_PERSONA`: Coordinación, Producción, Diseño,
+  Logística, Administración, Voluntariado, Persona atendida, Otra) **no**
+  se reutiliza directamente como nivel de permiso -- un "Voluntariado"
+  podría ser el administrador del bot en una organización pequeña. Nivel
+  de permiso separado, campo nuevo `PERSONA_EQUIPO.NIVEL_PERMISO_BOT`,
+  tres niveles:
+  - **Administrador**: todo lo que el bot ofrece, incluida configuración
+    propia y aprobación de acciones sensibles -- mismo patrón que
+    `EMAILS_AUTORIZADOS_MONTAJE` (Fase 3), aplicado a `chat_id` en vez de
+    email.
+  - **Colaborador**: consulta + acciones normales (reportar tarea del
+    día, responder a una convocatoria) -- el grueso del equipo.
+  - **Consulta**: solo lectura -- útil para "personas atendidas" o
+    colaboradores muy puntuales.
+- `REGISTRO_COMANDOS_BOT_` (ya diseñado, filtrado por módulo instalado)
+  se filtra también por este nivel -- mismo mecanismo, un eje más.
+
+### Estandarizar y automatizar la creación de clientes (menos fricción del operador)
+
+Frente distinto, para cuando haya evidencia real de que hace falta (no
+antes de un segundo o tercer cliente dado de alta -- automatizar algo
+hecho una sola vez es prematuro):
+
+1. **Plantillas de producto**: paquetes de módulos predefinidos
+   ("Voluntariado tecnológico estándar" = CORE+OPERATIVA+SEGUIMIENTO;
+   "Ecosistema completo" = + COMPRAS+VENTAS) en vez de elegir módulo a
+   módulo cada vez.
+2. **Un solo flujo de alta**: diálogo "Nuevo cliente" que encadena crear
+   el registro `CLIENTE`, disparar el aprovisionamiento ya construido
+   (`crearProyectoScript_`/`subirContenidoScript_`) y dejar preparado el
+   hueco del bot -- hoy son pasos sueltos que hay que recordar en orden.
+3. **Panel de estado de onboarding por cliente**: mismo patrón que
+   `SOLICITUDES_MONTAJE` -- visibilidad de en qué punto está cada cliente
+   (aprovisionado / bot vinculado / primera formación hecha).
+4. `CLIENTE.LIBRERIA_VERSION` (ya señalado como pendiente más arriba en
+   esta fase) encaja aquí directamente, como parte del mismo panel.
+
+**Orden recomendado**: cerrar el modelo de permisos primero (decisión de
+diseño barata ahora, cara de deshacer si el bot operativo ya está
+construido sin ella) -- la automatización del alta de clientes espera a
+que haya un segundo/tercer cliente real.
+
 ## Fase 2 -- Ventas (prioridad económica alta: cierra el margen real)
 
 Módulo nuevo acoplable (`VENTAS`, dependencia `CORE`, opcional `ECONOMICO`

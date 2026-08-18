@@ -492,6 +492,8 @@ PROYECTO: [
     { campo: 'CAPACIDAD_SEMANAL_DIAS', etiqueta: 'Capacidad semanal (días)', tipo: 'numero', requerido: true, min: 0 },
     { campo: 'DISPONIBILIDAD', etiqueta: 'Disponibilidad', tipo: 'catalogo', catalogo: 'CFG_DISPONIBILIDAD', requerido: true },
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_RECURSO', requerido: true, valorPorDefecto: 'Disponible' },
+    { campo: 'TELEGRAM_CHAT_ID', etiqueta: 'Chat ID de Telegram', tipo: 'texto', ayuda: 'Identifica a esta persona cuando escribe al bot operativo del cliente. Vacío si todavía no lo usa.' },
+    { campo: 'NIVEL_PERMISO_BOT', etiqueta: 'Nivel de permiso del bot', tipo: 'catalogo', catalogo: 'CFG_NIVEL_PERMISO_BOT', ayuda: 'Administrador: todo, incluida configuración y aprobaciones. Colaborador: consulta y acciones normales. Consulta: solo lectura.' },
     { campo: 'OBSERVACIONES', etiqueta: 'Observaciones', tipo: 'texto' }
   ],
 
