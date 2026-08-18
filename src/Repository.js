@@ -748,12 +748,26 @@ function actualizarRegistroTransaccional(entidad, id, cambios, opciones) {
     }
   });
 
+  /*
+   * ORIGEN_CREACION (ver conversación -- bug real encontrado probando
+   * "Incidencia aprobada -> Tarea"): actualizarRegistroTransaccional
+   * revalida internamente con insertarRegistroTransaccional en modo
+   * dryRun (más abajo, registroFusionado), que exige el registro
+   * completo -- si no se excluye aquí igual que el resto de campos de
+   * sistema, arrastra el valor ya existente de ORIGEN_CREACION al
+   * fusionar cabeceras y el motor de inserción lo rechaza por ser un
+   * campo gestionado por el sistema, rompiendo CUALQUIER actualización
+   * de un registro que ya lo tenga poblado (nunca antes se había
+   * disparado porque hasta ahora solo se actualizaban registros
+   * antiguos, creados antes de que esta columna existiera).
+   */
   var camposSistemaActualizar = [
     'ID',
     'FECHA_CREACION',
     'CREADO_POR',
     'FECHA_MODIFICACION',
-    'MODIFICADO_POR'
+    'MODIFICADO_POR',
+    'ORIGEN_CREACION'
   ];
 
   var camposSistemaRecibidos =
