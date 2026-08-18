@@ -42,7 +42,10 @@ function doPost(e) {
  * lo bastante rápido (arranque en frío de Apps Script, lectura de
  * Sheets), aunque el proceso original sí haya terminado bien. Sin esta
  * comprobación cada reintento crea una INCIDENCIA y un correo duplicados.
- * Cache de 10 min es de sobra frente al backoff de reintentos de Telegram.
+ * El backoff de reintentos de Telegram puede superar los 10 min
+ * (confirmado en pruebas reales: reintentos hasta 16 min después del
+ * mensaje original), así que se usa el máximo de CacheService (6 h) en
+ * vez de un TTL corto que deja pasar los reintentos más tardíos.
  */
 function actualizacionYaProcesada_(actualizacion) {
   var updateId = actualizacion && actualizacion.update_id;
@@ -50,7 +53,7 @@ function actualizacionYaProcesada_(actualizacion) {
   var cache = CacheService.getScriptCache();
   var clave = 'telegram_update_' + updateId;
   if (cache.get(clave)) return true;
-  cache.put(clave, '1', 600);
+  cache.put(clave, '1', 21600);
   return false;
 }
 

@@ -2048,7 +2048,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "fccc28da1fc50746fe22a71a21d35987f80e63879635c8dfd3b46147a5ccc95a",
+      "expectedSha256": "7fee893b4ff5479b3ae7a248abaa06cfc3dc08564d549919898c3311d08d2b32",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (bot de soporte Nexo, Fase 1a, gestado ademas por moduloInstalado_(INTERNO) en runtime para que solo actue en el maestro).",
       "mixed": false,
