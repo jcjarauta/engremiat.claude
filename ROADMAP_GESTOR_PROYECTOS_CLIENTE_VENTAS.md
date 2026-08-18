@@ -152,6 +152,18 @@ nuevo:
 - `REGISTRO_COMANDOS_BOT_` (ya diseñado, filtrado por módulo instalado)
   se filtra también por este nivel -- mismo mecanismo, un eje más.
 
+**Construido (2026-08-18), pendiente de verificación en vivo**: primer
+incremento de solo lectura -- módulo `COMUNICACION` nuevo,
+`WebhookTelegramService.js` (doPost compartido con Nexo, CORE) y
+`BotOperativoService.js` (`REGISTRO_COMANDOS_BOT_`, comandos `/ayuda`,
+`/mis_tareas`, `/hoy`). Gates de empaquetado en verde, pero **no
+probado contra un bot de Telegram real todavía** -- a diferencia de
+Nexo, no se puede probar en el propio maestro/Gestor de Proyectos
+porque `moduloInstalado_('INTERNO')` se comprueba antes que
+`COMUNICACION` en el despachador y siempre gana ahí. Hace falta un
+Sheet de cliente real o de prueba con `COMUNICACION` instalado (y no
+`INTERNO`) para verificar el flujo completo end-to-end.
+
 ### Estandarizar y automatizar la creación de clientes (menos fricción del operador)
 
 Frente distinto, para cuando haya evidencia real de que hace falta (no

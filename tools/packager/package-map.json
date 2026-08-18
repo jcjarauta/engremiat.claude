@@ -288,7 +288,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "2a880b52e73e6ddbe23ccda916d25a89a01c172278775fdfba555bd67acb9a3c",
+      "expectedSha256": "6b89b5b7dde1963ffd39fe7a8be6e9fc78c6af348a3fe5a45f331783e71aef3f",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
