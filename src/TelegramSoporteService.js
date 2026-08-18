@@ -25,12 +25,33 @@ var PROPIEDAD_TOKEN_TELEGRAM_ = 'TELEGRAM_BOT_TOKEN';
 function doPost(e) {
   try {
     if (moduloInstalado_('INTERNO') && e && e.postData && e.postData.contents) {
-      procesarMensajeTelegramSoporte_(JSON.parse(e.postData.contents));
+      var actualizacion = JSON.parse(e.postData.contents);
+      if (actualizacionYaProcesada_(actualizacion)) {
+        return ContentService.createTextOutput('');
+      }
+      procesarMensajeTelegramSoporte_(actualizacion);
     }
   } catch (err) {
     console.error('doPost Telegram: ' + err.message);
   }
   return ContentService.createTextOutput('');
+}
+
+/*
+ * Telegram reintenta la entrega del mismo update_id si no recibe el 200
+ * lo bastante rápido (arranque en frío de Apps Script, lectura de
+ * Sheets), aunque el proceso original sí haya terminado bien. Sin esta
+ * comprobación cada reintento crea una INCIDENCIA y un correo duplicados.
+ * Cache de 10 min es de sobra frente al backoff de reintentos de Telegram.
+ */
+function actualizacionYaProcesada_(actualizacion) {
+  var updateId = actualizacion && actualizacion.update_id;
+  if (updateId === undefined || updateId === null) return false;
+  var cache = CacheService.getScriptCache();
+  var clave = 'telegram_update_' + updateId;
+  if (cache.get(clave)) return true;
+  cache.put(clave, '1', 600);
+  return false;
 }
 
 function procesarMensajeTelegramSoporte_(actualizacion) {
