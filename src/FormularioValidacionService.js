@@ -1425,6 +1425,16 @@ function guardarFormulario(entidad, idRegistro, datosCrudos, correlationId) {
       );
     }
 
+    /*
+     * "Incidencia aprobada -> Tarea" (ver IncidenciaMantenimientoService.js,
+     * F-a de la Fase 1a de ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md):
+     * al pasar una INCIDENCIA de cliente a 'En resolución', se crea (o
+     * reutiliza) una TAREA real bajo su PROYECTO de Mantenimiento.
+     */
+    if (clave === 'INCIDENCIA') {
+      gestionarCreacionTareaMantenimientoDesdeIncidencia_(idFinal, datos, correlationIdFinal);
+    }
+
     return {
       id: idFinal,
       correlationId: correlationIdFinal

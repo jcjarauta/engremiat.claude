@@ -277,6 +277,10 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
+      "path": "src/IncidenciaMantenimientoService.js",
+      "module": "CLIENTE"
+    },
+    {
       "path": "src/Includes.js",
       "module": "CORE"
     },

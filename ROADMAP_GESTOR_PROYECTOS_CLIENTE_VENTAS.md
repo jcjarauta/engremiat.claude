@@ -89,11 +89,19 @@ el Sheet del cliente automáticamente en esta fase.
   de grupo) se resuelve contra un `CLIENTE`; quien reporta se identifica
   por nombre/usuario de Telegram en texto libre, sin necesidad de que cada
   persona del cliente tenga su propio `PERSONA_EQUIPO`.
-- **Incidencia aprobada -> Tarea**: cuando una `INCIDENCIA` pasa a
-  `ESTADO='Aprobada'`, se crea una `TAREA` bajo el `PROYECTO` tipo
-  `Mantenimiento` de ese cliente (opción A de arriba), enlazada vía
-  `VINCULO` (18_VINCULO, ya existe -- enlace polimórfico genérico, no hace
-  falta una relación nueva). Cierra el círculo con "Proyecto 0": una tarea
+- **Incidencia aprobada -> Tarea -- CONSTRUIDO (2026-08-18)**: al pasar
+  una `INCIDENCIA` de cliente a `ESTADO='En resolución'` (se reutiliza
+  este estado existente como disparador -- `CFG_ESTADO_INCIDENCIA` nunca
+  tuvo un valor `'Aprobada'`, no hacía falta inventar uno nuevo), se crea
+  una `TAREA` bajo el `PROYECTO` tipo `Mantenimiento` de ese cliente
+  (opción A de arriba), enlazada vía `VINCULO` (18_VINCULO, ya existe --
+  enlace polimórfico genérico, no hace falta una relación nueva). Ver
+  `IncidenciaMantenimientoService.js` (módulo `CLIENTE`): la cadena
+  completa CAMPANA->PROYECTO->PRODUCTO->PROCESO (obligatoria para que
+  exista una TAREA) se crea perezosamente una sola vez por cliente, bajo
+  una CAMPANA paraguas compartida "Mantenimiento de clientes". Idempotente
+  (comprueba si la incidencia ya generó una tarea antes de crear otra).
+  Cierra el círculo con "Proyecto 0": una tarea
   nacida de soporte es indistinguible de cualquier otra, así que si algún
   día una IA interna ejecuta tareas, esta cola ya encaja sin cambios.
 - **Huecos para personalizar por cliente**: campo `CLIENTE.CONFIG_BOT`

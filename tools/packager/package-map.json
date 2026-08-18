@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 188,
+  "universeExpected": 189,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -288,7 +288,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "6b89b5b7dde1963ffd39fe7a8be6e9fc78c6af348a3fe5a45f331783e71aef3f",
+      "expectedSha256": "e7ef4a1e97b8ef4827b8c82b7762e1d6c640ece0c65d783ddecfcc36a5240716",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -849,7 +849,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "5fbf4958a1359f6e5f180998552796ddc8e794082f4c678bddd312e92e40bd38",
+      "expectedSha256": "2122e9a9c7f94abbddab0a822752706ce3add7b17c413a7a01a43e6e054a79ee",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -1575,7 +1575,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "8e2b233eecadee40be29ae019c924b7f97b990984da5478afade0dde182e0357",
+      "expectedSha256": "2784314173509d7f284ce7b366479fabf5e817785ba7af8203c12ecab76eb860",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -2075,6 +2075,17 @@
       "reason": "bot operativo del cliente, primer incremento de solo lectura (REGISTRO_COMANDOS_BOT_, /ayuda /mis_tareas /hoy) -- Fase 1a de ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md, modulo nuevo COMUNICACION.",
       "mixed": false,
       "module": "COMUNICACION"
+    },
+    {
+      "path": "src/IncidenciaMantenimientoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "e80d09b889c47957bb4af463801466c00d1296113a4de26983636f3fc3580ba7",
+      "required": true,
+      "reason": "Incidencia aprobada -> Tarea (Fase 1a, pieza disenada pero nunca construida): al pasar una INCIDENCIA de cliente a En resolucion, crea/reutiliza CAMPANA/PROYECTO/PRODUCTO/PROCESO de Mantenimiento del cliente y una TAREA real, enlazada via VINCULO.",
+      "mixed": false,
+      "module": "CLIENTE"
     }
   ],
   "moduleDependencies": {
