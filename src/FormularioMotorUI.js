@@ -494,6 +494,13 @@ function agregarCatalogosCore_(menu) {
       .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano')
       .addItem('Configurar webhook del bot de soporte (Nexo)', 'configurarWebhookTelegramSoporte');
   }
+  // Bot operativo del cliente (ver ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md,
+  // "Dos bots distintos, no uno"): vive dentro del propio Sheet de cada
+  // cliente, a diferencia de Nexo (solo maestro) -- gateado por COMUNICACION,
+  // no por INTERNO.
+  if (moduloInstalado_('COMUNICACION')) {
+    menu = menu.addItem('Configurar webhook del bot operativo', 'configurarWebhookBotOperativo');
+  }
   return menu;
 }
 

@@ -19,7 +19,7 @@
  * Apps Script).
  */
 
-var SIMPLE_TRIGGER_NAMES_EMBEBIDO_ = { onOpen: true, onEdit: true };
+var SIMPLE_TRIGGER_NAMES_EMBEBIDO_ = { onOpen: true, onEdit: true, doPost: true };
 
 // Ver FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS en generate-shell-wrappers.mjs:
 // mismo criterio, misma lista.
@@ -187,7 +187,7 @@ function extraerObjetivosGoogleScriptRun_(jsSource) {
 
 function extraerTriggersSimples_(jsSource) {
   var masked = enmascararComentarios_(jsSource);
-  var regex = /(?:^|\n)[ \t]*function\s+(onOpen|onEdit)\s*\(/gu;
+  var regex = /(?:^|\n)[ \t]*function\s+(onOpen|onEdit|doPost)\s*\(/gu;
   var entries = [];
   var match;
   while ((match = regex.exec(masked))) {

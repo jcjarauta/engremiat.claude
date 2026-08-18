@@ -6,56 +6,15 @@
  * 'Cliente' y se avisa al operador por correo -- nadie ejecuta nada en
  * el Sheet del cliente automáticamente.
  *
- * Solo vive en el maestro (moduloInstalado_('INTERNO')), igual que
- * AprovisionamientoService.js -- no tiene sentido en ningún cliente,
- * que no recibe webhooks de este bot.
+ * Solo se invoca en el maestro (moduloInstalado_('INTERNO')), igual que
+ * AprovisionamientoService.js -- despachado desde el doPost compartido
+ * de WebhookTelegramService.js (doPost/actualizacionYaProcesada_/
+ * enviarMensajeTelegram_ viven ahí, no aquí, porque solo puede haber un
+ * doPost por proyecto y lo comparte con el bot operativo del cliente).
  *
  * Token del bot en Propiedades del script (TELEGRAM_BOT_TOKEN), nunca
  * en código -- ver conversación.
  */
-
-var PROPIEDAD_TOKEN_TELEGRAM_ = 'TELEGRAM_BOT_TOKEN';
-
-/*
- * Punto de entrada de Apps Script como aplicación web (Deploy > Nueva
- * implementación > Aplicación web) -- Telegram llama aquí en cada
- * mensaje una vez configurado el webhook (configurarWebhookTelegramSoporte).
- * Siempre responde 200 vacío: Telegram reintenta si no recibe 200.
- */
-function doPost(e) {
-  try {
-    if (moduloInstalado_('INTERNO') && e && e.postData && e.postData.contents) {
-      var actualizacion = JSON.parse(e.postData.contents);
-      if (actualizacionYaProcesada_(actualizacion)) {
-        return ContentService.createTextOutput('');
-      }
-      procesarMensajeTelegramSoporte_(actualizacion);
-    }
-  } catch (err) {
-    console.error('doPost Telegram: ' + err.message);
-  }
-  return ContentService.createTextOutput('');
-}
-
-/*
- * Telegram reintenta la entrega del mismo update_id si no recibe el 200
- * lo bastante rápido (arranque en frío de Apps Script, lectura de
- * Sheets), aunque el proceso original sí haya terminado bien. Sin esta
- * comprobación cada reintento crea una INCIDENCIA y un correo duplicados.
- * El backoff de reintentos de Telegram puede superar los 10 min
- * (confirmado en pruebas reales: reintentos hasta 16 min después del
- * mensaje original), así que se usa el máximo de CacheService (6 h) en
- * vez de un TTL corto que deja pasar los reintentos más tardíos.
- */
-function actualizacionYaProcesada_(actualizacion) {
-  var updateId = actualizacion && actualizacion.update_id;
-  if (updateId === undefined || updateId === null) return false;
-  var cache = CacheService.getScriptCache();
-  var clave = 'telegram_update_' + updateId;
-  if (cache.get(clave)) return true;
-  cache.put(clave, '1', 21600);
-  return false;
-}
 
 function procesarMensajeTelegramSoporte_(actualizacion) {
   var mensaje = actualizacion && actualizacion.message;
@@ -70,7 +29,7 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
   })[0];
 
   if (!cliente) {
-    enviarMensajeTelegramSoporte_(chatId, 'Este chat todavía no está vinculado a ninguna cuenta. Escríbenos a ' + Session.getEffectiveUser().getEmail() + ' para activarlo.');
+    enviarMensajeTelegram_(chatId, 'Este chat todavía no está vinculado a ninguna cuenta. Escríbenos a ' + Session.getEffectiveUser().getEmail() + ' para activarlo.');
     return;
   }
 
@@ -84,7 +43,7 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
     OBSERVACIONES: 'De ' + remitente + ' (' + new Date().toLocaleString() + '): ' + texto
   });
 
-  enviarMensajeTelegramSoporte_(chatId, 'Recibido, gracias. Lo hemos registrado y te responderemos en breve.');
+  enviarMensajeTelegram_(chatId, 'Recibido, gracias. Lo hemos registrado y te responderemos en breve.');
 
   MailApp.sendEmail({
     to: Session.getEffectiveUser().getEmail(),
@@ -93,47 +52,12 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
   });
 }
 
-function enviarMensajeTelegramSoporte_(chatId, texto) {
-  var token = PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
-  if (!token) {
-    console.error('enviarMensajeTelegramSoporte_: falta TELEGRAM_BOT_TOKEN en Propiedades del script');
-    return;
-  }
-  UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify({ chat_id: chatId, text: texto }),
-    muteHttpExceptions: true
-  });
-}
-
 /*
  * Configuración del webhook -- una sola vez, a mano, desde el editor de
- * Apps Script (ejecutar esta función directamente, o añadir un item de
- * menú si se usa a menudo). urlWebApp es la URL de la implementación
- * como aplicación web, termina en /exec.
+ * Apps Script (ejecutar esta función directamente, o desde el menú).
+ * urlWebApp es la URL de la implementación como aplicación web, termina
+ * en /exec.
  */
 function configurarWebhookTelegramSoporte() {
-  var ui = SpreadsheetApp.getUi();
-  var respuesta = ui.prompt(
-    'Configurar webhook de Telegram',
-    'Pega la URL de la implementación como aplicación web (termina en /exec):',
-    ui.ButtonSet.OK_CANCEL
-  );
-  if (respuesta.getSelectedButton() !== ui.Button.OK) return;
-
-  var urlWebApp = respuesta.getResponseText().trim();
-  if (!urlWebApp) return;
-
-  var token = PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
-  if (!token) {
-    ui.alert('Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.');
-    return;
-  }
-
-  var resultado = UrlFetchApp.fetch(
-    'https://api.telegram.org/bot' + token + '/setWebhook?url=' + encodeURIComponent(urlWebApp),
-    { muteHttpExceptions: true }
-  );
-  ui.alert('Resultado', resultado.getContentText(), ui.ButtonSet.OK);
+  configurarWebhookTelegram_('Configurar webhook de Telegram (Nexo)');
 }

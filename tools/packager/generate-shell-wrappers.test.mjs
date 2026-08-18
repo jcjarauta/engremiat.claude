@@ -228,7 +228,7 @@ test('23 proyecto real: selección de todos los módulos no deja huecos', () => 
   const aFiles = validated.validatedFiles.filter((entry) => entry.package === 'A');
   const plan = resolveWrapperPlan({
     map, aFiles,
-    modules: ['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO']
+    modules: ['CORE', 'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS', 'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO', 'COMUNICACION']
   });
   assertDeepEqual(plan.gaps, []);
   assert(plan.wrappers.includes('onOpen'));

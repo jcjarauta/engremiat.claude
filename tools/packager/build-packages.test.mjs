@@ -106,15 +106,15 @@ const expectedTests = [
 
 const expectedMixed = [];
 
-test('01 universo de 186 entradas', () => {
+test('01 universo de 188 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 186);
-  assertEqual(map.universeExpected, 186);
+  assertEqual(map.entries.length, 188);
+  assertEqual(map.universeExpected, 188);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 186);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 188);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -474,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [110, 11, 36, 29, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [110, 11, 36, 29]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [112, 11, 36, 29, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [112, 11, 36, 29]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -889,7 +889,7 @@ test('114 recuento de módulos en package A', () => {
       VENTAS: count('VENTAS'),
       OPORTUNIDAD: count('OPORTUNIDAD'),
     },
-    { CORE: 81, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 },
+    { CORE: 82, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 3, VENTAS: 3, OPORTUNIDAD: 2 },
   );
 });
 
@@ -898,11 +898,11 @@ test('115 entradas fuera de package A no declaran módulo', () => {
   assert(map.entries.filter((entry) => entry.package !== 'A').every((entry) => entry.module === null));
 });
 
-test('116 moduleDependencies declara exactamente los catorce módulos válidos', () => {
+test('116 moduleDependencies declara exactamente los quince módulos válidos', () => {
   const map = readPackageMap(MAP_PATH);
   assertDeepEqual(
     Object.keys(map.moduleDependencies).sort(),
-    ['APROVISIONAMIENTO', 'CLIENTE', 'COMPRAS', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'EJECUCION', 'ESCENARIOS', 'GANTT', 'IMPACTO', 'OPERATIVA', 'OPORTUNIDAD', 'SEGUIMIENTO', 'VENTAS'],
+    ['APROVISIONAMIENTO', 'CLIENTE', 'COMPRAS', 'COMUNICACION', 'CONVOCATORIAS', 'CORE', 'ECONOMICO', 'EJECUCION', 'ESCENARIOS', 'GANTT', 'IMPACTO', 'OPERATIVA', 'OPORTUNIDAD', 'SEGUIMIENTO', 'VENTAS'],
   );
 });
 

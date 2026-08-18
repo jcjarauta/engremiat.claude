@@ -23,7 +23,7 @@ class WrapperError extends Error {
   }
 }
 
-const SIMPLE_TRIGGER_NAMES = new Set(['onOpen', 'onEdit']);
+const SIMPLE_TRIGGER_NAMES = new Set(['onOpen', 'onEdit', 'doPost']);
 
 // Funciones cuyo envoltorio debe pasar MODULOS_INSTALADOS_CLIENTE como
 // argumento explícito, en vez del reenvío genérico .apply(null, arguments):
@@ -201,7 +201,7 @@ export function extractGoogleScriptRunTargets(jsSource) {
 
 export function extractSimpleTriggers(jsSource) {
   const masked = maskCommentsOnly(jsSource);
-  const regex = /(?:^|\n)[ \t]*function\s+(onOpen|onEdit)\s*\(/gu;
+  const regex = /(?:^|\n)[ \t]*function\s+(onOpen|onEdit|doPost)\s*\(/gu;
   const entries = [];
   let match;
   while ((match = regex.exec(masked))) {
@@ -338,14 +338,14 @@ export function renderWrapperStubs(plan, userSymbol) {
     '',
   ];
 
-  // Triggers simples (onOpen/onEdit) primero y aparte del resto -- ver
-  // conversación: al abrir un sheet recién montado, son lo primero que
-  // hay que localizar (onOpen construye el menú), y enterrados por orden
-  // alfabético entre 300+ envoltorios cuesta encontrarlos.
+  // Triggers simples (onOpen/onEdit/doPost) primero y aparte del resto --
+  // ver conversación: al abrir un sheet recién montado, son lo primero
+  // que hay que localizar (onOpen construye el menú), y enterrados por
+  // orden alfabético entre 300+ envoltorios cuesta encontrarlos.
   const triggers = plan.wrappers.filter((name) => SIMPLE_TRIGGER_NAMES.has(name));
   const resto = plan.wrappers.filter((name) => !SIMPLE_TRIGGER_NAMES.has(name));
   if (triggers.length > 0) {
-    lines.push('// --- Triggers simples (onOpen/onEdit) ---', '');
+    lines.push('// --- Triggers simples (onOpen/onEdit/doPost) ---', '');
     for (const name of triggers) pushWrapperBody(lines, name, userSymbol);
     lines.push('// --- Resto de envoltorios (orden alfabético) ---', '');
   }

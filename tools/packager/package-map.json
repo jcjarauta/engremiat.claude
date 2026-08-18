@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 186,
+  "universeExpected": 188,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -838,7 +838,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c9a7177590b94195751d39c2f769e9c6c6c73a4023f4e5c391b0be6006b338c5",
+      "expectedSha256": "7e032bbff23d216a824568705853e253f3dfb522561062b6f94031757ed1dda7",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -882,7 +882,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "0165d322e01483c9a7187d1a28fde6e7dcf64baa8cf42e1781bb6ea57d1ccd22",
+      "expectedSha256": "5edbe0517bf7581876711f0f658b5e85c371161794bcd60e01fccd6cbb8977e6",
       "required": true,
       "reason": "operación/UI/config -- puerto de generate-shell-wrappers.mjs para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -1575,7 +1575,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "a13af168e88eb907b346fe6bfe124383f3650b57769b8e84caa518ada9846a0a",
+      "expectedSha256": "8e2b233eecadee40be29ae019c924b7f97b990984da5478afade0dde182e0357",
       "required": true,
       "reason": "operación/UI/config -- mapa de módulos embebido para Fase 3 Aprovisionamiento, ver AprovisionamientoService.js",
       "mixed": false,
@@ -2048,11 +2048,33 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "7fee893b4ff5479b3ae7a248abaa06cfc3dc08564d549919898c3311d08d2b32",
+      "expectedSha256": "4753ab1577650c98afcaf6af424e2e32f1b5716b25d2ca8e81ebdffdbec17ba0",
       "required": true,
       "reason": "operacion/UI/config -- modulo APROVISIONAMIENTO (bot de soporte Nexo, Fase 1a, gestado ademas por moduloInstalado_(INTERNO) en runtime para que solo actue en el maestro).",
       "mixed": false,
       "module": "APROVISIONAMIENTO"
+    },
+    {
+      "path": "src/WebhookTelegramService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "a6046c9cac40034dfd576f92d2a0872038b719e9e65f0dcff51caf64377a6d52",
+      "required": true,
+      "reason": "despachador unico de doPost (Apps Script solo permite uno por proyecto), compartido entre Nexo (moduloInstalado_(INTERNO)) y el bot operativo del cliente (moduloInstalado_(COMUNICACION)) -- vive en CORE porque ninguno de los dos modulos que despacha esta garantizado.",
+      "mixed": false,
+      "module": "CORE"
+    },
+    {
+      "path": "src/BotOperativoService.js",
+      "type": "js",
+      "category": "production",
+      "package": "A",
+      "expectedSha256": "e8d7d26a71a39e00a0f86b8a8949d0bbccd787d2050891d370837bd10878a030",
+      "required": true,
+      "reason": "bot operativo del cliente, primer incremento de solo lectura (REGISTRO_COMANDOS_BOT_, /ayuda /mis_tareas /hoy) -- Fase 1a de ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md, modulo nuevo COMUNICACION.",
+      "mixed": false,
+      "module": "COMUNICACION"
     }
   ],
   "moduleDependencies": {
@@ -2098,6 +2120,9 @@
       "CORE"
     ],
     "APROVISIONAMIENTO": [
+      "CORE"
+    ],
+    "COMUNICACION": [
       "CORE"
     ]
   }

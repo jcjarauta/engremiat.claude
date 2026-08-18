@@ -50,6 +50,9 @@ var PACKAGE_MAP_EMBEBIDO = {
     ],
     "APROVISIONAMIENTO": [
       "CORE"
+    ],
+    "COMUNICACION": [
+      "CORE"
     ]
   },
   "entriesPackageA": [
@@ -72,6 +75,10 @@ var PACKAGE_MAP_EMBEBIDO = {
     {
       "path": "src/BibliotecaService.js",
       "module": "CORE"
+    },
+    {
+      "path": "src/BotOperativoService.js",
+      "module": "COMUNICACION"
     },
     {
       "path": "src/BusquedaGlobalService.js",
@@ -488,6 +495,10 @@ var PACKAGE_MAP_EMBEBIDO = {
     {
       "path": "src/TelegramSoporteService.js",
       "module": "APROVISIONAMIENTO"
+    },
+    {
+      "path": "src/WebhookTelegramService.js",
+      "module": "CORE"
     },
     {
       "path": "src/appsscript.json",
