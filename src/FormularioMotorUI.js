@@ -1010,6 +1010,20 @@ function abrirFormularioCrearTareaResponsable() { abrirFormularioCrear_('TAREA_R
 function abrirFormularioCrearProductoMaterial() { abrirFormularioCrear_('PRODUCTO_MATERIAL', 'Nueva relación producto-material'); }
 function abrirFormularioCrearTareaMaterial() { abrirFormularioCrear_('TAREA_MATERIAL', 'Nueva relación tarea-material'); }
 function abrirFormularioCrearAsignacion() { abrirFormularioCrear_('ASIGNACION', 'Nueva asignación'); }
+/*
+ * Variante con ENTIDAD_TIPO/ENTIDAD_ID precargados (ver F-053/F-060,
+ * obtenerAsignacionesDeEntidad en FormularioValidacionService.js):
+ * llamada desde el bloque "Personas asignadas" de FormularioGenerico.html
+ * al editar cualquiera de los seis niveles que usan ASIGNACION. Retorno
+ * sin 'tipo' -- vuelve al mismo formulario de edicion (abrirRetorno).
+ */
+function abrirFormularioCrearAsignacionParaEntidad(entidad, id) {
+  var etiqueta = MVP_A_ENTIDAD_DOCUMENTO_[entidad];
+  if (!etiqueta || !id) throw new Error('Entidad no válida para asignación: ' + entidad);
+  abrirFormularioCrear_('ASIGNACION', 'Nueva asignación', {
+    ENTIDAD_TIPO: etiqueta, ENTIDAD_ID: id
+  }, { entidad: entidad, id: id });
+}
 function abrirFormularioCrearRelacion() { abrirFormularioCrear_('RELACION', 'Nueva relación / dependencia'); }
 function abrirFormularioCrearVinculo() { abrirFormularioCrear_('VINCULO', 'Nuevo vínculo genérico'); }
 function abrirFormularioCrearHorario() { abrirFormularioCrear_('HORARIO', 'Nuevo horario (franja semanal)'); }

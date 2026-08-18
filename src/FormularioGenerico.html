@@ -15,6 +15,7 @@
   <div id="mensaje"></div>
   <div id="dependenciasBloqueando" class="campo-oculto"></div>
   <div id="vinculosRelacionados" class="campo-oculto"></div>
+  <div id="asignacionesRelacionadas" class="campo-oculto"></div>
   <div class="acciones">
     <button id="btnDesactivar" class="boton-peligro campo-oculto" onclick="desactivar()">Desactivar</button>
     <button id="btnCancelar" onclick="cancelar()">Cancelar</button>
@@ -373,6 +374,34 @@
         })
         .withFailureHandler(function () {})
         .obtenerVinculosDeEntidad(ENTIDAD, ID_REGISTRO);
+    }
+
+    /*
+     * Personas asignadas (ver F-053/F-060 en ROADMAP_BACKLOG_MEJORAS.md):
+     * mismo patron generico que vinculosRelacionados, pero acotado a los
+     * seis niveles que realmente usan ASIGNACION (CAMPANA/PROYECTO/
+     * PRODUCTO/PROCESO/DECISION/INCIDENCIA) -- TAREA sigue gestionandose
+     * por TAREA_RESPONSABLE, y el resto de entidades (DOCUMENTO, RECURSO,
+     * PERSONA_EQUIPO...) no tienen sentido aqui, así que ni se pide el
+     * enlace "+ Añadir asignación" para no sugerir una accion invalida.
+     */
+    var ENTIDADES_CON_ASIGNACION_ = ['CAMPANA', 'PROYECTO', 'PRODUCTO', 'PROCESO', 'DECISION', 'INCIDENCIA'];
+    function cargarAsignacionesRelacionadas_() {
+      if (!ID_REGISTRO || ENTIDADES_CON_ASIGNACION_.indexOf(ENTIDAD) === -1) return;
+      google.script.run
+        .withSuccessHandler(function (asignaciones) {
+          var el = document.getElementById("asignacionesRelacionadas");
+          var filas = (asignaciones || []).map(function (a) {
+            return "<div class=\"resumen-linea\"><span>" + escapeHtml_(a.personaNombre) +
+              (a.rolAsignado ? " (" + escapeHtml_(a.rolAsignado) + ")" : "") + "</span>" +
+              (a.estado ? "<span class=\"badge " + claseBadgeVinculo_(a.estado) + "\">" + escapeHtml_(a.estado) + "</span>" : "") + "</div>";
+          }).join("");
+          el.className = "";
+          el.innerHTML = "<h4>Personas asignadas</h4>" + filas +
+            "<div class=\"resumen-linea\"><span style=\"color:var(--color-primario);cursor:pointer;\" onclick=\"google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearAsignacionParaEntidad('" + ENTIDAD + "','" + ID_REGISTRO + "')\">+ Añadir asignación</span></div>";
+        })
+        .withFailureHandler(function () {})
+        .obtenerAsignacionesDeEntidad(ENTIDAD, ID_REGISTRO);
     }
     function esTransicionEquipoAPersona_(valorAnterior, valorNuevo) {
       return valorAnterior === "Equipo" && valorNuevo === "Persona";
@@ -895,6 +924,7 @@
           document.getElementById("campos").addEventListener("input", function () { formularioSucio_ = true; });
           document.getElementById("campos").addEventListener("change", function () { formularioSucio_ = true; });
           cargarVinculosRelacionados_();
+          cargarAsignacionesRelacionadas_();
         })
         .withFailureHandler(mostrarError)
         .obtenerEsquemaFormulario(ENTIDAD, ID_REGISTRO);

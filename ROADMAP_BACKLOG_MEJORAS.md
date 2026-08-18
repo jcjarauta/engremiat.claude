@@ -28,7 +28,7 @@ Los cuatro de mayor apalancamiento (resuelven 20+ fricciones combinadas). Diseñ
 
 **Corrección de alcance (tras construirlo, no asumido de antemano)**: de las fricciones originalmente listadas, solo **F-002** (CAMPANA sin responsable) y **F-009** (PROYECTO sin estructura de responsables) — y su equivalente para PRODUCTO/PROCESO/DECISION/INCIDENCIA — quedan realmente resueltas: son los 6 niveles que antes no tenían ningún mecanismo de asignación y ahora sí. **No resuelto todavía**:
 - **F-036** (TAREA sin responsable en su propia alta) y **F-046/F-047/F-049/F-050/F-051** (mejoras de UX de `TAREA_RESPONSABLE`: buscador, horas, desglose de equipo, disponibilidad visible) — `TAREA_RESPONSABLE` se dejó intacta a propósito, sigue siendo el mecanismo de tareas.
-- **F-053/F-060** (roles en DECISION/INCIDENCIA) — el mecanismo ya existe como relación independiente vía `ASIGNACION`, pero los formularios de DECISION/INCIDENCIA siguen mostrando un único `RESPONSABLE_ID`, sin integrar la nueva relación.
+- **F-053/F-060 — CERRADO (2026-08-18)**: bloque genérico "Personas asignadas" en `FormularioGenerico.html` (mismo patrón que `vinculosRelacionados`), acotado a los seis niveles de `ASIGNACION` (CAMPANA/PROYECTO/PRODUCTO/PROCESO/DECISION/INCIDENCIA) — lista las asignaciones existentes y enlaza a "+ Añadir asignación" con `ENTIDAD_TIPO`/`ENTIDAD_ID` precargados (`obtenerAsignacionesDeEntidad`/`abrirFormularioCrearAsignacionParaEntidad`). El formulario ya no muestra solo el `RESPONSABLE_ID` único.
 - **Límite de alcance documentado en código**: `FUNC-REC-001` (TAREA_RESPONSABLE) y `FUNC-ASG-001` (ASIGNACION) no se combinan — una persona podría superar el 100% real sumando ambas tablas sin que ninguna regla lo detecte todavía.
 
 F-046/F-047/F-049/F-050/F-051 quedan reclasificadas hacia L3.5 (buscador en selectores) y una futura integración de UX de `TAREA_RESPONSABLE`, no cerradas por L1.1.
@@ -144,7 +144,7 @@ Dependen de que L1 esté cerrado (usan las mismas convenciones de diseño):
 
 **Verificación previa que evitó un 4º falso hallazgo**: antes de escribir `FUNC-TAREA-014` confirmé que `FUNC-TAREA-001` ya cubre "Terminada con avance≠100" (ERROR) — no se duplicó, la nueva regla cubre solo el caso que faltaba.
 
-**Hueco de cobertura reconocido, no oculto**: `FUNC-PROCESO-005` no tiene prueba reactiva dedicada (requeriría un escenario controlado con tareas hijas reales); queda pendiente.
+**Corregido (2026-08-18)**: la nota anterior decía que `FUNC-PROCESO-005` no tenía prueba reactiva dedicada. Ya existe (`probarIntegridadProcesoAvancePorTareasDifiereDePromedio`, `Tests_IntegridadGapReglasFuncional.js`), registrada en el runner reactivo — deriva el escenario de una `TAREA` activa real en vez de requerir fixtures controlados. Nota desactualizada, no un hueco real.
 
 Instalador `instalarMetodoCalculoAvance`, reutilizando `crearCatalogoNuevoL3_` y `agregarColumnasSiFaltan_`.
 

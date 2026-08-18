@@ -41,6 +41,31 @@ function obtenerVinculosDeEntidad(entidad, id) {
       };
     });
 }
+/*
+ * Personas/equipos asignados a cualquiera de los seis niveles que usan
+ * ASIGNACION (CAMPANA/PROYECTO/PRODUCTO/PROCESO/DECISION/INCIDENCIA) --
+ * ver F-053/F-060 en ROADMAP_BACKLOG_MEJORAS.md: el mecanismo N:M ya
+ * existía pero ningún formulario lo mostraba, solo el RESPONSABLE_ID
+ * único. Mismo patrón que obtenerVinculosDeEntidad, misma etiqueta de
+ * CFG_ENTIDAD_DOCUMENTO que ya reutiliza el esquema de ASIGNACION.
+ */
+function obtenerAsignacionesDeEntidad(entidad, id) {
+  var etiqueta = MVP_A_ENTIDAD_DOCUMENTO_[entidad];
+  if (!etiqueta || !id) return [];
+
+  return listarRegistrosSeguro_('ASIGNACION', { ACTIVO: 'SÍ' })
+    .filter(function (a) { return a.ENTIDAD_TIPO === etiqueta && a.ENTIDAD_ID === id; })
+    .map(function (a) {
+      var persona = obtenerRegistroPorId('PERSONA_EQUIPO', a.PERSONA_EQUIPO_ID);
+      return {
+        asignacionId: a.ID,
+        personaId: a.PERSONA_EQUIPO_ID,
+        personaNombre: persona ? persona.NOMBRE : a.PERSONA_EQUIPO_ID,
+        rolAsignado: a.ROL_ASIGNADO || '',
+        estado: a.ESTADO || ''
+      };
+    });
+}
 function obtenerOpcionesDependientes(mapaEntidad, valorPadre) {
   var mapa = MAPAS_DEPENDENCIA_MVP[mapaEntidad];
   if (!mapa) throw new Error('No existe el mapa de dependencia ' + mapaEntidad);
