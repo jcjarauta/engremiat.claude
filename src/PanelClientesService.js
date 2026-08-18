@@ -8,6 +8,16 @@
 
 var ESTADOS_INCIDENCIA_CERRADOS_ = ['Resuelta', 'Cerrada', 'Cancelada'];
 
+/*
+ * Ficha técnica (Sheet+Script ID+versión de librería) por cliente (ver
+ * conversación -- "esto no lo tendríamos que tener automatizado?" tras
+ * encontrar gestor-proyectos 109 versiones por detrás sin visibilidad):
+ * solo se muestra en herramientas internas (INTERNO/APROVISIONAMIENTO),
+ * nunca en el panel de un cliente de pago -- mismo criterio que
+ * "Actualizar librería de un cliente" en AprovisionamientoService.js.
+ * obtenerVersionLibreriaMasReciente_ exige el scope script.projects, así
+ * que solo se llama cuando de verdad hace falta.
+ */
 function obtenerListaClientes() {
   var clientes = listarRegistros('CLIENTE', { ACTIVO: 'SÍ' });
 
@@ -19,6 +29,12 @@ function obtenerListaClientes() {
   });
 
   var ahora = new Date();
+
+  var mostrarInfoTecnica = moduloInstalado_('INTERNO') || moduloInstalado_('APROVISIONAMIENTO');
+  var versionMasReciente = null;
+  if (mostrarInfoTecnica) {
+    try { versionMasReciente = String(obtenerVersionLibreriaMasReciente_()); } catch (e) { versionMasReciente = null; }
+  }
 
   var lista = clientes.map(function (cliente) {
     var incidencias = incidenciasPorCliente_[cliente.ID] || [];
@@ -41,14 +57,31 @@ function obtenerListaClientes() {
       tipo: cliente.TIPO_CLIENTE,
       estado: cliente.ESTADO,
       sheetUrl: cliente.SHEET_URL || '',
+      scriptId: cliente.SCRIPT_ID || '',
+      libreriaVersion: cliente.LIBRERIA_VERSION || '',
+      libreriaDesactualizada: !!(mostrarInfoTecnica && versionMasReciente && cliente.SCRIPT_ID && String(cliente.LIBRERIA_VERSION || '') !== versionMasReciente),
       incidenciasAbiertas: abiertas.length,
       antiguedadDias: antiguedadDias
     };
   });
 
-  lista.sort(function (a, b) { return b.incidenciasAbiertas - a.incidenciasAbiertas; });
+  lista.sort(function (a, b) {
+    if (a.libreriaDesactualizada !== b.libreriaDesactualizada) return a.libreriaDesactualizada ? -1 : 1;
+    return b.incidenciasAbiertas - a.incidenciasAbiertas;
+  });
 
-  return { clientes: lista, total: lista.length };
+  return { clientes: lista, total: lista.length, mostrarInfoTecnica: mostrarInfoTecnica, versionMasReciente: versionMasReciente };
+}
+
+/*
+ * Variante de actualizarLibreriaClienteRemoto_ para el botón del panel:
+ * el scriptId ya se conoce (viene de CLIENTE.SCRIPT_ID), así que no hace
+ * falta el ui.prompt de abrirActualizarLibreriaCliente.
+ */
+function actualizarLibreriaClienteDesdePanel(scriptId) {
+  var resultado = actualizarLibreriaClienteRemoto_(scriptId);
+  actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+  return resultado;
 }
 
 function abrirPanelClientes() {

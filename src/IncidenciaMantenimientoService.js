@@ -56,6 +56,22 @@ function gestionarCreacionTareaMantenimientoDesdeIncidencia_(idIncidencia, datos
   }, correlationId);
 }
 
+/*
+ * Cambio de ESTADO de un clic (ver conversación -- "que cambiar el
+ * estado sea un clic, ya sea por formulario o por la ficha"): usado por
+ * FichaIncidencia.html y por cambiarEstadoKanban (KanbanService.js).
+ * Dispara las mismas reglas de negocio que guardarFormulario (Incidencia
+ * aprobada -> Tarea) -- un actualizarRegistroTransaccional_ suelto
+ * (como el que usa el resto del Kanban) las saltaría, porque el gancho
+ * vive en guardarFormulario, no en el repositorio genérico.
+ */
+function cambiarEstadoIncidenciaRapido_(id, nuevoEstado) {
+  actualizarRegistroTransaccional('INCIDENCIA', id, { ESTADO: nuevoEstado }, { origen: 'UI' });
+  var registro = obtenerRegistroPorId('INCIDENCIA', id);
+  gestionarCreacionTareaMantenimientoDesdeIncidencia_(id, registro, generarCorrelationId_());
+  return registro;
+}
+
 function obtenerOCrearProcesoSoporteCliente_(cliente, correlationId) {
   var productoId = obtenerOCrearProductoSoporteCliente_(cliente, correlationId);
 

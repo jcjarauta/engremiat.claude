@@ -55,8 +55,22 @@ function obtenerFichaIncidencia(id) {
     incidencia: incidencia,
     contexto: contexto,
     documentos: documentos,
-    decisionesVinculadas: decisionesVinculadas
+    decisionesVinculadas: decisionesVinculadas,
+    opcionesEstado: obtenerCatalogo('CFG_ESTADO_INCIDENCIA')
   });
+}
+
+/*
+ * Cambio de ESTADO de un clic desde el selector de la propia ficha (ver
+ * conversación -- "que cambiar el estado sea un clic"). Delega en
+ * cambiarEstadoIncidenciaRapido_ (IncidenciaMantenimientoService.js,
+ * mismo helper que usa el Kanban) para no duplicar el disparo de
+ * "Incidencia aprobada -> Tarea", y devuelve la ficha recién releída
+ * para que el cliente solo tenga que volver a renderizar.
+ */
+function cambiarEstadoIncidenciaDesdeFicha(id, nuevoEstado) {
+  cambiarEstadoIncidenciaRapido_(id, nuevoEstado);
+  return obtenerFichaIncidencia(id);
 }
 
 function abrirFichaIncidencia(id) {

@@ -226,6 +226,16 @@ function obtenerDatosKanban(entidad, filtro) {
 
 function cambiarEstadoKanban(entidad, id, nuevoEstado) {
   if (!KANBAN_CONFIG_[entidad]) throw new Error('ERROR_KANBAN: entidad no soportada: ' + entidad);
+  /*
+   * INCIDENCIA pasa por cambiarEstadoIncidenciaRapido_ (Incidencia
+   * MantenimientoService.js) en vez del actualizarRegistroTransaccional
+   * directo de abajo -- dispara "Incidencia aprobada -> Tarea", que un
+   * cambio de ESTADO suelto se saltaría.
+   */
+  if (entidad === 'INCIDENCIA') {
+    cambiarEstadoIncidenciaRapido_(id, nuevoEstado);
+    return { ok: true };
+  }
   actualizarRegistroTransaccional(entidad, id, { ESTADO: nuevoEstado }, { origen: 'UI' });
   return { ok: true };
 }

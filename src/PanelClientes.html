@@ -46,7 +46,7 @@
         return "badge-ok";
       }
 
-      function renderCliente_(cliente) {
+      function renderCliente_(cliente, mostrarInfoTecnica) {
         var codigo = cliente.codigo ? ' (' + escapeHtml(cliente.codigo) + ')' : '';
         var badgeEstado = '<span class="badge badge-neutro">' + escapeHtml(cliente.estado) + '</span>';
         var badgeIncidencias = cliente.incidenciasAbiertas > 0
@@ -59,11 +59,29 @@
           ? '<a class="boton btn-mini" href="' + escapeAttr(cliente.sheetUrl) + '" target="_blank">Ver Sheet</a>'
           : '';
 
+        /*
+         * Info técnica (Script ID + versión de librería), solo en
+         * herramientas internas (ver mostrarInfoTecnica en
+         * PanelClientesService.js) -- evita que un cliente de pago vea
+         * detalles de infraestructura que no le corresponden.
+         */
+        var bloqueTecnico = '';
+        if (mostrarInfoTecnica && cliente.scriptId) {
+          var badgeVersion = '<span class="badge ' + (cliente.libreriaDesactualizada ? 'badge-alerta' : 'badge-ok') + '">' +
+            'librería v' + escapeHtml(cliente.libreriaVersion || '?') +
+            (cliente.libreriaDesactualizada ? ' -- desactualizada' : '') + '</span>';
+          var botonActualizar = cliente.libreriaDesactualizada
+            ? '<button class="boton btn-mini" onclick="actualizarLibreria_(\'' + escapeAttr(cliente.scriptId) + '\', this)">Actualizar librería</button>'
+            : '';
+          bloqueTecnico = '<div class="detalle-cliente">' + badgeVersion + ' ' + botonActualizar + '</div>';
+        }
+
         return '<div class="fila-cliente">' +
           '<div class="fila-cabecera">' +
             '<div>' +
               '<div class="nombre-cliente">' + escapeHtml(cliente.nombre) + codigo + '</div>' +
               '<div class="detalle-cliente">' + escapeHtml(cliente.tipo) + ' · ' + badgeEstado + ' ' + badgeIncidencias + '</div>' +
+              bloqueTecnico +
             '</div>' +
           '</div>' +
           '<div class="acciones-cliente">' +
@@ -72,6 +90,15 @@
             botonSheet +
           '</div>' +
         '</div>';
+      }
+
+      function actualizarLibreria_(scriptId, boton) {
+        boton.disabled = true;
+        boton.textContent = 'Actualizando...';
+        google.script.run
+          .withSuccessHandler(function () { cargarLista(); })
+          .withFailureHandler(function (error) { boton.disabled = false; boton.textContent = 'Actualizar librería'; mostrarError(error); })
+          .actualizarLibreriaClienteDesdePanel(scriptId);
       }
 
       function mostrarError(error) {
@@ -95,7 +122,7 @@
           return;
         }
         document.getElementById("resumen").textContent = datos.total + " clientes en total";
-        document.getElementById("lista").innerHTML = datos.clientes.map(renderCliente_).join("");
+        document.getElementById("lista").innerHTML = datos.clientes.map(function (c) { return renderCliente_(c, datos.mostrarInfoTecnica); }).join("");
       }
 
       function cargarLista() {

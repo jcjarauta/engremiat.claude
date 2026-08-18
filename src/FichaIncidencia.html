@@ -35,6 +35,7 @@
         <h2 id="tituloIncidencia"></h2>
         <div class="detalle" id="detalleIncidencia"></div>
         <div class="acciones">
+          <select id="selectorEstadoRapido" class="btn-mini"></select>
           <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
           <button id="btnExportarCsv" class="boton btn-mini">Exportar CSV</button>
         </div>
@@ -123,12 +124,33 @@
         }).join('');
       }
 
+      /*
+       * Cambio de estado de un clic (ver conversacion -- "que cambiar el
+       * estado sea un clic, ya sea por formulario o por la ficha"):
+       * evita reabrir el formulario completo solo para mover el ESTADO.
+       * Dispara las mismas reglas de negocio que guardarFormulario
+       * (Incidencia aprobada -> Tarea) via cambiarEstadoIncidenciaRapido_
+       * en el servidor, a diferencia de un cambio de celda directo.
+       */
+      function cambiarEstadoRapido_(nuevoEstado) {
+        google.script.run.withSuccessHandler(render).withFailureHandler(mostrarError).cambiarEstadoIncidenciaDesdeFicha(ID_REGISTRO, nuevoEstado);
+      }
+
+      function renderSelectorEstadoRapido_(estadoActual, opcionesEstado) {
+        var select = document.getElementById("selectorEstadoRapido");
+        select.innerHTML = opcionesEstado.map(function (o) {
+          return '<option value="' + escapeHtml(o) + '"' + (o === estadoActual ? ' selected' : '') + '>' + escapeHtml(o) + '</option>';
+        }).join("");
+        select.onchange = function () { cambiarEstadoRapido_(select.value); };
+      }
+
       function render(datos) {
         document.getElementById("estadoCarga").style.display = "none";
         document.getElementById("contenido").style.display = "block";
 
         var inc = datos.incidencia;
         document.getElementById("tituloIncidencia").innerHTML = escapeHtml(inc.TITULO) + renderBadge_(inc.ESTADO);
+        renderSelectorEstadoRapido_(inc.ESTADO, datos.opcionesEstado);
         document.getElementById("detalleIncidencia").textContent =
           inc.ID + (inc.TIPO ? " · " + inc.TIPO : "") +
           (inc.PRIORIDAD ? " · Prioridad: " + inc.PRIORIDAD : "") +
