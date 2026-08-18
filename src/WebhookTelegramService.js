@@ -42,23 +42,47 @@ function doPost(e) {
 
 /*
  * Telegram reintenta la entrega del mismo update_id si no recibe el 200
- * lo bastante rápido (arranque en frío de Apps Script, lectura de
- * Sheets), aunque el proceso original sí haya terminado bien. Sin esta
- * comprobación cada reintento crea efectos duplicados (INCIDENCIA,
- * correo, respuesta repetida). El backoff de reintentos de Telegram
- * puede superar los 10 min (confirmado en pruebas reales: reintentos
- * hasta 16 min después del mensaje original), así que se usa el máximo
- * de CacheService (6 h) en vez de un TTL corto que deja pasar los
- * reintentos más tardíos.
+ * lo bastante rápido, aunque el proceso original sí haya terminado bien
+ * -- confirmado en pruebas reales: reintentos del MISMO mensaje más de
+ * 7 horas después del original (10:14 -> 17:11), muy por encima de las
+ * 6h que es el máximo que admite CacheService. No hay TTL de caché que
+ * cubra esto -- Telegram puede seguir reintentando durante horas, así
+ * que la deduplicación tiene que ser permanente (PropertiesService, sin
+ * caducidad), no un TTL por generoso que sea. Se guardan solo los
+ * últimos MAX_UPDATES_RECORDADOS_ para no crecer sin límite. Bajo lock
+ * corto porque dos entregas casi simultáneas podrían pisarse el
+ * lectura-modificación-escritura si no se serializa.
  */
+var PROPIEDAD_UPDATES_PROCESADOS_ = 'TELEGRAM_UPDATES_PROCESADOS';
+var MAX_UPDATES_RECORDADOS_ = 500;
+
 function actualizacionYaProcesada_(actualizacion) {
   var updateId = actualizacion && actualizacion.update_id;
   if (updateId === undefined || updateId === null) return false;
-  var cache = CacheService.getScriptCache();
-  var clave = 'telegram_update_' + updateId;
-  if (cache.get(clave)) return true;
-  cache.put(clave, '1', 21600);
-  return false;
+
+  var bloqueo = LockService.getScriptLock();
+  var tieneBloqueo = bloqueo.tryLock(5000);
+
+  try {
+    var props = PropertiesService.getScriptProperties();
+    var lista;
+    try {
+      lista = JSON.parse(props.getProperty(PROPIEDAD_UPDATES_PROCESADOS_) || '[]');
+    } catch (err) {
+      lista = [];
+    }
+
+    if (lista.indexOf(updateId) !== -1) return true;
+
+    lista.push(updateId);
+    if (lista.length > MAX_UPDATES_RECORDADOS_) {
+      lista = lista.slice(lista.length - MAX_UPDATES_RECORDADOS_);
+    }
+    props.setProperty(PROPIEDAD_UPDATES_PROCESADOS_, JSON.stringify(lista));
+    return false;
+  } finally {
+    if (tieneBloqueo) bloqueo.releaseLock();
+  }
 }
 
 /*

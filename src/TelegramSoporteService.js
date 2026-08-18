@@ -33,6 +33,18 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
     return;
   }
 
+  /*
+   * Cinturón de seguridad adicional a actualizacionYaProcesada_ (ver
+   * conversación -- "necesitamos mejorar la comunicación, está en
+   * bucle"): si por lo que sea un reintento se cuela pese a la
+   * deduplicación por update_id, este segundo filtro por contenido
+   * evita duplicar lo único que de verdad importa no duplicar -- la
+   * INCIDENCIA y el correo. Silencioso a propósito: no se reenvía ni
+   * la respuesta de Telegram ni el correo, porque ya se mandaron la
+   * vez que sí se creó.
+   */
+  if (yaExisteIncidenciaRecienteParaMensaje_(cliente.ID, texto)) return;
+
   guardarFormulario('INCIDENCIA', null, {
     NIVEL_INCIDENCIA: 'Cliente',
     CLIENTE_ID: cliente.ID,
@@ -49,6 +61,23 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
     to: Session.getEffectiveUser().getEmail(),
     subject: 'Nexo: nuevo mensaje de soporte -- ' + cliente.NOMBRE,
     body: 'Cliente: ' + cliente.NOMBRE + ' (' + cliente.ID + ')\nDe: ' + remitente + '\n\n' + texto
+  });
+}
+
+/*
+ * Ventana de una hora: suficiente para el patrón de reintentos en
+ * ráfaga ya observado (cada ~2 min durante la primera hora); los
+ * reintentos más tardíos (horas después) ya los cubre
+ * actualizacionYaProcesada_, que no caduca.
+ */
+var VENTANA_DEDUP_INCIDENCIA_MS_ = 60 * 60 * 1000;
+
+function yaExisteIncidenciaRecienteParaMensaje_(clienteId, texto) {
+  var haceUnaHora = new Date(Date.now() - VENTANA_DEDUP_INCIDENCIA_MS_);
+  return listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ', NIVEL_INCIDENCIA: 'Cliente', CLIENTE_ID: clienteId }).some(function (inc) {
+    var fechaCreacion = inc.FECHA_CREACION ? new Date(inc.FECHA_CREACION) : null;
+    if (!fechaCreacion || isNaN(fechaCreacion.getTime()) || fechaCreacion < haceUnaHora) return false;
+    return String(inc.OBSERVACIONES || '').indexOf(texto) !== -1;
   });
 }
 
