@@ -201,39 +201,148 @@ function construirResolutorContextoPanelTemporal_() {
 
 /*
  * Bloqueos (ver conversación -- "hace falta esta competencia para
- * este proceso", "hace falta este espacio para esta tarea"): a
- * diferencia del resto del panel (organizado por fecha), esto no
- * depende del rango consultado -- una tarea sin la competencia o el
- * recurso que exige está bloqueada hoy, mañana y la semana que viene
- * por igual. Reutiliza tal cual listarAsignacionesSinEncajeCompetencia_/
- * Recurso (DashboardService.js), que ya devuelven TAREA_ID/TAREA_NOMBRE
- * -- no hace falta ninguna resolución nueva, solo reformatear como
- * bloqueo con enlace de edición a la tarea.
+ * este proceso", "hace falta este espacio para esta tarea", ampliado
+ * después a "decisión pendiente bloquea un proyecto", "material
+ * insuficiente para una tarea", "pedido a proveedor retrasado",
+ * "proveedor inactivo en un material crítico" y "incidencia crítica
+ * sin acción correctora" -- asesoría estratégica 2026-08-17/18, ver
+ * VISION_MISION.md y ROADMAP_BACKLOG_MEJORAS.md Fase O4): a diferencia
+ * del resto del panel (organizado por fecha), esto no depende del
+ * rango consultado -- un bloqueo lo es hoy, mañana y la semana que
+ * viene por igual, así que tampoco se filtra por campaña/proyecto
+ * (mismo criterio que ya tenían competencia/recurso).
+ *
+ * Forma común de cada entrada: {tipo, entidad, entidadId,
+ * entidadNombre, detalle} -- 'entidad' es el nombre MVP real (TAREA,
+ * DECISION, MATERIAL...) para que el clic en el panel abra la ficha
+ * correcta con seleccionarYAbrirEdicion(entidad, id) en vez de asumir
+ * siempre TAREA.
  */
 function obtenerBloqueosPanelTemporal_() {
-  if (!moduloInstalado_('OPERATIVA')) return [];
-
   var bloqueos = [];
 
-  listarAsignacionesSinEncajeCompetencia().forEach(function (a) {
-    bloqueos.push({
-      tipo: 'competencia',
-      tareaId: a.TAREA_ID,
-      tareaNombre: a.TAREA_NOMBRE,
-      detalle: (a.PERSONA_NOMBRE || '(sin persona)') + ' no tiene la competencia "' + a.COMPETENCIA_NOMBRE + '"' +
-        (a.NIVEL_EXIGIDO ? ' (nivel mínimo ' + a.NIVEL_EXIGIDO + ')' : '')
+  if (moduloInstalado_('OPERATIVA')) {
+    listarAsignacionesSinEncajeCompetencia().forEach(function (a) {
+      bloqueos.push({
+        tipo: 'competencia',
+        entidad: 'TAREA',
+        entidadId: a.TAREA_ID,
+        entidadNombre: a.TAREA_NOMBRE,
+        detalle: (a.PERSONA_NOMBRE || '(sin persona)') + ' no tiene la competencia "' + a.COMPETENCIA_NOMBRE + '"' +
+          (a.NIVEL_EXIGIDO ? ' (nivel mínimo ' + a.NIVEL_EXIGIDO + ')' : '')
+      });
     });
-  });
 
-  listarAsignacionesSinEncajeRecurso().forEach(function (n) {
-    var requisito = [n.CLASE_RECURSO_REQUERIDA, n.CATEGORIA_RECURSO_REQUERIDA].filter(function (v) { return v; }).join(' / ') || 'recurso';
-    bloqueos.push({
-      tipo: 'recurso',
-      tareaId: n.TAREA_ID,
-      tareaNombre: n.TAREA_NOMBRE,
-      detalle: 'Faltan ' + requisito + ' (' + n.CANTIDAD_ASIGNADA + '/' + n.CANTIDAD_MINIMA + ' asignado(s))'
+    listarAsignacionesSinEncajeRecurso().forEach(function (n) {
+      var requisito = [n.CLASE_RECURSO_REQUERIDA, n.CATEGORIA_RECURSO_REQUERIDA].filter(function (v) { return v; }).join(' / ') || 'recurso';
+      bloqueos.push({
+        tipo: 'recurso',
+        entidad: 'TAREA',
+        entidadId: n.TAREA_ID,
+        entidadNombre: n.TAREA_NOMBRE,
+        detalle: 'Faltan ' + requisito + ' (' + n.CANTIDAD_ASIGNADA + '/' + n.CANTIDAD_MINIMA + ' asignado(s))'
+      });
     });
-  });
+  }
+
+  if (moduloInstalado_('SEGUIMIENTO')) {
+    listarDecisionesPendientes().filter(function (d) { return d.VENCIDA && d.PROYECTO_ID; }).forEach(function (d) {
+      bloqueos.push({
+        tipo: 'decision',
+        entidad: 'DECISION',
+        entidadId: d.ID,
+        entidadNombre: d.TITULO,
+        detalle: 'Decisión pendiente vencida (' + (d.FECHA_LIMITE || 'sin fecha') + ') bloqueando el proyecto ' + d.PROYECTO_ID
+      });
+    });
+
+    listarIncidenciasAbiertas().filter(function (i) {
+      return !String(i.ACCION_CORRECTORA || '').trim() &&
+        (i.PRIORIDAD === 'Crítico' || i.TIPO === 'Seguridad');
+    }).forEach(function (i) {
+      bloqueos.push({
+        tipo: 'incidencia',
+        entidad: 'INCIDENCIA',
+        entidadId: i.ID,
+        entidadNombre: i.TITULO,
+        detalle: 'Incidencia ' + (i.PRIORIDAD === 'Crítico' ? 'crítica' : 'de seguridad') + ' abierta sin acción correctora'
+      });
+    });
+  }
+
+  var materialesPorId_ = {};
+
+  if (moduloInstalado_('COMPRAS')) {
+    listarRegistrosSeguro_('MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (m) { materialesPorId_[m.ID] = m; });
+
+    listarRegistrosSeguro_('TAREA_MATERIAL', { ACTIVO: 'SÍ' }).filter(function (tm) {
+      return tm.ESTADO === 'Planificada' || tm.ESTADO === 'Activa';
+    }).forEach(function (tm) {
+      var material = materialesPorId_[tm.MATERIAL_ID];
+      if (!material) return;
+      var pendiente = Number(tm.CANTIDAD_PREVISTA || 0) - Number(tm.CANTIDAD_CONSUMIDA || 0);
+      var disponible = Number(material.STOCK_ACTUAL || 0) - Number(material.CANTIDAD_RESERVADA || 0);
+      if (pendiente > 0 && pendiente > disponible) {
+        bloqueos.push({
+          tipo: 'material',
+          entidad: 'TAREA',
+          entidadId: tm.TAREA_ID,
+          entidadNombre: tm.TAREA_ID,
+          detalle: 'Faltan ' + (pendiente - disponible) + ' ' + (tm.UNIDAD || '') + ' de ' + (material.NOMBRE || tm.MATERIAL_ID) +
+            ' (necesita ' + pendiente + ', disponible ' + disponible + ')'
+        });
+      }
+    });
+
+    var proveedoresPorId_ = {};
+    listarRegistrosSeguro_('PROVEEDOR', {}).forEach(function (p) { proveedoresPorId_[p.ID] = p; });
+
+    var hoy_ = new Date();
+    hoy_.setHours(0, 0, 0, 0);
+
+    listarRegistrosSeguro_('PEDIDO_PROVEEDOR', { ACTIVO: 'SÍ' }).filter(function (pp) {
+      return pp.ESTADO !== 'Recibido completo' && pp.ESTADO !== 'Cancelado' && pp.FECHA_PEDIDO;
+    }).forEach(function (pp) {
+      var proveedor = proveedoresPorId_[pp.PROVEEDOR_ID];
+      var plazoDias = Number((proveedor && proveedor.PLAZO_ENTREGA_DIAS) || 0);
+      if (!plazoDias) return;
+      var fechaEsperada = new Date(pp.FECHA_PEDIDO);
+      fechaEsperada.setDate(fechaEsperada.getDate() + plazoDias);
+      if (fechaEsperada < hoy_) {
+        bloqueos.push({
+          tipo: 'pedido_retrasado',
+          entidad: 'PEDIDO_PROVEEDOR',
+          entidadId: pp.ID,
+          entidadNombre: (proveedor && proveedor.NOMBRE) || pp.PROVEEDOR_ID,
+          detalle: 'Pedido a proveedor sin recibir, esperado hace ' +
+            Math.round((hoy_ - fechaEsperada) / 86400000) + ' día(s)'
+        });
+      }
+    });
+
+    var proveedorMaterialActivo_ = {};
+    listarRegistrosSeguro_('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ', ESTADO: 'Activo' }).forEach(function (pm) {
+      var proveedor = proveedoresPorId_[pm.PROVEEDOR_ID];
+      if (proveedor && proveedor.ESTADO === 'Activo') {
+        proveedorMaterialActivo_[pm.MATERIAL_ID] = true;
+      }
+    });
+
+    listarRegistrosSeguro_('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ' }).filter(function (pm) {
+      var proveedor = proveedoresPorId_[pm.PROVEEDOR_ID];
+      return proveedor && proveedor.ESTADO !== 'Activo' && !proveedorMaterialActivo_[pm.MATERIAL_ID];
+    }).forEach(function (pm) {
+      var material = materialesPorId_[pm.MATERIAL_ID];
+      if (!material) return;
+      bloqueos.push({
+        tipo: 'proveedor_inactivo',
+        entidad: 'MATERIAL',
+        entidadId: material.ID,
+        entidadNombre: material.NOMBRE,
+        detalle: 'Sin proveedor activo (' + (proveedoresPorId_[pm.PROVEEDOR_ID].NOMBRE || pm.PROVEEDOR_ID) + ' inactivo, sin alternativa)'
+      });
+    });
+  }
 
   return bloqueos;
 }

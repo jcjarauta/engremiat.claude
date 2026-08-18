@@ -303,8 +303,8 @@
 
       function renderBloqueos_(bloqueos) {
         var filas = bloqueos.map(function (b) {
-          return '<div class="bloqueo-item" onclick="abrirEdicion_(\'TAREA\',\'' + b.tareaId + '\')">' +
-            '<div class="bloqueo-tarea">' + escapeHtml(b.tareaNombre) + '</div>' +
+          return '<div class="bloqueo-item" onclick="abrirEdicion_(\'' + b.entidad + '\',\'' + b.entidadId + '\')">' +
+            '<div class="bloqueo-tarea">' + escapeHtml(b.entidadNombre || b.entidadId) + '</div>' +
             '<div class="bloqueo-detalle">' + escapeHtml(b.detalle) + '</div>' +
             '</div>';
         }).join('');
