@@ -481,7 +481,8 @@ function agregarCatalogosCore_(menu) {
       .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
       .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
       .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
-      .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria');
+      .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria')
+      .addItem('Actualizar librería de un cliente (por Script ID)', 'abrirActualizarLibreriaCliente');
   }
   // A diferencia del bloque de arriba (INTERNO || APROVISIONAMIENTO,
   // visible también en clientes internos reales como Gestor de

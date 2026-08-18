@@ -289,6 +289,98 @@ function abrirActualizarMiLibreria() {
 }
 
 /*
+ * Actualización remota de un cliente existente (ver conversación --
+ * "esto no lo tendríamos que tener automatizado?" tras encontrar
+ * gestor-proyectos 109 versiones por detrás sin que nadie se enterara).
+ * A diferencia de actualizarLibreriaPropia_ (autoservicio, exige que el
+ * propio cliente tenga APROVISIONAMIENTO, nunca cierto para clientes de
+ * pago), esta se ejecuta desde AQUÍ (maestro/interno) contra el
+ * scriptId de cualquier cliente, sin exigirle ningún módulo.
+ *
+ * No se limita a cambiar el número de versión del manifiesto: relee
+ * MODULOS_INSTALADOS_CLIENTE del propio Codigo.js del cliente (misma
+ * literal que emite generarEnvoltoriosParaModulos_) y llama de nuevo a
+ * subirContenidoScript_ con esos módulos -- así también recoge
+ * envoltorios nuevos generables desde la última vez, no solo la versión.
+ */
+function actualizarLibreriaClienteRemoto_(scriptId) {
+  var token = ScriptApp.getOAuthToken();
+
+  var respLeer = UrlFetchApp.fetch(
+    'https://script.googleapis.com/v1/projects/' + scriptId + '/content',
+    { headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }
+  );
+  if (respLeer.getResponseCode() !== 200) {
+    throw new Error('ACTUALIZAR_LIBRERIA_CLIENTE_ERROR: no se pudo leer el proyecto del cliente -- ' + respLeer.getContentText());
+  }
+
+  var contenido = JSON.parse(respLeer.getContentText());
+  var archivoCodigo = contenido.files.filter(function (f) { return f.name === 'Codigo'; })[0];
+  if (!archivoCodigo) throw new Error('ACTUALIZAR_LIBRERIA_CLIENTE_ERROR: no se encontró Codigo.js en el proyecto del cliente.');
+
+  var coincidencia = archivoCodigo.source.match(/var\s+MODULOS_INSTALADOS_CLIENTE\s*=\s*(\[[^\]]*\])/);
+  if (!coincidencia) throw new Error('ACTUALIZAR_LIBRERIA_CLIENTE_ERROR: no se encontró MODULOS_INSTALADOS_CLIENTE en el Codigo.js del cliente -- ¿es realmente un cliente generado por este empaquetador?');
+  var modulos = JSON.parse(coincidencia[1]);
+
+  var versionAnterior = null;
+  var archivoManifiesto = contenido.files.filter(function (f) { return f.name === 'appsscript'; })[0];
+  if (archivoManifiesto) {
+    try {
+      var manifiestoAnterior = JSON.parse(archivoManifiesto.source);
+      var libreriaAnterior = ((manifiestoAnterior.dependencies && manifiestoAnterior.dependencies.libraries) || []).filter(function (l) { return l.libraryId === LIBRERIA_ID_; })[0];
+      versionAnterior = libreriaAnterior ? String(libreriaAnterior.version) : null;
+    } catch (e) {
+      versionAnterior = null;
+    }
+  }
+
+  subirContenidoScript_(scriptId, modulos);
+  var versionNueva = String(obtenerVersionLibreriaMasReciente_());
+
+  return { versionAnterior: versionAnterior, versionNueva: versionNueva, modulos: modulos };
+}
+
+/*
+ * Si existe un CLIENTE con SCRIPT_ID igual al actualizado, deja
+ * constancia de la nueva versión en su ficha -- visibilidad sin tener
+ * que abrir clientes.json ni el proyecto de cada uno. Silencioso si no
+ * hay coincidencia (cliente interno sin ficha CLIENTE, p.ej. la-troballa).
+ */
+function actualizarLibreriaVersionEnFichaCliente_(scriptId, versionNueva) {
+  var cliente = listarRegistrosSeguro_('CLIENTE', { ACTIVO: 'SÍ' }).filter(function (c) {
+    return String(c.SCRIPT_ID || '').trim() === scriptId;
+  })[0];
+  if (!cliente) return;
+  actualizarRegistroTransaccional('CLIENTE', cliente.ID, { LIBRERIA_VERSION: versionNueva }, { origen: 'Sistema (actualizarLibreriaClienteRemoto_)' });
+}
+
+function abrirActualizarLibreriaCliente() {
+  var ui = SpreadsheetApp.getUi();
+  var respuesta = ui.prompt(
+    'Actualizar librería de un cliente',
+    'Pega el Script ID del proyecto de Apps Script del cliente (no el ID del Sheet):',
+    ui.ButtonSet.OK_CANCEL
+  );
+  if (respuesta.getSelectedButton() !== ui.Button.OK) return;
+  var scriptId = respuesta.getResponseText().trim();
+  if (!scriptId) return;
+
+  try {
+    var resultado = actualizarLibreriaClienteRemoto_(scriptId);
+    actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+    ui.alert(
+      'Cliente actualizado',
+      'Módulos: ' + resultado.modulos.join(', ') +
+        '\nVersión anterior: ' + (resultado.versionAnterior || '(desconocida)') +
+        '\nVersión nueva: ' + resultado.versionNueva,
+      ui.ButtonSet.OK
+    );
+  } catch (e) {
+    ui.alert('No se pudo actualizar', e.message, ui.ButtonSet.OK);
+  }
+}
+
+/*
  * Este handler vive en package A (módulo APROVISIONAMIENTO) a propósito,
  * aunque la lógica real que invoca (ejecutarLotePruebasReactivas_,
  * EjecutorPruebasReactivas.js) es package B -- nunca se distribuye a

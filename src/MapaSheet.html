@@ -81,6 +81,13 @@
           <div class="detalle">Pone este sheet en la última versión publicada de CORE, sin ir al editor a mano</div>
         </span>
       </button>
+      <button class="tarjeta" onclick="abrir('abrirActualizarLibreriaCliente')">
+        <span class="icono">🛰️</span>
+        <span class="texto">
+          <div class="titulo">Actualizar librería de un cliente</div>
+          <div class="detalle">Pega su Script ID -- lo pone en la última versión sin que el cliente tenga que hacer nada</div>
+        </span>
+      </button>
     </div>
 
     <div class="separador">Personal</div>
@@ -384,6 +391,9 @@
             return;
           case 'abrirActualizarMiLibreria':
             google.script.run.withFailureHandler(mostrarError).abrirActualizarMiLibreria();
+            return;
+          case 'abrirActualizarLibreriaCliente':
+            google.script.run.withFailureHandler(mostrarError).abrirActualizarLibreriaCliente();
             return;
         }
         mostrarError({ message: 'Espacio desconocido: ' + funcion });
