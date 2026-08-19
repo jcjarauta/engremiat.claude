@@ -34,7 +34,21 @@
 
 var PROPIEDAD_TOKEN_TELEGRAM_ = 'TELEGRAM_BOT_TOKEN';
 
-function doPost(e, tokenTelegram) {
+/*
+ * modulosInstalados (ver conversación -- el bot operativo respondía con
+ * el texto de Nexo): moduloInstalado_() lee modulosInstaladosClienteActual_,
+ * una variable de ámbito de LIBRERÍA que solo fija onOpen() -- en una
+ * ejecución aislada como esta (disparada directamente como aplicación
+ * web, sin que onOpen() haya corrido antes en la MISMA ejecución) esa
+ * variable nunca se fija, y moduloInstalado_() cae en su valor por
+ * defecto "todo instalado", incluido INTERNO -- por eso el bot operativo
+ * despachaba a procesarMensajeTelegramSoporte_ (Nexo) en vez de a
+ * procesarMensajeBotOperativo_. Mismo patrón que onOpen(): resolver y
+ * fijar modulosInstaladosClienteActual_ al principio de la ejecución.
+ */
+function doPost(e, tokenTelegram, modulosInstalados) {
+  var resueltos = resolverModulosInstalados_(modulosInstalados);
+  modulosInstaladosClienteActual_ = Array.isArray(resueltos) ? resueltos : null;
   try {
     if (e && e.postData && e.postData.contents) {
       var actualizacion = JSON.parse(e.postData.contents);
@@ -167,7 +181,9 @@ function configurarWebhookTelegram_(tituloDialogo, tokenTelegram) {
  * sondearTelegramBotOperativo en el Codigo.js de cada cliente,
  * activarSondeoTelegramSoporte/sondearTelegramSoporte en el maestro).
  */
-function sondearActualizacionesTelegram(tokenTelegram, offsetActual) {
+function sondearActualizacionesTelegram(tokenTelegram, offsetActual, modulosInstalados) {
+  var resueltos = resolverModulosInstalados_(modulosInstalados);
+  modulosInstaladosClienteActual_ = Array.isArray(resueltos) ? resueltos : null;
   if (!tokenTelegram) {
     console.error('sondearActualizacionesTelegram: falta el token');
     return { offsetNuevo: offsetActual, procesadas: 0 };

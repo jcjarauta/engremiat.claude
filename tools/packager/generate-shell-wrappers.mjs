@@ -330,7 +330,7 @@ function pushWrapperBody(lines, name, userSymbol) {
   if (name === 'doPost') {
     lines.push('function doPost(e) {');
     lines.push(`  var tokenTelegram = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');`);
-    lines.push(`  return ${userSymbol}.doPost(e, tokenTelegram);`);
+    lines.push(`  return ${userSymbol}.doPost(e, tokenTelegram, MODULOS_INSTALADOS_CLIENTE);`);
     lines.push('}');
     lines.push('');
     return;
@@ -353,7 +353,7 @@ function pushWrapperBody(lines, name, userSymbol) {
     lines.push('  var props = PropertiesService.getScriptProperties();');
     lines.push(`  var token = props.getProperty('TELEGRAM_BOT_TOKEN');`);
     lines.push(`  var offsetActual = parseInt(props.getProperty('TELEGRAM_OFFSET_ACTUALIZACIONES') || '0', 10);`);
-    lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram(token, offsetActual);`);
+    lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram(token, offsetActual, MODULOS_INSTALADOS_CLIENTE);`);
     lines.push(`  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty('TELEGRAM_OFFSET_ACTUALIZACIONES', String(resultado.offsetNuevo));`);
     lines.push('}');
     lines.push('');
