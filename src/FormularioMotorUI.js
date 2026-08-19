@@ -39,6 +39,29 @@
  * condiciona qué bloques se muestran según módulos instalados (eso es
  * el siguiente paso, pendiente de una señal en tiempo de ejecución que
  * hoy no existe).
+ *
+ * Reorganización de "Crear y gestionar datos" (ver conversación --
+ * "el menú de Catálogos y administración se está llenando de forma
+ * desordenada, propón un orden con previsión para desarrollos
+ * siguientes"): convención a seguir al añadir un ítem nuevo --
+ *   - Nombre: verbo + objeto ("Nuevo X", "Editar X", "Activar X",
+ *     "Instalar X", "Configurar X", "Ver X"). Sin jerga interna en la
+ *     etiqueta (p.ej. "(L4)") -- eso va en el comentario, no en lo que
+ *     ve el usuario.
+ *   - Emoji solo en los 3 polos raíz (Analizar/Navegar y editar/Crear y
+ *     gestionar datos) y en los submenús de segundo nivel de "Crear y
+ *     gestionar datos" (🗂️/🛠️/🤖/🏗️/🧪); nunca en un ítem suelto.
+ *   - Un módulo nuevo con su propio instalador L4 va DENTRO de
+ *     construirSubmenuInstaladoresCatalogo_, nunca como ítem suelto en
+ *     otro submenú -- ese submenú existe precisamente para que la
+ *     lista crezca sin ensuciar el nivel superior.
+ *   - Un comando/ajuste nuevo de bot de Telegram (o cualquier canal de
+ *     comunicación futuro) va en construirSubmenuComunicacion_.
+ *   - Cualquier función que solo tenga sentido para el propio equipo de
+ *     LaTroballa Software (nunca para un cliente de pago) va en
+ *     construirSubmenuAprovisionamiento_ (gestión de otros clientes) o
+ *     construirSubmenuDesarrollo_ (herramientas de desarrollo/pruebas)
+ *     -- nunca mezclada con lo que sí ve un cliente.
  */
 /**
  * Módulos instalados del cliente que llamó a onOpen() en esta ejecución.
@@ -289,7 +312,25 @@ function construirSubmenuCrearYGestionar_(ui) {
   if (moduloInstalado_('ECONOMICO')) menu = menu.addSubMenu(construirSubmenuPresupuestoYFinanciacion_(ui));
   if (moduloInstalado_('CONVOCATORIAS')) menu = menu.addSubMenu(construirSubmenuConvocatorias_(ui));
   if (moduloInstalado_('IMPACTO')) menu = menu.addSubMenu(construirSubmenuImpacto_(ui));
-  menu = menu.addSubMenu(construirSubmenuCatalogosYAdministracion_(ui));
+  if (moduloInstalado_('ESCENARIOS')) menu = menu.addSubMenu(construirSubmenuEscenarios_(ui));
+  // Reorganizado (ver conversación -- "el menú de Catálogos y
+  // administración se está llenando de forma desordenada"): un único
+  // submenú mezclaba catálogos de datos, mantenimiento del sheet,
+  // herramientas internas de La Troballa (nunca vistas por un cliente de
+  // pago), bots de Telegram e instaladores de catálogo de una vez por
+  // módulo -- este último crecía linealmente con cada módulo nuevo, sin
+  // ningún criterio de agrupación. Sustituido por 5 submenús con
+  // propósito propio; ver cada construirSubmenuX_ para el criterio de
+  // cada uno.
+  menu = menu.addSubMenu(construirSubmenuCatalogosYApoyo_(ui));
+  menu = menu.addSubMenu(construirSubmenuMantenimiento_(ui));
+  if (moduloInstalado_('INTERNO') || moduloInstalado_('COMUNICACION')) {
+    menu = menu.addSubMenu(construirSubmenuComunicacion_(ui));
+  }
+  if (moduloInstalado_('INTERNO') || moduloInstalado_('APROVISIONAMIENTO')) {
+    menu = menu.addSubMenu(construirSubmenuAprovisionamiento_(ui));
+  }
+  if (moduloInstalado_('INTERNO')) menu = menu.addSubMenu(construirSubmenuDesarrollo_(ui));
   return menu;
 }
 
@@ -439,92 +480,125 @@ function construirSubmenuImpacto_(ui) {
     .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto');
 }
 
-function construirSubmenuCatalogosYAdministracion_(ui) {
-  var menu = ui.createMenu('Catálogos y administración');
-  menu = agregarCatalogosCore_(menu);
-  if (moduloInstalado_('COMPRAS')) menu = agregarCatalogosCompras_(menu);
-  if (moduloInstalado_('CLIENTE')) menu = agregarCatalogosCliente_(menu);
-  if (moduloInstalado_('VENTAS')) menu = agregarCatalogosVentas_(menu);
-  if (moduloInstalado_('OPORTUNIDAD')) menu = agregarCatalogosOportunidad_(menu);
-  if (moduloInstalado_('ESCENARIOS')) menu = agregarCatalogosEscenarios_(menu);
-  return menu;
+/*
+ * ESCENARIOS (ver conversación -- reordenación del menú): "Nuevo/Editar
+ * escenario" son un alta/edición de registro normal, mal ubicados antes
+ * dentro de "Catálogos y administración" (pensada para configuración,
+ * no para CRUD de negocio) -- promovido a submenú propio, mismo patrón
+ * que Impacto/Convocatorias.
+ */
+function construirSubmenuEscenarios_(ui) {
+  return ui.createMenu('Escenarios de simulación')
+    .addItem('Nuevo escenario', 'abrirFormularioCrearEscenario')
+    .addItem('Editar escenario', 'abrirEditarEscenario');
 }
 
-function agregarCatalogosEscenarios_(menu) {
-  return menu
-    .addItem('Nuevo escenario de simulación', 'abrirFormularioCrearEscenario')
-    .addItem('Editar escenario de simulación', 'abrirEditarEscenario');
-}
+/* === 🗂️ Catálogos y datos de apoyo === */
 
-function agregarCatalogosCore_(menu) {
-  menu = menu.addItem('Catálogos', 'abrirCatalogosAdmin');
+function construirSubmenuCatalogosYApoyo_(ui) {
+  var menu = ui.createMenu('🗂️ Catálogos y datos de apoyo')
+    .addItem('Catálogos', 'abrirCatalogosAdmin');
   if (moduloInstalado_('OPERATIVA')) menu = menu.addItem('Personas y equipos (hoja)', 'abrirPersonasEquiposAdmin');
   if (moduloInstalado_('COMPRAS')) menu = menu.addItem('Proveedores (hoja)', 'abrirProveedoresAdmin');
-  menu = menu
+  return menu;
+}
+
+/* === 🛠️ Mantenimiento del sheet === */
+
+function construirSubmenuMantenimiento_(ui) {
+  var menu = ui.createMenu('🛠️ Mantenimiento del sheet')
+    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial')
     .addItem('Protección de hojas', 'abrirProteccionHojas')
     .addItem('Importación masiva (STG_*)', 'abrirImportacionMasivaInicio')
-    .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio')
-    .addItem('Instalar estructura inicial (hojas + catálogo)', 'abrirInstalarEstructuraInicial');
-  // Aprovisionamiento (montaje de clientes nuevos) es una herramienta de
-  // administración interna de LaTroballa Software, no una función de
-  // negocio para clientes externos de pago -- ver AprovisionamientoService.js
-  // (módulo APROVISIONAMIENTO, ver conversación "seguimos con B": promovido
-  // a módulo real de la librería para que un cliente interno como Gestor de
-  // Proyectos pueda usarlo, sin ofrecerlo nunca a un cliente de pago vía
-  // MODULOS_INSTALADOS_CLIENTE). 'INTERNO' no es un módulo real: ningún
-  // cliente lo pide nunca, así que moduloInstalado_('INTERNO') siempre es
-  // false ahí; en el propio Sheet maestro (que ejecuta el código en crudo,
-  // sin envoltorios, sin MODULOS_INSTALADOS_CLIENTE) el valor por defecto
-  // es true, así que sigue viendo estos items sin necesitar el módulo.
-  if (moduloInstalado_('INTERNO') || moduloInstalado_('APROVISIONAMIENTO')) {
-    menu = menu
-      .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
-      .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
-      .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
-      .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria')
-      .addItem('Gestión remota de clientes (versión / módulos)', 'abrirGestionRemotaClientes');
-  }
-  // A diferencia del bloque de arriba (INTERNO || APROVISIONAMIENTO,
-  // visible también en clientes internos reales como Gestor de
-  // Proyectos), esto se gatea solo por INTERNO: depende de Tests_*.js,
-  // que nunca se distribuye a ningún cliente -- ver
-  // abrirEjecutorPruebasReactivas en AprovisionamientoService.js.
-  if (moduloInstalado_('INTERNO')) {
-    menu = menu
-      .addItem('Ejecutar pruebas reactivas (342)', 'abrirEjecutorPruebasReactivas')
-      .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano')
-      .addItem('Activar sondeo de Telegram (Nexo)', 'activarSondeoTelegramSoporte');
-  }
-  // Bot operativo del cliente (ver ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md,
-  // "Dos bots distintos, no uno"): vive dentro del propio Sheet de cada
-  // cliente, a diferencia de Nexo (solo maestro) -- gateado por COMUNICACION,
-  // no por INTERNO. Sondeo, no webhook (ver conversación -- las Web Apps de
-  // Apps Script siempre responden con una redirección 302 antes de servir
-  // el contenido real, y Telegram no siempre la sigue; confirmado que
-  // afecta igual a un despliegue creado por la UI que a uno por clasp, así
-  // que no hay forma de evitarlo dentro del modelo de webhook).
-  if (moduloInstalado_('COMUNICACION')) {
-    menu = menu.addItem('Activar sondeo del bot operativo', 'activarSondeoBotOperativo');
+    .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio');
+  if (moduloInstalado_('OPORTUNIDAD')) menu = menu.addItem('Recalcular encaje de oportunidades', 'abrirRecalcularPuntuacionEncajeOportunidades');
+  // Instaladores de catálogo "de una vez" por módulo -- ver
+  // construirSubmenuInstaladoresCatalogo_: crecen ahí dentro, sin
+  // ensuciar este nivel con un ítem más por cada módulo nuevo.
+  if (moduloInstalado_('COMPRAS') || moduloInstalado_('CLIENTE') || moduloInstalado_('VENTAS') || moduloInstalado_('OPORTUNIDAD')) {
+    menu = menu.addSubMenu(construirSubmenuInstaladoresCatalogo_(ui));
   }
   return menu;
 }
 
-function agregarCatalogosCompras_(menu) {
-  return menu.addItem('Instalar catálogo de Compras (L4)', 'abrirInstalarCatalogoComprasL4');
+/*
+ * Instaladores de catálogo (L4) -- se ejecutan una sola vez por cliente
+ * para sembrar el catálogo de un módulo nuevo (ver InstaladorXxxL4.js).
+ * Submenú dedicado a propósito (ver conversación -- "el menú se está
+ * llenando de forma desordenada"): sin esto, cada módulo nuevo con su
+ * propio instalador L4 añadía un ítem más al nivel superior sin límite.
+ * Añadir un módulo nuevo aquí es añadir una entrada más a este submenú,
+ * nunca un ítem suelto en otro lado.
+ */
+function construirSubmenuInstaladoresCatalogo_(ui) {
+  var menu = ui.createMenu('Instaladores de catálogo (una vez)');
+  if (moduloInstalado_('COMPRAS')) menu = menu.addItem('Compras', 'abrirInstalarCatalogoComprasL4');
+  if (moduloInstalado_('CLIENTE')) menu = menu.addItem('Cliente', 'abrirInstalarCatalogoClienteL4');
+  if (moduloInstalado_('VENTAS')) menu = menu.addItem('Ventas', 'abrirInstalarCatalogoVentasL4');
+  if (moduloInstalado_('OPORTUNIDAD')) menu = menu.addItem('Oportunidad', 'abrirInstalarCatalogoOportunidadL4');
+  return menu;
 }
 
-function agregarCatalogosCliente_(menu) {
-  return menu.addItem('Instalar catálogo de Cliente (L4)', 'abrirInstalarCatalogoClienteL4');
+/* === 🤖 Comunicación (bots) === */
+
+/*
+ * Bots de Telegram (ver ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md, "Dos
+ * bots distintos, no uno"): Nexo (soporte, solo maestro, INTERNO) y el
+ * bot operativo (dentro de cada Sheet de cliente, COMUNICACION) -- antes
+ * repartidos entre el bloque de pruebas reactivas y un ítem suelto al
+ * final del menú viejo. Sondeo, no webhook (ver conversación -- las Web
+ * Apps de Apps Script siempre responden con una redirección 302 antes de
+ * servir el contenido real, y Telegram no siempre la sigue; confirmado
+ * que afecta igual a un despliegue creado por la UI que a uno por clasp).
+ * Hueco natural para lo que venga (configuración de mensajes, más
+ * comandos, otro canal).
+ */
+function construirSubmenuComunicacion_(ui) {
+  var menu = ui.createMenu('🤖 Comunicación (bots)');
+  if (moduloInstalado_('INTERNO')) menu = menu.addItem('Activar sondeo de Telegram (Nexo)', 'activarSondeoTelegramSoporte');
+  if (moduloInstalado_('COMUNICACION')) menu = menu.addItem('Activar sondeo del bot operativo', 'activarSondeoBotOperativo');
+  return menu;
 }
 
-function agregarCatalogosVentas_(menu) {
-  return menu.addItem('Instalar catálogo de Ventas (L4)', 'abrirInstalarCatalogoVentasL4');
+/* === 🏗️ Aprovisionamiento === */
+
+/*
+ * Aprovisionamiento (montaje de clientes nuevos) es una herramienta de
+ * administración interna de LaTroballa Software, no una función de
+ * negocio para clientes externos de pago -- ver AprovisionamientoService.js
+ * (módulo APROVISIONAMIENTO, ver conversación "seguimos con B": promovido
+ * a módulo real de la librería para que un cliente interno como Gestor de
+ * Proyectos pueda usarlo, sin ofrecerlo nunca a un cliente de pago vía
+ * MODULOS_INSTALADOS_CLIENTE). 'INTERNO' no es un módulo real: ningún
+ * cliente lo pide nunca, así que moduloInstalado_('INTERNO') siempre es
+ * false ahí; en el propio Sheet maestro (que ejecuta el código en crudo,
+ * sin envoltorios, sin MODULOS_INSTALADOS_CLIENTE) el valor por defecto
+ * es true, así que sigue viendo estos items sin necesitar el módulo.
+ * Submenú propio a propósito: nunca debe mezclarse con nada que un
+ * cliente de pago vea.
+ */
+function construirSubmenuAprovisionamiento_(ui) {
+  return ui.createMenu('🏗️ Aprovisionamiento')
+    .addItem('Nueva solicitud de montaje', 'abrirSolicitudMontaje')
+    .addItem('Aprobar solicitud de montaje', 'abrirAprobarSolicitudMontaje')
+    .addItem('Configurar aprovisionamiento (montaje de clientes)', 'abrirConfigurarAprovisionamiento')
+    .addItem('Actualizar mi librería a la última versión', 'abrirActualizarMiLibreria')
+    .addItem('Gestión remota de clientes (versión / módulos)', 'abrirGestionRemotaClientes');
 }
 
-function agregarCatalogosOportunidad_(menu) {
-  return menu
-    .addItem('Instalar catálogo de Oportunidad (L4)', 'abrirInstalarCatalogoOportunidadL4')
-    .addItem('Recalcular encaje de oportunidades', 'abrirRecalcularPuntuacionEncajeOportunidades');
+/* === 🧪 Desarrollo === */
+
+/*
+ * A diferencia de Aprovisionamiento (INTERNO || APROVISIONAMIENTO,
+ * visible también en clientes internos reales como Gestor de
+ * Proyectos), esto se gatea solo por INTERNO: depende de Tests_*.js,
+ * que nunca se distribuye a ningún cliente -- ver
+ * abrirEjecutorPruebasReactivas en AprovisionamientoService.js.
+ */
+function construirSubmenuDesarrollo_(ui) {
+  return ui.createMenu('🧪 Desarrollo')
+    .addItem('Ejecutar pruebas reactivas (342)', 'abrirEjecutorPruebasReactivas')
+    .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano');
 }
 /*
  * prefill (opcional): valores iniciales para campos del formulario en
