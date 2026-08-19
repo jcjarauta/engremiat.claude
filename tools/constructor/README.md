@@ -1,5 +1,17 @@
 # Constructor de clientes (Nivel 1 — autoservicio de módulos estándar)
 
+> **OBSOLETO** (ver conversación -- "clientes.json desactualizado, no refleja los clientes
+> reales"): esta herramienta y su registro `clientes.json` NO se usan en el flujo real de
+> montaje. El montaje de clientes reales pasa hoy por el flujo en vivo dentro del Sheet
+> maestro (`Nueva solicitud de montaje` → `Aprobar solicitud de montaje` →
+> `AprovisionamientoService.js`, que crea el proyecto de Apps Script directamente vía
+> `script.projects.create`) -- ver `ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md`, Fase 3.
+> `montar-cliente.mjs` quedó como prototipo previo a ese flujo y no se mantiene activamente;
+> `clientes.json` se resetea vacío periódicamente porque sus únicas escrituras vienen de
+> ejecutar `montar-cliente.test.mjs` (casos 9/11), no de montajes reales. No lo uses para
+> saber qué módulos tiene un cliente -- esa fuente de verdad es el propio registro `CLIENTE`
+> (campos `SCRIPT_ID`/`MODULOS_CONTRATADOS`/`LIBRERIA_VERSION`) en el Sheet que corresponda.
+
 Ver `PROPUESTA_MODULARIZACION_LIBRERIA.md` para el contexto completo. Este directorio es la
 "mesa de montaje" del fundador: monta el cascarón de un cliente que solo necesita módulos
 estándar (sin lógica propia) sobre la librería compartida ya publicada.

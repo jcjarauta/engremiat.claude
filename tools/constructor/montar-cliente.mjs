@@ -1,5 +1,20 @@
 #!/usr/bin/env node
 
+/*
+ * OBSOLETA (ver conversación -- clientes.json ya no refleja los
+ * clientes reales, "puede confundir en el futuro"): esta CLI local era
+ * la vía de montaje ANTES de que existiera el flujo en vivo por Sheet
+ * (SOLICITUDES_MONTAJE -> AprobarSolicitudMontaje -> AprovisionamientoService.js,
+ * que crea el proyecto real de Apps Script vía script.projects.create y
+ * NO pasa por aquí ni por clientes.json). Todos los clientes reales
+ * montados hasta ahora (incluido gestor-proyectos) usaron ese flujo, no
+ * este script -- las entradas que puedas ver en clientes.json son
+ * restos de ejecuciones de montar-cliente.test.mjs (que sí escribe
+ * datos reales al correr sus casos 9/11), no un registro fiable. No se
+ * mantiene activamente: si necesitas montar un cliente, usa "Nueva
+ * solicitud de montaje" desde el Sheet, no este comando.
+ */
+
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
