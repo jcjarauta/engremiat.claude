@@ -54,6 +54,10 @@
         <div class="lista" id="listaProcesos"></div>
       </section>
       <section class="bloque">
+        <h3>Incidencias <button id="btnNuevaIncidencia" class="boton btn-mini">+ Incidencia</button></h3>
+        <div class="lista" id="listaIncidencias"></div>
+      </section>
+      <section class="bloque">
         <h3>Materiales <button id="btnNuevoMaterial" class="boton btn-mini">+ Material</button></h3>
         <div class="lista" id="listaMateriales"></div>
       </section>
@@ -200,6 +204,12 @@
             }).join("")
           : '<div class="vacio-bloque">Sin procesos dados de alta.</div>';
 
+        document.getElementById("listaIncidencias").innerHTML = datos.incidencias.length
+          ? datos.incidencias.map(function (i) {
+              return filaHtml_(escapeHtml(i.titulo) + renderBadge_(i.estado), 'INCIDENCIA', i.id);
+            }).join("")
+          : '<div class="vacio-bloque">Sin incidencias a este nivel.</div>';
+
         document.getElementById("listaMateriales").innerHTML = datos.materiales.length
           ? datos.materiales.map(function (m) {
               var proveedor = m.proveedorNombre
@@ -231,6 +241,14 @@
         });
         document.getElementById("btnNuevoProyecto").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProyectoProductoParaProducto(p.ID);
+        });
+        document.getElementById("btnNuevaIncidencia").addEventListener("click", function () {
+          var primerProyecto = datos.proyectos[0];
+          google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearIncidenciaParaProducto(
+            primerProyecto ? primerProyecto.campanaId : '',
+            primerProyecto ? primerProyecto.proyectoId : '',
+            p.ID
+          );
         });
         document.getElementById("btnNuevoMaterial").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearProductoMaterialParaProducto(p.ID);

@@ -56,6 +56,7 @@
       .sub-lista { font-size: 12px; color: var(--color-texto-secundario); margin: 3px 0 0 2px; }
       .sub-etiqueta { font-weight: 600; }
       .anadir-mini { color: var(--color-primario); cursor: pointer; margin-left: 4px; white-space: nowrap; }
+      .enlace-incidencia { color: var(--color-primario); cursor: pointer; text-decoration: underline; }
     </style>
   </head>
   <body>
@@ -237,7 +238,9 @@
         var incidencias = nodo.incidencias || [];
         var enDescendientes = contarIncidenciasEnSubarbol_(nodo) - incidencias.length;
         var texto = incidencias.length
-          ? incidencias.map(function (i) { return escapeHtml(i.titulo) + " " + renderBadge_(i.estado); }).join(", ")
+          ? incidencias.map(function (i) {
+              return '<span class="enlace-incidencia" onclick="verFichaIncidencia(\'' + escapeAttr(i.id) + '\')">' + escapeHtml(i.titulo) + '</span>' + renderBadge_(i.estado);
+            }).join(", ")
           : (enDescendientes > 0 ? "ninguna directa" : "ninguna");
         if (enDescendientes > 0) {
           texto += ' <span class="detalle-nodo">(' + enDescendientes + ' en niveles inferiores)</span>';
@@ -274,6 +277,15 @@
       }
       function verFichaTarea(id) {
         google.script.run.withFailureHandler(mostrarError).abrirFichaTarea(id);
+      }
+      /*
+       * "Deberíamos poder entrar en la incidencia desde el panel de
+       * campaña" (ver conversación): antes el título de cada incidencia
+       * era texto plano, sin forma de ver su detalle salvo buscarla a
+       * mano por "Editar registro".
+       */
+      function verFichaIncidencia(id) {
+        google.script.run.withFailureHandler(mostrarError).abrirFichaIncidencia(id);
       }
 
       /*

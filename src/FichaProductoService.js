@@ -37,6 +37,7 @@ function obtenerFichaProducto(id) {
         relacionId: pp.ID,
         proyectoId: pp.PROYECTO_ID,
         proyectoNombre: proyecto ? proyecto.NOMBRE : pp.PROYECTO_ID,
+        campanaId: proyecto ? proyecto.CAMPANA_ID : '',
         campanaNombre: campana ? campana.NOMBRE : '',
         cantidadAsignada: pp.CANTIDAD_ASIGNADA,
         estado: pp.ESTADO
@@ -155,6 +156,19 @@ function obtenerFichaProducto(id) {
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Producto' && d.ENTIDAD_ID === id; })
     .map(function (d) { return { id: d.ID, titulo: d.TITULO, tipo: d.TIPO_DOCUMENTO, estado: d.ESTADO, url: d.URL }; });
 
+  /*
+   * Ficha de Producto era la única de la familia sin Incidencias (ver
+   * conversación -- "no está muy claro..."): Campaña/Proyecto/Proceso/
+   * Tarea/Recurso/Persona ya lo hacían. Mismo criterio que
+   * FichaProcesoService.js: solo incidencias ancladas EN ESTE nivel
+   * (PRODUCTO_ID relleno, sin PROCESO_ID) -- una incidencia de un
+   * Proceso de este producto ya aparece en la ficha de ese proceso, no
+   * se duplica aquí.
+   */
+  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
+    .filter(function (inc) { return inc.PRODUCTO_ID === id && !inc.PROCESO_ID; })
+    .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
+
   return serializarParaCliente_({
     producto: producto,
     responsableNombre: nombresPersona[producto.RESPONSABLE_ID] || '',
@@ -162,7 +176,8 @@ function obtenerFichaProducto(id) {
     procesos: procesos,
     resumenAvance: resumenAvance,
     materiales: materiales,
-    documentos: documentos
+    documentos: documentos,
+    incidencias: incidencias
   });
 }
 
@@ -237,6 +252,9 @@ function exportarFichaProductoCSV(id) {
   });
   datos.materiales.forEach(function (m) {
     filas.push(['Material', m.materialId, m.materialNombre, [m.cantidadPrevista, m.unidad].filter(Boolean).join(' '), m.estado]);
+  });
+  datos.incidencias.forEach(function (i) {
+    filas.push(['Incidencia', i.id, i.titulo, '', i.estado]);
   });
   datos.documentos.forEach(function (d) {
     filas.push(['Documento', d.id, d.titulo, d.tipo, d.estado]);
