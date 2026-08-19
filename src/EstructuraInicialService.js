@@ -108,6 +108,8 @@ function instalarEstructuraInicial(modulosInstalados, ssDestino) {
         if (creadaAhora) {
           sembrarCatalogoInicial_(hoja, modulosInstalados);
           resultado.catalogoSembrado = true;
+        } else {
+          resultado.categoriasCatalogoAnadidas = sembrarCategoriasCatalogoFaltantes_(ss, hoja, modulosInstalados);
         }
         resultado.rangosNombradosAsegurados = asegurarRangosNombradosCatalogo_(ss, hoja);
       }
@@ -189,6 +191,33 @@ function sembrarCatalogoInicial_(hojaConfig, modulosInstalados) {
   hojaConfig.getRange(2, 1, filas.length, filas[0].length).setValues(filas);
 
   console.log('OK catalogo_sembrado filas=' + filas.length);
+}
+
+/*
+ * Backfill para Sheets ya instalados: sembrarCatalogoInicial_ solo corre
+ * cuando 90_CONFIGURACION se crea por primera vez, así que una categoría
+ * añadida a CATALOGO_SEMILLA_MVP en una versión posterior de la librería
+ * (ver conversación -- NIVEL_PERMISO_BOT: el desplegable salía vacío en
+ * un Sheet de cliente ya provisionado porque la categoría nunca llegó a
+ * esa hoja, y había que añadirla a mano para desbloquear) se quedaba sin
+ * sembrar para siempre en cualquier instalación previa. Reutiliza
+ * crearCatalogoNuevoL3_ (InstaladorVinculo.js) categoría a categoría --
+ * ya es idempotente clave a clave, así que es seguro llamarla en cada
+ * ejecución de "Instalar estructura inicial", incluso para categorías
+ * que ya estaban completas.
+ */
+function sembrarCategoriasCatalogoFaltantes_(ss, hojaConfig, modulosInstalados) {
+  var paresPorCategoria = {};
+  CATALOGO_SEMILLA_MVP.forEach(function (entrada) {
+    if (!categoriaInstalable_(entrada.categoria, modulosInstalados)) return;
+    if (!paresPorCategoria[entrada.categoria]) paresPorCategoria[entrada.categoria] = [];
+    paresPorCategoria[entrada.categoria].push([entrada.clave, entrada.valor]);
+  });
+
+  return Object.keys(paresPorCategoria).sort().map(function (categoria) {
+    crearCatalogoNuevoL3_(ss, hojaConfig, categoria, paresPorCategoria[categoria]);
+    return categoria;
+  });
 }
 
 /**
@@ -277,6 +306,11 @@ function abrirInstalarEstructuraInicial(modulosInstalados) {
       mensaje += '\n\nColumnas nuevas añadidas a hojas ya existentes:\n' + resultado.hojasMigradas.map(function (m) {
         return '- ' + m.hoja + ': ' + m.columnas.join(', ');
       }).join('\n');
+    }
+
+    if (resultado.categoriasCatalogoAnadidas && resultado.categoriasCatalogoAnadidas.length > 0) {
+      mensaje += '\n\nCategorías de catálogo revisadas/completadas en 90_CONFIGURACION: ' +
+        resultado.categoriasCatalogoAnadidas.join(', ');
     }
 
     mensaje += '\n\nRangos con nombre asegurados: ' + resultado.rangosNombradosAsegurados;
