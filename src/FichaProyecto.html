@@ -171,7 +171,9 @@
           ? datos.incidencias.map(function (i) {
               return filaHtml_(escapeHtml(i.titulo) + renderBadge_(i.estado), 'INCIDENCIA', i.id);
             }).join("")
-          : '<div class="vacio-bloque">Sin incidencias a este nivel.</div>';
+          : (datos.incidenciasEnNivelesInferiores > 0
+              ? '<div class="vacio-bloque">Ninguna a este nivel (' + datos.incidenciasEnNivelesInferiores + ' en Productos/Procesos/Tareas de este proyecto).</div>'
+              : '<div class="vacio-bloque">Sin incidencias a este nivel.</div>');
 
         document.getElementById("listaDocumentos").innerHTML = datos.documentos.length
           ? datos.documentos.map(filaDocumentoHtml_).join("")

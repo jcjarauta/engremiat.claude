@@ -82,9 +82,20 @@ function obtenerFichaProyecto(id) {
    * aparece en la ficha de ese registro más específico, no se duplica
    * aquí.
    */
-  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
-    .filter(function (inc) { return inc.PROYECTO_ID === id && !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
+  var incidenciasDeEsteProyecto_ = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
+    .filter(function (inc) { return inc.PROYECTO_ID === id; });
+  var incidencias = incidenciasDeEsteProyecto_
+    .filter(function (inc) { return !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
+  /*
+   * Ver conversación -- "en ficha proyecto tampoco sale incidencias":
+   * "Sin incidencias a este nivel" daba la falsa impresión de rama
+   * vacía cuando en realidad había una en un Producto de este proyecto
+   * (mismo hallazgo que el rollup ya añadido al Panel de Campaña,
+   * PanelCampana.html, pero aquí no hay árbol cargado -- se calcula en
+   * el servidor con un filtro más).
+   */
+  var incidenciasEnNivelesInferiores = incidenciasDeEsteProyecto_.length - incidencias.length;
 
   var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Proyecto' && d.ENTIDAD_ID === id; })
@@ -108,6 +119,7 @@ function obtenerFichaProyecto(id) {
     resumenAvance: resumenAvance,
     decisiones: decisiones,
     incidencias: incidencias,
+    incidenciasEnNivelesInferiores: incidenciasEnNivelesInferiores,
     documentos: documentos,
     presupuesto: presupuesto
   });
