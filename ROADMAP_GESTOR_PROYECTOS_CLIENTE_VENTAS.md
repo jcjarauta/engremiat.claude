@@ -315,6 +315,102 @@ hacesfalta.org) para alimentar `OPORTUNIDAD` automáticamente, y
 generación de propuesta de software personalizado a partir del análisis.
 No diseñar hasta que el nivel básico esté en uso real.
 
+## Fase 5 -- Red de nodos (interorganizativo, propuesta, no construido)
+
+Ver conversación (2026-08-19, "la intención de la herramienta es sumar las
+capacidades y necesidades de todos los nodos donde está instalado... un
+nodo urbano tiene unas necesidades-capacidades diferentes a un nodo
+rural"). Reencuadre respecto a la Fase 0-4 (que tratan cada `CLIENTE`
+como un cliente aislado): cada `CLIENTE` instalado no es solo un
+cliente, es un **nodo** de una red de ecosistemas -- el valor está en
+que la red facilite conexiones de calidad entre nodos con capacidades y
+necesidades complementarias.
+
+Responde directamente a dos preguntas que `VISION_MISION.md` (sección
+"Preguntas abiertas") ya dejaba explícitamente sin resolver: *"cómo se
+sincronizan Sheet, bot y bóveda cuando el ecosistema crece más allá de
+una organización... necesitará algún puente entre Sheets
+independientes, todavía sin diseñar"* y *"proyectos colaborativos vía
+bot: sin resolver todavía si nacen dentro de una organización o entre
+nodos distintos"*.
+
+**Por qué encaja con lo ya construido, no parte de cero**:
+- `RECURSO`/`COMPETENCIAS` ya modelan capacidad -- pero *dentro* de un
+  nodo, invisible para los demás.
+- `OPORTUNIDAD` ya modela necesidad externa con `PUNTUACION_ENCAJE`
+  determinista (sin IA) -- pero mira *hacia fuera* de la red
+  (prospectos), no *entre* nodos ya instalados.
+- El sync nodo→maestro **ya existe**: `actualizarLibreriaVersionEnFichaCliente_`
+  (Fase 3) y el propio mecanismo de "Solicitar actualización de
+  librería" (ver más abajo, "Autoservicio de actualización") -- un
+  nodo puede escribir señales en su ficha del maestro sin que La
+  Troballa entre a su Sheet, ni el nodo necesite el scope OAuth
+  `script.projects`.
+
+**Diseño propuesto, nivel básico**:
+1. **Señal de nodo** (`NODO_NECESIDAD`/`NODO_CAPACIDAD`, o una única
+   `NODO_SENAL` con campo `TIPO`): cada nodo, si quiere, publica qué
+   busca o qué le sobra -- categoría/ámbito (mismo catálogo abierto
+   que `OPORTUNIDAD.AMBITO`: Rural/Cultural/Social/Voluntariado,
+   ampliable), descripción corta, visibilidad (privada / visible en
+   red).
+2. **Vive primero en el propio Sheet del nodo** (privacidad por
+   defecto -- el nodo decide qué expone) y se sincroniza al maestro
+   con el mismo patrón ya probado de `LIBRERIA_VERSION`. Un nodo
+   "autónomo" (ver más abajo) simplemente nunca sincroniza nada aquí
+   -- la distinción autónomo/red queda resuelta sola, sin interruptor
+   técnico nuevo.
+3. **El maestro es el directorio de la red**: agrega las señales
+   publicadas por todos los nodos conectados.
+4. **Encaje v1 determinista**: cruzar necesidad de un nodo contra
+   capacidad de otro por categoría -- mismo patrón sin IA que
+   `PUNTUACION_ENCAJE`. Panel nuevo (`PanelRed.html`) para verlo.
+5. **La conexión en sí reutiliza infraestructura ya construida**: el
+   bot operativo de cada nodo (Telegram) avisa "hay un nodo con lo que
+   buscas, ¿os ponemos en contacto?" -- sin inventar un canal nuevo.
+
+**Autónomo vs. red** (política de acceso técnico al entregar un
+cliente, valorada en la misma conversación): no es una casilla de
+configuración, es un fork real -- "red" es el modelo de hoy (cliente
+ligero, referencia a la librería Core compartida, participa en el
+directorio de señales); "autónomo" es el **Nivel 2** que ya menciona
+`PROPUESTA_MODULARIZACION_LIBRERIA.md` (código fuente propio, sin
+dependencia de librería, La Troballa sin control técnico posterior).
+Construir bien el fork autónomo requiere una vía de montaje nueva
+(volcado único + traspaso de propiedad) que hoy no existe -- **no
+diseñar hasta tener una decisión explícita** de qué se traspasa
+exactamente y si hay punto de no retorno.
+
+**Pospuesto a propósito** (nivel avanzado, mismo criterio que Fase 4
+avanzada): matching semántico/IA entre descripciones libres,
+sugerencias proactivas, reputación/confianza entre nodos (pregunta
+abierta explícita en `VISION_MISION.md`: *"uno lento, defectuoso o
+malicioso podría invalidar verificaciones de otros"*) -- no se diseña
+hasta que el nivel básico tenga nodos reales usándolo.
+
+**Relación con Proyecto 0** (ver `ROADMAP_IMPLEMENTACION.md`/sección
+final de este documento): ortogonal, no bloqueante en ningún sentido --
+Proyecto 0 es cómo La Troballa organiza su propio desarrollo interno,
+Red de nodos es una capacidad futura de cara a clientes. Pueden
+construirse en cualquier orden; prioridad actual (2026-08-19) es
+Proyecto 0.
+
+### Otras funciones candidatas de `VISION_MISION.md`, todavía no construidas
+
+Referencia rápida para no perder contexto -- detalle completo en
+`VISION_MISION.md` (secciones "Arquitectura en capas"/"Preguntas
+abiertas"), no duplicado aquí:
+- **Bot con doble rol**: hoy solo existe el "agente operativo" básico
+  (`/ayuda`/`/mis_tareas`/`/hoy`) -- falta el "filtro de formación de
+  voluntarios" (cara externa) y "convocar personas a acciones"
+  (broadcast + autoselección).
+- **Bóveda de Obsidian** (capa reflexiva) -- no construida.
+- **Capa gamificada** -- identificada como "gratis" arquitectónicamente
+  (mismas entidades CAMPAÑA→TAREA, piel distinta), no construida.
+- **Formación con verificación** (bot como verificador conversacional,
+  evitar "resuelto por IA sin comprensión") -- no construida, pieza
+  clave de la oferta a escuelas.
+
 ## Arquitectura de módulos (corregido tras esta sesión)
 
 `CLIENTE` y `VENTAS` se separaron de CORE como módulos reales en
