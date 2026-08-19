@@ -707,7 +707,7 @@ PROYECTO: [
     { campo: 'ESTADO', etiqueta: 'Estado', tipo: 'catalogo', catalogo: 'CFG_ESTADO_CLIENTE', requerido: true, valorPorDefecto: 'Prospecto' },
     { campo: 'SHEET_URL', etiqueta: 'URL del Sheet (si es cliente de software)', tipo: 'texto' },
     { campo: 'SCRIPT_ID', etiqueta: 'Script ID (si es cliente de software)', tipo: 'texto' },
-    { campo: 'MODULOS_CONTRATADOS', etiqueta: 'Módulos contratados', tipo: 'texto' },
+    { campo: 'MODULOS_CONTRATADOS', etiqueta: 'Módulos contratados', tipo: 'multiseleccion' },
     { campo: 'LIBRERIA_VERSION', etiqueta: 'Versión de librería', tipo: 'texto', ayuda: 'Se actualiza sola tras usar "Actualizar librería de un cliente" -- no editar a mano.' },
     { campo: 'TELEGRAM_CHAT_ID', etiqueta: 'Chat ID de Telegram', tipo: 'texto', ayuda: 'Identifica al cliente cuando escribe al bot -- privado o de grupo, da igual. Vacío si todavía no usa el bot.' },
     { campo: 'CONFIG_BOT', etiqueta: 'Configuración del bot (JSON)', tipo: 'texto', ayuda: 'Overrides opcionales sobre el registro estándar de comandos (mensaje de bienvenida, comandos propios de este cliente). Vacío = comportamiento por defecto.' },

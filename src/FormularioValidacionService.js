@@ -143,6 +143,19 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
     }
 
     /*
+     * Selección múltiple (ver conversación -- MODULOS_CONTRATADOS de
+     * CLIENTE era texto libre): admite opciones declaradas directamente
+     * en el esquema; si no existen, usa la lista real de módulos de la
+     * librería (obtenerModulosDisponibles_, AprovisionamientoService.js
+     * -- misma fuente que el desplegable de "Gestión remota de
+     * clientes"), para que se mantenga al día sola según se añaden
+     * módulos nuevos.
+     */
+    if (copia.tipo === 'multiseleccion') {
+      copia.opciones = Array.isArray(copia.opciones) ? copia.opciones.slice() : obtenerModulosDisponibles_();
+    }
+
+    /*
      * Claves foráneas:
      * - solo registros activos;
      * - permite excluir estados concretos.

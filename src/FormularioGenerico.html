@@ -3,6 +3,11 @@
 <head>
   <base target="_top">
   <?!= include('Estilos') ?>
+  <style>
+    .multiseleccion-opciones { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-top: 4px; }
+    .multiseleccion-opcion { display: flex; align-items: center; gap: 6px; font-weight: normal; font-size: 13px; }
+    .multiseleccion-opcion input[type="checkbox"] { margin: 0; }
+  </style>
 </head>
 <body>
   <h3><?= titulo ?></h3>
@@ -321,6 +326,23 @@
         html += "<input type=\"number\" id=\"" + id + "\"" + atrMin + atrMax + ">";
       } else if (campo.tipo === "textarea") {
         html += "<textarea id=\"" + id + "\" rows=\"4\"></textarea>";
+      } else if (campo.tipo === "multiseleccion") {
+        /*
+         * Selección múltiple por checkboxes (ver conversación -- MODULOS_
+         * CONTRATADOS de CLIENTE era texto libre, propenso a error humano
+         * al escribir nombres de módulo a mano). El valor real sigue
+         * viajando en un input oculto de texto separado por comas (mismo
+         * formato que antes, "CORE, GANTT, CLIENTE") -- guardar() lo lee
+         * igual que cualquier otro campo, sin tocar esa función; solo
+         * cambia cómo se construye ese texto (ver activarMultiseleccion_).
+         */
+        html += "<input type=\"hidden\" id=\"" + id + "\" value=\"\">";
+        html += "<div class=\"multiseleccion-opciones\">";
+        (campo.opciones || []).forEach(function (op) {
+          var idOpcion = id + "__opt_" + op.replace(/[^A-Za-z0-9]/g, "_");
+          html += "<label class=\"multiseleccion-opcion\"><input type=\"checkbox\" id=\"" + idOpcion + "\" data-multiseleccion-de=\"" + id + "\" value=\"" + escaparAtributo_(op) + "\"> " + op + "</label>";
+        });
+        html += "</div>";
       } else {
         html += "<input type=\"text\" id=\"" + id + "\">";
       }
@@ -682,6 +704,27 @@
     }
 
     /*
+     * Mantiene el input oculto de un campo "multiseleccion" sincronizado
+     * con los checkboxes que lo componen -- guardar() solo lee ese
+     * input oculto (mismo camino genérico que cualquier otro campo), así
+     * que basta con recalcularlo aquí cada vez que cambia una casilla.
+     */
+    function activarMultiseleccion_() {
+      esquemaActual.forEach(function (campo) {
+        if (campo.tipo !== "multiseleccion") return;
+        var elOculto = document.getElementById("campo_" + campo.campo);
+        if (!elOculto) return;
+        var checkboxes = document.querySelectorAll("[data-multiseleccion-de=\"campo_" + campo.campo + "\"]");
+        var actualizar = function () {
+          var seleccionados = [];
+          checkboxes.forEach(function (chk) { if (chk.checked) seleccionados.push(chk.value); });
+          elOculto.value = seleccionados.join(", ");
+        };
+        checkboxes.forEach(function (chk) { chk.addEventListener("change", actualizar); });
+      });
+    }
+
+    /*
      * Ampliacion tras F-015: sugiere el CODIGO de PRODUCTO/MATERIAL/
      * PROVEEDOR a partir de siglas de campos ya elegidos (ver
      * GeneracionCodigo.js), cuando cambian esos campos de contexto.
@@ -901,6 +944,16 @@
               return;
             }
             if (campo.tipo === "fk_dependiente") return; // se rellena en repoblarDependiente_
+            if (campo.tipo === "multiseleccion") {
+              var seleccionados = String(campo.valorActual || "").split(",").map(function (v) { return v.trim(); }).filter(Boolean);
+              var elOcultoMulti = document.getElementById("campo_" + campo.campo);
+              if (elOcultoMulti) elOcultoMulti.value = seleccionados.join(", ");
+              seleccionados.forEach(function (valor) {
+                var chk = document.getElementById("campo_" + campo.campo + "__opt_" + valor.replace(/[^A-Za-z0-9]/g, "_"));
+                if (chk) chk.checked = true;
+              });
+              return;
+            }
             var el = document.getElementById("campo_" + campo.campo);
             if (el) el.value = campo.valorActual;
           });
@@ -913,6 +966,7 @@
           activarSugerenciasVersion_();
           activarDerivacionDeRelacion_();
           activarAltaRapidaCatalogo_();
+          activarMultiseleccion_();
           activarValidacionEnVivo_();
           esquema.forEach(function (campo) {
             if (campo.tipo === "fk_dependiente") {

@@ -253,6 +253,22 @@ administración interna de LaTroballa Software -- solo el Sheet maestro
 y proyectos internos la ven (`moduloInstalado_('INTERNO')`, pseudo-
 módulo que ningún cliente real pide nunca).
 
+### Futuro: autoservicio de montaje para clientes externos (decisión, no construido)
+
+Ver conversación (2026-08-19, verificación en vivo del bot operativo de
+Gestor de Proyectos): el flujo de dos pasos actual (`Nueva solicitud de
+montaje` → `Aprobar solicitud de montaje`, ambos formularios ya
+separados) se mantiene deliberadamente en dos pasos pensando en esto --
+en el futuro el propio cliente podrá rellenar y enviar su solicitud de
+montaje personalizada (qué módulos quiere, datos de su organización),
+y el operador de LaTroballa Software solo tendrá que revisar/aprobar y
+terminar de implementar el Sheet resultante, sin tener que construir la
+solicitud él mismo desde cero. No requiere cambios de arquitectura hoy
+-- los dos formularios ya existen como pasos independientes, solo falta
+decidir en su momento quién tiene acceso a `Nueva solicitud de montaje`
+(hoy gateado igual que el resto de Aprovisionamiento, `INTERNO` o
+`APROVISIONAMIENTO`).
+
 ### Menú y hojas condicionados por módulo (mecanismo transversal)
 
 De aquí salió el hallazgo de que el menú y las hojas de cada cliente
