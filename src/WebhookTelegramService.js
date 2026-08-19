@@ -167,9 +167,9 @@ function configurarWebhookTelegram_(tituloDialogo, tokenTelegram) {
  * sondearTelegramBotOperativo en el Codigo.js de cada cliente,
  * activarSondeoTelegramSoporte/sondearTelegramSoporte en el maestro).
  */
-function sondearActualizacionesTelegram_(tokenTelegram, offsetActual) {
+function sondearActualizacionesTelegram(tokenTelegram, offsetActual) {
   if (!tokenTelegram) {
-    console.error('sondearActualizacionesTelegram_: falta el token');
+    console.error('sondearActualizacionesTelegram: falta el token');
     return { offsetNuevo: offsetActual, procesadas: 0 };
   }
 
@@ -182,7 +182,7 @@ function sondearActualizacionesTelegram_(tokenTelegram, offsetActual) {
   try {
     datos = JSON.parse(resp.getContentText());
   } catch (err) {
-    console.error('sondearActualizacionesTelegram_: respuesta no JSON de Telegram: ' + resp.getContentText());
+    console.error('sondearActualizacionesTelegram: respuesta no JSON de Telegram: ' + resp.getContentText());
     return { offsetNuevo: offsetActual, procesadas: 0 };
   }
 
@@ -200,7 +200,7 @@ function sondearActualizacionesTelegram_(tokenTelegram, offsetActual) {
         procesarMensajeBotOperativo_(actualizacion, tokenTelegram);
       }
     } catch (err) {
-      console.error('sondearActualizacionesTelegram_: ' + err.message);
+      console.error('sondearActualizacionesTelegram: ' + err.message);
     }
     offsetNuevo = actualizacion.update_id + 1;
   });
@@ -208,7 +208,7 @@ function sondearActualizacionesTelegram_(tokenTelegram, offsetActual) {
   return { offsetNuevo: offsetNuevo, procesadas: datos.result.length };
 }
 
-function eliminarWebhookTelegram_(tokenTelegram) {
+function eliminarWebhookTelegram(tokenTelegram) {
   var token = tokenTelegram || PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
   if (!token) return;
   UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/deleteWebhook', { muteHttpExceptions: true });

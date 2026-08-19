@@ -104,7 +104,7 @@ function sondearTelegramSoporte() {
   var props = PropertiesService.getScriptProperties();
   var token = props.getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
   var offsetActual = parseInt(props.getProperty(PROPIEDAD_OFFSET_TELEGRAM_SOPORTE_) || '0', 10);
-  var resultado = sondearActualizacionesTelegram_(token, offsetActual);
+  var resultado = sondearActualizacionesTelegram(token, offsetActual);
   if (resultado && resultado.offsetNuevo !== undefined) {
     props.setProperty(PROPIEDAD_OFFSET_TELEGRAM_SOPORTE_, String(resultado.offsetNuevo));
   }
@@ -118,7 +118,7 @@ function activarSondeoTelegramSoporte() {
     return;
   }
 
-  eliminarWebhookTelegram_(token);
+  eliminarWebhookTelegram(token);
 
   var yaInstalado = ScriptApp.getProjectTriggers().some(function (t) {
     return t.getHandlerFunction() === 'sondearTelegramSoporte';

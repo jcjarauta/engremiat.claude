@@ -343,7 +343,7 @@ function pushWrapperBody(lines, name, userSymbol) {
     lines.push(`    ui.alert('Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.');`);
     lines.push('    return;');
     lines.push('  }');
-    lines.push(`  ${userSymbol}.eliminarWebhookTelegram_(token);`);
+    lines.push(`  ${userSymbol}.eliminarWebhookTelegram(token);`);
     lines.push(`  var yaInstalado = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'sondearTelegramBotOperativo'; });`);
     lines.push(`  if (!yaInstalado) ScriptApp.newTrigger('sondearTelegramBotOperativo').timeBased().everyMinutes(1).create();`);
     lines.push(`  ui.alert('Sondeo activado', 'Webhook eliminado. Sondeo cada 1 minuto ' + (yaInstalado ? '(el disparador ya existía).' : '(disparador creado).'), ui.ButtonSet.OK);`);
@@ -353,7 +353,7 @@ function pushWrapperBody(lines, name, userSymbol) {
     lines.push('  var props = PropertiesService.getScriptProperties();');
     lines.push(`  var token = props.getProperty('TELEGRAM_BOT_TOKEN');`);
     lines.push(`  var offsetActual = parseInt(props.getProperty('TELEGRAM_OFFSET_ACTUALIZACIONES') || '0', 10);`);
-    lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram_(token, offsetActual);`);
+    lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram(token, offsetActual);`);
     lines.push(`  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty('TELEGRAM_OFFSET_ACTUALIZACIONES', String(resultado.offsetNuevo));`);
     lines.push('}');
     lines.push('');
