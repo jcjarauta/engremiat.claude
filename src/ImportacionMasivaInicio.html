@@ -51,9 +51,6 @@
       .barra-cola-archivos { display: none; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
       .barra-cola-archivos button { flex: 1; margin-top: 0; font-size: 12px; padding: 6px; min-width: 120px; }
 
-      .barra-acciones-globales { display: flex; gap: 8px; margin: 12px 0; }
-      .barra-acciones-globales button { flex: 1; margin-top: 0; }
-
       .orden-recomendado { font-size: 11px; color: var(--color-texto-secundario); background: var(--color-fondo-suave); border-radius: 6px; padding: 6px 10px; margin-bottom: 8px; }
 
       .grupo-card {
@@ -171,10 +168,6 @@
 
     <h4>Validar e importar</h4>
     <div id="ordenRecomendado"></div>
-    <div class="barra-acciones-globales" id="barraAccionesGlobales">
-      <button class="boton" onclick="validarTodo()">Validar todo</button>
-      <button class="boton boton-primario" onclick="importarTodoValidado()">Importar todo lo validado</button>
-    </div>
     <div id="gruposImportacion"></div>
 
     <div class="resumen-sesion" id="resumenSesion"></div>
@@ -254,7 +247,7 @@
        * su propio estado por separado (ver establecerEstadoBoton_).
        */
       function establecerOcupado_(ocupado, mensaje) {
-        document.querySelectorAll('.paso button, .barra-acciones-globales button').forEach(function (boton) { boton.disabled = ocupado; });
+        document.querySelectorAll('.paso button').forEach(function (boton) { boton.disabled = ocupado; });
         if (ocupado) {
           document.getElementById('mensaje').className = 'ok';
           document.getElementById('mensaje').textContent = '⏳ ' + mensaje;
@@ -690,21 +683,20 @@
       }
 
       /*
-       * Con un solo grupo instalado (ver conversación -- "esto sigue
-       * pareciendo repetitivo", tras colapsar ya el bloque de plantillas)
-       * tanto el "Orden recomendado" como "Validar todo"/"Importar todo
-       * lo validado" son ruido puro: no hay nada que ordenar entre un
-       * único grupo, y esos dos botones globales hacen exactamente lo
-       * mismo que "Validar"/"Importar" de la única tarjeta de abajo. Se
-       * ocultan solo en ese caso -- con 2+ grupos siguen aportando (saber
-       * el orden entre secciones, disparar todas de una).
+       * "Validar todo"/"Importar todo lo validado" eliminados (ver
+       * conversación -- Proyecto 0, primera fricción real de uso: "el
+       * sistema necesita hacerlo por pasos"). Disparar varias secciones
+       * de golpe invitaba a saltarse la revisión del resultado de cada
+       * paso antes de pasar al siguiente -- justo lo que "Validar"/
+       * "Importar" de cada tarjeta ya hacen bien, uno a uno. Con un solo
+       * grupo instalado, "Orden recomendado" tampoco aporta (nada que
+       * ordenar entre un único grupo).
        */
       function inicializarGrupos_() {
         var orden = ordenTopologicoGrupos_();
 
         if (orden.length <= 1) {
           document.getElementById('ordenRecomendado').innerHTML = '';
-          document.getElementById('barraAccionesGlobales').style.display = 'none';
         } else {
           var lineaOrden = '<div class="orden-recomendado">Orden recomendado: ' +
             orden.map(function (g, i) { return (i + 1) + '. ' + escapeHtml(g.titulo.split(' →')[0].split(' (')[0]); }).join(' → ') +
@@ -844,50 +836,6 @@
           resultadoEl.className = 'resultado-grupo error';
           resultadoEl.textContent = '✗ Error al importar: ' + (error && error.message ? error.message : error);
           document.getElementById('btn-importar-' + id).disabled = false;
-        });
-      }
-
-      function validarTodo() {
-        mostrarOk('Validando todas las secciones...');
-        GRUPOS_IMPORTACION_.forEach(function (g) { validarGrupo(g.id); });
-      }
-
-      function importarTodoValidado() {
-        // Orden topológico, no el orden de declaración del array -- ver
-        // ordenTopologicoGrupos_ (mismo motivo que el aviso de dependencias).
-        var listos = ordenTopologicoGrupos_().filter(function (g) { return ESTADO_GRUPOS_[g.id] === 'valido'; });
-        if (listos.length === 0) {
-          mostrarOk('No hay ninguna sección validada (en verde) lista para importar. Pulsa "Validar todo" primero.');
-          return;
-        }
-        confirmarAccion_(
-          '¿Importar ' + listos.length + ' sección(es) ya validada(s), en el orden correcto?',
-          function () { importarSecuencial_(listos.map(function (g) { return g.id; }), 0); },
-          null,
-          'Importar todo'
-        );
-      }
-
-      function importarSecuencial_(ids, indice) {
-        if (indice >= ids.length) { mostrarOk('Importación completa.'); return; }
-        var id = ids[indice];
-        var g = grupoPorId_(id);
-        document.getElementById('btn-importar-' + id).disabled = true;
-        var resultadoEl = document.getElementById('resultado-' + id);
-        resultadoEl.className = 'resultado-grupo';
-        resultadoEl.textContent = '⏳ Importando...';
-
-        llamarConfirmar_(id, function (resultado) {
-          registrarEnResumenSesion_(g.titulo, resultado.resumen);
-          resultadoEl.className = 'resultado-grupo ok';
-          resultadoEl.textContent = '✓ Importado: ' + g.resumenTexto(resultado.resumen);
-          establecerEstadoBoton_(id, 'sin-validar');
-          actualizarPanelEstado_();
-          importarSecuencial_(ids, indice + 1);
-        }, function (error) {
-          resultadoEl.className = 'resultado-grupo error';
-          resultadoEl.textContent = '✗ Error al importar: ' + (error && error.message ? error.message : error);
-          mostrarError({ message: 'Importación de todo detenida en "' + g.titulo + '": ' + (error && error.message ? error.message : error) });
         });
       }
 
