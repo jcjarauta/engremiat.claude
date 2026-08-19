@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 190,
+  "universeExpected": 191,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -289,6 +289,17 @@
       "category": "excluded",
       "package": "NONE",
       "expectedSha256": "3deac0ce5e8450c9ac90ecd8842f3b020dc880214418c77ac186e626433b76ea",
+      "required": true,
+      "reason": "no desplegable",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "ROADMAP_PROYECTO_0.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "1916b06c97554cbc9731d89a33427d1ee06cfde8d2e9f806bfb8bd2f63d3db9c",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
