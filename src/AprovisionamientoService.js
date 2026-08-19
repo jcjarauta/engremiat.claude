@@ -925,7 +925,10 @@ function subirContenidoScript_(scriptId, modulos) {
    * cliente montado por este generador puede necesitar exponer doPost
    * (WebhookTelegramService.js, bot operativo/COMUNICACION), así que se
    * declara siempre, no solo para clientes con ese módulo -- no tiene
-   * coste si nunca se despliega como app web.
+   * coste si nunca se despliega como app web. access debe ser
+   * 'ANYONE_ANONYMOUS', no 'ANYONE': con 'ANYONE' la API de Apps Script
+   * sigue exigiendo que el llamador tenga sesión Google, y un webhook
+   * (Telegram) sin login recibe 401.
    */
   var manifiesto = {
     timeZone: 'Europe/Madrid',
@@ -936,7 +939,7 @@ function subirContenidoScript_(scriptId, modulos) {
     exceptionLogging: 'STACKDRIVER',
     runtimeVersion: 'V8',
     webapp: {
-      access: 'ANYONE',
+      access: 'ANYONE_ANONYMOUS',
       executeAs: 'USER_DEPLOYING'
     }
   };
