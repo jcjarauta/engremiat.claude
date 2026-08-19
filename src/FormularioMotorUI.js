@@ -511,6 +511,19 @@ function construirSubmenuMantenimiento_(ui) {
     .addItem('Protección de hojas', 'abrirProteccionHojas')
     .addItem('Importación masiva (STG_*)', 'abrirImportacionMasivaInicio')
     .addItem('Mantenimiento (revertir cambio)', 'abrirRevertirUltimoCambio');
+  /*
+   * Autoservicio de actualización para CUALQUIER cliente (ver conversación
+   * -- "necesitamos que cada cliente pueda autogestionar la actualización
+   * y mejora de su sheet"), sin pedirle el scope OAuth script.projects
+   * (ver WebhookTelegramService.js) -- a diferencia de "Actualizar mi
+   * librería a la última versión" en 🏗️ Aprovisionamiento (que SÍ exige
+   * ese scope y por eso sigue restringido a INTERNO||APROVISIONAMIENTO).
+   * !moduloInstalado_('INTERNO') excluye específicamente al maestro (que
+   * corre el código fuente directo, sin dependencia de librería -- pulsar
+   * esto ahí no debe hacer nada, así que ni se muestra): 'INTERNO' nunca
+   * es real en un cliente, solo es true por defecto en el propio maestro.
+   */
+  if (!moduloInstalado_('INTERNO')) menu = menu.addItem('Solicitar actualización de librería', 'solicitarActualizacionLibreria');
   if (moduloInstalado_('OPORTUNIDAD')) menu = menu.addItem('Recalcular encaje de oportunidades', 'abrirRecalcularPuntuacionEncajeOportunidades');
   // Instaladores de catálogo "de una vez" por módulo -- ver
   // construirSubmenuInstaladoresCatalogo_: crecen ahí dentro, sin

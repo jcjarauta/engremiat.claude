@@ -49,21 +49,41 @@ var PROPIEDAD_TOKEN_TELEGRAM_ = 'TELEGRAM_BOT_TOKEN';
 function doPost(e, tokenTelegram, modulosInstalados) {
   var resueltos = resolverModulosInstalados_(modulosInstalados);
   modulosInstaladosClienteActual_ = Array.isArray(resueltos) ? resueltos : null;
+  var respuesta = '';
   try {
     if (e && e.postData && e.postData.contents) {
-      var actualizacion = JSON.parse(e.postData.contents);
-      if (!actualizacionYaProcesada_(actualizacion)) {
+      var cuerpo = JSON.parse(e.postData.contents);
+
+      /*
+       * Solicitud de autoactualización de un cliente (ver conversación --
+       * "necesitamos que cada cliente pueda autogestionar la actualización
+       * de su Sheet, sin pedirle el scope OAuth script.projects"): distinto
+       * de una actualización de Telegram (que trae update_id/message), así
+       * que se distingue por forma antes de entrar en la rama de Telegram.
+       * Solo el maestro recibe esto de verdad (moduloInstalado_('INTERNO')
+       * es su valor por defecto); en un cliente normal este doPost nunca
+       * ve una petición con esta forma porque nadie se la manda salvo el
+       * propio envoltorio generado, ver
+       * solicitarActualizacionLibreria en GeneradorEnvoltoriosEmbebido.js/
+       * generate-shell-wrappers.mjs.
+       */
+      if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
+        respuesta = JSON.stringify(procesarSolicitudActualizacionLibreria_(cuerpo.scriptId));
+      } else if (!actualizacionYaProcesada_(cuerpo)) {
         if (moduloInstalado_('INTERNO')) {
-          procesarMensajeTelegramSoporte_(actualizacion, tokenTelegram);
+          procesarMensajeTelegramSoporte_(cuerpo, tokenTelegram);
         } else if (moduloInstalado_('COMUNICACION')) {
-          procesarMensajeBotOperativo_(actualizacion, tokenTelegram);
+          procesarMensajeBotOperativo_(cuerpo, tokenTelegram);
         }
       }
     }
   } catch (err) {
     console.error('doPost Telegram: ' + err.message);
+    respuesta = JSON.stringify({ ok: false, error: err.message });
   }
-  return ContentService.createTextOutput('');
+  return respuesta
+    ? ContentService.createTextOutput(respuesta).setMimeType(ContentService.MimeType.JSON)
+    : ContentService.createTextOutput('');
 }
 
 /*
@@ -229,3 +249,42 @@ function eliminarWebhookTelegram(tokenTelegram) {
   if (!token) return;
   UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/deleteWebhook', { muteHttpExceptions: true });
 }
+
+/*
+ * Autoservicio de actualización sin pedirle a cada cliente el scope OAuth
+ * script.projects (ver conversación -- ese scope da acceso de lectura/
+ * escritura a CUALQUIER proyecto de Apps Script de la cuenta del cliente,
+ * más potencia de la que un Sheet de producción normal necesita, y
+ * dispara una pantalla de reautorización nueva). El cliente nunca pide
+ * ese scope: su botón solo hace un UrlFetchApp.fetch normal (scope
+ * script.external_request, ya habitual en este proyecto para Telegram)
+ * contra este mismo doPost -- el maestro, que YA tiene script.projects
+ * autorizado para Aprovisionamiento, hace la actualización real por él.
+ * Reutiliza actualizarLibreriaClienteRemoto_/actualizarLibreriaVersionEn
+ * FichaCliente_ (AprovisionamientoService.js) -- mismo camino que
+ * "Gestión remota de clientes", solo que disparado por el propio cliente
+ * en vez de por un operador.
+ */
+function procesarSolicitudActualizacionLibreria_(scriptId) {
+  if (!scriptId) return { ok: false, error: 'Falta scriptId en la solicitud.' };
+  try {
+    var resultado = actualizarLibreriaClienteRemoto_(scriptId);
+    actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
+    return { ok: true, versionAnterior: resultado.versionAnterior, versionNueva: resultado.versionNueva };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+/*
+ * Cuerpo real generado íntegro en el Codigo.js de cada cliente (ver
+ * FUNCIONES_ACTIVACION_SONDEO_TELEGRAM_/pushWrapperBody_ en
+ * GeneradorEnvoltoriosEmbebido.js y su gemelo Node.js): necesita leer
+ * ScriptApp.getScriptId() del proyecto CLIENTE, no de esta librería (ver
+ * cabecera del fichero -- ScriptApp, igual que PropertiesService, dentro
+ * de código de librería no ve el contexto del proyecto que la invoca).
+ * Este cuerpo vacío existe solo para que el generador la descubra como
+ * perteneciente a CORE (siempre disponible, cualquier cliente, no solo
+ * los que tienen APROVISIONAMIENTO) -- nunca se llama.
+ */
+function solicitarActualizacionLibreria() {}

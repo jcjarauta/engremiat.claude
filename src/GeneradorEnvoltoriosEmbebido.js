@@ -37,6 +37,24 @@ var FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_ = { onOpen: true, abrirInstalarEst
  */
 var FUNCIONES_ACTIVACION_SONDEO_TELEGRAM_ = { activarSondeoBotOperativo: true };
 
+/*
+ * URL del doPost del maestro que atiende solicitudes de autoactualización
+ * (ver WebhookTelegramService.js, procesarSolicitudActualizacionLibreria_)
+ * -- pública, no un secreto (un cliente solo puede pedir SU PROPIA
+ * actualización, identificada por su propio ScriptApp.getScriptId()).
+ * Cambia solo si se recrea el despliegue del maestro; mantener en sync
+ * con la constante gemela en generate-shell-wrappers.mjs.
+ */
+var URL_MAESTRO_SOLICITUD_ACTUALIZACION_ = 'https://script.google.com/macros/s/AKfycbz1N-ZJRjjjZ1BRZJaXxPLaBHrVtPD1tRDl1wi8tHA3dW5AYMITX5z4AFEsPEluPjQ2/exec';
+
+/*
+ * solicitarActualizacionLibreria: autoservicio sin scope OAuth ampliado
+ * (ver WebhookTelegramService.js) -- cuerpo completo generado a mano,
+ * como activarSondeoBotOperativo: necesita ScriptApp.getScriptId() del
+ * proyecto CLIENTE, así que no puede ser un simple reenvío a Core.xxx().
+ */
+var FUNCIONES_SOLICITUD_ACTUALIZACION_ = { solicitarActualizacionLibreria: true };
+
 function compararRutasCanonicas_(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -350,6 +368,25 @@ function pushWrapperBody_(lines, name, userSymbol) {
     lines.push('  var offsetActual = parseInt(props.getProperty(\'TELEGRAM_OFFSET_ACTUALIZACIONES\') || \'0\', 10);');
     lines.push('  var resultado = ' + userSymbol + '.sondearActualizacionesTelegram(token, offsetActual, MODULOS_INSTALADOS_CLIENTE);');
     lines.push('  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty(\'TELEGRAM_OFFSET_ACTUALIZACIONES\', String(resultado.offsetNuevo));');
+    lines.push('}');
+    lines.push('');
+    return;
+  }
+  if (FUNCIONES_SOLICITUD_ACTUALIZACION_[name]) {
+    lines.push('function solicitarActualizacionLibreria() {');
+    lines.push('  var ui = SpreadsheetApp.getUi();');
+    lines.push('  var resp = UrlFetchApp.fetch(\'' + URL_MAESTRO_SOLICITUD_ACTUALIZACION_ + '\', {');
+    lines.push('    method: \'post\', contentType: \'application/json\',');
+    lines.push('    payload: JSON.stringify({ accion: \'solicitar_actualizacion_libreria\', scriptId: ScriptApp.getScriptId() }),');
+    lines.push('    muteHttpExceptions: true');
+    lines.push('  });');
+    lines.push('  var resultado;');
+    lines.push('  try { resultado = JSON.parse(resp.getContentText()); } catch (err) { resultado = { ok: false, error: resp.getContentText() }; }');
+    lines.push('  if (resultado.ok) {');
+    lines.push('    ui.alert(\'Solicitud enviada\', resultado.versionAnterior === resultado.versionNueva ? \'Ya tenías la última versión (\' + resultado.versionNueva + \').\' : \'Actualizado: versión anterior \' + resultado.versionAnterior + \' -> nueva \' + resultado.versionNueva + \'.\\n\\nRecarga el sheet para que el código nuevo tenga efecto.\', ui.ButtonSet.OK);');
+    lines.push('  } else {');
+    lines.push('    ui.alert(\'No se pudo actualizar\', resultado.error || \'Error desconocido.\', ui.ButtonSet.OK);');
+    lines.push('  }');
     lines.push('}');
     lines.push('');
     return;

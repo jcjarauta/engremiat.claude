@@ -45,6 +45,17 @@ const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstal
 // nunca referenciado desde un menu/google.script.run).
 const FUNCIONES_ACTIVACION_SONDEO_TELEGRAM = new Set(['activarSondeoBotOperativo']);
 
+// URL del doPost del maestro que atiende solicitudes de autoactualización
+// (ver WebhookTelegramService.js, procesarSolicitudActualizacionLibreria_)
+// -- pública, no un secreto. Mantener en sync con la constante gemela en
+// GeneradorEnvoltoriosEmbebido.js.
+const URL_MAESTRO_SOLICITUD_ACTUALIZACION = 'https://script.google.com/macros/s/AKfycbz1N-ZJRjjjZ1BRZJaXxPLaBHrVtPD1tRDl1wi8tHA3dW5AYMITX5z4AFEsPEluPjQ2/exec';
+
+// solicitarActualizacionLibreria: autoservicio sin scope OAuth ampliado
+// (ver WebhookTelegramService.js) -- cuerpo completo generado a mano,
+// necesita ScriptApp.getScriptId() del proyecto cliente.
+const FUNCIONES_SOLICITUD_ACTUALIZACION = new Set(['solicitarActualizacionLibreria']);
+
 /**
  * A diferencia de maskNonCode (build-packages.mjs), que también blanquea el
  * contenido de strings para evitar falsos positivos en nombres de prueba,
@@ -355,6 +366,25 @@ function pushWrapperBody(lines, name, userSymbol) {
     lines.push(`  var offsetActual = parseInt(props.getProperty('TELEGRAM_OFFSET_ACTUALIZACIONES') || '0', 10);`);
     lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram(token, offsetActual, MODULOS_INSTALADOS_CLIENTE);`);
     lines.push(`  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty('TELEGRAM_OFFSET_ACTUALIZACIONES', String(resultado.offsetNuevo));`);
+    lines.push('}');
+    lines.push('');
+    return;
+  }
+  if (FUNCIONES_SOLICITUD_ACTUALIZACION.has(name)) {
+    lines.push('function solicitarActualizacionLibreria() {');
+    lines.push('  var ui = SpreadsheetApp.getUi();');
+    lines.push(`  var resp = UrlFetchApp.fetch('${URL_MAESTRO_SOLICITUD_ACTUALIZACION}', {`);
+    lines.push(`    method: 'post', contentType: 'application/json',`);
+    lines.push(`    payload: JSON.stringify({ accion: 'solicitar_actualizacion_libreria', scriptId: ScriptApp.getScriptId() }),`);
+    lines.push('    muteHttpExceptions: true');
+    lines.push('  });');
+    lines.push('  var resultado;');
+    lines.push('  try { resultado = JSON.parse(resp.getContentText()); } catch (err) { resultado = { ok: false, error: resp.getContentText() }; }');
+    lines.push('  if (resultado.ok) {');
+    lines.push(`    ui.alert('Solicitud enviada', resultado.versionAnterior === resultado.versionNueva ? 'Ya tenías la última versión (' + resultado.versionNueva + ').' : 'Actualizado: versión anterior ' + resultado.versionAnterior + ' -> nueva ' + resultado.versionNueva + '.\\n\\nRecarga el sheet para que el código nuevo tenga efecto.', ui.ButtonSet.OK);`);
+    lines.push('  } else {');
+    lines.push(`    ui.alert('No se pudo actualizar', resultado.error || 'Error desconocido.', ui.ButtonSet.OK);`);
+    lines.push('  }');
     lines.push('}');
     lines.push('');
     return;
