@@ -20,6 +20,7 @@
       .cabecera-fila select { flex: 1; font-size: 14px; padding: 8px; }
       .cabecera-fila button { flex-shrink: 0; }
       .resumen-campana { color: var(--color-texto-secundario); font-size: 13px; margin-bottom: 12px; }
+      .marca-actualizacion { color: var(--color-texto-secundario); font-size: 11px; margin-top: 2px; }
       details { margin-bottom: 8px; }
       details > div { margin-left: 18px; border-left: 2px solid var(--color-borde); padding-left: 12px; }
       summary { cursor: pointer; padding: 8px 4px; }
@@ -71,6 +72,7 @@
           <input type="checkbox" id="incluirPruebas"> Piloto/auditoría
         </label>
       </div>
+      <div id="marcaActualizacion" class="marca-actualizacion"></div>
     </div>
     <div id="resumenCampana" class="resumen-campana"></div>
 
@@ -381,6 +383,29 @@
         return document.getElementById("selectCampana").value;
       }
 
+      /*
+       * Marca de "Actualizado a las HH:MM:SS" (ver conversación --
+       * "el buscador se queda en 'cargando', deberíamos tener un aviso de
+       * que ya está cargado" -- ni el botón 🔄 cambiaba de aspecto al
+       * pulsarlo ni quedaba ningún rastro de que la carga había
+       * terminado, así que "pulsar refrescar" tampoco daba confianza).
+       * Persistente a propósito, no un aviso que desaparece solo: sigue
+       * visible aunque el usuario mire el panel más tarde.
+       */
+      function marcarBotonCargando_(cargando) {
+        var btn = document.getElementById("btnActualizar");
+        btn.disabled = cargando;
+        btn.textContent = cargando ? "⏳" : "🔄";
+      }
+
+      function marcarActualizado_() {
+        var ahora = new Date();
+        var hhmmss = [ahora.getHours(), ahora.getMinutes(), ahora.getSeconds()]
+          .map(function (n) { return String(n).padStart(2, "0"); })
+          .join(":");
+        document.getElementById("marcaActualizacion").textContent = "✓ Actualizado a las " + hhmmss;
+      }
+
       function cargarArbol() {
         var campanaId = campanaSeleccionada_();
         google.script.run.withFailureHandler(function () {}).guardarUltimaCampanaPanel(campanaId);
@@ -389,13 +414,22 @@
           document.getElementById("arbol").innerHTML = "";
           document.getElementById("estadoCarga").textContent = "Elige una campaña para ver su estructura.";
           document.getElementById("estadoCarga").style.display = "block";
+          document.getElementById("marcaActualizacion").textContent = "";
           return;
         }
         document.getElementById("estadoCarga").textContent = "Cargando...";
         document.getElementById("estadoCarga").style.display = "block";
+        marcarBotonCargando_(true);
         google.script.run
-          .withSuccessHandler(renderArbol)
-          .withFailureHandler(mostrarError)
+          .withSuccessHandler(function (datos) {
+            marcarBotonCargando_(false);
+            marcarActualizado_();
+            renderArbol(datos);
+          })
+          .withFailureHandler(function (error) {
+            marcarBotonCargando_(false);
+            mostrarError(error);
+          })
           .obtenerArbolCampana(campanaId);
       }
 
