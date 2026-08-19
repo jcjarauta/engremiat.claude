@@ -832,10 +832,18 @@ function actualizarRegistroTransaccional(entidad, id, cambios, opciones) {
     }
   );
 
+  /*
+   * Mismo hallazgo que obtenerEsquemaFormulario (FormularioValidacionService.js,
+   * ver conversacion -- "Argumento no valido: timeZone" al editar una
+   * incidencia con campo fecha real): getActiveSpreadsheet() sin
+   * fallback rompia tambien el GUARDADO, no solo la carga del
+   * formulario -- este es el segundo (y ultimo) sitio del proyecto sin
+   * el patron || 'Europe/Madrid' que usa el resto del codigo.
+   */
   var zonaHoraria =
-    SpreadsheetApp
-      .getActiveSpreadsheet()
-      .getSpreadsheetTimeZone();
+    (SpreadsheetApp.getActiveSpreadsheet() && SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone()) ||
+    Session.getScriptTimeZone() ||
+    'Europe/Madrid';
 
   var diferencias = clavesCambio
     .filter(function (campo) {

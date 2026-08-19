@@ -1840,7 +1840,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "c29fa6b848a352a1c7633e28e0e24ce3075a9dddd30151f1d7b27e46fc73a5f5",
+      "expectedSha256": "b5c444e6be4da4c766a2553c095359d23967a66b850c4e68bbe40f94c5e0eb97",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
