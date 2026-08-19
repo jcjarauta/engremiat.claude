@@ -212,11 +212,36 @@
         google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearDecisionParaProyecto(proyectoId);
       }
 
+      /*
+       * Cuenta incidencias del propio nodo + todos sus descendientes (ver
+       * conversación -- "aquí aparece sin incidencias, aquí sí aparece":
+       * cada nivel del árbol solo mostraba SUS incidencias directas,
+       * coherente con NIVEL_INCIDENCIA, pero un Proyecto con "ninguna"
+       * incidencia directa daba la falsa impresión de que no hay nada
+       * pendiente en toda su rama, cuando en realidad la incidencia
+       * estaba en uno de sus Productos). Genérico a propósito: funciona
+       * igual en Proyecto/Producto/Proceso porque el nombre del array de
+       * hijos varía pero la forma es la misma en todo el árbol ya
+       * cargado -- sin llamada adicional al servidor.
+       */
+      function contarIncidenciasEnSubarbol_(nodo) {
+        var total = (nodo.incidencias || []).length;
+        (nodo.proyectos || []).forEach(function (h) { total += contarIncidenciasEnSubarbol_(h); });
+        (nodo.productos || []).forEach(function (h) { total += contarIncidenciasEnSubarbol_(h); });
+        (nodo.procesos || []).forEach(function (h) { total += contarIncidenciasEnSubarbol_(h); });
+        (nodo.tareas || []).forEach(function (h) { total += contarIncidenciasEnSubarbol_(h); });
+        return total;
+      }
+
       function renderIncidencias_(nodo, nivel, campanaId, proyectoId, productoId, procesoId, tareaId) {
         var incidencias = nodo.incidencias || [];
+        var enDescendientes = contarIncidenciasEnSubarbol_(nodo) - incidencias.length;
         var texto = incidencias.length
           ? incidencias.map(function (i) { return escapeHtml(i.titulo) + " " + renderBadge_(i.estado); }).join(", ")
-          : "ninguna";
+          : (enDescendientes > 0 ? "ninguna directa" : "ninguna");
+        if (enDescendientes > 0) {
+          texto += ' <span class="detalle-nodo">(' + enDescendientes + ' en niveles inferiores)</span>';
+        }
         var args = [nivel, campanaId, proyectoId, productoId, procesoId, tareaId].map(function (v) {
           return "'" + escapeAttr(v || "") + "'";
         }).join(",");
@@ -373,7 +398,7 @@
               '<button class="boton btn-mini" onclick="verFichaCampana(\'' + escapeAttr(datos.campana.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button>' +
             '</div>' +
-            renderIncidencias_(datos.campana, "CAMPANA", datos.campana.id, "", "", "", "") +
+            renderIncidencias_({ incidencias: datos.campana.incidencias, proyectos: datos.proyectos }, "CAMPANA", datos.campana.id, "", "", "", "") +
           '</div>' +
           contenedorProyectos +
           '<button class="boton btn-anadir boton-primario" onclick="crearHijo(\'abrirFormularioCrearProyectoConCampana\',\'' + escapeAttr(datos.campana.id) + '\')">+ Nuevo proyecto</button>';
