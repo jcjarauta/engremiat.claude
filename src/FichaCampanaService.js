@@ -52,9 +52,19 @@ function obtenerFichaCampana(id) {
    * aparece en la ficha de ese registro más específico, no se duplica
    * aquí.
    */
-  var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
-    .filter(function (inc) { return inc.CAMPANA_ID === id && !inc.PROYECTO_ID && !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
+  var incidenciasDeEstaCampana_ = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
+    .filter(function (inc) { return inc.CAMPANA_ID === id; });
+  var incidencias = incidenciasDeEstaCampana_
+    .filter(function (inc) { return !inc.PROYECTO_ID && !inc.PRODUCTO_ID && !inc.PROCESO_ID && !inc.TAREA_ID; })
     .map(function (inc) { return { id: inc.ID, titulo: inc.TITULO, estado: inc.ESTADO }; });
+  /*
+   * Ver conversación -- "a este nivel tampoco se ven las incidencias":
+   * mismo hallazgo y mismo arreglo que ya se aplicó en
+   * FichaProyectoService.js -- "Sin incidencias a este nivel" daba la
+   * falsa impresión de rama vacía cuando en realidad había una en un
+   * Proyecto/Producto/Proceso/Tarea de esta campaña.
+   */
+  var incidenciasEnNivelesInferiores = incidenciasDeEstaCampana_.length - incidencias.length;
 
   var documentos = listarRegistrosSeguro_('DOCUMENTO', { ACTIVO: 'SÍ' })
     .filter(function (d) { return d.ENTIDAD_TIPO === 'Campaña' && d.ENTIDAD_ID === id; })
@@ -73,6 +83,7 @@ function obtenerFichaCampana(id) {
     proyectos: proyectos,
     resumenAvance: resumenAvance,
     incidencias: incidencias,
+    incidenciasEnNivelesInferiores: incidenciasEnNivelesInferiores,
     documentos: documentos,
     presupuesto: presupuesto
   });

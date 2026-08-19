@@ -102,10 +102,18 @@ function obtenerEsquemaFormulario(entidad, idRegistro) {
     );
   }
 
+  /*
+   * Unico formatDate del proyecto sin el fallback "|| 'Europe/Madrid'"
+   * que usan el resto de sitios (DesviacionService.js,
+   * IncidenciaMantenimientoService.js, etc.) -- ver conversacion:
+   * "Argumento no valido: timeZone. Deberia ser del tipo: String." al
+   * editar una incidencia con un campo fecha real. Mismo patron que
+   * ya se aplica en todo el resto del código.
+   */
   var zonaHoraria =
-    SpreadsheetApp
-      .getActive()
-      .getSpreadsheetTimeZone();
+    (SpreadsheetApp.getActive() && SpreadsheetApp.getActive().getSpreadsheetTimeZone()) ||
+    Session.getScriptTimeZone() ||
+    'Europe/Madrid';
 
   var campos = esquema.map(function (campo) {
     var copia = Object.assign({}, campo);
