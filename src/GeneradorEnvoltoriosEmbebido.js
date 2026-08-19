@@ -25,6 +25,15 @@ var SIMPLE_TRIGGER_NAMES_EMBEBIDO_ = { onOpen: true, onEdit: true, doPost: true 
 // mismo criterio, misma lista.
 var FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_ = { onOpen: true, abrirInstalarEstructuraInicial: true, moduloGanttInstalado: true, abrirMapaSheet: true, abrirInformes: true, abrirProteccionHojas: true, abrirImportacionMasivaInicio: true, instalarStagingImportacionMasiva: true, generarTodasLasPlantillasImportacionMasiva: true };
 
+/*
+ * PropertiesService dentro de código de librería lee las propiedades DE
+ * LA LIBRERÍA, no las del proyecto cliente (ver WebhookTelegramService.js)
+ * -- estas funciones necesitan TELEGRAM_BOT_TOKEN del proyecto cliente,
+ * así que su envoltorio lo lee localmente y lo pasa como argumento extra.
+ * Ver FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM en generate-shell-wrappers.mjs.
+ */
+var FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM_ = { configurarWebhookBotOperativo: true, configurarWebhookTelegramSoporte: true };
+
 function compararRutasCanonicas_(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
 }
@@ -310,8 +319,20 @@ function resolverPlanEnvoltorios_(aFiles, modulos) {
 }
 
 function pushWrapperBody_(lines, name, userSymbol) {
+  if (name === 'doPost') {
+    lines.push('function doPost(e) {');
+    lines.push('  var tokenTelegram = PropertiesService.getScriptProperties().getProperty(\'TELEGRAM_BOT_TOKEN\');');
+    lines.push('  return ' + userSymbol + '.doPost(e, tokenTelegram);');
+    lines.push('}');
+    lines.push('');
+    return;
+  }
   lines.push('function ' + name + '() {');
   if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_[name]) lines.push('  return ' + userSymbol + '.' + name + '(MODULOS_INSTALADOS_CLIENTE);');
+  else if (FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM_[name]) {
+    lines.push('  var tokenTelegram = PropertiesService.getScriptProperties().getProperty(\'TELEGRAM_BOT_TOKEN\');');
+    lines.push('  return ' + userSymbol + '.' + name + '(tokenTelegram);');
+  }
   else lines.push('  return ' + userSymbol + '.' + name + '.apply(null, arguments);');
   lines.push('}');
   lines.push('');

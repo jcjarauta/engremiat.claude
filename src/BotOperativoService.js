@@ -25,7 +25,7 @@ var REGISTRO_COMANDOS_BOT_ = [
   { comando: '/hoy', descripcion: 'Tus tareas con fecha fin hoy o vencidas, e incidencias abiertas a tu cargo', modulo: 'SEGUIMIENTO', permisoMinimo: 'Consulta', handler: comandoBotHoy_ }
 ];
 
-function procesarMensajeBotOperativo_(actualizacion) {
+function procesarMensajeBotOperativo_(actualizacion, tokenTelegram) {
   var mensaje = actualizacion && actualizacion.message;
   if (!mensaje || !mensaje.text) return;
 
@@ -37,7 +37,7 @@ function procesarMensajeBotOperativo_(actualizacion) {
   })[0];
 
   if (!persona) {
-    enviarMensajeTelegram_(chatId, 'Este chat todavía no está vinculado a ninguna persona del equipo. Pide que te den de alta el Chat ID de Telegram en tu ficha.');
+    enviarMensajeTelegram_(chatId, 'Este chat todavía no está vinculado a ninguna persona del equipo. Pide que te den de alta el Chat ID de Telegram en tu ficha.', tokenTelegram);
     return;
   }
 
@@ -45,23 +45,23 @@ function procesarMensajeBotOperativo_(actualizacion) {
   var entrada = REGISTRO_COMANDOS_BOT_.filter(function (c) { return c.comando === comando; })[0];
 
   if (!entrada) {
-    enviarMensajeTelegram_(chatId, 'No reconozco ese comando. Escribe /ayuda para ver los disponibles.');
+    enviarMensajeTelegram_(chatId, 'No reconozco ese comando. Escribe /ayuda para ver los disponibles.', tokenTelegram);
     return;
   }
 
   if (entrada.modulo && !moduloInstalado_(entrada.modulo)) {
-    enviarMensajeTelegram_(chatId, 'Ese comando no está disponible en esta instancia.');
+    enviarMensajeTelegram_(chatId, 'Ese comando no está disponible en esta instancia.', tokenTelegram);
     return;
   }
 
   var rangoPersona = NIVEL_PERMISO_BOT_RANGO_[persona.NIVEL_PERMISO_BOT] || -1;
   var rangoRequerido = NIVEL_PERMISO_BOT_RANGO_[entrada.permisoMinimo] || 0;
   if (rangoPersona < rangoRequerido) {
-    enviarMensajeTelegram_(chatId, 'No tienes permiso para usar ese comando.');
+    enviarMensajeTelegram_(chatId, 'No tienes permiso para usar ese comando.', tokenTelegram);
     return;
   }
 
-  enviarMensajeTelegram_(chatId, entrada.handler(persona));
+  enviarMensajeTelegram_(chatId, entrada.handler(persona), tokenTelegram);
 }
 
 /*
@@ -131,6 +131,6 @@ function comandoBotHoy_(persona) {
  * proyecto de Apps Script (Deploy > Nueva implementación > Aplicación
  * web), con su propio TELEGRAM_BOT_TOKEN en Propiedades del script.
  */
-function configurarWebhookBotOperativo() {
-  configurarWebhookTelegram_('Configurar webhook de Telegram (bot operativo)');
+function configurarWebhookBotOperativo(tokenTelegram) {
+  configurarWebhookTelegram_('Configurar webhook de Telegram (bot operativo)', tokenTelegram);
 }

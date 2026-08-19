@@ -16,21 +16,33 @@
  * tiempo de ejecución cuál aplica, exactamente igual que el resto de
  * bloques condicionales de onOpen(). Token del bot en Propiedades del
  * script (TELEGRAM_BOT_TOKEN), nunca en código -- cada proyecto (maestro
- * o cliente) tiene su propio almacén de propiedades, sin colisión pese a
- * reutilizar el mismo nombre de propiedad.
+ * o cliente) tiene su propio almacén de propiedades.
+ *
+ * OJO -- esto NO se cumple gratis para clientes que usan la librería
+ * compartida (todos salvo el maestro, que corre el código directamente):
+ * PropertiesService.getScriptProperties() dentro de código de una
+ * LIBRERÍA lee las propiedades de LA LIBRERÍA, no las del proyecto
+ * cliente que la invoca (limitación documentada de Apps Script). Por eso
+ * doPost/enviarMensajeTelegram_/configurarWebhookTelegram_ aceptan el
+ * token como parámetro opcional -- el maestro sigue llamándolas sin él
+ * (su propio PropertiesService.getScriptProperties() ya es el correcto),
+ * pero el envoltorio generado para cada cliente (ver
+ * GeneradorEnvoltoriosEmbebido.js/generate-shell-wrappers.mjs,
+ * FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM_) lo lee localmente en su propio
+ * proyecto y lo pasa explícitamente.
  */
 
 var PROPIEDAD_TOKEN_TELEGRAM_ = 'TELEGRAM_BOT_TOKEN';
 
-function doPost(e) {
+function doPost(e, tokenTelegram) {
   try {
     if (e && e.postData && e.postData.contents) {
       var actualizacion = JSON.parse(e.postData.contents);
       if (!actualizacionYaProcesada_(actualizacion)) {
         if (moduloInstalado_('INTERNO')) {
-          procesarMensajeTelegramSoporte_(actualizacion);
+          procesarMensajeTelegramSoporte_(actualizacion, tokenTelegram);
         } else if (moduloInstalado_('COMUNICACION')) {
-          procesarMensajeBotOperativo_(actualizacion);
+          procesarMensajeBotOperativo_(actualizacion, tokenTelegram);
         }
       }
     }
@@ -90,8 +102,8 @@ function actualizacionYaProcesada_(actualizacion) {
  * mismo token (Propiedades del script de cada proyecto), mismo formato
  * de llamada, sin duplicar el UrlFetchApp en cada bot.
  */
-function enviarMensajeTelegram_(chatId, texto) {
-  var token = PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
+function enviarMensajeTelegram_(chatId, texto, tokenTelegram) {
+  var token = tokenTelegram || PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
   if (!token) {
     console.error('enviarMensajeTelegram_: falta TELEGRAM_BOT_TOKEN en Propiedades del script');
     return;
@@ -109,7 +121,7 @@ function enviarMensajeTelegram_(chatId, texto) {
  * su propia implementación como aplicación web y su propio token en
  * Propiedades del script del proyecto en el que se ejecuta.
  */
-function configurarWebhookTelegram_(tituloDialogo) {
+function configurarWebhookTelegram_(tituloDialogo, tokenTelegram) {
   var ui = SpreadsheetApp.getUi();
   var respuesta = ui.prompt(
     tituloDialogo,
@@ -121,7 +133,7 @@ function configurarWebhookTelegram_(tituloDialogo) {
   var urlWebApp = respuesta.getResponseText().trim();
   if (!urlWebApp) return;
 
-  var token = PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
+  var token = tokenTelegram || PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
   if (!token) {
     ui.alert('Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.');
     return;

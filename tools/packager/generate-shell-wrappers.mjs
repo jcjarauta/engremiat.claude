@@ -33,6 +33,13 @@ const SIMPLE_TRIGGER_NAMES = new Set(['onOpen', 'onEdit', 'doPost']);
 // FormularioMotorUI.js.
 const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstalarEstructuraInicial', 'moduloGanttInstalado', 'abrirMapaSheet', 'abrirInformes', 'abrirProteccionHojas', 'abrirImportacionMasivaInicio', 'instalarStagingImportacionMasiva', 'generarTodasLasPlantillasImportacionMasiva']);
 
+// Mismo motivo que arriba, pero para TELEGRAM_BOT_TOKEN (ver
+// WebhookTelegramService.js): PropertiesService.getScriptProperties()
+// dentro de código de librería lee las propiedades DE LA LIBRERÍA, no las
+// del proyecto cliente. doPost es un caso especial (ver pushWrapperBody_,
+// necesita conservar el parámetro `e` del trigger real además del token).
+const FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM = new Set(['configurarWebhookBotOperativo', 'configurarWebhookTelegramSoporte']);
+
 /**
  * A diferencia de maskNonCode (build-packages.mjs), que también blanquea el
  * contenido de strings para evitar falsos positivos en nombres de prueba,
@@ -315,8 +322,20 @@ export function resolveWrapperPlan({ map, aFiles, modules }) {
 }
 
 function pushWrapperBody(lines, name, userSymbol) {
+  if (name === 'doPost') {
+    lines.push('function doPost(e) {');
+    lines.push(`  var tokenTelegram = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');`);
+    lines.push(`  return ${userSymbol}.doPost(e, tokenTelegram);`);
+    lines.push('}');
+    lines.push('');
+    return;
+  }
   lines.push(`function ${name}() {`);
   if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS.has(name)) lines.push(`  return ${userSymbol}.${name}(MODULOS_INSTALADOS_CLIENTE);`);
+  else if (FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM.has(name)) {
+    lines.push(`  var tokenTelegram = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');`);
+    lines.push(`  return ${userSymbol}.${name}(tokenTelegram);`);
+  }
   else lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
   lines.push('}');
   lines.push('');

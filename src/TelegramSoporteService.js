@@ -16,7 +16,7 @@
  * en código -- ver conversación.
  */
 
-function procesarMensajeTelegramSoporte_(actualizacion) {
+function procesarMensajeTelegramSoporte_(actualizacion, tokenTelegram) {
   var mensaje = actualizacion && actualizacion.message;
   if (!mensaje || !mensaje.text) return;
 
@@ -29,7 +29,7 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
   })[0];
 
   if (!cliente) {
-    enviarMensajeTelegram_(chatId, 'Este chat todavía no está vinculado a ninguna cuenta. Escríbenos a ' + Session.getEffectiveUser().getEmail() + ' para activarlo.');
+    enviarMensajeTelegram_(chatId, 'Este chat todavía no está vinculado a ninguna cuenta. Escríbenos a ' + Session.getEffectiveUser().getEmail() + ' para activarlo.', tokenTelegram);
     return;
   }
 
@@ -55,7 +55,7 @@ function procesarMensajeTelegramSoporte_(actualizacion) {
     OBSERVACIONES: 'De ' + remitente + ' (' + new Date().toLocaleString() + '): ' + texto
   });
 
-  enviarMensajeTelegram_(chatId, 'Recibido, gracias. Lo hemos registrado y te responderemos en breve.');
+  enviarMensajeTelegram_(chatId, 'Recibido, gracias. Lo hemos registrado y te responderemos en breve.', tokenTelegram);
 
   MailApp.sendEmail({
     to: Session.getEffectiveUser().getEmail(),
@@ -87,6 +87,6 @@ function yaExisteIncidenciaRecienteParaMensaje_(clienteId, texto) {
  * urlWebApp es la URL de la implementación como aplicación web, termina
  * en /exec.
  */
-function configurarWebhookTelegramSoporte() {
-  configurarWebhookTelegram_('Configurar webhook de Telegram (Nexo)');
+function configurarWebhookTelegramSoporte(tokenTelegram) {
+  configurarWebhookTelegram_('Configurar webhook de Telegram (Nexo)', tokenTelegram);
 }
