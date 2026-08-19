@@ -46,13 +46,22 @@
         return "badge-ok";
       }
 
+      /*
+       * != null (no !== null) a propósito en antiguedadDias (ver
+       * conversación -- salía "más antigua: undefined días"):
+       * google.script.run puede entregar un antiguedadDias null del
+       * servidor como undefined en el cliente (mismo tipo de gotcha de
+       * serialización que ya se sufrió con Date, ver SerializacionService.js).
+       * != null cubre null Y undefined a la vez, sin afectar al caso
+       * legítimo de 0 días (incidencia detectada hoy).
+       */
       function renderCliente_(cliente, mostrarInfoTecnica) {
         var codigo = cliente.codigo ? ' (' + escapeHtml(cliente.codigo) + ')' : '';
         var badgeEstado = '<span class="badge badge-neutro">' + escapeHtml(cliente.estado) + '</span>';
         var badgeIncidencias = cliente.incidenciasAbiertas > 0
           ? '<span class="badge ' + claseBadgeIncidencias_(cliente.incidenciasAbiertas) + '">' +
             cliente.incidenciasAbiertas + ' incidencia' + (cliente.incidenciasAbiertas === 1 ? '' : 's') + ' abierta' + (cliente.incidenciasAbiertas === 1 ? '' : 's') +
-            (cliente.antiguedadDias !== null ? ' · más antigua: ' + cliente.antiguedadDias + ' días' : '') + '</span>'
+            (cliente.antiguedadDias != null ? ' · más antigua: ' + cliente.antiguedadDias + ' días' : '') + '</span>'
           : '';
 
         var botonSheet = cliente.sheetUrl

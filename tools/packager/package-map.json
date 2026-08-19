@@ -1609,7 +1609,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "15203c0ce77b1ac04ab63093a5bef39862e310ec259e7e0cd531f4c08a3c948d",
+      "expectedSha256": "691eadfe665834ebf3946344c8b491e80a6e5d6c74ecf88b1f2daef9a1ff360e",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
