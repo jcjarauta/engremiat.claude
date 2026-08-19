@@ -493,14 +493,18 @@ function agregarCatalogosCore_(menu) {
     menu = menu
       .addItem('Ejecutar pruebas reactivas (342)', 'abrirEjecutorPruebasReactivas')
       .addItem('Ejecutar pruebas reactivas en segundo plano', 'abrirEjecutorPruebasReactivasSegundoPlano')
-      .addItem('Configurar webhook del bot de soporte (Nexo)', 'configurarWebhookTelegramSoporte');
+      .addItem('Activar sondeo de Telegram (Nexo)', 'activarSondeoTelegramSoporte');
   }
   // Bot operativo del cliente (ver ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md,
   // "Dos bots distintos, no uno"): vive dentro del propio Sheet de cada
   // cliente, a diferencia de Nexo (solo maestro) -- gateado por COMUNICACION,
-  // no por INTERNO.
+  // no por INTERNO. Sondeo, no webhook (ver conversación -- las Web Apps de
+  // Apps Script siempre responden con una redirección 302 antes de servir
+  // el contenido real, y Telegram no siempre la sigue; confirmado que
+  // afecta igual a un despliegue creado por la UI que a uno por clasp, así
+  // que no hay forma de evitarlo dentro del modelo de webhook).
   if (moduloInstalado_('COMUNICACION')) {
-    menu = menu.addItem('Configurar webhook del bot operativo', 'configurarWebhookBotOperativo');
+    menu = menu.addItem('Activar sondeo del bot operativo', 'activarSondeoBotOperativo');
   }
   return menu;
 }

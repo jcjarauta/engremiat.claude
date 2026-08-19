@@ -127,10 +127,15 @@ function comandoBotHoy_(persona) {
 }
 
 /*
- * Configuración del webhook -- una sola vez por cliente, desde su propio
- * proyecto de Apps Script (Deploy > Nueva implementación > Aplicación
- * web), con su propio TELEGRAM_BOT_TOKEN en Propiedades del script.
+ * activarSondeoBotOperativo/sondearTelegramBotOperativo (sondeo, no
+ * webhook -- ver WebhookTelegramService.js) NO se ejecutan aquí: necesitan
+ * leer y escribir PropertiesService/ScriptApp del proyecto CLIENTE, algo
+ * que el código de esta librería no puede hacer (ver cabecera de
+ * WebhookTelegramService.js). Se generan con cuerpo propio íntegro en el
+ * Codigo.js de cada cliente -- ver FUNCIONES_ACTIVACION_SONDEO_TELEGRAM_
+ * en GeneradorEnvoltoriosEmbebido.js/generate-shell-wrappers.mjs. Este
+ * cuerpo vacío existe solo para que el generador la descubra como
+ * perteneciente al módulo COMUNICACION (localiza declaraciones reales,
+ * no basta con que se referencie en el menú) -- nunca se llama.
  */
-function configurarWebhookBotOperativo(tokenTelegram) {
-  configurarWebhookTelegram_('Configurar webhook de Telegram (bot operativo)', tokenTelegram);
-}
+function activarSondeoBotOperativo() {}

@@ -90,3 +90,46 @@ function yaExisteIncidenciaRecienteParaMensaje_(clienteId, texto) {
 function configurarWebhookTelegramSoporte(tokenTelegram) {
   configurarWebhookTelegram_('Configurar webhook de Telegram (Nexo)', tokenTelegram);
 }
+
+/*
+ * Sondeo en vez de webhook (ver WebhookTelegramService.js). El maestro
+ * corre el código directamente, sin librería de por medio, así que aquí
+ * SÍ es correcto leer/escribir PropertiesService/ScriptApp del propio
+ * proyecto -- a diferencia del bot operativo del cliente, que necesita
+ * el envoltorio generado en su propio Codigo.js para lo mismo.
+ */
+var PROPIEDAD_OFFSET_TELEGRAM_SOPORTE_ = 'TELEGRAM_OFFSET_ACTUALIZACIONES';
+
+function sondearTelegramSoporte() {
+  var props = PropertiesService.getScriptProperties();
+  var token = props.getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
+  var offsetActual = parseInt(props.getProperty(PROPIEDAD_OFFSET_TELEGRAM_SOPORTE_) || '0', 10);
+  var resultado = sondearActualizacionesTelegram_(token, offsetActual);
+  if (resultado && resultado.offsetNuevo !== undefined) {
+    props.setProperty(PROPIEDAD_OFFSET_TELEGRAM_SOPORTE_, String(resultado.offsetNuevo));
+  }
+}
+
+function activarSondeoTelegramSoporte() {
+  var ui = SpreadsheetApp.getUi();
+  var token = PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
+  if (!token) {
+    ui.alert('Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.');
+    return;
+  }
+
+  eliminarWebhookTelegram_(token);
+
+  var yaInstalado = ScriptApp.getProjectTriggers().some(function (t) {
+    return t.getHandlerFunction() === 'sondearTelegramSoporte';
+  });
+  if (!yaInstalado) {
+    ScriptApp.newTrigger('sondearTelegramSoporte').timeBased().everyMinutes(1).create();
+  }
+
+  ui.alert(
+    'Sondeo activado',
+    'Webhook eliminado. Sondeo cada 1 minuto ' + (yaInstalado ? '(el disparador ya existía).' : '(disparador creado).'),
+    ui.ButtonSet.OK
+  );
+}

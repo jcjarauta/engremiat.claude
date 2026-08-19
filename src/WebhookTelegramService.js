@@ -145,3 +145,71 @@ function configurarWebhookTelegram_(tituloDialogo, tokenTelegram) {
   );
   ui.alert('Resultado', resultado.getContentText(), ui.ButtonSet.OK);
 }
+
+/*
+ * Sondeo (polling) en vez de webhook -- ver conversación: toda Web App de
+ * Apps Script responde con una redirección 302 (a script.googleusercontent.com)
+ * antes de servir el contenido real; confirmado empíricamente que afecta
+ * igual a un despliegue creado desde la UI (Nexo, maestro) que a uno
+ * creado por clasp (bot operativo, cliente) -- no es un problema de cómo
+ * se desplegó, es inherente al modelo de Web App. Telegram no siempre
+ * sigue esa redirección, así que la entrega por webhook puede fallar o
+ * demorarse horas (reintentos). El sondeo evita el problema del todo:
+ * Apps Script llama activamente a Telegram (getUpdates), sin exponer
+ * ningún endpoint al que Telegram tenga que llegar.
+ *
+ * Función pura a propósito -- token y offset ENTRAN como parámetros y el
+ * offset nuevo SALE en el resultado, sin tocar PropertiesService aquí:
+ * igual que con el token (ver cabecera del fichero), PropertiesService
+ * dentro de código de librería no ve las propiedades del proyecto
+ * cliente, así que leer/escribir el offset tiene que hacerlo el
+ * envoltorio de cada proyecto (activarSondeoBotOperativo/
+ * sondearTelegramBotOperativo en el Codigo.js de cada cliente,
+ * activarSondeoTelegramSoporte/sondearTelegramSoporte en el maestro).
+ */
+function sondearActualizacionesTelegram_(tokenTelegram, offsetActual) {
+  if (!tokenTelegram) {
+    console.error('sondearActualizacionesTelegram_: falta el token');
+    return { offsetNuevo: offsetActual, procesadas: 0 };
+  }
+
+  var resp = UrlFetchApp.fetch(
+    'https://api.telegram.org/bot' + tokenTelegram + '/getUpdates?offset=' + (offsetActual || 0) + '&timeout=0',
+    { muteHttpExceptions: true }
+  );
+
+  var datos;
+  try {
+    datos = JSON.parse(resp.getContentText());
+  } catch (err) {
+    console.error('sondearActualizacionesTelegram_: respuesta no JSON de Telegram: ' + resp.getContentText());
+    return { offsetNuevo: offsetActual, procesadas: 0 };
+  }
+
+  if (!datos.ok || !datos.result || datos.result.length === 0) {
+    return { offsetNuevo: offsetActual, procesadas: 0 };
+  }
+
+  var offsetNuevo = offsetActual;
+
+  datos.result.forEach(function (actualizacion) {
+    try {
+      if (moduloInstalado_('INTERNO')) {
+        procesarMensajeTelegramSoporte_(actualizacion, tokenTelegram);
+      } else if (moduloInstalado_('COMUNICACION')) {
+        procesarMensajeBotOperativo_(actualizacion, tokenTelegram);
+      }
+    } catch (err) {
+      console.error('sondearActualizacionesTelegram_: ' + err.message);
+    }
+    offsetNuevo = actualizacion.update_id + 1;
+  });
+
+  return { offsetNuevo: offsetNuevo, procesadas: datos.result.length };
+}
+
+function eliminarWebhookTelegram_(tokenTelegram) {
+  var token = tokenTelegram || PropertiesService.getScriptProperties().getProperty(PROPIEDAD_TOKEN_TELEGRAM_);
+  if (!token) return;
+  UrlFetchApp.fetch('https://api.telegram.org/bot' + token + '/deleteWebhook', { muteHttpExceptions: true });
+}

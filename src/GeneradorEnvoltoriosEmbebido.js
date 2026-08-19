@@ -26,13 +26,16 @@ var SIMPLE_TRIGGER_NAMES_EMBEBIDO_ = { onOpen: true, onEdit: true, doPost: true 
 var FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_ = { onOpen: true, abrirInstalarEstructuraInicial: true, moduloGanttInstalado: true, abrirMapaSheet: true, abrirInformes: true, abrirProteccionHojas: true, abrirImportacionMasivaInicio: true, instalarStagingImportacionMasiva: true, generarTodasLasPlantillasImportacionMasiva: true };
 
 /*
- * PropertiesService dentro de código de librería lee las propiedades DE
- * LA LIBRERÍA, no las del proyecto cliente (ver WebhookTelegramService.js)
- * -- estas funciones necesitan TELEGRAM_BOT_TOKEN del proyecto cliente,
- * así que su envoltorio lo lee localmente y lo pasa como argumento extra.
- * Ver FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM en generate-shell-wrappers.mjs.
+ * activarSondeoBotOperativo necesita ScriptApp.newTrigger/PropertiesService
+ * del proyecto CLIENTE (ver WebhookTelegramService.js -- ni PropertiesService
+ * ni los disparadores creados desde código de librería afectan al proyecto
+ * que la invoca). Cuerpo completo generado a mano, no un simple reenvío --
+ * junto con sondearTelegramBotOperativo (el handler del disparador, nunca
+ * referenciado desde un menú/google.script.run, así que se genera siempre
+ * que se genera activarSondeoBotOperativo). Ver
+ * FUNCIONES_ACTIVACION_SONDEO_TELEGRAM en generate-shell-wrappers.mjs.
  */
-var FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM_ = { configurarWebhookBotOperativo: true, configurarWebhookTelegramSoporte: true };
+var FUNCIONES_ACTIVACION_SONDEO_TELEGRAM_ = { activarSondeoBotOperativo: true };
 
 function compararRutasCanonicas_(a, b) {
   return a < b ? -1 : a > b ? 1 : 0;
@@ -327,12 +330,32 @@ function pushWrapperBody_(lines, name, userSymbol) {
     lines.push('');
     return;
   }
+  if (FUNCIONES_ACTIVACION_SONDEO_TELEGRAM_[name]) {
+    lines.push('function activarSondeoBotOperativo() {');
+    lines.push('  var ui = SpreadsheetApp.getUi();');
+    lines.push('  var token = PropertiesService.getScriptProperties().getProperty(\'TELEGRAM_BOT_TOKEN\');');
+    lines.push('  if (!token) {');
+    lines.push('    ui.alert(\'Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.\');');
+    lines.push('    return;');
+    lines.push('  }');
+    lines.push('  ' + userSymbol + '.eliminarWebhookTelegram_(token);');
+    lines.push('  var yaInstalado = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === \'sondearTelegramBotOperativo\'; });');
+    lines.push('  if (!yaInstalado) ScriptApp.newTrigger(\'sondearTelegramBotOperativo\').timeBased().everyMinutes(1).create();');
+    lines.push('  ui.alert(\'Sondeo activado\', \'Webhook eliminado. Sondeo cada 1 minuto \' + (yaInstalado ? \'(el disparador ya existía).\' : \'(disparador creado).\'), ui.ButtonSet.OK);');
+    lines.push('}');
+    lines.push('');
+    lines.push('function sondearTelegramBotOperativo() {');
+    lines.push('  var props = PropertiesService.getScriptProperties();');
+    lines.push('  var token = props.getProperty(\'TELEGRAM_BOT_TOKEN\');');
+    lines.push('  var offsetActual = parseInt(props.getProperty(\'TELEGRAM_OFFSET_ACTUALIZACIONES\') || \'0\', 10);');
+    lines.push('  var resultado = ' + userSymbol + '.sondearActualizacionesTelegram_(token, offsetActual);');
+    lines.push('  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty(\'TELEGRAM_OFFSET_ACTUALIZACIONES\', String(resultado.offsetNuevo));');
+    lines.push('}');
+    lines.push('');
+    return;
+  }
   lines.push('function ' + name + '() {');
   if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS_[name]) lines.push('  return ' + userSymbol + '.' + name + '(MODULOS_INSTALADOS_CLIENTE);');
-  else if (FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM_[name]) {
-    lines.push('  var tokenTelegram = PropertiesService.getScriptProperties().getProperty(\'TELEGRAM_BOT_TOKEN\');');
-    lines.push('  return ' + userSymbol + '.' + name + '(tokenTelegram);');
-  }
   else lines.push('  return ' + userSymbol + '.' + name + '.apply(null, arguments);');
   lines.push('}');
   lines.push('');

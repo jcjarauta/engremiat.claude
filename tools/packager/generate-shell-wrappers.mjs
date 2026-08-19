@@ -36,9 +36,14 @@ const FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS = new Set(['onOpen', 'abrirInstal
 // Mismo motivo que arriba, pero para TELEGRAM_BOT_TOKEN (ver
 // WebhookTelegramService.js): PropertiesService.getScriptProperties()
 // dentro de código de librería lee las propiedades DE LA LIBRERÍA, no las
-// del proyecto cliente. doPost es un caso especial (ver pushWrapperBody_,
+// del proyecto cliente. doPost es un caso especial (ver pushWrapperBody,
 // necesita conservar el parámetro `e` del trigger real además del token).
-const FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM = new Set(['configurarWebhookBotOperativo', 'configurarWebhookTelegramSoporte']);
+//
+// activarSondeoBotOperativo necesita ademas ScriptApp.newTrigger del
+// proyecto cliente (mismo motivo) -- cuerpo completo generado a mano,
+// junto con sondearTelegramBotOperativo (el handler del disparador,
+// nunca referenciado desde un menu/google.script.run).
+const FUNCIONES_ACTIVACION_SONDEO_TELEGRAM = new Set(['activarSondeoBotOperativo']);
 
 /**
  * A diferencia de maskNonCode (build-packages.mjs), que también blanquea el
@@ -330,12 +335,32 @@ function pushWrapperBody(lines, name, userSymbol) {
     lines.push('');
     return;
   }
+  if (FUNCIONES_ACTIVACION_SONDEO_TELEGRAM.has(name)) {
+    lines.push('function activarSondeoBotOperativo() {');
+    lines.push('  var ui = SpreadsheetApp.getUi();');
+    lines.push(`  var token = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');`);
+    lines.push('  if (!token) {');
+    lines.push(`    ui.alert('Falta configurar TELEGRAM_BOT_TOKEN en Propiedades del script antes de esto.');`);
+    lines.push('    return;');
+    lines.push('  }');
+    lines.push(`  ${userSymbol}.eliminarWebhookTelegram_(token);`);
+    lines.push(`  var yaInstalado = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'sondearTelegramBotOperativo'; });`);
+    lines.push(`  if (!yaInstalado) ScriptApp.newTrigger('sondearTelegramBotOperativo').timeBased().everyMinutes(1).create();`);
+    lines.push(`  ui.alert('Sondeo activado', 'Webhook eliminado. Sondeo cada 1 minuto ' + (yaInstalado ? '(el disparador ya existía).' : '(disparador creado).'), ui.ButtonSet.OK);`);
+    lines.push('}');
+    lines.push('');
+    lines.push('function sondearTelegramBotOperativo() {');
+    lines.push('  var props = PropertiesService.getScriptProperties();');
+    lines.push(`  var token = props.getProperty('TELEGRAM_BOT_TOKEN');`);
+    lines.push(`  var offsetActual = parseInt(props.getProperty('TELEGRAM_OFFSET_ACTUALIZACIONES') || '0', 10);`);
+    lines.push(`  var resultado = ${userSymbol}.sondearActualizacionesTelegram_(token, offsetActual);`);
+    lines.push(`  if (resultado && resultado.offsetNuevo !== undefined) props.setProperty('TELEGRAM_OFFSET_ACTUALIZACIONES', String(resultado.offsetNuevo));`);
+    lines.push('}');
+    lines.push('');
+    return;
+  }
   lines.push(`function ${name}() {`);
   if (FUNCIONES_QUE_RECIBEN_MODULOS_INSTALADOS.has(name)) lines.push(`  return ${userSymbol}.${name}(MODULOS_INSTALADOS_CLIENTE);`);
-  else if (FUNCIONES_QUE_RECIBEN_TOKEN_TELEGRAM.has(name)) {
-    lines.push(`  var tokenTelegram = PropertiesService.getScriptProperties().getProperty('TELEGRAM_BOT_TOKEN');`);
-    lines.push(`  return ${userSymbol}.${name}(tokenTelegram);`);
-  }
   else lines.push(`  return ${userSymbol}.${name}.apply(null, arguments);`);
   lines.push('}');
   lines.push('');
