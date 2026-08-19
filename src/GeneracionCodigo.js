@@ -1,12 +1,21 @@
 /**
  * Fase L4 (ampliación tras F-015): sugerencia de CODIGO para PRODUCTO,
- * MATERIAL y PROVEEDOR a partir de siglas de campos ya elegidos, para
- * evitar tener que inventar y teclear el código a mano y normalizarlo
- * entre usuarios. Combinación confirmada:
+ * MATERIAL, PROVEEDOR, RECURSO y CLIENTE a partir de siglas de campos ya
+ * elegidos, para evitar tener que inventar y teclear el código a mano y
+ * normalizarlo entre usuarios. Combinación confirmada:
  *
  *   PRODUCTO:  {3 letras de ORIGEN}-{4 letras de NOMBRE}-{inicial de PRIORIDAD}-{correlativo}
  *   MATERIAL:  {3 letras de CATEGORIA}-{4 letras de NOMBRE}-{correlativo}
  *   PROVEEDOR: {4 letras de NOMBRE}-{correlativo}
+ *   RECURSO:   {3 letras de CLASE_RECURSO}-{4 letras de NOMBRE}-{correlativo}
+ *   CLIENTE:   {4 letras de NOMBRE}-{correlativo} -- mismo patrón que
+ *     PROVEEDOR (ver conversación -- el CODIGO de CLIENTE nunca se
+ *     sugería: faltaba este caso, así que obtenerSugerenciaCodigo
+ *     lanzaba "No hay sugerencia de código configurada para CLIENTE",
+ *     silenciado por el withFailureHandler del cliente -- de ahí que no
+ *     se viera ningún error pese a que el campo tiene
+ *     sugerenciaCodigo: { camposContexto: ['NOMBRE'] } en
+ *     FormularioEsquemas.js desde el principio).
  *
  * Igual que la sugerencia de ORDEN_SECUENCIA de L4: se calcula bajo
  * demanda (obtenerSugerenciaCodigo, llamada desde FormularioGenerico.html)
@@ -23,7 +32,8 @@ var PALABRAS_GENERICAS_CODIGO_ = {
   PRODUCTO: ['PRODUCTO'],
   MATERIAL: ['MATERIAL'],
   PROVEEDOR: ['PROVEEDOR'],
-  RECURSO: ['RECURSO']
+  RECURSO: ['RECURSO'],
+  CLIENTE: ['CLIENTE']
 };
 
 var PATRON_DIACRITICOS_ = new RegExp('[̀-ͯ]', 'g');
@@ -187,6 +197,14 @@ function obtenerSugerenciaCodigo(entidadClave, contexto) {
     segmentos = [
       siglasDeCatalogo_(claseRecurso, 3),
       siglasDeNombre_(nombreRecurso, PALABRAS_GENERICAS_CODIGO_.RECURSO, 4)
+    ];
+  } else if (clave === 'CLIENTE') {
+    var nombreCliente = String(contexto.NOMBRE || '').trim();
+
+    if (!nombreCliente) return null;
+
+    segmentos = [
+      siglasDeNombre_(nombreCliente, PALABRAS_GENERICAS_CODIGO_.CLIENTE, 4)
     ];
   } else {
     throw new Error('No hay sugerencia de código configurada para ' + entidadClave);
