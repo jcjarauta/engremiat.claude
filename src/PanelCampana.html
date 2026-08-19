@@ -252,10 +252,6 @@
           ' <span class="anadir-mini" onclick="pedirIncidencia_(' + args + ')">+ añadir</span></div>';
       }
 
-      function editar(entidad, id) {
-        google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirEdicion(entidad, id);
-      }
-
       /* Ver la ficha de registro de un producto directamente desde el árbol (ver conversacion). */
       function verFichaProducto(id) {
         google.script.run.withFailureHandler(mostrarError).abrirFichaProducto(id);
@@ -317,6 +313,15 @@
         mostrarError({ message: "Función de creación desconocida: " + funcion });
       }
 
+      /*
+       * "Ficha" sin "Editar" al lado, en los 5 niveles (ver conversación
+       * -- "los botones editar son repetitivos, deberíamos entrar en la
+       * ficha y allí editar, en el panel de campaña también parece
+       * repetitivo"): ambos apuntaban al MISMO registro (Campaña/
+       * Proyecto/Producto/Proceso/Tarea es su propia entidad, no una
+       * relación con datos propios) -- "Editar" aquí era el mismo
+       * "Editar datos" que ya tiene la propia ficha, un clic antes.
+       */
       function renderTarea(tarea) {
         var subListas =
           renderSubListaTarea_("👤", "Responsables", tarea.responsables, function (r) { return escapeHtml(r.nombre); }, "RESPONSABLE", tarea.id) +
@@ -328,7 +333,6 @@
           '<div class="fila-superior"><span>' + escapeHtml(tarea.nombre) + ' ' + renderBadge_(tarea.estado) + renderDetalle_(tarea) + '</span></div>' +
           '<div class="acciones-nodo">' +
             '<button class="boton btn-mini" onclick="verFichaTarea(\'' + escapeAttr(tarea.id) + '\')">Ficha</button>' +
-            '<button class="boton btn-mini" onclick="editar(\'TAREA\',\'' + escapeAttr(tarea.id) + '\')">Editar</button>' +
           '</div>' +
           subListas +
         '</div>';
@@ -343,7 +347,6 @@
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProceso(\'' + escapeAttr(proceso.id) + '\')">Ficha</button>' +
-              '<button class="boton btn-mini" onclick="editar(\'PROCESO\',\'' + escapeAttr(proceso.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
             '</div>' +
             renderIncidencias_(proceso, "PROCESO", CAMPANA_ACTUAL_ID, proceso.proyectoId, proceso.productoId, proceso.id, "") +
@@ -361,7 +364,6 @@
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(producto.nombre) + ' ' + renderBadge_(producto.estado) + renderDetalle_(producto) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProducto(\'' + escapeAttr(producto.id) + '\')">Ficha</button>' +
-              '<button class="boton btn-mini" onclick="editar(\'PRODUCTO\',\'' + escapeAttr(producto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProcesoConProducto\',\'' + escapeAttr(producto.id) + '\')">+ Proceso</button>' +
             '</div>' +
             renderIncidencias_(producto, "PRODUCTO", CAMPANA_ACTUAL_ID, producto.proyectoId, producto.id, "", "") +
@@ -379,7 +381,6 @@
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProyecto(\'' + escapeAttr(proyecto.id) + '\')">Ficha</button>' +
-              '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + escapeAttr(proyecto.id) + '\')">Editar</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
             '</div>' +
             renderDecisionesProyecto_(proyecto) +
@@ -408,7 +409,6 @@
             '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(datos.campana.nombre) + ' ' + renderBadge_(datos.campana.estado) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaCampana(\'' + escapeAttr(datos.campana.id) + '\')">Ficha</button>' +
-              '<button class="boton btn-mini" onclick="editar(\'CAMPANA\',\'' + escapeAttr(datos.campana.id) + '\')">Editar</button>' +
             '</div>' +
             renderIncidencias_({ incidencias: datos.campana.incidencias, proyectos: datos.proyectos }, "CAMPANA", datos.campana.id, "", "", "", "") +
           '</div>' +

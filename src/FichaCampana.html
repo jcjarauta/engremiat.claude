@@ -103,12 +103,20 @@
         google.script.run.withFailureHandler(mostrarError).abrirFichaProyecto(id);
       }
 
+      /*
+       * Solo "Ver ficha" (ver conversación -- "los botones editar son
+       * repetitivos, deberíamos entrar en la ficha y allí editar"): a
+       * diferencia de Material<->Proveedor (donde "Editar" toca una
+       * RELACIÓN con datos propios -- precio, preferencia -- distinta
+       * del registro que abre "Ver ficha"), aquí ambos apuntaban al
+       * MISMO PROYECTO (CAMPANA_ID es una FK directa, no una tabla de
+       * relación con su propio ID) -- "Editar" era el mismo "Editar
+       * datos" que ya tiene la propia ficha, solo que un clic antes.
+       */
       function filaProyectoHtml_(infoHtml, proyectoId) {
         return '<div class="fila"><span class="info">' + infoHtml + '</span>' +
-          '<span class="celda-acciones" style="display:flex;gap:6px;">' +
           '<button class="boton btn-mini" onclick="verFichaProyecto(\'' + proyectoId + '\')">Ver ficha</button>' +
-          '<button class="boton btn-mini" onclick="editar(\'PROYECTO\',\'' + proyectoId + '\')">Editar</button>' +
-          '</span></div>';
+          '</div>';
       }
 
       function render(datos) {
