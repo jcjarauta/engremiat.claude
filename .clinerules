@@ -1,0 +1,44 @@
+# Reglas para Cline en este repo (LaTroballa.audit)
+
+Este proyecto lo supervisa Claude (Claude Code). Tu trabajo es EJECUTAR una
+tarea concreta que Claude te deja en `puente-cline/tareas/<tarea-id>.md`,
+no decidir alcance ni publicar nada por tu cuenta.
+
+## Antes de empezar
+
+Lee siempre `puente-cline/tareas/<tarea-id>.md` completo primero -- trae el
+objetivo, el resultado esperado, los criterios de aceptación y el
+"definition of done" ya definidos. No los reinterpretes ni amplíes el
+alcance.
+
+## Límites obligatorios (no negociables)
+
+- NUNCA ejecutes `clasp push`, `clasp version`, ni toques
+  `.clasp.json`, `tools/constructor/libreria.json` o cualquier llamada
+  a la API de Apps Script en vivo. Publicar es tarea de Claude, no tuya.
+- NUNCA modifiques `tools/packager/package-map.json` a mano -- si
+  cambias un fichero de `src/`, deja que Claude recalcule los hashes.
+- Corre los gates locales antes de darte por terminado:
+  `node tools/packager/build-packages.test.mjs` y
+  `node tools/packager/generate-shell-wrappers.test.mjs` -- ambos deben
+  terminar en `result=OK failures=0`. Si no puedes dejarlos en verde,
+  eso es un bloqueo, no un "terminado con avisos".
+- No pruebes contra el Google Sheet real ni contra Apps Script en vivo
+  -- no tienes acceso ni deberías necesitarlo para el código en sí.
+
+## Al terminar, bloquearte o tener dudas (SIEMPRE, como último mensaje)
+
+Cada tarjeta corre en su propio worktree aislado -- un fichero que
+escribas ahí NO es visible fuera de esa tarjeta, así que el aviso a
+Claude va por el propio mensaje final de la tarea (lo que Kanban
+muestra en la tarjeta al moverla a Review), no por un fichero.
+
+Termina SIEMPRE tu último mensaje con estas líneas, literalmente:
+
+```
+ESTADO: terminada | bloqueada | duda
+RESUMEN: una o dos frases de qué hiciste o en qué te atascaste
+ARCHIVOS: src/Archivo.js, ...
+GATES: en verde | en rojo | no corridos
+PREGUNTA: (solo si ESTADO=duda) la pregunta concreta para Claude
+```
