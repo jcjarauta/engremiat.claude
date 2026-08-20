@@ -69,12 +69,21 @@ la pata 4).
   `GUIA_DISENO_ENGREMIAT.md` (WCAG 2.1/2.2 AA + heurísticas de Nielsen +
   convención propia del proyecto ya establecida en `Estilos.html`/
   `ModalConfirmar.html`).
-- **Quién ejecuta**: Claude con el Browser, inspección visual real de
-  paneles (no solo lectura de HTML).
+- **Quién ejecuta**: Claude, pero NO contra el Sheet real -- probado en
+  vivo (2026-08-20) que automatizar clics en los menús anidados de
+  Sheets es demasiado frágil (fallos repetidos). El método que sí
+  funciona: un arnés local -- combinar `Estilos.html` + el HTML del
+  diálogo en un fichero estático (con un stub de `google.script.run` que
+  no falle), servirlo con `npx serve` y abrirlo con el Browser, sin login
+  de Google ni menús de por medio. Ahí se inyecta `axe-core` (CDN,
+  `Runtime.evaluate` vía `javascript_tool`) para el chequeo real, más
+  inspección de estilos computados (`getComputedStyle`) para lo que
+  `axe-core` no puede evaluar por sí solo (p.ej. contraste contra un
+  fondo verdaderamente transparente).
 - **Criterio de hallazgo válido**: citar el criterio concreto incumplido
   (p.ej. "WCAG 1.4.3" o "NN/g -- Consistencia y estándares"), nunca gusto
-  personal. Se aprovechan los flujos ya ejercitados en la pata 3 en vez
-  de auditar cada panel suelto desde cero.
+  personal. Antes de dar un hallazgo por sistémico, confirmar con grep en
+  los demás ficheros (ver INC-0031/0032 -- afectaba a los 33 diálogos).
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Diseño".
 
 ## Triage común (después de las 4 patas)
@@ -82,8 +91,14 @@ la pata 4).
 Mismo criterio ya validado en los ciclos 1 y 2: cada hallazgo se clasifica
 
 - **Delegable al worker local** (`sugerir-parche.sh`): cambio mecánico,
-  1-3 líneas, un solo fichero o el mismo patrón repetido en varios
-  ficheros idénticos (ver INC-0012/INC-0025).
+  1-3 líneas, en UN fichero, que necesita que alguien (worker o Claude)
+  lea y entienda el contexto antes de tocarlo (ver INC-0012/INC-0025).
+- **Script directo, sin worker ni brief** (ver INC-0031/0032, 2026-08-20):
+  el mismo cambio, determinista y sin ambigüedad, repetido en MUCHOS
+  ficheros -- no hace falta juicio por fichero, así que ni el worker ni
+  un brief aportan nada. Más rápido y más fiable que delegar N veces:
+  un script Node.js que aplique la transformación a todos a la vez,
+  seguido de la revisión de que el diff es el esperado antes de publicar.
 - **Claude directamente**: refactor, integración entre módulos, cambio de
   flujo, o cualquier cosa marcada "pendiente de diseño" en la propia
   incidencia.

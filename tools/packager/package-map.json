@@ -2346,7 +2346,7 @@
       "type": "markdown",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "95d99ad25a9774e24e3e0fbe28f47c549cc5a2f2a6b716cc517569da9404eccc",
+      "expectedSha256": "f30afa1087e068f1eebbc9cdd023938899168ad98881a685fba90d88c08e5e1e",
       "required": true,
       "reason": "no desplegable -- documentacion de referencia",
       "mixed": false,
