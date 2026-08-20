@@ -18,10 +18,20 @@
     --color-borde: #dadce0;
     --color-fondo-suave: #f5f5f5;
     --color-fondo-cabecera: #f1f3f4;
+    --color-fondo: #fff;
     --radio-borde: 4px;
   }
 
-  body { font-family: Arial, sans-serif; font-size: 13px; color: var(--color-texto); margin: 10px; padding: 0; }
+  /*
+   * background explícito (ver conversación -- INC-0030): sin esto, body
+   * queda transparente y con prefers-color-scheme:dark el navegador
+   * pinta un fondo oscuro por defecto detrás de --color-texto (oscuro,
+   * pensado para fondo claro) -- texto casi ilegible en modo oscuro del
+   * sistema. Fix mínimo: fondo claro siempre. Modo oscuro real (paleta
+   * alternativa vía @media prefers-color-scheme) queda como incidencia
+   * aparte, no mezclado con este fix.
+   */
+  body { font-family: Arial, sans-serif; font-size: 13px; color: var(--color-texto); background: var(--color-fondo); margin: 10px; padding: 0; }
   h3 { margin-top: 0; margin-bottom: 4px; font-size: 16px; }
   h4 { margin-top: 18px; margin-bottom: 4px; font-size: 13px; border-bottom: 1px solid var(--color-borde); padding-bottom: 3px; }
   label { display: block; margin-top: 10px; font-weight: bold; font-size: 13px; }
