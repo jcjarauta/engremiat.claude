@@ -590,7 +590,7 @@ function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO, filtroCampa
   if (datos.bloqueos.length > 0) {
     bloquesCsv.push({
       titulo: 'Bloqueos',
-      encabezados: ['Tipo', 'Tarea', 'Detalle'],
+      encabezados: ['Tipo', 'Elemento', 'Detalle'],
       filas: datos.bloqueos.map(function (b) { return [b.tipo, b.entidadNombre, b.detalle]; })
     });
   }
