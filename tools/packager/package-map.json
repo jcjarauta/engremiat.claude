@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 198,
+  "universeExpected": 199,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2184,6 +2184,17 @@
       "expectedSha256": "d070e9deb043cbacd24c8795afce09af0a1c3dee38e7936c4d27d545dab0b25f",
       "required": true,
       "reason": "no desplegable -- puente Aider modo sugerencia (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "puente-cline/tareas/TAR-0006.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "20019f273dbd8543f3fac3ac3c058acdaabf6af9be182b5acac6810c48f0e224",
+      "required": true,
+      "reason": "no desplegable -- puente Aider (herramienta de desarrollo, no de producto)",
       "mixed": false,
       "module": null
     }
