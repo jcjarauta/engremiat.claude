@@ -2148,7 +2148,7 @@
       "type": "text",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "25e37a0e347449bb987f21baff1b1c61be0f232903e1823d4042c7775e75cc73",
+      "expectedSha256": "85743f1f47e7375e01601c7c765db5ed0042d713acf7e25c21c2b968a6f37bbc",
       "required": true,
       "reason": "no desplegable -- puente Aider (herramienta de desarrollo, no de producto)",
       "mixed": false,
