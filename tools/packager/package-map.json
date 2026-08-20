@@ -2225,7 +2225,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "30a38da931001a6fa7ca5a824cbc730215044999474f938cc71086bf9148f28b",
+      "expectedSha256": "7c3b801f4ce15f0383a71fe0a80c82ef14e3e83bf1b78fa0ac7637ee86d0973e",
       "required": true,
       "reason": "no desplegable -- registro de metricas del puente Aider",
       "mixed": false,
