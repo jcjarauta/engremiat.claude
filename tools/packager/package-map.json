@@ -2071,7 +2071,7 @@
       "type": "js",
       "category": "production",
       "package": "A",
-      "expectedSha256": "79bc09e8ca22e5446f087691730b866718b1cf0dd1b59247d928776630479aab",
+      "expectedSha256": "4503898277bff7c5a72d099bb49e1d45f3bc0e91fd0075c338e44bf42536b983",
       "required": true,
       "reason": "despachador unico de doPost (Apps Script solo permite uno por proyecto), compartido entre Nexo (moduloInstalado_(INTERNO)) y el bot operativo del cliente (moduloInstalado_(COMUNICACION)) -- vive en CORE porque ninguno de los dos modulos que despacha esta garantizado.",
       "mixed": false,

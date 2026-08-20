@@ -315,6 +315,7 @@ var CORREO_OPERADOR_ = 'sacandofilo@gmail.com';
  */
 var DESTINATARIOS_POR_CATEGORIA_ = Object.freeze({
   Ciclo: CORREO_OPERADOR_,
+  Jornada: CORREO_OPERADOR_,
   Sistema: CORREO_OPERADOR_
 });
 
