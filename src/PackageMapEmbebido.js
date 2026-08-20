@@ -289,10 +289,6 @@ var PACKAGE_MAP_EMBEBIDO = {
       "module": "CORE"
     },
     {
-      "path": "src/IndicadorCargaGlobal.html",
-      "module": "CORE"
-    },
-    {
       "path": "src/InformeGenerico.html",
       "module": "CORE"
     },
