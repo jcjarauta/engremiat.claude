@@ -21,42 +21,67 @@
    * boton de cada Ficha/Formulario/Panel (habria que tocar decenas de
    * sitios y mantenerlo en cada uno nuevo), se engancha AQUI una sola
    * vez sobre el propio google.script.run -- cualquier llamada al
-   * servidor, la lance quien la lance, muestra la capa al empezar y la
-   * oculta sola en exito o error, sin que el codigo de cada dialogo
-   * tenga que saber que existe esto.
+   * servidor lanzada DESDE UN CLIC, la lance quien la lance, muestra la
+   * capa al empezar y la oculta sola en exito o error.
    *
-   * Como funciona: la API real de google.script.run es encadenable con
-   * nombres de metodo dinamicos (la llamada real al servidor es
-   * ".miFuncion(args)", con "miFuncion" distinto en cada sitio) -- no
-   * hay un unico punto de entrada fijo que interceptar con una simple
-   * sustitucion de funcion. Se usa un Proxy que se coloca "por delante"
-   * de cada runner: withSuccessHandler/withFailureHandler se combinan
-   * con ocultarCapaCargandoGlobal_ (ademas de con el callback propio de
-   * cada sitio, si lo hay); antes de armar la cadena se le da al runner
-   * base un exito/fallo por defecto que tambien oculta la capa, para
-   * que los sitios que solo usan withFailureHandler (p.ej. los botones
-   * que solo ABREN otro dialogo y no esperan datos de vuelta, como
-   * abrirFichaProyecto) tambien la oculten al terminar aunque no
-   * registren su propio withSuccessHandler. Cualquier otro nombre de
-   * metodo se trata como la llamada real: muestra la capa y delega.
+   * Ver conversacion -- hallazgo real al probar "Mapa del sheet": ese
+   * dialogo dispara solo, al abrirse (sin ningun clic), una llamada de
+   * fondo para la "Actividad reciente"; si esa llamada tarda, la
+   * primera version de esto tapaba el dialogo ENTERO con la capa aunque
+   * el usuario no hubiera pulsado nada -- "no consigue cargar" era en
+   * realidad el propio indicador bloqueando lo que antes SI se veia
+   * (el resto de tarjetas, ya pintadas, seguian ahi debajo). Se limita
+   * la capa a llamadas que arrancan dentro de un manejador de clic
+   * (banderaDentroDeClic_, activada en la fase de captura ANTES de que
+   * corra el onclick del boton, y desactivada en cuanto ese turno de
+   * evento termina) -- las cargas automaticas de fondo vuelven a ser
+   * silenciosas, como antes de este cambio.
+   *
+   * Segundo hallazgo (revision propia antes de publicar): con un
+   * contador binario, si dos llamadas se solapan (dos clics rapidos, o
+   * un clic mientras algo de fondo seguia en vuelo) la que termina
+   * PRIMERO ocultaba la capa aunque la otra siguiera pendiente.
+   * contadorLlamadasEnCurso_ lo evita -- solo se oculta cuando llega a
+   * cero.
    */
   (function () {
     if (typeof window.google === "undefined" || !google.script || !google.script.run) return;
     if (window.__capaCargandoGlobalInstalada_) return;
     window.__capaCargandoGlobalInstalada_ = true;
 
-    function mostrarCapaCargandoGlobal_() {
+    var banderaDentroDeClic_ = false;
+    document.addEventListener("click", function () {
+      banderaDentroDeClic_ = true;
+      setTimeout(function () { banderaDentroDeClic_ = false; }, 0);
+    }, true);
+
+    var contadorLlamadasEnCurso_ = 0;
+    function actualizarCapa_() {
       var capa = document.getElementById("capaCargandoGlobal_");
-      if (capa) capa.classList.remove("campo-oculto");
+      if (!capa) return;
+      if (contadorLlamadasEnCurso_ > 0) capa.classList.remove("campo-oculto");
+      else capa.classList.add("campo-oculto");
     }
-    function ocultarCapaCargandoGlobal_() {
-      var capa = document.getElementById("capaCargandoGlobal_");
-      if (capa) capa.classList.add("campo-oculto");
+    function marcarInicioLlamada_() {
+      contadorLlamadasEnCurso_++;
+      actualizarCapa_();
+    }
+    function marcarFinLlamada_() {
+      contadorLlamadasEnCurso_ = Math.max(0, contadorLlamadasEnCurso_ - 1);
+      actualizarCapa_();
     }
 
     var runOriginal_ = google.script.run;
 
-    function envolverRunner_(runner) {
+    /*
+     * seMarcoInicio se decide UNA sola vez por cadena, en el momento en
+     * que se lee "google.script.run" (sincronico con el clic, si lo
+     * hay) -- y esa MISMA decision se reutiliza tanto para contar el
+     * inicio (al llamar al metodo dinamico) como el fin (en los
+     * handlers), en vez de volver a mirar la bandera en cada paso, que
+     * podria haber cambiado de valor entre medias.
+     */
+    function envolverRunner_(runner, seMarcoInicio) {
       return new Proxy(runner, {
         get: function (objetivo, propiedad) {
           var original = objetivo[propiedad];
@@ -65,15 +90,15 @@
           if (propiedad === "withSuccessHandler" || propiedad === "withFailureHandler") {
             return function (callback) {
               var combinado = function () {
-                ocultarCapaCargandoGlobal_();
+                if (seMarcoInicio) marcarFinLlamada_();
                 if (typeof callback === "function") callback.apply(this, arguments);
               };
-              return envolverRunner_(original.call(objetivo, combinado));
+              return envolverRunner_(original.call(objetivo, combinado), seMarcoInicio);
             };
           }
 
           return function () {
-            mostrarCapaCargandoGlobal_();
+            if (seMarcoInicio) marcarInicioLlamada_();
             return original.apply(objetivo, arguments);
           };
         }
@@ -83,10 +108,11 @@
     Object.defineProperty(google.script, "run", {
       configurable: true,
       get: function () {
+        var seMarcoInicio_ = banderaDentroDeClic_;
         var runnerConDefectos_ = runOriginal_
-          .withSuccessHandler(function () { ocultarCapaCargandoGlobal_(); })
-          .withFailureHandler(function () { ocultarCapaCargandoGlobal_(); });
-        return envolverRunner_(runnerConDefectos_);
+          .withSuccessHandler(function () { if (seMarcoInicio_) marcarFinLlamada_(); })
+          .withFailureHandler(function () { if (seMarcoInicio_) marcarFinLlamada_(); });
+        return envolverRunner_(runnerConDefectos_, seMarcoInicio_);
       }
     });
   })();
