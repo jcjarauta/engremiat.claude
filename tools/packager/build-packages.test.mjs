@@ -106,15 +106,15 @@ const expectedTests = [
 
 const expectedMixed = [];
 
-test('01 universo de 194 entradas', () => {
+test('01 universo de 195 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 194);
-  assertEqual(map.universeExpected, 194);
+  assertEqual(map.entries.length, 195);
+  assertEqual(map.universeExpected, 195);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 194);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 195);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -474,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [114, 11, 36, 33, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [114, 11, 36, 33]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [114, 11, 36, 34, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [114, 11, 36, 34]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {

@@ -242,7 +242,7 @@ export function validatePackageMap(map) {
     }
     categoryCounts.set(entry.category, (categoryCounts.get(entry.category) ?? 0) + 1);
   }
-  const expectedCounts = { production: 114, test: 11, auxiliary: 36, excluded: 33, mixed: 0 };
+  const expectedCounts = { production: 114, test: 11, auxiliary: 36, excluded: 34, mixed: 0 };
   for (const [category, count] of Object.entries(expectedCounts)) {
     if ((categoryCounts.get(category) ?? 0) !== count) errors.push(`RECUENTO_${category.toUpperCase()} esperado=${count} actual=${categoryCounts.get(category) ?? 0}`);
   }
