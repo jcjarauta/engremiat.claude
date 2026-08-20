@@ -18,29 +18,31 @@
    * conversacion -- "de que forma podriamos informar al operador que
    * se esta ejecutando un clic, como un modal"). Cobertura automatica:
    * en vez de anadir mostrarCargando()/ocultarCargando() a mano en cada
-   * boton de cada Ficha/Formulario/Panel, se engancha AQUI una sola vez
-   * sobre el propio google.script.run.
+   * boton de cada Ficha/Formulario/Panel (habria que tocar decenas de
+   * sitios y mantenerlo en cada uno nuevo), se engancha AQUI una sola
+   * vez sobre el propio google.script.run -- cualquier llamada al
+   * servidor lanzada DESDE UN CLIC, la lance quien la lance, muestra la
+   * capa al empezar y la oculta sola en exito o error.
    *
-   * v158 enganchaba TODAS las llamadas (incluidas las que solo hacen
-   * ".withFailureHandler(fn).abrirX()" para abrir otro dialogo/sidebar
-   * sin esperar datos de vuelta) forzando SIEMPRE un withSuccessHandler
-   * propio sobre el runner base, aunque el sitio nunca hubiera pedido
-   * uno. Eso rompio en vivo (ver conversacion -- "Personas y equipo" y
-   * "Mapa del sheet" se quedaban colgados en "Procesando...") las
-   * llamadas que abren un SIDEBAR (showSidebar, p.ej. abrirPanelPersonas)
-   * o un dialogo (showModelessDialog): Apps Script trata de forma
-   * especial esas respuestas sin webhook de exito registrado por el
-   * propio sitio, y forzar uno ahi rompe ese mecanismo interno.
+   * Ver conversacion -- hallazgo real al probar "Mapa del sheet": ese
+   * dialogo dispara solo, al abrirse (sin ningun clic), una llamada de
+   * fondo para la "Actividad reciente"; si esa llamada tarda, la
+   * primera version de esto tapaba el dialogo ENTERO con la capa aunque
+   * el usuario no hubiera pulsado nada -- "no consigue cargar" era en
+   * realidad el propio indicador bloqueando lo que antes SI se veia
+   * (el resto de tarjetas, ya pintadas, seguian ahi debajo). Se limita
+   * la capa a llamadas que arrancan dentro de un manejador de clic
+   * (banderaDentroDeClic_, activada en la fase de captura ANTES de que
+   * corra el onclick del boton, y desactivada en cuanto ese turno de
+   * evento termina) -- las cargas automaticas de fondo vuelven a ser
+   * silenciosas, como antes de este cambio.
    *
-   * v160 ya NO toca nunca esas cadenas: si el sitio no registra su
-   * propio withSuccessHandler, esta capa se queda TOTALMENTE al margen
-   * (ni siquiera se envuelve withFailureHandler) -- exactamente el
-   * comportamiento de antes de que existiera este fichero. Solo se
-   * activa para cadenas que EMPIEZAN con ".withSuccessHandler(...)"
-   * (el patron real de "traer datos para pintar esta misma pantalla":
-   * obtenerFicha/obtenerEsquema/guardar/buscar/etc.), que es donde el
-   * indicador aporta y donde no hay swap de sidebar/dialogo de por
-   * medio.
+   * Segundo hallazgo (revision propia antes de publicar): con un
+   * contador binario, si dos llamadas se solapan (dos clics rapidos, o
+   * un clic mientras algo de fondo seguia en vuelo) la que termina
+   * PRIMERO ocultaba la capa aunque la otra siguiera pendiente.
+   * contadorLlamadasEnCurso_ lo evita -- solo se oculta cuando llega a
+   * cero.
    */
   (function () {
     if (typeof window.google === "undefined" || !google.script || !google.script.run) return;
@@ -72,11 +74,12 @@
     var runOriginal_ = google.script.run;
 
     /*
-     * Envuelve el runner SOLO despues de que el propio sitio haya
-     * llamado a withSuccessHandler (marcado=true a partir de ahi).
-     * Antes de eso, withFailureHandler y la llamada dinamica final se
-     * devuelven SIN TOCAR -- ligados directamente al runner real, sin
-     * ningun Proxy de por medio.
+     * seMarcoInicio se decide UNA sola vez por cadena, en el momento en
+     * que se lee "google.script.run" (sincronico con el clic, si lo
+     * hay) -- y esa MISMA decision se reutiliza tanto para contar el
+     * inicio (al llamar al metodo dinamico) como el fin (en los
+     * handlers), en vez de volver a mirar la bandera en cada paso, que
+     * podria haber cambiado de valor entre medias.
      */
     function envolverRunner_(runner, seMarcoInicio) {
       return new Proxy(runner, {
@@ -95,7 +98,7 @@
           }
 
           return function () {
-            if (seMarcoInicio && banderaDentroDeClic_) marcarInicioLlamada_();
+            if (seMarcoInicio) marcarInicioLlamada_();
             return original.apply(objetivo, arguments);
           };
         }
@@ -105,30 +108,11 @@
     Object.defineProperty(google.script, "run", {
       configurable: true,
       get: function () {
-        return new Proxy(runOriginal_, {
-          get: function (objetivo, propiedad) {
-            var original = objetivo[propiedad];
-            if (typeof original !== "function") return original;
-
-            if (propiedad === "withSuccessHandler") {
-              return function (callback) {
-                var combinado = function () {
-                  marcarFinLlamada_();
-                  if (typeof callback === "function") callback.apply(this, arguments);
-                };
-                return envolverRunner_(original.call(objetivo, combinado), true);
-              };
-            }
-
-            /*
-             * Cualquier otra propiedad (withFailureHandler sin exito
-             * previo, o el nombre de metodo dinamico directamente) se
-             * devuelve atada al runner real, sin envolver -- pasa de
-             * largo exactamente como si esta capa no existiera.
-             */
-            return original.bind(objetivo);
-          }
-        });
+        var seMarcoInicio_ = banderaDentroDeClic_;
+        var runnerConDefectos_ = runOriginal_
+          .withSuccessHandler(function () { if (seMarcoInicio_) marcarFinLlamada_(); })
+          .withFailureHandler(function () { if (seMarcoInicio_) marcarFinLlamada_(); });
+        return envolverRunner_(runnerConDefectos_, seMarcoInicio_);
       }
     });
   })();
