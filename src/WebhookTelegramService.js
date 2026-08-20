@@ -70,7 +70,7 @@ function doPost(e, tokenTelegram, modulosInstalados) {
       if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
         respuesta = JSON.stringify(procesarSolicitudActualizacionLibreria_(cuerpo.scriptId));
       } else if (cuerpo && cuerpo.accion === 'notificar_operador') {
-        respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo, cuerpo.cuerpoHtml));
+        respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo, cuerpo.cuerpoHtml, cuerpo.categoria));
       } else if (cuerpo && cuerpo.accion === 'instalar_modulo_cliente') {
         respuesta = JSON.stringify(procesarInstalacionModuloCliente_(cuerpo.scriptId, cuerpo.modulo));
       } else if (!actualizacionYaProcesada_(cuerpo)) {
@@ -304,6 +304,25 @@ function solicitarActualizacionLibreria() {}
 var CORREO_OPERADOR_ = 'sacandofilo@gmail.com';
 
 /*
+ * Mapa categoría -> destinatario (ver conversación -- "a la larga puede
+ * crecer y también puede que delegue los avisos a otros operadores"):
+ * hoy todas las categorías apuntan al mismo correo, pero el mapa ya
+ * tiene la forma correcta para que una categoría futura apunte a otra
+ * persona cambiando una línea, sin tener que rediseñar el mecanismo de
+ * aviso ni tocar cada punto de llamada. No implementa reparto real
+ * (varios destinatarios, CC, asignación) -- eso espera a que exista un
+ * segundo operador de verdad.
+ */
+var DESTINATARIOS_POR_CATEGORIA_ = Object.freeze({
+  Ciclo: CORREO_OPERADOR_,
+  Sistema: CORREO_OPERADOR_
+});
+
+function resolverDestinatarioNotificacion_(categoria) {
+  return DESTINATARIOS_POR_CATEGORIA_[categoria] || CORREO_OPERADOR_;
+}
+
+/*
  * Instalación remota de un módulo en un cliente existente (ver
  * conversación -- "implementa en el gestor de proyectos [OPORTUNIDAD/
  * IMPACTO/EJECUCION/ESCENARIOS], tenemos que dejarlo preparado para
@@ -324,11 +343,13 @@ function procesarInstalacionModuloCliente_(scriptId, modulo) {
   }
 }
 
-function procesarNotificacionOperador_(asunto, cuerpoMensaje, cuerpoHtml) {
+function procesarNotificacionOperador_(asunto, cuerpoMensaje, cuerpoHtml, categoria) {
   if (!asunto) return { ok: false, error: 'Falta asunto en la solicitud.' };
   try {
+    var asuntoFinal = categoria ? '[Engremiat:' + categoria + '] ' + asunto : asunto;
+    var destinatario = resolverDestinatarioNotificacion_(categoria);
     var opciones = cuerpoHtml ? { htmlBody: cuerpoHtml } : undefined;
-    MailApp.sendEmail(CORREO_OPERADOR_, asunto, cuerpoMensaje || '', opciones);
+    MailApp.sendEmail(destinatario, asuntoFinal, cuerpoMensaje || '', opciones);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
