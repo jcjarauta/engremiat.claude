@@ -82,6 +82,10 @@
       </select>
     </div>
 
+    <label style="display:flex;align-items:center;gap:4px;font-weight:normal;font-size:12px;margin-bottom:10px;">
+      <input type="checkbox" id="incluirPruebas" onchange="cargar_()"> Piloto/auditoría
+    </label>
+
     <div id="estadoCarga">Cargando...</div>
     <div class="rango-mostrado" id="rangoMostrado"></div>
     <div class="resumen-numerico" id="resumenNumerico"></div>
@@ -196,7 +200,7 @@
         google.script.run
           .withSuccessHandler(renderizarPanel_)
           .withFailureHandler(mostrarError)
-          .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL, FILTRO_CAMPANA_ACTUAL, FILTRO_PROYECTO_ACTUAL);
+          .obtenerPanelTemporal(MODO_ACTUAL, FECHA_INICIO_ACTUAL, FECHA_FIN_ACTUAL, FILTRO_CAMPANA_ACTUAL, FILTRO_PROYECTO_ACTUAL, document.getElementById('incluirPruebas').checked);
       }
 
       function cargarResumenBotones_() {

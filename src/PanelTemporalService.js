@@ -64,8 +64,13 @@ function abrirPanelTemporal() {
  * filtroCampanaId/filtroProyectoId: opcionales, mutuamente excluyentes
  * (si hay proyecto, gana sobre campaña) -- ver "buscador por campaña o
  * proyecto".
+ * incluirPruebas: opcional (por defecto false/excluye) -- mismo
+ * criterio Operativo/Piloto/Auditoría que ya tenía Panel de Campaña
+ * (NivelDatoService.js), replicado aquí (ver conversación -- Fase O5,
+ * "pendiente natural señalado ya en Fase M"). Sin esto, Agenda
+ * Operativa mezclaba datos de piloto/auditoría con trabajo real.
  */
-function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId) {
+function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId, filtroProyectoId, incluirPruebas) {
   var rango = calcularRangoPanelTemporal_(modo, fechaInicioISO, fechaFinISO);
   var incluirAtrasadasSiempre = (modo === 'HOY');
   var hoy = new Date();
@@ -74,12 +79,12 @@ function obtenerPanelTemporal(modo, fechaInicioISO, fechaFinISO, filtroCampanaId
   var entidades = ['TAREA', 'PROCESO'];
   if (moduloInstalado_('SEGUIMIENTO')) entidades = entidades.concat(['INCIDENCIA', 'DECISION']);
 
-  var resolutorContexto = (filtroCampanaId || filtroProyectoId) ? construirResolutorContextoPanelTemporal_() : null;
+  var resolutorContexto = (filtroCampanaId || filtroProyectoId || !incluirPruebas) ? construirResolutorContextoPanelTemporal_() : null;
 
   var bloques = entidades.map(function (entidad) {
     return construirBloquePanelTemporal_(
       entidad, rango, incluirAtrasadasSiempre, hoy,
-      resolutorContexto ? resolutorContexto[entidad] : null, filtroCampanaId, filtroProyectoId
+      resolutorContexto ? resolutorContexto[entidad] : null, filtroCampanaId, filtroProyectoId, incluirPruebas
     );
   });
 
@@ -366,7 +371,7 @@ function obtenerUltimoModoPanelTemporal() {
   }
 }
 
-function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy, resolverContexto, filtroCampanaId, filtroProyectoId) {
+function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, hoy, resolverContexto, filtroCampanaId, filtroProyectoId, incluirPruebas) {
   var config = CONFIG_PANEL_TEMPORAL_[entidad];
   var registros = listarRegistrosSeguro_(entidad, { ACTIVO: 'SÍ' });
 
@@ -374,6 +379,24 @@ function construirBloquePanelTemporal_(entidad, rango, incluirAtrasadasSiempre, 
     registros = registros.filter(function (r) {
       var contexto = resolverContexto(r);
       return filtroProyectoId ? contexto.proyectoId === filtroProyectoId : contexto.campanaId === filtroCampanaId;
+    });
+  }
+
+  /*
+   * Piloto/Auditoría (ver conversación -- Fase O5, mismo criterio que
+   * Panel de Campaña): sin resolverContexto no hay forma de saber la
+   * campaña de cada registro, así que sin filtro configurado (incluirPruebas
+   * undefined/false pero tampoco se construyó el resolutor) no se filtra --
+   * en la práctica obtenerPanelTemporal siempre construye el resolutor
+   * cuando incluirPruebas es falsy, así que este caso solo protege
+   * llamadas directas que no lo hagan.
+   */
+  if (!incluirPruebas && resolverContexto) {
+    var nivelPorCampana_ = resolverNivelDatoPorCampana_();
+    registros = registros.filter(function (r) {
+      var campanaId = resolverContexto(r).campanaId;
+      var nivel = nivelPorCampana_[campanaId] || 'Operativo';
+      return nivel === 'Operativo';
     });
   }
 
