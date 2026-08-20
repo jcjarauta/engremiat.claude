@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 199,
+  "universeExpected": 200,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2195,6 +2195,17 @@
       "expectedSha256": "20019f273dbd8543f3fac3ac3c058acdaabf6af9be182b5acac6810c48f0e224",
       "required": true,
       "reason": "no desplegable -- puente Aider (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "ROADMAP_ECOSISTEMA_AGENTICO.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "9fef86038f9e62d18c3fdf984de18e4e8a1572993a1c73b9942fb9d58e1b48be",
+      "required": true,
+      "reason": "no desplegable",
       "mixed": false,
       "module": null
     }
