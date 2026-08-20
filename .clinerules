@@ -26,6 +26,29 @@ alcance.
 - No pruebes contra el Google Sheet real ni contra Apps Script en vivo
   -- no tienes acceso ni deberías necesitarlo para el código en sí.
 
+## Contexto de código: usa Graphify en vez de leer archivos enteros a ciegas
+
+Antes de abrir un archivo `.js` grande buscando "quién llama a X" o "qué
+llama esta función", usa Graphify -- selector de contexto estructural
+local, ya extendido a los 78 ficheros `.js` de producción de este repo
+(todos los módulos, no solo Core). Te da solo el fragmento relevante,
+con archivo/línea reales, en vez de que tengas que leer y adivinar.
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\pc\Desktop\Graphify\tools\graphify-context\graphify-context.v2.ps1" `
+  -Mode callers -Symbol nombreDeLaFuncion -Budget 5000 -Root "C:\Users\pc\Desktop\Graphify"
+
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Users\pc\Desktop\Graphify\tools\graphify-context\graphify-context.v2.ps1" `
+  -Mode path -Symbol funcionOrigen -ToSymbol funcionDestino -Budget 5000 -Root "C:\Users\pc\Desktop\Graphify"
+```
+
+Modos disponibles: `path`, `callers`, `context`, `explain`, `affected`.
+Advertencia: el grafo es un snapshot manual (ver
+`C:\Users\pc\Desktop\Graphify\BASELINE_GRAPHIFY_CORE_EXT_001.md`) --
+si el código cambió desde la última extracción, puede no reflejar tu
+edición actual. Úsalo para ORIENTARTE, no como sustituto de leer el
+archivo real antes de editarlo.
+
 ## Al terminar, bloquearte o tener dudas (SIEMPRE, como último mensaje)
 
 Cada tarjeta corre en su propio worktree aislado -- un fichero que

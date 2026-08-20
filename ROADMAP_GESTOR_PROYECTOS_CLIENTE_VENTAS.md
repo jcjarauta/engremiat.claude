@@ -6,7 +6,7 @@ de Proyectos. Prioriza lo económico: primero lo que genera trazabilidad de
 ingreso/margen real, después CRM/prospección avanzada, después
 automatización de infraestructura (no es urgente, es conveniencia).
 
-No sustituye ni compite con el proceso de auditoría formal de La Troballa
+No sustituye ni compite con el proceso de auditoría formal de Engremiat
 (`package-map.json`, `ROADMAP_AUDITORIA_UX.md` etc.) -- es la hoja de ruta
 de una ampliación nueva, sobre Gestor de Proyectos.
 

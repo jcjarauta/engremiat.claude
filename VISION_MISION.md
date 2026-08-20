@@ -1,4 +1,10 @@
-# Visión y misión — LaTroballa / el ecosistema
+# Visión y misión — Engremiat y el ecosistema
+
+Nota de nomenclatura (2026-08-20): **Engremiat** es la plataforma/librería
+raíz que se construye aquí; **La Troballa** es el primer cliente real sobre
+el que se construyó y valida, no el proyecto en sí. Este documento habla del
+ecosistema al que sirve Engremiat -- La Troballa aparece como el caso real
+de partida, pero la visión no es exclusiva suya.
 
 Este documento no es un roadmap técnico (para eso están `ROADMAP_IMPLEMENTACION.md`,
 `ROADMAP_AUDITORIA_UX.md`, `ROADMAP_BACKLOG_MEJORAS.md` y
