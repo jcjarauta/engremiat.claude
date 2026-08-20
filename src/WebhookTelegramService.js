@@ -69,6 +69,8 @@ function doPost(e, tokenTelegram, modulosInstalados) {
        */
       if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
         respuesta = JSON.stringify(procesarSolicitudActualizacionLibreria_(cuerpo.scriptId));
+      } else if (cuerpo && cuerpo.accion === 'notificar_operador') {
+        respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo));
       } else if (!actualizacionYaProcesada_(cuerpo)) {
         if (moduloInstalado_('INTERNO')) {
           procesarMensajeTelegramSoporte_(cuerpo, tokenTelegram);
@@ -288,3 +290,23 @@ function procesarSolicitudActualizacionLibreria_(scriptId) {
  * los que tienen APROVISIONAMIENTO) -- nunca se llama.
  */
 function solicitarActualizacionLibreria() {}
+
+/*
+ * Aviso al operador humano por correo cuando Claude cierra un ciclo de
+ * trabajo (ver conversación -- "necesito que me envíes por correo la
+ * notificación con la función nativa de sheets"): mismo patrón que la
+ * autoactualización de librería de arriba -- se invoca directamente
+ * contra el /exec del maestro, nunca desde un cliente, así que no
+ * necesita wrapper generado ni pasar por moduloInstalado_.
+ */
+var CORREO_OPERADOR_ = 'sacandofilo@gmail.com';
+
+function procesarNotificacionOperador_(asunto, cuerpoMensaje) {
+  if (!asunto) return { ok: false, error: 'Falta asunto en la solicitud.' };
+  try {
+    MailApp.sendEmail(CORREO_OPERADOR_, asunto, cuerpoMensaje || '');
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
