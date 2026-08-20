@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 197,
+  "universeExpected": 198,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2115,7 +2115,7 @@
       "type": "text",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "85d30c1b859c6ab077398ff7ea9da9e36ca64f3ef304775184b1941bcce280a3",
+      "expectedSha256": "587e19d4aa3357fe340c461b1ecc8f7f35419a528251f6f2de04ad84cde4bcbe",
       "required": true,
       "reason": "no desplegable -- puente Cline (herramienta de desarrollo, no de producto)",
       "mixed": false,
@@ -2173,6 +2173,17 @@
       "expectedSha256": "cee84b1f0dc5010fc55161b6cbb429e0210a6d00c156b34555bc182502597004",
       "required": true,
       "reason": "no desplegable -- puente Aider (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "puente-cline/sugerir-parche.sh",
+      "type": "text",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "d070e9deb043cbacd24c8795afce09af0a1c3dee38e7936c4d27d545dab0b25f",
+      "required": true,
+      "reason": "no desplegable -- puente Aider modo sugerencia (herramienta de desarrollo, no de producto)",
       "mixed": false,
       "module": null
     }

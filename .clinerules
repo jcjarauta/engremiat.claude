@@ -1,8 +1,23 @@
-# Reglas para Cline en este repo (LaTroballa.audit)
+# Reglas para el worker local en este repo (LaTroballa.audit)
 
 Este proyecto lo supervisa Claude (Claude Code). Tu trabajo es EJECUTAR una
 tarea concreta que Claude te deja en `puente-cline/tareas/<tarea-id>.md`,
 no decidir alcance ni publicar nada por tu cuenta.
+
+## Dos modos de uso (decisión de asesoría técnica, ver INC-0004)
+
+Tras 10+ pruebas reales, el worker local dejó de usarse como aplicador
+autónomo de código -- no es fiable produciendo parches exactos sobre
+archivos reales, aunque `--edit-format diff` evita que corrompa nada.
+
+- `puente-cline/lanzar-aider.sh` -- SOLO para cambios de contenido
+  puro (texto/HTML sin lógica), en worktree aislado, con verificación
+  de diff obligatoria antes de fusionar nada.
+- `puente-cline/sugerir-parche.sh` -- para lógica de servidor real:
+  modo `--dry-run`, no toca ningún archivo. La salida es un borrador
+  que Claude revisa y aplica a mano tras leer el archivo real. Este es
+  el modo recomendado por defecto para cualquier tarea con código
+  (`.js`).
 
 ## No hay nadie al otro lado esperando tu pregunta
 
