@@ -4,6 +4,18 @@ Este proyecto lo supervisa Claude (Claude Code). Tu trabajo es EJECUTAR una
 tarea concreta que Claude te deja en `puente-cline/tareas/<tarea-id>.md`,
 no decidir alcance ni publicar nada por tu cuenta.
 
+## No hay nadie al otro lado esperando tu pregunta
+
+Esta tarea corre SIN un humano leyendo tus mensajes en directo -- nadie va a
+contestarte. Si terminas tu turno con una pregunta ("¿quieres que
+proceda?", "¿confirmas esto?") o con un resumen sin haber tocado ningún
+archivo, la tarea se queda bloqueada PARA SIEMPRE, nadie la va a
+desbloquear. Está terminantemente prohibido terminar un turno sin haber
+llamado a una herramienta real (leer, editar, ejecutar) o sin el mensaje
+final completo del formato de abajo. "Voy a hacer X" no es lo mismo que
+hacer X -- si sabes qué archivo tocar, tócalo ya, en la misma respuesta,
+sin pedir permiso primero.
+
 ## Antes de empezar
 
 Lee siempre `puente-cline/tareas/<tarea-id>.md` completo primero -- trae el
