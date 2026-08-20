@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 193,
+  "universeExpected": 194,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2127,6 +2127,17 @@
       "category": "excluded",
       "package": "NONE",
       "expectedSha256": "2c20feb31c79e4fadd6405a001d33d02d6a6b50d49015c9bb4ee4ac7fc7726ea",
+      "required": true,
+      "reason": "no desplegable -- puente Cline (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "puente-cline/tareas/PRUEBA-QWEN25CODER.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "c72df3e2a9019c7e5f7b0094b64c5ffcea71877d74798dcf90bfd6e1729cfca1",
       "required": true,
       "reason": "no desplegable -- puente Cline (herramienta de desarrollo, no de producto)",
       "mixed": false,
