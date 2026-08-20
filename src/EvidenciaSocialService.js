@@ -68,7 +68,7 @@ function obtenerEtiquetasImpactoAmbito_(ambito) {
   ambito.proyectosIds.forEach(function (id) { idsValidos['Proyecto:' + id] = true; });
   ambito.productosIds.forEach(function (id) { idsValidos['Producto:' + id] = true; });
 
-  var etiquetas = listarRegistros('ETIQUETA_IMPACTO', { ACTIVO: 'SÍ' })
+  var etiquetas = listarRegistrosSeguro_('ETIQUETA_IMPACTO', { ACTIVO: 'SÍ' })
     .filter(function (e) { return idsValidos[e.ENTIDAD_TIPO + ':' + e.ENTIDAD_ID]; })
     .map(function (e) {
       return {

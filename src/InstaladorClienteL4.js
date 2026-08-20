@@ -77,12 +77,16 @@ function instalarCatalogoClienteL4() {
       var categoria = par[0];
       var valores = par[1];
 
-      if (clavesExistentes_[categoria + '::' + valores[0][0]]) {
+      var valoresFaltantes = valores.filter(function (valor) {
+        return !clavesExistentes_[categoria + '::' + valor[0]];
+      });
+
+      if (valoresFaltantes.length === 0) {
         console.log('OK ' + categoria + '_ya_completo=true');
         return;
       }
 
-      var filas = valores.map(function (valor) {
+      var filas = valoresFaltantes.map(function (valor) {
         maxNumero += 1;
         anadidas.push('CFG-' + String(maxNumero).padStart(4, '0') + ':' + categoria + '/' + valor[0]);
         return ['CFG-' + String(maxNumero).padStart(4, '0'), categoria, valor[0], valor[1], '', '', 'SÍ', ahora, usuario, ahora, usuario];

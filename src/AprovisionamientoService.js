@@ -417,16 +417,29 @@ function obtenerModulosDisponibles_() {
     .sort();
 }
 
+/*
+ * versionMasReciente/libreriaDesactualizada (ver conversación -- INC-0017):
+ * Panel de Clientes ya calcula este mismo aviso para la misma acción de
+ * "actualizar librería" -- este diálogo hacía la acción a ciegas, sin
+ * saber si de verdad hacía falta. obtenerVersionLibreriaMasReciente_
+ * exige el scope script.projects, así que solo se llama una vez y se
+ * reparte a todos los clientes, no una vez por cliente.
+ */
 function obtenerClientesConScriptId_() {
+  var versionMasReciente = null;
+  try { versionMasReciente = String(obtenerVersionLibreriaMasReciente_()); } catch (e) { versionMasReciente = null; }
+
   return listarRegistrosSeguro_('CLIENTE', { ACTIVO: 'SÍ' })
     .filter(function (c) { return String(c.SCRIPT_ID || '').trim(); })
     .map(function (c) {
+      var libreriaVersion = c.LIBRERIA_VERSION || '(desconocida)';
       return {
         id: c.ID,
         nombre: c.NOMBRE,
         codigo: c.CODIGO,
         scriptId: String(c.SCRIPT_ID).trim(),
-        libreriaVersion: c.LIBRERIA_VERSION || '(desconocida)'
+        libreriaVersion: libreriaVersion,
+        libreriaDesactualizada: !!(versionMasReciente && String(c.LIBRERIA_VERSION || '') !== versionMasReciente)
       };
     });
 }

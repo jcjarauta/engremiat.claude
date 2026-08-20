@@ -62,9 +62,11 @@
 
       function renderDetalleCliente_() {
         var c = clienteSeleccionado_();
-        document.getElementById("detalleCliente").textContent = c
-          ? "Versión de librería actual: " + c.libreriaVersion
-          : "";
+        if (!c) { document.getElementById("detalleCliente").innerHTML = ""; return; }
+        var badgeVersion = '<span class="badge ' + (c.libreriaDesactualizada ? 'badge-alerta' : 'badge-ok') + '">' +
+          'librería v' + escapeHtml(c.libreriaVersion) +
+          (c.libreriaDesactualizada ? ' -- desactualizada' : '') + '</span>';
+        document.getElementById("detalleCliente").innerHTML = badgeVersion;
       }
 
       function render(datos) {
