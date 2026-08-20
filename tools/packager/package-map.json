@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 191,
+  "universeExpected": 193,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -288,7 +288,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "3deac0ce5e8450c9ac90ecd8842f3b020dc880214418c77ac186e626433b76ea",
+      "expectedSha256": "a6cea4e732bd705befafe6ff658d0783dbd4f79bac2815dc44cae3974a0afb98",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -366,7 +366,7 @@
       "type": "html",
       "category": "production",
       "package": "A",
-      "expectedSha256": "d8350fff1ab6f1b0902c2e8337b92d8773de35f0bbe2560e8ccded3af48829d3",
+      "expectedSha256": "265048b72e8728809f47e79f3fb666d383d291ea670d987c7af548ec45f8949f",
       "required": true,
       "reason": "operación/UI/config",
       "mixed": false,
@@ -2049,7 +2049,7 @@
       "type": "md",
       "category": "excluded",
       "package": "NONE",
-      "expectedSha256": "07c9888aff5b809ad7fae063b57a7250972d43bb626097a6072598d79d9576ca",
+      "expectedSha256": "f47d8b169e86e19111a084c06670c59f9f8b5518613229a25202058f42282d82",
       "required": true,
       "reason": "no desplegable",
       "mixed": false,
@@ -2109,6 +2109,28 @@
       "reason": "Dialogo con desplegables dinamicos (cliente por CLIENTE.SCRIPT_ID, modulo por PACKAGE_MAP_EMBEBIDO.moduleDependencies) para actualizar version de libreria o anadir modulo a un cliente remoto -- reemplaza los prompts de texto libre de version anterior.",
       "mixed": false,
       "module": "APROVISIONAMIENTO"
+    },
+    {
+      "path": ".clinerules",
+      "type": "text",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "85d30c1b859c6ab077398ff7ea9da9e36ca64f3ef304775184b1941bcce280a3",
+      "required": true,
+      "reason": "no desplegable -- puente Cline (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "puente-cline/tareas/TAR-0002.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "2c20feb31c79e4fadd6405a001d33d02d6a6b50d49015c9bb4ee4ac7fc7726ea",
+      "required": true,
+      "reason": "no desplegable -- puente Cline (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
     }
   ],
   "moduleDependencies": {
