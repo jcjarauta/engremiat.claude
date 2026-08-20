@@ -49,6 +49,16 @@
 # para construir contexto incluso en tareas triviales) -- solo anade
 # lentitud sin aportar nada cuando el brief ya dice exactamente que
 # archivo tocar.
+#
+# --edit-format diff: CRITICO. Sin esto, Aider elige "whole edit format"
+# para un modelo personalizado como devstral-dev (no tiene perfil
+# reconocido) -- el modelo reescribe el ARCHIVO ENTERO en cada edicion.
+# Fallo real observado (TAR-0005, ver INC-0004): el modelo abrevio
+# "// ... resto del codigo ..." como si fuera valido, y Aider lo aplico
+# literalmente -- borro 695 de ~700 lineas de un archivo real. Con
+# --edit-format diff el modelo solo emite hunks SEARCH/REPLACE
+# quirurgicos, mucho menos margen para una elision catastrofica de este
+# tipo. NUNCA quitar esta flag sin motivo verificado.
 
 set -euo pipefail
 
@@ -71,7 +81,7 @@ export OLLAMA_API_BASE="http://127.0.0.1:11434"
 export PYTHONIOENCODING="utf-8"
 
 cd "$WORKTREE_DIR"
-aider --model "$MODEL" --yes-always --no-auto-commits --no-auto-lint --map-tokens 0 \
+aider --model "$MODEL" --edit-format diff --yes-always --no-auto-commits --no-auto-lint --map-tokens 0 \
   --message "Lee el fichero ${BRIEF} completo y sigue sus instrucciones al pie de la letra. No preguntes nada, actua directamente." \
   --exit
 
