@@ -106,15 +106,15 @@ const expectedTests = [
 
 const expectedMixed = [];
 
-test('01 universo de 191 entradas', () => {
+test('01 universo de 192 entradas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.length, 191);
-  assertEqual(map.universeExpected, 191);
+  assertEqual(map.entries.length, 192);
+  assertEqual(map.universeExpected, 192);
 });
 
 test('02 rutas únicas', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 191);
+  assertEqual(new Set(map.entries.map((entry) => entry.path)).size, 192);
 });
 
 test('03 categorías válidas y recuentos', () => {
@@ -183,9 +183,9 @@ test('11 repositorios de tests separados', () => {
   assert(first && second && first !== second && first.expectedSha256 !== second.expectedSha256);
 });
 
-test('12 inclusión de 35 HTML en A', () => {
+test('12 inclusión de 36 HTML en A', () => {
   const map = readPackageMap(MAP_PATH);
-  assertEqual(map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html')).length, 35);
+  assertEqual(map.entries.filter((entry) => entry.package === 'A' && entry.path.endsWith('.html')).length, 36);
 });
 
 test('13 inclusión de appsscript.json en A', () => {
@@ -474,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [114, 11, 36, 30, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [114, 11, 36, 30]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [115, 11, 36, 30, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [115, 11, 36, 30]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -889,7 +889,7 @@ test('114 recuento de módulos en package A', () => {
       VENTAS: count('VENTAS'),
       OPORTUNIDAD: count('OPORTUNIDAD'),
     },
-    { CORE: 82, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 4, VENTAS: 3, OPORTUNIDAD: 2 },
+    { CORE: 83, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 4, VENTAS: 3, OPORTUNIDAD: 2 },
   );
 });
 

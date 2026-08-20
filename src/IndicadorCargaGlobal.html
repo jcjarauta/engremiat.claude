@@ -1,0 +1,93 @@
+<div id="capaCargandoGlobal_" class="campo-oculto overlay-fondo">
+  <div class="overlay-caja" style="max-width:none; width:auto; display:flex; align-items:center; gap:10px; padding:14px 20px;">
+    <span class="spinner-carga-global_"></span>
+    <span>Procesando…</span>
+  </div>
+</div>
+<style>
+  .spinner-carga-global_ {
+    width: 16px; height: 16px; flex: none;
+    border: 2px solid var(--color-borde); border-top-color: var(--color-primario);
+    border-radius: 50%; animation: girarCapaCargandoGlobal_ .8s linear infinite;
+  }
+  @keyframes girarCapaCargandoGlobal_ { to { transform: rotate(360deg); } }
+</style>
+<script>
+  /*
+   * Indicador de "clic ejecutandose" para TODOS los dialogos (ver
+   * conversacion -- "de que forma podriamos informar al operador que
+   * se esta ejecutando un clic, como un modal"). Cobertura automatica:
+   * en vez de anadir mostrarCargando()/ocultarCargando() a mano en cada
+   * boton de cada Ficha/Formulario/Panel (habria que tocar decenas de
+   * sitios y mantenerlo en cada uno nuevo), se engancha AQUI una sola
+   * vez sobre el propio google.script.run -- cualquier llamada al
+   * servidor, la lance quien la lance, muestra la capa al empezar y la
+   * oculta sola en exito o error, sin que el codigo de cada dialogo
+   * tenga que saber que existe esto.
+   *
+   * Como funciona: la API real de google.script.run es encadenable con
+   * nombres de metodo dinamicos (la llamada real al servidor es
+   * ".miFuncion(args)", con "miFuncion" distinto en cada sitio) -- no
+   * hay un unico punto de entrada fijo que interceptar con una simple
+   * sustitucion de funcion. Se usa un Proxy que se coloca "por delante"
+   * de cada runner: withSuccessHandler/withFailureHandler se combinan
+   * con ocultarCapaCargandoGlobal_ (ademas de con el callback propio de
+   * cada sitio, si lo hay); antes de armar la cadena se le da al runner
+   * base un exito/fallo por defecto que tambien oculta la capa, para
+   * que los sitios que solo usan withFailureHandler (p.ej. los botones
+   * que solo ABREN otro dialogo y no esperan datos de vuelta, como
+   * abrirFichaProyecto) tambien la oculten al terminar aunque no
+   * registren su propio withSuccessHandler. Cualquier otro nombre de
+   * metodo se trata como la llamada real: muestra la capa y delega.
+   */
+  (function () {
+    if (typeof window.google === "undefined" || !google.script || !google.script.run) return;
+    if (window.__capaCargandoGlobalInstalada_) return;
+    window.__capaCargandoGlobalInstalada_ = true;
+
+    function mostrarCapaCargandoGlobal_() {
+      var capa = document.getElementById("capaCargandoGlobal_");
+      if (capa) capa.classList.remove("campo-oculto");
+    }
+    function ocultarCapaCargandoGlobal_() {
+      var capa = document.getElementById("capaCargandoGlobal_");
+      if (capa) capa.classList.add("campo-oculto");
+    }
+
+    var runOriginal_ = google.script.run;
+
+    function envolverRunner_(runner) {
+      return new Proxy(runner, {
+        get: function (objetivo, propiedad) {
+          var original = objetivo[propiedad];
+          if (typeof original !== "function") return original;
+
+          if (propiedad === "withSuccessHandler" || propiedad === "withFailureHandler") {
+            return function (callback) {
+              var combinado = function () {
+                ocultarCapaCargandoGlobal_();
+                if (typeof callback === "function") callback.apply(this, arguments);
+              };
+              return envolverRunner_(original.call(objetivo, combinado));
+            };
+          }
+
+          return function () {
+            mostrarCapaCargandoGlobal_();
+            return original.apply(objetivo, arguments);
+          };
+        }
+      });
+    }
+
+    Object.defineProperty(google.script, "run", {
+      configurable: true,
+      get: function () {
+        var runnerConDefectos_ = runOriginal_
+          .withSuccessHandler(function () { ocultarCapaCargandoGlobal_(); })
+          .withFailureHandler(function () { ocultarCapaCargandoGlobal_(); });
+        return envolverRunner_(runnerConDefectos_);
+      }
+    });
+  })();
+</script>
