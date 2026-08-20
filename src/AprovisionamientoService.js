@@ -412,7 +412,9 @@ function agregarModuloClienteRemoto_(scriptId, moduloNuevo) {
  *   medida que se construyen módulos nuevos, sin tocar este código.
  */
 function obtenerModulosDisponibles_() {
-  return Object.keys(PACKAGE_MAP_EMBEBIDO.moduleDependencies || {}).sort();
+  return Object.keys(PACKAGE_MAP_EMBEBIDO.moduleDependencies || {})
+    .filter(function (m) { return m !== 'APROVISIONAMIENTO' && m !== 'CORE'; })
+    .sort();
 }
 
 function obtenerClientesConScriptId_() {

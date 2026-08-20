@@ -42,7 +42,10 @@ function aplicarMovimientoAStock_(materialId, tipoMovimiento, cantidad) {
   if (!materialId || cantidadNum === 0) return;
 
   var material = obtenerRegistroPorId('MATERIAL', materialId);
-  if (!material) return;
+  if (!material) {
+    console.warn('aplicarMovimientoAStock_: material no encontrado, stock desincronizado. materialId=' + materialId + ' tipoMovimiento=' + tipoMovimiento);
+    return;
+  }
 
   if (Object.prototype.hasOwnProperty.call(DELTA_STOCK_POR_TIPO_MOVIMIENTO_, tipoMovimiento)) {
     var signoStock = DELTA_STOCK_POR_TIPO_MOVIMIENTO_[tipoMovimiento];
