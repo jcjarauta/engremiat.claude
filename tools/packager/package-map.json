@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 211,
+  "universeExpected": 212,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2327,6 +2327,17 @@
       "expectedSha256": "59b18b7d4b0677829d708dd2d1e49cbbf279125e5be68fa8a8a331338443801a",
       "required": true,
       "reason": "no desplegable -- brief de tarea para el worker local",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "GUIA_DISENO_ENGREMIAT.md",
+      "type": "markdown",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "70039eb256ba07cc1067f6c7892f1586a9f32db62ffbff3d4131fc26cea68b99",
+      "required": true,
+      "reason": "no desplegable -- documentacion de referencia",
       "mixed": false,
       "module": null
     }
