@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 212,
+  "universeExpected": 213,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2336,6 +2336,17 @@
       "category": "excluded",
       "package": "NONE",
       "expectedSha256": "70039eb256ba07cc1067f6c7892f1586a9f32db62ffbff3d4131fc26cea68b99",
+      "required": true,
+      "reason": "no desplegable -- documentacion de referencia",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "CICLO_AUDITORIA_ENGREMIAT.md",
+      "type": "markdown",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "95d99ad25a9774e24e3e0fbe28f47c549cc5a2f2a6b716cc517569da9404eccc",
       "required": true,
       "reason": "no desplegable -- documentacion de referencia",
       "mixed": false,
