@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "universeExpected": 201,
+  "universeExpected": 202,
   "toolingExclusions": [
     "tools/packager/"
   ],
@@ -2217,6 +2217,17 @@
       "expectedSha256": "3f8f83e36be4eed1fbb2ff330331eb3cd348ca33799594a8d59d1b0091fddfab",
       "required": true,
       "reason": "no desplegable -- puente Aider (herramienta de desarrollo, no de producto)",
+      "mixed": false,
+      "module": null
+    },
+    {
+      "path": "puente-cline/metricas.md",
+      "type": "md",
+      "category": "excluded",
+      "package": "NONE",
+      "expectedSha256": "30a38da931001a6fa7ca5a824cbc730215044999474f938cc71086bf9148f28b",
+      "required": true,
+      "reason": "no desplegable -- registro de metricas del puente Aider",
       "mixed": false,
       "module": null
     }
