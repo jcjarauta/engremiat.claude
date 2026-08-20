@@ -344,7 +344,7 @@
           : '<div class="vacio-nivel">Sin tareas todavía.</div>';
         return '<details>' +
           '<summary>' +
-            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span></div>' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proceso.nombre) + ' <span class="detalle-nodo">(' + proceso.tareas.length + ' tareas)</span> ' + renderBadge_(proceso.estado) + renderDetalle_(proceso) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProceso(\'' + escapeAttr(proceso.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearTareaConProceso\',\'' + escapeAttr(proceso.id) + '\')">+ Tarea</button>' +
@@ -378,7 +378,7 @@
           : '<div class="vacio-nivel">Sin productos todavía.</div>';
         return '<details open>' +
           '<summary>' +
-            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span></div>' +
+            '<div class="fila-superior"><span class="nombre-nodo">' + escapeHtml(proyecto.nombre) + ' <span class="detalle-nodo">(' + proyecto.productos.length + ' productos)</span> ' + renderBadge_(proyecto.estado) + renderDetalle_(proyecto) + '</span></div>' +
             '<div class="acciones-nodo">' +
               '<button class="boton btn-mini" onclick="verFichaProyecto(\'' + escapeAttr(proyecto.id) + '\')">Ficha</button>' +
               '<button class="boton btn-mini boton-primario" onclick="crearHijo(\'abrirFormularioCrearProductoConProyecto\',\'' + escapeAttr(proyecto.id) + '\')">+ Producto</button>' +
