@@ -49,7 +49,7 @@ function procesarMensajeTelegramSoporte_(actualizacion, tokenTelegram) {
     NIVEL_INCIDENCIA: 'Cliente',
     CLIENTE_ID: cliente.ID,
     TITULO: 'Soporte vía bot -- ' + cliente.NOMBRE,
-    TIPO: 'Documentación',
+    TIPO: 'Otra',
     PRIORIDAD: 'Media',
     ESTADO: 'Abierta',
     OBSERVACIONES: 'De ' + remitente + ' (' + new Date().toLocaleString() + '): ' + texto

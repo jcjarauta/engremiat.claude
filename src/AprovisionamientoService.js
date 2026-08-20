@@ -746,6 +746,7 @@ function ejecutarAprobacionMontaje_(hoja, fila, cabeceras, emailAprobador) {
   if (modulos.length === 0) throw new Error('AL_APROBAR_MONTAJE_ERROR: falta MODULOS en la fila ' + fila + '.');
 
   var resultado = crearProyectoScript_(nombre, modulos);
+  crearRegistroClienteDesdeMontaje_(nombre, modulos, resultado);
 
   if (colIdReal) hoja.getRange(fila, colIdReal).setValue(resultado.scriptId);
   if (colUrl) hoja.getRange(fila, colUrl).setValue(resultado.spreadsheetUrl);
@@ -754,6 +755,36 @@ function ejecutarAprobacionMontaje_(hoja, fila, cabeceras, emailAprobador) {
   if (colError) hoja.getRange(fila, colError).setValue('');
 
   return resultado;
+}
+
+/*
+ * Aprobar una solicitud de montaje creaba el proyecto/Sheet real pero
+ * nunca dejaba constancia en 38_CLIENTE (ver conversación -- INC-0019):
+ * el cliente nuevo era invisible en Panel de Clientes/Gestión remota
+ * hasta que alguien lo daba de alta a mano copiando SCRIPT_ID/SHEET_URL,
+ * justo el paso manual que este flujo pretende evitar. TIPO_CLIENTE
+ * 'Cliente de software' ya existe en el catálogo específicamente para
+ * clientes auto-provisionados por este mismo flujo (ver
+ * EstructuraInicialDatos.js).
+ *
+ * Comprueba primero si ya existe un CLIENTE con este SCRIPT_ID (defensa
+ * ante reejecución de la misma aprobación) -- no debería ocurrir porque
+ * obtenerSolicitudesPendientesMontaje ya filtra filas con ID_REAL
+ * relleno, pero es una comprobación barata y evita duplicar el cliente
+ * si algo llama a esta función dos veces.
+ */
+function crearRegistroClienteDesdeMontaje_(nombre, modulos, resultadoMontaje) {
+  var yaExiste = listarRegistrosSeguro_('CLIENTE', { ACTIVO: 'SÍ', SCRIPT_ID: resultadoMontaje.scriptId })[0];
+  if (yaExiste) return yaExiste;
+
+  return insertarRegistroTransaccional('CLIENTE', {
+    NOMBRE: nombre,
+    TIPO_CLIENTE: 'Cliente de software',
+    ESTADO: 'Activo',
+    SHEET_URL: resultadoMontaje.spreadsheetUrl,
+    SCRIPT_ID: resultadoMontaje.scriptId,
+    MODULOS_CONTRATADOS: modulos.join(', ')
+  }, { origen: 'SCRIPT' });
 }
 
 /*

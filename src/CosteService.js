@@ -50,17 +50,17 @@ function resolverAmbitoCoste_(entidadTipo, entidadId) {
 }
 
 function calcularCosteMaterialesEstimado_(productosIds) {
-  var lineas = listarRegistros('PRODUCTO_MATERIAL', { ACTIVO: 'SÍ' })
+  var lineas = listarRegistrosSeguro_('PRODUCTO_MATERIAL', { ACTIVO: 'SÍ' })
     .filter(function (pm) { return productosIds.indexOf(pm.PRODUCTO_ID) !== -1; });
 
   if (lineas.length === 0) return { total: 0, sinPrecioReferencia: [] };
 
   var materialesPorId = {};
-  listarRegistros('MATERIAL', {}).forEach(function (m) { materialesPorId[m.ID] = m; });
+  listarRegistrosSeguro_('MATERIAL', {}).forEach(function (m) { materialesPorId[m.ID] = m; });
 
   var preciosPorMaterial = {};
-  listarRegistros('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (pm) {
-    if (!preciosPorMaterial[pm.MATERIAL_ID] || pm.ES_PREFERENTE === 'SÍ') {
+  listarRegistrosSeguro_('PROVEEDOR_MATERIAL', { ACTIVO: 'SÍ' }).forEach(function (pm) {
+    if (!Object.prototype.hasOwnProperty.call(preciosPorMaterial, pm.MATERIAL_ID) || pm.ES_PREFERENTE === 'SÍ') {
       preciosPorMaterial[pm.MATERIAL_ID] = Number(pm.PRECIO_UNITARIO) || 0;
     }
   });

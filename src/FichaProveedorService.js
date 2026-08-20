@@ -108,7 +108,7 @@ function exportarFichaProveedorCSV(id) {
     filas.push(['Material', m.materialId, m.materialNombre, detalle, m.estado]);
   });
   datos.pedidos.forEach(function (p) {
-    filas.push(['Pedido', p.id, p.fechaPedido, p.numeroLineas + ' líneas · ' + p.total + ' €', p.estado]);
+    filas.push(['Pedido', p.id, 'Pedido ' + p.id, p.fechaPedido + ' · ' + p.numeroLineas + ' líneas · ' + p.total + ' €', p.estado]);
   });
 
   var nombreArchivo = 'FICHA_PROVEEDOR_' + id + '_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';

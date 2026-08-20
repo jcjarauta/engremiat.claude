@@ -70,7 +70,9 @@ function doPost(e, tokenTelegram, modulosInstalados) {
       if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
         respuesta = JSON.stringify(procesarSolicitudActualizacionLibreria_(cuerpo.scriptId));
       } else if (cuerpo && cuerpo.accion === 'notificar_operador') {
-        respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo));
+        respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo, cuerpo.cuerpoHtml));
+      } else if (cuerpo && cuerpo.accion === 'instalar_modulo_cliente') {
+        respuesta = JSON.stringify(procesarInstalacionModuloCliente_(cuerpo.scriptId, cuerpo.modulo));
       } else if (!actualizacionYaProcesada_(cuerpo)) {
         if (moduloInstalado_('INTERNO')) {
           procesarMensajeTelegramSoporte_(cuerpo, tokenTelegram);
@@ -301,10 +303,32 @@ function solicitarActualizacionLibreria() {}
  */
 var CORREO_OPERADOR_ = 'sacandofilo@gmail.com';
 
-function procesarNotificacionOperador_(asunto, cuerpoMensaje) {
+/*
+ * Instalación remota de un módulo en un cliente existente (ver
+ * conversación -- "implementa en el gestor de proyectos [OPORTUNIDAD/
+ * IMPACTO/EJECUCION/ESCENARIOS], tenemos que dejarlo preparado para
+ * poder crear configuraciones de montaje para futuros clientes"): mismo
+ * patrón que el resto de acciones de este router -- reutiliza
+ * agregarModuloClienteDesdeDialogo (AprovisionamientoService.js), que ya
+ * hace exactamente esto para el diálogo de Gestión remota de clientes,
+ * solo que aquí se dispara vía /exec en vez de desde la UI del Sheet.
+ */
+function procesarInstalacionModuloCliente_(scriptId, modulo) {
+  if (!scriptId) return { ok: false, error: 'Falta scriptId en la solicitud.' };
+  if (!modulo) return { ok: false, error: 'Falta modulo en la solicitud.' };
+  try {
+    var resultado = agregarModuloClienteDesdeDialogo(scriptId, modulo);
+    return { ok: true, resultado: resultado };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
+}
+
+function procesarNotificacionOperador_(asunto, cuerpoMensaje, cuerpoHtml) {
   if (!asunto) return { ok: false, error: 'Falta asunto en la solicitud.' };
   try {
-    MailApp.sendEmail(CORREO_OPERADOR_, asunto, cuerpoMensaje || '');
+    var opciones = cuerpoHtml ? { htmlBody: cuerpoHtml } : undefined;
+    MailApp.sendEmail(CORREO_OPERADOR_, asunto, cuerpoMensaje || '', opciones);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };

@@ -43,8 +43,14 @@ export OLLAMA_API_BASE="http://127.0.0.1:11434"
 export PYTHONIOENCODING="utf-8"
 
 echo "=== SUGERENCIA DE ${MODEL} para ${TAREA_ID} (no se ha tocado ningún archivo) ==="
+# El brief tiene que entrar al contexto vía --read (solo lectura, no
+# editable) -- mencionarlo por ruta en --message no basta, el modelo no
+# tiene ninguna herramienta de lectura de ficheros en este modo y solo
+# pide que se lo "compartan" (fallo real observado: INC-0008/0009/0010/
+# 0012/0014, todas con el mismo síntoma).
 aider --model "$MODEL" --edit-format diff --dry-run --yes-always --no-auto-lint --map-tokens 0 \
-  --message "Lee el fichero ${BRIEF} completo y sigue sus instrucciones al pie de la letra. No preguntes nada, actua directamente." \
+  --read "$BRIEF" \
+  --message "Lee el contenido de ${BRIEF} (ya está en el contexto) y sigue sus instrucciones al pie de la letra. No preguntes nada, actua directamente." \
   --exit
 
 echo ""
