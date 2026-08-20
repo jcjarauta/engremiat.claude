@@ -591,7 +591,7 @@ function exportarPanelTemporalCSV(modo, fechaInicioISO, fechaFinISO, filtroCampa
     bloquesCsv.push({
       titulo: 'Bloqueos',
       encabezados: ['Tipo', 'Tarea', 'Detalle'],
-      filas: datos.bloqueos.map(function (b) { return [b.tipo, b.tareaNombre, b.detalle]; })
+      filas: datos.bloqueos.map(function (b) { return [b.tipo, b.entidadNombre, b.detalle]; })
     });
   }
 
@@ -651,7 +651,7 @@ function generarHtmlPanelTemporalImprimible_(datos) {
   if (datos.bloqueos.length > 0) {
     bloqueosHtml = '<h2>Bloqueos</h2><table><tr><th>Tarea</th><th>Bloqueo</th></tr>' +
       datos.bloqueos.map(function (b) {
-        return '<tr><td>' + enlaceEdicion_('TAREA', b.tareaId, b.tareaNombre) + '</td><td>' + escaparHtmlServer_(b.detalle) + '</td></tr>';
+        return '<tr><td>' + enlaceEdicion_(b.entidad, b.entidadId, b.entidadNombre) + '</td><td>' + escaparHtmlServer_(b.detalle) + '</td></tr>';
       }).join('') + '</table>';
   }
 
