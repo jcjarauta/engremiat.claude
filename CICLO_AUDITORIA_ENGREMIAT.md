@@ -1,4 +1,4 @@
-# Ciclo de auditoría Engremiat -- 4 patas
+# Ciclo de auditoría Engremiat -- 4 fases
 
 Dinámica de trabajo consolidada a partir de lo aplicado en los ciclos 1 y
 2 (2026-08-20). Cuatro pasadas distintas porque cada una encuentra una
@@ -6,11 +6,11 @@ clase de defecto que las otras tres no ven -- código correcto no implica
 comportamiento correcto con datos reales, y ninguno de los dos implica
 una interfaz usable. Ver también `ROADMAP_ECOSISTEMA_AGENTICO.md` (marco
 general Claude-local-worker) y `GUIA_DISENO_ENGREMIAT.md` (checklist de
-la pata 4).
+la fase 4).
 
-## Las 4 patas
+## Las 4 fases
 
-### Pata 1 -- Código
+### Fase 1 -- Código
 
 - **Busca**: campos obsoletos, deriva copia-pega entre módulos hermanos,
   fallos silenciosos, funciones que crashean en un caso real,
@@ -25,7 +25,7 @@ la pata 4).
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Revisión de
   código".
 
-### Pata 2 -- Integración entre módulos
+### Fase 2 -- Integración entre módulos
 
 - **Busca**: si los mecanismos transversales que YA EXISTEN en código
   (NivelDatoService, CosteService, EvidenciaSocialService,
@@ -40,12 +40,12 @@ la pata 4).
   en fichero:línea" o "hueco confirmado, sin resultados en grep de [X]".
   Nunca reportar un hueco sin haberlo verificado.
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Revisión de
-  código" (misma pata que código en la práctica, ya que ambas parten de
+  código" (misma fase que código en la práctica, ya que ambas parten de
   lectura estática) -- los hallazgos de integración suelen ser de alcance
   mayor (Media/Alta prioridad, marcados "pendiente de diseño" si no son
   un fix mecánico).
 
-### Pata 3 -- Comportamiento con datos simulados
+### Fase 3 -- Comportamiento con datos simulados
 
 - **Busca**: bugs que solo aparecen ejecutando de verdad -- cálculos
   raros con números reales, timeouts con volumen, fricción de un flujo
@@ -59,11 +59,11 @@ la pata 4).
   irreversible fuera del propio Sheet (aprobar una solicitud de montaje
   real crea un proyecto de Google Cloud de verdad) ni disparar el bot de
   Telegram real o un correo real sin avisar antes -- esos flujos quedan
-  fuera de esta pata salvo petición explícita.
+  fuera de esta fase salvo petición explícita.
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Prueba
   funcional".
 
-### Pata 4 -- Diseño
+### Fase 4 -- Diseño
 
 - **Busca**: inconsistencia visual/de interacción objetiva, contra
   `GUIA_DISENO_ENGREMIAT.md` (WCAG 2.1/2.2 AA + heurísticas de Nielsen +
@@ -86,7 +86,7 @@ la pata 4).
   los demás ficheros (ver INC-0031/0032 -- afectaba a los 33 diálogos).
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Diseño".
 
-## Triage común (después de las 4 patas)
+## Triage común (después de las 4 fases)
 
 Mismo criterio ya validado en los ciclos 1 y 2: cada hallazgo se clasifica
 
@@ -109,19 +109,19 @@ No hay disparador automático -- deliberado, mismo principio que ya
 aplicamos con el worker local y el daemon del Agent SDK (no construir
 automatización sin necesidad demostrada). El ciclo se lanza cuando el
 usuario lo pide o cuando la cola delegable se vacía y toca decidir el
-siguiente lote. Las 4 patas no tienen por qué correr siempre juntas -- se
-puede lanzar solo la pata 1 sobre un módulo nuevo, o solo la pata 4 sobre
+siguiente lote. Las 4 fases no tienen por qué correr siempre juntas -- se
+puede lanzar solo la fase 1 sobre un módulo nuevo, o solo la fase 4 sobre
 un panel concreto.
 
 ## Cierre de ciclo
 
 Mismo correo de siempre (`notificar_operador`, con `cuerpoHtml`), con una
-sección por pata que haya corrido: terminadas (con cómo probarlas),
+sección por fase que haya corrido: terminadas (con cómo probarlas),
 pendientes (con su origen), siguiente paso sugerido.
 
 ## Revisión de la propia dinámica
 
-Después de unos cuantos ciclos completos, revisar si alguna pata deja de
+Después de unos cuantos ciclos completos, revisar si alguna fase deja de
 aportar señal real (p.ej. si "diseño" deja de encontrar nada verificable
 en varias pasadas seguidas) -- en ese caso espaciarla en vez de correrla
 en cada ciclo por inercia. Mismo principio de "medir antes de asumir" que
