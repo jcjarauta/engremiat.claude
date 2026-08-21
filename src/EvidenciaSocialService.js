@@ -46,11 +46,26 @@ function calcularReutilizacionAmbito_(ambito) {
       return ambito.productosIds.indexOf(p.PRODUCTO_ID) !== -1 && modosReutilizacion.indexOf(p.MODO_USO) !== -1;
     })
     .map(function (p) {
+      /*
+       * El proyecto solo es resoluble de forma unica si el Proceso viene
+       * de una relacion PROYECTO_PRODUCTO concreta (PROYECTO_PRODUCTO_ID,
+       * campo opcional del esquema) -- mismo motivo/patron que
+       * FichaProcesoService.js (un mismo Producto puede reutilizarse en
+       * varios Proyectos, N:M).
+       */
+      var proyectoNombre = '';
+      if (p.PROYECTO_PRODUCTO_ID) {
+        var proyectoProducto = obtenerRegistroPorId('PROYECTO_PRODUCTO', p.PROYECTO_PRODUCTO_ID);
+        if (proyectoProducto) {
+          proyectoNombre = nombreRegistroEntidad_('Proyecto', proyectoProducto.PROYECTO_ID);
+        }
+      }
       return {
         id: p.ID,
         nombre: p.NOMBRE,
         productoId: p.PRODUCTO_ID,
         productoNombre: nombreRegistroEntidad_('Producto', p.PRODUCTO_ID),
+        proyectoNombre: proyectoNombre,
         modoUso: p.MODO_USO
       };
     });

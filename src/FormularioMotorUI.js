@@ -477,7 +477,8 @@ function construirSubmenuConvocatorias_(ui) {
 function construirSubmenuImpacto_(ui) {
   return ui.createMenu('Impacto')
     .addItem('Nueva etiqueta de impacto', 'abrirFormularioCrearEtiquetaImpacto')
-    .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto');
+    .addItem('Editar etiqueta de impacto', 'abrirEditarEtiquetaImpacto')
+    .addItem('Instalar catálogo de Impacto (una vez)', 'abrirInstalarEntidadEtiquetaImpacto');
 }
 
 /*

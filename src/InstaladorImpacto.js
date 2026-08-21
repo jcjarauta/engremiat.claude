@@ -64,3 +64,29 @@ function instalarEntidadEtiquetaImpacto() {
 
   return true;
 }
+
+/*
+ * INC-0023: sin esta entrada de menú, "Nueva etiqueta de impacto" crashea
+ * sin salida si este instalador nunca corrió (hoja ENTIDAD_ETIQUETA_IMPACTO
+ * o catálogo CATEGORIA_IMPACTO ausentes) -- mismo patrón que
+ * abrirInstalarCatalogoComprasL4 (confirmación + try/catch con mensaje).
+ */
+function abrirInstalarEntidadEtiquetaImpacto() {
+  var ui = SpreadsheetApp.getUi();
+
+  var resp = ui.alert(
+    'Instalar catálogo de Impacto',
+    'Esto crea (si falta) la hoja de etiquetas de impacto y el catálogo CATEGORIA_IMPACTO ' +
+    'en 90_CONFIGURACION. Idempotente -- no duplica nada ya presente. ¿Continuar?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (resp !== ui.Button.YES) return;
+
+  try {
+    instalarEntidadEtiquetaImpacto();
+    ui.alert('Catálogo de Impacto instalado', 'Ya puedes crear etiquetas de impacto.', ui.ButtonSet.OK);
+  } catch (err) {
+    ui.alert('Error', err.message, ui.ButtonSet.OK);
+  }
+}

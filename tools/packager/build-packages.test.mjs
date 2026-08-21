@@ -474,8 +474,8 @@ test('50 hashes nuevos de archivos de integridad', () => {
 test('51 recuento actualizado de categorías y paquetes', () => {
   const map = readPackageMap(MAP_PATH);
   const count = (field, value) => map.entries.filter((entry) => entry[field] === value).length;
-  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [114, 11, 36, 52, 0]);
-  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [114, 11, 36, 52]);
+  assertDeepEqual([count('category', 'production'), count('category', 'test'), count('category', 'auxiliary'), count('category', 'excluded'), count('category', 'mixed')], [115, 11, 35, 52, 0]);
+  assertDeepEqual([count('package', 'A'), count('package', 'B'), count('package', 'C'), count('package', 'NONE')], [115, 11, 35, 52]);
 });
 
 test('52 única declaración global de probarReporteIntegridad', () => {
@@ -889,7 +889,7 @@ test('114 recuento de módulos en package A', () => {
       VENTAS: count('VENTAS'),
       OPORTUNIDAD: count('OPORTUNIDAD'),
     },
-    { CORE: 82, GANTT: 3, ECONOMICO: 1, IMPACTO: 1, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 4, VENTAS: 3, OPORTUNIDAD: 2 },
+    { CORE: 82, GANTT: 3, ECONOMICO: 1, IMPACTO: 2, COMPRAS: 7, CONVOCATORIAS: 2, CLIENTE: 4, VENTAS: 3, OPORTUNIDAD: 2 },
   );
 });
 

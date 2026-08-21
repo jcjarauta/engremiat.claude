@@ -678,7 +678,7 @@ function bloquesEvidenciaSocialCsv_(informe) {
       titulo: 'Reutilización (vía "Modo de uso")',
       encabezados: ['Producto/Proceso', 'Proyecto', 'Modo de uso'],
       filas: reutilizacion.relacionesReutilizadas.map(function (r) { return [r.productoNombre, r.proyectoNombre, r.modoUso]; })
-        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.productoNombre, p.modoUso]; }))
+        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.proyectoNombre, p.modoUso]; }))
     }
   ];
 }
@@ -962,7 +962,7 @@ function generarHtmlEvidenciaSocial_(informe, nivel) {
     '<h2>Reutilización (vía "Modo de uso")</h2>' +
     tablaSimpleHtml_(['Producto/Proceso', 'Proyecto', 'Modo de uso'],
       reutilizacion.relacionesReutilizadas.map(function (r) { return [r.productoNombre, r.proyectoNombre, r.modoUso]; })
-        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.productoNombre, p.modoUso]; })));
+        .concat(reutilizacion.procesosReutilizados.map(function (p) { return [p.nombre, p.proyectoNombre, p.modoUso]; })));
 
   return construirDocumentoInformeImprimible_('Evidencia de impacto', informe.entidadTipo + ': ' + informe.entidadNombre, cuerpo);
 }

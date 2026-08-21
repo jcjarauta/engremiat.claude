@@ -182,12 +182,16 @@
 
       function abrirTitulo_(entidad, id) {
         /*
-         * Incidencia abre su Ficha (nueva, ver conversacion); Tarea y
-         * Proceso abren la edicion directa como hasta ahora -- no
-         * existe (ni hace falta) una Ficha de Tarea/Proceso propia.
+         * Incidencia y Tarea abren su Ficha propia; Proceso sigue abriendo
+         * la edicion directa -- no existe (ni hace falta) una Ficha de
+         * Proceso propia.
          */
         if (entidad === 'INCIDENCIA') {
           google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirFichaIncidencia(entidad, id);
+          return;
+        }
+        if (entidad === 'TAREA') {
+          google.script.run.withFailureHandler(mostrarError).seleccionarYAbrirFichaTarea(entidad, id);
           return;
         }
         abrirEdicionTarjeta_(entidad, id);
