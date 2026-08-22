@@ -224,8 +224,26 @@
   .pill-ciclo[data-estado="en_curso"] { background: var(--exito-bg); color: var(--exito); border-color: transparent; }
   .pill-ciclo[data-estado="esperando_siguiente"] { background: var(--aviso-bg); color: var(--aviso); border-color: transparent; }
   .pill-ciclo[data-estado="pausado"] { background: var(--surface-2); color: var(--text-2); border-color: var(--border); }
-  .btn-conectar-ejecutor { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  .btn-desconectar-ejecutor { border-color: var(--peligro); color: var(--peligro); font-weight: 600; }
+  .pill-ciclo[data-estado="en_bucle"] { background: var(--exito-bg); color: var(--exito); border-color: transparent; }
+  .pill-ciclo[data-estado="tarea_puntual"] { background: var(--aviso-bg); color: var(--aviso); border-color: transparent; }
+
+  /* ---- Mando -- fila principal de control, metafora de reproductor:
+     play/pause (alterno), stop, tarea puntual, y dos accesos a paneles
+     secundarios (loop=ritmo, info=documentos). ---- */
+  .mando { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn-mando {
+    font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 14px;
+  }
+  .btn-mando:active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn-mando-principal { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .btn-mando-principal[data-tipo="ejecutor_desconectar"] { border-color: var(--peligro); color: var(--peligro); }
+  .btn-mando-secundario { background: transparent; border-style: dashed; color: var(--text-2); }
+
+  .info-config { font-size: 12.5px; margin: 0 0 14px; display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; }
+  .info-config dt { color: var(--text-2); }
+  .info-config dd { margin: 0; font-family: "IBM Plex Mono", monospace; }
   .pill-rama {
     font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
     background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border);
@@ -312,11 +330,15 @@
     background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
     border-radius: 8px; padding: 0 18px;
   }
-  .fila-adjuntos { margin-top: 8px; }
-  .btn-adjuntar {
-    display: inline-block; font-size: 12px; font-weight: 500; cursor: pointer;
-    color: var(--accent); border: 1px dashed var(--accent); border-radius: 6px; padding: 5px 10px;
+  /* Clip de adjuntar dentro de la propia fila de petición, no como
+     elemento separado -- menos ruido visual (2026-08-22). */
+  .btn-adjuntar-inline {
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 38px; height: 38px; font-size: 15px; cursor: pointer;
+    color: var(--text-2); border: 1px solid var(--border); border-radius: 8px;
+    background: var(--surface);
   }
+  .btn-adjuntar-inline:hover { color: var(--accent); border-color: var(--accent); }
   .chips-adjuntos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
   .chip-adjunto {
     font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--border);
@@ -374,37 +396,37 @@
 
   <div class="panel-mando">
     <div class="cabecera-panel">
-      <h2>Panel de mando</h2>
-      <span id="estadoCiclo" class="pill-ciclo" data-estado="pausado" title="Ejecutor desconectado -- pausado a mano el 22/8/2026 mientras se termina de concretar la Consola">⏸ Ejecutor pausado</span>
+      <h2>Panel de Control</h2>
+      <span id="estadoCiclo" class="pill-ciclo" data-estado="pausado" title="Ejecutor pausado a mano el 22/8/2026 mientras se termina de concretar la Consola">⏸ Pausado</span>
       <span id="ramaActiva" class="pill-rama" data-visible="true">🌿 <b>jornada-2026-08-22</b></span>
       <span id="trabajandoAhora" class="pill-trabajo" data-visible="false" data-actor="" data-desde="" data-fase="">◐ Trabajando: <b></b> · <span class="fase-trabajo"></span> · desde <span class="hora-trabajo"></span></span>
     </div>
-    <div id="configEjecutor" data-horario-inicio="07:00" data-horario-fin="21:00" data-dias-activos="L-D" data-incidencias-por-fase="2" data-foco-ciclo="" data-notas-extra="" data-actualizado="2026-08-21 19:35" style="display:none;"></div>
-    <div id="ejecutorConexion" data-estado="desconectado" style="display:none;"></div>
-    <div class="botones-rapidos">
-      <button type="button" class="btn-accion-rapida" data-tipo="ciclo_inicio">🔁 Trabajar ahora</button>
-      <button type="button" class="btn-accion-rapida" data-tipo="ciclo_detener" title="Solo avisa -- no detiene los ciclos automáticos">⏸ Pausar</button>
-      <button type="button" class="btn-accion-rapida btn-conectar-ejecutor" data-tipo="ejecutor_conectar" title="Reactiva el trigger automático horario -- lo confirma Claude, no es instantáneo">▶ Conectar Ejecutor</button>
-      <button type="button" class="btn-accion-rapida btn-desconectar-ejecutor" data-tipo="ejecutor_desconectar" title="Pausa el trigger automático horario -- lo confirma Claude, no es instantáneo" style="display:none;">🔌 Desconectar Ejecutor</button>
+
+    <div class="mando">
+      <button type="button" class="btn-mando btn-mando-principal btn-accion-rapida" id="btnToggleEjecutor" data-tipo="ejecutor_conectar" title="Conecta el bucle automático de Ejecutor -- lo confirma Claude, no es instantáneo">▶ Play</button>
+      <button type="button" class="btn-mando btn-accion-rapida" data-tipo="jornada_fin" title="Cierra la jornada de hoy">⏹ Stop</button>
+      <button type="button" class="btn-mando btn-accion-rapida" data-tipo="ciclo_inicio" title="Pide que resuelva algo concreto ahora, sin activar el bucle automático completo">🎯 Tarea puntual</button>
+      <button type="button" class="btn-mando btn-mando-secundario" data-abre="panelRitmo">🔁 Loop</button>
+      <button type="button" class="btn-mando btn-mando-secundario" data-abre="panelInfo">ℹ️ Info</button>
     </div>
+
+    <div id="configEjecutor" data-horario-inicio="07:00" data-horario-fin="21:00" data-dias-activos="L-D" data-incidencias-por-fase="2" data-foco-ciclo="" data-notas-extra="" data-actualizado="2026-08-21 19:35" style="display:none;"></div>
+
     <div class="fila-peticion">
       <div class="peticion-texto" id="peticionTexto" contenteditable="true"></div>
-      <button type="button" id="btnEnviarPeticion">Enviar</button>
-    </div>
-    <div class="fila-adjuntos">
-      <label class="btn-adjuntar" for="incArchivos" title="También puedes pegar o arrastrar directamente en el cuadro de arriba">📎 Adjuntar archivo</label>
+      <label class="btn-adjuntar-inline" for="incArchivos" title="También puedes pegar o arrastrar directamente en el cuadro de arriba">📎</label>
       <input type="file" id="incArchivos" multiple accept="image/*,.pdf,.doc,.docx,.txt" style="display:none;">
+      <button type="button" id="btnEnviarPeticion">Enviar</button>
     </div>
     <div id="adjuntosSeleccionados" class="chips-adjuntos"></div>
     <p id="avisoAdjuntos" style="display:none;font-size:11.5px;color:var(--peligro);margin:4px 0 0;"></p>
 
-    <details class="seccion-avanzada">
-      <summary>⚙ Avanzado</summary>
+    <details class="seccion-avanzada" id="panelRitmo">
+      <summary>🔁 Loop -- ritmo del bucle automático</summary>
       <div class="contenido-avanzado">
         <p class="titulo-form">Anular horario automático (excepcional)</p>
         <div class="botones-rapidos">
           <button type="button" class="btn-accion-rapida" data-tipo="jornada_inicio" title="Adelanta el inicio de jornada">▶ Iniciar jornada</button>
-          <button type="button" class="btn-accion-rapida" data-tipo="jornada_fin" title="Adelanta el cierre de jornada">⏹ Cerrar jornada</button>
           <button type="button" class="btn-accion-rapida" data-tipo="resumen_ciclo">📋 Resumen del ciclo</button>
           <button type="button" class="btn-accion-rapida" data-tipo="solicitar_merge">📤 Enviar informe a Claude</button>
         </div>
@@ -420,6 +442,14 @@
         <button type="button" id="btnGuardarHorario">Guardar ritmo</button>
         <p id="avisoGuardarHorario" style="display:none;font-size:12px;color:var(--exito);margin:6px 0 0;font-weight:600;"></p>
         <p class="nota-horario">Se guarda como solicitud -- Claude lo aplica al Sheet en cuanto lo vea, no hace falta abrir la conversación.</p>
+      </div>
+    </details>
+
+    <details class="seccion-avanzada" id="panelInfo">
+      <summary>ℹ️ Info -- configuración, fase y documentos</summary>
+      <div class="contenido-avanzado">
+        <p class="titulo-form">Configuración vigente</p>
+        <dl class="info-config" id="infoConfigVisible"></dl>
 
         <p class="titulo-form">Prompt para Ejecutor</p>
         <button type="button" id="btnCopiarPromptEjecutor">📋 Copiar prompt para Ejecutor</button>
@@ -428,23 +458,17 @@
           <label class="etiqueta-prompt-manual">Si el copiado automático falla, mantén pulsado y selecciona todo aquí:</label>
           <input type="text" id="cajaPromptManual" readonly>
         </div>
-      </div>
-    </details>
 
-    <details class="seccion-avanzada">
-      <summary>🌐 Herramientas ChatGPT</summary>
-      <div class="contenido-avanzado">
-        <button type="button" id="btnDescargar">Descargar para ChatGPT ↓</button>
+        <p class="titulo-form">Exportar / importar en bloque</p>
+        <button type="button" id="btnDescargar">Descargar lote ↓</button>
         <p id="avisoDescarga" style="display:none;font-size:12px;color:var(--text-2);margin:8px 0 0;"></p>
-        <p class="titulo-importar">↑ Importar resultado de ChatGPT</p>
-        <div class="peticion-texto" id="resultadoChatGPT" contenteditable="true" data-placeholder-import="Pega aquí lo que ha reportado ChatGPT sobre el lote…"></div>
+        <p class="titulo-importar">↑ Importar resultado</p>
+        <div class="peticion-texto" id="resultadoChatGPT" contenteditable="true" data-placeholder-import="Pega aquí lo que te ha reportado sobre el lote…"></div>
         <button type="button" id="btnImportarResultado">Importar</button>
-      </div>
-    </details>
 
-    <details class="seccion-avanzada">
-      <summary id="resumenHistorial">📜 Historial de solicitudes</summary>
-      <div class="lista-solicitudes" id="listaSolicitudes"><div class="solicitud" data-key="sk-1787345500000-cicloespera" data-estado="en_espera" data-tipo="ciclo_pendiente" data-hora="22/8/2026 07:11" data-texto="Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta." data-respuesta=""><span class="estado-sol">En espera</span><div class="cuerpo-sol"><div>Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta. <span class="hora-sol">· 22/8/2026 07:11</span></div></div></div><div class="solicitud" data-key="sk-1787345400000-jornada22" data-estado="atendida" data-tipo="jornada_inicio" data-hora="22/8/2026 07:10" data-texto="" data-respuesta="Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0."><span class="estado-sol">Atendida</span><div class="cuerpo-sol"><div>▶ Iniciar jornada <span class="hora-sol">· 22/8/2026 07:10</span></div><div class="respuesta-sol">Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0.</div></div></div></div>
+        <p class="titulo-form" id="resumenHistorial">📜 Historial de solicitudes</p>
+        <div class="lista-solicitudes" id="listaSolicitudes"><div class="solicitud" data-key="sk-1787345500000-cicloespera" data-estado="en_espera" data-tipo="ciclo_pendiente" data-hora="22/8/2026 07:11" data-texto="Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta." data-respuesta=""><span class="estado-sol">En espera</span><div class="cuerpo-sol"><div>Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta. <span class="hora-sol">· 22/8/2026 07:11</span></div></div></div><div class="solicitud" data-key="sk-1787345400000-jornada22" data-estado="atendida" data-tipo="jornada_inicio" data-hora="22/8/2026 07:10" data-texto="" data-respuesta="Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0."><span class="estado-sol">Atendida</span><div class="cuerpo-sol"><div>▶ Iniciar jornada <span class="hora-sol">· 22/8/2026 07:10</span></div><div class="respuesta-sol">Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0.</div></div></div></div>
+        </div>
       </div>
     </details>
   </div>
@@ -1091,32 +1115,37 @@
 
   // ---- Estado del ciclo -- que sepas de un vistazo si hay trabajo en
   // curso o si el sistema esta esperando a que inicies el siguiente ----
+  // 4 estados reales del bucle (2026-08-22): pausado / en_bucle / tarea_puntual
+  // / en_curso, mas sin_iniciar para cuando la jornada esta cerrada del todo.
   var ETIQUETAS_ESTADO_CICLO_ = {
     sin_iniciar: '○ Jornada sin iniciar',
-    en_curso: '● Ciclo en curso',
-    esperando_siguiente: '○ Próximo ciclo automático',
-    pausado: '⏸ Ejecutor pausado'
+    en_curso: '● En curso',
+    en_bucle: '🔁 En bucle',
+    tarea_puntual: '🎯 Tarea puntual',
+    pausado: '⏸ Pausado'
   };
   function fijarEstadoCiclo_(estado, detalle) {
     var el = document.getElementById('estadoCiclo');
     if (!el) return;
     el.setAttribute('data-estado', estado);
     el.textContent = (ETIQUETAS_ESTADO_CICLO_[estado] || estado) + (detalle ? ' · ' + detalle : '');
+    sincronizarBotonToggle_();
   }
 
-  // ---- Conectar/Desconectar Ejecutor -- el boton NO apaga el trigger por
-  // si solo (Ejecutor no tiene acceso a su propio RemoteTrigger, solo
-  // Claude). Aqui solo se dejan constancia de la intencion (pill + que
-  // boton se ve) y se publica la solicitud; Claude aplica el cambio real
-  // y republica confirmando el estado de verdad. ----
-  function fijarConexionEjecutor_(conectado) {
-    var pill = document.getElementById('ejecutorConexion');
-    if (pill) pill.setAttribute('data-estado', conectado ? 'conectado' : 'desconectado');
-    var btnConectar = document.querySelector('.btn-conectar-ejecutor');
-    var btnDesconectar = document.querySelector('.btn-desconectar-ejecutor');
-    if (btnConectar) btnConectar.style.display = conectado ? 'none' : '';
-    if (btnDesconectar) btnDesconectar.style.display = conectado ? '' : 'none';
-    if (!conectado) fijarEstadoCiclo_('pausado');
+  // ---- Play/Pause -- un solo boton alterno (2026-08-22, en vez de dos
+  // botones que se ocultaban entre si). No apaga el trigger por si solo
+  // (Ejecutor no tiene acceso a su propio RemoteTrigger, solo Claude) --
+  // aqui solo se deja constancia de la intencion; Claude aplica el cambio
+  // real y republica confirmando el estado de verdad. El boton refleja
+  // siempre el estado ACTUAL de #estadoCiclo, no un estado propio. ----
+  function sincronizarBotonToggle_() {
+    var pill = document.getElementById('estadoCiclo');
+    var boton = document.getElementById('btnToggleEjecutor');
+    if (!pill || !boton) return;
+    var estado = pill.getAttribute('data-estado');
+    var pausadoComo = estado === 'pausado' || estado === 'sin_iniciar';
+    boton.setAttribute('data-tipo', pausadoComo ? 'ejecutor_conectar' : 'ejecutor_desconectar');
+    if (!boton.dataset.textoOriginal) boton.textContent = pausadoComo ? '▶ Play' : '⏸ Pause';
   }
 
   // ---- Indicador de rama activa de la jornada -- creada de verdad por
@@ -1143,23 +1172,47 @@
       // verificable (commit, deploy...) -- el boton en si no garantiza que
       // nada haya arrancado (ver conversacion 2026-08-21: quedo marcado
       // "en curso" mientras en realidad no habia nadie trabajando).
-      if (tipo === 'ciclo_inicio') fijarEstadoCiclo_('esperando_siguiente', 'ciclo pedido ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
-      if (tipo === 'ciclo_detener') fijarEstadoCiclo_('esperando_siguiente', 'detenido ' + horaActual_());
+      if (tipo === 'ciclo_inicio') fijarEstadoCiclo_('tarea_puntual', 'pedida ' + horaActual_() + ' -- pendiente de que Claude la confirme');
       if (tipo === 'jornada_fin') { fijarEstadoCiclo_('sin_iniciar'); fijarRamaActiva_(null, false); }
       if (tipo === 'ejecutor_desconectar') fijarEstadoCiclo_('pausado', 'pedido ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
-      if (tipo === 'ejecutor_conectar') fijarEstadoCiclo_('esperando_siguiente', 'reconexión pedida ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
+      if (tipo === 'ejecutor_conectar') fijarEstadoCiclo_('en_bucle', 'pedido ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
       guardarEstado_();
     });
   });
 
-  // ---- Estado inicial de la pill/botones de conexion -- coincide con lo
-  // que ya diga #ejecutorConexion en el HTML publicado (Claude lo actualiza
-  // a mano cuando confirma un conectar/desconectar real). ----
-  (function inicializarConexionEjecutor_() {
-    var pill = document.getElementById('ejecutorConexion');
-    if (!pill) return;
-    fijarConexionEjecutor_(pill.getAttribute('data-estado') === 'conectado');
-  })();
+  // ---- Botones que solo abren un panel local (Loop/Info) -- no envian
+  // solicitud, no tocan el estado del ciclo. ----
+  document.querySelectorAll('.btn-mando-secundario[data-abre]').forEach(function (boton) {
+    boton.addEventListener('click', function () {
+      var panel = document.getElementById(boton.getAttribute('data-abre'));
+      if (!panel) return;
+      panel.open = !panel.open;
+      if (panel.open) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+
+  // ---- Configuracion vigente, visible en el panel Info (antes era
+  // #configEjecutor con display:none y no se veia en ningun sitio). ----
+  function renderInfoConfig_() {
+    var cfg = document.getElementById('configEjecutor');
+    var dl = document.getElementById('infoConfigVisible');
+    if (!cfg || !dl) return;
+    var campos = [
+      ['Horario', cfg.getAttribute('data-horario-inicio') + '–' + cfg.getAttribute('data-horario-fin')],
+      ['Días activos', cfg.getAttribute('data-dias-activos')],
+      ['Incidencias/fase', cfg.getAttribute('data-incidencias-por-fase')],
+      ['Foco de este ciclo', cfg.getAttribute('data-foco-ciclo') || '—'],
+      ['Notas del operador', cfg.getAttribute('data-notas-extra') || '—'],
+      ['Actualizado', cfg.getAttribute('data-actualizado')]
+    ];
+    dl.innerHTML = campos.map(function (c) { return '<dt>' + escapeHtml_(c[0]) + '</dt><dd>' + escapeHtml_(c[1]) + '</dd>'; }).join('');
+  }
+
+  // ---- Estado inicial -- el boton toggle y el panel Info arrancan
+  // coincidiendo con lo que ya diga el HTML publicado (Claude actualiza
+  // #estadoCiclo y #configEjecutor a mano al confirmar un cambio real). ----
+  sincronizarBotonToggle_();
+  renderInfoConfig_();
 
   document.getElementById('btnEnviarPeticion').addEventListener('click', function (e) {
     var boton = e.currentTarget;
@@ -1573,6 +1626,7 @@
     if (dias) { partes.push('días activos ' + dias); cfg.setAttribute('data-dias-activos', dias); }
     if (cupo) { partes.push('incidencias por fase y ciclo: ' + cupo); cfg.setAttribute('data-incidencias-por-fase', cupo); }
     cfg.setAttribute('data-actualizado', horaActual_());
+    renderInfoConfig_();
     anadirSolicitud_('cambiar_horario', 'Nuevo ritmo pedido -- ' + partes.join(', ') + '.', []);
     aviso.textContent = '✓ Aplicado -- Ejecutor lo recogerá directamente del artefacto en su próximo ciclo, sin pasos intermedios.';
     aviso.style.color = 'var(--exito)';
