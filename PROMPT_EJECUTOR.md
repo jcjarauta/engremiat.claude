@@ -201,22 +201,53 @@ conocido, no insistas.
 
 ## EVENTO ESPECIAL -- HORARIO_INICIO
 
-Arranque automático de jornada (detectado como se explica arriba): crea y
-sube la rama `jornada-<fecha de hoy>` si no existe, actualiza `#ramaActiva`
-en el artefacto, resetea METRICAS DEL DIA (`data-ciclos`/`data-creadas`/
-`data-cerradas` a 0, `data-cierre-enviado` a `"false"`, `data-fecha` a hoy),
-VACÍA el historial de solicitudes del artefacto (`<div id="listaSolicitudes">`
--- sin ninguna `.solicitud` dentro) y republica el artefacto. Esto NO pide
-aprobación humana -- el operador ya lo autorizó al fijar HORARIO_INICIO.
-Justo después de este evento, sigue con el ciclo normal (las dos tareas de
-arriba) en el mismo disparo -- no esperes al siguiente.
+Arranque automático de jornada (detectado como se explica arriba): crea la
+rama `jornada-<fecha de hoy>` **siempre partiendo de `main`** (`git fetch
+origin main` + `git checkout -b jornada-<fecha> origin/main`), nunca desde
+la rama de la jornada anterior -- así hereda automáticamente todo lo que ya
+se mergeó, sin depender de que nadie se acuerde a tiempo. Súbela, actualiza
+`#ramaActiva` en el artefacto, resetea METRICAS DEL DIA (`data-ciclos`/
+`data-creadas`/`data-cerradas` a 0, `data-cierre-enviado` a `"false"`,
+`data-fecha` a hoy), VACÍA el historial de solicitudes del artefacto (`<div
+id="listaSolicitudes">` -- sin ninguna `.solicitud` dentro) y republica el
+artefacto. Esto NO pide aprobación humana -- el operador ya lo autorizó al
+fijar HORARIO_INICIO. Justo después de este evento, sigue con el ciclo
+normal (las dos tareas de arriba) en el mismo disparo -- no esperes al
+siguiente.
+
+**Si `main` no tiene `PROMPT_EJECUTOR.md`** (por ejemplo, la jornada
+anterior no se mergeó todavía): avísalo explícitamente en tu respuesta y
+sigue igualmente con las instrucciones de este fichero (las tienes en
+contexto aunque la rama nueva no las incluya todavía) -- no te quedes
+parado ni improvises un ciclo distinto.
 
 ## EVENTO ESPECIAL -- HORARIO_FIN
 
 Informe de fin de día (detectado como se explica arriba): NO hagas merge a
-main bajo ninguna circunstancia. Redacta un informe honesto del día (qué se
-resolvió, qué quedó pendiente, fricción real) y publícalo en el artefacto
-como una solicitud nueva de tipo `informe_fin_dia`, con el informe completo
-en el campo respuesta, estado `pendiente`. El operador lo revisará y
-decidirá cuándo reenviarlo para merge -- tu trabajo termina en dejar el
-informe listo, nunca en mergear.
+main bajo ninguna circunstancia -- eso lo hace Claude, no tú. Redacta el
+informe con estos campos exactos, porque alimentan directamente una fila de
+`95_DIARIO_NAVEGACION` (el diario de coste-resultado del proyecto) y Claude
+los transcribe tal cual, sin tener que reinterpretarlos:
+
+- `ASUNTO`: título corto de la jornada (una línea).
+- `RESUMEN`: ciclos ejecutados hoy, incidencias creadas/cerradas
+  (`data-creadas`/`data-cerradas` de `#metricasDia`), solicitudes atendidas,
+  commits hechos.
+- `EXITOS`: qué funcionó de verdad hoy, sin adornar.
+- `FRICCION_ERRORES`: bloqueos, cosas que no cuadraron, fricción real --
+  igual de honesto que el resto del informe, no lo suavices.
+- `SIGUIENTE_PASO`: qué queda pendiente para mañana.
+
+Publícalo en DOS sitios, no uno solo:
+1. Como solicitud nueva `informe_fin_dia` en el artefacto (estado
+   `pendiente`, los 5 campos de arriba en el texto), para que se vea al
+   momento.
+2. Como commit de un fichero `informes/<fecha AAAA-MM-DD>.md` en el repo,
+   con los mismos 5 campos -- es la copia de seguridad, porque
+   `#listaSolicitudes` se VACÍA en el próximo HORARIO_INICIO (ver arriba) y
+   si nadie procesa la solicitud a tiempo se pierde. El fichero en el repo
+   no sustituye la fila del diario -- es solo lo que garantiza que la
+   información sobrevive hasta que Claude la transcriba.
+
+Tu trabajo termina en dejar esto publicado y commiteado -- nunca en
+mergear ni en tocar el Sheet directamente.
