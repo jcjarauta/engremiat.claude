@@ -160,7 +160,13 @@ el artefacto lo refleje.
 `data-creadas`, `data-cerradas`, `data-cierre-enviado`) es contador manual:
 solo lo tocas TÚ al republicar. Si este ciclo hizo trabajo real, suma 1 a
 `data-ciclos`; suma `data-creadas`/`data-cerradas` según lo que de verdad
-haya pasado.
+haya pasado. **Importante, causa de un bug real (2026-08-22)**: el texto
+visible NO se actualiza solo con el atributo -- tiene sus propios `<b
+data-metrica="ciclos">`, `<b data-metrica="creadas">`, `<b
+data-metrica="cerradas">` dentro del mismo párrafo, y hay que actualizar su
+contenido a la vez que el atributo (igual que ya haces con
+`#trabajandoAhora`). Si solo cambias el `data-*`, el número visible en la
+Consola se queda congelado aunque el dato real esté bien.
 
 ## REGLA DE TRIAGE
 
