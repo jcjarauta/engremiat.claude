@@ -194,10 +194,15 @@ solo, para no truncar el documento a mitad.
 
 Commit y push a la rama activa (nunca a main). Republica el artefacto
 (documento completo, nunca fragmento) con lo que hayas avanzado -- incluye
-la sincronía con `13_INCIDENCIAS` y las métricas del día. Intenta la
-notificación por email -- UNA agrupada al final del ciclo, nunca una por
-fase ni por hallazgo individual -- pero si falla por el bloqueo de red
-conocido, no insistas.
+la sincronía con `13_INCIDENCIAS` y las métricas del día. **No intentes
+enviar email al final del ciclo** -- decisión 2026-08-22: `95_DIARIO_NAVEGACION`
+es el almacén real de lo que pasa cada día (crudo, se procesa/enriquece
+después), el email de resumen es redundante con eso además de estar
+condenado a fallar (bloqueo de red conocido, ver arriba). Si algo requiere
+intervención humana urgente de verdad (deploy_pendiente,
+autorizacion_claude), eso ya se resuelve publicando la solicitud
+destacada en el artefacto -- el canal de email para avisos urgentes es
+trabajo pendiente, no algo que intentes tú todavía.
 
 ## EVENTO ESPECIAL -- HORARIO_INICIO
 
