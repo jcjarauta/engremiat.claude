@@ -14,14 +14,20 @@ la fase 4).
 
 - **Busca**: campos obsoletos, deriva copia-pega entre módulos hermanos,
   fallos silenciosos, funciones que crashean en un caso real,
-  desconexión de catálogos/esquemas.
+  desconexión de catálogos/esquemas, código muerto confirmado.
 - **Quién ejecuta**: subagentes `general-purpose` en paralelo, uno por
   lote de módulos (2-3 módulos cada uno), nunca `Explore` -- hace falta
   juicio, no solo localizar código.
 - **Criterio de hallazgo válido**: solo defectos objetivamente
   verificables, anclados a fichero:línea, con escenario de fallo
   concreto. Nunca opinión de arquitectura ni "esto podría ser mejor".
-  Máximo 3-6 hallazgos por lote.
+  Máximo 3-6 hallazgos por lote. Para **código muerto** el "escenario de
+  fallo concreto" es el grep en sí: cero llamadas reales en todo `src/`
+  (tanto `.js` como `.html`, la función puede invocarse desde
+  `google.script.run` en una plantilla) -- cítalo como
+  "grep -rn nombreFuncion src/ -- 0 resultados fuera de su propia
+  definición". Si el fichero tiene otras funciones sí usadas, dilo
+  explícitamente (limpieza puntual, no todo el fichero está muerto).
 - **Se registra como**: INCIDENCIA, `ORIGEN_CREACION` = "Revisión de
   código".
 
