@@ -1,0 +1,1623 @@
+<title>Consola Engremiat</title><link id="enlaceFuentes" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500..700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap"><style id="estilosPrincipales">
+  :root {
+    --bg: #faf8f4;
+    --surface: #ffffff;
+    --surface-2: #f2efe8;
+    --border: #e2ddd0;
+    --text: #211f1a;
+    --text-2: #6e6a5e;
+    --accent: #5b4de0;
+    --accent-ink: #ffffff;
+    --exito: #1a7f37;
+    --exito-bg: #e7f4ea;
+    --peligro: #b00020;
+    --peligro-bg: #fbe9ea;
+    --aviso: #9a5b00;
+    --aviso-bg: #fbf0dd;
+    --radio: 10px;
+    --sombra: 0 1px 2px rgba(33,31,26,.06), 0 6px 20px -8px rgba(33,31,26,.12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #18171b; --surface: #211f24; --surface-2: #29272d; --border: #383641;
+      --text: #ece9e4; --text-2: #a09b8f; --accent: #9186f0; --accent-ink: #16141d;
+      --exito: #5fbf7f; --exito-bg: #1c2e21; --peligro: #ef6a70; --peligro-bg: #341f21;
+      --aviso: #e0a844; --aviso-bg: #34290f; --sombra: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px -8px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #18171b; --surface: #211f24; --surface-2: #29272d; --border: #383641;
+    --text: #ece9e4; --text-2: #a09b8f; --accent: #9186f0; --accent-ink: #16141d;
+    --exito: #5fbf7f; --exito-bg: #1c2e21; --peligro: #ef6a70; --peligro-bg: #341f21;
+    --aviso: #e0a844; --aviso-bg: #34290f; --sombra: 0 1px 2px rgba(0,0,0,.3), 0 6px 24px -8px rgba(0,0,0,.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, sans-serif; font-size: 14px; line-height: 1.5;
+  }
+  .envoltorio { max-width: 1080px; margin: 0 auto; padding: 28px 20px 80px; }
+
+  header.cabecera { margin-bottom: 6px; position: relative; padding-right: 90px; min-height: 24px; }
+  #btnRecargar {
+    font-family: inherit; font-size: 11.5px; font-weight: 500; cursor: pointer;
+    background: none; color: var(--text-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 4px 10px; flex-shrink: 0;
+    position: absolute; top: 0; right: 0;
+  }
+  #btnRecargar:hover { color: var(--accent); border-color: var(--accent); }
+  @media (max-width: 480px) {
+    header.cabecera { padding-right: 76px; }
+    #btnRecargar { font-size: 10px; padding: 3px 8px; }
+  }
+  #btnRecargar .icono-recargar { display: inline-block; }
+  #btnRecargar.girando .icono-recargar { animation: girar-recarga .6s linear; }
+  @keyframes girar-recarga { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  header.cabecera p { margin: 0; color: var(--text-2); font-size: 13px; }
+  .enlace-sheet { margin: 4px 0 18px; font-size: 12.5px; color: var(--text-2); }
+  .enlace-sheet a { color: var(--accent); font-weight: 500; text-decoration: none; }
+  .enlace-sheet a:hover { text-decoration: underline; }
+
+  .resumen {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1px;
+    background: var(--border); border: 1px solid var(--border); border-radius: var(--radio);
+    overflow: hidden; margin: 20px 0 16px;
+  }
+  .resumen .celda { background: var(--surface); padding: 14px 16px; }
+  .resumen .num {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 22px;
+    font-variant-numeric: tabular-nums; display: block;
+  }
+  .resumen .etq { color: var(--text-2); font-size: 11.5px; text-transform: uppercase; letter-spacing: .04em; }
+
+  #metricasDia {
+    font-size: 12.5px; color: var(--text-2); margin: 0 0 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  #metricasDia b { color: var(--text); font-weight: 600; }
+
+  .celda[data-estado-salud="ok"] .num-salud { color: var(--exito); }
+  .celda[data-estado-salud="aviso"] .num-salud { color: var(--aviso); }
+  .celda[data-estado-salud="error"] .num-salud { color: var(--peligro); }
+
+  .aviso-cambios {
+    display: flex; align-items: center; gap: 10px; margin: 0 0 16px;
+    background: var(--exito-bg); color: var(--exito); border: 1px solid transparent;
+    border-radius: var(--radio); padding: 10px 14px; font-size: 12.5px; font-weight: 500;
+  }
+  .aviso-cambios[data-visible="false"] { display: none; }
+  .aviso-cambios span { flex: 1; }
+  .aviso-cambios button {
+    border: none; background: none; color: inherit; cursor: pointer;
+    font-size: 14px; line-height: 1; padding: 2px 6px; opacity: .7;
+  }
+  .aviso-cambios button:hover { opacity: 1; }
+
+  #barraEstado {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 14px; margin-bottom: 16px; font-size: 12px; color: var(--text-2);
+  }
+  #barraEstado .punto { width: 7px; height: 7px; border-radius: 50%; background: var(--text-2); flex-shrink: 0; }
+  #barraEstado[data-estado="guardando"] .punto { background: var(--aviso); }
+  #barraEstado[data-estado="guardado"] .punto { background: var(--exito); }
+  #barraEstado[data-estado="error"] .punto { background: var(--peligro); }
+
+  nav.filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  nav.filtros:last-of-type { margin-bottom: 22px; }
+  nav.filtros button {
+    font-family: inherit; font-size: 12.5px; font-weight: 500; color: var(--text-2);
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 14px; cursor: pointer; font-variant-numeric: tabular-nums;
+  }
+  nav.filtros button[data-activo="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  /* Fila de actor -- eje distinto (quien lo trabaja, no en que etapa esta),
+     estilo de contorno en vez de relleno para que se lea como una segunda
+     pregunta, no como mas opciones de la misma lista de arriba. */
+  nav.filtros-actor button {
+    background: transparent; border-style: dashed;
+  }
+  nav.filtros-actor button[data-activo="true"] {
+    background: var(--surface-2); border-style: solid; border-color: var(--text-2); color: var(--text);
+  }
+
+  section.grupo { margin-bottom: 34px; }
+  section.grupo[data-local-oculto="true"] { display: none; }
+  .titulo-grupo {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
+    border-bottom: 1px solid var(--border); padding-bottom: 8px;
+  }
+  .titulo-grupo h2 { font-family: "Fraunces", Georgia, serif; font-size: 17px; font-weight: 600; margin: 0; }
+  .titulo-grupo .cuenta { font-family: "IBM Plex Mono", monospace; color: var(--text-2); font-size: 12px; }
+  .titulo-grupo .pista { color: var(--text-2); font-size: 12px; margin-left: auto; }
+  .grupo-vacio { color: var(--text-2); font-size: 13px; font-style: italic; }
+
+  .tarjeta {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radio);
+    box-shadow: var(--sombra); padding: 16px 18px; margin-bottom: 12px;
+  }
+  .tarjeta.revisada { opacity: .55; }
+  .fila-superior { display: flex; align-items: flex-start; gap: 10px; }
+  .id-chip {
+    font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 5px;
+    padding: 2px 7px; flex-shrink: 0; margin-top: 2px;
+  }
+  .cuerpo-tarjeta { flex: 1; min-width: 0; }
+  .titulo-tarjeta { font-weight: 600; font-size: 14.5px; margin: 0 0 4px; text-wrap: balance; }
+  .pills { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .pill {
+    font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .03em;
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .pill-alta { background: var(--peligro-bg); color: var(--peligro); }
+  .pill-media { background: var(--aviso-bg); color: var(--aviso); }
+  .pill-baja { background: var(--surface-2); color: var(--text-2); }
+  .pill-tipo { background: var(--surface-2); color: var(--text-2); }
+  .resumen-tarjeta { color: var(--text-2); font-size: 13px; margin: 0 0 10px; }
+  details.como-revisar { margin-bottom: 10px; }
+  details.como-revisar summary { cursor: pointer; font-size: 12.5px; font-weight: 500; color: var(--accent); list-style: none; }
+  details.como-revisar summary::-webkit-details-marker { display: none; }
+  details.como-revisar summary::before { content: "▸ "; }
+  details.como-revisar[open] summary::before { content: "▾ "; }
+  details.como-revisar .texto { font-size: 13px; color: var(--text); margin-top: 6px; padding-left: 14px; border-left: 2px solid var(--border); }
+  .pie-tarjeta { display: flex; align-items: flex-start; gap: 10px; }
+  .notas {
+    flex: 1; min-height: 20px; font-family: inherit; font-size: 12.5px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px;
+    padding: 6px 9px; color: var(--text); white-space: pre-wrap; word-break: break-word;
+  }
+  .notas:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .notas:empty::before { content: attr(data-placeholder); color: var(--text-2); }
+  .notas.sugerencia-sin-aprobar { color: var(--text-2); font-style: italic; }
+  .btn-aprobar-sugerencia {
+    font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+    background: var(--exito-bg); color: var(--exito); border: 1px solid var(--exito);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  .btn-aprobar-sugerencia:active { background: var(--exito); color: var(--accent-ink); }
+  .btn-trabajar-valorar {
+    font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer;
+    background: var(--surface-2); color: var(--accent); border: 1px solid var(--accent);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  .btn-trabajar-valorar:active { background: var(--accent); color: var(--accent-ink); }
+  .btn-trabajar-valorar:disabled { opacity: .55; cursor: default; }
+  .fila-acciones-tarjeta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+  .btn-descargar-una {
+    font-family: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+    background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 6px 10px;
+  }
+  .btn-descargar-una:active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+
+  #barraGuardar {
+    position: sticky; bottom: 0; display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px;
+    margin: 0 -20px; box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+  }
+  #barraGuardar[data-visible="false"] { display: none; }
+  #barraGuardar span { font-size: 12.5px; color: var(--text-2); flex: 1; }
+  #btnGuardarCambios {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
+    border-radius: 999px; padding: 9px 18px;
+  }
+  #btnGuardarCambios:disabled { opacity: .5; cursor: default; }
+
+  .panel-mando {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radio);
+    box-shadow: var(--sombra); padding: 16px 18px; margin-bottom: 22px;
+  }
+  .cabecera-panel { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .panel-mando h2 { font-family: "Fraunces", Georgia, serif; font-size: 16px; font-weight: 600; margin: 0; }
+  .pill-ciclo {
+    font-size: 11.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border);
+  }
+  .pill-ciclo[data-estado="en_curso"] { background: var(--exito-bg); color: var(--exito); border-color: transparent; }
+  .pill-ciclo[data-estado="esperando_siguiente"] { background: var(--aviso-bg); color: var(--aviso); border-color: transparent; }
+  .pill-ciclo[data-estado="pausado"] { background: var(--surface-2); color: var(--text-2); border-color: var(--border); }
+  .btn-conectar-ejecutor { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .btn-desconectar-ejecutor { border-color: var(--peligro); color: var(--peligro); font-weight: 600; }
+  .pill-rama {
+    font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
+    background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border);
+  }
+  .pill-rama[data-visible="false"] { display: none; }
+  .pill-rama b { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+  .pill-trabajo {
+    font-size: 11.5px; font-weight: 500; padding: 4px 10px; border-radius: 999px;
+    background: var(--exito-bg); color: var(--exito); border: 1px solid transparent;
+  }
+  .pill-trabajo[data-visible="false"] { display: none; }
+  .pill-trabajo b { font-weight: 600; }
+  .botones-rapidos { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .botones-rapidos button {
+    font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 12px;
+  }
+  .botones-rapidos button:active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .botones-rapidos button[data-tipo="deploy_aprobado"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+  .lista-solicitudes.destacados {
+    background: var(--surface); border: 1px solid var(--accent); border-radius: var(--radio);
+    box-shadow: var(--sombra); padding: 4px 18px 10px; margin-bottom: 22px;
+  }
+  .lista-solicitudes.destacados[data-visible="false"] { display: none; }
+  .lista-solicitudes.destacados h2 {
+    font-family: "Fraunces", Georgia, serif; font-size: 15px; font-weight: 600;
+    margin: 12px 0 2px; color: var(--accent);
+  }
+  .lista-solicitudes.destacados .solicitud:first-of-type { border-top: none; }
+  .nota-destacados { font-size: 11.5px; color: var(--text-2); margin: 0 0 8px; }
+
+  .seccion-avanzada { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .seccion-avanzada summary {
+    cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text-2);
+    list-style: none; user-select: none;
+  }
+  .seccion-avanzada summary::-webkit-details-marker { display: none; }
+  .seccion-avanzada summary::before { content: "▸ "; }
+  .seccion-avanzada[open] summary::before { content: "▾ "; }
+  .contenido-avanzado { margin-top: 12px; }
+  .titulo-form { font-size: 12px; font-weight: 700; color: var(--text-2); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: .03em; }
+  .titulo-form:first-child { margin-top: 0; }
+  .fila-horario { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .fila-horario label { font-size: 11px; color: var(--text-2); display: flex; flex-direction: column; gap: 4px; }
+  .fila-horario input {
+    font-family: inherit; font-size: 13px; padding: 7px 9px; width: 90px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  }
+  .fila-horario .campo-dias input { width: 70px; }
+  .fila-horario .campo-cupo input { width: 70px; }
+  .nota-horario { font-size: 11px; color: var(--text-2); margin: 0 0 10px; }
+  #btnGuardarHorario {
+    font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
+    border-radius: 8px; padding: 7px 14px; margin-bottom: 4px;
+  }
+  #btnCopiarPromptEjecutor {
+    font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer;
+    background: var(--surface-2); color: var(--text); border: 1px dashed var(--text-2);
+    border-radius: 8px; padding: 8px 12px;
+  }
+  #btnCopiarPromptEjecutor:active { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .fila-prompt-manual { margin: -8px 0 12px; }
+  .etiqueta-prompt-manual { display: block; font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+  #cajaPromptManual {
+    width: 100%; font-family: inherit; font-size: 12px; padding: 7px 9px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 6px; color: var(--text);
+  }
+  button:disabled { opacity: .5; cursor: default; }
+
+  .fila-peticion { display: flex; gap: 8px; }
+  .peticion-texto {
+    flex: 1; min-height: 38px; font-family: inherit; font-size: 13px;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 10px; color: var(--text); display: flex; align-items: center;
+  }
+  .peticion-texto:empty::before { content: "Escribe una petición, o pega/suelta una captura…"; color: var(--text-2); }
+  .peticion-texto:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .peticion-texto.zona-arrastre-activa { outline: 2px dashed var(--accent); outline-offset: 2px; background: var(--surface); }
+  #btnEnviarPeticion {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0;
+    background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent);
+    border-radius: 8px; padding: 0 18px;
+  }
+  .fila-adjuntos { margin-top: 8px; }
+  .btn-adjuntar {
+    display: inline-block; font-size: 12px; font-weight: 500; cursor: pointer;
+    color: var(--accent); border: 1px dashed var(--accent); border-radius: 6px; padding: 5px 10px;
+  }
+  .chips-adjuntos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .chip-adjunto {
+    font-size: 11.5px; background: var(--surface-2); border: 1px solid var(--border);
+    border-radius: 999px; padding: 3px 6px 3px 10px; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .chip-adjunto button { border: none; background: none; color: var(--text-2); cursor: pointer; font-size: 13px; line-height: 1; padding: 2px 4px; }
+  .adjuntos-sol { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .adjunto-miniatura img { width: 52px; height: 52px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); display: block; }
+  .adjunto-doc { font-size: 11.5px; color: var(--accent); text-decoration: none; align-self: center; }
+  .importar-chatgpt { margin: -6px 0 22px; padding-top: 4px; }
+  .titulo-importar { font-size: 12.5px; font-weight: 600; color: var(--text-2); margin: 0 0 8px; }
+  #resultadoChatGPT { margin-bottom: 8px; }
+  #resultadoChatGPT:empty::before { content: attr(data-placeholder-import); color: var(--text-2); }
+  #btnImportarResultado {
+    font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--surface-2); color: var(--accent); border: 1px solid var(--accent);
+    border-radius: 8px; padding: 8px 14px;
+  }
+  .lista-solicitudes { margin-top: 12px; font-size: 12.5px; }
+  .solicitud { display: flex; gap: 8px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--border); }
+  .solicitud .estado-sol {
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em;
+    padding: 1px 6px; border-radius: 999px; flex-shrink: 0;
+  }
+  .solicitud[data-estado="pendiente"] .estado-sol { background: var(--aviso-bg); color: var(--aviso); }
+  .solicitud[data-estado="atendida"] .estado-sol { background: var(--exito-bg); color: var(--exito); }
+  .solicitud[data-estado="en_espera"] .estado-sol { background: var(--surface-2); color: var(--text-2); }
+  .solicitud .cuerpo-sol { flex: 1; }
+  .solicitud .hora-sol { color: var(--text-2); font-size: 11px; }
+  .solicitud .respuesta-sol { color: var(--text-2); margin-top: 3px; font-style: italic; }
+</style><div class="envoltorio">
+  <header class="cabecera">
+    <button type="button" id="btnRecargar" title="Si algo no reacciona tras una actualización en vivo, recarga para reengancharlo todo"><span class="icono-recargar">↻</span> Recargar</button>
+    <p>Estado operativo · 2026-08-22</p>
+  </header>
+  <p class="enlace-sheet">Todas las incidencias en <a href="https://docs.google.com/spreadsheets/d/142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ/edit#gid=1182532531" target="_blank" rel="noopener">13_INCIDENCIAS ↗</a> · aquí solo el cupo activo de cada grupo.</p>
+
+  <div class="resumen">
+    <div class="celda" title="Total real en 13_INCIDENCIAS (Abierta + En resolución) -- incluye lo no mostrado en Consola por cupo, no es la suma de las columnas siguientes"><span class="num" data-resumen="abiertas">26</span><span class="etq">Abiertas</span></div>
+    <div class="celda" title="Nada se toca hasta que decidas algo sobre ellas"><span class="num" data-resumen="decision">4</span><span class="etq">Necesitan decisión</span></div>
+    <div class="celda" title="Sin decisión pendiente -- esperan a que Ejecutor las coja en un ciclo"><span class="num" data-resumen="ciclo">6</span><span class="etq">Sin bloqueo</span></div>
+    <div class="celda" title="Aprobadas, sin urgencia -- features nuevas que pueden esperar"><span class="num" data-resumen="backlog">4</span><span class="etq">Backlog</span></div>
+    <div class="celda" title="Ideas sin triaje -- trabajo genuino para Claude, no ciclos de Ejecutor"><span class="num" data-resumen="valorar">11</span><span class="etq">A valorar</span></div>
+    <div class="celda" data-estado-salud="ok" title="Consistencia Consola↔Sheet: 24 IDs comprobados, sin desajuste (22/8/2026 15:35) | Suite de regresión worker local: 4/4 casos correctos (22/8/2026 15:20)"><span class="num num-salud" data-resumen="salud">OK</span><span class="etq">Salud del sistema</span></div>
+  </div>
+
+  <p id="metricasDia" data-fecha="2026-08-22" data-ciclos="1" data-creadas="15" data-cerradas="4" data-cierre-enviado="false">📅 Hoy -- <b data-metrica="ciclos">0</b> ciclos de Ejecutor · <b data-metrica="creadas">15</b> incidencias nuevas (todo el sistema) · <b data-metrica="cerradas">4</b> cerradas</p>
+
+
+  <div id="avisoCambios" class="aviso-cambios" data-visible="false" artifact-local>
+    <span id="textoAvisoCambios"></span>
+    <button type="button" id="btnCerrarAvisoCambios" aria-label="Cerrar aviso">✕</button>
+  </div>
+
+
+  <div class="panel-mando">
+    <div class="cabecera-panel">
+      <h2>Panel de mando</h2>
+      <span id="estadoCiclo" class="pill-ciclo" data-estado="pausado" title="Ejecutor desconectado -- pausado a mano el 22/8/2026 mientras se termina de concretar la Consola">⏸ Ejecutor pausado</span>
+      <span id="ramaActiva" class="pill-rama" data-visible="true">🌿 <b>jornada-2026-08-22</b></span>
+      <span id="trabajandoAhora" class="pill-trabajo" data-visible="false" data-actor="" data-desde="" data-fase="">◐ Trabajando: <b></b> · <span class="fase-trabajo"></span> · desde <span class="hora-trabajo"></span></span>
+    </div>
+    <div id="configEjecutor" data-horario-inicio="07:00" data-horario-fin="21:00" data-dias-activos="L-D" data-incidencias-por-fase="2" data-foco-ciclo="" data-notas-extra="" data-actualizado="2026-08-21 19:35" style="display:none;"></div>
+    <div id="ejecutorConexion" data-estado="desconectado" style="display:none;"></div>
+    <div class="botones-rapidos">
+      <button type="button" class="btn-accion-rapida" data-tipo="ciclo_inicio">🔁 Trabajar ahora</button>
+      <button type="button" class="btn-accion-rapida" data-tipo="ciclo_detener" title="Solo avisa -- no detiene los ciclos automáticos">⏸ Pausar</button>
+      <button type="button" class="btn-accion-rapida btn-conectar-ejecutor" data-tipo="ejecutor_conectar" title="Reactiva el trigger automático horario -- lo confirma Claude, no es instantáneo">▶ Conectar Ejecutor</button>
+      <button type="button" class="btn-accion-rapida btn-desconectar-ejecutor" data-tipo="ejecutor_desconectar" title="Pausa el trigger automático horario -- lo confirma Claude, no es instantáneo" style="display:none;">🔌 Desconectar Ejecutor</button>
+    </div>
+    <div class="fila-peticion">
+      <div class="peticion-texto" id="peticionTexto" contenteditable="true"></div>
+      <button type="button" id="btnEnviarPeticion">Enviar</button>
+    </div>
+    <div class="fila-adjuntos">
+      <label class="btn-adjuntar" for="incArchivos" title="También puedes pegar o arrastrar directamente en el cuadro de arriba">📎 Adjuntar archivo</label>
+      <input type="file" id="incArchivos" multiple accept="image/*,.pdf,.doc,.docx,.txt" style="display:none;">
+    </div>
+    <div id="adjuntosSeleccionados" class="chips-adjuntos"></div>
+    <p id="avisoAdjuntos" style="display:none;font-size:11.5px;color:var(--peligro);margin:4px 0 0;"></p>
+
+    <details class="seccion-avanzada">
+      <summary>⚙ Avanzado</summary>
+      <div class="contenido-avanzado">
+        <p class="titulo-form">Anular horario automático (excepcional)</p>
+        <div class="botones-rapidos">
+          <button type="button" class="btn-accion-rapida" data-tipo="jornada_inicio" title="Adelanta el inicio de jornada">▶ Iniciar jornada</button>
+          <button type="button" class="btn-accion-rapida" data-tipo="jornada_fin" title="Adelanta el cierre de jornada">⏹ Cerrar jornada</button>
+          <button type="button" class="btn-accion-rapida" data-tipo="resumen_ciclo">📋 Resumen del ciclo</button>
+          <button type="button" class="btn-accion-rapida" data-tipo="solicitar_merge">📤 Enviar informe a Claude</button>
+        </div>
+
+        <p class="titulo-form">Ritmo de Ejecutor Engremiat</p>
+        <div class="fila-horario">
+          <label>Inicio jornada<input type="text" id="horarioInicioInput" placeholder="07:00"></label>
+          <label>Fin jornada<input type="text" id="horarioFinInput" placeholder="21:00"></label>
+          <label class="campo-dias">Días activos<input type="text" id="horarioDiasInput" placeholder="L-D"></label>
+          <label class="campo-cupo">Incidencias por fase y ciclo<input type="number" id="horarioCupoInput" min="1" max="20" placeholder="3"></label>
+        </div>
+        <p class="nota-horario">Sube el cupo por fase los días que no puedas atender el artefacto (reuniones, visitas…) para que cada ciclo avance más antes de necesitar tu decisión; bájalo si prefieres lotes pequeños y frecuentes.</p>
+        <button type="button" id="btnGuardarHorario">Guardar ritmo</button>
+        <p id="avisoGuardarHorario" style="display:none;font-size:12px;color:var(--exito);margin:6px 0 0;font-weight:600;"></p>
+        <p class="nota-horario">Se guarda como solicitud -- Claude lo aplica al Sheet en cuanto lo vea, no hace falta abrir la conversación.</p>
+
+        <p class="titulo-form">Prompt para Ejecutor</p>
+        <button type="button" id="btnCopiarPromptEjecutor">📋 Copiar prompt para Ejecutor</button>
+        <p id="avisoCopiarPrompt" style="display:none;font-size:11.5px;color:var(--text-2);margin:6px 0 4px;"></p>
+        <div class="fila-prompt-manual">
+          <label class="etiqueta-prompt-manual">Si el copiado automático falla, mantén pulsado y selecciona todo aquí:</label>
+          <input type="text" id="cajaPromptManual" readonly>
+        </div>
+      </div>
+    </details>
+
+    <details class="seccion-avanzada">
+      <summary>🌐 Herramientas ChatGPT</summary>
+      <div class="contenido-avanzado">
+        <button type="button" id="btnDescargar">Descargar para ChatGPT ↓</button>
+        <p id="avisoDescarga" style="display:none;font-size:12px;color:var(--text-2);margin:8px 0 0;"></p>
+        <p class="titulo-importar">↑ Importar resultado de ChatGPT</p>
+        <div class="peticion-texto" id="resultadoChatGPT" contenteditable="true" data-placeholder-import="Pega aquí lo que ha reportado ChatGPT sobre el lote…"></div>
+        <button type="button" id="btnImportarResultado">Importar</button>
+      </div>
+    </details>
+
+    <details class="seccion-avanzada">
+      <summary id="resumenHistorial">📜 Historial de solicitudes</summary>
+      <div class="lista-solicitudes" id="listaSolicitudes"><div class="solicitud" data-key="sk-1787345500000-cicloespera" data-estado="en_espera" data-tipo="ciclo_pendiente" data-hora="22/8/2026 07:11" data-texto="Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta." data-respuesta=""><span class="estado-sol">En espera</span><div class="cuerpo-sol"><div>Jornada iniciada, sin ciclo todavía -- en espera del próximo disparo automático de Ejecutor (cada hora, minuto :36). Esta entrada es solo informativa, no necesita respuesta. <span class="hora-sol">· 22/8/2026 07:11</span></div></div></div><div class="solicitud" data-key="sk-1787345400000-jornada22" data-estado="atendida" data-tipo="jornada_inicio" data-hora="22/8/2026 07:10" data-texto="" data-respuesta="Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0."><span class="estado-sol">Atendida</span><div class="cuerpo-sol"><div>▶ Iniciar jornada <span class="hora-sol">· 22/8/2026 07:10</span></div><div class="respuesta-sol">Jornada de hoy iniciada por petición directa en el chat. Rama jornada-2026-08-22 creada desde main (jornada-2026-08-21 estaba idéntica a main, sin nada pendiente de mergear) y subida. RAMA_ACTIVA actualizada en el Sheet. Métricas del día reiniciadas a 0.</div></div></div></div>
+      </div>
+    </details>
+  </div>
+  <div class="lista-solicitudes destacados" id="pendientesDestacados" data-visible="false" artifact-local></div>
+
+
+  <nav class="filtros" id="filtros">
+    <button type="button" data-filtro="todas" data-activo="false">Todas · 25</button>
+    <button type="button" data-filtro="decision" data-activo="true">Necesitan decisión · 4</button>
+    <button type="button" data-filtro="ciclo" data-activo="false">Sin bloqueo · 6</button>
+    <button type="button" data-filtro="backlog" data-activo="false">Backlog · 4</button>
+    <button type="button" data-filtro="valorar" data-activo="false">A valorar · 11</button>
+  </nav>
+  <nav class="filtros filtros-actor" id="filtrosActor">
+    <button type="button" data-filtro-actor="humano" data-activo="false">👤 Humano · 4</button>
+    <button type="button" data-filtro-actor="claude" data-activo="false">🧠 Claude · 11</button>
+    <button type="button" data-filtro-actor="worker" data-activo="false">🔧 Worker local · 0</button>
+    <button type="button" data-filtro-actor="ejecutor" data-activo="false">🤖 Ejecutor · 10</button>
+  </nav>
+
+  <div id="grupos"><section class="grupo" data-grupo="decision"><div class="titulo-grupo"><h2>Necesitan tu decisión</h2><span class="cuenta">4/5</span><span class="pista">Nada se toca hasta que decidas</span></div><article class="tarjeta" data-inc="INC-0020"><div class="fila-superior"><span class="id-chip">INC-0020</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">El deployment del maestro no sigue @HEAD</p><div class="pills"><span class="pill pill-alta">alta</span><span class="pill pill-tipo">Bug</span></div><p class="resumen-tarjeta">Cada publicación necesitó un <code>clasp deploy</code> explícito además del push+version habitual, o el código nuevo no llegaba al endpoint real.</p><details class="como-revisar"><summary>Cómo revisar</summary><div class="texto">Decide: ¿el deployment fijo pasa a apuntar a <code>@HEAD</code> siempre, o <code>clasp deploy</code> se documenta como paso obligatorio de cada ciclo? Ninguna opción es la "correcta" técnicamente, es una decisión de riesgo vs. comodidad.</div></details><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0020">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Tu decisión y por qué…">clasp deploy explícito como paso obligatorio de cada ciclo, documentado -- no cambiar a @HEAD por ahora, es más seguro para el cliente en producción.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0027"><div class="fila-superior"><span class="id-chip">INC-0027</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Impacto y Convocatorias son silos totalmente desconectados</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Confirmado por código: ningún dato de evidencia de impacto se enlaza con una convocatoria, pese a que las subvenciones suelen pedir justificar impacto.</p><details class="como-revisar"><summary>Cómo revisar</summary><div class="texto">Decide si vale la pena enlazar ambos módulos ahora, o queda aparcado hasta que una convocatoria real lo necesite.</div></details><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0027">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Tu decisión y por qué…">Aparcado por ahora -- sin necesidad demostrada de conectar Impacto con Convocatorias todavía.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0028"><div class="fila-superior"><span class="id-chip">INC-0028</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Gantt nunca lee las fechas reales de Ejecución de Tarea</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">La desviación plan-vs-real se calcula con fechas manuales de Tarea/Proceso, duplicando datos que Ejecución de Tarea ya registra.</p><details class="como-revisar"><summary>Cómo revisar</summary><div class="texto">Decide si Gantt debería leer esas fechas reales en vez de/además de los campos manuales -- cambia de dónde sale el dato, no es un fix mecánico.</div></details><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0028">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Tu decisión y por qué…">Sí, Gantt debería leer las fechas reales de Ejecución de Tarea -- evita duplicar entrada de datos.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0029"><div class="fila-superior"><span class="id-chip">INC-0029</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">El orden de columnas del Sheet no coincide con el del código</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Bug</span></div><p class="resumen-tarjeta">Confirmado en 4 tablas -- un script externo que escriba por posición (como me pasó a mí) falla en silencio.</p><details class="como-revisar"><summary>Cómo revisar</summary><div class="texto">Decide si se realinea el Sheet al orden del código, o se actualiza el código al orden real -- y si hace falta revisar más tablas antes de decidir el alcance completo.</div></details><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0029">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Tu decisión y por qué…">Actualizar el código al orden real del Sheet (más barato que realinear datos ya en producción), y revisar el resto de tablas antes de cerrar el alcance.</div></div></div></div></article></section><section class="grupo" data-grupo="ciclo"><div class="titulo-grupo"><h2>Sin bloqueo</h2><span class="cuenta">5/10</span><span class="pista">Bugs/mejoras reales, sin decisión pendiente -- esperan a Ejecutor · +1 en cola, van entrando a medida que resuelves</span></div><article class="tarjeta" data-inc="INC-0001"><div class="fila-superior"><span class="id-chip">INC-0001</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Alertas de bloqueo ampliadas (O4)</p><div class="pills"><span class="pill pill-alta">alta</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Extender "Bloqueos" de Agenda Operativa más allá de dependientes activos: decisión pendiente, material insuficiente, recurso no disponible, competencia ausente.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0001">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Ya en resolución en el Sheet -- sin bloqueo, seguir con el ciclo en curso hasta cerrarla.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0035"><div class="fila-superior"><span class="id-chip">INC-0035</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Kanban de Incidencias oculta el filtro Responsable pese a que sí existe</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Bug</span></div><p class="resumen-tarjeta">tarjetasKanbanIncidencia_ nunca aplica el filtro "Responsable" al ver Incidencias -- su comentario dice que Incidencia no tiene RESPONSABLE_ID propio, pero FormularioEsquemas.js confirma que sí es un campo real y asignable.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0035">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para el próximo ciclo -- fix mecánico y de bajo riesgo, añadir el filtro que ya existe para Tarea/Proceso.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0002"><div class="fila-superior"><span class="id-chip">INC-0002</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Indicador de carga global -- revertido, requiere rediseño</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">El overlay automático sobre google.script.run rompía sidebars/diálogos que registran su propio withSuccessHandler -- revertido en producción. Rediseño: mostrarCargando()/ocultarCargando() explícito por botón, sin parchear la API global.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0002">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para el próximo ciclo -- alcance ya acotado, probar contra cada superficie real (diálogo Y sidebar) antes de cerrar.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0005"><div class="fila-superior"><span class="id-chip">INC-0005</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Ficha de Recurso y Persona/Equipo sin exportar CSV</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Las otras 5 Fichas del sistema ya tienen exportación CSV; estas dos se quedaron sin ella.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0005">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para el próximo ciclo -- mismo patrón que las Fichas existentes, sin ambigüedad.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0013"><div class="fila-superior"><span class="id-chip">INC-0013</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Panel de Ventas no muestra Entregas</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Solo cubre Pedidos y Contratos, pese a que Entregas tiene CRUD completo en otros sitios.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0013">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para el próximo ciclo -- completa la cobertura del módulo Ventas.</div></div></div></div></article></section><section class="grupo" data-grupo="backlog"><div class="titulo-grupo"><h2>Backlog de producto</h2><span class="cuenta">3/4</span><span class="pista">Sin urgencia, features nuevas · +1 en cola, van entrando a medida que resuelves</span></div><article class="tarjeta" data-inc="INC-0021"><div class="fila-superior"><span class="id-chip">INC-0021</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Selector múltiple + barra de acción en el Kanban</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Cambio de estado por lotes, para delegar un lote entero al worker sin tarea por tarea.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0021">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para backlog -- sin prisa, mejora de comodidad, no bloquea nada.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0033"><div class="fila-superior"><span class="id-chip">INC-0033</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Modo oscuro real para los diálogos</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Nace del fix de legibilidad (INC-0030) -- paleta oscura completa vía <code>prefers-color-scheme</code>.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0033">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para backlog -- el fix mínimo (INC-0030) ya cubre lo urgente, esto es pulido.</div></div></div></div></article><article class="tarjeta" data-inc="INC-0034"><div class="fila-superior"><span class="id-chip">INC-0034</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Adjuntar imagen a una Incidencia sin salir de la Ficha</p><div class="pills"><span class="pill pill-media">media</span><span class="pill pill-tipo">Mejora</span></div><p class="resumen-tarjeta">Pegar/arrastrar una captura, subida directa a Drive, sin el formulario genérico de Documentos.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button><button type="button" class="btn-descargar-una" data-inc="INC-0034">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas sugerencia-sin-aprobar" contenteditable="true" data-prellenado="true" data-placeholder="Notas…">Aprobado para backlog -- confirmado que el nivel 0 (pegar en celda) no bastaba.</div></div></div></div></article></section><section class="grupo" data-grupo="valorar"><div class="titulo-grupo"><h2>A valorar</h2><span class="cuenta">5/11</span><span class="pista">Análisis y estrategia -- trabajo genuino con Claude, no ciclos de Ejecutor · +6 en cola, van entrando a medida que resuelves</span></div><article class="tarjeta" data-inc="INC-0037"><div class="fila-superior"><span class="id-chip">INC-0037</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Mostrar antigüedad de cada incidencia en la Consola</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">A valorar</span></div><p class="resumen-tarjeta">Junto al id de cada tarjeta, mostrar hace cuántos días está abierta -- ayuda a priorizar por antigüedad sin leer fechas del Sheet.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-trabajar-valorar" data-inc="INC-0037" data-titulo="Mostrar antigüedad de cada incidencia en la Consola">💬 Vamos a por esta</button><button type="button" class="btn-descargar-una" data-inc="INC-0037">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas" contenteditable="true" data-placeholder="Tu valoración…"></div></div></div></div></article><article class="tarjeta" data-inc="INC-0038"><div class="fila-superior"><span class="id-chip">INC-0038</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Selector de jornadas anteriores en la Consola</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">A valorar</span></div><p class="resumen-tarjeta">Desplegable ligero que lea 95_DIARIO_NAVEGACION para consultar el histórico sin salir del artefacto ni acumular nada en el DOM del día actual.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-trabajar-valorar" data-inc="INC-0038" data-titulo="Selector de jornadas anteriores en la Consola">💬 Vamos a por esta</button><button type="button" class="btn-descargar-una" data-inc="INC-0038">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas" contenteditable="true" data-placeholder="Tu valoración…"></div></div></div></div></article><article class="tarjeta" data-inc="INC-0039"><div class="fila-superior"><span class="id-chip">INC-0039</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Sello de última sincronización real de GRUPOS con el Sheet</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">A valorar</span></div><p class="resumen-tarjeta">GRUPOS es una foto manual, no un espejo en vivo de 13_INCIDENCIAS. Mostrar "sincronizado hace X" evita confiar en datos desactualizados sin saberlo.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-trabajar-valorar" data-inc="INC-0039" data-titulo="Sello de última sincronización real de GRUPOS con el Sheet">💬 Vamos a por esta</button><button type="button" class="btn-descargar-una" data-inc="INC-0039">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas" contenteditable="true" data-placeholder="Tu valoración…"></div></div></div></div></article><article class="tarjeta" data-inc="INC-0040"><div class="fila-superior"><span class="id-chip">INC-0040</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Aprobar tarjetas en lote en la Consola</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">A valorar</span></div><p class="resumen-tarjeta">Seleccionar varias tarjetas de golpe y aprobarlas de una vez en "Necesitan decisión" (además del Kanban, ya pedido como INC-0021).</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-trabajar-valorar" data-inc="INC-0040" data-titulo="Aprobar tarjetas en lote en la Consola">💬 Vamos a por esta</button><button type="button" class="btn-descargar-una" data-inc="INC-0040">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas" contenteditable="true" data-placeholder="Tu valoración…"></div></div></div></div></article><article class="tarjeta" data-inc="INC-0041"><div class="fila-superior"><span class="id-chip">INC-0041</span><div class="cuerpo-tarjeta"><p class="titulo-tarjeta">Posponer una decisión en vez de dejarla indefinida en la cola</p><div class="pills"><span class="pill pill-baja">baja</span><span class="pill pill-tipo">A valorar</span></div><p class="resumen-tarjeta">Botón "pregúntamelo en unos días" que mueve una tarjeta a un estado latente y la reactiva sola pasado ese tiempo.</p><div class="fila-acciones-tarjeta"><button type="button" class="btn-trabajar-valorar" data-inc="INC-0041" data-titulo="Posponer una decisión en vez de dejarla indefinida en la cola">💬 Vamos a por esta</button><button type="button" class="btn-descargar-una" data-inc="INC-0041">↓ Descargar solo esta</button></div><div class="pie-tarjeta"><div class="notas" contenteditable="true" data-placeholder="Tu valoración…"></div></div></div></div></article></section></div>
+
+
+  <div><span id="barraEstado" data-estado="guardado"><span class="punto"></span><span id="textoEstado">Al día</span></span></div>
+
+  <div id="barraGuardar" data-visible="false">
+    <span id="textoGuardar">Cambios sin guardar</span>
+    <button type="button" id="btnGuardarCambios">Guardar cambios</button>
+  </div>
+</div><script id="scriptPrincipal">
+  // ---- Fuente de verdad del contenido: datos, no markup estático ----
+  var GRUPOS = [
+  {
+    "clave": "decision",
+    "titulo": "Necesitan tu decisión",
+    "pista": "Nada se toca hasta que decidas",
+    "items": [
+      {
+        "id": "INC-0020",
+        "titulo": "El deployment del maestro no sigue @HEAD",
+        "prioridad": "alta",
+        "tipo": "Bug",
+        "resumen": "Cada publicación necesitó un \u003ccode>clasp deploy\u003c/code> explícito además del push+version habitual, o el código nuevo no llegaba al endpoint real.",
+        "comoRevisar": "Decide: ¿el deployment fijo pasa a apuntar a \u003ccode>@HEAD\u003c/code> siempre, o \u003ccode>clasp deploy\u003c/code> se documenta como paso obligatorio de cada ciclo? Ninguna opción es la \"correcta\" técnicamente, es una decisión de riesgo vs. comodidad.",
+        "placeholder": "Tu decisión y por qué…",
+        "sugerencia": "clasp deploy explícito como paso obligatorio de cada ciclo, documentado -- no cambiar a @HEAD por ahora, es más seguro para el cliente en producción."
+      },
+      {
+        "id": "INC-0026",
+        "titulo": "Oportunidad no puede estimar coste antes de convertirse en venta",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "CosteService no soporta Oportunidad como ámbito; solo hay un importe manual, no una estimación real de materiales/recursos.",
+        "comoRevisar": "Decide si de verdad hace falta esa estimación real antes de decidir perseguir una oportunidad, o si el importe manual actual ya es suficiente para cómo trabajáis hoy.",
+        "placeholder": "Tu decisión y por qué…",
+        "sugerencia": "Sí, hace falta la estimación real antes de decidir perseguir una oportunidad."
+      },
+      {
+        "id": "INC-0027",
+        "titulo": "Impacto y Convocatorias son silos totalmente desconectados",
+        "prioridad": "baja",
+        "tipo": "Mejora",
+        "resumen": "Confirmado por código: ningún dato de evidencia de impacto se enlaza con una convocatoria, pese a que las subvenciones suelen pedir justificar impacto.",
+        "comoRevisar": "Decide si vale la pena enlazar ambos módulos ahora, o queda aparcado hasta que una convocatoria real lo necesite.",
+        "placeholder": "Tu decisión y por qué…",
+        "sugerencia": "Aparcado por ahora -- sin necesidad demostrada de conectar Impacto con Convocatorias todavía."
+      },
+      {
+        "id": "INC-0028",
+        "titulo": "Gantt nunca lee las fechas reales de Ejecución de Tarea",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "La desviación plan-vs-real se calcula con fechas manuales de Tarea/Proceso, duplicando datos que Ejecución de Tarea ya registra.",
+        "comoRevisar": "Decide si Gantt debería leer esas fechas reales en vez de/además de los campos manuales -- cambia de dónde sale el dato, no es un fix mecánico.",
+        "placeholder": "Tu decisión y por qué…",
+        "sugerencia": "Sí, Gantt debería leer las fechas reales de Ejecución de Tarea -- evita duplicar entrada de datos."
+      },
+      {
+        "id": "INC-0029",
+        "titulo": "El orden de columnas del Sheet no coincide con el del código",
+        "prioridad": "media",
+        "tipo": "Bug",
+        "resumen": "Confirmado en 4 tablas -- un script externo que escriba por posición (como me pasó a mí) falla en silencio.",
+        "comoRevisar": "Decide si se realinea el Sheet al orden del código, o se actualiza el código al orden real -- y si hace falta revisar más tablas antes de decidir el alcance completo.",
+        "placeholder": "Tu decisión y por qué…",
+        "sugerencia": "Actualizar el código al orden real del Sheet (más barato que realinear datos ya en producción), y revisar el resto de tablas antes de cerrar el alcance."
+      }
+    ]
+  },
+  {
+    "clave": "ciclo",
+    "titulo": "Sin bloqueo",
+    "pista": "Bugs/mejoras reales, sin decisión pendiente -- esperan a Ejecutor",
+    "items": [
+      {
+        "id": "INC-0001",
+        "titulo": "Alertas de bloqueo ampliadas (O4)",
+        "prioridad": "alta",
+        "tipo": "Mejora",
+        "resumen": "Extender \"Bloqueos\" de Agenda Operativa más allá de dependientes activos: decisión pendiente, material insuficiente, recurso no disponible, competencia ausente.",
+        "placeholder": "Notas…",
+        "sugerencia": "Ya en resolución en el Sheet -- sin bloqueo, seguir con el ciclo en curso hasta cerrarla."
+      },
+      {
+        "id": "INC-0035",
+        "titulo": "Kanban de Incidencias oculta el filtro Responsable pese a que sí existe",
+        "prioridad": "media",
+        "tipo": "Bug",
+        "resumen": "tarjetasKanbanIncidencia_ nunca aplica el filtro \"Responsable\" al ver Incidencias -- su comentario dice que Incidencia no tiene RESPONSABLE_ID propio, pero FormularioEsquemas.js confirma que sí es un campo real y asignable.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- fix mecánico y de bajo riesgo, añadir el filtro que ya existe para Tarea/Proceso."
+      },
+      {
+        "id": "INC-0002",
+        "titulo": "Indicador de carga global -- revertido, requiere rediseño",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "El overlay automático sobre google.script.run rompía sidebars/diálogos que registran su propio withSuccessHandler -- revertido en producción. Rediseño: mostrarCargando()/ocultarCargando() explícito por botón, sin parchear la API global.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- alcance ya acotado, probar contra cada superficie real (diálogo Y sidebar) antes de cerrar."
+      },
+      {
+        "id": "INC-0005",
+        "titulo": "Ficha de Recurso y Persona/Equipo sin exportar CSV",
+        "prioridad": "baja",
+        "tipo": "Mejora",
+        "resumen": "Las otras 5 Fichas del sistema ya tienen exportación CSV; estas dos se quedaron sin ella.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- mismo patrón que las Fichas existentes, sin ambigüedad."
+      },
+      {
+        "id": "INC-0006",
+        "titulo": "Kanban no abre la Ficha de Tarea",
+        "prioridad": "baja",
+        "tipo": "Mejora",
+        "resumen": "Comentario desactualizado en el código -- la Ficha de Tarea ya existe y se usa en todos los demás sitios.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- fix de una línea, sin riesgo."
+      },
+      {
+        "id": "INC-0007",
+        "titulo": "Panel de Recursos sin botón \"Ficha\"",
+        "prioridad": "baja",
+        "tipo": "Mejora",
+        "resumen": "Panel de Personas (su hermano casi idéntico) sí lo tiene.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- replicar el patrón de Panel de Personas."
+      },
+      {
+        "id": "INC-0013",
+        "titulo": "Panel de Ventas no muestra Entregas",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "Solo cubre Pedidos y Contratos, pese a que Entregas tiene CRUD completo en otros sitios.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- completa la cobertura del módulo Ventas."
+      },
+      {
+        "id": "INC-0018",
+        "titulo": "Dos funciones idénticas para actualizar librería de un cliente",
+        "prioridad": "baja",
+        "tipo": "Mejora",
+        "resumen": "Duplicación real -- ya casi provocó un desfase (INC-0017) al tocar solo una de las dos copias.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo -- colapsar en una función compartida, evita que se repita el desfase."
+      },
+      {
+        "id": "INC-0022",
+        "titulo": "Informe de Evidencia Social: columna \"Proyecto\" muestra el Producto",
+        "prioridad": "alta",
+        "tipo": "Bug",
+        "resumen": "El nombre del producto acaba en la columna equivocada del informe -- afecta al Balanç Social real.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo, prioridad alta -- afecta a un informe que ya se usa de verdad."
+      },
+      {
+        "id": "INC-0023",
+        "titulo": "Instalador de Impacto sin entrada de menú -- crashea sin salida",
+        "prioridad": "alta",
+        "tipo": "Bug",
+        "resumen": "Si el instalador nunca corrió, \"Nueva etiqueta de impacto\" crashea y no hay forma de arreglarlo desde el menú.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para el próximo ciclo, prioridad alta -- deja al usuario sin salida hasta que se arregle."
+      }
+    ]
+  },
+  {
+    "clave": "backlog",
+    "titulo": "Backlog de producto",
+    "pista": "Sin urgencia, features nuevas",
+    "items": [
+      {
+        "id": "INC-0021",
+        "titulo": "Selector múltiple + barra de acción en el Kanban",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "Cambio de estado por lotes, para delegar un lote entero al worker sin tarea por tarea.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para backlog -- sin prisa, mejora de comodidad, no bloquea nada."
+      },
+      {
+        "id": "INC-0033",
+        "titulo": "Modo oscuro real para los diálogos",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "Nace del fix de legibilidad (INC-0030) -- paleta oscura completa vía \u003ccode>prefers-color-scheme\u003c/code>.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para backlog -- el fix mínimo (INC-0030) ya cubre lo urgente, esto es pulido."
+      },
+      {
+        "id": "INC-0034",
+        "titulo": "Adjuntar imagen a una Incidencia sin salir de la Ficha",
+        "prioridad": "media",
+        "tipo": "Mejora",
+        "resumen": "Pegar/arrastrar una captura, subida directa a Drive, sin el formulario genérico de Documentos.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para backlog -- confirmado que el nivel 0 (pegar en celda) no bastaba."
+      },
+      {
+        "id": "INC-0036",
+        "titulo": "Webhook de notificación rechaza mensajes de más de ~250-280 caracteres",
+        "prioridad": "baja",
+        "tipo": "Bug",
+        "resumen": "notificar_operador falla con \"Argumento demasiado grande: subject\" en cuanto el cuerpo pasa de ~250-280 caracteres -- el error acusa al campo equivocado. Detectado enviando el informe de hoy.",
+        "placeholder": "Notas…",
+        "sugerencia": "Aprobado para backlog -- no bloquea nada crítico (hay workaround: mensajes cortos), pero conviene arreglarlo antes de depender más de las notificaciones."
+      }
+    ]
+  },
+  {
+    "clave": "valorar",
+    "titulo": "A valorar",
+    "pista": "Análisis y estrategia -- trabajo genuino con Claude, no ciclos de Ejecutor",
+    "items": [
+      {
+        "id": "INC-0037",
+        "titulo": "Mostrar antigüedad de cada incidencia en la Consola",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Junto al id de cada tarjeta, mostrar hace cuántos días está abierta -- ayuda a priorizar por antigüedad sin leer fechas del Sheet.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0038",
+        "titulo": "Selector de jornadas anteriores en la Consola",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Desplegable ligero que lea 95_DIARIO_NAVEGACION para consultar el histórico sin salir del artefacto ni acumular nada en el DOM del día actual.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0039",
+        "titulo": "Sello de última sincronización real de GRUPOS con el Sheet",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "GRUPOS es una foto manual, no un espejo en vivo de 13_INCIDENCIAS. Mostrar \"sincronizado hace X\" evita confiar en datos desactualizados sin saberlo.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0040",
+        "titulo": "Aprobar tarjetas en lote en la Consola",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Seleccionar varias tarjetas de golpe y aprobarlas de una vez en \"Necesitan decisión\" (además del Kanban, ya pedido como INC-0021).",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0041",
+        "titulo": "Posponer una decisión en vez de dejarla indefinida en la cola",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Botón \"pregúntamelo en unos días\" que mueve una tarjeta a un estado latente y la reactiva sola pasado ese tiempo.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0042",
+        "titulo": "Enlace directo a la fila exacta del Sheet desde cada tarjeta",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Cada tarjeta enlaza hoy al 13_INCIDENCIAS genérico -- llevar directamente a la fila ahorraría buscarla a mano.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0043",
+        "titulo": "Contador de coste/tokens del día en la Consola",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "95_DIARIO_NAVEGACION ya trackea tokens por jornada -- mostrarlo aquí responde directamente a la pregunta de consumo, sin abrir el Sheet.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0044",
+        "titulo": "Aviso proactivo por email cuando aparece algo en \"Necesita tu respuesta\"",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Hoy solo se ve si abres el artefacto. Con el webhook arreglado (INC-0036), avisar por email en el momento, no solo al cierre del día.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0045",
+        "titulo": "Chequeo automático de consistencia GRUPOS vs 13_INCIDENCIAS",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Comprobación periódica de si la Consola coincide de verdad con el Sheet, para detectar el próximo bug de datos antes de notarlo por casualidad.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0048",
+        "titulo": "Consola se queda bloqueada en \"Guardando...\" sin recuperarse tras conflicto de versión",
+        "prioridad": "media",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Caso real: editar una tarjeta mientras se publica una versión nueva en paralelo deja la UI bloqueada en \"Guardando…\" sin mostrar el aviso de conflicto ni desbloquear los botones. Propuesta: timeout de seguridad en guardarEstado_() que fuerce el desbloqueo si ni then ni catch responden.",
+        "placeholder": "Tu valoración…"
+      },
+      {
+        "id": "INC-0051",
+        "titulo": "Repaso íntegro de interfaz de la Consola Engremiat",
+        "prioridad": "baja",
+        "tipo": "A valorar",
+        "paraClaude": true,
+        "resumen": "Normalizar tipografía, tamaño de letra y elementos visuales de toda la Consola de una vez, en vez de corregir caso a caso. Ejemplo ya resuelto hoy: nombres confusos, iconos de más, etiquetas redundantes.",
+        "placeholder": "Tu valoración…"
+      }
+    ]
+  }
+];
+
+  // ---- Cupo minimo visible por grupo -- lo resuelto sale del listado y
+  // deja pasar lo siguiente. El total real y todo lo que no cabe aqui
+  // vive en el Sheet (13_INCIDENCIAS), este panel es una cola de trabajo,
+  // no un clon del backlog completo. ----
+  var MOSTRAR_MIN = {"decision":5,"ciclo":5,"backlog":3,"valorar":5};
+
+  function escapeHtml_(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderTarjeta_(item, estadoItem) {
+    var revisado = estadoItem && estadoItem.revisado;
+    var notasGuardadas = (estadoItem && estadoItem.notas) || '';
+    var prellenar = !notasGuardadas && !!item.sugerencia;
+    var notasMostrar = prellenar ? item.sugerencia : notasGuardadas;
+    var comoRevisarHtml = item.comoRevisar
+      ? '<details class="como-revisar"><summary>Cómo revisar</summary><div class="texto">' + item.comoRevisar + '</div></details>'
+      : '';
+    return '' +
+      '<article class="tarjeta' + (revisado ? ' revisada' : '') + '" data-inc="' + item.id + '">' +
+        '<div class="fila-superior">' +
+          '<span class="id-chip">' + item.id + '</span>' +
+          '<div class="cuerpo-tarjeta">' +
+            '<p class="titulo-tarjeta">' + escapeHtml_(item.titulo) + '</p>' +
+            '<div class="pills"><span class="pill pill-' + item.prioridad + '">' + item.prioridad + '</span><span class="pill pill-tipo">' + item.tipo + '</span></div>' +
+            '<p class="resumen-tarjeta">' + item.resumen + '</p>' +
+            comoRevisarHtml +
+            '<div class="fila-acciones-tarjeta">' +
+              (item.sugerencia ? '<button type="button" class="btn-aprobar-sugerencia">✓ Aprobar</button>' : '') +
+              (item.paraClaude ? '<button type="button" class="btn-trabajar-valorar" data-inc="' + item.id + '" data-titulo="' + escapeHtml_(item.titulo) + '">💬 Vamos a por esta</button>' : '') +
+              '<button type="button" class="btn-descargar-una" data-inc="' + item.id + '">↓ Descargar solo esta</button>' +
+            '</div>' +
+            '<div class="pie-tarjeta">' +
+              '<div class="notas' + (prellenar ? ' sugerencia-sin-aprobar' : '') + '" contenteditable="true"' + (prellenar ? ' data-prellenado="true"' : '') + ' data-placeholder="' + escapeHtml_(item.placeholder) + '">' + escapeHtml_(notasMostrar) + '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</article>';
+  }
+
+  function renderGrupos_(estado) {
+    return GRUPOS.map(function (grupo) {
+      var pendientes = grupo.items.filter(function (it) { return !(estado[it.id] && estado[it.id].revisado); });
+      var cap = MOSTRAR_MIN[grupo.clave] || grupo.items.length;
+      var visibles = pendientes.slice(0, cap);
+      var enCola = pendientes.length - visibles.length;
+      var pistaExtra = enCola > 0 ? (' · +' + enCola + ' en cola, van entrando a medida que resuelves') : '';
+      return '<section class="grupo" data-grupo="' + grupo.clave + '">' +
+        '<div class="titulo-grupo"><h2>' + grupo.titulo + '</h2><span class="cuenta">' + visibles.length + '/' + grupo.items.length + '</span><span class="pista">' + grupo.pista + pistaExtra + '</span></div>' +
+        (visibles.length
+          ? visibles.map(function (item) { return renderTarjeta_(item, estado[item.id]); }).join('')
+          : '<p class="grupo-vacio">Nada pendiente en este grupo -- consulta el Sheet para el resto.</p>') +
+        '</section>';
+    }).join('');
+  }
+
+  // ---- Estado en memoria: id -> {revisado, notas}. revisado se infiere de
+  // si hay texto en notas -- ya no hay checkbox manual (ver conversacion
+  // 2026-08-21: "el chek de revisado ya no tiene sentido hacerlo a mano"). ----
+  var ESTADO = {};
+  GRUPOS.forEach(function (g) { g.items.forEach(function (it) { ESTADO[it.id] = { revisado: false, notas: '' }; }); });
+
+  function pintar_() {
+    // si el servidor ya envio tarjetas renderizadas (una carga despues de
+    // un guardado real), NO las pisamos con el estado vacio inicial.
+    if (document.querySelectorAll('#grupos .tarjeta').length > 0) { actualizarResumen_(leerEstadoDelDom_()); return; }
+    document.getElementById('grupos').innerHTML = renderGrupos_(ESTADO);
+    actualizarResumen_(ESTADO);
+  }
+
+  function actualizarResumen_(estado) {
+    // "abiertas" ya NO se recalcula aqui -- pasa a ser un dato estatico real
+    // del Sheet completo (13_INCIDENCIAS), fijado al publicar, no una suma
+    // del cupo mostrado en GRUPOS (2026-08-22: el cliente sobrescribia el
+    // numero real con el conteo del cupo cada vez que cargaba la pagina).
+    var porGrupo = { decision: 0, ciclo: 0, backlog: 0, valorar: 0 };
+    GRUPOS.forEach(function (g) {
+      g.items.forEach(function (it) {
+        if (!(estado[it.id] && estado[it.id].revisado)) { porGrupo[g.clave]++; }
+      });
+    });
+    var decisionEl = document.querySelector('[data-resumen="decision"]');
+    var cicloEl = document.querySelector('[data-resumen="ciclo"]');
+    var backlogEl = document.querySelector('[data-resumen="backlog"]');
+    var valorarEl = document.querySelector('[data-resumen="valorar"]');
+    if (valorarEl) valorarEl.textContent = porGrupo.valorar;
+    if (decisionEl) decisionEl.textContent = porGrupo.decision;
+    if (cicloEl) cicloEl.textContent = porGrupo.ciclo;
+    if (backlogEl) backlogEl.textContent = porGrupo.backlog;
+    actualizarContadoresFiltros_(porGrupo);
+  }
+
+  // ---- Cuenta dentro de cada pill de filtro (etapa y actor), para no
+  // depender de mirar las tarjetas resumen de arriba para saber cuantas
+  // hay en cada filtro. ----
+  var ETIQUETAS_FILTRO_BASE_ = { decision: 'Necesitan decisión', ciclo: 'Sin bloqueo', backlog: 'Backlog', valorar: 'A valorar' };
+  var ETIQUETAS_ACTOR_BASE_ = { humano: '👤 Humano', claude: '🧠 Claude', worker: '🔧 Worker local', ejecutor: '🤖 Ejecutor' };
+  function actualizarContadoresFiltros_(porGrupo) {
+    var total = porGrupo.decision + porGrupo.ciclo + porGrupo.backlog + porGrupo.valorar;
+    var btnTodas = filtros && filtros.querySelector('button[data-filtro="todas"]');
+    if (btnTodas) btnTodas.textContent = 'Todas · ' + total;
+    Object.keys(ETIQUETAS_FILTRO_BASE_).forEach(function (clave) {
+      var btn = filtros && filtros.querySelector('button[data-filtro="' + clave + '"]');
+      if (btn) btn.textContent = ETIQUETAS_FILTRO_BASE_[clave] + ' · ' + porGrupo[clave];
+    });
+    if (filtrosActor) {
+      Object.keys(ETIQUETAS_ACTOR_BASE_).forEach(function (actor) {
+        var btn = filtrosActor.querySelector('button[data-filtro-actor="' + actor + '"]');
+        if (!btn) return;
+        var suma = (MAPA_ACTOR_GRUPOS_[actor] || []).reduce(function (s, g) { return s + (porGrupo[g] || 0); }, 0);
+        btn.textContent = ETIQUETAS_ACTOR_BASE_[actor] + ' · ' + suma;
+      });
+    }
+  }
+
+  // ---- Panel de mando: solicitudes (botones rapidos + nueva incidencia) ----
+  var ETIQUETAS_TIPO_SOLICITUD_ = {
+    jornada_inicio: '▶ Adelantar inicio de jornada',
+    ciclo_inicio: '🔁 Trabajar ahora',
+    ciclo_detener: '⏸ Pausar',
+    jornada_fin: '⏹ Adelantar cierre de jornada',
+    deploy_aprobado: '🚀 Aprobar despliegue (clasp push/version/deploy)',
+    deploy_pendiente: '🚀 Despliegue listo -- pendiente de tu aprobación',
+    resumen_ciclo: '📋 Resumen y valoración del ciclo',
+    informe_fin_dia: '🌙 Informe de fin de jornada (de Ejecutor)',
+    solicitar_merge: '📤 Enviado a Claude para evaluar merge',
+    autorizacion_claude: '❓ Claude pide tu autorización -- responde con Enviar cuando puedas',
+    peticion_libre: '💬 Petición / nueva incidencia',
+    resultado_chatgpt: '↑ Resultado importado de ChatGPT',
+    cambiar_horario: '🕒 Cambio de ritmo pedido',
+    ciclo_pendiente: '🔁 Ciclo del día -- en espera de Ejecutor',
+    trabajar_valorar: '💬 Quiere trabajar contigo en esta idea',
+    ejecutor_desconectar: '🔌 Desconectar Ejecutor -- pendiente de que Claude pause el trigger',
+    ejecutor_conectar: '▶ Conectar Ejecutor -- pendiente de que Claude reactive el trigger'
+  };
+  var TIPOS_PENDIENTE_DESTACADO_ = { autorizacion_claude: true, deploy_pendiente: true, trabajar_valorar: true, ejecutor_desconectar: true, ejecutor_conectar: true };
+
+  function renderAdjunto_(a) {
+    var esImagen = (a.tipo || '').indexOf('image/') === 0;
+    if (esImagen) return '<a href="' + a.dataUrl + '" download="' + escapeHtml_(a.nombre) + '" class="adjunto-miniatura"><img src="' + a.dataUrl + '" alt="' + escapeHtml_(a.nombre) + '"></a>';
+    return '<a href="' + a.dataUrl + '" download="' + escapeHtml_(a.nombre) + '" class="adjunto-doc">📎 ' + escapeHtml_(a.nombre) + '</a>';
+  }
+
+  function renderSolicitud_(sol) {
+    var muestraTexto = sol.tipo === 'peticion_libre' || sol.tipo === 'resultado_chatgpt' || sol.tipo === 'autorizacion_claude' || sol.tipo === 'informe_fin_dia' || sol.tipo === 'cambiar_horario' || sol.tipo === 'deploy_pendiente' || sol.tipo === 'ciclo_pendiente' || sol.tipo === 'trabajar_valorar';
+    var etiqueta = muestraTexto ? escapeHtml_(sol.texto).slice(0, 400) : (ETIQUETAS_TIPO_SOLICITUD_[sol.tipo] || sol.tipo);
+    var etiquetaPrefijo = sol.tipo === 'resultado_chatgpt' ? '<b>↑ ChatGPT:</b> ' : '';
+    var respuestaHtml = sol.respuesta ? '<div class="respuesta-sol">' + escapeHtml_(sol.respuesta) + '</div>' : '';
+    var adjuntosHtml = (sol.adjuntos && sol.adjuntos.length) ? '<div class="adjuntos-sol">' + sol.adjuntos.map(renderAdjunto_).join('') + '</div>' : '';
+    var adjuntosAttr = (sol.adjuntos && sol.adjuntos.length) ? ' data-adjuntos="' + escapeHtml_(JSON.stringify(sol.adjuntos)) + '"' : '';
+    return '<div class="solicitud" data-key="' + escapeHtml_(sol.clave) + '" data-estado="' + sol.estado + '" data-tipo="' + sol.tipo + '" data-hora="' + escapeHtml_(sol.hora) + '" data-texto="' + escapeHtml_(sol.texto || '') + '" data-respuesta="' + escapeHtml_(sol.respuesta || '') + '"' + adjuntosAttr + '>' +
+      '<span class="estado-sol">' + (sol.estado === 'atendida' ? 'Atendida' : sol.estado === 'en_espera' ? 'En espera' : 'Pendiente') + '</span>' +
+      '<div class="cuerpo-sol"><div>' + etiquetaPrefijo + etiqueta + ' <span class="hora-sol">· ' + escapeHtml_(sol.hora) + '</span></div>' + adjuntosHtml + respuestaHtml + '</div>' +
+      '</div>';
+  }
+
+  function renderListaSolicitudes_(lista) {
+    return lista.slice().reverse().map(renderSolicitud_).join('');
+  }
+
+  function actualizarResumenHistorial_(lista) {
+    var resumen = document.getElementById('resumenHistorial');
+    if (resumen) resumen.textContent = '📜 Historial de solicitudes (' + lista.length + ')';
+  }
+
+  function renderPendientesDestacados_(lista) {
+    var pendientes = lista.filter(function (s) { return s.estado === 'pendiente' && TIPOS_PENDIENTE_DESTACADO_[s.tipo]; });
+    var cont = document.getElementById('pendientesDestacados');
+    if (!cont) return;
+    if (!pendientes.length) { cont.setAttribute('data-visible', 'false'); cont.innerHTML = ''; return; }
+    cont.setAttribute('data-visible', 'true');
+    cont.innerHTML = '<h2>🔔 Necesita tu respuesta</h2><p class="nota-destacados">Responde en el cuadro de texto de arriba y pulsa Enviar -- no hace falta abrir la conversación.</p>' + pendientes.slice().reverse().map(renderSolicitud_).join('');
+  }
+
+  function leerSolicitudesDelDom_() {
+    return Array.prototype.map.call(document.querySelectorAll('#listaSolicitudes .solicitud'), function (el) {
+      var adjRaw = el.getAttribute('data-adjuntos'), adjuntos = [];
+      if (adjRaw) { try { adjuntos = JSON.parse(adjRaw); } catch (e) { adjuntos = []; } }
+      return {
+        clave: el.getAttribute('data-key') || claveNueva_(),
+        tipo: el.getAttribute('data-tipo'),
+        texto: el.getAttribute('data-texto') || '',
+        adjuntos: adjuntos,
+        hora: el.getAttribute('data-hora'),
+        estado: el.getAttribute('data-estado'),
+        respuesta: el.getAttribute('data-respuesta') || ''
+      };
+    }).reverse();
+  }
+
+  function horaActual_() {
+    var d = new Date();
+    return d.toLocaleDateString('es-ES') + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  function claveNueva_() {
+    return 'sk-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  function anadirSolicitud_(tipo, texto, adjuntos) {
+    var lista = leerSolicitudesDelDom_();
+    lista.push({ clave: claveNueva_(), tipo: tipo, texto: texto || '', adjuntos: adjuntos || [], hora: horaActual_(), estado: 'pendiente', respuesta: '' });
+    document.getElementById('listaSolicitudes').innerHTML = renderListaSolicitudes_(lista);
+    actualizarResumenHistorial_(lista);
+    renderPendientesDestacados_(lista);
+  }
+
+  // ---- Adjuntos de la peticion libre -- leidos en el propio navegador
+  // (FileReader -> data URL) y embebidos en el documento publicado, sin
+  // capacidad de subida dedicada (el artefacto no tiene ninguna disponible
+  // para esto). Limite de tamano total para no disparar el peso del
+  // documento en cada guardado -- si hace falta mas, se sube al Drive real
+  // cuando Claude procese la peticion y se retira del artefacto. ----
+  var LIMITE_ADJUNTOS_BYTES_ = 4 * 1024 * 1024;
+  var adjuntosPendientes_ = [];
+
+  function actualizarListaAdjuntosUI_() {
+    var cont = document.getElementById('adjuntosSeleccionados');
+    if (!cont) return;
+    cont.innerHTML = adjuntosPendientes_.map(function (a, i) {
+      return '<span class="chip-adjunto">' + escapeHtml_(a.nombre) + ' <button type="button" data-quitar="' + i + '">×</button></span>';
+    }).join('');
+  }
+
+  function procesarArchivos_(archivos, alTerminar) {
+    var pendientes = archivos.length;
+    if (!pendientes) return;
+    archivos.forEach(function (f) {
+      var lector = new FileReader();
+      lector.onload = function () {
+        var actual = adjuntosPendientes_.reduce(function (s, a) { return s + (a.dataUrl ? a.dataUrl.length : 0); }, 0);
+        if (actual + lector.result.length > LIMITE_ADJUNTOS_BYTES_) {
+          var aviso = document.getElementById('avisoAdjuntos');
+          if (aviso) { aviso.style.display = 'block'; aviso.textContent = '"' + f.name + '" no cabe -- límite ~4MB por envío entre todos los adjuntos.'; }
+        } else {
+          adjuntosPendientes_.push({ nombre: f.name, tipo: f.type || 'application/octet-stream', dataUrl: lector.result });
+          actualizarListaAdjuntosUI_();
+        }
+        if (--pendientes === 0 && alTerminar) alTerminar();
+      };
+      lector.readAsDataURL(f);
+    });
+  }
+
+  var inputArchivos = document.getElementById('incArchivos');
+  if (inputArchivos) {
+    inputArchivos.addEventListener('change', function () {
+      var archivos = Array.prototype.slice.call(inputArchivos.files || []);
+      procesarArchivos_(archivos, function () { inputArchivos.value = ''; });
+    });
+  }
+
+  var peticionTexto = document.getElementById('peticionTexto');
+  if (peticionTexto) {
+    peticionTexto.addEventListener('paste', function (e) {
+      var items = (e.clipboardData && e.clipboardData.items) || [];
+      var archivos = [];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].kind === 'file') { var f = items[i].getAsFile(); if (f) archivos.push(f); }
+      }
+      if (archivos.length) { e.preventDefault(); procesarArchivos_(archivos); }
+    });
+    ['dragover', 'dragenter'].forEach(function (ev) {
+      peticionTexto.addEventListener(ev, function (e) { e.preventDefault(); peticionTexto.classList.add('zona-arrastre-activa'); });
+    });
+    ['dragleave', 'dragend'].forEach(function (ev) {
+      peticionTexto.addEventListener(ev, function () { peticionTexto.classList.remove('zona-arrastre-activa'); });
+    });
+    peticionTexto.addEventListener('drop', function (e) {
+      e.preventDefault();
+      peticionTexto.classList.remove('zona-arrastre-activa');
+      var archivos = Array.prototype.slice.call((e.dataTransfer && e.dataTransfer.files) || []);
+      if (archivos.length) procesarArchivos_(archivos);
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var quitar = e.target.closest('[data-quitar]');
+    if (!quitar) return;
+    adjuntosPendientes_.splice(Number(quitar.getAttribute('data-quitar')), 1);
+    actualizarListaAdjuntosUI_();
+  });
+
+  // ---- Estado del ciclo -- que sepas de un vistazo si hay trabajo en
+  // curso o si el sistema esta esperando a que inicies el siguiente ----
+  var ETIQUETAS_ESTADO_CICLO_ = {
+    sin_iniciar: '○ Jornada sin iniciar',
+    en_curso: '● Ciclo en curso',
+    esperando_siguiente: '○ Próximo ciclo automático',
+    pausado: '⏸ Ejecutor pausado'
+  };
+  function fijarEstadoCiclo_(estado, detalle) {
+    var el = document.getElementById('estadoCiclo');
+    if (!el) return;
+    el.setAttribute('data-estado', estado);
+    el.textContent = (ETIQUETAS_ESTADO_CICLO_[estado] || estado) + (detalle ? ' · ' + detalle : '');
+  }
+
+  // ---- Conectar/Desconectar Ejecutor -- el boton NO apaga el trigger por
+  // si solo (Ejecutor no tiene acceso a su propio RemoteTrigger, solo
+  // Claude). Aqui solo se dejan constancia de la intencion (pill + que
+  // boton se ve) y se publica la solicitud; Claude aplica el cambio real
+  // y republica confirmando el estado de verdad. ----
+  function fijarConexionEjecutor_(conectado) {
+    var pill = document.getElementById('ejecutorConexion');
+    if (pill) pill.setAttribute('data-estado', conectado ? 'conectado' : 'desconectado');
+    var btnConectar = document.querySelector('.btn-conectar-ejecutor');
+    var btnDesconectar = document.querySelector('.btn-desconectar-ejecutor');
+    if (btnConectar) btnConectar.style.display = conectado ? 'none' : '';
+    if (btnDesconectar) btnDesconectar.style.display = conectado ? '' : 'none';
+    if (!conectado) fijarEstadoCiclo_('pausado');
+  }
+
+  // ---- Indicador de rama activa de la jornada -- creada de verdad por
+  // Claude al procesar "jornada_inicio" (no por el boton en si), pero el
+  // texto se deja preparado aqui para que quede visible en cuanto se
+  // confirme, con el recordatorio de revisar/mergear al cerrar. ----
+  function fijarRamaActiva_(nombre, visible) {
+    var el = document.getElementById('ramaActiva');
+    if (!el) return;
+    el.setAttribute('data-visible', visible ? 'true' : 'false');
+    if (nombre) {
+      var negrita = el.querySelector('b');
+      if (negrita) negrita.textContent = nombre;
+    }
+  }
+
+  document.querySelectorAll('.btn-accion-rapida').forEach(function (boton) {
+    boton.addEventListener('click', function () {
+      if (boton.disabled) return;
+      var tipo = boton.getAttribute('data-tipo');
+      marcarBotonEnCurso_(boton, '⏳ Enviando…');
+      anadirSolicitud_(tipo, '');
+      // "en_curso" solo lo confirma Claude cuando de verdad hay trabajo
+      // verificable (commit, deploy...) -- el boton en si no garantiza que
+      // nada haya arrancado (ver conversacion 2026-08-21: quedo marcado
+      // "en curso" mientras en realidad no habia nadie trabajando).
+      if (tipo === 'ciclo_inicio') fijarEstadoCiclo_('esperando_siguiente', 'ciclo pedido ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
+      if (tipo === 'ciclo_detener') fijarEstadoCiclo_('esperando_siguiente', 'detenido ' + horaActual_());
+      if (tipo === 'jornada_fin') { fijarEstadoCiclo_('sin_iniciar'); fijarRamaActiva_(null, false); }
+      if (tipo === 'ejecutor_desconectar') fijarEstadoCiclo_('pausado', 'pedido ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
+      if (tipo === 'ejecutor_conectar') fijarEstadoCiclo_('esperando_siguiente', 'reconexión pedida ' + horaActual_() + ' -- pendiente de que Claude lo confirme');
+      guardarEstado_();
+    });
+  });
+
+  // ---- Estado inicial de la pill/botones de conexion -- coincide con lo
+  // que ya diga #ejecutorConexion en el HTML publicado (Claude lo actualiza
+  // a mano cuando confirma un conectar/desconectar real). ----
+  (function inicializarConexionEjecutor_() {
+    var pill = document.getElementById('ejecutorConexion');
+    if (!pill) return;
+    fijarConexionEjecutor_(pill.getAttribute('data-estado') === 'conectado');
+  })();
+
+  document.getElementById('btnEnviarPeticion').addEventListener('click', function (e) {
+    var boton = e.currentTarget;
+    if (boton.disabled) return;
+    var campo = document.getElementById('peticionTexto');
+    var texto = campo.textContent.trim();
+    if (!texto && !adjuntosPendientes_.length) return;
+    marcarBotonEnCurso_(boton, '⏳ Enviando…');
+    anadirSolicitud_('peticion_libre', texto, adjuntosPendientes_.slice());
+    campo.textContent = '';
+    adjuntosPendientes_ = [];
+    actualizarListaAdjuntosUI_();
+    guardarEstado_();
+  });
+
+  // ---- Reparte un resultado pegado de ChatGPT entre las tarjetas que
+  // reconozca por su encabezado "### INC-0000 -- ..." (el mismo formato
+  // que genera construirEncargoChatGPT_) -- si encuentra la tarjeta, la
+  // marca resuelta con ese contenido como nota, sin esperar al poll. ----
+  function repartirResultadoChatGPT_(texto) {
+    var partes = texto.split(/(?=^###\s+(INC-\d{4})\b)/gm);
+    var idsActualizados = [];
+    partes.forEach(function (parte) {
+      var m = parte.match(/^###\s+(INC-\d{4})\b[^\n]*\n?/);
+      if (!m) return;
+      var tarjeta = document.querySelector('.tarjeta[data-inc="' + m[1] + '"]');
+      if (!tarjeta) return;
+      var notas = tarjeta.querySelector('.notas');
+      if (!notas) return;
+      var contenido = parte.slice(m[0].length).trim();
+      notas.textContent = contenido || 'Importado de ChatGPT (sin detalle adicional).';
+      notas.removeAttribute('data-prellenado');
+      notas.classList.remove('sugerencia-sin-aprobar');
+      tarjeta.classList.add('revisada');
+      idsActualizados.push(m[1]);
+    });
+    return idsActualizados;
+  }
+
+  var btnImportarResultado = document.getElementById('btnImportarResultado');
+  if (btnImportarResultado) {
+    btnImportarResultado.addEventListener('click', function (e) {
+      var boton = e.currentTarget;
+      if (boton.disabled) return;
+      var campo = document.getElementById('resultadoChatGPT');
+      var texto = campo.textContent.trim();
+      if (!texto) return;
+      marcarBotonEnCurso_(boton, '⏳ Importando…');
+      var idsActualizados = repartirResultadoChatGPT_(texto);
+      if (idsActualizados.length) {
+        anadirSolicitud_('resultado_chatgpt', 'Repartido automáticamente a ' + idsActualizados.join(', ') + '.');
+      } else {
+        anadirSolicitud_('resultado_chatgpt', texto); // formato no reconocido -- lo revisa Claude en el siguiente poll
+      }
+      campo.textContent = '';
+      guardarEstado_();
+    });
+  }
+
+  function leerEstadoDelDom_() {
+    var estado = {};
+    Array.prototype.forEach.call(document.querySelectorAll('.tarjeta'), function (tarjeta) {
+      var inc = tarjeta.getAttribute('data-inc');
+      if (!inc) return;
+      var notas = tarjeta.querySelector('.notas');
+      var texto = notas ? notas.textContent.trim() : '';
+      var esSoloSugerenciaSinAprobar = notas && notas.getAttribute('data-prellenado') === 'true';
+      estado[inc] = { revisado: texto !== '' && !esSoloSugerenciaSinAprobar, notas: texto };
+    });
+    return estado;
+  }
+
+  // ---- Documento completo (para publish(html)) ----
+  function documentoCompleto_(estado) {
+    var envoltorio = document.querySelector('.envoltorio').cloneNode(true);
+    var grupos = envoltorio.querySelector('#grupos');
+    grupos.innerHTML = renderGrupos_(estado);
+    // "abiertas" NO se toca aqui -- sigue siendo el dato real estatico del
+    // Sheet fijado al publicar, no una suma del cupo (mismo motivo que en
+    // actualizarResumen_ arriba).
+    var porGrupo = { decision: 0, ciclo: 0, backlog: 0, valorar: 0 };
+    GRUPOS.forEach(function (g) { g.items.forEach(function (it) { if (!(estado[it.id] && estado[it.id].revisado)) { porGrupo[g.clave]++; } }); });
+    var setResumen = function (attr, val) { var el = envoltorio.querySelector('[data-resumen="' + attr + '"]'); if (el) el.textContent = val; };
+    setResumen('decision', porGrupo.decision);
+    setResumen('ciclo', porGrupo.ciclo); setResumen('backlog', porGrupo.backlog);
+    setResumen('valorar', porGrupo.valorar);
+    (function () {
+      var total = porGrupo.decision + porGrupo.ciclo + porGrupo.backlog + porGrupo.valorar;
+      var filtrosClon = envoltorio.querySelector('#filtros');
+      var btnTodas = filtrosClon && filtrosClon.querySelector('button[data-filtro="todas"]');
+      if (btnTodas) btnTodas.textContent = 'Todas · ' + total;
+      Object.keys(ETIQUETAS_FILTRO_BASE_).forEach(function (clave) {
+        var btn = filtrosClon && filtrosClon.querySelector('button[data-filtro="' + clave + '"]');
+        if (btn) btn.textContent = ETIQUETAS_FILTRO_BASE_[clave] + ' · ' + porGrupo[clave];
+      });
+      var filtrosActorClon = envoltorio.querySelector('#filtrosActor');
+      if (filtrosActorClon) {
+        Object.keys(ETIQUETAS_ACTOR_BASE_).forEach(function (actor) {
+          var btn = filtrosActorClon.querySelector('button[data-filtro-actor="' + actor + '"]');
+          if (!btn) return;
+          var suma = (MAPA_ACTOR_GRUPOS_[actor] || []).reduce(function (s, g) { return s + (porGrupo[g] || 0); }, 0);
+          btn.textContent = ETIQUETAS_ACTOR_BASE_[actor] + ' · ' + suma;
+        });
+      }
+    })();
+    var barra = envoltorio.querySelector('#barraGuardar');
+    if (barra) {
+      barra.setAttribute('data-visible', 'false');
+      barra.querySelector('#textoGuardar').textContent = 'Cambios sin guardar';
+      var boton = barra.querySelector('#btnGuardarCambios');
+      if (boton) boton.removeAttribute('disabled');
+    }
+    // el estado "guardando"/deshabilitado es transitorio de ESTA sesion --
+    // si se congela en el clon, la instantanea publicada queda pegada en
+    // "Enviando..." para siempre (ver conversacion 2026-08-21: "se ha
+    // quedado colgado en enviando", el mismo fallo que ya tuvo barraGuardar
+    // antes, ahora tambien afectaba a barraEstado y a los botones).
+    var estadoPill = envoltorio.querySelector('#barraEstado');
+    if (estadoPill) {
+      estadoPill.setAttribute('data-estado', 'guardado');
+      var textoEstadoClon = estadoPill.querySelector('#textoEstado');
+      if (textoEstadoClon) textoEstadoClon.textContent = 'Al día';
+    }
+    Array.prototype.forEach.call(envoltorio.querySelectorAll(SELECTOR_BOTONES_ACCION_), function (b) {
+      b.removeAttribute('disabled');
+      if (b.dataset.textoOriginal) { b.textContent = b.dataset.textoOriginal; delete b.dataset.textoOriginal; }
+    });
+    var estilos = document.getElementById('estilosPrincipales').outerHTML;
+    var enlaceFuente = document.getElementById('enlaceFuentes').outerHTML;
+    return '<!doctype html><html><head><meta charset="utf-8"><title>Consola Engremiat</title>' + enlaceFuente + estilos + '</head><body>' +
+      envoltorio.outerHTML +
+      '<script>' + document.getElementById('scriptPrincipal').textContent + '<' + '/script>' +
+      '</body></html>';
+  }
+
+  // ---- Filtros (locales, no se guardan) ----
+  var filtros = document.getElementById('filtros');
+  var filtrosActor = document.getElementById('filtrosActor');
+  // Actor no es un dato propio de cada tarjeta -- se deriva de a que grupo
+  // pertenece (decision=Humano, valorar=Claude, ciclo+backlog=Ejecutor).
+  // "Worker local" no tiene grupo propio todavia (ESTADO="esperando worker
+  // local" vive solo en el Sheet, no llega a esta foto) -- queda con 0
+  // hasta que se traiga ese dato, en vez de fingir que hay algo ahi.
+  var MAPA_ACTOR_GRUPOS_ = { humano: ['decision'], claude: ['valorar'], worker: [], ejecutor: ['ciclo', 'backlog'] };
+
+  function limpiarActivos_(nav) {
+    if (!nav) return;
+    Array.prototype.forEach.call(nav.querySelectorAll('button'), function (b) { b.setAttribute('data-activo', 'false'); });
+  }
+
+  filtros.addEventListener('click', function (e) {
+    var boton = e.target.closest('button[data-filtro]');
+    if (!boton) return;
+    limpiarActivos_(filtros);
+    limpiarActivos_(filtrosActor);
+    boton.setAttribute('data-activo', 'true');
+    var filtro = boton.getAttribute('data-filtro');
+    Array.prototype.forEach.call(document.querySelectorAll('section.grupo'), function (sec) {
+      var mostrar = filtro === 'todas' || sec.getAttribute('data-grupo') === filtro;
+      sec.setAttribute('data-local-oculto', mostrar ? 'false' : 'true');
+    });
+  });
+
+  if (filtrosActor) {
+    filtrosActor.addEventListener('click', function (e) {
+      var boton = e.target.closest('button[data-filtro-actor]');
+      if (!boton) return;
+      limpiarActivos_(filtros);
+      limpiarActivos_(filtrosActor);
+      boton.setAttribute('data-activo', 'true');
+      var actor = boton.getAttribute('data-filtro-actor');
+      var gruposVisibles = MAPA_ACTOR_GRUPOS_[actor] || [];
+      Array.prototype.forEach.call(document.querySelectorAll('section.grupo'), function (sec) {
+        var mostrar = gruposVisibles.indexOf(sec.getAttribute('data-grupo')) !== -1;
+        sec.setAttribute('data-local-oculto', mostrar ? 'false' : 'true');
+      });
+    });
+  }
+
+  // ---- Guardado real: publish(html), página completa ----
+  var barraEstado = document.getElementById('barraEstado');
+  var textoEstado = document.getElementById('textoEstado');
+
+  function fijarEstadoUI_(estado, texto) {
+    barraEstado.setAttribute('data-estado', estado);
+    textoEstado.textContent = texto;
+  }
+
+  // ---- Bloqueo de UI mientras se guarda -- evita doble clic y deja claro
+  // que algo esta pasando, mas alla del pill de estado que es facil pasar
+  // por alto (ver conversacion 2026-08-21: "el boton cambia de color pero
+  // no hace nada" -- el unico aviso real era el pill, ahora cada boton da
+  // su propio aviso). ----
+  var SELECTOR_BOTONES_ACCION_ = '.btn-accion-rapida, #btnEnviarPeticion, #btnImportarResultado, .btn-aprobar-sugerencia, #btnGuardarCambios, .btn-descargar-una';
+  function bloquearUI_(bloqueado) {
+    Array.prototype.forEach.call(document.querySelectorAll(SELECTOR_BOTONES_ACCION_), function (b) {
+      b.disabled = bloqueado;
+      if (!bloqueado && b.dataset.textoOriginal) { b.textContent = b.dataset.textoOriginal; delete b.dataset.textoOriginal; }
+    });
+  }
+  function marcarBotonEnCurso_(boton, textoEnCurso) {
+    if (!boton || boton.dataset.textoOriginal) return;
+    boton.dataset.textoOriginal = boton.textContent;
+    boton.textContent = textoEnCurso;
+  }
+
+  function guardarEstado_() {
+    fijarEstadoUI_('guardando', 'Guardando…');
+    bloquearUI_(true);
+    var estado = leerEstadoDelDom_();
+    try { sessionStorage.setItem('mesaFiltroActivo', document.querySelector('nav.filtros button[data-activo="true"]').getAttribute('data-filtro')); } catch (e) {}
+    claude.use('artifact').then(function (artifact) {
+      if (!artifact) { fijarEstadoUI_('error', 'Guardado no disponible en este visor'); bloquearUI_(false); return; }
+      artifact.publish(documentoCompleto_(estado)).catch(function (err) {
+        bloquearUI_(false);
+        textoGuardar.textContent = 'Cambios sin guardar';
+        if (err && err.code === 'not_writer') {
+          fijarEstadoUI_('error', 'Solo lectura -- tus cambios no se guardan aquí');
+        } else if (err && err.code === 'conflict') {
+          fijarEstadoUI_('error', 'Alguien guardó primero -- recargando…');
+        } else {
+          var detalle = err && (err.code || err.message) ? (err.code || '') + (err.message ? ' -- ' + err.message : '') : String(err);
+          fijarEstadoUI_('error', 'Error al guardar [' + detalle + ']');
+        }
+      });
+    });
+  }
+
+  // ---- Guardado EXPLICITO para escritura manual de notas (evita
+  // interrumpir al escribir en movil). Las acciones de un solo gesto
+  // (boton rapido, sugerencia, crear incidencia) guardan al instante. ----
+  var barraGuardar = document.getElementById('barraGuardar');
+  var textoGuardar = document.getElementById('textoGuardar');
+  var btnGuardarCambios = document.getElementById('btnGuardarCambios');
+
+  function marcarCambiosSinGuardar_() {
+    barraGuardar.setAttribute('data-visible', 'true');
+    textoGuardar.textContent = 'Cambios sin guardar';
+    fijarEstadoUI_('inactivo', 'Cambios sin guardar');
+  }
+
+  document.addEventListener('input', function (e) {
+    if (e.target.matches('.notas[contenteditable]')) {
+      var notas = e.target;
+      // al editar a mano, deja de ser "solo la sugerencia sin aprobar" --
+      // pasa a ser una decision real, se guarda con el flujo explicito
+      // normal (boton "Guardar cambios"), no se autoaprueba sola.
+      if (notas.getAttribute('data-prellenado') === 'true') {
+        notas.removeAttribute('data-prellenado');
+        notas.classList.remove('sugerencia-sin-aprobar');
+      }
+      var tarjeta = notas.closest('.tarjeta');
+      if (tarjeta) tarjeta.classList.toggle('revisada', notas.textContent.trim() !== '');
+      marcarCambiosSinGuardar_();
+    }
+  });
+
+  document.addEventListener('click', function (e) {
+    var boton = e.target.closest('.btn-aprobar-sugerencia');
+    if (!boton || boton.disabled) return;
+    var tarjeta = boton.closest('.tarjeta');
+    var notas = tarjeta.querySelector('.notas');
+    notas.removeAttribute('data-prellenado');
+    notas.classList.remove('sugerencia-sin-aprobar');
+    tarjeta.classList.add('revisada');
+    marcarBotonEnCurso_(boton, '⏳ Guardando…');
+    guardarEstado_(); // un solo toque: aprueba lo que ya esta escrito Y guarda
+  });
+
+  btnGuardarCambios.addEventListener('click', function () {
+    btnGuardarCambios.disabled = true;
+    textoGuardar.textContent = 'Guardando…';
+    guardarEstado_();
+  });
+
+  // ---- Descarga para ChatGPT (lote completo o una sola incidencia) ----
+  var CABECERA_ENCARGO_ = [
+    'Eres un agente de navegador encargado de revisar/probar incidencias del proyecto Engremiat (Google Apps Script + Google Sheets, sistema de gestión de proyectos de una entidad social).',
+    '',
+    'Sistema en vivo: https://docs.google.com/spreadsheets/d/142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ/edit',
+    'Paso a paso para acceder: abre esa URL, espera a que cargue la hoja de cálculo, y busca un menú personalizado en la barra superior (junto a Archivo/Editar/Ver) con el nombre del sistema -- ahí están las funciones reales (fichas, paneles, informes) que la incidencia te pedirá abrir. Si no ves el menú personalizado tras 10-15s, recarga la página una vez antes de darlo por caído.',
+    '',
+    'Para cada incidencia de abajo, dos modos distintos según su tipo:',
+    '- Si el texto de "Cómo revisar" empieza pidiendo DECIDIR algo ("Decide si...", "Decide cuál..."): NO es una prueba técnica -- es una decisión que le corresponde al operador humano, no a ti. No la ejecutes ni la pruebes en el sistema; simplemente repórtala tal cual la leíste, sin alterarla, bajo su encabezado.',
+    '- Si el texto describe un comportamiento a comprobar (un botón, un dato, un informe): esa sí es una verificación real -- síguela al pie de la letra en el sistema en vivo, paso a paso, sin inventar alcance fuera de lo descrito.',
+    '',
+    'Reporta el resultado de cada incidencia por separado, bajo el mismo encabezado "### INC-NNNN" con el que te la mandé -- así se reparte solo al importar tu respuesta de vuelta en la Consola Engremiat. Sé concreto: qué hiciste, qué viste, si coincide con lo esperado.',
+    '',
+    'No apliques cambios de código -- esto es revisión/prueba en el sistema en vivo, no desarrollo.'
+  ];
+
+  function bloqueTarjeta_(tarjeta) {
+    var lineas = [];
+    var id = tarjeta.getAttribute('data-inc');
+    var titulo = tarjeta.querySelector('.titulo-tarjeta');
+    var resumen = tarjeta.querySelector('.resumen-tarjeta');
+    var comoRevisar = tarjeta.querySelector('.como-revisar .texto');
+    var notas = tarjeta.querySelector('.notas');
+    var notasAprobadas = notas && notas.getAttribute('data-prellenado') !== 'true' && notas.textContent.trim();
+    lineas.push('### ' + id + ' -- ' + (titulo ? titulo.textContent.trim() : ''));
+    if (resumen) lineas.push(resumen.textContent.trim());
+    if (comoRevisar && comoRevisar.textContent.trim()) { lineas.push(''); lineas.push('**Cómo revisar:** ' + comoRevisar.textContent.trim()); }
+    if (notasAprobadas) { lineas.push(''); lineas.push('**Notas del operador:** ' + notasAprobadas); }
+    lineas.push('');
+    return lineas;
+  }
+
+  function construirEncargoChatGPT_() {
+    var lineas = [];
+    lineas.push('# Encargo de lote -- Engremiat (' + new Date().toISOString().slice(0, 10) + ')');
+    lineas.push('');
+    lineas = lineas.concat(CABECERA_ENCARGO_);
+    lineas.push(''); lineas.push('---'); lineas.push('');
+
+    var visibles = Array.prototype.filter.call(document.querySelectorAll('section.grupo'), function (sec) {
+      return sec.getAttribute('data-local-oculto') !== 'true';
+    });
+    visibles.forEach(function (sec) {
+      var tituloGrupo = sec.querySelector('.titulo-grupo h2');
+      lineas.push('## ' + (tituloGrupo ? tituloGrupo.textContent.trim() : 'Grupo'));
+      lineas.push('');
+      Array.prototype.forEach.call(sec.querySelectorAll('.tarjeta'), function (tarjeta) {
+        lineas = lineas.concat(bloqueTarjeta_(tarjeta));
+      });
+    });
+    return lineas.join('\n');
+  }
+
+  function construirEncargoUnaIncidencia_(tarjeta) {
+    var id = tarjeta.getAttribute('data-inc');
+    var lineas = ['# Encargo -- ' + id + ' (Engremiat, ' + new Date().toISOString().slice(0, 10) + ')', ''];
+    lineas = lineas.concat(CABECERA_ENCARGO_);
+    lineas.push(''); lineas.push('---'); lineas.push('');
+    lineas = lineas.concat(bloqueTarjeta_(tarjeta));
+    return lineas.join('\n');
+  }
+
+  function descargar_(nombreArchivo, contenido, aviso) {
+    claude.use('downloads').then(function (downloads) {
+      if (!downloads) { aviso.style.display = 'block'; aviso.textContent = 'La descarga no está disponible en este visor -- copia el contenido manualmente.'; return; }
+      downloads.save({ filename: nombreArchivo, data: contenido })
+        .then(function () { aviso.style.display = 'block'; aviso.textContent = 'Descargado -- listo para pegar en ChatGPT.'; })
+        .catch(function () { aviso.style.display = 'block'; aviso.textContent = 'Descarga cancelada.'; });
+    });
+  }
+
+  // ---- Prompt para Ejecutor Engremiat -- corto a proposito. El contenido
+  // real vive en la pestana 96_PROMPT_EJECUTOR del Sheet (mas facil de
+  // mantener al dia, y Sheets no tiene la restriccion de portapapeles que
+  // bloquea al artefacto). El artefacto solo copia esta linea de arranque;
+  // Ejecutor Engremiat lee el resto el solo. No hay forma de enviar esto
+  // automaticamente -- sigue haciendo falta un tap para copiar/pegar. ----
+  var PROMPT_ARRANQUE_EJECUTOR_ = 'Hoy es 2026-08-22, rama activa jornada-2026-08-22. Lee la pestaña 96_PROMPT_EJECUTOR del Sheet 142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ y sigue esas instrucciones al pie de la letra -- ahí está la metodología completa, siempre actualizada.';
+
+  var cajaPromptManual = document.getElementById('cajaPromptManual');
+  if (cajaPromptManual) cajaPromptManual.value = PROMPT_ARRANQUE_EJECUTOR_;
+
+  var btnCopiarPromptEjecutor = document.getElementById('btnCopiarPromptEjecutor');
+  if (btnCopiarPromptEjecutor) {
+    btnCopiarPromptEjecutor.addEventListener('click', function () {
+      var aviso = document.getElementById('avisoCopiarPrompt');
+      var mostrarAviso = function (msg) { aviso.style.display = 'block'; aviso.textContent = msg; };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(PROMPT_ARRANQUE_EJECUTOR_)
+          .then(function () { mostrarAviso('Copiado -- pégalo como primer mensaje en Ejecutor Engremiat.'); })
+          .catch(function () { mostrarAviso('No se pudo copiar automáticamente -- usa la caja de abajo, mantén pulsado y selecciona todo.'); if (cajaPromptManual) { cajaPromptManual.focus(); cajaPromptManual.select(); } });
+      } else {
+        mostrarAviso('El portapapeles no está disponible aquí -- usa la caja de abajo.');
+        if (cajaPromptManual) { cajaPromptManual.focus(); cajaPromptManual.select(); }
+      }
+    });
+  }
+
+  document.getElementById('btnRecargar').addEventListener('click', function (e) {
+    e.currentTarget.classList.add('girando');
+    window.location.reload();
+  });
+
+  (function inicializarConfigEjecutor_() {
+    var cfg = document.getElementById('configEjecutor');
+    if (!cfg) return;
+    var mapa = {
+      horarioInicioInput: 'data-horario-inicio',
+      horarioFinInput: 'data-horario-fin',
+      horarioDiasInput: 'data-dias-activos',
+      horarioCupoInput: 'data-incidencias-por-fase'
+    };
+    Object.keys(mapa).forEach(function (idCampo) {
+      var campo = document.getElementById(idCampo);
+      var valor = cfg.getAttribute(mapa[idCampo]);
+      if (campo && valor) campo.value = valor;
+    });
+  })();
+
+  document.getElementById('btnGuardarHorario').addEventListener('click', function () {
+    var aviso = document.getElementById('avisoGuardarHorario');
+    var cfg = document.getElementById('configEjecutor');
+    var inicio = document.getElementById('horarioInicioInput').value.trim();
+    var fin = document.getElementById('horarioFinInput').value.trim();
+    var dias = document.getElementById('horarioDiasInput').value.trim();
+    var cupo = document.getElementById('horarioCupoInput').value.trim();
+    if (!inicio && !fin && !dias && !cupo) {
+      aviso.textContent = 'Rellena al menos un campo antes de guardar.';
+      aviso.style.color = 'var(--peligro)';
+      aviso.style.display = 'block';
+      return;
+    }
+    var partes = [];
+    if (inicio) { partes.push('inicio jornada ' + inicio); cfg.setAttribute('data-horario-inicio', inicio); }
+    if (fin) { partes.push('fin jornada ' + fin); cfg.setAttribute('data-horario-fin', fin); }
+    if (dias) { partes.push('días activos ' + dias); cfg.setAttribute('data-dias-activos', dias); }
+    if (cupo) { partes.push('incidencias por fase y ciclo: ' + cupo); cfg.setAttribute('data-incidencias-por-fase', cupo); }
+    cfg.setAttribute('data-actualizado', horaActual_());
+    anadirSolicitud_('cambiar_horario', 'Nuevo ritmo pedido -- ' + partes.join(', ') + '.', []);
+    aviso.textContent = '✓ Aplicado -- Ejecutor lo recogerá directamente del artefacto en su próximo ciclo, sin pasos intermedios.';
+    aviso.style.color = 'var(--exito)';
+    aviso.style.display = 'block';
+  });
+
+  document.getElementById('btnDescargar').addEventListener('click', function () {
+    descargar_('engremiat-encargo-' + new Date().toISOString().slice(0, 10) + '.md', construirEncargoChatGPT_(), document.getElementById('avisoDescarga'));
+  });
+
+  document.addEventListener('click', function (e) {
+    var boton = e.target.closest('.btn-descargar-una');
+    if (!boton) return;
+    var tarjeta = boton.closest('.tarjeta');
+    if (!tarjeta) return;
+    var id = tarjeta.getAttribute('data-inc');
+    descargar_('engremiat-' + id + '-' + new Date().toISOString().slice(0, 10) + '.md', construirEncargoUnaIncidencia_(tarjeta), document.getElementById('avisoDescarga'));
+  });
+
+  document.addEventListener('click', function (e) {
+    var boton = e.target.closest('.btn-trabajar-valorar');
+    if (!boton) return;
+    var id = boton.getAttribute('data-inc');
+    var titulo = boton.getAttribute('data-titulo') || '';
+    anadirSolicitud_('trabajar_valorar', 'Vamos a trabajar en ' + id + ': ' + titulo, []);
+    boton.textContent = '✓ Avisado';
+    boton.disabled = true;
+  });
+
+  // ---- Arranque ----
+  pintar_();
+  (function () {
+    var lista = leerSolicitudesDelDom_();
+    actualizarResumenHistorial_(lista);
+    renderPendientesDestacados_(lista);
+  })();
+
+  // ---- Aviso de cambios desde la ultima visita -- comparacion local (este
+  // navegador), no forma parte del documento compartido. No detecta cambios
+  // de contenido dentro de una tarjeta, solo altas/bajas de incidencias. ----
+  (function avisarCambiosDesdeUltimaVisita_() {
+    var CLAVE = 'mesaRevisionIncidenciasVistas';
+    var actuales = Array.prototype.map.call(document.querySelectorAll('#grupos .tarjeta'), function (t) {
+      return t.getAttribute('data-inc');
+    });
+    var anteriores = [];
+    try { anteriores = JSON.parse(localStorage.getItem(CLAVE) || '[]'); } catch (e) { anteriores = []; }
+    try { localStorage.setItem(CLAVE, JSON.stringify(actuales)); } catch (e) {}
+    if (!anteriores.length) return; // primera visita en este navegador -- nada que comparar
+    var nuevas = actuales.filter(function (id) { return anteriores.indexOf(id) === -1; });
+    var resueltas = anteriores.filter(function (id) { return actuales.indexOf(id) === -1; });
+    if (!nuevas.length && !resueltas.length) return;
+    var partes = [];
+    if (nuevas.length) partes.push('🆕 ' + nuevas.length + ' incidencia' + (nuevas.length > 1 ? 's' : '') + ' nueva' + (nuevas.length > 1 ? 's' : '') + ' (' + nuevas.join(', ') + ')');
+    if (resueltas.length) partes.push('✅ ' + resueltas.length + ' resuelta' + (resueltas.length > 1 ? 's' : '') + ' o cerrada' + (resueltas.length > 1 ? 's' : '') + ' (' + resueltas.join(', ') + ')');
+    var aviso = document.getElementById('avisoCambios');
+    var texto = document.getElementById('textoAvisoCambios');
+    if (!aviso || !texto) return;
+    texto.textContent = partes.join(' · ') + ' desde tu última visita.';
+    aviso.setAttribute('data-visible', 'true');
+  })();
+
+  var btnCerrarAvisoCambios = document.getElementById('btnCerrarAvisoCambios');
+  if (btnCerrarAvisoCambios) {
+    btnCerrarAvisoCambios.addEventListener('click', function () {
+      document.getElementById('avisoCambios').setAttribute('data-visible', 'false');
+    });
+  }
+  try {
+    var filtroGuardado = sessionStorage.getItem('mesaFiltroActivo');
+    if (filtroGuardado && filtroGuardado !== 'todas') {
+      var boton = filtros.querySelector('button[data-filtro="' + filtroGuardado + '"]');
+      if (boton) boton.click();
+    }
+  } catch (e) {}
+  fijarEstadoUI_('guardado', 'Al día');
+</script>
