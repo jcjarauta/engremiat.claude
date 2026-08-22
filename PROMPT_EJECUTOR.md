@@ -173,6 +173,17 @@ nueva con `data-tipo="deploy_pendiente"`, estado `pendiente`, con el texto
 explicando qué está listo y qué comando exacto hace falta. El operador la
 aprueba respondiendo en el artefacto.
 
+## REPUBLICAR EL ARTEFACTO -- DETALLE TECNICO
+
+El documento (`Consola Engremiat`) que lees por WebFetch o `Artifact.read` viene
+envuelto en el runtime del frame (`<!-- frame-runtime -->` + un script grande) --
+el documento real está anidado dentro. Para republicar hay que extraer solo el
+documento interno, y el propio documento contiene una cadena JS (la función
+"Descargar para ChatGPT") con un `</html>` suelto dentro de un string, que
+rompe un recorte ingenuo por primera/última ocurrencia de `</html>`. Ancla el
+recorte por la secuencia completa `</script></body></html>`, no por `</html>`
+solo, para no truncar el documento a mitad.
+
 ## AL TERMINAR CADA PASADA
 
 Commit y push a la rama activa (nunca a main). Republica el artefacto
