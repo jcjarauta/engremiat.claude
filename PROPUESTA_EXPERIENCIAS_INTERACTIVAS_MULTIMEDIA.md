@@ -3,6 +3,7 @@
 **Fecha de apertura:** 2026-08-23
 **Estado:** A valorar -- sin urgencia, roadmap futuro (ver "Cuándo" más abajo)
 **Incidencia Sheet:** INC-0055 (`13_INCIDENCIAS`, A valorar)
+**Google Doc vinculado (edición libre del operador, sin depender de Claude):** https://docs.google.com/document/d/1CHsRiry9Y3uF1vsKhNzPrTxRDo-pf60qa1ZlLTByUhE/edit -- este fichero `.md` es el análisis técnico versionado; el Doc es donde el operador añade enlaces/capturas/notas sueltas cuando le surjan. A partir de esta incidencia, toda "a valorar" nueva lleva su propio Doc desde el principio (ver `feedback_incidencias_a_valorar_google_doc` en memoria).
 **Por qué existe este fichero:** las incidencias "a valorar" en la Consola solo tienen sitio para un resumen corto -- cuando la idea necesita investigación real (comparar herramientas, decidir arquitectura, ir añadiendo hallazgos en varias sesiones), ese resumen se queda corto y todo lo demás vive solo en la conversación, que se pierde. Este fichero es el sitio para acumular eso, siguiendo el mismo patrón que ya usan `PROPUESTA_MODULARIZACION_LIBRERIA.md` y el resto de `PROPUESTA_*.md` del repo -- vivo, no un documento cerrado el día que se escribe.
 
 ## Disparador
