@@ -90,7 +90,9 @@ Motivo: en tareas abiertas, los modelos baratos/locales probados razonan bien pe
 
 Esta regla es directamente aplicable al criterio de entrada de esta metodología (micro-canvas/BMC, "Definición de Hecho" por tarea) -- es el mecanismo concreto para decidir, tarea a tarea del backlog, si es delegable a un worker barato o necesita quedarse con Claude/humano.
 
-**Cierre de esta ronda de pruebas**: no se abren más spikes de este tipo por ahora -- la regla se considera suficientemente validada (5 pruebas convergentes) para fijarse como parte de la metodología v1. Próxima validación real: aplicarla a un proyecto de desarrollo concreto (ver ejemplo de escape rooms en la conversación del 2026-08-23), no a más pruebas sintéticas.
+**Cierre de esta ronda de pruebas**: no se abren más spikes de este tipo por ahora -- la regla se considera suficientemente validada (5 pruebas convergentes) para fijarse como parte de la metodología v1. Próxima validación real: aplicarla a un proyecto de desarrollo concreto (ver ejemplo de escape rooms en la conversación del 2026-08-23, que encaja con INC-0055), no a más pruebas sintéticas.
+
+**Matiz añadido tras el ejemplo de escape rooms**: una tarea "abierta" a menudo lo es solo hasta que alguien invierte trabajo en acotarla -- ej. "redactar un guion" es abierto, "redactar un guion de 150-200 palabras siguiendo esta plantilla de tono/estructura" ya es acotado y delegable. Parte real del trabajo de Claude/humano en un proyecto no es solo resolver las tareas difíciles, es **convertir tareas abiertas en tareas acotadas** (especificar la Definición de Hecho con precisión suficiente) para que después sí puedan delegarse de verdad. Es el puente concreto entre "diseñar" (esta conversación) y "automatizar" (Ejecutor y otros agentes).
 
 ## Pendiente de concretar / preguntas abiertas
 
