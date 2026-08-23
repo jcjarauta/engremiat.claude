@@ -62,6 +62,17 @@ Primer uso real de esta metodología -- rellenar el Business Model Canvas comple
 
 **Hallazgo secundario (no la pregunta del spike, pero relevante)**: `claude-code-router` dio fricción de integración real -- el asistente de configuración terminó correctamente, pero al invocar Claude Code a través del perfil configurado, este rechazó el modelo (`unrecognized_model`) y pidió login, sin resolverse en el tiempo del spike. La pregunta de fondo (¿sirve DeepSeek para esto?) se resolvió igualmente con una llamada directa a la API, sin depender de esa integración. Pendiente: investigar la integración de `claude-code-router` como spike aparte, si en el futuro hace falta enrutar automáticamente desde el propio Claude Code en vez de con llamadas directas.
 
+## Segundo spike: DeepSeek V4 Flash en revisión de código (tarea más compleja)
+
+**Pregunta**: ¿DeepSeek encuentra, sin pista, un bug real y sutil de pérdida de datos en una revisión de código -- y dónde está su límite frente a Claude?
+**Cómo se mide**: se le dio la primera versión (con bug) de `regenerar_estatico.mjs` -- exactamente el código que yo (Claude) revisé y corregí hoy antes de publicarlo -- con el mismo contexto de sistema que tenía yo, sin señalar dónde estaba el problema, y se comparó su respuesta contra el bug real ya conocido.
+**Fecha límite**: 2026-08-23 (mismo día).
+**Resultado**: ⚠️ Parcial -- acierto real + un falso positivo con el mismo tono de confianza.
+- **Acertó** el bug real (estado reseteado a "pendiente", pierde decisiones ya publicadas) con precisión, identificando la línea exacta y el mecanismo.
+- **Falló** afirmando (igual de seguro) que el script "no persiste la actualización de GRUPOS" -- incorrecto: no entendió que GRUPOS se edita a mano ANTES de ejecutar el script, y que por eso el fragmento no tocado del HTML ya lo conserva bien. Le faltó contexto del flujo completo y no lo señaló como incertidumbre.
+
+**Conclusión para la arquitectura**: para tareas acotadas y bien delimitadas (spike #1: clasificación) es fiable sin supervisión. Para revisión de código dentro de un sistema más amplio, **necesita revisión humana/Claude antes de confiar en su veredicto** -- no por mal razonamiento, sino porque no distingue ni avisa cuándo le falta contexto. Coste de esta prueba: ~4.900 tokens, céntimos de dólar.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
