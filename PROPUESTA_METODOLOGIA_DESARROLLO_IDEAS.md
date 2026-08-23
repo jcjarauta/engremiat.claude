@@ -80,6 +80,18 @@ Primer uso real de esta metodología -- rellenar el Business Model Canvas comple
 **Resultado**: los tres coincidieron en el criterio (`ciclo`). Local: gratis, pero ~34x más lento que DeepSeek (17s vs 0,5s) y ~3x más tokens de entrada para el mismo contenido (1607 vs 485 -- causa no investigada, pendiente). Confirma que acotar bien el formato de salida esperado permite que hasta un modelo barato/local acierte de forma fiable.
 **Nota de honestidad**: la columna Claude es estimación por precio público sobre volumen de tokens comparable, no una llamada medida -- no confundir con dato duro.
 
+## Regla de delegación de IA (fijada 2026-08-23, cierra la ronda de 5 spikes)
+
+Conclusión consolidada de los spikes 1-5 (triaje, revisión de código, arquitectura, comparación de motores, pipeline local+DeepSeek). Convergen en el mismo patrón desde ángulos distintos: lo que decide si una tarea puede delegarse sin supervisión no es qué motor se usa, es si la tarea tiene un **resultado esperado acotado y verificable**.
+
+> **Delegar sin supervisión SOLO cuando la tarea tenga un formato de salida verificable y acotado de antemano** (ej. clasificar entre opciones fijas, devolver un JSON con campos definidos). **Cualquier tarea que dependa de contexto no completamente dado** (código dentro de un sistema mayor, decisiones de arquitectura o de negocio) **pasa siempre por revisión de Claude o humana antes de actuar sobre el resultado -- sin importar qué motor la generó, ni cuántos pasos tenga el pipeline.**
+
+Motivo: en tareas abiertas, los modelos baratos/locales probados razonan bien pero no distinguen lo que saben de lo que suponen, y no lo avisan -- ni siquiera cuando se les pide explícitamente no asumir (spikes 2 y 3). Encadenar dos modelos (spike 5) mejora algo la robustez pero no lo resuelve del todo, y no ahorra coste ni tiempo frente a un modelo solo.
+
+Esta regla es directamente aplicable al criterio de entrada de esta metodología (micro-canvas/BMC, "Definición de Hecho" por tarea) -- es el mecanismo concreto para decidir, tarea a tarea del backlog, si es delegable a un worker barato o necesita quedarse con Claude/humano.
+
+**Cierre de esta ronda de pruebas**: no se abren más spikes de este tipo por ahora -- la regla se considera suficientemente validada (5 pruebas convergentes) para fijarse como parte de la metodología v1. Próxima validación real: aplicarla a un proyecto de desarrollo concreto (ver ejemplo de escape rooms en la conversación del 2026-08-23), no a más pruebas sintéticas.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
