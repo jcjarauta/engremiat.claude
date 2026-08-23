@@ -88,6 +88,24 @@ Validado por consenso de mercado 2026 (enrutar lo rutinario/sensible en local, l
 - **Cierre de jornada de Ejecutor**: sí se puede automatizar parcialmente -- separar lo mecánico (tests, conflictos, tamaño del diff) de lo que necesita revisión (algo fuera de lo normal). Riesgo real: fallos silenciosos y sutiles (precedente: el bug de columnas desplazadas que corrompió INC-0050) son justo los que un filtro humano/Claude detecta y una automatización total no. Recomendación: definir señales explícitas que decidan solas cuándo el cierre pasa automático y cuándo espera revisión, no todo-o-nada.
 - **Priorización del trabajo de desarrollo** (nuevo elemento de gobierno planteado por el operador): es la decisión más sensible de todo el sistema -- decidir qué importa más no es mecánico. Recomendación: **no** automatizar de entrada. Empezar por hacer visible en la Consola el criterio de prioridad que ya existe en el Sheet (`PRIORIDAD`), y solo delegarlo si se demuestra repetitivo y predecible con el tiempo.
 
+## Business Model Canvas (primer relleno, piloto de INC-0057)
+
+Primer uso en vivo de la metodología definida en INC-0057 -- Canvas completo, no micro-canvas, porque esta idea es productizable.
+
+| Bloque | Contenido |
+|---|---|
+| **Segmentos de clientes** | Clientes actuales/futuros de Engremiat, segmentados por nivel de infraestructura que aceptan (solo software / + hardware local / + API externa). El propio estudio es "cliente cero". |
+| **Propuesta de valor** | Nivel 1: gestión sin IA, coste fijo. Nivel 2: asistencia IA privada, datos nunca salen de tu cuenta, sin coste variable. Nivel 3: razonamiento avanzado bajo demanda, pagado por uso, con tope de gasto real desde el día uno. Transversal: nunca depender de un único proveedor de IA. |
+| **Canales** | Directo (relación ya existente con clientes Engremiat) + partner tecnológico para instalación/mantenimiento de hardware. |
+| **Relación con clientes** | Autoservicio en nivel 1; acompañamiento técnico continuo en niveles 2-3, vía el partner. |
+| **Fuentes de ingresos** | Licencia de software (fija) + venta/renting de hardware + consumo de API repercutido al cliente + instalación/mantenimiento recurrente. |
+| **Recursos clave** | El core Engremiat ya construido, la metodología/arquitectura del ecosistema agéntico, el conocimiento de integración multi-proveedor. |
+| **Actividades clave** | Diseño y mantenimiento de la arquitectura, aprovisionamiento por cliente (cuenta API propia + tope de gasto + hardware), soporte continuo. |
+| **Socios clave** | Partner tecnológico (hardware/instalación), proveedores de IA en plural (Anthropic, DeepSeek, otros vía router -- a propósito, no exclusivo), Google (Sheets como infraestructura de datos del cliente). |
+| **Estructura de costes** | Tiempo de diseño/mantenimiento propio, coste de API en uso interno (presupuestado: 2-45€/mes según nivel para el caso de sincronización), hardware si el estudio lo compra para revender, soporte. |
+
+**Sin decidir a propósito** (el Canvas lo deja visible, no lo esconde): margen sobre el consumo de API repercutido al cliente (¿a coste, o con margen?), y si el hardware se vende o se renta vía el partner. Son decisiones de precio, no de arquitectura -- no hace falta cerrarlas ahora.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Se pilota primero Claude Code Router (cambio mínimo, reversible) antes de evaluar OpenCode como reemplazo de la capa de orquestación?
