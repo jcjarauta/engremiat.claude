@@ -73,6 +73,13 @@ Primer uso real de esta metodología -- rellenar el Business Model Canvas comple
 
 **Conclusión para la arquitectura**: para tareas acotadas y bien delimitadas (spike #1: clasificación) es fiable sin supervisión. Para revisión de código dentro de un sistema más amplio, **necesita revisión humana/Claude antes de confiar en su veredicto** -- no por mal razonamiento, sino porque no distingue ni avisa cuándo le falta contexto. Coste de esta prueba: ~4.900 tokens, céntimos de dólar.
 
+## Spike 4: comparación real Local (devstral-dev) vs DeepSeek vs Claude
+
+**Pregunta**: para la misma tarea acotada del spike 1, ¿qué diferencia real de tiempo/coste hay entre el worker local, DeepSeek y Claude?
+**Cómo se mide**: mismo caso (INC-0052), mismo prompt, ejecutado contra `devstral-dev` local (Ollama) -- medido con `prompt_eval_count`/`eval_count`/duraciones reales de Ollama --, comparado contra los datos ya medidos de DeepSeek (spike 1) y una estimación de Claude por precio público (no medida en vivo, no se pudo aislar dentro de esta conversación).
+**Resultado**: los tres coincidieron en el criterio (`ciclo`). Local: gratis, pero ~34x más lento que DeepSeek (17s vs 0,5s) y ~3x más tokens de entrada para el mismo contenido (1607 vs 485 -- causa no investigada, pendiente). Confirma que acotar bien el formato de salida esperado permite que hasta un modelo barato/local acierte de forma fiable.
+**Nota de honestidad**: la columna Claude es estimación por precio público sobre volumen de tokens comparable, no una llamada medida -- no confundir con dato duro.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
