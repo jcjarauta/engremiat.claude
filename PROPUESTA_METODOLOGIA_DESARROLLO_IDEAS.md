@@ -36,6 +36,17 @@ Toda incidencia "a valorar" nueva se clasifica al abrirla:
 
 El Canvas relleno de una idea productizable NO se reescribe a mano como business plan o memoria de subvención -- ese documento externo se **genera a partir de** los Canvas ya rellenos cuando haga falta presentarlo, igual que la Consola se genera a partir del Sheet. Evita mantener el mismo contenido dos veces.
 
+### 3.bis. Todo elemento nuevo del ecosistema nace registrado (2026-08-23)
+
+Añadido tras encontrar 4 desincronizaciones reales el mismo día (Consola↔Sheet,
+rama vs main, prompt desactualizado, trigger desactivado sin avisar -- ver
+`SALUD_ECOSISTEMA.md`). Regla: **crear un prompt operativo, un trigger
+programado, o un script de sincronización nuevo no está "Hecho" hasta que
+también se añade a `tools/registro_ecosistema.json`**, en el mismo
+commit/sesión, no después. El ritual de salud (`tools/salud_ecosistema.mjs`)
+lee ese registro sin nombres fijos -- si algo no está ahí, no se vigila, y
+puede desincronizarse sin que nadie se entere.
+
 ### 3. "Definición de Hecho" por tarea del backlog
 
 Cada tarea de `13_INCIDENCIAS` que pase a ejecución lleva una definición explícita de qué significa "terminado" -- no solo quién la hace. Esto hace que una tarea sea asignable indistintamente a un agente IA o a una persona (`RESPONSABLE_ID` ya soporta cualquier tipo de actor, no hace falta cambiar el esquema) sin fricción, y de paso es literalmente el encargo que se le pasaría a un freelance el día que se contrate.

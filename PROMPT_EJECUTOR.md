@@ -1,5 +1,10 @@
 # PROMPT_EJECUTOR
 
+**Última revisión humana/Claude de este fichero: 2026-08-23.** Si al leer
+esto han pasado más de ~7 días desde esa fecha, dilo explícitamente en tu
+respuesta -- puede estar desactualizado frente a herramientas/reglas nuevas
+del repo (ver `tools/salud_ecosistema.mjs`).
+
 Instrucciones operativas de Ejecutor Engremiat (Claude Code on the web). Este
 fichero, en la raíz del repo, es la fuente de verdad que el trigger automático
 te pide leer en cada disparo -- no una copia. Si algo aquí y en la pestaña

@@ -1,0 +1,29 @@
+{
+  "_comentario": "Registro central de elementos del ecosistema Engremiat sujetos a chequeo de salud (ver SALUD_ECOSISTEMA.md). Todo elemento nuevo (prompt operativo, trigger programado, script de sincronizacion) se anade aqui en el MISMO commit que lo crea -- no en uno posterior. salud_ecosistema.mjs lee este fichero, no tiene nombres a fuego.",
+
+  "prompts_operativos": [
+    {
+      "fichero": "PROMPT_EJECUTOR.md",
+      "agente": "Ejecutor Engremiat",
+      "cabecera_revision_regex": "Última revisión humana/Claude de este fichero: (\\d{4}-\\d{2}-\\d{2})",
+      "umbral_dias_aviso": 7
+    }
+  ],
+
+  "triggers_programados": [
+    {
+      "id": "trig_01PcwtGdVbbWVHU5zbrJrh4U",
+      "nombre": "Engremiat: revisar 96_PROMPT_EJECUTOR",
+      "agente": "Ejecutor Engremiat",
+      "persistent_session_id": "session_01AYjZjU3NUiKQBToRo5ieuU",
+      "nota": "Comprobacion de enabled/last_fired_at es manual, solo con RemoteTrigger (ver SALUD_ECOSISTEMA.md punto 4) -- este registro solo documenta que existe y a que agente pertenece."
+    }
+  ],
+
+  "scripts_sincronizacion": [
+    { "fichero": "tools/consola/chequear_consistencia.mjs", "que_compara": "Consola (GRUPOS) vs 13_INCIDENCIAS" },
+    { "fichero": "tools/consola/regenerar_estatico.mjs", "que_hace": "Reconstruye el HTML estatico de la Consola preservando estado publicado" },
+    { "fichero": "tools/consola/extraer_decisiones.mjs", "que_hace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet" },
+    { "fichero": "tools/salud_ecosistema.mjs", "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro" }
+  ]
+}
