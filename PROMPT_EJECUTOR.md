@@ -156,6 +156,16 @@ respuesta/informe qué incidencias tocaste para que el operador o Claude
 local lo sincronicen. Nunca des una incidencia por cerrada o creada sin que
 el artefacto lo refleje.
 
+**Ritual ya sistematizado (2026-08-23), úsalo en vez de razonar la sincronía
+a mano**: `tools/consola/SINCRONIZACION.md` documenta el proceso completo, con
+tres scripts en el mismo directorio -- `chequear_consistencia.mjs` (drift
+Consola↔Sheet en las dos direcciones), `regenerar_estatico.mjs` (reconstruye
+el HTML estático de `<div id="grupos">` desde `GRUPOS` preservando las
+decisiones ya publicadas -- nunca reescribas ese bloque a mano), y
+`extraer_decisiones.mjs` (solo lectura, lista decisiones pendientes de
+trasladar al Sheet). Si vas a tocar `GRUPOS` o el bloque estático, sigue ese
+ritual, no una versión propia.
+
 **METRICAS DEL DIA**: `<p id="metricasDia">` (`data-ciclos`,
 `data-creadas`, `data-cerradas`, `data-cierre-enviado`) es contador manual:
 solo lo tocas TÚ al republicar. Si este ciclo hizo trabajo real, suma 1 a
@@ -170,8 +180,18 @@ Consola se queda congelado aunque el dato real esté bien.
 
 ## REGLA DE TRIAGE
 
-Sin acceso al worker local (Aider+Ollama). Cualquier incidencia que lo
-requiera: márcala ESTADO `esperando worker local` y sigue.
+Sin acceso al worker local (Ollama, modelo `devstral-dev`). Cualquier
+incidencia que lo requiera: márcala ESTADO `esperando worker local` y sigue.
+
+**Regla de delegación de IA (fijada 2026-08-23, INC-0057)**: al triajar tus
+propios hallazgos de auditoría o decidir si algo puede resolverse sin
+supervisión, usa este criterio -- delegable sin supervisión SOLO si el
+resultado esperado es acotado y verificable (ej. clasificar entre opciones
+fijas, formato de salida definido); cualquier tarea que dependa de contexto
+no completamente dado (arquitectura, decisiones de negocio, revisión de
+código dentro de un sistema mayor) necesita revisión de Claude o humana
+antes de darse por resuelta -- detalle y evidencia en
+`PROPUESTA_METODOLOGIA_DESARROLLO_IDEAS.md` (raíz del repo).
 
 Si algo queda listo para desplegar (`clasp push`/version/deploy), NUNCA lo
 hagas tú mismo. Publica en el artefacto (documento completo) una solicitud
