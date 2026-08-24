@@ -105,6 +105,20 @@ Esta regla es directamente aplicable al criterio de entrada de esta metodología
 
 **Matiz añadido tras el ejemplo de escape rooms**: una tarea "abierta" a menudo lo es solo hasta que alguien invierte trabajo en acotarla -- ej. "redactar un guion" es abierto, "redactar un guion de 150-200 palabras siguiendo esta plantilla de tono/estructura" ya es acotado y delegable. Parte real del trabajo de Claude/humano en un proyecto no es solo resolver las tareas difíciles, es **convertir tareas abiertas en tareas acotadas** (especificar la Definición de Hecho con precisión suficiente) para que después sí puedan delegarse de verdad. Es el puente concreto entre "diseñar" (esta conversación) y "automatizar" (Ejecutor y otros agentes).
 
+## El carril "A valorar" nunca lo trabaja un worker autónomo (fijado 2026-08-23)
+
+Precisión importante sobre la regla de delegación, para no confundir dos
+cosas parecidas: lo único automatizable alrededor del carril "A valorar"
+es la mecánica de fuera -- clasificar en qué carril entra una idea nueva
+(tarea acotada, ya validada con DeepSeek en el spike 1), o avisar de que
+hay algo esperando. **El contenido del carril en sí -- diseñar, decidir
+arquitectura, definir funciones nuevas -- es trabajo genuino que necesita
+al operador interactuando, siempre, sin excepción.** Ningún worker
+autónomo entra ahí a avanzar la idea por su cuenta, ni siquiera de forma
+parcial. El resto de piezas del ecosistema (Ejecutor, futuros triajes,
+sincronización) sí se preparan para trabajo autónomo -- esta es la única
+excepción explícita, y es la más importante de todas.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
