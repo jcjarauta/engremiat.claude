@@ -119,6 +119,18 @@ parcial. El resto de piezas del ecosistema (Ejecutor, futuros triajes,
 sincronización) sí se preparan para trabajo autónomo -- esta es la única
 excepción explícita, y es la más importante de todas.
 
+## Spike 6: 4 variantes reales de auditoría (fichero completo/Graphify × solo/pipeline)
+
+**Pregunta**: ¿alguna combinación de DeepSeek/local/Graphify encuentra el bug real y ya conocido de INC-0052 (falta `filtrarPorNivelDato_` en `ReportService.js`), y cuál sale más barata?
+**Cómo se mide**: 4 variantes ciegas (no se les dice el bug) contra el código real de `ReportService.js`, con el criterio real de `CICLO_AUDITORIA_ENGREMIAT.md` Fase 1 -- DeepSeek solo (fichero completo / Graphify) y Local→DeepSeek-revisor (fichero completo / Graphify).
+**Resultado**: ⚠️ **Ninguna de las 4 encontró el bug real que ya sabíamos que estaba ahí.** No valida delegar la auditoría completa de Ejecutor a DeepSeek.
+
+Hallazgos positivos reales, aunque no resuelvan la pregunta principal:
+- **Graphify redujo el coste ~3x** (22.463 vs 66.145 tokens) sin perder especificidad -- y tiró de ficheros relacionados reales a través de las llamadas, no solo del fichero pedido.
+- **El patrón de revisión (local borrador → DeepSeek revisor) actuó como filtro de calidad real**: rechazó correctamente 4/4 hallazgos vagos de un borrador, y en el otro caso aceptó solo lo verificable con una salvedad explícita ("si no puedes confirmar que el símbolo no existe, retíralo") -- más honesto sobre su propia incertidumbre que en los spikes 2/3/5 de esta mañana, posiblemente porque aquí tenía un criterio de aprobado/rechazado explícito, no una pregunta abierta.
+
+**Conclusión de arquitectura**: la auditoría real de Ejecutor se queda con Claude -- este spike no encontró una forma válida de sustituirlo ahí. Lo que sí se adopta ya: usar Graphify para acotar contexto de código (ahorro de coste real, sin coste de calidad) y el patrón de revisión con criterio explícito para cualquier tarea donde SÍ se delegue a un modelo barato.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
