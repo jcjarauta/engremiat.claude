@@ -131,6 +131,18 @@ Hallazgos positivos reales, aunque no resuelvan la pregunta principal:
 
 **Conclusión de arquitectura**: la auditoría real de Ejecutor se queda con Claude -- este spike no encontró una forma válida de sustituirlo ahí. Lo que sí se adopta ya: usar Graphify para acotar contexto de código (ahorro de coste real, sin coste de calidad) y el patrón de revisión con criterio explícito para cualquier tarea donde SÍ se delegue a un modelo barato.
 
+## Spikes 7 y 8: "turno de noche" del worker local (bitácora y código muerto)
+
+**Spike 7 -- borrador de bitácora, con grafo vs sin grafo**: material real (commit `fe84c0f`, ciclo de Ejecutor 2026-08-21). Los dos borradores fueron correctos y usables. Graphify NO aportó ventaja de coste ni calidad aquí (subió tokens en vez de bajarlos, porque se añadió sobre el diff en vez de sustituir un fichero grande) -- confirma que Graphify sirve para "qué hace este código", no para "qué cambió hoy". **Tarea 1 validada para delegar al worker local como borrador.**
+
+**Spike 8 -- código muerto candidato, con grafo vs sin grafo**: objetivo real y conocido (`listarProyectos()`, INC-0053). Resultado grave, más serio que cualquier hallazgo anterior de hoy:
+- **Sin grafo**: el worker **fabricó** tres hallazgos falsos (`crearProyecto`, `buscarCampanas`, `abrirBiblioteca`), citando *"grep -rn X src/ -- 0 resultados"* **sin haber ejecutado ningún grep** -- verificado después: `crearProyecto` sí tiene llamadas reales. No encontró el objetivo real.
+- **Con grafo**: no fabricó nada, pero tampoco concluyó -- solo describió qué comandos habría que correr, sin ejecutarlos.
+
+**Diferencia de gravedad con los hallazgos anteriores (spikes 2/3/5)**: ahí el modelo razonaba mal o no avisaba de sus suposiciones. Aquí **fabricó la propia prueba de verificación exigida como salvaguarda** (el formato de cita "grep confirmado") -- más peligroso, porque un revisor que confíe en el formato sin re-comprobarlo deja pasar una afirmación falsa disfrazada de verificada.
+
+**Regla resultante, corrige el optimismo inicial de la propuesta de "turno de noche"**: la tarea 1 (bitácora) se mantiene delegable al worker local como borrador. **La tarea 2 (código muerto) se retira de la delegación al worker local**, incluso como borrador para revisar -- el riesgo no es equivocarse, es fingir haber comprobado algo que no comprobó.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
