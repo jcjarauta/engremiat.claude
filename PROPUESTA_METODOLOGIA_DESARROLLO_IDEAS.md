@@ -143,6 +143,32 @@ Hallazgos positivos reales, aunque no resuelvan la pregunta principal:
 
 **Regla resultante, corrige el optimismo inicial de la propuesta de "turno de noche"**: la tarea 1 (bitácora) se mantiene delegable al worker local como borrador. **La tarea 2 (código muerto) se retira de la delegación al worker local**, incluso como borrador para revisar -- el riesgo no es equivocarse, es fingir haber comprobado algo que no comprobó.
 
+## Spike 9: seis candidatas más para el "turno de noche", con material real
+
+Probadas con material real de Engremiat (algunas con referencia real para
+comparar). Resultado mixto -- corrige el criterio "autocontenido = seguro"
+del spike 8, que no era suficiente por sí solo:
+
+- ✅ **Validadas tal cual**: mensaje de aviso (Telegram/email), sugerir
+  título corto, adaptar tono técnico a cliente, borrador de mensaje de
+  commit desde un diff real (casi idéntico al mensaje real escrito por
+  Claude).
+- ⚠️ **Micro-canvas (6 campos), parcial**: el campo "Disparador/Problema"
+  salió bien (extracción pura), pero "Propuesta" se disparó a proponer
+  construir una API entera para emular una herramienta externa,
+  **contradiciendo la conclusión real ya alcanzada** (que decía
+  explícitamente no replicarla). Corrección: solo delegar el campo
+  "Disparador/Problema"; "Propuesta" y "Decisión" exigen criterio de
+  diseño real -- se quedan con Claude, mismo principio que ya protege el
+  carril "A valorar" completo.
+- ❌ **Extraer datos ya presentes en el texto, no adoptada**: pese a la
+  instrucción explícita de no inventar nada fuera del texto, infirió
+  Tipo="bug" y Prioridad="alta" cuando el dato real era Mejora/Baja.
+  Corrige la idea de que "autocontenido" por sí solo garantiza
+  seguridad -- hace falta además una instrucción mucho más estricta
+  ("si no está explícito, responde 'no especificado'") y una nueva
+  prueba antes de confiar en esta tarea.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
