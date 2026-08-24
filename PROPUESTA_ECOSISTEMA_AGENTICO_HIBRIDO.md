@@ -106,6 +106,49 @@ Primer uso en vivo de la metodología definida en INC-0057 -- Canvas completo, n
 
 **Sin decidir a propósito** (el Canvas lo deja visible, no lo esconde): margen sobre el consumo de API repercutido al cliente (¿a coste, o con margen?), y si el hardware se vende o se renta vía el partner. Son decisiones de precio, no de arquitectura -- no hace falta cerrarlas ahora.
 
+## Backlog de tareas automatizables (propuesta 2026-08-23, sin priorizar aún)
+
+Generado tras validar el ciclo de Ejecutor y la regla de delegación. Cada
+tarea aplica esa regla: acotada -> delegable; abierta -> se queda en
+"A valorar" con supervisión, nunca aquí.
+
+### Por horario (cron, como Ejecutor) -- bajo riesgo
+
+1. `salud_ecosistema.mjs` en cron diario -- hoy solo corre si alguien se
+   acuerda; detectaría desincronizaciones como las de hoy sin esperar a
+   que se noten por casualidad.
+2. Chequeo Consola↔Sheet diario, no solo al trabajar la Consola.
+3. Limpieza automática de tarjetas cerradas en Sheet pero vivas en
+   Consola (el caso real de INC-0006/7/22/23 de hoy).
+4. Copia de seguridad periódica del Sheet maestro y del repo.
+5. Memoria de producción / informe ejecutivo (`ReportService.js`, ya
+   construidos) -- generación automática semanal/mensual en vez de bajo
+   demanda.
+6. Informe de coste real de IA (DeepSeek/local/Claude) -- alimenta con
+   datos reales el panel "Salud del sistema", hoy solo estimaciones.
+7. Triaje de incidencias nuevas con DeepSeek (validado en los spikes) --
+   cierra el hueco de INC-0052-0055 de forma recurrente.
+
+### Por eventos -- reacciona a algo, no espera a la hora
+
+8. Incidencia nueva creada -> triaje inmediato. Aviso: probablemente
+   choque con el bloqueo de red conocido de Apps Script hacia fuera --
+   no es gratis, habría que resolver eso primero.
+9. Commit nuevo en `main` -> comprobación automática de que
+   `salud_ecosistema.mjs` sigue en verde (CI ligero).
+10. Deploy aprobado -> ejecutarlo solo. **Deliberadamente NO
+    recomendado** -- `PROMPT_EJECUTOR.md` ya dice explícitamente "nunca lo
+    hagas tú mismo"; zona de riesgo real (código en producción), no
+    tocar sin decisión aparte.
+
+### Más ambiciosas
+
+11. Vigilancia de presupuesto -- compara gasto real acumulado contra el
+    tope fijado y avisa antes de acercarse al límite, no después.
+12. Borrador de retrospectiva semanal -- recopila datos de la semana
+    (ciclos, incidencias, spikes) y prepara material para que el
+    operador decida -- nunca decide por su cuenta.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Se pilota primero Claude Code Router (cambio mínimo, reversible) antes de evaluar OpenCode como reemplazo de la capa de orquestación?
