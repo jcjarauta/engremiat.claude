@@ -78,10 +78,16 @@ function obtenerListaClientes() {
  * el scriptId ya se conoce (viene de CLIENTE.SCRIPT_ID), así que no hace
  * falta el ui.prompt de abrirActualizarLibreriaCliente.
  */
+/*
+ * Antes duplicaba letra por letra actualizarLibreriaClienteDesdeDialogo
+ * (AprovisionamientoService.js) -- colapsado 2026-08-23 (INC-0018), tras
+ * casi provocar un desfase real (INC-0017) al tocar solo una de las dos
+ * copias. Se mantienen ambos nombres (los llama cada uno un HTML
+ * distinto via google.script.run) pero la implementacion real vive en
+ * un solo sitio.
+ */
 function actualizarLibreriaClienteDesdePanel(scriptId) {
-  var resultado = actualizarLibreriaClienteRemoto_(scriptId);
-  actualizarLibreriaVersionEnFichaCliente_(scriptId, resultado.versionNueva);
-  return resultado;
+  return actualizarLibreriaClienteDesdeDialogo(scriptId);
 }
 
 function abrirPanelClientes() {
