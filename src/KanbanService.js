@@ -164,10 +164,11 @@ function tarjetasKanbanProceso_(filtro) {
 }
 
 /*
- * INCIDENCIA no tiene RESPONSABLE_ID (se asignaria via ASIGNACION,
- * generico) -- el filtro de responsable no se aplica aqui, se ignora
- * en vez de forzar un campo que no existe. Si tiene PROCESO_ID propio
- * (a diferencia de TAREA), asi que el filtro "Proceso" SI se aplica.
+ * INCIDENCIA SI tiene RESPONSABLE_ID propio (columna real en
+ * 13_INCIDENCIAS) -- corregido 2026-08-23 (INC-0035): el comentario
+ * anterior decia lo contrario y el filtro de responsable se ignoraba
+ * sin motivo real. Tiene tambien PROCESO_ID propio (a diferencia de
+ * TAREA), asi que el filtro "Proceso" tambien se aplica.
  */
 function tarjetasKanbanIncidencia_(filtro) {
   var datos = leerVariasEntidadesBatch_(['INCIDENCIA', 'CAMPANA', 'PROYECTO', 'PRODUCTO', 'PROCESO', 'TAREA']);
@@ -186,6 +187,7 @@ function tarjetasKanbanIncidencia_(filtro) {
     if (filtro.campanaId && incidencia.CAMPANA_ID !== filtro.campanaId) return false;
     if (filtro.proyectoId && incidencia.PROYECTO_ID !== filtro.proyectoId) return false;
     if (filtro.procesoId && incidencia.PROCESO_ID !== filtro.procesoId) return false;
+    if (filtro.responsableId && incidencia.RESPONSABLE_ID !== filtro.responsableId) return false;
     return true;
   }).map(function (incidencia) {
     /*
