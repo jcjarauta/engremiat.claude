@@ -34,6 +34,7 @@
         <div class="acciones">
           <button id="btnEditarDatos" class="boton btn-mini">Editar datos</button>
           <button id="btnNuevoHorario" class="boton btn-mini">+ Horario</button>
+          <button id="btnExportarCsv" class="boton btn-mini">Exportar CSV</button>
         </div>
       </div>
 
@@ -193,6 +194,9 @@
         document.getElementById("btnEditarDatos").addEventListener("click", function () { editar("PERSONA_EQUIPO", p.ID); });
         document.getElementById("btnNuevoHorario").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearHorarioParaPersonaEquipo(p.ID);
+        });
+        document.getElementById("btnExportarCsv").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaPersonaEquipoCSV(p.ID);
         });
       }
 

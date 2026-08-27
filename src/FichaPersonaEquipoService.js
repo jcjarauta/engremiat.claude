@@ -217,6 +217,50 @@ function abrirFichaPersonaEquipoBuscar() {
  * cadena Campaña->Proyecto -- y retorna a esta misma ficha al cerrar
  * el formulario (ver conversacion: "no tener que salir de la ficha").
  */
+/*
+ * Exportar CSV de la ficha -- mismo exportador compartido que el resto
+ * de fichas (ver FichaTareaService.js).
+ */
+function exportarFichaPersonaEquipoCSV(id) {
+  var datos = obtenerFichaPersonaEquipo(id);
+  var encabezados = ['Tipo', 'ID', 'Nombre', 'Detalle', 'Estado'];
+
+  var filas = [];
+  datos.miembros.forEach(function (m) {
+    filas.push(['Miembro', m.miembroId, m.miembroNombre, m.rol || '', m.estado]);
+  });
+  datos.equiposDondeEsMiembro.forEach(function (e) {
+    filas.push(['Equipo', e.equipoId, e.equipoNombre, e.rol || '', e.estado]);
+  });
+  datos.horarios.forEach(function (h) {
+    var detalle = [h.dia, [h.inicio, h.fin].filter(Boolean).join('-')].filter(Boolean).join(' · ');
+    filas.push(['Horario', h.id, detalle, '', h.estado]);
+  });
+  ['hoy', 'proximas', 'terminadas', 'otras'].forEach(function (grupo) {
+    (datos.tareasPorFecha[grupo] || []).forEach(function (t) {
+      filas.push(['Tarea', t.tareaId, t.tareaNombre, t.rol || '', t.estado]);
+    });
+  });
+  datos.asignaciones.forEach(function (a) {
+    filas.push(['Asignación', a.id, a.entidad, a.rol || '', a.estado]);
+  });
+  datos.documentos.forEach(function (d) {
+    filas.push(['Documento', d.id, d.titulo, d.tipo, d.estado]);
+  });
+  datos.vinculos.forEach(function (v) {
+    filas.push(['Vínculo', v.id, v.otro, v.tipoVinculo || '', v.direccion]);
+  });
+
+  var nombreArchivo = 'FICHA_PERSONA_EQUIPO_' + id + '_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
+  registrarHistorial('PERSONA_EQUIPO', id, 'EXPORTAR_FICHA', [], { origen: 'UI', formato: 'CSV' });
+  return { nombreArchivo: nombreArchivo, contenidoCsv: construirCsvConBom_(encabezados, filas) };
+}
+
+function abrirDialogoExportarFichaPersonaEquipoCSV(id) {
+  var resultado = exportarFichaPersonaEquipoCSV(id);
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
+}
+
 function abrirFormularioCrearHorarioParaPersonaEquipo(entidadId) {
   abrirFormularioCrear_('HORARIO', 'Nuevo horario (franja semanal)', {
     ENTIDAD_TIPO: 'Persona/Equipo', ENTIDAD_ID: entidadId

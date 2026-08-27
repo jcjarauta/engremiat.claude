@@ -138,3 +138,39 @@ function abrirFormularioCrearDocumentoParaRecurso(recursoId) {
     ENTIDAD_TIPO: 'Recurso', ENTIDAD_ID: recursoId
   }, { tipo: 'ficha', entidad: 'RECURSO', id: recursoId });
 }
+
+/*
+ * Exportar CSV de la ficha -- mismo exportador compartido que el resto
+ * de fichas (ver FichaTareaService.js).
+ */
+function exportarFichaRecursoCSV(id) {
+  var datos = obtenerFichaRecurso(id);
+  var encabezados = ['Tipo', 'ID', 'Nombre', 'Detalle', 'Estado'];
+
+  var filas = [];
+  datos.contenidos.forEach(function (c) {
+    filas.push(['Contenido', c.id, c.nombre, c.clase || '', c.estado]);
+  });
+  datos.usos.forEach(function (u) {
+    filas.push(['Uso', u.id, u.tareaNombre, u.tipoUso || '', u.estado]);
+  });
+  datos.horarios.forEach(function (h) {
+    var detalle = [h.dia, [h.inicio, h.fin].filter(Boolean).join('-')].filter(Boolean).join(' · ');
+    filas.push(['Horario', h.id, detalle, '', h.estado]);
+  });
+  datos.documentos.forEach(function (d) {
+    filas.push(['Documento', d.id, d.titulo, d.tipo, d.estado]);
+  });
+  datos.incidenciasVinculadas.forEach(function (i) {
+    filas.push(['Incidencia', i.incidenciaId, i.titulo, '', i.estado]);
+  });
+
+  var nombreArchivo = 'FICHA_RECURSO_' + id + '_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'GMT', 'yyyy-MM-dd_HHmmss') + '.csv';
+  registrarHistorial('RECURSO', id, 'EXPORTAR_FICHA', [], { origen: 'UI', formato: 'CSV' });
+  return { nombreArchivo: nombreArchivo, contenidoCsv: construirCsvConBom_(encabezados, filas) };
+}
+
+function abrirDialogoExportarFichaRecursoCSV(id) {
+  var resultado = exportarFichaRecursoCSV(id);
+  abrirDialogoDescargaCSV_(resultado.nombreArchivo, resultado.contenidoCsv);
+}
