@@ -335,7 +335,9 @@ function nombreRegistroEntidad_(entidadTipo, entidadId) {
  * se esté consultando en el resto del informe.
  */
 function obtenerComparativaCampanas() {
-  var filas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }).map(function (c) {
+  // INC-0059: mismo patron que INC-0052 (ReportService.js) -- excluye
+  // campañas Piloto/Auditoria de la comparativa de coste.
+  var filas = filtrarPorNivelDato_('CAMPANA', listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }), false).map(function (c) {
     var coste = calcularCosteTotalPorCategoria_('Campaña', c.ID);
     var ambito = resolverAmbitoCoste_('Campaña', c.ID);
     var financiacion = calcularFuentesFinanciacionAmbito_(ambito);

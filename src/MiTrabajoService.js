@@ -15,7 +15,7 @@ function obtenerMiTrabajo() {
   if (!yo) return serializarParaCliente_({ sinPersona: true });
 
   var tareasPorId = {};
-  listarRegistros('TAREA', {}).forEach(function (t) { tareasPorId[t.ID] = t; });
+  listarRegistros('TAREA', { ACTIVO: 'SÍ' }).forEach(function (t) { tareasPorId[t.ID] = t; });
 
   var ESTADOS_TAREA_CIERRE = ['Terminada', 'Cancelada'];
   var tareas = listarRegistros('TAREA_RESPONSABLE', { ACTIVO: 'SÍ' })

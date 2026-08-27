@@ -188,7 +188,9 @@ function generarMemoriaProduccion() {
   // Orden cronológico (ver conversación -- "gráficos, diagramas"): la
   // línea de tendencia de desviación por campaña necesita un eje
   // temporal con sentido, no el orden de fila de la hoja.
-  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' })
+  // INC-0052: filtrarPorNivelDato_ excluye campañas Piloto/Auditoria,
+  // igual que ya hace obtenerOpcionesCampanasActivas (PanelCampanaService.js:16).
+  var campanas = filtrarPorNivelDato_('CAMPANA', listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }), false)
     .sort(function (a, b) { return new Date(a.FECHA_INICIO_PLAN) - new Date(b.FECHA_INICIO_PLAN); });
   // proyectosDetalle (ver conversación -- "me siguen faltando los
   // detalles operativos", destapado con Memoria de producción
@@ -293,7 +295,9 @@ function obtenerOpcionesInforme(tipo) {
  * ya CORE-safe) en vez de duplicar ninguna consulta.
  */
 function generarInformeEjecutivo() {
-  var campanas = listarRegistros('CAMPANA', { ACTIVO: 'SÍ' });
+  // INC-0052: mismo filtro que generarMemoriaProduccion, excluye
+  // campañas Piloto/Auditoria de los KPIs de una página.
+  var campanas = filtrarPorNivelDato_('CAMPANA', listarRegistros('CAMPANA', { ACTIVO: 'SÍ' }), false);
   var campanasActivas = campanas.filter(function (c) { return c.ESTADO === 'Activa'; });
   var procesosActivos = listarRegistros('PROCESO', { ACTIVO: 'SÍ' });
   var avanceMedioProcesos = procesosActivos.length > 0
