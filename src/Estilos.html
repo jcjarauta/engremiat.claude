@@ -15,22 +15,42 @@
     --color-exito: #1a7f37;
     --color-texto: #202124;
     --color-texto-secundario: #5f6368;
+    --color-texto-tenue: #888;
     --color-borde: #dadce0;
     --color-fondo-suave: #f5f5f5;
     --color-fondo-cabecera: #f1f3f4;
     --color-fondo: #fff;
+    --color-sombra: rgba(0,0,0,.25);
+    --color-texto-sobre-primario: #fff;
     --radio-borde: 4px;
   }
 
   /*
-   * background explícito (ver conversación -- INC-0030): sin esto, body
-   * queda transparente y con prefers-color-scheme:dark el navegador
-   * pinta un fondo oscuro por defecto detrás de --color-texto (oscuro,
-   * pensado para fondo claro) -- texto casi ilegible en modo oscuro del
-   * sistema. Fix mínimo: fondo claro siempre. Modo oscuro real (paleta
-   * alternativa vía @media prefers-color-scheme) queda como incidencia
-   * aparte, no mezclado con este fix.
+   * Modo oscuro real (INC-0033, resuelve el fix mínimo de INC-0030 de
+   * arriba): redefine solo las variables, ningún selector nuevo -- todo
+   * componente que ya usa las variables (botones, inputs, tabla, modal
+   * de confirmación) se adapta solo. El modo claro no cambia de
+   * aspecto -- prefers-color-scheme: dark solo entra cuando el sistema
+   * operativo del usuario está en modo oscuro de verdad.
    */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --color-primario: #8ab4f8;
+      --color-primario-oscuro: #aecbfa;
+      --color-peligro: #f28b82;
+      --color-peligro-fondo: #3c2a29;
+      --color-exito: #81c995;
+      --color-texto: #e8eaed;
+      --color-texto-secundario: #9aa0a6;
+      --color-texto-tenue: #9199a0;
+      --color-borde: #6e7276;
+      --color-fondo-suave: #303134;
+      --color-fondo-cabecera: #292a2d;
+      --color-fondo: #202124;
+      --color-sombra: rgba(0,0,0,.6);
+      --color-texto-sobre-primario: #202124;
+    }
+  }
   body { font-family: Arial, sans-serif; font-size: 13px; color: var(--color-texto); background: var(--color-fondo); margin: 10px; padding: 0; }
   h3 { margin-top: 0; margin-bottom: 4px; font-size: 16px; }
   h4 { margin-top: 18px; margin-bottom: 4px; font-size: 13px; border-bottom: 1px solid var(--color-borde); padding-bottom: 3px; }
@@ -51,20 +71,20 @@
   #mensaje.error, .error { color: var(--color-peligro); }
   #mensaje.ok, .ok { color: var(--color-exito); }
   #estado-carga { color: var(--color-texto-secundario); }
-  .vacio { color: #888; font-style: italic; }
+  .vacio { color: var(--color-texto-tenue); font-style: italic; }
 
   .acciones { margin-top: 16px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
   button, .boton {
     padding: 8px 16px; cursor: pointer; font-size: 13px; font-family: inherit;
-    border-radius: var(--radio-borde); border: 1px solid var(--color-borde); background: #fff; color: var(--color-texto);
+    border-radius: var(--radio-borde); border: 1px solid var(--color-borde); background: var(--color-fondo); color: var(--color-texto);
   }
   button:hover, .boton:hover { background: var(--color-fondo-suave); }
   button:disabled, .boton:disabled { opacity: .5; cursor: default; }
 
-  #btnGuardar, #btnAceptar, .boton-primario { background: var(--color-primario); border-color: var(--color-primario); color: #fff; }
+  #btnGuardar, #btnAceptar, .boton-primario { background: var(--color-primario); border-color: var(--color-primario); color: var(--color-texto-sobre-primario); }
   #btnGuardar:hover, #btnAceptar:hover, .boton-primario:hover { background: var(--color-primario-oscuro); }
 
-  .boton-peligro { background: #fff; border-color: var(--color-peligro); color: var(--color-peligro); margin-right: auto; }
+  .boton-peligro { background: var(--color-fondo); border-color: var(--color-peligro); color: var(--color-peligro); margin-right: auto; }
   .boton-peligro:hover { background: var(--color-peligro-fondo); }
 
   .badge { display: inline-block; min-width: 18px; text-align: center; background: var(--color-fondo-suave); border-radius: 10px; padding: 1px 8px; font-weight: bold; font-size: 12px; }
@@ -81,8 +101,8 @@
     display: flex; align-items: center; justify-content: center;
   }
   .overlay-caja {
-    background: #fff; border-radius: 8px; padding: 20px; max-width: 320px; width: 90%;
-    box-shadow: 0 4px 24px rgba(0,0,0,.25); font-size: 13px;
+    background: var(--color-fondo); color: var(--color-texto); border-radius: 8px; padding: 20px; max-width: 320px; width: 90%;
+    box-shadow: 0 4px 24px var(--color-sombra); font-size: 13px;
   }
   .overlay-caja p { margin: 0 0 16px 0; line-height: 1.4; }
   .overlay-acciones { display: flex; justify-content: flex-end; gap: 8px; }

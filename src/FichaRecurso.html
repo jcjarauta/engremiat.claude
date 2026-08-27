@@ -36,6 +36,7 @@
           <button id="btnVerOcupacion" class="boton btn-mini">Ver ocupación</button>
           <button id="btnNuevoHorario" class="boton btn-mini">+ Horario</button>
           <button id="btnNuevoDocumento" class="boton btn-mini">+ Documento</button>
+          <button id="btnExportarCsv" class="boton btn-mini">Exportar CSV</button>
         </div>
       </div>
 
@@ -146,6 +147,9 @@
         });
         document.getElementById("btnNuevoDocumento").addEventListener("click", function () {
           google.script.run.withFailureHandler(mostrarError).abrirFormularioCrearDocumentoParaRecurso(r.ID);
+        });
+        document.getElementById("btnExportarCsv").addEventListener("click", function () {
+          google.script.run.withFailureHandler(mostrarError).abrirDialogoExportarFichaRecursoCSV(r.ID);
         });
       }
 

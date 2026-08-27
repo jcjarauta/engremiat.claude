@@ -29,10 +29,6 @@ function obtenerProyecto(id) {
   return obtenerRegistroPorId('PROYECTO', id);
 }
 
-function listarProyectos(filtros) {
-  return listarRegistros('PROYECTO', filtros);
-}
-
 function buscarProyectos(criterio) {
   return buscarRegistros('PROYECTO', criterio);
 }
