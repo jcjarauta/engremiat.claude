@@ -149,6 +149,237 @@ tarea aplica esa regla: acotada -> delegable; abierta -> se queda en
     (ciclos, incidencias, spikes) y prepara material para que el
     operador decida -- nunca decide por su cuenta.
 
+## Evaluación práctica de workers complementarios (2026-08-24)
+
+Primera evidencia real (no solo investigación) sobre los tres candidatos a
+worker complementario que aparecían como pendientes en este documento.
+Piloto completo en `DEV_PRUEBAS/codex-trigger-piloto` (repo separado, no
+tocó el repo real de Engremiat).
+
+| Worker | Coste | Evidencia de hoy | Techo detectado |
+|---|---|---|---|
+| **Worker local (devstral-dev/Ollama)** | 0€, cómputo propio | No se volvió a probar hoy -- sigue en pie la validación previa de 3 muestras (ver [[proyecto_worker_local_devstral]]): idioma correcto, formato respetado, honestidad epistémica real. | Contexto acotado por Graphify (`MaxCallers`); nada de razonamiento largo. Bueno para tareas rutinarias de bajo riesgo y alto volumen. |
+| **DeepSeek** | ~7-10x más barato que Sonnet (API compatible OpenAI) | No se probó en vivo hoy tampoco -- sigue como investigación (backlog #7, "validado en los spikes" previos). Precio no reverificado tras el cambio de alias del 2026-07-24. | Pendiente de refrescar antes de presupuestar nada con cifras actuales. |
+| **Codex (`openai/codex-action` / CLI)** | Cuenta OpenAI/Codex propia | **Probado en vivo hoy, 3 rondas de dificultad creciente**, todas en el repo piloto: (1) crear archivo + commit + ejecutar, trivial, correcto; (2) diagnóstico y fix de un bug real de una variable acotada (drift de columna en `13_INCIDENCIAS`), causa raíz correcta, respetó la convención `COL_INC_`, commit bien descrito; (3) reescritura no trivial de un extractor basado en regex a un escáner léxico real (balanceo de paréntesis sin límite de profundidad, respetando strings), con tests propios en verde. | **El "todo en verde" del propio Codex no bastó**: en la ronda 3 amplió el alcance por su cuenta (añadió manejo de comentarios) y lo dejó a medias -- una prueba adversarial fuera de su propio test suite encontró que una llamada dentro de un comentario `//` se sigue detectando como real. Reportó éxito con total confianza sin haber cubierto lo que él mismo había añadido. |
+
+**Conclusión de la jornada**: Codex es un complemento real y viable para
+incidencias de Engremiat bien acotadas -- diagnostica causas raíz
+correctas y respeta convenciones del proyecto cuando se le dan
+explícitamente, incluso en problemas de diseño no trivial. Pero confirma
+la misma regla de gobierno que ya regía para Ejecutor (ver sección
+"Gobierno" más abajo): **el filtro humano no es opcional cuando el
+trabajo se sale, aunque sea un poco, del contrato original de la
+tarea** -- ni el propio informe de éxito del agente, ni sus propios tests,
+son prueba suficiente en ese caso. Nueva regla explícita para el ecosistema:
+cualquier worker delegado que amplíe el alcance de una tarea por
+iniciativa propia necesita verificación independiente de esa ampliación
+concreta, no solo de la tarea original.
+
+**Cómo encaja en la arquitectura de delegación segura**: no cambia el
+diseño ya propuesto (bus de eventos vía Sheet + contrato de tarea por
+proveedor) -- lo completa con un criterio de reparto de trabajo entre
+workers, basado en evidencia real y no solo en coste:
+
+- **Rutinario, alto volumen, bajo riesgo, contrato simple** (tarea 1, 2, 3
+  del backlog por horario) -> worker local primero, es gratis y ya
+  demostró seguir el formato pedido.
+- **Acotado con causa raíz identificable y criterio de éxito objetivo
+  verificable** (tests, no solo "parece que funciona") -> Codex es
+  candidato real, con la regla de verificación independiente de arriba
+  como condición, no como opcional.
+- **Decisión de prioridad, cierre de jornada sin filtro, deploy** -> se
+  mantiene la recomendación ya escrita en la sección "Gobierno": no se
+  automatiza de entrada, cualquiera que sea el worker.
+
+El bus de eventos vía Sheet sigue siendo el mecanismo de coordinación
+correcto entre estos workers: cada uno reclama su fila, escribe su
+resultado y una fila de evento -- el "quién verifica qué" se apoya sobre
+esa misma traza, no sobre confiar en el reporte de texto del agente.
+
+## Piloto de dos ramas y ahorro instrumentado (2026-08-24)
+
+Segunda fase del piloto `codex-trigger-piloto`: dos incidencias reales
+(bugs sintéticos representativos, no producción) delegadas en paralelo,
+una por rama, sin solapamiento de archivos -- INC-TEST-03 (CSV sin BOM)
+a Codex en `piloto-codex-lote1`, INC-TEST-04 (antigüedad con bug de
+límite de día natural) a DeepSeek en `piloto-deepseek-lote1` (primera
+llamada real a la API de DeepSeek de este documento, no solo
+investigación).
+
+**Resultado**: los dos diagnósticos fueron correctos a la primera y
+pasaron verificación adversarial fuera de sus propios tests (10 días,
+cambio de mes, fecha futura, CSV sin filas -- todos correctos). Coste
+real medido de DeepSeek: ~1620 tokens totales por llamada (con caché de
+prompt activo en la segunda), dato exacto del campo `usage` de la API.
+
+**Hallazgo operativo no anticipado**: trabajar las dos ramas en la misma
+carpeta de git (checkout compartido) causó un cruce real -- un cambio de
+rama arrastró trabajo sin commitear de una incidencia a la rama
+equivocada, más colisiones de lock file (`packed-refs.lock`) por
+procesos de git concurrentes. Sin daño porque se detectó a tiempo, pero
+confirma que la arquitectura real necesita **`git worktree` por
+rama/worker**, no una carpeta compartida -- añadido como requisito, no
+como opcional.
+
+**Ahorro instrumentado (control real, no solo estimación)**: incidencia
+de control INC-TEST-05 (mismo tamaño/dificultad, bug de `sort()` sin
+comparador numérico) resuelta por Claude en solitario, con la misma
+disciplina de verificación adversarial que en las delegadas. Conteo
+exacto de pasos (tool calls): revisar una solución ya delegada = 2 pasos
+(correr tests + 1 comprobación adversarial, sin `Read` ni `Edit` porque
+el diff llega ya visible); resolver en solitario = 4 pasos reales
+(`Read` + `Edit` + los mismos 2 de verificación). **Revisar cuesta
+aproximadamente la mitad de pasos que resolver, y de naturaleza más
+barata (validar un diagnóstico ya escrito, no generarlo)** -- confirma
+con datos la estimación previa del 25-35% de coste relativo, sobre una
+muestra todavía pequeña (3 incidencias).
+
+**Regla de gobierno que se mantiene**: la verificación adversarial
+independiente (fuera de los tests que el propio worker escribió o
+verificó) fue la que confirmó que los dos fixes delegados eran
+correctos de verdad, no solo "en verde según su propio criterio" -- ver
+el hallazgo de la ronda 3 de Codex más arriba. No se retira ese paso al
+escalar el método, es la parte que hace el ahorro real y no solo
+aparente.
+
+## Lote nocturno del worker local: triaje ciego instrumentado (2026-08-24)
+
+Tercera fase del piloto. El worker local (devstral-dev/Ollama, llamado
+directo vía API HTTP porque las 5 incidencias del piloto no forman
+parte de ningún grafo indexado por Graphify -- `graphify-ollama.ps1`
+exige un `-Symbol` de un proyecto ya indexado, no acepta tickets libres)
+diagnosticó en modo ciego (sin ver las soluciones reales) las 5
+incidencias del piloto de hoy, con el reparto Codex/DeepSeek **decidido
+de antemano por regla determinista, no por el propio modelo local** --
+distinción deliberada: el worker local triaja, no decide a quién se
+delega.
+
+**Resultado (comparado contra la causa raíz real ya conocida)**: 3 de 5
+diagnósticos exactos (INC-TEST-01, 02, 03), 2 de 5 imprecisos
+(INC-TEST-04: confundió el mecanismo del bug aunque señaló la función
+correcta; INC-TEST-05: identificó la dirección correcta pero no el
+mecanismo exacto). **El worker local reportó "confianza alta" en los 5
+casos, incluidos los 2 erróneos** -- su confianza autodeclarada no es
+señal fiable de acierto, mismo patrón de gobierno ya visto con Codex
+(ronda 3, ampliación de alcance sin cobertura). Refuerza la regla:
+ningún resultado de ningún worker se pasa a otro worker o a producción
+sin marcar "sin verificar", independientemente de la confianza que
+declare.
+
+**Calibración de capacidad (dato real, no estimado)**: 84.7s para las 5
+tareas (14-27s cada una, coste 0€ por ser cómputo local). A ese ritmo el
+worker local tiene capacidad sobrada para decenas de triajes por noche
+-- el cuello de botella hoy no es su capacidad sino la falta de un flujo
+real que le dé trabajo (la integración con `13_INCIDENCIAS` vía bus de
+eventos sigue siendo diseño, no está construida).
+
+**Conclusión operativa**: el triaje del worker local sí puede ahorrar
+turnos de diagnóstico a Codex/DeepSeek cuando acierta (3/5 aquí), pero
+su hipótesis debe tratarse siempre como borrador a verificar, nunca como
+respuesta a delegar directamente -- no cambia la arquitectura de
+gobierno, la confirma con una segunda muestra independiente.
+
+## Auditoría real contra 13_INCIDENCIAS + ciclo de Ejecutor acotado por DeepSeek (2026-08-24/25)
+
+Cuarta fase del piloto, ya contra el Sheet real (`142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ`), siempre en modo lectura -- ninguna escritura a `13_INCIDENCIAS` todavía.
+
+**Corrección de proceso importante**: al enumerar las 58 filas reales a mano cometí varios errores de indexado (off-by-one/two, dos veces seguidas) que me llevaron a proponer cerrar una incidencia que en realidad seguía abierta y legítima, y a incluir en la cola dos incidencias (INC-0028, INC-0029) que su propia ficha marca explícitamente "pendiente de diseño, no es un fix mecánico" -- fallan nuestro propio criterio de "acotada" y no deberían haber estado ahí. Lección: verificar cada fila por número de fila directo, nunca recontar arrays a mano.
+
+**Auditoría de patrón `filtrarPorNivelDato_`** (10 ficheros, grep-acotado sobre 125): 1 hallazgo real confirmado (`CosteService.js:337-356`, `obtenerComparativaCampanas`, mismo bug que INC-0052 pero en la comparativa de coste), 9 descartes razonados. Coste: ~22.000 tokens, 1.3-2.1s/fichero.
+
+**Ciclo de "Ejecutor" acotado a DeepSeek** (Fase 1 Código + Fase 2 Integración de `CICLO_AUDITORIA_ENGREMIAT.md`, sin fase de resolución -- deliberadamente sin permiso de escritura en repo real, esa es la línea que no se cruza sin decisión aparte): Fase 1 sobre 5 módulos sin auditar, 3 hallazgos en 5.2s/6522 tokens; Fase 2 sobre integración de `calcularCosteTotalPorCategoria_`, 0 hallazgos forzados (razonó correctamente que faltaba evidencia, no inventó un hueco). **Verificación línea por línea de los 3 hallazgos de Fase 1**: 1 de 3 exacto (cita y mecanismo correctos), 2 de 3 con intuición del problema real pero **cita equivocada** (línea/función correctas del *síntoma* apuntando al sitio equivocado del código) -- mismo patrón "confiado pero impreciso en el detalle" que la ronda 3 de Codex.
+
+**Triaje real corregido** (10 incidencias reales de `13_INCIDENCIAS`, prompt v2 tras detectar dos fallos en la v1): la v1 confundía "¿ya está arreglado?" con "¿el ticket está bien especificado?", y alucinaba nombres de fichero fuera de su dominio (`consola.py`, `graphify.py`, en un proyecto sin una sola línea de Python) en vez de decir "no lo sé". La v2 corrigió ambos: 0/3 alucinaciones de fichero (dijo explícitamente "fuera de src/"), y el mismo patrón de bug (INC-0052 vs el hallazgo nuevo de CosteService) recibió por fin el mismo veredicto -- antes eran inconsistentes sin motivo. 121.3s para 10 tareas reales, coste 0€.
+
+**Intento de paralelismo real fallido**: lanzar los dos procesos con `&`/`wait` en el mismo shell no funcionó -- el proceso de auditoría nunca arrancó, sin error visible hasta revisar manualmente. Confirma (segunda vez, tras el cruce de `git worktree`) que la infraestructura de orquestación necesita procesos gestionados de verdad, no comandos de shell improvisados.
+
+## Desfase de librería en Gestor de Proyectos: hallazgo, intento fallido de UI, fix real (2026-08-25)
+
+Verificación real (no solo lectura del Sheet) de si un cliente sigue
+sincronizado con la librería CORE. Dos capas de dato distintas, y las
+dos pueden mentir por separado:
+
+1. **`CLIENTE.LIBRERIA_VERSION` (Sheet)**: decía 152. Resultó ser un
+   dato de seguimiento desactualizado, no la versión real bindeada.
+2. **`appsscript.json` del proyecto de script del cliente (fuente de
+   verdad real)**: decía 173, verificado con `clasp pull` directo
+   contra el `scriptId` del cliente. La librería real publicada estaba
+   en 175 (`clasp versions` contra `LIBRERIA_ID_`,
+   `1fRR3hjtUIxWcZrjU1APFtG361QuDZ8GmBNQjAoKY_ZjhaYprAkvOEA7M` --
+   proyecto de librería distinto del proyecto raíz/`.clasp.json` local,
+   confundirlos fue un error real de esta sesión).
+
+**Gap real: 2 versiones (175 vs 173), no 23** -- la cifra de 23 que se
+reportó primero estaba basada solo en el dato de Sheet, ya desactualizado.
+
+**Intento fallido**: activar "Panel de clientes" (menú Analizar del
+maestro) vía automatización de navegador -- los submenús se abren bien,
+pero el clic final que dispara la acción (`google.script.run`) no
+llega a activarse, de forma reproducible en múltiples intentos con
+distintas variantes de timing/hover. Se descartó reimplementar a mano
+`actualizarLibreriaClienteRemoto_`/`generarEnvoltoriosParaModulos_` en
+Node bajo presión de tiempo -- esa lógica ya causó un bug real serio
+una vez (wrapper generator nested-callback gap).
+
+**Fix real aplicado, más simple y más seguro de lo que parecía**: subir
+solo la versión de librería NO requiere regenerar `Codigo.js` -- los
+envoltorios no cambian de forma entre versiones de librería que no
+añaden funciones nuevas top-level, solo el número de versión en
+`dependencies.libraries[].version` de `appsscript.json`. Aplicado con
+`clasp pull` (proyecto del cliente) -> editar solo ese campo -> `clasp
+push -f` -- sin tocar `Codigo.js`, sin pasar por la lógica de
+regeneración. Verificado con un segundo `clasp pull` que el cambio
+está en vivo. Sheet actualizado a juego (175) por separado.
+
+**Norma para sistematizar esto** (revisa la propuesta anterior de "solo
+detección" -- el fix en sí también es scriptable, con este límite
+claro):
+
+- **Detección** (script, sin riesgo, candidato a
+  `tools/chequear_libreria_clientes.mjs`): para cada `CLIENTE` con
+  `SCRIPT_ID`, comparar `appsscript.json` real (vía `clasp pull` o la
+  API de Apps Script) contra la versión real de `LIBRERIA_ID_` -- nunca
+  fiarse del campo `LIBRERIA_VERSION` del Sheet como fuente de verdad,
+  es solo un reflejo que puede quedarse atrás.
+- **Fix simple (bump de versión, sin funciones nuevas que envolver)**:
+  SÍ delegable a un script determinista -- `clasp pull` -> editar
+  `dependencies.libraries[].version` -> `clasp push -f` -> actualizar
+  el Sheet a juego. No requiere juicio, es mecánico.
+- **Fix con regeneración de envoltorios** (cuando la librería añadió
+  funciones nuevas top-level que el cliente aún no tiene envueltas):
+  sigue siendo `actualizarLibreriaClienteRemoto_` vía la UI del Sheet
+  (una vez se resuelva por qué el clic automatizado no dispara la
+  acción) -- no delegar a un script improvisado sin probar primero
+  contra ese generador real.
+
+## Verificación real: git local NO es un espejo fiable de la librería publicada (2026-08-25)
+
+Se verificó el punto pendiente de la sección anterior (¿se puede confiar
+en el checkout local de git como fuente para regenerar envoltorios?).
+**Resultado: no.** Comparado el contenido real vía API
+(`LIBRERIA_ID_/content`) contra 6 ficheros del checkout local: 5/6
+idénticos, pero `PanelClientesService.js` diverge de verdad --
+`actualizarLibreriaClienteDesdePanel` tiene una implementación distinta
+en la librería publicada (llama directo a
+`actualizarLibreriaClienteRemoto_`/`actualizarLibreriaVersionEnFichaCliente_`)
+frente al git local (delega en `actualizarLibreriaClienteDesdeDialogo`,
+el colapso de INC-0018). No se determinó cuál de los dos está
+desactualizado -- el punto importante es que **divergen**, confirmando
+el riesgo que motivó la verificación.
+
+**Diseño corregido en consecuencia**: el sistema de regeneración de
+envoltorios NO debe leer del checkout local de git
+(`validateAndReadFiles`, que es lo que hace `montar-cliente.mjs`) --
+debe construir `aFiles` a partir del contenido **real y en vivo** de
+`LIBRERIA_ID_/content` (misma llamada ya verificada esta noche),
+combinado con la asignación fichero->módulo del mapa de paquetes (dato
+estable, no código), y pasar eso a `resolveWrapperPlan`/
+`renderWrapperStubs` (la lógica ya probada de
+`tools/packager/generate-shell-wrappers.mjs`, sin tocarla). Así cada
+ejecución parte de la fuente real, sin depender de que git esté al día
+-- evita el modo de fallo encontrado aquí, en vez de confiar en que no
+vuelva a pasar.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Se pilota primero Claude Code Router (cambio mínimo, reversible) antes de evaluar OpenCode como reemplazo de la capa de orquestación?
@@ -161,3 +392,6 @@ tarea aplica esa regla: acotada -> delegable; abierta -> se queda en
 ## Bitácora
 
 - **2026-08-23**: apertura del documento tras una conversación larga que fue de "sistematizar la sincronización Consola↔Sheet" a diseñar la arquitectura completa del ecosistema agéntico híbrido. Archivado como INC-0056 para no perder el contexto, como ya pasó parcialmente con la primera mención de LiteLLM/OpenRouter antes de este documento.
+- **2026-08-24**: primera evaluación práctica en vivo de Codex como worker complementario (piloto `codex-trigger-piloto`, repo separado). Ver sección "Evaluación práctica de workers complementarios" -- confirma a Codex como candidato real para incidencias acotadas, y añade la regla de gobierno "verificación independiente obligatoria cuando el worker amplía el alcance por su cuenta".
+- **2026-08-24 (continuación)**: piloto de dos ramas en paralelo (Codex + primera llamada real a DeepSeek) más control instrumentado de ahorro. Ver "Piloto de dos ramas y ahorro instrumentado" -- confirma con datos (no solo estimación) que revisar cuesta ~la mitad de pasos que resolver, y añade el requisito de `git worktree` por rama tras un cruce real detectado en la práctica.
+- **2026-08-24 (cierre de jornada)**: lote nocturno instrumentado del worker local, triaje ciego de las 5 incidencias del piloto. Ver "Lote nocturno del worker local" -- 3/5 diagnósticos exactos, 84.7s de coste real para las 5 tareas (capacidad sobrada, cuello de botella es falta de flujo real de trabajo), y hallazgo de gobierno: la confianza autodeclarada del worker no predice acierto.

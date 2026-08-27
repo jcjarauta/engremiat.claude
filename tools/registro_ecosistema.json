@@ -24,6 +24,8 @@
     { "fichero": "tools/consola/chequear_consistencia.mjs", "que_compara": "Consola (GRUPOS) vs 13_INCIDENCIAS" },
     { "fichero": "tools/consola/regenerar_estatico.mjs", "que_hace": "Reconstruye el HTML estatico de la Consola preservando estado publicado" },
     { "fichero": "tools/consola/extraer_decisiones.mjs", "que_hace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet" },
-    { "fichero": "tools/salud_ecosistema.mjs", "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro" }
+    { "fichero": "tools/salud_ecosistema.mjs", "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro" },
+    { "fichero": "tools/gobierno/chequear_libreria_clientes.mjs", "que_compara": "appsscript.json real de cada cliente vs version real publicada de LIBRERIA_ID_ (nunca el dato LIBRERIA_VERSION del Sheet como fuente de verdad)" },
+    { "fichero": "tools/gobierno/cerrar_ciclo.mjs", "que_hace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear" }
   ]
 }
