@@ -636,3 +636,73 @@ comprobarlo con datos reales de la Fase 1.
   con la transcripción. Un paso (aplicar el barro sobre el armazón) se
   marcó explícitamente como **inferido, no observado** -- honestidad sobre
   el límite del método (7 fotogramas puntuales, no el vídeo completo).
+
+## Documentación presentable: primer informe real + workers locales de generación (2026-08-30)
+
+Objetivo de esta ronda: pasar de "datos en el Sheet" a un documento presentable de verdad para arrancar un proyecto de manualidades en el taller, y probar en la práctica los workers locales de imagen/infografía/PDF -- con la GPU real del operador (RTX 4060 Ti, 16GB) y **descubriendo por el camino que ya existían imágenes Docker preparadas** (n8n, Open WebUI, ngrok) sin haberlas usado todavía -- infraestructura de la que partir, no que construir desde cero.
+
+### Resultados reales de esta ronda
+
+- **Informe en PDF**: generado a partir de `DOC-0002` (amigurumi) con HTML/CSS propio +
+  **Microsoft Edge en modo headless** (`msedge --headless --print-to-pdf`) -- ya viene
+  con Windows, no hizo falta instalar LaTeX ni ninguna librería pesada. `weasyprint`
+  (alternativa Python) se probó primero y falló por dependencias nativas de Windows
+  (GTK/Pango) -- Edge headless es la vía más simple en este sistema operativo concreto.
+- **Infografía real, sin generación de imagen libre**: el worker local (`qwen3:8b`, vía
+  LiteLLM) agrupó los 10 pasos del amigurumi en 3 fases lógicas (Preparación, Piezas,
+  Acabado) -- contenido real, no inventado por una plantilla fija. El renderizado final
+  (SVG → PNG) usó una plantilla propia, no un modelo de imagen -- confirma la
+  recomendación ya hecha antes: dato real + plantilla es más fiable que generación libre
+  para este tipo de material.
+- **Generación de imagen local**: instalación en curso (`torch`+`diffusers`, ~2.5GB) al
+  cierre de esta ronda -- pendiente de completar y probar con un prompt genérico (no
+  "Stitch" -- ver aviso legal siguiente).
+
+### Aviso legal nuevo, específico de este caso (no cubierto antes)
+
+El amigurumi de esta prueba es **Stitch, personaje registrado de Disney**. Aquí hay un
+matiz que no había salido hasta ahora: **generar una imagen propia por IA del personaje
+no elimina el problema de marca/derecho de autor** -- el personaje en sí está protegido,
+no solo el vídeo o las fotos concretas de terceros. Es distinto de dibujar tu propia
+versión genérica de "un muñeco amigurumi azul tipo alien". Recomendación: para
+personajes con licencia (Stitch, Pokémon, etc.), la documentación interna de taller
+puede describir y enlazar sin problema (como ya hace este informe), pero cualquier
+imagen final -- generada o no -- que represente al personaje reconocible sigue
+necesitando la misma cautela que una foto. Para el material gráfico propio (infografías,
+ilustraciones de apoyo), mejor centrarse en diagramas de proceso -- como la infografía de
+fases ya generada -- que no dependen de reproducir un personaje con marca.
+
+### Hacia un ciclo tipo "Ejecutor" para este pipeline (diseño, no construido todavía)
+
+El operador imagina un ciclo repetible, igual que el que ya usa `92_BUS_TRABAJO` para
+código. Con el descubrimiento de que **n8n ya está preparado** (imagen Docker
+descargada, sin usar todavía), la recomendación cambia: no construir un script a medida
+(`bus_trabajo.mjs`-style) para este pipeline -- usar n8n como orquestador, ya pensado
+para exactamente este tipo de flujo multi-paso, con interfaz visual para depurarlo.
+
+Diseño propuesto del flujo (mismo principio de puerta humana ya fijado en todo el
+documento -- nada se publica al taller sin revisión):
+
+1. **Disparador**: nueva fila en una cola (mismo patrón que `92_BUS_TRABAJO`) con la URL
+   del vídeo/documento y el tipo de proyecto deseado.
+2. **Extracción**: `yt-dlp` saca transcripción + capítulos + descripción (texto, nunca el
+   vídeo en sí, salvo copia de trabajo temporal para el paso 3).
+3. **Análisis visual, solo si hace falta** (vídeo sin capítulos propios, como el caso del
+   bahareque): fotogramas a intervalos, revisados por un modelo -- aquí sigue haciendo
+   falta Claude para el razonamiento visual complejo hasta que un modelo local
+   multimodal (tipo LLaVA vía Ollama) esté probado y validado para este uso.
+4. **Estructuración**: el worker local convierte la transcripción/capítulos en
+   `PROCESO`/`TAREA`/`MATERIAL`, escritos vía las acciones de cliente ya existentes en el
+   webhook (mismo mecanismo que hoy, no uno nuevo).
+5. **Generación de material gráfico**: infografía (worker local + plantilla, como se
+   acaba de probar) y, cuando esté lista, ilustraciones propias para casos sin marca
+   registrada de por medio.
+6. **Informe final en PDF** (Edge headless, ya probado).
+7. **Puerta humana obligatoria**: el resultado queda en estado "lista para revisión"
+   (mismo estado que ya usa `92_BUS_TRABAJO` para código) -- nadie del taller ve el
+   material hasta que una persona lo aprueba, exactamente igual que una `TAREA` de
+   código no se da por buena sin verificación.
+
+Pendiente de construir, no de diseñar: el workflow de n8n en sí (nodo por paso), y
+decidir qué modelo multimodal local usar para el paso 3 antes de depender de Claude ahí
+de forma permanente -- por coste y por soberanía, igual que el resto de esta propuesta.
