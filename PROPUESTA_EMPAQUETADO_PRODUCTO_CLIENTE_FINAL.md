@@ -595,3 +595,17 @@ comprobarlo con datos reales de la Fase 1.
   "esto es aproximado y por qué" que fingir precisión que no existe.
   `CAM-0005` renombrada de "Huerto/jardín asistido" a "Investigación y
   planificación asistida" al dejar de ser solo un caso de jardinería.
+- **2026-08-29 (bug real encontrado desde la UI del propio Sheet)**: el
+  operador detectó, mirando el panel "Gestión de campaña", que `CAM-0004` y
+  `CAM-0005` no aparecían en el desplegable de campañas. Causa: al crearlas
+  por API (no por `insertarRegistroTransaccional`) se usó una fila más corta
+  de lo debido, dejando `ACTIVO` en blanco en vez de `"SÍ"` -- y
+  `obtenerOpcionesCampanasActivas` filtra por `ACTIVO='SÍ'`. No era un
+  filtro de "piloto/auditoría" (`NIVEL_DATO`) como se pensó al principio,
+  era un campo de sistema mal escrito. Corregido escribiendo `ACTIVO="SÍ"`
+  (y el resto de campos de auditoría: fechas/autor) en ambas filas.
+  Lección para cualquier escritura futura por API cruda (sin pasar por
+  `insertarRegistroTransaccional`): **hay que rellenar la fila completa
+  hasta `ACTIVO`, no solo hasta el último campo que parezca relevante** --
+  un campo de sistema olvidado deja el registro invisible para el resto del
+  sistema sin ningún error visible.
