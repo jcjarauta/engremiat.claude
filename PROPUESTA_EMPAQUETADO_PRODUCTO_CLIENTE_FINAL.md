@@ -367,6 +367,51 @@ Esto no es un sistema nuevo, es un canal nuevo (Telegram) sobre capacidades
 que el maestro ya tiene -- mismo principio que las acciones de cliente de
 solo lectura de más arriba.
 
+### El bot como acompañante progresivo, no una entrevista larga (investigación 2026-08-29)
+
+El operador plantea que este bot acompañe también la creación de misión y
+visión, proyectos, personas, espacios... -- la investigación dice que hacer
+esto en una sola entrevista larga en el alta sería un error medible, no solo
+una cuestión de estilo: **cada minuto extra en el alta reduce la conversión
+de prueba a cliente activo en torno a un 3%**, y el límite recomendado en
+2026 es de una o dos preguntas de golpe, nunca cinco temas distintos
+seguidos. El patrón que sí funciona (con datos de 2-4x más activación) se
+llama "embudo conversacional": capturar la intención en una pregunta abierta,
+en las propias palabras del cliente, y dejar que el resto se rellene con el
+tiempo, en conversaciones sucesivas -- no en una sola sesión.
+Fuentes: [Progressive Profiling](https://userguiding.com/blog/progressive-profiling),
+[The Rise of the Conversational Funnel](https://getperspective.ai/blog/the-rise-of-the-conversational-funnel-2026-saas-trend-report).
+
+**Rediseño concreto**: el alta (bot de onboarding) se queda en lo mínimo ya
+descrito (nombre + módulos). La misión/visión/proyectos/personas/espacios se
+recogen **después**, en el bot ya operativo del propio cliente, de forma
+progresiva y oportunista -- mismo mecanismo ya diseñado en "Onboarding
+conversacional" (arquitectura, punto 7): una sola pregunta abierta inicial
+("¿qué quieres conseguir con Engremiat?"), y a partir de ahí, cada vez que
+el cliente mencione un proyecto, una persona o un espacio en una conversación
+normal, el bot lo propone como candidato a registrar -- nunca se lo pide de
+golpe como cuestionario.
+
+**Misión y visión no necesitan un campo nuevo**: se guardan como un
+`DOCUMENTO` vinculado al `CLIENTE` (entidad y tabla ya existentes,
+`14_DOCUMENTOS`) -- consistente con "no construir de más" ya aplicado en
+todo este documento.
+
+### Aviso de seguridad real para cuando el bot proponga escribir datos (no solo leerlos)
+
+Hasta ahora las acciones de cliente son de solo lectura. En cuanto el bot
+proponga crear un `PROYECTO`/`PERSONA`/`RECURSO` a partir de lo que alguien
+cuenta por chat, aparece un riesgo real y documentado: **no hay que confiar
+en que el propio modelo decida cuándo pedir confirmación** -- un usuario
+insistente, o una instrucción escondida en un mensaje, podría convencerlo de
+saltarse ese paso. La práctica recomendada es una **puerta determinista, en
+código, no en el criterio del modelo**: el bot siempre muestra un resumen de
+lo que va a crear y exige una confirmación explícita y literal (p.ej.
+responder exactamente `SI, CREAR`) comprobada por el propio código de
+`bot-local.mjs`, nunca decidida por el modelo. Ninguna escritura real ocurre
+sin ese paso, sin excepción -- ni aunque el mensaje "insista mucho".
+Fuente: [Human-in-the-Loop AI: Why "Ask the LLM to Confirm" Isn't Enough](https://dev.to/pavelgj/human-in-the-loop-ai-why-ask-the-llm-to-confirm-isnt-enough-oij).
+
 ### Qué decide esto sobre "descargar Engremiat" como producto
 
 No hace falta una imagen de Raspberry Pi OS a medida (como Home Assistant
