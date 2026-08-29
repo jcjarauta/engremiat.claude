@@ -123,6 +123,35 @@ demostrarlo con un caso concreto, no con una promesa.
     retomar con la evidencia de esta noche de que la delegación real
     funciona y a qué coste/tasa de acierto.
 
+## 5.1 Diseño de INC-0034 (adjuntar imagen a Incidencia) — antes de implementar
+
+Verificado antes de diseñar: **no existe ningún uso real de `DriveApp` en
+todo el producto** (un único caso no relacionado en
+`ExportarCodigoProduccion.js`). El flujo actual de documentos es
+enteramente manual -- el operador sube el archivo a mano y pega el
+enlace. Esto significa que INC-0034 no es solo una función de UI, es
+**la primera integración de escritura en Drive de todo el producto**, con
+decisiones que no se pueden delegar a un worker sin resolver antes:
+
+- **Nuevo scope OAuth**: cada cliente reautoriza la primera vez que use
+  la función -- no es transparente, hay que comunicarlo.
+- **Carpeta destino**: Apps Script sube como el usuario que interactúa;
+  sin carpeta explícita, el archivo cae en la raíz de su Drive personal.
+  Propuesta: resolver la carpeta contenedora del propio Sheet del
+  cliente (`DriveApp.getFileById(ss.getId()).getParents()`) y crear/
+  reusar ahí una subcarpeta "Adjuntos" -- el archivo queda junto a los
+  datos del cliente, no disperso.
+- **Límite de tamaño**: ~5MB por imagen -- suficiente para una captura
+  real, pequeño para no forzar el límite práctico de payload de
+  `google.script.run`.
+- **Validación**: tipo MIME (imagen) y tamaño comprobados *antes* de
+  intentar subir, no después de un fallo a medio camino.
+
+Solo con estas cuatro decisiones tomadas (y comunicado el cambio de
+permisos a los clientes existentes) tiene sentido delegar la
+implementación -- antes no, por el mismo motivo que ya se aparcó el
+2026-08-25: superficie de seguridad real, no un bug fix.
+
 ## 6. Lo que deliberadamente sigue sin proponerse
 
 No propongo fusionar las ramas de esta noche sin revisión humana, ni un
