@@ -565,3 +565,19 @@ comprobarlo con datos reales de la Fase 1.
   sincronización periódica a ficheros `.md` reales, y una acción de
   escritura acotada (`crear_incidencia`) para que el cliente pueda crear y
   seguir proyectos desde el propio chat, no solo consultarlos.
+- **2026-08-29 (caso de uso: investigación profunda + plan automático)**: se
+  valida en lenguaje no técnico un caso de uso nuevo -- el cliente cuenta un
+  objetivo real ("quiero montar un huerto", "quiero un gallinero"), el
+  sistema investiga en internet (calendarios, materiales, buenas prácticas),
+  propone una campaña con sus proyectos/tareas ya organizados, acompaña con
+  fotos/checklists vinculados como `DOCUMENTO`, y al final entrega un manual
+  final (reutilizando el exportador Obsidian ya construido). Aviso explícito
+  de seguridad para casos con impacto real (p.ej. recetas de pienso animal):
+  la IA propone, un humano confirma antes de que se convierta en una acción
+  real -- misma puerta determinista ya fijada más arriba para escrituras.
+  **Prueba real hecha, no solo hablada**: `CAM-0005`/`PRO-0023` (albahaca en
+  maceta) -- investigación web real sobre cultivo, y el plan generado
+  reconoce explícitamente que finales de agosto no es la época ideal de
+  siembra en exterior (en vez de dar un plan genérico), proponiendo un ciclo
+  corto protegido como piloto y dejando la campaña de exterior para la
+  próxima primavera. Primera demostración de punta a punta de la capacidad.
