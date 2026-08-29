@@ -581,3 +581,17 @@ comprobarlo con datos reales de la Fase 1.
   siembra en exterior (en vez de dar un plan genérico), proponiendo un ciclo
   corto protegido como piloto y dejando la campaña de exterior para la
   próxima primavera. Primera demostración de punta a punta de la capacidad.
+- **2026-08-29 (segunda prueba, más compleja: construcción)**: `PRO-0024`
+  (yurta de 6m de diámetro) -- mismo caso de uso aplicado a un proyecto de
+  construcción real, con lista de materiales, cantidades razonadas, y una
+  estimación de coste de autoconstrucción (1.500-4.700€, rango amplio,
+  explícitamente aproximado) junto a una referencia real de mercado (kit
+  profesional de 6,1m, Celtic Yurts, 13.800€ estructura + 4.500€ plataforma).
+  Fotos de referencia enlazadas desde Wikimedia Commons (con licencia
+  verificable), no descargadas ni redistribuidas sin comprobar cada licencia.
+  Límites del informe declarados explícitamente (cantidades no calculadas
+  con herramienta de corte real, precios sin cotización de proveedor) --
+  mismo principio de honestidad que en la prueba de la albahaca: mejor decir
+  "esto es aproximado y por qué" que fingir precisión que no existe.
+  `CAM-0005` renombrada de "Huerto/jardín asistido" a "Investigación y
+  planificación asistida" al dejar de ser solo un caso de jardinería.
