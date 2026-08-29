@@ -338,6 +338,56 @@ Compose) es el punto de partida correcto: mismo principio ya aplicado en
 todo este documento -- construir lo mínimo que resuelve la necesidad real
 de hoy, no lo máximo que podría hacer falta algún día.
 
+## OpenClaw: qué tomar prestado y qué NO adoptar (investigación 2026-08-29)
+
+OpenClaw ([openclaw/openclaw](https://github.com/openclaw/openclaw), MIT,
+creado por Peter Steinberger) es una plataforma de agente IA autoalojado que
+se solapa mucho con lo que estamos construyendo: pasarela a 10+ proveedores
+(Ollama y Claude incluidos), 23+ canales de mensajería, plugin oficial de
+Obsidian con sincronización bidireccional real, y acceso remoto ya resuelto
+vía Tailscale + token de pasarela + claves de dispositivo Ed25519.
+
+**Por qué NO se recomienda adoptarla entera**: tiene un historial real de
+problemas de seguridad -- 6 CVE publicadas en los dos primeros meses de
+2026, incluida una vulnerabilidad de secuestro de WebSocket "zero-click".
+Su mercado de skills de comunidad (ClawHub, 13.000+ skills) tiene
+**incidentes documentados de skills maliciosas** -- robo de credenciales,
+exfiltración de datos, campañas coordinadas de subidas hostiles. Y hay casos
+reales de facturas de la API por bucles de agente sin control (>$3.600 en un
+mes). Adoptar esto entero, con su mercado abierto, contradice directamente
+el eje de soberanía y control que es la base de toda esta propuesta.
+Fuentes: [OpenClaw Cost Breakdown 2026](https://trustclawd.com/blog/openclaw-real-cost).
+
+**Qué sí vale la pena tomar prestado, como patrón, sin el ecosistema abierto**:
+
+- **Su modelo de tres tipos de extensión** (Skills -- integraciones en
+  lenguaje natural definidas en Markdown; Plugins -- extensiones profundas
+  en TypeScript/JavaScript; Webhooks -- endpoints HTTP que otros sistemas
+  llaman) es una forma clara de organizar lo que ya tenemos: nuestras
+  acciones de cliente (`generar_nota_obsidian`, `listar_incidencias_abiertas`)
+  son exactamente "Webhooks" en ese modelo -- no hace falta reinventar la
+  taxonomía, solo adoptar el vocabulario.
+- **`dmPolicy`**: su propia documentación lo llama "el ajuste de seguridad
+  más importante de tu bot de Telegram" -- filtra por ID de usuario quién
+  puede hablarle. **Corregido ya en `bot-local.mjs`** (no como propuesta
+  futura): sin esta lista, cualquiera que encontrara el bot podía pedir
+  `/nota` o `/incidencias` y leer datos reales del cliente. Ahora funciona
+  en "fail-closed" -- lista vacía significa que nadie puede hablarle hasta
+  que se autorice explícitamente (`TELEGRAM_IDS_AUTORIZADOS`).
+- **Su plugin de Obsidian** (sincronización bidireccional real) sigue siendo
+  candidato a evaluar para la Fase 1.5 (sincronización de bóveda) -- pero
+  aislado, sin pasar por ClawHub ni por el resto de la plataforma, igual que
+  se evaluaría cualquier librería de terceros: leyendo su código, no
+  instalándolo a ciegas desde un marketplace con historial de paquetes
+  hostiles.
+
+**Cómo aplica esto de vuelta a nuestro propio diseño**: LiteLLM ya cubre el
+control de gasto que evitaría el escenario de la factura de $3.600 (límites
+de gasto de fábrica, ver sección de LiteLLM más arriba) -- pero conviene
+fijar también un tope explícito de peticiones/coste por cliente cuando se
+active el escalón de Claude, no asumir que "ya lo cubre LiteLLM" sin
+comprobarlo con datos reales de la Fase 1.
+
 ## Fases propuestas (de más barato/reversible a más comprometido)
 
 1. **Fase 0 (ya hecha)**: TEST-Cliente-2026-08-29 -- Sheet, bot, exportador,
