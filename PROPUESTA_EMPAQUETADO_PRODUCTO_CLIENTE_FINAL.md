@@ -329,6 +329,44 @@ Fuente: [Running AI on a Raspberry Pi Server](https://medium.com/@kostyantins/ru
    (`13_INCIDENCIAS` → `92_BUS_TRABAJO` → Ejecutor/worker local), sin que el
    cliente necesite saber que ese ciclo existe.
 
+### Bot de onboarding (nuevo, 2026-08-29) -- distinto del bot operativo de cada cliente
+
+Hallazgo directo de operar el piloto: para autorizar al bot de un cliente a
+responder solo a quien debe, hacía falta que alguien buscara su ID de
+Telegram a mano (`@userinfobot`) y lo pasara para configurarlo -- un paso
+manual que no escala a un cliente nuevo por semana. La solución no es
+automatizar ese paso suelto, es no necesitarlo: **si el alta se hace
+hablando con un bot, ese bot ya conoce el ID de quien le escribe desde el
+primer mensaje** -- viene incluido en cada mensaje de Telegram, sin
+preguntarlo aparte.
+
+Por eso se propone un **bot de onboarding, único y separado de cada bot
+operativo de cliente** -- lo opera Engremiat (nosotros), no cada cliente:
+
+1. El futuro cliente le escribe a este bot único para darse de alta.
+2. El bot captura su ID de Telegram automáticamente (para autorizarlo luego
+   en su propio bot, sin volver a preguntarlo) y le pregunta qué módulos
+   quiere -- llama a `crear_solicitud_montaje`, que **ya existe** en el
+   webhook del maestro, no hay que construir nada nuevo aquí.
+3. **La aprobación real (creación de Sheet+Script) sigue pasando por
+   revisión humana**, deliberadamente -- mismo criterio que ya rige
+   `EMAILS_AUTORIZADOS_MONTAJE` hoy: crear una solicitud es autoservicio
+   seguro, aprobar recursos reales de pago no lo es todavía, sin más
+   volumen y confianza acumulada.
+4. Una vez aprobado, el bot de onboarding entrega el "kit de instalación"
+   (ver más arriba) -- que ya incluye el ID de Telegram capturado en el
+   paso 2, así que el script de instalación de la Pi puede configurar la
+   lista de autorizados del bot del cliente sin que nadie vuelva a pedir
+   ese dato a mano.
+5. El cliente crea su PROPIO bot en BotFather (dato suyo, nunca nuestro,
+   igual que hoy) y pega el token cuando el instalador se lo pida --
+   ese paso sigue siendo manual a propósito: es la prueba de que el cliente
+   controla su propia infraestructura, no algo a automatizar.
+
+Esto no es un sistema nuevo, es un canal nuevo (Telegram) sobre capacidades
+que el maestro ya tiene -- mismo principio que las acciones de cliente de
+solo lectura de más arriba.
+
 ### Qué decide esto sobre "descargar Engremiat" como producto
 
 No hace falta una imagen de Raspberry Pi OS a medida (como Home Assistant
