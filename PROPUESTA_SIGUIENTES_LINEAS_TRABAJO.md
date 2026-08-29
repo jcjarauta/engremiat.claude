@@ -152,6 +152,25 @@ permisos a los clientes existentes) tiene sentido delegar la
 implementación -- antes no, por el mismo motivo que ya se aparcó el
 2026-08-25: superficie de seguridad real, no un bug fix.
 
+## 5.2 Fallo del clic de menú automatizado — cerrado con hallazgo, no con solución
+
+Investigado con dos vías reales (2026-08-25): clic sintético (varias
+variantes de timing/hover) y navegación por teclado (flechas + Enter).
+**Las dos fallan igual** en el ítem final de un menú personalizado de
+Apps Script -- el menú se cierra y la acción no se dispara, sin importar
+el mecanismo de interacción. Esto descarta que sea un problema
+específico del ratón: los menús que genera Apps Script no se comportan
+como menús nativos accesibles ante ninguna vía estándar de
+automatización.
+
+**Se cierra sin más investigación** porque la motivación original (poder
+actualizar la librería de un cliente sin depender de la UI) ya está
+resuelta de forma mejor y más robusta con
+`tools/gobierno/actualizar_libreria_cliente.mjs` (API directa,
+verificado en producción con INC-0061). Queda como límite conocido de
+la automatización de navegador contra Sheets, no como bloqueo de nada
+pendiente.
+
 ## 6. Lo que deliberadamente sigue sin proponerse
 
 No propongo fusionar las ramas de esta noche sin revisión humana, ni un
