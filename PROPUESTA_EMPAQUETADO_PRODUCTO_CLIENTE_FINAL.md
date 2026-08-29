@@ -51,29 +51,88 @@ simple:
 **Decisión para esta prueba: empezar solo por la dirección de salida.** Es más
 barata, más simple, y no obliga a decidir todavía el mecanismo de túnel.
 
-## Jerarquía de tres niveles (con el hardware real ya disponible)
+## Corrección 2026-08-29 (2ª revisión): no es una cadena de niveles, es un solo mando con varios modelos
 
-1. **Raspberry Pi + SSD externo** -- el cerebro siempre encendido, bajo
-   consumo. Guarda los datos del cliente (Sheet sincronizado, bóveda
-   Obsidian, backups), corre el bot de Telegram, y modelos pequeños para
-   tareas ligeras. El SSD (en vez de tarjeta SD) es la elección correcta:
-   más rápido, más fiable, con espacio real para modelos y datos.
-2. **PC del operador + DeepSeek** -- el "músculo" bajo demanda: se activa
-   cuando hace falta más potencia de la que da la Pi, mismo patrón que ya
-   usa hoy `92_BUS_TRABAJO` para repartir trabajo real.
-3. **Claude (nube)** -- último recurso, solo para lo verdaderamente complejo
-   o cuando el nivel 2 no da la talla. Señal de escalado ya disponible sin
-   inventar nada nuevo: cuando el worker local marca una tarea como
-   `rechazada` en el bus de trabajo (ya ocurrió hoy con `TASK-0004`), esa es
-   la señal natural para subir al nivel 3.
+La versión anterior describía "Pi → LLM local → DeepSeek → Claude" como una
+cadena secuencial (nivel 1 pasa al 2, el 2 pasa al 3). El operador aclara que
+ya hay varios modelos locales probados y usables para propósitos distintos
+(DeepSeek es el más potente de ellos, no un nivel aparte) -- y que la
+interfaz (el propio chat de Telegram) debe poder mandar cada mensaje a
+Claude o a la IA local según haga falta, en el momento. Encadenar niveles no
+sirve para eso: hace falta un **único mando central con varios modelos
+registrados**, no una cadena de favores.
+
+La pieza que ya resuelve esto en 2026, sin construir nada a medida, se llama
+**LiteLLM**: una pasarela (gateway) autoalojada que habla el mismo idioma
+con más de 140 proveedores distintos -- modelos locales servidos por Ollama
+(los que ya se han probado, y cualquiera nuevo que se pruebe después) y
+Claude en la nube, todos por la misma puerta. Ya trae de fábrica selección
+de modelo por reglas, plan B automático si un modelo falla, control de
+gasto, y registro de qué se ha usado y cuánto ha costado.
+Fuentes: [Build a Unified AI Gateway with LiteLLM and Ollama](https://dev.to/everylocalai/build-a-unified-ai-gateway-with-litellm-and-ollama-387a),
+[Implementing LLM Model Routing: A Practical Guide with Ollama and LiteLLM](https://medium.com/@michael.hannecke/implementing-llm-model-routing-a-practical-guide-with-ollama-and-litellm-b62c1562f50f).
+
+### Cómo queda el reparto de trabajo
+
+- **Raspberry Pi + SSD externo** -- el cerebro siempre encendido: guarda los
+  datos del cliente, corre el bot de Telegram, y aloja la propia pasarela
+  LiteLLM (el "mando central"). No necesita ser potente para esto -- solo
+  estar siempre disponible.
+- **Varios modelos locales en el PC (vía Ollama)** -- no una jerarquía fija,
+  sino un catálogo de modelos ya probados, cada uno registrado en LiteLLM
+  para un propósito: uno rápido y barato para tareas sencillas, DeepSeek
+  para lo más exigente que aún se quiere resolver sin salir de casa, y
+  hueco libre para probar otros sin tocar nada del resto del sistema --
+  añadir un modelo nuevo es una línea de configuración en LiteLLM, no un
+  cambio de arquitectura.
+- **Claude (nube)** -- un proveedor más dentro del mismo catálogo de
+  LiteLLM, marcado como el más caro/potente. Se llama desde dentro
+  (dirección de salida, ver más abajo), nunca al revés en esta fase.
+- **Señal de enrutado**: por defecto, enrutado automático por complejidad
+  (patrón ya investigado y maduro en 2026 -- ver RouteLLM más abajo): los
+  mensajes sencillos van solos a un modelo local barato, los complejos suben
+  a Claude, sin que nadie tenga que decidirlo a mano cada vez. Además,
+  control manual explícito desde el propio Telegram (ver siguiente sección)
+  para cuando el usuario quiere decidir él mismo.
+
+### Enrutado automático por complejidad (RouteLLM) -- reduce coste sin perder calidad
+
+Investigación 2026 (RouteLLM, LMSYS) muestra que **más de la mitad de los
+mensajes reales (52,8%) se resuelven igual de bien con un modelo pequeño**
+que con uno grande -- solo una minoría de casos difíciles necesita el modelo
+más caro. Un clasificador ligero (200-500ms, sin infraestructura extra)
+decide, antes de responder, si el mensaje es sencillo (va al modelo local) o
+complejo (sube a Claude). Esto no sustituye el control manual -- es el
+comportamiento por defecto cuando nadie elige explícitamente.
+Fuente: [RouteLLM: An Open-Source Framework for Cost-Effective LLM Routing](https://www.lmsys.org/blog/2024-07-01-routellm/).
+
+### Telegram como interfaz de selección, no solo de chat
+
+El bot de Telegram ya construido gana una capa nueva, sin rehacer nada de lo
+que ya funciona: botones en línea (`inline keyboard`, función nativa de
+Telegram) para que el usuario elija "Claude" o "IA local" en el momento, o
+un comando (`/modelo claude`, `/modelo local`) para fijar su preferencia
+durante la sesión. Por debajo, el bot simplemente llama a LiteLLM indicando
+qué modelo usar -- la pasarela ya sabe hablar con cualquiera de los dos.
+Patrón ya usado por bots de Telegram reales con Claude/GPT/Gemini/Llama
+registrados como opciones seleccionables.
+Fuente: [Telegram Bot Features -- inline keyboards](https://core.telegram.org/bots/features).
+
+### Beneficio adicional: esto también responde a la pregunta pendiente del coste
+
+LiteLLM registra de fábrica cuánto se ha gastado y en qué modelo -- es
+exactamente el dato que faltaba para decidir, más adelante, el modelo de
+precio de un cliente real (cuota fija vs. consumo real de IA en la nube).
+No hace falta instrumentar nada a mano para tener esa cifra.
 
 ## Beneficio no buscado: esto también prueba la Fase 1 de independencia de red
 
 Al vivir en hardware propio y descentralizado, esta prueba responde de paso
 la pregunta que dejó abierta `PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md`: qué
 pasa si se corta la conexión a internet. Diseño previsto desde el principio:
-la Pi y el PC siguen funcionando para todo lo que no necesite el nivel 3; solo
-la escalada a Claude queda en cola hasta que vuelva la red -- ni se pierde
+la Pi y los modelos locales del PC siguen funcionando para todo lo que no
+necesite a Claude; LiteLLM ya soporta plan B automático, así que solo la
+escalada a Claude queda en cola hasta que vuelva la red -- ni se pierde
 trabajo, ni se bloquea todo el sistema por un corte puntual.
 
 ## Hallazgo crítico que sigue vigente para la Fase posterior (entrada)
@@ -117,21 +176,30 @@ Fuentes: [Get started with custom connectors using remote MCP](https://support.c
   Generator, Obsidian Local AI): receta estándar 2026 -- Ollama local +
   `nomic-embed-text` para embeddings + un modelo de chat local, todo contra
   `localhost:11434`. Reutilizable tal cual para la bóveda de cada cliente.
-- **Raspberry Pi como nodo de inferencia siempre encendido**, emparejado con
-  un equipo más potente para cargas pesadas: patrón ya documentado y probado
-  por terceros -- encaja exactamente con la jerarquía de tres niveles descrita
-  arriba.
+- **Raspberry Pi como nodo de control siempre encendido**, emparejado con un
+  equipo más potente para los modelos pesados: patrón ya documentado y
+  probado por terceros -- encaja exactamente con el reparto descrito arriba.
+- **LiteLLM** ([dev.to/everylocalai](https://dev.to/everylocalai/build-a-unified-ai-gateway-with-litellm-and-ollama-387a)):
+  pasarela unificada de código abierto, estándar de facto en 2026 para
+  combinar Ollama (modelos locales) con proveedores en la nube (Claude
+  incluido) bajo una sola API, con enrutado, plan B automático y control de
+  gasto de fábrica.
+- **RouteLLM** ([lmsys.org](https://www.lmsys.org/blog/2024-07-01-routellm/)):
+  enrutado automático por complejidad -- más de la mitad de los mensajes
+  reales se resuelven igual de bien con un modelo pequeño que con uno caro.
 - **Onboarding conversacional**: "la primera interacción es una conversación
   que declara intención, y la ruta se adapta a esa intención" mide 3.2x más
   activación que un tour de producto fijo (benchmark Perspective AI 2026).
 
 ## Arquitectura propuesta (por capas)
 
-### 1. Infraestructura: Raspberry Pi + SSD (control) y PC (cómputo bajo demanda)
+### 1. Infraestructura: Raspberry Pi + SSD (control + pasarela) y PC (catálogo de modelos locales)
 
-Ver jerarquía de tres niveles arriba. La Pi es el plano de control, siempre
-encendida, bajo consumo. El PC es el worker elástico. Claude es el último
-recurso, invocado hacia fuera, nunca al revés en esta primera fase.
+Ver "no es una cadena de niveles, es un solo mando" arriba. La Pi aloja
+LiteLLM (el mando central) y todo lo que necesita estar siempre disponible.
+El PC aporta el catálogo de modelos locales (Ollama), DeepSeek incluido.
+Claude es un proveedor más dentro del mismo catálogo, invocado hacia fuera,
+nunca al revés en esta primera fase.
 
 ### 2. Bóveda Obsidian: construcción y personalización
 
@@ -139,8 +207,9 @@ Construida a partir de las entidades reales del cliente (`DOCUMENTO`,
 `DECISION`, `TAREA`, `PROYECTO`...), reutilizando `generarNotaObsidian()` ya
 construido y probado. Personalización real: qué entidades se exportan
 depende de los módulos contratados -- mismo patrón que ya usamos en CAM-0002.
-Búsqueda semántica ligera vive en la Pi; el razonamiento pesado se delega
-al PC, y solo lo verdaderamente complejo escala a Claude.
+Búsqueda semántica ligera vive en la Pi; el razonamiento pesado se reparte
+entre los modelos locales del PC vía LiteLLM, y solo lo verdaderamente
+complejo escala a Claude.
 
 **Recomendación técnica sobre GraphRAG**: no adoptar el GraphRAG completo de
 Microsoft -- fue diseñado para extraer un grafo de texto no estructurado, un
@@ -156,9 +225,10 @@ Corre en la Pi -- no depende de que el PC ni Claude estén disponibles.
 
 ### 4. Vínculo con Claude: empezar por la salida, no por la entrada
 
-Ver sección "Dos direcciones distintas" arriba. Fase 1 de esta prueba: la Pi
-o el PC llaman a la API de Claude cuando el nivel 2 (PC+DeepSeek) rechaza o
-no puede con una tarea. Fase posterior (opcional): Custom Connector para que
+Ver sección "Dos direcciones distintas" arriba. Fase 1 de esta prueba:
+LiteLLM llama a la API de Claude cuando el enrutado por complejidad lo pide,
+o cuando un modelo local rechaza/no puede con una tarea. Fase posterior
+(opcional): Custom Connector para que
 el cliente entre desde su propio chat de Claude/ChatGPT.
 
 ### 5. Interfaz web
@@ -193,9 +263,12 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
 1. **Fase 0 (ya hecha)**: TEST-Cliente-2026-08-29 -- Sheet, bot, exportador,
    ciclo agéntico verificado.
 2. **Fase 1 -- esta prueba, hardware propio, solo dirección de salida**:
-   Pi + SSD como plano de control, PC+DeepSeek como músculo bajo demanda,
-   escalada a Claude solo hacia fuera (sin exponer nada a internet). Prueba
-   también la resiliencia ante cortes de red.
+   Pi + SSD alojando LiteLLM como pasarela única; PC con el catálogo de
+   modelos locales (Ollama, DeepSeek incluido) registrado en esa pasarela;
+   Claude registrado como proveedor de salida únicamente (sin exponer nada a
+   internet). Telegram habla solo con LiteLLM, con enrutado automático por
+   complejidad por defecto y selección manual (`/modelo`, botones en línea)
+   como opción explícita. Prueba también la resiliencia ante cortes de red.
 3. **Fase 2 -- dirección de entrada (opcional)**: Custom Connector MCP
    expuesto vía túnel, para que el cliente entre desde su propio chat.
 4. **Fase 3 -- personalización real de la bóveda**: plantillas de exportación
@@ -213,9 +286,13 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
 ## Pendiente de concretar
 
 - Modelo de coste real para un futuro cliente (hardware propio vs alquilado) --
-  sigue sin abordarse, deliberadamente, hasta tener datos reales de esta prueba.
-- Qué modelo(s) concretos corren en la Pi (candidatos ligeros: Phi-3, Qwen2
-  pequeño) vs en el PC (DeepSeek, ya en uso).
+  se abordará con los datos de gasto que LiteLLM ya registra de fábrica una
+  vez arranque la Fase 1, no hace falta instrumentarlo aparte.
+- Qué modelos locales concretos se registran en LiteLLM y para qué propósito
+  cada uno (catálogo a decidir con los ya probados por el operador).
+- Reglas exactas del enrutado automático por complejidad (umbral sencillo/
+  complejo) -- empezar con la configuración por defecto de RouteLLM y
+  ajustar con datos reales de uso.
 - Mecanismo de túnel definitivo, cuando se llegue a la Fase 2.
 
 ## Bitácora
@@ -228,3 +305,10 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
   dos direcciones de integración con Claude (salida vs entrada) y se fija la
   Fase 1 en la dirección de salida únicamente. Se fusiona con
   `PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md` (PRO-0018).
+- **2026-08-29 (2ª revisión)**: el operador aclara que hay varios modelos
+  locales ya probados (DeepSeek el más potente, no un nivel aparte) y que la
+  interfaz (Telegram) debe poder mandar cada mensaje a Claude o a la IA
+  local según haga falta. Se sustituye la cadena de tres niveles por un
+  único mando (LiteLLM) con varios modelos registrados, enrutado automático
+  por complejidad (RouteLLM) como comportamiento por defecto, y selección
+  manual desde Telegram como opción explícita.
