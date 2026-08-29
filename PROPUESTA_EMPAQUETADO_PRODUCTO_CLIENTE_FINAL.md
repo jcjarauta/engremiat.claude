@@ -1,37 +1,91 @@
-# Propuesta — Empaquetar Engremiat para uso real: infraestructura de cliente, bóveda Obsidian y vínculo conversacional
+# Propuesta — Empaquetar Engremiat para uso real: infraestructura descentralizada, bóveda Obsidian y vínculo con Claude
 
 **Fecha de apertura:** 2026-08-29
 **Estado:** A valorar -- diseño en curso
 **Incidencia Sheet:** INC-0066 (`13_INCIDENCIAS`, A valorar)
 **Proyecto Sheet:** PRO-0022 (`02_PROYECTOS`, Gestor de Proyectos, CAM-0004)
-**Origen:** conversación derivada del piloto TEST-Cliente-2026-08-29 (PRO-0020) --
-al ver el ciclo completo funcionar de principio a fin sobre un cliente real, la
-pregunta natural fue "¿cómo empaquetamos esto para un usuario final de verdad?"
+**Fusiona con:** `PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md` (PRO-0018, pausada
+25/08/2026 "hasta demanda real de un cliente") -- esa demanda real es esta
+misma prueba, con hardware propio del operador (Raspberry Pi + SSD externo
+ya disponibles). Ambos documentos describen el mismo eje (independencia de
+la nube, control del propio dato/cómputo); este documento es ahora la versión
+viva, `PRO-0018` queda como antecedente histórico, no se duplica el diseño.
+**Origen:** conversación derivada del piloto TEST-Cliente-2026-08-29 (PRO-0020)
+-- al ver el ciclo completo funcionar de principio a fin, la pregunta pasó de
+"¿funciona la tecnología?" a "¿cómo se lo servimos a alguien real, con
+soberanía real sobre sus propios datos e infraestructura?"
 
-## Disparador
+## Decisión central de esta versión: la soberanía es el producto, no un detalle técnico
 
-TEST-Cliente-2026-08-29 demostró que el ciclo completo funciona: montaje
-automático, bot operativo, exportador Obsidian, incidencia real cerrada y
-verificada por el ciclo agéntico. La pregunta que abre este documento es
-distinta: no "¿funciona la tecnología?" sino "¿cómo se lo servimos a alguien
-que no es el propio operador?" -- infraestructura (Raspberry Pi + PC como
-worker bajo demanda), bóveda Obsidian personalizable, interfaz web, bot de
-Telegram, y sobre todo: que el cliente pueda abrir su propia conversación de
-Claude/ChatGPT y, desde ahí, interactuar con los ciclos del Ejecutor para
-personalizar su propia experiencia del sistema.
+La prueba se hace con hardware propio del operador (Raspberry Pi + SSD
+externo), no con infraestructura de un proveedor cloud. La idea rectora,
+explícita del operador: **el cliente tiene el control de sus datos y de su
+infraestructura de IA en sus propias máquinas, y solo acude a Claude (nube)
+en momentos de trabajo más intensos.** Esto no es un detalle de despliegue --
+es el diferenciador de producto frente a cualquier competidor que solo ofrezca
+"un chatbot más" encima de una nube ajena.
 
-## Hallazgo crítico de la investigación (cambia la arquitectura, no es un detalle)
+## Dos direcciones distintas -- no confundirlas (corrección sobre la versión anterior)
 
-**Un Custom Connector de Claude.ai exige que el servidor MCP sea alcanzable
-públicamente desde las IPs de Anthropic.** Una Raspberry Pi detrás de NAT
-doméstico, o cualquier red privada/VPN, **no sirve tal cual** -- la conexión
-se origina desde los servidores de Anthropic, no desde la red del cliente.
-Hace falta un túnel expuesto delante del Pi/PC: **Tailscale Funnel** (gratis,
-sin gestión de certificados, pero solo 3 puertos exponibles: 443/8443/10000),
-Cloudflare Tunnel, o ngrok. Esto determina el diseño de la capa de red desde
-el principio, no es un paso posterior de "despliegue".
+La versión anterior de este documento asumía una sola dirección ("el cliente
+abre su chat de Claude y este entra a leer su Pi", vía Custom Connector MCP).
+Esa dirección exige un servidor alcanzable públicamente desde las IPs de
+Anthropic -- un túnel expuesto (Tailscale Funnel/Cloudflare Tunnel/ngrok),
+delante de la Pi. Es real y sigue siendo útil más adelante, pero **diluye la
+soberanía pura**: expone algo hacia fuera, aunque sea de forma controlada.
 
-Fuente: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp),
+La idea que ahora plantea el operador es la dirección **contraria**, y es más
+simple:
+
+- **Salida (Pi/PC → Claude)**: la propia infraestructura del cliente decide
+  cuándo pedir ayuda a Claude y le envía exactamente lo que hace falta, nada
+  más. Es una llamada normal a la API de Claude, iniciada por el cliente. No
+  requiere exponer ningún servidor a internet, no hay superficie de ataque
+  nueva, y es coherente al cien por cien con "control de mis datos en mis
+  propias máquinas": la Pi decide, la Pi pregunta, la Pi recibe la respuesta.
+- **Entrada (Claude → Pi)**: lo que describía la versión anterior. Útil para
+  "abro mi chat de Claude y le pregunto por mi negocio" desde cualquier
+  sitio, pero exige exponer algo, aunque sea con autenticación. Queda como
+  fase posterior y opcional, no como punto de partida.
+
+**Decisión para esta prueba: empezar solo por la dirección de salida.** Es más
+barata, más simple, y no obliga a decidir todavía el mecanismo de túnel.
+
+## Jerarquía de tres niveles (con el hardware real ya disponible)
+
+1. **Raspberry Pi + SSD externo** -- el cerebro siempre encendido, bajo
+   consumo. Guarda los datos del cliente (Sheet sincronizado, bóveda
+   Obsidian, backups), corre el bot de Telegram, y modelos pequeños para
+   tareas ligeras. El SSD (en vez de tarjeta SD) es la elección correcta:
+   más rápido, más fiable, con espacio real para modelos y datos.
+2. **PC del operador + DeepSeek** -- el "músculo" bajo demanda: se activa
+   cuando hace falta más potencia de la que da la Pi, mismo patrón que ya
+   usa hoy `92_BUS_TRABAJO` para repartir trabajo real.
+3. **Claude (nube)** -- último recurso, solo para lo verdaderamente complejo
+   o cuando el nivel 2 no da la talla. Señal de escalado ya disponible sin
+   inventar nada nuevo: cuando el worker local marca una tarea como
+   `rechazada` en el bus de trabajo (ya ocurrió hoy con `TASK-0004`), esa es
+   la señal natural para subir al nivel 3.
+
+## Beneficio no buscado: esto también prueba la Fase 1 de independencia de red
+
+Al vivir en hardware propio y descentralizado, esta prueba responde de paso
+la pregunta que dejó abierta `PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md`: qué
+pasa si se corta la conexión a internet. Diseño previsto desde el principio:
+la Pi y el PC siguen funcionando para todo lo que no necesite el nivel 3; solo
+la escalada a Claude queda en cola hasta que vuelva la red -- ni se pierde
+trabajo, ni se bloquea todo el sistema por un corte puntual.
+
+## Hallazgo crítico que sigue vigente para la Fase posterior (entrada)
+
+Cuando se aborde la dirección de entrada (Claude → Pi, más adelante): un
+Custom Connector de Claude.ai exige que el servidor MCP sea alcanzable
+públicamente desde las IPs de Anthropic -- la conexión se origina desde los
+servidores de Anthropic, no desde la red del cliente. Sigue sin resolverse el
+mecanismo de túnel definitivo (Tailscale Funnel/Cloudflare Tunnel/ngrok); no
+hace falta decidirlo para la Fase 1.
+
+Fuentes: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp),
 [Connect to remote MCP Servers](https://modelcontextprotocol.io/docs/2026-07-28/develop/connect-remote-servers),
 [Using ngrok as your MCP gateway](https://ngrok.com/docs/using-ngrok-with/using-mcp).
 
@@ -41,177 +95,136 @@ Fuente: [Get started with custom connectors using remote MCP](https://support.cl
 |---|---|
 | Bot operativo por cliente | `WebhookTelegramService.js`, probado en vivo (TEST-Cliente-2026-08-29) |
 | Datos → nota exportable | `generarNotaObsidian()` (`ReportService.js`, v177 de la librería) |
-| Grafo de entidades | `17_RELACION`/`18_VINCULO` -- **ya es un grafo tipado**, no texto plano a extraer |
+| Grafo de entidades | `17_RELACION`/`18_VINCULO` -- ya es un grafo tipado, no texto plano a extraer |
 | Interfaz web ligera | Consola Engremiat (`tools/consola/`), Artifact estático ya sincronizado |
-| Cola de trabajo con estado | `92_BUS_TRABAJO` (reclamada→en_progreso→lista_para_revision→verificada) |
-| Puente incidencia→trabajo real | Flujo `NIVEL_INCIDENCIA=Producto` → `PROCESO`/`TAREA` auto-generados |
+| Cola de trabajo con estado | `92_BUS_TRABAJO` (reclamada→en_progreso→lista_para_revision→verificada), ya sirve como mecanismo de reparto entre los tres niveles |
+| Señal de escalado a Claude | Estado `rechazada` en `92_BUS_TRABAJO`, ya en uso real (`TASK-0004`) |
+| Hardware de la Fase 1 | Raspberry Pi + SSD externo -- ya disponibles, sin compra pendiente |
 
 ## Panorama de proyectos comparables (qué funciona, qué no)
 
 - **Khoj** ([github.com/khoj-ai/khoj](https://github.com/khoj-ai/khoj)): "segundo
   cerebro" autoalojable, 35k+ estrellas, activo, soporta LLMs locales y en la
   nube, agentes personalizables y automatizaciones programadas. Confirma que
-  el patrón "second brain personal, self-hosted, con agente conversacional"
-  es maduro en 2026, no experimental -- pero está pensado para **una persona**,
-  no para gestionar el ciclo de vida de un cliente de negocio (proyectos,
-  tareas, incidencias). Engremiat ya tiene esa capa de negocio; lo que le
-  falta es justo la capa conversacional que Khoj sí resuelve bien.
+  el patrón "second brain personal, self-hosted" es maduro en 2026 -- pero
+  está pensado para una persona, no para gestionar el ciclo de vida de un
+  cliente de negocio. Engremiat ya tiene esa capa de negocio.
 - **Onyx / antes Danswer** ([tooldirectory.ai/tools/onyx](https://tooldirectory.ai/tools/onyx)):
   buscador empresarial + asistente IA, 40+ conectores, MIT, autoalojable
-  gratis. Referencia de "cómo conectar muchas fuentes de datos a un único
-  asistente" -- relevante si en el futuro un cliente Engremiat quiere que el
-  asistente también lea correo/Drive/Slack, no solo su Sheet.
+  gratis. Referencia si en el futuro un cliente quiere que el asistente
+  también lea correo/Drive/Slack, no solo su Sheet.
 - **Plugins de IA para Obsidian** (Smart Connections, Copilot, Text
-  Generator, Obsidian Local AI): confirman la receta estándar 2026 -- Ollama
-  local + `nomic-embed-text` para embeddings + `llama3.2` (o similar) para
-  chat, todo apuntando a `localhost:11434`. Un vault de 10.000 notas se
-  indexa en ~2.5 min en hardware modesto, búsqueda en <100ms. Esta receta es
-  literalmente reutilizable tal cual para la bóveda de cada cliente Engremiat.
+  Generator, Obsidian Local AI): receta estándar 2026 -- Ollama local +
+  `nomic-embed-text` para embeddings + un modelo de chat local, todo contra
+  `localhost:11434`. Reutilizable tal cual para la bóveda de cada cliente.
 - **Raspberry Pi como nodo de inferencia siempre encendido**, emparejado con
-  un "workstation" más potente para cargas pesadas: patrón ya documentado y
-  probado por terceros (Pi 5 8GB como nodo estable de bajo consumo + Ollama/
-  llama.cpp en un equipo más grande para lo pesado). Encaja exactamente con
-  la idea del usuario: Pi = siempre vivo, PC = bajo demanda.
-- **Onboarding conversacional**: el patrón "la primera interacción es una
-  conversación que declara intención, y la ruta se adapta a esa intención"
-  mide 3.2x más activación que un tour de producto fijo (benchmark Perspective
-  AI 2026). Confirma que la idea del usuario ("qué quiero aprender, qué
-  quiero conseguir...") no es una ocurrencia, es la práctica recomendada
-  actual para dar de alta un cliente nuevo en cualquier producto con IA.
+  un equipo más potente para cargas pesadas: patrón ya documentado y probado
+  por terceros -- encaja exactamente con la jerarquía de tres niveles descrita
+  arriba.
+- **Onboarding conversacional**: "la primera interacción es una conversación
+  que declara intención, y la ruta se adapta a esa intención" mide 3.2x más
+  activación que un tour de producto fijo (benchmark Perspective AI 2026).
 
 ## Arquitectura propuesta (por capas)
 
-### 1. Infraestructura: Raspberry Pi (control) + PC (cómputo bajo demanda)
+### 1. Infraestructura: Raspberry Pi + SSD (control) y PC (cómputo bajo demanda)
 
-La Pi es el **plano de control**, siempre encendida, bajo consumo: aloja el
-servidor MCP remoto (expuesto vía Tailscale Funnel), el bot de Telegram, y
-la sincronización con el Sheet del cliente. El PC es el **worker elástico**:
-solo se enciende/usa cuando hace falta cómputo pesado real (generación
-masiva de la bóveda, un análisis GraphRAG completo, un lote de incidencias).
-La cola ya existente (`92_BUS_TRABAJO`) es el mecanismo de reparto -- la Pi
-encola, el PC (con DeepSeek/Ollama) reclama cuando está disponible, exactamente
-el mismo patrón que ya usa `bus_trabajo.mjs` hoy con workers humanos/Claude.
+Ver jerarquía de tres niveles arriba. La Pi es el plano de control, siempre
+encendida, bajo consumo. El PC es el worker elástico. Claude es el último
+recurso, invocado hacia fuera, nunca al revés en esta primera fase.
 
 ### 2. Bóveda Obsidian: construcción y personalización
 
 Construida a partir de las entidades reales del cliente (`DOCUMENTO`,
 `DECISION`, `TAREA`, `PROYECTO`...), reutilizando `generarNotaObsidian()` ya
-construido y probado. Personalización real, no cosmética: **qué entidades se
-exportan como notas depende de los módulos contratados** -- mismo patrón que
-ya usamos en CAM-0002 (una configuración por combinación de módulos). Un
-cliente con COMPRAS instalado tendrá notas de proveedor/material; uno sin él,
-no. Búsqueda semántica ligera (embeddings locales estilo Smart Connections)
-vive en la Pi; el razonamiento pesado sobre todo el grafo (resúmenes por
-comunidad, preguntas "qué está pasando en todo mi negocio") se delega al PC.
+construido y probado. Personalización real: qué entidades se exportan
+depende de los módulos contratados -- mismo patrón que ya usamos en CAM-0002.
+Búsqueda semántica ligera vive en la Pi; el razonamiento pesado se delega
+al PC, y solo lo verdaderamente complejo escala a Claude.
 
 **Recomendación técnica sobre GraphRAG**: no adoptar el GraphRAG completo de
-Microsoft tal cual -- fue diseñado para *extraer* un grafo de texto no
-estructurado, un paso costoso que Engremiat **ya no necesita**: `17_RELACION`/
-`18_VINCULO` ya son un grafo tipado desde el origen. La alternativa más
-adecuada es un enfoque más ligero (estilo `LightRAG`) que recorra ese grafo
-ya existente en vez de reconstruirlo -- mucho más barato en cómputo local/Pi,
-y coherente con lo que `generarNotaObsidian()` ya hace de forma determinista
-(resolver wikilinks vía `VINCULO`). El LLM entra para *narrar* el
-recorrido, no para *descubrir* el grafo.
+Microsoft -- fue diseñado para extraer un grafo de texto no estructurado, un
+paso costoso que Engremiat ya no necesita: `17_RELACION`/`18_VINCULO` ya son
+un grafo tipado desde el origen. Un enfoque más ligero (estilo `LightRAG`)
+que recorra ese grafo ya existente es mucho más barato en Pi/local, y
+coherente con lo que `generarNotaObsidian()` ya hace de forma determinista.
 
 ### 3. Bot de Telegram
 
-Ya construido. Su rol en esta propuesta: canal rápido/asíncrono (recordatorios,
-consultas puntuales, disparar una síntesis). No es el canal de personalización
-profunda -- eso vive en la conversación Claude/ChatGPT vinculada.
+Ya construido. Canal rápido/asíncrono (recordatorios, consultas puntuales).
+Corre en la Pi -- no depende de que el PC ni Claude estén disponibles.
 
-### 4. Vínculo con una conversación de Claude/ChatGPT (el hallazgo central)
+### 4. Vínculo con Claude: empezar por la salida, no por la entrada
 
-El cliente añade un **Custom Connector** en su propia cuenta de Claude.ai
-apuntando al servidor MCP remoto de su Pi (expuesto vía túnel). Desde su
-propia conversación, con sus propias credenciales, el cliente puede: leer el
-estado de sus incidencias/proyectos, pedir una nota Obsidian de algo
-concreto, o registrar una nueva necesidad -- todo mediado por herramientas
-MCP concretas y auditable (autenticación OAuth en el propio conector, no
-acceso libre). Referencia real de un conector MCP casero ya construido por
-terceros para este mismo propósito: [aki-mcp-sv](https://github.com/lacvietanh/aki-mcp-sv).
+Ver sección "Dos direcciones distintas" arriba. Fase 1 de esta prueba: la Pi
+o el PC llaman a la API de Claude cuando el nivel 2 (PC+DeepSeek) rechaza o
+no puede con una tarea. Fase posterior (opcional): Custom Connector para que
+el cliente entre desde su propio chat de Claude/ChatGPT.
 
 ### 5. Interfaz web
 
-No hace falta construir una interfaz nueva: la Consola Engremiat
-(`tools/consola/`) ya es un Artifact estático sincronizado. Extenderla a
-"vista de cliente" (permisos acotados a su propio Sheet) es mucho más barato
-que un desarrollo desde cero.
+Reutilizar la Consola Engremiat (`tools/consola/`) extendida a "vista de
+cliente" -- más barato que un desarrollo desde cero.
 
 ### 6. ¿Un asistente dentro del sistema?
 
-Sí, pero como **capa fina sobre lo que ya existe**, no un proyecto aparte.
-Khoj y Onyx confirman que el patrón funciona y está maduro -- la propuesta no
-es adoptar ninguno de los dos tal cual (están pensados para un caso de uso
-distinto: conocimiento personal / búsqueda empresarial genérica, no gestión
-de proyectos de cliente), sino tomar prestada su receta de agente + memoria
-+ automatizaciones programadas, e implementarla llamando a lo que Engremiat
-ya tiene: `generarNotaObsidian`, búsqueda semántica local, y el propio
-`92_BUS_TRABAJO`.
+Sí, como capa fina sobre lo que ya existe (ver `generarNotaObsidian`,
+búsqueda semántica local, `92_BUS_TRABAJO`), inspirada en la receta de
+Khoj/Onyx pero sin adoptar ninguno de los dos tal cual.
 
 ### 7. Onboarding conversacional
 
-Modelarlo como una **incidencia especial** generada automáticamente en el
-mismo instante en que `crearProyectoEnGestorDeProyectos_` crea el PROYECTO
-de un cliente nuevo (mismo gancho ya construido para el auto-registro de
-montajes): una `TAREA` "Onboarding conversacional" con un guion de preguntas
-adaptativas (qué quiero aprender / conseguir / qué me hace falta / cuánto me
-cuesta / en qué beneficia al ecosistema), siguiendo el patrón validado de
-"primera interacción conversacional, ruta adaptada a la intención declarada".
+Incidencia especial generada automáticamente junto con el PROYECTO de cada
+cliente nuevo (mismo gancho que `crearProyectoEnGestorDeProyectos_`): una
+`TAREA` "Onboarding conversacional" con preguntas adaptativas (qué quiero
+aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
 
 ## Extensión: análisis de oportunidades y comunicación asistida sobre el grafo
 
-- **Análisis de oportunidades**: el módulo `OPORTUNIDAD` (`44_OPORTUNIDAD`)
-  ya vive en el mismo grafo. Un recorrido asistido por LLM sobre
-  `OPORTUNIDAD` + sus `TAREA`/`RECURSO`/`COMPETENCIA` vinculados puede
-  detectar oportunidades sobre-comprometidas o con recursos insuficientes --
-  extensión natural del rol de Ejecutor: en vez de auditar solo código,
-  audita también el grafo de negocio del cliente, y genera incidencias de
-  nivel `Proyecto`/`Oportunidad`, no solo `Producto`.
-- **Comunicación asistida**: el bot de Telegram ya existe; la extensión es
-  que las respuestas se apoyen en búsqueda semántica local sobre el vault
-  antes de contestar (patrón "Vault QA" de Copilot para Obsidian) -- grounded
-  en lo que el cliente realmente tiene escrito, no en generación libre.
+- **Análisis de oportunidades**: recorrido asistido por LLM sobre
+  `OPORTUNIDAD` + `TAREA`/`RECURSO`/`COMPETENCIA` vinculados, para detectar
+  oportunidades sobre-comprometidas o con recursos insuficientes.
+- **Comunicación asistida**: respuestas del bot de Telegram apoyadas en
+  búsqueda semántica local sobre el vault antes de contestar (patrón "Vault
+  QA"), grounded en lo que el cliente realmente tiene escrito.
 
 ## Fases propuestas (de más barato/reversible a más comprometido)
 
-1. **Fase 0 (ya hecha, sin saberlo)**: TEST-Cliente-2026-08-29 es literalmente
-   el piloto técnico de esta propuesta -- Sheet, bot, exportador, ciclo
-   agéntico verificado.
-2. **Fase 1 -- probarlo primero con el propio operador**: exponer un
-   servidor MCP mínimo (2-3 herramientas de solo lectura: nota Obsidian de
-   una entidad, listar incidencias abiertas) desde el PC actual (no la Pi
-   todavía) detrás de Tailscale Funnel, y vincularlo a una conversación
-   Claude propia antes de pensar en dárselo a nadie más.
-3. **Fase 2 -- mover el rol "siempre encendido" a la Raspberry Pi**: MCP
-   server + bot de Telegram + sincronización con el Sheet en la Pi; el PC
-   queda como worker bajo demanda (DeepSeek/Ollama) para carga pesada real.
+1. **Fase 0 (ya hecha)**: TEST-Cliente-2026-08-29 -- Sheet, bot, exportador,
+   ciclo agéntico verificado.
+2. **Fase 1 -- esta prueba, hardware propio, solo dirección de salida**:
+   Pi + SSD como plano de control, PC+DeepSeek como músculo bajo demanda,
+   escalada a Claude solo hacia fuera (sin exponer nada a internet). Prueba
+   también la resiliencia ante cortes de red.
+3. **Fase 2 -- dirección de entrada (opcional)**: Custom Connector MCP
+   expuesto vía túnel, para que el cliente entre desde su propio chat.
 4. **Fase 3 -- personalización real de la bóveda**: plantillas de exportación
    por combinación de módulos, mismo patrón que CAM-0002.
 5. **Fase 4 -- asistente conversacional de gestión + onboarding automatizado**.
 
 ## Deliberadamente fuera de alcance por ahora
 
-- Multi-tenant real (varios clientes compartiendo una misma Pi/PC) -- sin
-  demanda real todavía, y la Fase 1 es de un solo cliente (el propio piloto).
-- GraphRAG completo estilo Microsoft (community summarization sobre todo el
-  corpus) -- coste de cómputo no justificado mientras el grafo siga siendo
-  pequeño y ya estructurado.
+- Multi-tenant real (varios clientes compartiendo una misma Pi/PC).
+- GraphRAG completo estilo Microsoft.
+- La dirección de entrada (Custom Connector) hasta no tener la Fase 1 probada.
 - Cualquier automatización que escriba en el Sheet del cliente sin
-  verificación humana/Ejecutor de por medio -- mismo criterio de gobernanza
-  que el resto del proyecto.
+  verificación humana/Ejecutor de por medio.
 
 ## Pendiente de concretar
 
-- Elegir el mecanismo de túnel definitivo (Tailscale Funnel vs Cloudflare
-  Tunnel vs ngrok) -- Tailscale Funnel es gratis pero limita a 3 puertos;
-  decidir cuando se llegue a Fase 2.
-- Modelo de coste real para el cliente (hardware Pi propio vs alquilado,
-  cuota de uso del worker PC) -- no abordado en este documento.
-- Alcance exacto de las 2-3 primeras herramientas MCP de la Fase 1.
+- Modelo de coste real para un futuro cliente (hardware propio vs alquilado) --
+  sigue sin abordarse, deliberadamente, hasta tener datos reales de esta prueba.
+- Qué modelo(s) concretos corren en la Pi (candidatos ligeros: Phi-3, Qwen2
+  pequeño) vs en el PC (DeepSeek, ya en uso).
+- Mecanismo de túnel definitivo, cuando se llegue a la Fase 2.
 
 ## Bitácora
 
 - **2026-08-29**: apertura del documento tras el piloto TEST-Cliente-2026-08-29
-  (PRO-0020), con investigación real aplicada al diseño el mismo día. Registrado
-  como INC-0066 / PRO-0022 (CAM-0004) en Gestor de Proyectos.
+  (PRO-0020). Registrado como INC-0066/PRO-0022 (CAM-0004).
+- **2026-08-29 (revisión)**: el operador aporta hardware real ya disponible
+  (Raspberry Pi + SSD externo) y reformula el eje central: soberanía de
+  datos/infraestructura como producto, no detalle técnico. Se separan las
+  dos direcciones de integración con Claude (salida vs entrada) y se fija la
+  Fase 1 en la dirección de salida únicamente. Se fusiona con
+  `PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md` (PRO-0018).
