@@ -17,6 +17,14 @@
       "agente": "Ejecutor Engremiat",
       "persistent_session_id": "session_01AYjZjU3NUiKQBToRo5ieuU",
       "nota": "Comprobacion de enabled/last_fired_at es manual, solo con RemoteTrigger (ver SALUD_ECOSISTEMA.md punto 4) -- este registro solo documenta que existe y a que agente pertenece."
+    },
+    {
+      "id": "windows-task-scheduler:Engremiat - Chequeo libreria clientes",
+      "nombre": "Engremiat - Chequeo libreria clientes",
+      "mecanismo": "Windows Task Scheduler (maquina local del operador), no RemoteTrigger",
+      "cadencia": "Diaria, 08:00",
+      "que_hace": "tools/gobierno/ejecutar_chequeo_libreria.ps1 -- git pull + node tools/gobierno/chequear_libreria_clientes.mjs. Registra cada ejecucion en 92_BUS_TRABAJO.",
+      "nota": "Corre solo si la maquina esta encendida a esa hora -- sin reintento automatico si se salta un dia. Verificado en vivo el 2026-08-25 (LastTaskResult=0)."
     }
   ],
 
