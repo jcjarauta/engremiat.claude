@@ -380,6 +380,29 @@ ejecución parte de la fuente real, sin depender de que git esté al día
 -- evita el modo de fallo encontrado aquí, en vez de confiar en que no
 vuelva a pasar.
 
+## Evidencia real para el Business Model Canvas (2026-08-25)
+
+El presupuesto de "2-45€/mes" de arriba era una estimación sin datos
+reales de precio. Ahora sí hay consumo real medido de esta misma noche:
+~22.000 tokens para auditar 10 ficheros con DeepSeek, ~1.600 tokens por
+triaje individual, lote completo de 8 incidencias reales resuelto en
+minutos de cómputo -- coste real en céntimos de euro, no en euros,
+para el volumen de trabajo de una sesión completa. Esto no sustituye el
+presupuesto (sigue haciendo falta el precio público actual de DeepSeek,
+no verificado desde el cambio de alias de julio), pero sí confirma que
+el rango bajo del presupuesto (2-5€/mes) es plausible incluso para un
+uso más intensivo que "revisión 1x/día" -- **decisión pendiente, no
+tomada aquí**: si vale la pena refinar el presupuesto con el precio
+público real antes de usarlo en una conversación con un cliente.
+
+**Tasa de acierto real, no solo coste**: 3/4 en DeepSeek (lote 1,
+2026-08-25) para tareas dentro del perfil delegable ya definido en
+`PROPUESTA_METODOLOGIA_DESARROLLO_IDEAS.md`. Relevante para el nivel 3
+del modelo de producto por niveles ("razonamiento avanzado bajo
+demanda") -- la promesa al cliente debería incluir la disciplina de
+verificación como parte del servicio, no como un detalle técnico
+interno, dado que ya se ha demostrado necesaria en producción real.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Se pilota primero Claude Code Router (cambio mínimo, reversible) antes de evaluar OpenCode como reemplazo de la capa de orquestación?

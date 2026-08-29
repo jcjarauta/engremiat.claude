@@ -49,6 +49,18 @@ por "independencia de red".
 No comprometerse con la Fase 3 sin demanda real de un cliente. La Fase 1
 sí merece la pena trabajarla pronto -- coste bajo, piezas ya construidas.
 
+## Pieza nueva relevante para la Fase 1 (2026-08-25)
+
+`tools/gobierno/bus_trabajo.mjs` (bus de eventos vía Sheet, construido
+hoy) ya resuelve la mitad conceptual de la Fase 1: una cola de tareas
+con estado (reclamada/en_progreso/lista_para_revision/verificada), con
+protección contra doble procesado, viviendo en el propio Sheet. La
+pieza que le faltaría para el caso de corte de red es que la cola
+pueda escribirse y leerse **en local** cuando el Sheet no es alcanzable,
+y sincronizarse sola al volver la conexión -- no está construido, pero
+el patrón de estados y el propio código ya existen como punto de
+partida real, no hay que diseñarlos desde cero.
+
 ## Pendiente de concretar
 
 - Rellenar el Business Model Canvas completo (productizable, según el

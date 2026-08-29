@@ -169,6 +169,42 @@ del spike 8, que no era suficiente por sí solo:
   ("si no está explícito, responde 'no especificado'") y una nueva
   prueba antes de confiar en esta tarea.
 
+## Spike 10 (a escala real, no sintética): lote 1 de producción, 2026-08-25
+
+Los spikes 1-9 fueron pruebas acotadas y en su mayoría sintéticas o de
+material ya conocido. Este es el primer caso a **escala real de
+producción**: 8 incidencias reales de `13_INCIDENCIAS`, repartidas entre
+DeepSeek y Claude, con `git worktree` real y verificación antes de
+fusionar a `main`. Resultado, que confirma la regla de delegación de
+arriba con el mayor volumen de evidencia real hasta ahora:
+
+- **DeepSeek: 3/4 correctas, 1/4 rechazada.** Las 3 correctas eran
+  exactamente el perfil que la regla predice como delegable (fix
+  mecánico, formato de salida acotado: aplicar un filtro ya existente
+  con firma conocida). La rechazada (INC-0036) necesitaba entender una
+  ambigüedad de plataforma fuera del código mostrado -- exactamente el
+  perfil de "contexto no completamente dado" que la regla ya predice
+  como no delegable sin revisión. Uno de los 3 "correctos" (INC-0060)
+  llevaba además un error real (`'SI'` sin tilde) que la verificación
+  cazó antes de aplicarse -- ni siquiera un caso "delegable" se fusiona
+  sin revisión.
+- **Claude: 3/3 correctas** en las que no encajaban en el perfil
+  delegable (requerían leer y entender varios ficheros relacionados:
+  paleta de contraste WCAG, patrón replicado entre 2 fichas y sus HTML).
+- **INC-0034 aparcada, no delegada**: nueva funcionalidad con decisiones
+  de producto (scope OAuth, dónde vive el archivo) -- mismo principio
+  que protege el carril "A valorar", aplicado aquí a una tarea que
+  parecía "solo una función de UI" hasta que se investigó.
+
+**Esto no cambia la regla de delegación -- la confirma a escala 8x mayor
+que cualquier spike anterior**, y añade un matiz nuevo: el sistema de
+regeneración de envoltorios construido la misma noche
+(`actualizar_libreria_cliente.mjs`) encontró en su primer uso real un
+bug de producción genuino (INC-0061) que nadie había detectado --
+evidencia de que la inversión en verificación/infraestructura de esta
+metodología no es solo prudencia, encuentra problemas reales que de
+otro modo quedan invisibles.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Quién y con qué cadencia revisa el propio funcionamiento de esta metodología (la "Retrospectiva" que queda fuera del alcance v1)?
