@@ -61,6 +61,22 @@ es `PROVEEDOR`, mismo patrón de ficha).
   aviso/actualización (¿el cliente ejecuta él mismo "Actualizar" desde su
   menú? ¿se lo pedimos por email?) -- encaja como parte de Mantenimiento,
   no como módulo aparte.
+- **Puntos (b) y parte del (c), CONSTRUIDOS y verificados en producción
+  (2026-08-25)**: `tools/gobierno/chequear_libreria_clientes.mjs`
+  (detección automática de desfase, cadencia diaria real via Task
+  Scheduler -- resuelve (b) sin necesidad de tocar el esquema de
+  `CLIENTE`, comparando siempre contra la version REAL publicada, nunca
+  contra el dato del Sheet) y
+  `tools/gobierno/actualizar_libreria_cliente.mjs` (actualización remota
+  real, modo diagnóstico antes de aplicar -- resuelve la mitad técnica
+  de (c): ya no hace falta que el cliente ejecute nada ni que se le pida
+  por email, el estudio puede actualizarlo de forma remota y segura).
+  Encontró y resolvió un bug real en producción en su primera ejecución
+  (INC-0061, `abrirFichaRecurso`/`abrirInstalarEntidadEtiquetaImpacto`
+  rotas en Gestor de Proyectos desde hacía tiempo, sin que nadie lo
+  hubiera notado). Sigue pendiente (a) -- qué nivel de acceso técnico se
+  conserva al entregar un cliente -- es una decisión contractual, no
+  técnica.
 
 ### El canal de comunicación: bot de Telegram como relé (Fase 1a)
 
