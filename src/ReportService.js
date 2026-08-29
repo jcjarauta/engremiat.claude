@@ -1131,3 +1131,61 @@ function abrirInformes(modulosInstalados) {
   var html = template.evaluate().setTitle('Informes').setWidth(420);
   SpreadsheetApp.getUi().showSidebar(html);
 }
+
+/*
+ * Exportador mínimo Documento/Decisión -> nota Markdown para Obsidian
+ * (INC-0065/TAR-0003, esqueleto TEST-Cliente-2026-08-29 -- primer paso real
+ * hacia PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md). Solo DOCUMENTO y
+ * DECISION por ahora, los dos únicos tipos con caso de prueba real
+ * -- ampliar a otras entidades es trabajo futuro, no de esta tarea.
+ *
+ * Formato fijado en DEC-0001 (12_DECISIONES, TEST-Cliente-2026-08-29):
+ * front-matter YAML (id/tipo/estado/fecha) + wikilinks [[ID]] resueltos
+ * por 18_VINCULO -- nunca texto libre para referenciar otra entidad.
+ */
+function generarNotaObsidian(entidadTipo, entidadId) {
+  entidadTipo = String(entidadTipo || '').toUpperCase();
+  if (entidadTipo !== 'DOCUMENTO' && entidadTipo !== 'DECISION') {
+    throw new Error('GENERAR_NOTA_OBSIDIAN_ERROR: entidadTipo debe ser DOCUMENTO o DECISION, recibido ' + entidadTipo + '.');
+  }
+
+  var registro = listarRegistrosSeguro_(entidadTipo, { ID: entidadId })[0];
+  if (!registro) throw new Error('GENERAR_NOTA_OBSIDIAN_ERROR: no existe ' + entidadTipo + ' ' + entidadId + '.');
+
+  var fecha = registro.FECHA_CREACION;
+  if (Object.prototype.toString.call(fecha) === '[object Date]') {
+    fecha = Utilities.formatDate(fecha, 'Europe/Madrid', 'yyyy-MM-dd');
+  }
+
+  var frontMatter = [
+    '---',
+    'id: ' + entidadId,
+    'tipo: ' + entidadTipo.toLowerCase(),
+    'estado: "' + String(registro.ESTADO || '').replace(/"/g, '\\"') + '"',
+    'fecha: "' + String(fecha || '').replace(/"/g, '\\"') + '"',
+    '---'
+  ].join('\n');
+
+  var cuerpo = '# ' + (registro.TITULO || entidadId) + '\n\n';
+  if (entidadTipo === 'DOCUMENTO') {
+    cuerpo += (registro.DESCRIPCION || '') + '\n';
+    if (registro.URL) cuerpo += '\nEnlace: ' + registro.URL + '\n';
+  } else {
+    cuerpo += (registro.CONTEXTO || '') + '\n';
+    if (registro.RESOLUCION) cuerpo += '\n## Resolución\n\n' + registro.RESOLUCION + '\n';
+  }
+
+  var vinculos = listarRegistrosSeguro_('VINCULO', { ACTIVO: 'SÍ' }).filter(function (v) {
+    return v.ENTIDAD_ORIGEN_ID === entidadId || v.ENTIDAD_DESTINO_ID === entidadId;
+  });
+
+  if (vinculos.length > 0) {
+    cuerpo += '\n## Vínculos\n\n';
+    vinculos.forEach(function (v) {
+      var otroId = v.ENTIDAD_ORIGEN_ID === entidadId ? v.ENTIDAD_DESTINO_ID : v.ENTIDAD_ORIGEN_ID;
+      cuerpo += '- [[' + otroId + ']] (' + v.TIPO_VINCULO + ')\n';
+    });
+  }
+
+  return frontMatter + '\n\n' + cuerpo;
+}
