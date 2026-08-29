@@ -26,6 +26,7 @@
     { "fichero": "tools/consola/extraer_decisiones.mjs", "que_hace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet" },
     { "fichero": "tools/salud_ecosistema.mjs", "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro" },
     { "fichero": "tools/gobierno/chequear_libreria_clientes.mjs", "que_compara": "appsscript.json real de cada cliente vs version real publicada de LIBRERIA_ID_ (nunca el dato LIBRERIA_VERSION del Sheet como fuente de verdad)" },
-    { "fichero": "tools/gobierno/cerrar_ciclo.mjs", "que_hace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear" }
+    { "fichero": "tools/gobierno/cerrar_ciclo.mjs", "que_hace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear" },
+    { "fichero": "tools/gobierno/bus_trabajo.mjs", "que_hace": "Bus de eventos vía Sheet (pestaña 92_BUS_TRABAJO): reclamar/en_progreso/cerrar/verificar por worker, con proteccion contra doble reclamacion y panel de coste/tiempo agregado por worker. Formaliza el patron probado a mano en el lote 1 (2026-08-25)." }
   ]
 }
