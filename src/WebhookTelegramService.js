@@ -344,13 +344,33 @@ function procesarInstalacionModuloCliente_(scriptId, modulo) {
   }
 }
 
+/*
+ * INC-0036: el error real era "Argumento demasiado grande: subject" con
+ * un CUERPO de 500-800 caracteres y un asunto corto -- dos workers
+ * distintos (worker local, DeepSeek) diagnosticaron mal esto asumiendo
+ * que el asunto era el campo realmente largo, y "arreglaron" truncando
+ * el asunto, sin tocar el sintoma real. Causa probable real: la forma
+ * POSICIONAL de 4 argumentos de MailApp.sendEmail(recipient, subject,
+ * body, options) tiene varias sobrecargas ambiguas en la API de Apps
+ * Script, y el mensaje de error de validacion de esa API puede citar el
+ * nombre de parametro equivocado cuando la ambiguedad se resuelve mal
+ * -- el nombre "subject" en el error no es fiable como diagnostico.
+ * Fix: usar la forma de UN SOLO OBJETO (recipient + campos con nombre),
+ * la forma recomendada por la documentacion de Apps Script y la unica
+ * sin ambiguedad de sobrecarga -- evita el problema de raiz en vez de
+ * truncar un campo que no era el culpable.
+ * PENDIENTE: no se ha podido verificar en vivo contra Apps Script real
+ * (sin acceso de ejecucion desde este entorno) -- probar con un POST
+ * real de 500-800 caracteres antes de dar la incidencia por cerrada.
+ */
 function procesarNotificacionOperador_(asunto, cuerpoMensaje, cuerpoHtml, categoria) {
   if (!asunto) return { ok: false, error: 'Falta asunto en la solicitud.' };
   try {
     var asuntoFinal = categoria ? '[Engremiat:' + categoria + '] ' + asunto : asunto;
     var destinatario = resolverDestinatarioNotificacion_(categoria);
-    var opciones = cuerpoHtml ? { htmlBody: cuerpoHtml } : undefined;
-    MailApp.sendEmail(destinatario, asuntoFinal, cuerpoMensaje || '', opciones);
+    var mensaje = { to: destinatario, subject: asuntoFinal, body: cuerpoMensaje || '' };
+    if (cuerpoHtml) mensaje.htmlBody = cuerpoHtml;
+    MailApp.sendEmail(mensaje);
     return { ok: true };
   } catch (err) {
     return { ok: false, error: err.message };
