@@ -623,3 +623,16 @@ comprobarlo con datos reales de la Fase 1.
   capítulos propios exigiría un paso adicional de segmentación antes de
   llegar a esta misma estructura -- no asumir que todos los vídeos vienen
   tan bien organizados como este.
+- **2026-08-29 (caso difícil confirmado: análisis multimodal real audio+vídeo)**:
+  `PRO-0026` -- vídeo real sin capítulos ni lista de materiales (canal Los
+  Elegi2, construcción de un muro de bahareque/barro). Se combinó la
+  transcripción con fotogramas reales extraídos a intervalos (`ffmpeg`,
+  copia de trabajo temporal en 240p, borrada tras el análisis, nunca
+  redistribuida) -- exactamente el análisis "lo que ve + lo que oye" que
+  pidió el operador. Resultado: 3 de los 6 pasos reconstruidos (amasar el
+  barro con los pies, la selección de tierra en el talud, las grietas de
+  secado del muro terminado) **no se habrían capturado solo con el audio**
+  -- confirma que el análisis visual aporta valor real, no es redundante
+  con la transcripción. Un paso (aplicar el barro sobre el armazón) se
+  marcó explícitamente como **inferido, no observado** -- honestidad sobre
+  el límite del método (7 fotogramas puntuales, no el vídeo completo).
