@@ -312,3 +312,13 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
   único mando (LiteLLM) con varios modelos registrados, enrutado automático
   por complejidad (RouteLLM) como comportamiento por defecto, y selección
   manual desde Telegram como opción explícita.
+- **2026-08-29 (arranque Fase 1, primer paso)**: LiteLLM instalado y probado
+  en el PC del operador (`G:\Mi unidad\DEVS\engremiat-litellm\`), con los
+  tres modelos locales ya existentes registrados (`qwen3:8b`, `qwen3:14b`,
+  `devstral-dev`) y probados con éxito a través de la misma puerta
+  (`localhost:4000`). El modelo `claude` queda registrado y falla, como se
+  esperaba, solo por falta de `ANTHROPIC_API_KEY` -- credencial pendiente de
+  que el operador la cree en console.anthropic.com y la configure él mismo.
+  Pendiente siguiente: decidir si el bot de Telegram (hoy en Apps Script)
+  pasa a hablar con esta pasarela directamente o si su lógica se traslada a
+  la Pi -- ver nota de arquitectura en la conversación, no resuelto aún.
