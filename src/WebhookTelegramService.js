@@ -67,7 +67,25 @@ function doPost(e, tokenTelegram, modulosInstalados) {
        * solicitarActualizacionLibreria en GeneradorEnvoltoriosEmbebido.js/
        * generate-shell-wrappers.mjs.
        */
-      if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
+      /*
+       * Acciones de CLIENTE (seguras en cualquier contenedor -- viven en la
+       * librería CORE, así que llegan a cualquier cliente vía su propio
+       * Core.doPost, no solo al maestro). Solo lectura a propósito: bot-local.mjs
+       * (Fase 1, PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md) las llama
+       * para responder con datos reales sin poder escribir nada en el Sheet.
+       */
+      if (cuerpo && cuerpo.accion === 'generar_nota_obsidian') {
+        try {
+          respuesta = JSON.stringify({ ok: true, nota: generarNotaObsidian(cuerpo.entidadTipo, cuerpo.entidadId) });
+        } catch (err) {
+          respuesta = JSON.stringify({ ok: false, error: err.message });
+        }
+      } else if (cuerpo && cuerpo.accion === 'listar_incidencias_abiertas') {
+        var incidencias = listarRegistrosSeguro_('INCIDENCIA', { ACTIVO: 'SÍ' })
+          .filter(function (i) { return i.ESTADO === 'Abierta' || i.ESTADO === 'En análisis' || i.ESTADO === 'En resolución'; })
+          .map(function (i) { return { id: i.ID, titulo: i.TITULO, estado: i.ESTADO }; });
+        respuesta = JSON.stringify({ ok: true, incidencias: incidencias });
+      } else if (cuerpo && cuerpo.accion === 'solicitar_actualizacion_libreria') {
         respuesta = JSON.stringify(procesarSolicitudActualizacionLibreria_(cuerpo.scriptId));
       } else if (cuerpo && cuerpo.accion === 'notificar_operador') {
         respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo, cuerpo.cuerpoHtml, cuerpo.categoria));
