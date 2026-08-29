@@ -73,6 +73,17 @@ function doPost(e, tokenTelegram, modulosInstalados) {
         respuesta = JSON.stringify(procesarNotificacionOperador_(cuerpo.asunto, cuerpo.cuerpo, cuerpo.cuerpoHtml, cuerpo.categoria));
       } else if (cuerpo && cuerpo.accion === 'instalar_modulo_cliente') {
         respuesta = JSON.stringify(procesarInstalacionModuloCliente_(cuerpo.scriptId, cuerpo.modulo));
+      } else if (cuerpo && cuerpo.accion === 'crear_solicitud_montaje') {
+        respuesta = JSON.stringify({ ok: true, resultado: crearSolicitudMontaje(cuerpo.nombre, cuerpo.modulosSeleccionados) });
+      } else if (cuerpo && cuerpo.accion === 'aprobar_solicitud_montaje') {
+        respuesta = JSON.stringify({ ok: true, resultado: aprobarSolicitudMontaje(cuerpo.idTemporal) });
+      } else if (cuerpo && cuerpo.accion === 'instalar_estructura_cliente') {
+        respuesta = JSON.stringify({ ok: true, resultado: instalarEstructuraInicial(cuerpo.modulos, SpreadsheetApp.openById(cuerpo.spreadsheetId)) });
+      } else if (cuerpo && cuerpo.accion === 'actualizar_cliente_montaje') {
+        respuesta = JSON.stringify({ ok: true, resultado: actualizarRegistroTransaccional('CLIENTE', cuerpo.id, cuerpo.campos, { origen: 'ADMIN' }) });
+      } else if (cuerpo && cuerpo.accion === 'configurar_gestor_proyectos_spreadsheet_id') {
+        PropertiesService.getScriptProperties().setProperty('GESTOR_PROYECTOS_SPREADSHEET_ID', String(cuerpo.spreadsheetId || ''));
+        respuesta = JSON.stringify({ ok: true });
       } else if (!actualizacionYaProcesada_(cuerpo)) {
         if (moduloInstalado_('INTERNO')) {
           procesarMensajeTelegramSoporte_(cuerpo, tokenTelegram);

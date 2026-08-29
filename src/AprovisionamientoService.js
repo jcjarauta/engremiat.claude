@@ -792,7 +792,7 @@ function crearRegistroClienteDesdeMontaje_(nombre, modulos, resultadoMontaje) {
   var yaExiste = listarRegistrosSeguro_('CLIENTE', { ACTIVO: 'SÍ', SCRIPT_ID: resultadoMontaje.scriptId })[0];
   if (yaExiste) return yaExiste;
 
-  return insertarRegistroTransaccional('CLIENTE', {
+  var cliente = insertarRegistroTransaccional('CLIENTE', {
     NOMBRE: nombre,
     TIPO_CLIENTE: 'Cliente de software',
     ESTADO: 'Activo',
@@ -800,6 +800,89 @@ function crearRegistroClienteDesdeMontaje_(nombre, modulos, resultadoMontaje) {
     SCRIPT_ID: resultadoMontaje.scriptId,
     MODULOS_CONTRATADOS: modulos.join(', ')
   }, { origen: 'SCRIPT' });
+
+  crearProyectoEnGestorDeProyectos_(nombre, cliente.id, modulos);
+
+  return cliente;
+}
+
+/*
+ * Norma (2026-08-29): "todos los proyectos Engremiat cuelgan de Gestor de
+ * Proyectos" -- antes esto se hacía a mano tras cada montaje (visto con
+ * TEST-Cliente-2026-08-29: la fila CLIENTE existía pero nadie la veía
+ * reflejada en 02_PROYECTOS hasta que alguien se acordaba de crearla).
+ * Gestor de Proyectos es un Spreadsheet DISTINTO del que ejecuta este
+ * código (no es SpreadsheetApp.getActiveSpreadsheet()), así que se abre
+ * explícitamente por ID -- guardado en GESTOR_PROYECTOS_SPREADSHEET_ID
+ * (Propiedades del script) en vez de hardcodeado, por si el operador
+ * cambia de Sheet maestro de seguimiento algún día.
+ *
+ * No usa insertarRegistroTransaccional (esa función siempre escribe en
+ * getActiveSpreadsheet(), no admite un destino explícito) -- por eso esto
+ * tampoco deja constancia en 91_HISTORIAL de Gestor de Proyectos, mismo
+ * matiz ya aceptado para otras escrituras directas vía API en ese Sheet.
+ *
+ * Fallo silencioso a propósito (solo console.error): que Gestor de
+ * Proyectos no tenga aún la propiedad configurada, o esté momentáneamente
+ * inalcanzable, no debe tirar abajo un montaje real que ya creó Sheet +
+ * Script + fila CLIENTE -- esto es trazabilidad adicional, no el
+ * entregable principal.
+ */
+function crearProyectoEnGestorDeProyectos_(nombre, clienteId, modulos) {
+  try {
+    var spreadsheetId = PropertiesService.getScriptProperties().getProperty('GESTOR_PROYECTOS_SPREADSHEET_ID');
+    if (!spreadsheetId) {
+      console.error('CREAR_PROYECTO_GESTOR_ERROR: falta la propiedad de script GESTOR_PROYECTOS_SPREADSHEET_ID.');
+      return null;
+    }
+
+    var hoja = SpreadsheetApp.openById(spreadsheetId).getSheetByName('02_PROYECTOS');
+    if (!hoja) throw new Error('no existe la hoja 02_PROYECTOS en Gestor de Proyectos.');
+
+    var bloqueo = LockService.getScriptLock();
+    bloqueo.waitLock(10000);
+    try {
+      var ultimaFila = hoja.getLastRow();
+      var numeroMaximo = 0;
+      if (ultimaFila >= 2) {
+        hoja.getRange(2, 1, ultimaFila - 1, 1).getDisplayValues().forEach(function (fila) {
+          var m = /^PRO-(\d{4})$/.exec(String(fila[0] || '').trim());
+          if (m) numeroMaximo = Math.max(numeroMaximo, Number(m[1]));
+        });
+      }
+      var idProyecto = 'PRO-' + String(numeroMaximo + 1).padStart(4, '0');
+      var ahora = new Date();
+      var autor = Session.getEffectiveUser().getEmail();
+
+      var cabeceras = hoja.getRange(1, 1, 1, hoja.getLastColumn()).getValues()[0];
+      var fila = cabeceras.map(function (cabecera) {
+        switch (cabecera) {
+          case 'ID': return idProyecto;
+          case 'CAMPANA_ID': return 'CAM-0001';
+          case 'NOMBRE': return nombre;
+          case 'DESCRIPCION': return 'Proyecto creado automáticamente al aprobar el montaje de este cliente (módulos: ' + modulos.join(', ') + ').';
+          case 'TIPO_PROYECTO': return 'Importante';
+          case 'PRIORIDAD': return 'Media';
+          case 'ESTADO': return 'Planificado';
+          case 'FECHA_CREACION': return ahora;
+          case 'CREADO_POR': return autor;
+          case 'FECHA_MODIFICACION': return ahora;
+          case 'MODIFICADO_POR': return autor;
+          case 'ACTIVO': return 'SÍ';
+          case 'CLIENTE_ID': return clienteId;
+          case 'ORIGEN_CREACION': return 'SCRIPT';
+          default: return '';
+        }
+      });
+      hoja.appendRow(fila);
+      return idProyecto;
+    } finally {
+      bloqueo.releaseLock();
+    }
+  } catch (err) {
+    console.error('CREAR_PROYECTO_GESTOR_ERROR: ' + err.message);
+    return null;
+  }
 }
 
 /*
