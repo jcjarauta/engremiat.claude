@@ -609,3 +609,17 @@ comprobarlo con datos reales de la Fase 1.
   hasta `ACTIVO`, no solo hasta el último campo que parezca relevante** --
   un campo de sistema olvidado deja el registro invisible para el resto del
   sistema sin ningún error visible.
+- **2026-08-29 (caso de uso: vídeo/documento -> curso de taller, tercera
+  prueba real)**: `PRO-0025` -- tutorial real de YouTube (Manimenos
+  Manualidades, amigurumi de Stitch a crochet) convertido en 10 tareas de
+  taller, cada una enlazada al minuto exacto del vídeo original. Confirmado
+  en la práctica: `yt-dlp --skip-download --write-auto-sub --write-description`
+  extrae subtítulos y descripción en texto sin tocar el vídeo -- el propio
+  vídeo ya traía capítulos y lista de materiales puestos por la creadora,
+  así que no hizo falta inventar ni segmentar nada, solo reutilizar la
+  estructura real. Ningún fotograma, clip ni fragmento de transcripción
+  literal se redistribuyó -- el informe final (`DOC-0002`) cita la fuente
+  explícitamente y enlaza, no copia. Aviso para casos futuros: un vídeo sin
+  capítulos propios exigiría un paso adicional de segmentación antes de
+  llegar a esta misma estructura -- no asumir que todos los vídeos vienen
+  tan bien organizados como este.
