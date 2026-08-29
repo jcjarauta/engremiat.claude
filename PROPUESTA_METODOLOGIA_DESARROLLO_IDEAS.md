@@ -6,6 +6,22 @@
 **Google Doc vinculado:** (enlace añadido tras crear el Doc)
 **Por qué existe este fichero:** separar "cómo trabajamos las ideas" de "qué estamos construyendo" -- vive aparte de `PROPUESTA_ECOSISTEMA_AGENTICO_HIBRIDO.md` (INC-0056) para que la metodología no quede enterrada dentro del primer proyecto al que se aplica, y sea reutilizable el día que se aplique a una tercera idea.
 
+## Ampliación de alcance (2026-08-25): de "cómo trabajamos ideas en Engremiat" a norma del estudio
+
+Decisión tomada tras el Spike 10 (lote 1 de producción, ver más abajo):
+**la prueba de concepto (formato Spike, ya definido y validado 10 veces
+en esta metodología) se convierte en la fase inicial oficial de
+documentación de cualquier proyecto nuevo del estudio** -- no solo de
+Engremiat como producto, sino de software, voluntariado o cualquier
+proyecto nuevo que se emprenda. Antes de escribir el Business Model
+Canvas completo o comprometerse con una idea, se corre al menos un
+Spike real (pregunta acotada, cómo se mide, fecha límite, resultado
+adoptado/descartado) -- exactamente el mismo mecanismo que ya evitó
+comprometerse con supuestos equivocados 10 veces en el desarrollo de
+Engremiat mismo. Es una generalización de alcance, no un mecanismo
+nuevo: la disciplina ya estaba validada, lo que cambia es a qué se
+aplica por defecto.
+
 ## Disparador
 
 Durante el diseño de INC-0056 (ecosistema agéntico), la conversación derivó en cómo estructurar el propio proceso de llevar una idea "a valorar" desde que se abre hasta que se decide -- Business Model Canvas, Scrum, e incorporación futura de trabajadores humanos. El operador señaló, con razón, que mezclar "el proceso" con "el primer proyecto que lo usa" (INC-0056) diluye ambas cosas -- de ahí esta incidencia separada.

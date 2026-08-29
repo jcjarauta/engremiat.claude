@@ -44,6 +44,14 @@ por "independencia de red".
 - **Fase 3 (grande, la versión completa de la propuesta)**: el producto
   entero corriendo en local, con Google como opción, no como base.
 
+## Decisión (2026-08-25)
+
+**Pausado.** Se queda anotado con la pieza nueva de arriba (bus de
+eventos ya construido) como punto de partida real para cuando se
+retome -- no se pierde el avance de hoy, solo se aplaza hasta tener
+demanda real de un cliente, como ya recomendaba este documento desde el
+23 de agosto.
+
 ## Recomendación inicial
 
 No comprometerse con la Fase 3 sin demanda real de un cliente. La Fase 1

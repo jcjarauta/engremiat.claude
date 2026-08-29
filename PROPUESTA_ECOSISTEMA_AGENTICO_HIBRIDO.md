@@ -403,6 +403,35 @@ demanda") -- la promesa al cliente debería incluir la disciplina de
 verificación como parte del servicio, no como un detalle técnico
 interno, dado que ya se ha demostrado necesaria en producción real.
 
+## Precio real de DeepSeek verificado (2026-08-25)
+
+Verificado contra la página oficial (`api-docs.deepseek.com`), leída dos
+veces con resultado idéntico. **Aviso real**: los resultados de búsqueda
+general (varios agregadores de terceros con nombres de aspecto oficial)
+daban cifras distintas y más bajas que las oficiales -- no usar esas
+fuentes para presupuestar, solo la documentación oficial de DeepSeek.
+
+**DeepSeek-V4-Flash** (el modelo usado toda esta sesión, alias
+`deepseek-chat`): input caché existente $0.007/1M (fuera de pico) -
+$0.014/1M (pico); input caché nuevo $0.22/1M - $0.44/1M; output
+$0.66/1M - $1.32/1M. Horario pico: 01:00-04:00 y 06:00-10:00 UTC, L-V.
+
+**Coste real de toda la actividad de DeepSeek de esta sesión** (triajes,
+auditorías, fixes del lote 1), calculado con precio real en el peor
+caso (hora pico): **por debajo de 5 céntimos de dólar en total.**
+
+## Hacia un presupuesto real de personalización por cliente
+
+Con precio verificado + los tokens reales ya medidos por tipo de tarea
+esta sesión (triaje individual ~1.200-1.600 tokens, fix mecánico
+~1.000-3.000, auditoría de un fichero ~700-7.300 según tamaño), ya hay
+base real para una tabla de coste de cómputo por tipo de tarea -- no
+solo estimación. **Pieza que falta, no ignorar**: sumar el margen de
+verificación ya medido (revisar cuesta ~50% de lo que cuesta resolver
+desde cero, ver `PROPUESTA_METODOLOGIA_DESARROLLO_IDEAS.md`) al coste de
+cómputo puro -- un presupuesto que solo cuente tokens de IA
+subestimaría el coste real del trabajo.
+
 ## Pendiente de concretar / preguntas abiertas
 
 - ¿Se pilota primero Claude Code Router (cambio mínimo, reversible) antes de evaluar OpenCode como reemplazo de la capa de orquestación?
