@@ -258,6 +258,86 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
   búsqueda semántica local sobre el vault antes de contestar (patrón "Vault
   QA"), grounded en lo que el cliente realmente tiene escrito.
 
+## Del piloto manual a "el cliente se lo monta él mismo" (nueva sección, 2026-08-29)
+
+Todo lo hecho hasta ahora en TEST-Cliente-2026-08-29 lo ha operado el propio
+Claude a mano (clasp, curl, despliegues). Para un cliente real, ese camino
+tiene que desaparecer por completo: solicitud de montaje → un solo comando
+en su Pi → bot, Sheet y bóveda funcionando, sin que nadie tenga que tocar
+`clasp` ni `curl`.
+
+### Lo que ya no hay que inventar
+
+- **[hwdsl2/self-hosted-ai-stack](https://github.com/hwdsl2/self-hosted-ai-stack)**:
+  Docker Compose ya empaquetado con Ollama + LiteLLM + extras, multi-arquitectura
+  (`amd64`/`arm64`, es decir, ya piensa en Raspberry Pi), local-first por
+  diseño. Punto de partida real para nuestro propio `docker-compose.yml`, en
+  vez de escribirlo desde cero.
+- **Patrón de instalación de un solo comando**: `curl -fsSL <url>/instalar.sh | bash`
+  descarga el compose y lo levanta -- el mismo patrón que ya usan Docker,
+  HomelabOS y decenas de proyectos self-hosted en 2026. Es lo que hace que
+  "descargar e instalar Engremiat" sea real y no una entrevista técnica.
+
+### Aviso crítico de fiabilidad en Raspberry Pi 5 (antes de que nos muerda)
+
+Hay un bug real de firmware/kernel en la Pi 5: **carga sostenida en los 4
+núcleos (Ollama por defecto los usa todos) puede provocar un kernel panic**
+a partir de generaciones de ~20 tokens. Mitigación conocida: limitar Ollama
+a un núcleo (`OLLAMA_NUM_THREADS=1` o afinidad de CPU) -- el coste es
+respuesta más lenta (12-17s en vez de 3-5s), aceptable para un asistente
+que no necesita ser instantáneo. Fijar versiones concretas de imagen en el
+compose (no `latest`) es también práctica recomendada 2026 para evitar
+regresiones sorpresa en un dispositivo sin supervisión.
+Fuente: [Running AI on a Raspberry Pi Server](https://medium.com/@kostyantins/running-ai-on-a-raspberry-pi-server-gemma-4-ollama-883aade3442c).
+
+### Flujo de onboarding propuesto, de punta a punta
+
+1. **Solicitud de montaje** (ya existe): cliente pide su Sheet, se aprueba,
+   se crea Sheet + Script + registro `CLIENTE` + `PROYECTO` (ya automatizado
+   hoy, ver `crearProyectoEnGestorDeProyectos_`).
+2. **Nuevo: "kit de instalación"** generado en el mismo paso de aprobación --
+   un fichero de configuración (o un Documento en la carpeta Drive del
+   cliente, mismo patrón ya usado) con los tres datos que su Pi necesita:
+   URL del webhook de su cliente (ya pública), el token de su propio bot de
+   Telegram (lo crea él en BotFather -- dato suyo, nunca nuestro), y el ID
+   de su Sheet.
+3. **Un solo comando en su Pi**: `curl -fsSL .../instalar-engremiat.sh | bash`.
+   El script instala Docker si falta, descarga el `docker-compose.yml`
+   (basado en el stack de arriba + nuestro `bot-local` como contenedor
+   propio), coloca los tres datos del kit en un `.env`, y arranca todo con
+   `restart: unless-stopped` -- sobrevive a un reinicio de la Pi sin que el
+   cliente vuelva a tocar una terminal.
+4. **El bot cobra vida solo.** El cliente ya puede hablarle por Telegram
+   desde el minuto uno.
+5. **Sincronización periódica de la bóveda real** (pieza nueva, no resuelta
+   aún): un temporizador dentro del propio contenedor recorre `DOCUMENTO`/
+   `DECISION`/`TAREA`/`PROYECTO` (ampliando las acciones de solo lectura ya
+   creadas, no solo nota-a-nota bajo demanda) y escribe/actualiza ficheros
+   `.md` reales en una carpeta del SSD -- el cliente la abre directamente
+   con la app de escritorio de Obsidian. Ningún plugin de sincronización
+   existente resuelve esto tal cual (sincronizan vaults entre sí, no una
+   base de datos externa hacia un vault) -- es pieza propia, pero sencilla:
+   mismo patrón cron + escritura de fichero ya validado en el ecosistema
+   self-hosted.
+6. **Crear y hacer seguimiento de proyectos desde el propio chat**: hoy las
+   dos acciones de cliente (`generar_nota_obsidian`, `listar_incidencias_abiertas`)
+   son deliberadamente de solo lectura. El paso que falta para que el
+   cliente "cree proyectos" de verdad es una tercera acción, de escritura
+   pero acotada (`crear_incidencia`, mismo patrón que ya usa el formulario
+   humano `guardarFormulario`) -- una nueva necesidad contada por chat se
+   registra como incidencia real, entra en el mismo ciclo ya probado
+   (`13_INCIDENCIAS` → `92_BUS_TRABAJO` → Ejecutor/worker local), sin que el
+   cliente necesite saber que ese ciclo existe.
+
+### Qué decide esto sobre "descargar Engremiat" como producto
+
+No hace falta una imagen de Raspberry Pi OS a medida (como Home Assistant
+OS) para empezar -- eso es mucho más caro de mantener y solo compensa con
+demanda real de clientes no técnicos. El script de un comando (Docker
+Compose) es el punto de partida correcto: mismo principio ya aplicado en
+todo este documento -- construir lo mínimo que resuelve la necesidad real
+de hoy, no lo máximo que podría hacer falta algún día.
+
 ## Fases propuestas (de más barato/reversible a más comprometido)
 
 1. **Fase 0 (ya hecha)**: TEST-Cliente-2026-08-29 -- Sheet, bot, exportador,
@@ -269,11 +349,17 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
    internet). Telegram habla solo con LiteLLM, con enrutado automático por
    complejidad por defecto y selección manual (`/modelo`, botones en línea)
    como opción explícita. Prueba también la resiliencia ante cortes de red.
-3. **Fase 2 -- dirección de entrada (opcional)**: Custom Connector MCP
+3. **Fase 1.5 -- empaquetado y onboarding real**: kit de instalación generado
+   al aprobar el montaje, script de un comando (Docker Compose sobre
+   `hwdsl2/self-hosted-ai-stack`) para que el cliente lo levante en su propia
+   Pi sin tocar `clasp`/`curl`, acción de escritura acotada (`crear_incidencia`)
+   para que pueda crear y hacer seguimiento de proyectos desde el chat, y
+   sincronización periódica de la bóveda real a ficheros `.md` en su SSD.
+4. **Fase 2 -- dirección de entrada (opcional)**: Custom Connector MCP
    expuesto vía túnel, para que el cliente entre desde su propio chat.
-4. **Fase 3 -- personalización real de la bóveda**: plantillas de exportación
+5. **Fase 3 -- personalización real de la bóveda**: plantillas de exportación
    por combinación de módulos, mismo patrón que CAM-0002.
-5. **Fase 4 -- asistente conversacional de gestión + onboarding automatizado**.
+6. **Fase 4 -- asistente conversacional de gestión + onboarding automatizado**.
 
 ## Deliberadamente fuera de alcance por ahora
 
@@ -322,3 +408,27 @@ aprender / conseguir / qué me hace falta / cuánto cuesta / en qué beneficia).
   Pendiente siguiente: decidir si el bot de Telegram (hoy en Apps Script)
   pasa a hablar con esta pasarela directamente o si su lógica se traslada a
   la Pi -- ver nota de arquitectura en la conversación, no resuelto aún.
+- **2026-08-29 (decisión de arquitectura + bot fuera de Apps Script)**: se
+  descarta cualquier puente a "Claude en la web" vía suscripción (prohibido
+  por Anthropic desde abril 2026, riesgo de baneo). Se decide sacar la
+  lógica del bot de Apps Script: `bot-local.mjs` (misma carpeta) sustituye
+  al webhook de Apps Script para el bot de TEST-Cliente-2026-08-29, usando
+  long polling (cero exposición, ni siquiera controlada) en vez de webhook.
+  Probado en vivo con éxito. Se añaden dos acciones de solo lectura a la
+  librería CORE compartida (`generar_nota_obsidian`, `listar_incidencias_abiertas`,
+  v178) para que el bot responda con datos reales -- deliberadamente solo en
+  la librería, nunca en el `WebhookTelegramService.js` del maestro (que
+  tiene acciones administrativas sensibles). Bug real encontrado: los
+  despliegues web de Apps Script quedan fijados a una versión, actualizar
+  el contenido no basta -- hace falta `clasp deploy -i` explícito tras cada
+  cambio de librería que deba llegar a un cliente ya desplegado.
+- **2026-08-29 (del piloto manual al autoservicio)**: se diseña el flujo
+  completo de onboarding para que un cliente real pase de "solicitud de
+  montaje" a "bot+Sheet+bóveda funcionando en su propia Pi" sin que nadie
+  ejecute `clasp`/`curl` a mano -- kit de instalación generado al aprobar el
+  montaje, script de un comando sobre Docker Compose (reutilizando
+  `hwdsl2/self-hosted-ai-stack` en vez de construir desde cero), aviso de
+  fiabilidad real de la Pi 5 (bug de kernel panic con Ollama a 4 núcleos),
+  sincronización periódica a ficheros `.md` reales, y una acción de
+  escritura acotada (`crear_incidencia`) para que el cliente pueda crear y
+  seguir proyectos desde el propio chat, no solo consultarlos.
