@@ -1932,15 +1932,37 @@ mismo workflow, renombrado "Plaza - backend (Baserow + IA local)").
   tareas del propio usuario -- pendiente real, no un fallo).
 - **Avisar de un problema**: guarda el aviso (de momento en local, pendiente de
   tabla `INCIDENCIA` en Baserow).
-- **Biblioteca** y **Ágora**: muestran honestamente "todavía sin conectar en
-  este prototipo" en vez de simular datos falsos.
+- **Biblioteca** y **Ágora**: **conectadas de verdad en una segunda pasada
+  (2026-08-30)**, ver más abajo.
+
+### Biblioteca y Ágora, conectadas con datos reales
+
+Se crearon dos tablas nuevas en Baserow -- `DOCUMENTO` (id `834`, con 3
+documentos reales generados por Cronista en rondas anteriores: el manual del
+amigurumi, el informe del bahareque, un fotograma estilizado) y `AGORA` (id
+`833`, con recursos de ejemplo -- ofrecer/necesitar, usuario, estado, saldo) --
+mismo procedimiento de importación CSV ya usado para `TAREA` (los tokens de API
+de Baserow no permiten crear tablas, solo filas, ver limitación ya documentada).
+Tres acciones nuevas en el backend n8n: `listar_documentos`,
+`listar_recursos_agora`, `proponer_intercambio`.
+
+**Probado en el navegador con datos reales**: Biblioteca carga y muestra los 3
+documentos reales con su título y descripción. Ágora muestra los recursos con
+su tipo (🎁 Ofrece / 🙏 Necesita), usuario y saldo, y el botón "Proponer
+intercambio" funciona de verdad -- probado proponiendo un intercambio como
+"Ana" sobre el recurso de Juan Carlos, verificado que el estado cambió a "En
+proceso" y la descripción quedó anotada con quién lo propuso, leyendo la fila
+directamente de Baserow después.
 
 ### Pendiente, no resuelto todavía
 
 - Login real por PIN/QR contra una tabla de usuarios -- el prototipo no
   autentica a nadie todavía.
-- Conectar Biblioteca y Ágora en cuanto existan sus tablas correspondientes en
-  Baserow.
+- El saldo de Ágora (`SALDO_USUARIO`) es un campo mostrado, no un motor de
+  crédito mutuo real -- proponer un intercambio no mueve saldo todavía, solo
+  cambia el estado a "En proceso". Falta la lógica de liquidación (y,
+  idealmente, migrar esa parte a Cyclos como se diseñó en la sección de
+  Ágora).
 - Conectar el chat de "Preguntar" con el contenido real de la Biblioteca y las
   tareas del usuario, para que pueda responder con datos propios citando la
   fuente (principio ya establecido en Oportunidad).
