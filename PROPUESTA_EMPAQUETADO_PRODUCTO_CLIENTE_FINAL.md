@@ -1150,3 +1150,100 @@ distintas -- nada más cambia:
   "Explorar" real contra webs de terceros, revisar los términos de uso de cada
   fuente (muchos directorios y portales de convocatorias prohíben explícitamente
   el scraping automatizado) -- no asumido, a confirmar caso por caso.
+
+## Valoración cruzada: "Oportunidad" + "Nodo Operativo Comunitario" (2026-08-30)
+
+### El encaje entre las dos propuestas
+
+Son dos capas distintas de la misma idea, no dos productos en competencia:
+
+- **"Nodo Operativo Comunitario"** (Raspberry Pi + PC + energía solar, para
+  comunidades aisladas) es la **infraestructura desplegable** -- lo que se
+  entrega físicamente a una comunidad, cooperativa o centro sin conexión fiable.
+- **"Oportunidad"** (ciclo de detección de clientes/subvenciones/voluntariado) es
+  el **motor de puesta en marcha** de esa infraestructura -- quién encuentra a la
+  comunidad que lo necesita, quién detecta la convocatoria que puede pagarlo, y
+  quién elabora la propuesta concreta para presentarla.
+
+El encaje es literal: el tipo de organización que necesita un Nodo Operativo
+Comunitario (cooperativa rural, ONG, centro de formación en zona aislada) es
+exactamente el tipo de `PERFIL_OBJETIVO` que "Oportunidad" está diseñado para
+detectar, y las subvenciones de "brecha digital"/cohesión rural/cooperación al
+desarrollo son exactamente el tipo de convocatoria que su fase "Explorar" debería
+encontrar. **Sin "Oportunidad" (o un proceso manual equivalente), el Nodo
+Operativo Comunitario no tiene manera de llegar a quien lo necesita** -- es un
+producto excelente sin canal de distribución. Esta es la razón real para
+construir ambas piezas juntas, no una casualidad de calendario.
+
+### Competencia real verificada (no asumida)
+
+La búsqueda de mercado del análisis previo se ha verificado contra fuentes
+primarias -- los datos más relevantes, confirmados:
+
+| Producto | Qué es realmente | Precio/coste verificado |
+|---|---|---|
+| **Kiwix Hotspot** | Dispositivo plug-and-play, SSD NVMe, hasta 24 usuarios, contenidos Wikipedia/médico/manuales | 319 USD (impuestos y envío a ~60 países incluidos) |
+| **RACHEL 6** (World Possible) | Servidor educativo, 8GB RAM, **IA integrada de fábrica**, hasta 50 usuarios, usado en 40+ países | RACHEL-Plus 4.0: 500 USD |
+| **SolarSPELL** | Biblioteca offline solar, resistente al agua/polvo/calor, hotspot Wi-Fi propio | Menos de 200 USD en piezas -- el coste real está en curación de contenido y soporte, no en el hardware |
+| **Internet-in-a-Box** | Stack abierto sobre Raspberry Pi de 2GB+ (35 USD), integra Kolibri + Moodle + Nextcloud + WordPress | Gratuito (software libre), coste = hardware básico |
+| **Project NOMAD** | **Servidor abierto con IA local vía Ollama, Wikipedia completa, mapas, Khan Academy -- sin API keys, sin nube** | Gratuito y de código abierto (proyecto en tendencia en GitHub) |
+
+**El dato que cambia el análisis**: Project NOMAD ya hace, gratis y en código
+abierto, casi exactamente lo que "IA local + biblioteca offline sin nube" iba a
+ser nuestro argumento de venta -- Ollama local, sin API keys, sin datos que salgan
+del dispositivo. RACHEL 6 también trae IA integrada de fábrica. **La IA local
+offline ya no es una ventaja competitiva por sí sola en 2026** -- es una
+característica que un proyecto gratuito de GitHub ya resuelve mejor que lo que
+podríamos construir desde cero.
+
+### Dictamen honesto sobre el valor diferencial
+
+- **Como "biblioteca offline + IA local + Wi-Fi autónomo"**: valor diferencial
+  bajo. Competimos contra software libre maduro (Project NOMAD, Internet-in-a-Box,
+  RACHEL) que ya resuelve esto con años de despliegues reales en decenas de
+  países. Construir esa capa desde cero sería reinventar una rueda ya gratuita.
+- **Como "capa operativa sobre esa infraestructura"**: valor diferencial real y
+  defendible. Ninguno de los competidores investigados (Kiwix, RACHEL, SolarSPELL,
+  IIAB, NOMAD) ofrece gestión de tareas, procesos, recursos, incidencias o
+  decisiones estructuradas -- son bibliotecas y aulas, no herramientas de gestión.
+  Esto es precisamente lo que ya existe y funciona en el esquema de Sheets de
+  Engremiat (`PROYECTO`/`TAREA`/`RECURSO`/`INCIDENCIA`/`DECISION`).
+- **Como "motor de detección y financiación de despliegues"**: valor diferencial
+  real y único -- ningún competidor investigado tiene nada parecido a "Oportunidad".
+  Todos dependen de que una ONG, universidad o gobierno decida desplegarlos
+  manualmente; ninguno se dedica a encontrar activamente dónde desplegarse ni a
+  redactar la financiación que lo permite.
+
+### Recomendación de posicionamiento (revisa la propuesta anterior)
+
+**No competir en la capa de contenidos/IA offline.** Reutilizar Internet-in-a-Box
+o Project NOMAD tal cual como la capa de biblioteca+IA del Nodo Operativo
+Comunitario (ambos gratuitos, maduros, ya probados en campo) en vez de construir
+una versión propia. El desarrollo propio de Engremiat se concentra en dos capas
+que ningún competidor cubre:
+
+1. **La capa operativa** (ya construida): gestión de proyectos, tareas, recursos,
+   incidencias y documentación sobre el mismo Sheet que ya usa Engremiat --
+   convertir el nodo de "biblioteca que se consulta" en "espacio de trabajo donde
+   una comunidad gestiona sus propios procesos".
+2. **La capa de detección y financiación** (`OPORTUNIDAD`, diseñada esta misma
+   ronda): encontrar comunidades/organizaciones que encajan, encontrar la
+   subvención que lo paga, y dejar la propuesta de despliegue ya redactada.
+
+Esto convierte el argumento de venta de "tenemos una caja con Wikipedia offline e
+IA" (débil, gratis en otro sitio) a "integramos infraestructura ya probada y
+gratuita con gestión operativa real, y además encontramos y financiamos dónde
+desplegarla" (sin competencia directa identificada en la investigación).
+
+### Pendiente, no resuelto todavía
+
+- No se ha construido ningún piloto de integración entre Internet-in-a-Box/NOMAD
+  y el esquema de Sheets de Engremiat -- diseño de alto nivel únicamente.
+- El consumo/dimensionado solar (Raspberry + HDD, placa 100-150W, batería LiFePO4
+  30-50Ah) viene de estimaciones del análisis previo, no de medición real con
+  enchufe medidor -- confirmado como pendiente en ese mismo análisis, se mantiene
+  como limitación conocida.
+- No se ha identificado todavía el primer sector/comunidad piloto concreto para
+  probar esta combinación -- sigue siendo la recomendación central: elegir un
+  sector, definir 2-3 procesos críticos reales, y probar con 5-10 usuarios antes
+  de generalizar.
