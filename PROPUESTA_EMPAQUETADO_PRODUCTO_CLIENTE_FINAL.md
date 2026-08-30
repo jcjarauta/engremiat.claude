@@ -1247,3 +1247,93 @@ desplegarla" (sin competencia directa identificada en la investigación).
   probar esta combinación -- sigue siendo la recomendación central: elegir un
   sector, definir 2-3 procesos críticos reales, y probar con 5-10 usuarios antes
   de generalizar.
+
+## Prioridad de desarrollo y el problema real que destapa el offline (2026-08-30)
+
+### Qué conviene seguir desarrollando (dictamen)
+
+De todo lo abierto ahora mismo -- construir `render-worker /identidad-visual`,
+implementar `OPORTUNIDAD` de verdad, seguir ampliando el Nodo Operativo
+Comunitario -- **ninguna de las tres es la prioridad real**. Hay un bloqueante
+más básico debajo de las tres, y el propio operador lo acaba de detectar: **todo
+el modelo de datos de Engremiat vive en Google Sheets, que necesita internet para
+funcionar.** Mientras eso sea cierto, "Nodo Operativo Comunitario" y "la
+soberanía es el producto" (la frase que abre este mismo documento) son una
+promesa sin cumplir -- el nodo que se instalaría en una comunidad sin conexión
+fiable seguiría dependiendo de Google para leer y escribir sus propios datos.
+
+**Recomendación**: pausar `OPORTUNIDAD` (el diseño ya está hecho y no caduca; no
+hay ningún cliente esperando) y no seguir ampliando el Nodo Operativo Comunitario
+con más hardware/energía hasta demostrar que la capa de datos puede vivir fuera
+de Google. Es el bloqueante que, si no se resuelve, invalida silenciosamente todo
+lo demás.
+
+### La capa de datos fuera de Google: no hay que inventarla, ya existe en el propio stack
+
+El operador ya tiene **Baserow** corriendo en el stack Docker `engremiat-*`
+(descubierto en la sesión anterior junto a n8n, ver
+[[project_cronista_n8n_stack]]) -- una base de datos tipo hoja de cálculo,
+autoalojada, con API REST propia y nodo nativo en n8n (confirmado: cambiar la URL
+de host de `api.baserow.io` a la instancia propia es la única diferencia entre
+usar la nube de Baserow o la autoalojada). Es, estructuralmente, un reemplazo
+directo de Google Sheets: tablas con filas y columnas, vistas, y una API con la
+que ya sabemos trabajar porque el patrón (leer/escribir filas via API) es idéntico
+al que ya se usa contra Sheets.
+
+**Por qué Baserow y no otra alternativa investigada (NocoDB, Directus, SQLite a
+pelo)**: NocoDB es más ligero pero necesita una base SQL propia detrás y carece de
+permisos finos y automatización -- exigiría montar más piezas. Baserow ya
+gestiona su propia base, ya tiene permisos, ya está instalado, y ya se integra
+con n8n sin fricción. La opción más barata no es la más ligera técnicamente, es
+la que el operador ya tiene funcionando.
+
+### Diseño de migración: no sustituir, bifurcar
+
+No se propone abandonar Google Sheets -- los clientes actuales (La Troballa,
+Gestor de Proyectos) funcionan bien con él y no hay ninguna razón para tocarlos.
+Se propone una **bifurcación deliberada**:
+
+| | Clientes cloud (actuales) | Nodos offline (nuevo) |
+|---|---|---|
+| Almacén de datos | Google Sheets | Baserow autoalojado (Pi o PC del nodo) |
+| Lógica/dispatcher | Apps Script (`doPost`) | n8n (ya autoalojado, ya usado en Cronista) |
+| Autenticación | Cuenta de servicio + OAuth Google | Token de API de Baserow (mucho más simple -- sin las cuotas y JWT de Google que ya han costado horas esta sesión) |
+| Esquema de entidades | `02_PROYECTOS`, `06_TAREAS`, `14_DOCUMENTOS`... | Las mismas tablas, mismos nombres de columna -- migración de esquema, no de diseño |
+
+El esquema de entidades (`PROYECTO`/`TAREA`/`RECURSO`/`DOCUMENTO`/`INCIDENCIA`/
+`DECISION`/`VINCULO`) es el activo real de Engremiat, no el motor de
+almacenamiento que hay debajo -- se replica tal cual en Baserow, con las mismas
+columnas y las mismas convenciones de ID (`TAR-0008`, `DOC-0004`...). Nada de la
+lógica de negocio ya diseñada (bus de trabajo, ciclos Ejecutor/Cronista/futuro
+Oportunidad) cambia de forma; cambia únicamente a qué API llama cada acción del
+dispatcher.
+
+### Piloto mínimo propuesto, antes de comprometerse a nada más grande
+
+1. Crear en la Baserow ya instalada una única tabla, `TAREA`, con las mismas
+   columnas que `06_TAREAS`.
+2. Un workflow n8n minúsculo: leer una tarea por ID, crear una tarea nueva --
+   exactamente las dos operaciones más simples del dispatcher actual, pero contra
+   Baserow en vez de contra Sheets.
+3. Verificar que TODO el ciclo (crear, leer, listar) funciona **sin ninguna
+   llamada a una API de Google** -- apagar la conexión a internet del PC durante
+   la prueba es la validación más honesta posible.
+4. Solo si esto funciona limpio, decidir si migrar `PROYECTO`/`RECURSO`/
+   `DOCUMENTO` al mismo patrón para el primer nodo piloto real.
+
+### Lo que esto NO resuelve todavía (honesto, no lo escondemos)
+
+- **La sincronización cloud↔offline** no está diseñada: si en el futuro un nodo
+  offline necesita compartir datos con el Gestor de Proyectos central cuando
+  recupera conexión, hace falta un mecanismo de sincronización explícito (no
+  asumir que "ya se resolverá solo") -- Baserow no sincroniza nativamente con
+  Google Sheets, habría que construir ese puente en n8n si algún día hace falta.
+- **La migración de Apps Script a n8n para las acciones offline** implica
+  reescribir en n8n (o en un pequeño servicio Node/Python) la lógica que hoy vive
+  en `WebhookTelegramService.js`/`AprovisionamientoService.js`/`ReportService.js`
+  -- no es un simple cambio de endpoint, es portar lógica real, tarea no trivial
+  y no estimada todavía.
+- **No se ha probado Baserow bajo carga en una Raspberry Pi real** -- el stack
+  Docker actual corre en el PC del operador, no en la Pi de 4GB que sería el
+  hardware real del nodo; falta confirmar que Baserow (que gestiona su propia
+  Postgres) cabe cómodamente en esa RAM junto al resto de servicios del nodo.
