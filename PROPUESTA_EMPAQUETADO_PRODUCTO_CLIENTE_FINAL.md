@@ -4634,3 +4634,91 @@ que hace falta decisión humana antes de pasar esto a `proponer_tareas`
 - Probar con un tema orientado a software, no solo a comunidad/historia,
   para confirmar que el mismo mecanismo sirve para los tres dominios que
   se pedían (cuento, software, cooperativa).
+
+## Prueba con tema de software, y cuatro mejoras estratégicas de la misma tarde (2026-08-30)
+
+### Prueba de software -- funciona igual la mecánica, no siempre el encaje
+
+Mismo Concilio (Acervo Rural + Urbano), tema: una herramienta para que un
+equipo pequeño decida qué error corregir primero. Resultado: propuesta
+técnicamente coherente ("Cosecha Prioritaria", índice de impacto, mapa de
+plagas por módulo), coste real $0,00054 -- **la tubería funciona
+idéntica**, pero el resultado fuerza una metáfora agrícola sobre un
+dominio que no la pedía. Hallazgo honesto, no un fallo: confirma que hacen
+falta Acervos con enfoque de software (backend/frontend/redes, ya
+anticipado por el árbol `COMPETENCIA`) para que la calidad, no solo la
+mecánica, sea igual de buena en los tres dominios.
+
+### Ecosistema de Acervos, sin jerarquía nueva
+
+Los árboles `COMPETENCIA` (respaldado por ESCO) y `UBICACION_GEOGRAFICA`
+ya construidos sirven para anclar Acervos reales -- *Acervo Ebanistería*,
+*Acervo Backend*, *Acervo Comarca-X* -- en vez de nombres inventados en
+código. Un Concilio elegiría sus voces filtrando por sector o zona real.
+
+### Grafo de Obsidian para Acervo -- sin adoptar OpenClaw
+
+Recuperada la investigación de ayer: no se recomienda el plugin de
+Obsidian de OpenClaw (mismo ecosistema con historial de seguridad
+problemático). Obsidian ya soporta `[[wikilink]]` y vista de grafo de
+forma nativa -- el volcado de solo lectura ya diseñado en `obsidian.yaml`
+basta para tener el grafo de Acervo sin ninguna dependencia nueva.
+
+### Sociocracia -- honestidad sobre lo que hay hoy, y una mejora real
+
+Con un solo operador no hay sociocracia real posible -- exige un grupo. Lo
+honesto hoy sería un campo de consentimiento trazable
+(`CONSENTIDO_POR`/`FECHA`), no sociocracia todavía. **Mejora real
+aportada por el operador**: las propias simulaciones de Concilio (varias
+voces proponen, una síntesis integra sin objeción) ya modelan el patrón
+sociocrático -- etiquetadas como `demo_onboarding`, sirven de material
+real para que un cliente nuevo *vea* cómo funciona antes de tener que
+hacerlo de verdad, cerrando el hueco de la curva de aprendizaje ya
+señalada como riesgo real de la sociocracia.
+
+### Concilio alimenta a Pregonero y Oportunidad mientras se construyen
+
+Las simulaciones etiquetadas `demo_onboarding` son el primer material real
+de **Pregonero** (practicar publicación sin esperar a un cliente con
+historia terminada) y de **Oportunidad** (cuyo contexto real detectado
+alimentaría la siguiente tanda de simulaciones, ancladas cada vez más en
+la realidad).
+
+### "Vigilia" -- construido y en marcha esta misma noche
+
+Nombre elegido para el lote de Concilio trabajando sin supervisión --
+coherente con el resto del vocabulario del gremio (una guardia nocturna
+mientras el resto descansa). Construido:
+
+- **Tabla `VIGILIA_TAREA`** (Baserow, id 287) -- cola de capítulos
+  pendientes, cada uno con contexto del anterior.
+- **Disparador programado cada 15 minutos** en el generador: busca el
+  siguiente capítulo pendiente, añade el resultado del capítulo anterior
+  como contexto, llama a Concilio, guarda el resultado.
+- Sembrados 4 capítulos reales, continuando "El Huerto del Abuelo" (la
+  historia que generó Concilio hoy): conflicto, decisión del grupo, giro
+  inesperado, cierre.
+- **Verificado manualmente el mecanismo completo** antes de dejarlo
+  desatendido -- capítulo 1 ya procesado con continuidad narrativa real
+  confirmada. Los capítulos 2-4 los procesará la Vigilia programada
+  durante la noche, para revisar el guión completo por la mañana.
+
+### Límites y honestidad
+
+- El disparador programado no se ha probado disparándose solo todavía --
+  solo se verificó la lógica a mano, replicando lo que hará.
+- Ningún Acervo por sector/zona está construido -- siguen siendo dos
+  voces fijas (Rural/Urbano) en código.
+- El etiquetado `demo_onboarding`/`desarrollo_real` de Concilio es una
+  propuesta, no está implementado -- hoy todo lo que genera Concilio es
+  indistinguible en ese sentido.
+
+### Pendiente
+
+- Confirmar por la mañana que la Vigilia procesó los 4 capítulos sola.
+- Añadir Acervos de software (backend/frontend/redes) y probar de nuevo
+  el tema técnico con voces adecuadas.
+- Implementar el campo `CONSENTIDO_POR`/`FECHA` como primer paso trazable
+  hacia la sociocracia real.
+- Etiquetar de verdad las salidas de Concilio como `demo_onboarding` o
+  `desarrollo_real`, y conectar las de demo con Pregonero.
