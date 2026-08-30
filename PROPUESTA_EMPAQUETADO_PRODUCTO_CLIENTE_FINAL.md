@@ -3709,3 +3709,70 @@ nuevos para Engremiat.
   real de `ENTIDAD_ORGANIZATIVA` y el primer lote de misiones.
 - Ninguna captación real de grupos ha empezado -- esto es la propuesta,
   no una campaña en marcha.
+
+## La propuesta de valor en lenguaje no técnico: la escalera de confianza (2026-08-30)
+
+### En una frase
+
+El sistema no vende una herramienta -- vende una escalera de confianza:
+se empieza jugando, sin arriesgar nada, y a medida que el grupo comprueba
+que el sistema es justo, transparente y cumple lo que promete, decide por
+sí mismo subir un escalón más -- hasta gestionar un proyecto real, con
+dinero o recursos reales, con la misma herramienta con la que empezó
+jugando.
+
+### Los escalones
+
+- **Escalón 0 -- el juego, en Telegram, gratis, sin compromiso.** Un grupo
+  prueba un Escenario (p.ej. escribir un cuento cooperativo). Sin dinero,
+  sin instalación, sin riesgo. El objetivo no es producir algo valioso --
+  es que el grupo sienta cómo es cooperar con este sistema: las decisiones
+  se respetan, cada aportación queda reconocida.
+- **Escalón 1 -- el mismo grupo, tareas un poco más reales.** Organizar
+  una actividad, mapear recursos del barrio, montar un archivo de memoria
+  familiar. Sigue sin haber dinero real, pero ya hay un resultado
+  tangible. Aquí el grupo empieza a confiar en el *proceso*: las
+  decisiones importantes quedan registradas, el trabajo de cada persona
+  se puede rastrear y se reconoce.
+- **Escalón 2 -- un proyecto real, pequeño y reversible.** Reparar algo
+  de la comunidad, un intercambio real de objetos, un encargo con
+  presupuesto modesto. Hay algo en juego de verdad, pero acotado, y sigue
+  habiendo red de seguridad -- ninguna decisión importante se ejecuta
+  sola, siempre pasa por revisión humana antes de comprometerse.
+- **Escalón 3 -- una iniciativa productiva real, con economía real.** El
+  grupo, que ya vio una y otra vez que el sistema es fiable, da el salto a
+  algo con dinero real, reparto real, responsabilidad real -- una pequeña
+  cooperativa, un negocio comunitario. La diferencia con empezar
+  directamente aquí (que es lo que hace casi todo el mundo, y por eso casi
+  todo fracasa) es que **la confianza ya se ganó antes de que hubiera algo
+  que perder**.
+
+### Por qué es una estrategia comercial inteligente, no solo una buena historia
+
+- Captar gente cuesta casi nada -- el juego en Telegram es gratuito, no
+  necesita convencer a nadie, solo invitar a probar.
+- El propio juego filtra -- los grupos que cooperan bien y quieren seguir
+  se auto-seleccionan, sin necesidad de un vendedor insistiendo.
+- No se cobra por adelantado lo que no se ha demostrado -- se paga cuando
+  ya se ha visto, en escalones anteriores, que el sistema cumple. Es mucho
+  más fácil vender el escalón 3 a quien ya vivió el 0, el 1 y el 2, que
+  vendérselo a un desconocido el primer día.
+- Cada escalón reutiliza exactamente la misma base técnica -- no hay que
+  construir un producto distinto por nivel. Crecer no cuesta más
+  ingeniería, solo más confianza acumulada.
+
+### Nombres decididos
+
+- **Bot de Telegram**: "Feria de Engremiat" -- si Plaza es la plaza del
+  pueblo donde el cliente se queda a vivir (su sistema propio, soberano),
+  Feria es la feria que llega y le invita a entrar: ligera, festiva, de
+  bajo compromiso.
+- **Workflow n8n**: `Feria - puerta de entrada (Telegram)`, mismo patrón de
+  nombres ya usado (`Plaza - backend...`, `Cronista - Segmentar
+  documento...`).
+
+### Pendiente
+
+- Nada de esto está construido -- ni el bot "Feria", ni el workflow, ni la
+  escalera de escalones como flujo real dentro del sistema. Es la
+  propuesta comercial y su nombre, no la implementación.
