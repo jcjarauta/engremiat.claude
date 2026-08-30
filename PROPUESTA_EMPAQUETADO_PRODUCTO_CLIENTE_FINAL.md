@@ -4776,3 +4776,100 @@ mezclarse con las otras).
   si las voces nuevas encajan mejor que Rural/Urbano en sus dominios.
 - Si funciona bien, convertir `PERSONAS_JSON` en referencias a una tabla
   `ACERVO_PERSONA` real en vez de JSON suelto por fila.
+
+## Canvas+DAFO, exportación a PDF y aviso por correo al terminar la Vigilia (2026-08-30)
+
+### Por qué
+
+Petición directa: poder valorar mañana no solo si una historia queda bien
+contada, sino si una de las ideas de software que produce Concilio
+serviría como módulo nuevo real de Engremiat -- con un documento de
+negocio de verdad (Canvas, DAFO, plan, presupuesto, alianzas), exportable
+como PDF entregable a un cliente o socio, y un aviso por correo cuando la
+Vigilia termine, con el coste real en tiempo y tokens para decidir si
+merece la pena ampliar el presupuesto mensual y encolar más trabajo.
+
+### Qué se construyó
+
+- **Acción `generar_canvas_dafo`** en el generador -- mismo patrón que
+  `concilio_proponer` (borrador local gratuito -> comprobación de
+  presupuesto -> verificación DeepSeek con coste registrado), pero en vez
+  de una propuesta narrativa produce un análisis de negocio completo:
+  Business Model Canvas (9 bloques), DAFO (4 cuadrantes), resumen de plan
+  de negocio, presupuesto estimado de puesta en marcha, alianzas
+  estratégicas reales posibles, y un veredicto explícito
+  (`encaje_engremiat`) sobre si la idea encajaría como módulo nuevo de
+  Engremiat -- para que la respuesta al "¿nos sirve?" no dependa solo de
+  la lectura humana, sino que el propio sistema se moje primero.
+- **Exportación a PDF real y duradero**: se amplió `render-worker.py`
+  (el servicio que ya generaba PDFs para Cronista) para aceptar una
+  `ruta_guardado` opcional -- si se manda, además de devolver el PDF a
+  n8n, escribe una copia persistente en
+  `G:\Mi unidad\DEVS\engremiat-litellm\documentos-generados\`. El
+  generador construye un HTML con estilo propio a partir del JSON de
+  Canvas+DAFO y se lo pasa a este endpoint, guardando el resultado con
+  nombre único (`canvas_dafo_<timestamp>.pdf`).
+- **Aviso por correo al vaciarse la cola de Vigilia**: reutilizado (no
+  duplicado) el webhook `notificar-humano` que ya existía en el n8n
+  compartido (correo vía SMTP, mismo remitente/destinatario que ya se
+  usaba para Taller). Cuando la Vigilia ya no encuentra elementos
+  pendientes, construye un resumen HTML con cada capítulo procesado, el
+  gasto total del día (tokens y coste en USD, leído de `GASTO_API`) y los
+  minutos transcurridos, y lo envía por correo.
+- **`VIGILIA_TAREA` ahora admite un campo `ACCION` por fila** (por
+  defecto `concilio_proponer`, también acepta `generar_canvas_dafo`) --
+  así una misma cola puede mezclar capítulos de historia con análisis de
+  negocio, sin tocar código.
+
+### Verificado antes de dejarlo desatendido
+
+Antes de fiar el resultado a la cola nocturna, se invocó `generar_canvas_dafo`
+a mano con un tema real (herramienta de reparto de tareas vecinales) y se
+confirmaron los tres puntos críticos por separado:
+
+1. El JSON completo vuelve con los 9 bloques del Canvas, el DAFO, plan de
+   negocio, presupuesto, alianzas y el veredicto de encaje -- coherente y
+   completo, no truncado.
+2. El gasto quedó registrado de verdad en `GASTO_API` (fila id 12:
+   944 tokens de entrada, 1871 de salida, $0.002885).
+3. El PDF se escribió de verdad en disco:
+   `documentos-generados/canvas_dafo_1788121782815.pdf`, 70 266 bytes.
+
+Con esto verificado, se encoló la prueba real para la Vigilia: fila
+`VIGILIA_TAREA` id 13 (`Software.4 - Canvas y DAFO`, `ACCION:
+generar_canvas_dafo`), colocada justo después de `Software.3` para que
+reciba como contexto la idea ya desarrollada en los pasos anteriores de
+esa cadena.
+
+### Límites y honestidad
+
+- Lo verificado es la acción aislada, llamada a mano una vez. Lo que
+  **no** se ha visto todavía es que la Vigilia, corriendo sola de noche,
+  llegue hasta este elemento (id 13) dentro de su cola encadenada y lo
+  procese sin intervención.
+- El correo de resumen al vaciarse la cola tampoco se ha visto disparar
+  todavía en una ejecución real de la Vigilia -- solo se construyó y
+  desplegó el nodo, razonando sobre el mismo mecanismo ya probado para
+  `notificar-humano` en Taller.
+- El HTML del Canvas+DAFO usa un estilo fijo definido en el generador --
+  no hay todavía ninguna opción de plantilla o marca distinta según el
+  destinatario (cliente final vs. uso interno).
+- Solo se ha probado un tema de software. No hay ninguna garantía de que
+  la calidad del análisis se sostenga igual con un tema de otro dominio
+  (p. ej. una idea de cooperativa o de patrimonio) -- eso es justo parte
+  de lo que hay que valorar mañana con los resultados reales.
+
+### Pendiente
+
+- Confirmar por la mañana que la fila 13 se procesó sola dentro de la
+  Vigilia y que el correo de resumen llegó de verdad con el lote completo.
+- Valorar la calidad real del Canvas+DAFO generado (no solo que la
+  tubería funcione) y decidir si el "encaje_engremiat" que propone el
+  propio sistema es fiable o hay que pedir una segunda verificación
+  humana siempre.
+- Decidir, con el coste real medido esta noche, si ampliar el tope
+  mensual de $5 en DeepSeek para poder encolar más ejercicios como este.
+- Si se valida el mecanismo, extender `generar_canvas_dafo` a los otros
+  dos dominios sembrados (Huerto del Abuelo como posible producto,
+  Taller de oficios/Semilla Cooperativa) para comparar encaje entre los
+  tres.
