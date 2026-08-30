@@ -3208,13 +3208,39 @@ principio ya aplicado con el token de la Pi.
 
 ### Pendiente, no resuelto todavía
 
-- Ejecutar `crear_tabla_desde_manifiesto.mjs` una vez de verdad, con tu
-  login, contra la Baserow del PC o de la Pi, para confirmar que el flujo
-  completo (crear tabla, borrar campos de fábrica, renombrar el primario,
-  crear el resto de campos, enlazar `link_row`) funciona tal cual está
-  escrito.
 - Escribir el `.tablas.json` para el resto de módulos `solo_disenado`
   (`red_social`, `asociacionismo`, `oportunidad`, `pregonero`) -- solo
   existe para `jerarquia` de momento.
 - Decidir si, una vez probado, este mecanismo sustituye también el proceso
   CSV de módulos futuros ya construidos, o convive con él.
+
+### Primera ejecución real, en la Pi (2026-08-30)
+
+`crear_tabla_desde_manifiesto.mjs` funcionó de extremo a extremo contra la
+Baserow real de la Pi (`http://192.168.8.230`, database 76): las cuatro
+tablas de `jerarquia.yaml` (`ENTIDAD_ORGANIZATIVA` id 279,
+`UBICACION_GEOGRAFICA` id 280, `COMPETENCIA` id 281, `PERSONA_COMPETENCIA`
+id 282) se crearon con sus campos, tipos, opciones de `single_select` y
+enlaces `link_row` correctos -- verificado leyendo los campos reales por
+API después de crearlos, no solo asumiendo que la ejecución sin error
+significaba éxito.
+
+Dos fallos reales, corregidos sobre la marcha:
+
+- **Ruta relativa rota entre PC y Pi**: `baserow-schema.mjs` guardaba el
+  `refresh_token` en una ruta de Windows escrita a mano
+  (`G:\...\.baserow_refresh_token`), que no existe en la Pi. Corregido para
+  calcular la ruta relativa al propio fichero del script
+  (`fileURLToPath(import.meta.url)`), portable entre Windows y Linux sin
+  configuración.
+- **El bug de enrutado por `Host` de Baserow (ya documentado antes en este
+  proyecto) reaparece incluso en llamadas locales dentro de la propia Pi**:
+  como `BASEROW_PUBLIC_URL` de la Pi es `http://192.168.8.230`, ni siquiera
+  `curl http://localhost/api/...` desde la propia Pi funciona -- hay que
+  usar la IP pública también para llamadas intra-máquina. Ajustado
+  documentando `BASEROW_URL=http://192.168.8.230` en vez de `localhost`
+  como variable de entorno al ejecutar el script en la Pi.
+
+Nada de esto se ha creado todavía en el Baserow del PC -- solo en la Pi.
+Las tablas existen vacías: ninguna fila de datos, ninguna acción n8n ni
+pantalla de Plaza las usa todavía.
