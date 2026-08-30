@@ -1338,6 +1338,59 @@ dispatcher.
   hardware real del nodo; falta confirmar que Baserow (que gestiona su propia
   Postgres) cabe cómodamente en esa RAM junto al resto de servicios del nodo.
 
+## Piloto mínimo: montado, probado y funcionando (2026-08-30)
+
+El piloto descrito arriba se construyó y se probó de verdad, no quedó en diseño:
+
+- Tabla `TAREA` real en Baserow (`engremiat.claude` → tabla id `832`), con las
+  mismas 26 columnas que `06_TAREAS`, cargada con dos tareas reales del
+  amigurumi (`TAR-0008`, `TAR-0009`) vía importación CSV.
+- Workflow n8n **"Piloto Baserow - sin Google"** (id `9Yg3yEOaWWcmCmXC`),
+  webhook `POST /webhook/piloto-baserow`, con las dos acciones más simples del
+  dispatcher actual (`leer_tarea`, `crear_tarea`) reimplementadas contra la API
+  de Baserow en vez de la de Google Sheets.
+- **Probado con éxito de punta a punta**: `leer_tarea` devuelve la fila real de
+  `TAR-0009`; `crear_tarea` crea una fila nueva y la deja visible al instante en
+  la tabla. Ninguna de las dos llamadas invoca ninguna API de Google -- el
+  workflow no contiene ni un solo nodo de Google Sheets, service account, ni
+  referencia a `googleapis.com`.
+
+**Un obstáculo técnico real, no anticipado, que vale la pena documentar** (aplica
+a cualquier integración futura de n8n con esta misma Baserow autoalojada):
+Baserow, al recibir una petición con una cabecera `Host` que no coincide con su
+`BASEROW_PUBLIC_URL` (`http://localhost`), la trata como si fuera un dominio de
+una aplicación publicada con el "Builder" de Baserow y devuelve "Site not
+found" -- esto ocurre incluso llamando desde dentro de Docker via
+`host.docker.internal`, porque ese nombre de host tampoco coincide con
+`localhost`. La variable de entorno pensada para esto,
+`BASEROW_EXTRA_ALLOWED_HOSTS`, **no resolvió el problema** (hay reportes
+similares en la comunidad de Baserow) -- solo evita un rechazo a nivel de
+Django, no el enrutado del "web-frontend" (Nuxt) que hace la comprobación de
+dominio publicado antes de llegar a la API. Y el cliente HTTP de n8n (axios) no
+deja sobrescribir la cabecera `Host` cuando la URL usa ese mismo nombre de host
+-- hay que apuntar a la IP directamente y mandar `Host: localhost` como
+cabecera aparte para que no haya conflicto. **Solución que sí funcionó**:
+apuntar el nodo HTTP Request de n8n directamente a la IP de
+`host.docker.internal` (fija en Docker Desktop, `192.168.65.254`) y añadir
+manualmente la cabecera `Host: localhost` en la propia petición -- así Baserow
+la trata como si viniera de sí mismo, no de una app publicada.
+
+**Otra limitación de Baserow importante para el diseño del nodo offline**: los
+tokens de API personales de Baserow solo dan acceso a nivel de fila (leer/crear/
+editar/borrar) -- **no permiten crear tablas ni columnas nuevas**, eso exige una
+sesión de usuario autenticada (JWT), no un token. Para este piloto, la tabla
+`TAREA` la creó el propio operador importando un CSV -- para el nodo offline
+real, cualquier automatización que necesite crear NUEVAS tablas (no solo filas)
+tendrá que iniciar sesión como usuario, no bastará con un token de API guardado
+en n8n.
+
+**Validación de "cero Google" pendiente de la forma más honesta**: la prueba se
+hizo con el PC conectado a internet -- se verificó arquitectónicamente que el
+workflow no contiene ninguna llamada a Google, pero la prueba definitiva
+(desconectar la red del PC y repetir `leer_tarea`/`crear_tarea`) no se ha hecho
+todavía porque exige cortar la conexión de la máquina de trabajo -- pendiente de
+que el operador la ejecute cuando quiera confirmarlo de la forma más exigente.
+
 ## Propuesta: "Pregonero" -- el cuarto ciclo, entre Cronista y Oportunidad (2026-08-30)
 
 ### La idea del operador
