@@ -3819,3 +3819,108 @@ todavía no registran el voto en ninguna tabla real.
   todavía a este flujo.
 - Probado con un solo usuario (el operador) -- sin ningún grupo real de
   Telegram (varias personas) todavía.
+
+## La jugabilidad, explicada sin tecnicismos (2026-08-30)
+
+Cómo se sentiría jugar "Cuento Cooperativo", contado como un juego de mesa:
+
+1. **Entras al puesto de la feria.** Eliges tu aventura desde Telegram, sin
+   instalar nada -- como elegir mesa en una feria de juegos.
+2. **Repartes papeles.** El que propone y escribe (rol por defecto), el
+   guardián del canon (vigila que nada se contradiga), el revisor (opina,
+   no reescribe), el tutor/acompañante (si lo hay, guía y da el visto
+   bueno en los momentos importantes), el editor final (junta todo al
+   terminar).
+3. **Se juega por misiones cortas**, como niveles: "hoy inventamos el
+   primer personaje", "hoy decidimos dónde pasa la historia" -- diez
+   minutos, progreso visible.
+4. **Libertad total en el borrador, votación real en lo importante.**
+   Proponer es libre; cambiar algo que afecta a todo el grupo (matar un
+   personaje, cambiar el final, inventar una regla del mundo) pasa por
+   decisión conjunta antes de quedar fijo.
+5. **Nada se pierde, aunque se rechace** -- una idea no aprobada queda
+   guardada con el motivo, recuperable más adelante.
+6. **Al final se ve el resultado y quién hizo qué** -- no solo el cuento
+   terminado, también quién propuso qué, quién resolvió una contradicción,
+   quién ayudó a un compañero atascado. Cooperar y revisar cuentan como
+   aportación real, no solo escribir más.
+7. **Si gustó, se sube de nivel** -- el mismo grupo, con la confianza ya
+   ganada, pasa a la siguiente aventura de la escalera de confianza.
+
+En una frase: **un juego de mesa cooperativo donde el tablero es una
+historia, las fichas son las decisiones del grupo, y ganar significa haber
+construido algo juntos sin que nadie se sienta ignorado ni atropellado.**
+
+## Personalización real desde el onboarding: casi un juego por grupo (2026-08-30)
+
+### La propuesta del operador
+
+Durante el alta y personalización de cada grupo, el sistema podría recoger
+nombres reales, roles preferidos, historia del propio grupo, y datos de su
+zona (geografía, historia local) -- e invertir eso en construir el
+Escenario a medida de esa realidad concreta, no una plantilla genérica.
+Las reglas del juego serían las mismas para todos; el contenido, propio de
+cada grupo consolidado.
+
+### Valoración -- la idea es sólida, y hay datos reales que la respaldan
+
+- El 62% de líderes empresariales afirma que la personalización mejora
+  mucho la retención; añadir gamificación sube el engagement un 48% y la
+  retención en programas de fidelización un 22%
+  ([Storyly](https://www.storyly.io/post/5-stats-that-prove-gamification-boosts-retention)).
+  No son cifras de este nicho exacto, pero confirman la dirección: la
+  gente vuelve más a lo que siente propio.
+- Precedente de mercado real: productos personalizados como los libros
+  infantiles de Wonderbly (el niño es el protagonista, con su nombre y su
+  pueblo) tienen éxito comercial demostrado por la misma razón -- ver tu
+  propia realidad dentro de la historia genera un enganche que ninguna
+  plantilla genérica iguala. En comunidades de rol de mesa, el world
+  building "sobre tu propio grupo de amigos" (Kanka, World Anvil) es ya
+  una práctica extendida de forma informal -- Engremiat lo sistematizaría.
+
+### Mejora sobre la propuesta -- cuándo pedir los datos, no solo qué pedir
+
+Pedir nombres, historia del grupo y datos locales **antes** de la primera
+partida rompería justo lo que hace fuerte a Feria: cero fricción, cero
+compromiso. La mejora: pedir esta información **después** de una primera
+ronda genérica que ya funcionó y gustó -- como una oferta de "subir de
+nivel", no como un formulario de entrada. Encaja exactamente con la
+escalera de confianza ya diseñada: el Escalón 0 sigue siendo instantáneo;
+la personalización real es la puerta al Escalón 1.
+
+### No hace falta infraestructura nueva -- es el mismo motor, otro contenido
+
+Esta personalización es exactamente la misma cascada de coste ya construida
+y probada (local prepara el borrador, DeepSeek/Claude lo pule) -- aplicada
+a generar un Escenario a medida en vez de segmentar un roadmap en tareas.
+El generador protegido (`engremiat-generador-n8n`) es también el lugar
+correcto para esta lógica: la forma de convertir "datos de un grupo real"
+en "un mundo narrativo a su medida" es precisamente el tipo de propiedad
+intelectual que conviene proteger, coherente con el modelo de negocio ya
+definido (catálogo vs. personalizado).
+
+### Límites y honestidad
+
+- Nombres reales, historia de un grupo y datos de su zona son datos
+  personales desde el primer campo del formulario -- RGPD aplica igual
+  que en el resto de este documento, con consentimiento explícito y
+  revisable, doblemente sensible si el grupo incluye menores (p.ej. un
+  aula).
+- Nada de esto está construido -- ni el formulario de personalización, ni
+  la lógica de "tejer" los datos reales en el Escenario, ni la oferta de
+  "subir de nivel" tras la primera partida gratuita.
+- Riesgo a vigilar: si la personalización tarda demasiado o pide
+  demasiados datos de golpe, se pierde la ligereza que hace funcionar a
+  Feria -- debe seguir sintiéndose como un paso más del juego, no como
+  papeleo.
+
+### Pendiente
+
+- Diseñar el formulario mínimo de personalización (qué datos son
+  imprescindibles, cuáles opcionales) y el momento exacto en que se ofrece
+  tras la primera partida.
+- Extender el prompt de la cascada de coste para "tejer" datos reales de
+  grupo/zona en un Escenario, no solo para segmentar tareas -- mismo
+  mecanismo, prompt nuevo.
+- Decidir si esta personalización es gratuita (parte de subir de escalón)
+  o ya es el primer punto de cobro real -- no decidido todavía.
