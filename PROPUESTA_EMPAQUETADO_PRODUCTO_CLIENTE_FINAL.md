@@ -4326,3 +4326,46 @@ verificado leyendo Baserow, en `en_construccion`.
   "Cuento Cooperativo" ya publicado, no solo para Escenarios nuevos.
 - Construir el modo de prueba de Taller que permita jugar
   `en_construccion` antes de promocionar a `publicado`.
+
+## Modo de prueba de Taller, construido (2026-08-30)
+
+### Diseño
+
+Comando oculto `/taller` en el mismo bot de Feria, restringido al chat_id
+del operador -- lista los Escenarios con misiones `en_construccion` como
+botones, y al elegir uno crea un grupo marcado `[PRUEBA TALLER]` y
+encadena sus misiones exactamente igual que una partida real, pero
+consultando `en_construccion` en vez de `publicado`. Las respuestas de
+texto en modo prueba se guardan en `TAREA.RESULTADO_ESPERADO` (genérico,
+válido para cualquier Escenario) usando un marcador `(taller_ref:ID)`
+distinto del `(ref:ID)` real -- para que nunca se mezcle con la captura de
+`PERSONAJE` de "Cuento Cooperativo". Al agotar el catálogo en
+`en_construccion`, avisa que la prueba terminó. Ninguna fila se marca
+`publicado` automáticamente -- eso sigue siendo siempre una decisión
+manual en Baserow.
+
+### Por qué esta separación importa
+
+Evita exactamente el problema que disparó esta corrección de arquitectura
+hoy: probar contenido nuevo mezclado con partidas reales, en el mismo
+canal, sin ningún cortafuegos. `/taller` corre en el mismo bot (no hace
+falta mantener una segunda app), pero cada partida de prueba queda
+marcada, aislada, y usando un catálogo distinto (`en_construccion`) del
+que ve cualquier grupo real (`publicado`).
+
+### Límites y honestidad
+
+- Restringido por un único chat_id fijo en el código -- no hay lista de
+  usuarios autorizados ni gestión de permisos, suficiente mientras solo el
+  operador prueba contenido.
+- No se ha jugado todavía una partida completa de prueba real -- construido
+  y desplegado, pendiente de la primera verificación en vivo.
+- La promoción de `en_construccion` a `publicado` sigue siendo edición
+  manual en Baserow, sin ninguna pantalla ni acción dedicada.
+
+### Pendiente
+
+- Verificar en vivo el flujo completo de `/taller` contra "Atlas vivo del
+  barrio".
+- Decidir si vale la pena una acción n8n dedicada para "promocionar" en
+  vez de editar el campo `ESTADO` a mano en Baserow.
