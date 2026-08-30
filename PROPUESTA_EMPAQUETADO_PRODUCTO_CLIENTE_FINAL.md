@@ -4873,3 +4873,182 @@ esa cadena.
   dos dominios sembrados (Huerto del Abuelo como posible producto,
   Taller de oficios/Semilla Cooperativa) para comparar encaje entre los
   tres.
+
+## Investigación: cliente potencial primario (neurodivergencia, Catalunya) y dinámicas de juego/aprendizaje probadas (2026-08-30)
+
+### Por qué esta investigación
+
+Corrección de modelo de coste hecha explícita por el promotor: el trabajo
+se hace en tiempo libre paralelo a un empleo, el hardware lo pone el
+cliente (ya validado con el despliegue real en la Pi), y el gasto de API
+medido esta misma noche es de **$0.0005-0.003 por interacción** -- una
+demo personalizada completa (~10 interacciones + 1 informe) cuesta en
+torno a $0.01 en API. El coste marginal en caja es, a efectos prácticos,
+cero. El recurso escaso real no es dinero, es el tiempo del promotor para
+la "puerta humana" (personalizar, acompañar, revisar). Esto cambia la
+pregunta de "¿qué margen por unidad?" (no aplicable, no hay precio ni
+ingresos todavía) a "¿cuánto tiempo cuesta conseguir una señal real de
+una organización concreta?" -- que es la métrica que de verdad decide si
+merece la pena seguir, coherente con la regla de no construir sin señal
+real.
+
+Se investigó en dos frentes, pedidos explícitamente por el promotor: (1)
+quién es el cliente potencial primario real en Barcelona/Catalunya, y
+(2) qué dinámicas de juego y modelos de aprendizaje están ya probadas
+para neurodivergencia, para que la propuesta de valor se adapte a
+intervenciones conocidas en vez de inventar mecánicas desde cero.
+
+### Cliente potencial primario: redes reales en Catalunya
+
+**Autismo -- Federació Catalana d'Autisme**
+- 48 entidades federadas en toda Catalunya.
+- Contacto: info@fedcatalanautisme.org / 683 158 309 (lun-mié 16-20h).
+- Red grande y fragmentada -- difícil de mover como conjunto; una entrada
+  federativa se diluye entre 48 interlocutores independientes.
+
+**TDAH -- FCAFA-TDAH (Federació Catalana d'Associacions de Familiars i
+Afectats de TDAH)**
+- Solo 9 asociaciones federadas (Sabadell, Santa Coloma de Gramenet, Sant
+  Boi, Tarragona, Amposta, Rubí, Vic, Puigcerdà, y Fundación ADANA en
+  Barcelona ciudad).
+- Junta directiva renovada en julio de 2026, sede recién trasladada a
+  TDAH Vallès (Sabadell) -- señal de reorganización activa, momento
+  probablemente más receptivo que una federación asentada.
+- Contacto: info@federaciocatalanatdah.org
+
+**Altas capacidades -- red fragmentada, sin federación única**
+- FANJAC (desde 2006, oficinas en Barcelona, Girona, Lleida, Tarragona) --
+  la más establecida.
+- AFINS (Barcelona), ACTUAR!, RECOLZA (Arenys de Mar), ATHENA (Tarragona).
+- ACACIA agrupa directorio pero es de ámbito adultos, no el segmento
+  familiar/infantil.
+
+**Recomendación de entrada**: FCAFA-TDAH es la puerta más razonable para
+una primera señal real -- red pequeña, un único interlocutor federativo,
+liderazgo recién renovado. Con Autismo (48 entidades) o Altas Capacidades
+(mosaico sin federación), la vía correcta sería una asociación local
+concreta, no la red completa.
+
+### Dinámicas de juego y aprendizaje: qué está probado, qué se comparte y qué es específico
+
+Revisión de literatura reciente (2025-2026, revisiones sistemáticas y
+meta-análisis) sobre gamificación e intervención por colectivo:
+
+**Elementos compartidos entre neurodivergencias (Universal Design for
+Learning, UDL)**
+- El marco UDL se centra en la **variabilidad**, no en el déficit: múltiples
+  formas de representar la información, múltiples formas de actuar/
+  expresarse, múltiples formas de motivar el compromiso -- en vez de un
+  único camino "estándar" con adaptaciones a posteriori.
+- Enfoque desde fortalezas ("jagged profile"): identificar qué hace bien
+  cada persona, no solo qué necesita reforzar -- reduce ansiedad y
+  estigma frente a pedir constantemente adaptaciones.
+- Reducir el "one-size-fits-all": el mismo contenido con varias vías de
+  acceso, no un contenido distinto para cada persona.
+
+**Específico de autismo -- método TEACCH (décadas de respaldo, Universidad
+de Carolina del Norte)**
+- Entorno organizado y predecible: secuencia de actividades siempre
+  visible, horarios visuales, transiciones anunciadas.
+- Apoyos visuales y "social stories" (narrativas personalizadas que
+  describen una situación social concreta) para reducir ambigüedad.
+- Reducir sobrecarga sensorial y mantener el foco sin abrumar.
+- **Esto ya coincide con lo que Taller demostró funcionar en la prueba
+  real de esta sesión**: captura por botón en vez de texto libre,
+  misiones encadenadas con orden claro y "Fin de la prueba" explícito --
+  no fue diseñado pensando en TEACCH, pero es exactamente ese principio
+  (predictibilidad, reducción de ambigüedad) puesto en práctica sin
+  saberlo.
+
+**Específico de TDAH -- evidencia de meta-análisis 2025**
+- El refuerzo inmediato es central: los juegos serios mejoran atención,
+  hiperactividad-impulsividad, habilidades sociales y funciones
+  ejecutivas cuando dan feedback y recompensa al instante.
+- Hallazgo que **contradice la intuición habitual de "sesiones cortas
+  para TDAH"**: sesiones de más de 40 minutos produjeron efectos
+  moderados-altos significativamente mayores que sesiones más cortas --
+  hay que diseñar el piloto con esto en cuenta, no asumir que "corto es
+  mejor" sin comprobarlo.
+- El apoyo parental y el uso en casa (no solo en sesión supervisada)
+  mejora resultados cuando el sistema da feedback adaptativo por sí solo
+  -- coincide con el modelo de Feria como bot accesible fuera de una
+  sesión presencial.
+
+**Específico de altas capacidades -- pedagogía de enriquecimiento**
+- Necesitan profundidad y complejidad real, no repetición del mismo
+  contenido más rápido: proyectos abiertos, "fuzzy problems" sin una
+  única respuesta correcta, autonomía para explorar.
+- El aprendizaje basado en proyectos conectado con aplicaciones del
+  mundo real mejora la motivación específicamente en este colectivo --
+  aburrirse por baja exigencia es el riesgo principal, no la sobrecarga.
+- **Esto encaja de forma directa con Concilio/Vigilia**: el mecanismo ya
+  construido de deliberación abierta y proyectos en red (sin una
+  respuesta única predefinida) es estructuralmente lo que la literatura
+  de enriquecimiento pide para este colectivo, sin que se haya diseñado
+  pensando en ellos.
+
+### Lo que esto significa para la propuesta de valor
+
+No hay que inventar tres productos distintos. Hay **un mismo motor
+(Taller/Feria + Concilio/Vigilia) que ya expresa, sin haberlo buscado
+deliberadamente, los tres principios de intervención más documentados**:
+predictibilidad y reducción de ambigüedad (autismo/TEACCH), refuerzo
+inmediato y accesibilidad fuera de sesión (TDAH), y apertura/complejidad
+real en proyectos en red (altas capacidades). La propuesta de valor
+correcta no es "una app para neurodivergencia" genérica, sino **el mismo
+sistema, con el dial de predictibilidad-vs-apertura ajustado por
+colectivo** -- algo que ya es configurable hoy (personas de Acervo por
+petición, plantillas de misión versionadas).
+
+Además, medir participación real por colectivo (sin tocar nunca datos
+diagnósticos, ver aviso RGPD más abajo) generaría **datos de impacto
+propios y verificables** -- qué dinámica funciona mejor para quién,
+dentro de la propia red de Engremiat -- algo que ninguna de las
+asociaciones investigadas parece tener sistematizado hoy, y que podría
+ser en sí mismo un argumento de valor frente a financiadores.
+
+### Aviso RGPD (Artículo 9 -- categoría especial de datos)
+
+Se repite aquí porque es la condición de viabilidad legal de toda esta
+línea, no un detalle:
+- Engremiat no debe tocar nunca datos diagnósticos ni clínicos -- eso se
+  queda siempre dentro de la asociación.
+- El sistema solo debe registrar datos de participación (qué misión
+  completó, cuántas veces jugó), nunca la condición de la persona.
+- Cualquier dato de un menor requiere consentimiento explícito del
+  tutor, gestionado por la propia asociación, nunca directamente por
+  Engremiat.
+
+### Límites y honestidad
+
+- Esta es literatura general de intervención educativa/terapéutica
+  aplicada por analogía a un contexto lúdico-comunitario -- Engremiat no
+  es ni pretende ser una intervención clínica, y esta comparación no
+  sustituye la validación de un profesional de cada asociación antes de
+  aplicar cualquier dinámica con personas reales.
+- El hallazgo de "sesiones largas mejor para TDAH" viene de contextos de
+  intervención supervisada (escolar/clínica) -- no está probado que se
+  sostenga igual en un uso informal vía bot de Telegram, y habría que
+  verificarlo con el primer piloto real, no darlo por bueno.
+- No se ha contactado todavía a ninguna de las asociaciones o
+  federaciones citadas -- toda esta sección es investigación previa al
+  primer contacto, no una relación ya iniciada.
+- El "encaje" descrito entre lo ya construido (Taller/Concilio) y los
+  tres marcos de intervención es una lectura razonada a posteriori, no
+  el resultado de haber diseñado el sistema pensando en estos marcos
+  desde el principio -- vale como argumento de coherencia, no como
+  validación empírica.
+
+### Pendiente
+
+- Preparar un primer contacto de outreach con FCAFA-TDAH, redactado
+  desde el principio de "una señal real", no una propuesta genérica.
+- Diseñar el primer piloto de demo personalizada probando explícitamente
+  sesiones más largas de lo intuitivo, dado el hallazgo del meta-análisis.
+- Formalizar el campo de "datos de participación" (sin condición ni
+  diagnóstico) como diseño de esquema, antes de cualquier prueba con
+  usuarios reales de una asociación.
+- Si el piloto de TDAH avanza, valorar una segunda línea de contacto con
+  una asociación local concreta de autismo (no la federación completa) y
+  con FANJAC para altas capacidades, aplicando el ajuste de "dial"
+  correspondiente a cada una.
