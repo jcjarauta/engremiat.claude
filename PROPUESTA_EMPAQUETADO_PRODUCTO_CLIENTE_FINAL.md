@@ -1441,14 +1441,90 @@ hueco: un bucle simple (leer el problema, proponer un cambio en un workflow o en
 una fila de Baserow, aplicarlo, verificar) ejecutado enteramente en el PC/Pi del
 nodo, sin ninguna llamada externa.
 
-**Con qué construirlo, sin reinventar**: proyectos de código abierto ya resuelven
-"agente de código apuntando a un modelo local" -- Continue.dev, Aider, o incluso
-un bucle propio sencillo en Python/Node que llame a `local-codigo`
-(`devstral-dev`) vía LiteLLM (ya montado, ya funcionando). No hace falta
-construir un "mini-Claude" desde cero: la pieza de razonamiento ya existe
-(LiteLLM + Ollama), solo falta el bucle que decida qué archivo tocar y verifique
-el resultado -- alcance mucho más modesto que Ejecutor completo, pensado para
-arreglos puntuales in situ, no para desarrollo nuevo.
+### Diseño concreto de "Ejecutor Local" (2026-08-30)
+
+**Con qué construirlo, sin reinventar** (investigado, no asumido): el hueco de
+"agente que actúa apuntando a un modelo 100% local" ya está resuelto por
+software libre maduro:
+
+- **Goose** (Block/Square, código abierto) -- agente nativo en MCP, corre
+  totalmente offline contra Ollama, y se extiende añadiendo servidores MCP
+  propios. Encaja mejor que construir un bucle desde cero porque el patrón
+  "herramientas acotadas + modelo local" ya viene resuelto.
+- **Aider** (46.000+ estrellas, terminal, consciente de git) -- mejor opción
+  específica para cuando el arreglo es literalmente editar un archivo de código
+  (por ejemplo `render-worker.py` corrupto), con commits automáticos que dejan
+  rastro de cada cambio.
+
+**Recomendación**: Goose como motor principal (porque la mayoría de arreglos in
+situ son operativos -- reactivar un workflow, corregir un dato -- no ediciones
+de código), con Aider como herramienta complementaria para el caso concreto de
+tocar un archivo de código directamente. Ambos hablan con Ollama vía LiteLLM
+(`local-codigo` / `devstral-dev`), ya montado y probado esta misma ronda.
+
+**Las herramientas que se le exponen al agente, acotadas a propósito** (el
+riesgo real de un modelo local de 8-14B es que se equivoque con más frecuencia
+que Claude, así que el diseño compensa con un catálogo de acciones deliberadamente
+pequeño, no con "acceso total" como tiene Claude Code):
+
+| Herramienta (MCP) | Qué hace | Qué NO permite |
+|---|---|---|
+| `n8n_listar_workflows` / `n8n_ver_ejecuciones` | Leer estado y errores recientes | -- |
+| `n8n_activar_workflow` / `n8n_desactivar_workflow` | Activar/pausar un workflow ya existente | Crear o modificar la lógica interna de un workflow |
+| `baserow_leer_fila` / `baserow_editar_campo` | Leer una fila, cambiar UN campo de una fila ya existente | Crear tablas, borrar filas, editar varios campos a la vez sin confirmación |
+| `docker_reiniciar_servicio` | Reiniciar un contenedor de una lista blanca (`n8n`, `baserow`) | Detener, borrar o modificar contenedores fuera de esa lista |
+| `registrar_incidencia_offline` | Anotar el problema si no sabe resolverlo, para revisión cuando vuelva la conexión | -- |
+
+**El bucle, con confirmación humana obligatoria en cada paso** (la misma
+"puerta humana" de Cronista/Oportunidad, pero aquí en tiempo real porque SÍ hay
+una persona presente, el técnico in situ):
+
+1. El técnico describe el problema en lenguaje natural (interfaz: una página
+   HTML sencilla servida en la LAN local del nodo, o directamente la terminal si
+   es alguien técnico).
+2. El agente diagnostica usando las herramientas de SOLO LECTURA primero
+   (`n8n_ver_ejecuciones`, `baserow_leer_fila`).
+3. Propone UNA acción concreta en texto llano: *"El workflow 'Cronista de
+   Tareas' está desactivado desde las 14:32. Voy a activarlo. ¿Confirmas?
+   (sí/no)"*.
+4. Solo tras un "sí" explícito ejecuta la herramienta correspondiente.
+5. Si no encuentra una acción segura dentro de su catálogo, usa
+   `registrar_incidencia_offline` en vez de improvisar algo fuera de su alcance
+   -- mismo principio de honestidad ya aplicado en los pilotos de Cronista
+   (nunca inventar una solución que no está seguro de que funcione).
+6. Cada sesión completa queda registrada (fecha, problema, acción, resultado)
+   para que el operador la revise cuando recupere conexión -- mismo patrón de
+   trazabilidad que el resto del sistema.
+
+### Corrección al método de validación: no hace falta desconectar la conversación
+
+El operador señala algo que mejora el plan de verificación anterior: "Ejecutor
+Local", una vez construido, es un **proceso completamente aparte** de esta
+conversación con Claude -- corre su propio bucle contra Ollama en local, sin
+ninguna dependencia de que Claude esté conectado. Eso significa que **el sujeto
+de la prueba (Ejecutor Local) y el observador de la prueba (esta sesión de
+Claude) no tienen por qué compartir la misma condición de red** -- cortar todo
+el Wi-Fi del PC (como se planteó antes) es innecesariamente disruptivo, porque
+también corta esta conversación.
+
+**Método de validación mejorado, más quirúrgico y sin desconectar nada**:
+
+1. Lanzar el bucle de Ejecutor Local para un caso real (ej. diagnosticar un
+   workflow desactivado).
+2. Mientras corre, capturar sus conexiones de red reales -- `netstat` filtrado
+   por su PID, o una regla de Firewall de Windows que bloquee salida a WAN
+   *solo para ese proceso concreto* dejando pasar `localhost`/LAN.
+3. Confirmar que todas sus conexiones son a `127.0.0.1`/`192.168.x.x` (Ollama,
+   n8n, Baserow) y ninguna a un host externo -- esto prueba "cero dependencia de
+   red externa" de forma más rigurosa que cortar el adaptador entero, porque
+   audita el proceso exacto en vez de asumir que ningún otro programa del PC
+   necesitaba esa conexión.
+4. Esta auditoría por proceso es la validación de referencia durante el
+   desarrollo. Cortar el adaptador de red completo del PC sigue teniendo
+   sentido como comprobación final de aceptación, una sola vez, antes de dar
+   por bueno un despliegue real -- pero no hace falta repetirla en cada
+   iteración, y nunca debería depender de que esta conversación siga viva
+   durante la prueba.
 
 ### Honestidad sobre el límite real
 
@@ -1467,9 +1543,11 @@ funcionar sin internet es la OPERACIÓN diaria, y esa ya no depende de Claude.
 
 - No se ha construido ningún "Ejecutor Local" -- diseño de alto nivel únicamente,
   nacido directamente de la objeción del operador en esta misma conversación.
-- No se ha repetido la prueba del piloto con la red realmente desconectada --
-  sigue pendiente, y ahora con el método correcto: una persona disparando el
-  webhook a mano, no Claude verificándolo por control remoto.
+- No se ha repetido la prueba del piloto de ninguna de las dos formas
+  discutidas -- ni con una persona disparando el webhook a mano con el PC
+  desconectado, ni con la auditoría de red por proceso propuesta arriba (esta
+  segunda, una vez exista Ejecutor Local, es la que no requiere desconectar
+  nada ni depende de que esta conversación siga viva).
 
 ## Propuesta: "Pregonero" -- el cuarto ciclo, entre Cronista y Oportunidad (2026-08-30)
 
