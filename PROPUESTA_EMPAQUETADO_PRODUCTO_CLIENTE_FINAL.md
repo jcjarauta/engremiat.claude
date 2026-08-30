@@ -4177,3 +4177,45 @@ desarrollo de software, aplicado a millones de artículos.
   en Feria -- pendiente ya señalado en la sección anterior.
 - Implementar el conteo dinámico de participantes vía la API de Telegram
   para escalar el número de huecos de personaje.
+
+## Corrección de arquitectura: "Taller" separa construir de servir (2026-08-30)
+
+### El problema real que la disparó
+
+Un bug real lo destapó: el catálogo de misiones de "Cuento Cooperativo"
+vivía hardcodeado dentro del código JavaScript de un nodo de Feria, y se
+editaba **en producción**, probando contra Telegram real sin ningún
+entorno intermedio -- un salto de línea sin escapar en una expresión rompió
+el bot para cualquier grupo real en ese momento. El operador señaló
+correctamente que se estaba construyendo "de forma desordenada".
+
+### La corrección
+
+Se creó `manifiestos/taller.yaml` y una tabla real,
+**`PLANTILLA_MISION`** (Baserow, id 284, Pi) -- `NOMBRE`, `ESCENARIO`,
+`ORDEN`, `DESCRIPCION`, `TIPO_CAPTURA`, `ESTADO`
+(`en_construccion`/`publicado`). El workflow de Feria se reescribió para
+**consultar esta tabla en vez de decidir el contenido en código** -- las 5
+misiones de "Cuento Cooperativo" ya viven ahí, marcadas `publicado`.
+Cambiar el guion de un Escenario publicado ya no exige tocar el workflow,
+solo editar una fila de Baserow.
+
+### Límites y honestidad
+
+- Todavía no existe ningún modo de prueba separado que lea
+  `en_construccion` -- Taller hoy es solo la tabla y el cambio en Feria
+  para leer de ella, no un espacio de validación real todavía.
+- El catálogo de **Escenarios** (qué botones aparecen en el menú principal
+  de Feria) sigue hardcodeado -- solo se migró el catálogo de misiones
+  dentro de un Escenario ya elegido.
+- Promocionar una misión de `en_construccion` a `publicado` sigue siendo
+  edición manual en Baserow, sin ninguna pantalla dedicada -- suficiente
+  mientras el volumen de contenido sea bajo (un Escenario, 5 misiones).
+
+### Pendiente
+
+- Construir un modo de prueba (bot separado o flag) que permita jugar
+  misiones en `en_construccion` antes de publicarlas.
+- Migrar también el catálogo de Escenarios a una tabla real.
+- Decidir si Taller necesita interfaz propia o basta con Baserow mientras
+  el contenido sea poco.
