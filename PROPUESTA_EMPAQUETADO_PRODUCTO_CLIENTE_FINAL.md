@@ -4110,3 +4110,70 @@ en vez de una misión nueva.
 workflow (`Determinar siguiente mision`), no en una tabla editable -- para
 cambiar el guion de "Cuento Cooperativo" hoy hay que tocar el workflow, no
 un fichero de configuración.
+
+## Metodología de creación de historias, con precedentes reales verificados (2026-08-30)
+
+### Las dos preguntas del operador, respondidas con precedentes probados
+
+**"¿Cuántos personajes según cuántos usuarios tenga el grupo?"** -- ya
+resuelto por el juego de rol **Fate Core** con el método **"Phase Trio"**:
+tres fases donde cada personaje se conecta obligatoriamente con al menos
+otros dos del grupo, contando algo vivido juntos. Escala solo -- funciona
+igual con 3 personas que con 30, porque es una cadena rotatoria, no un
+número fijo.
+
+**"¿Cómo creamos una historia base que el equipo amplíe?"** -- el
+precedente más probado del mundo: **Wikipedia**. Un artículo nace como
+"stub" (esbozo, marcado explícitamente como incompleto) y lo amplía un
+equipo coordinado ("WikiProjects"). Es el mismo patrón de "documentación
+mínima ampliada por el equipo que la desarrolla" que ya se usa en
+desarrollo de software, aplicado a millones de artículos.
+
+### La metodología, con las piezas ya construidas
+
+- **Fase 0 -- la semilla (stub)**: título, premisa de una frase, tono,
+  escenario, y tantos huecos de personaje vacíos como personas reales
+  tenga el grupo de Telegram (contado con la propia API de Telegram, no
+  adivinado). Determinista, sin IA, coste cero.
+- **Fase 1 -- reparto de personajes, método Phase Trio**: Cronista trocea
+  la semilla en una misión de "crea tu personaje" por persona real, cada
+  una pidiendo conectar con el personaje de la persona anterior.
+- **Fase 2 -- Ejecutor/Ejecutor Local como "WikiProject"**: mismo
+  mecanismo ya construido de seguimiento de mantenimiento, aplicado a
+  seguir qué huecos del stub siguen vacíos.
+- **Fase 3 -- Cronista cierra el círculo** (ya construido y probado hoy):
+  la deliberación colectiva del grupo, sin que nadie escriba un documento
+  formal, es la entrada de `proponer_tareas`/`confirmar_tareas`.
+- **Fase 4 -- Pregonero publica** el resultado final (diseñado, no
+  construido).
+- **Fase 5 -- Oportunidad, corregido**: no es el eslabón más débil de la
+  cadena (buscar dónde publicar un Escenario terminado) -- es el
+  **generador de contexto real para la semilla**, apuntando su motor de
+  detección (ya diseñado en `oportunidad.yaml`) a "qué le importa de
+  verdad a esta comunidad" en vez de "quién nos puede financiar". Una
+  premisa anclada en un rescate local real, en vez de una fantasía
+  genérica -- mismo principio de "Preguntar": nunca inventar, siempre
+  citar la fuente, con puerta humana obligatoria antes de usar cualquier
+  dato real detectado.
+
+### Límites y honestidad
+
+- Nada de esta metodología está construida más allá de lo ya probado hoy
+  (la cadena fija de 5 misiones de "Cuento Cooperativo"). El método
+  Phase Trio, el conteo dinámico de personajes por grupo, y el nuevo
+  `PERFIL_OBJETIVO` de Oportunidad orientado a contexto local, están
+  descritos, no implementados.
+- Requiere crear la tabla `PERSONAJE` (biblia narrativa, ya prevista en
+  `escenario.yaml`) antes de poder capturar fichas reales -- hoy no existe.
+- Usar datos reales detectados por Oportunidad para una historia exige la
+  misma puerta humana y el mismo cuidado de fuente que ya rige "Preguntar"
+  -- nunca automático.
+
+### Pendiente
+
+- Diseñar el `PERFIL_OBJETIVO` de Oportunidad orientado a "contexto local
+  de interés" (distinto del ya descrito para subvenciones/organizaciones).
+- Crear `PERSONAJE` y conectar la captura de texto real (no solo botones)
+  en Feria -- pendiente ya señalado en la sección anterior.
+- Implementar el conteo dinámico de participantes vía la API de Telegram
+  para escalar el número de huecos de personaje.
