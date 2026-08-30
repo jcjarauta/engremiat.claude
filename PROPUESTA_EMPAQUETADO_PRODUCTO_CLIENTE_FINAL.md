@@ -2957,10 +2957,24 @@ repetible a un cliente distinto.
   no una decisión cerrada -- depende del tamaño real de las asociaciones que
   se aborden primero.
 
+### Manifiesto `asociacionismo`, escrito (2026-08-30)
+
+`G:\Mi unidad\DEVS\engremiat-litellm\manifiestos\asociacionismo.yaml` --
+documenta las entidades `ASOCIACION`/`SOCIO`/`DECISION_GRUPO`, la integración
+con Loomio, y cómo conecta con cada módulo ya existente (Cronista/Ejecutor,
+Ágora, red_social, Oportunidad). Deja explícita una decisión de arquitectura
+real todavía sin resolver: `PAQUETE_CLIENTE` hoy asume una fila por
+nodo/persona -- una asociación es un nivel institucional por encima, con
+varios socios debajo, y no está decidido si el paquete se aplica a la
+asociación entera en cascada o si cada socio conserva el suyo propio dentro
+del paraguas de la asociación.
+
 ### Pendiente, no resuelto todavía
 
-- Manifiesto `asociacionismo` (entidades `ASOCIACION`/`SOCIO`, integración
-  Loomio) -- no escrito todavía, queda acotado para la próxima ronda.
+- Nada de este módulo está construido -- ni las tablas, ni Loomio, ni las
+  acciones ni la pantalla de Plaza.
+- La decisión de arquitectura sobre el alcance de `PAQUETE_CLIENTE`
+  (asociación vs. socio individual) sigue abierta.
 - Ninguna conversación real con una asociación de familias/personas TEA u
   otras neurodivergencias -- validar esta hipótesis de mercado es el paso
   lógico antes de construir nada de esta sección.
