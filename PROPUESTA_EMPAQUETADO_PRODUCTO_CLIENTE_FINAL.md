@@ -3522,7 +3522,7 @@ bien cuidada.
   segura, coherente con la separación ya propuesta del generador en su
   propia infraestructura.
 
-### Primera medición real, con DeepSeek (2026-08-30)
+### Primera medición real, con DeepSeek, y una corrección de diseño (2026-08-30)
 
 Mientras se resuelve el acceso a Claude, se probó la misma cascada con
 DeepSeek como verificador -- resultado y coste real (no estimado) en
@@ -3531,4 +3531,16 @@ coste". Resumen: mejora clara sobre el borrador local (recuperó tareas
 omitidas, corrigió fases mal etiquetadas), un fallo real (mantuvo una tarea
 narrativa que se le pidió excluir), y un coste medido de **$0,003-0,006 por
 llamada** -- tan bajo que DeepSeek pasa a ser candidato serio para esta
-cascada por derecho propio, no solo un sustituto temporal de Claude.
+cascada por derecho propio.
+
+**Corrección de diseño, decidida el mismo día**: no son dos niveles
+("local + Claude automatizado"), son **tres**: local (borrador gratis),
+DeepSeek (verificación automatizada en n8n, coste marginal real), y Claude
+**deliberadamente manual, por cliente** -- el operador y Claude Code
+revisan y afinan a mano los casos que lo merezcan, sin automatizar esa
+capa por ahora. Esto saca `ANTHROPIC_API_KEY` de la ruta crítica: DeepSeek
+ya basta para el nivel de pago automatizado, y el nivel Claude se convierte
+en un servicio de mayor contacto y precio ("asesoría experta de
+personalización"), no en una tarea de infraestructura pendiente. Detalle
+completo en `ROADMAP_BASELINE_ENGREMIAT.md`, sección "Decisión: tres
+niveles, no dos".

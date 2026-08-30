@@ -307,3 +307,41 @@ de infraestructura del generador).
 proyecto (`DEV_PRUEBAS/codex-trigger-piloto`), prestada solo para esta
 comprobación puntual -- para uso real y sostenido de Engremiat hace falta
 una clave propia, en el `.env` de `engremiat-litellm`, no una prestada.
+
+## Decisión: tres niveles, no dos -- Claude queda manual por ahora (2026-08-30)
+
+Corrección sobre la cascada diseñada antes: no son "local + Claude
+automatizado". Son **tres niveles reales**, con Claude deliberadamente
+fuera de la automatización por ahora:
+
+1. **Local (worker Ollama)** -- borrador gratis, ya construido y probado.
+   Calidad variable, falla con documentos largos (ver pruebas anteriores).
+2. **DeepSeek (automatizado en n8n)** -- verificación/corrección del
+   borrador local, coste real medido de $0,003-0,006 por llamada. Este es
+   el nivel que se automatiza de verdad en el workflow, sin esperar a
+   Claude ni a `ANTHROPIC_API_KEY`.
+3. **Claude, manual, por cliente** -- NO se automatiza todavía. Cuando un
+   caso lo merezca, el operador y Claude Code (esta misma sesión,
+   literalmente) revisan y afinan la configuración de ese cliente a mano,
+   en una sesión real de trabajo. Esto no es un nivel "peor" que
+   automatizar -- es un servicio de mayor contacto y precio más alto,
+   sin necesitar ninguna infraestructura nueva (ni clave de API, ni nodo
+   n8n, ni separar nada) porque ya es exactamente lo que ocurre en
+   sesiones como esta.
+
+**Por qué mejora la propuesta**: elimina el bloqueo actual (falta de
+`ANTHROPIC_API_KEY`) de la ruta crítica -- DeepSeek ya es suficiente para
+tener el nivel automatizado de pago funcionando. Y convierte el trabajo
+manual operador+Claude Code en un tercer nivel de negocio con nombre propio
+("asesoría experta de personalización"), no en una tarea pendiente.
+
+**Pendiente, ajustado**:
+- Migrar el workflow de segmentación al n8n separado
+  (`engremiat-generador-n8n`, ya levantado, pendiente de cuenta) y añadir
+  ahí el nodo de verificación con **DeepSeek** (no Claude) como tercera
+  ruta del webhook.
+- Añadir `DEEPSEEK_API_KEY` propia al `.env` de `engremiat-litellm` --
+  hoy la prueba usó una clave prestada de otro proyecto.
+- El nivel "Claude manual" no necesita construirse -- ya está disponible
+  cada vez que el operador abre una sesión de Claude Code para un cliente
+  concreto. Sí falta decidir cómo se factura/empaqueta como oferta.
