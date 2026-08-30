@@ -3401,3 +3401,113 @@ para operar su propio Engremiat.
 - Nada de esto se activa antes de tener un catálogo probado -- mismo
   principio de "no construir sin señal real" ya aplicado en todo este
   documento.
+
+## Cascada de coste: los agentes locales preparan, Claude pule (2026-08-30)
+
+### La mejora sobre la propuesta anterior
+
+Tratar el coste de API como **gasto de adquisición de cliente** (no como
+coste operativo que hay que repercutir desde el primer día) cambia la
+pregunta de "¿cómo cobramos esto?" a "¿cómo lo hacemos tan barato que dé
+igual regalarlo al principio?" -- y la respuesta ya está delante: **no hay
+que mandarle a Claude el trabajo pesado, solo el veredicto final.** Los
+agentes locales (Cronista con el modelo local, Ejecutor Local) ya saben
+leer, trocear y proponer un primer borrador -- gratis, sin límite de
+llamadas, con la calidad que ya se ha visto hoy: aceptable pero con fallos
+reales. La idea de hoy es exactamente resolver eso sin pagar por generar
+desde cero: **que el modelo local prepare el terreno, y que Claude solo
+revise y corrija un resultado ya casi hecho**, no que escriba el documento
+entero. Eso es lo que hace barata una llamada de calidad profesional.
+
+### Por qué esto no es una idea nueva en este proyecto, es una que ya estaba anotada
+
+`config.yaml` (la pasarela LiteLLM) ya dejó escrito, desde su primera
+versión: *"El enrutado automático por complejidad (RouteLLM) es un
+refinamiento posterior"*. Esto es exactamente ese refinamiento, con un
+propósito concreto por fin: no es "elegir el modelo según lo complejo que
+parezca el prompt" en abstracto, es **una cascada de dos pasos con un
+trabajo específico cada uno** -- redactar (local, gratis) y verificar
+(Claude, de pago, barato porque el texto de entrada ya es corto).
+
+### Cómo se aplicaría, con la prueba de hoy como caso concreto
+
+La propia sesión de hoy es el ejemplo perfecto de por qué esto funciona:
+
+1. **Paso local (gratis)**: Cronista segmenta el documento completo con
+   `local-potente` -- exactamente lo que ya se probó. Resultado: una lista
+   de tareas, con los fallos reales ya documentados (tarea narrativa
+   colada, fases mal atribuidas, tareas reales omitidas).
+2. **Paso Claude (de pago, pero barato)**: en vez de mandarle a Claude el
+   documento entero otra vez, se le manda **la lista corta ya generada por
+   el paso 1** (unos pocos cientos de tokens, no los ~3.000 del documento
+   completo) junto con el documento original, y se le pide un trabajo
+   acotado: *"verifica esta lista contra el documento: corrige fases mal
+   atribuidas, elimina lo que sea texto narrativo, añade lo que falte"* --
+   no "genera la lista", sino "corrige la lista". Es precisamente el tipo
+   de tarea de verificación puntual donde un modelo grande rinde mucho
+   mejor que redactando desde cero, y de las más baratas que existen porque
+   la salida esperada es corta (una lista corregida, no un ensayo).
+3. **Puerta humana, sin cambios**: el resultado de Claude sigue sin
+   escribirse en Baserow directamente -- pasa por la misma revisión humana
+   ya construida (`confirmar_tareas`). Esta cascada mejora lo que llega a
+   esa puerta, no la elimina.
+
+### El coste real, en orden de magnitud (no una cifra exacta)
+
+Una llamada de este tipo -- entrada de unos pocos miles de tokens (el
+documento + el borrador local), salida de unos pocos cientos (la lista
+corregida) -- cae, con las tarifas públicas actuales de la API de Claude,
+en el rango de **céntimos de dólar por llamada, no euros**. Incluso
+asumiendo un margen generoso de error en esa estimación, regalar este paso
+en el onboarding de cada cliente nuevo es un gasto de marketing trivial
+frente al valor de una primera experiencia que "se comporta ya bien" desde
+el primer día -- comparable a lo que cualquier negocio gasta en una demo
+bien cuidada.
+
+### El modelo de negocio que propone el operador, ya extendido
+
+- **En el onboarding**: la cascada local+Claude corre automáticamente,
+  incluida en el precio (o gratis) -- es la inversión en que la primera
+  impresión sea profesional. Encaja directamente con el embudo de
+  onboarding ya diseñado antes en este documento (bot → demo
+  personalizada → conversión).
+- **Después del onboarding**: la misma cascada queda disponible como
+  **opción de pago bajo demanda** -- "mejorar cómo se comporta mi sistema"
+  como acción que el cliente puede pedir desde Plaza en cualquier momento,
+  no solo al darse de alta. Esto cierra un hueco que ya se había señalado
+  antes en este mismo documento (el cliente "solicita mejoras a través de
+  mantenimiento/Ejecutor") -- ahora con un mecanismo concreto y con un
+  precio que se sostiene solo, porque el coste real por llamada es bajo y
+  conocido.
+
+### Límites y honestidad
+
+- Nada de esta cascada está construida -- hoy el workflow de segmentación
+  solo tiene el paso local; el paso de verificación con Claude no existe
+  todavía como nodo real.
+- La estimación de coste es una aproximación razonada, no una factura real
+  todavía pagada -- antes de fijar un precio de venta hace falta medir el
+  coste real de varias llamadas de este tipo contra la API de Claude, no
+  solo estimarlo.
+- Regalar esta cascada en cada onboarding sin límite es un riesgo de coste
+  no acotado si el negocio escala -- hace falta una política explícita
+  (p.ej. una pasada gratuita por cliente nuevo, las siguientes de pago) en
+  vez de dejarlo abierto por defecto.
+- La clave del vector de protección de propiedad intelectual (sección
+  anterior) sigue aplicando aquí sin cambios: esta cascada corre en el
+  generador protegido del operador, con la clave de API de Claude del
+  operador -- nunca se distribuye una clave de Claude al hardware de un
+  cliente.
+
+### Pendiente
+
+- Añadir el nodo de verificación con Claude al workflow
+  `Cronista - Segmentar documento en tareas`, como segundo paso opcional
+  antes de la puerta humana.
+- Medir el coste real de al menos 5-10 llamadas de verificación reales,
+  antes de fijar cualquier precio de la opción de pago.
+- Definir la política de cuántas pasadas gratuitas incluye el onboarding
+  antes de que la mejora "cueste" al cliente.
+- Decidir dónde vive la clave de API de Claude del operador de forma
+  segura, coherente con la separación ya propuesta del generador en su
+  propia infraestructura.
