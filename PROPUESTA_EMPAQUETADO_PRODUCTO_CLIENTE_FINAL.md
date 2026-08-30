@@ -5052,3 +5052,182 @@ línea, no un detalle:
   una asociación local concreta de autismo (no la federación completa) y
   con FANJAC para altas capacidades, aplicando el ajuste de "dial"
   correspondiente a cada una.
+
+## Estimación de usuarios potenciales y coste-beneficio a 5 años (2026-08-30)
+
+### TAM / SAM / SOM -- tres niveles, no una única cifra
+
+**TAM (prevalencia poblacional bruta, Catalunya, menores 0-18 ≈ 1,34M
+derivados de datos Idescat 2025)**: TDAH ~91.500 (6,8% prevalencia real,
+solo 3% diagnosticado, 1% tratado); Autismo ~13.400 (1% consenso
+internacional); Altas capacidades ~11.300 identificados oficialmente
+(0,84%) frente a un potencial real sin identificar de 27.000-134.000
+(2-10%). Cifra casi inútil para decidir nada -- el 95%+ de esas personas
+no están conectadas a ninguna asociación.
+
+**SAM (alcanzable vía las redes ya investigadas)**: único dato oficial
+real encontrado -- **Fundación ADANA (una de las 9 de FCAFA-TDAH)
+atiende a más de 1.000 familias/año**, 150 niños/día. Es la mayor de su
+federación. Estimación razonada (no hay cifra oficial de la federación
+completa, se marca explícitamente como supuesto): FCAFA-TDAH completa
+podría representar 2.000-4.000 familias activas; Federació Autisme (48
+entidades, mucho más fragmentada) 2.400-7.200 familias en el conjunto,
+inalcanzable como bloque único; Altas capacidades, unos cientos de
+familias en el conjunto de FANJAC/AFINS/ACTUAR!/RECOLZA/ATHENA.
+
+**SOM a 5 años (limitado por tiempo humano, no por mercado ni por
+tecnología)**:
+
+| Año | Escenario realista | Asociaciones activas | Familias/usuarios en contacto |
+|---|---|---|---|
+| 1 | 1 piloto validado | 1 | Decenas |
+| 2 | Si el piloto funciona | 3-5 | 100-300 |
+| 3 | Si algo se sostiene (voluntariado/financiación parcial) | 5-8 | 300-800 |
+| 4-5 | Solo si se resuelve el cuello de botella humano | 8-15 | 800-2.500 |
+
+El salto de año 3 a año 5 no depende de la tecnología -- el motor ya lo
+soporta hoy sin cambios -- depende enteramente de si alguien más comparte
+la carga de la "puerta humana".
+
+### Coste-beneficio a 5 años
+
+**Coste real de caja**: incluso en el escenario más optimista (año 5,
+2.500 usuarios, ~5 interacciones/usuario/mes) el gasto de API rondaría
+$12,50/mes ≈ $150/año -- trivial en cualquier escala de la tabla.
+Hardware sigue puesto por cada cliente (modelo ya validado). El único
+coste real no reflejado en euros es el tiempo del promotor, sin precio
+de mercado asignado por no facturarse.
+
+**Beneficio**: no hay ingresos ni modelo de precio decidido hoy. Si no se
+monetiza nunca, el beneficio es impacto social + validación + porfolio
+real. Si se decide una cuota simbólica por asociación (no por familia --
+encaja mejor con presupuestos de tercer sector) de 20-50€/mes por
+asociación × 8-15 activas en año 5: 1.920€-9.000€/año, con >90% de
+margen dado el coste variable de ~150€/año. Vía más realista dado el
+contexto: un piloto bien documentado con 1-2 asociaciones podría
+justificar una **subvención pública puntual** (Ajuntament de Barcelona /
+Generalitat, tercer sector social) que cubra tiempo dedicado -- más
+habitual en este sector que el pago directo de las familias.
+
+### Límites y honestidad
+
+- Todas las cifras de SAM/SOM son estimaciones razonadas, no datos
+  oficiales -- ninguna federación investigada publica el número total
+  de familias activas.
+- La proyección a 5 años asume que el cuello de botella humano se
+  resuelve en algún punto entre el año 2 y el 3; si no se resuelve nunca,
+  el techo real está mucho más cerca de la fila del año 3 que de la del
+  año 5.
+- No hay ningún contacto real todavía con ninguna de las asociaciones o
+  federaciones citadas -- toda la estimación es previa al primer contacto.
+
+### Pendiente
+
+- Validar o corregir la estimación de SAM en cuanto haya un primer
+  contacto real con FCAFA-TDAH.
+- Decidir en qué punto (probablemente año 2-3) se busca activamente
+  ayuda añadida para la puerta humana, en vez de asumir que aparecerá
+  sola.
+
+## "Cuadrilla": incorporar workers humanos a Concilio vía un grupo de Telegram (2026-08-30)
+
+### La idea y por qué cierra hilos abiertos
+
+Propuesta del promotor: extender Concilio (hoy solo workers IA +
+datos deterministas) para que workers humanos participen en un grupo de
+Telegram donde se deciden cosas, se genera documentación y se crean
+tareas que un worker humano pueda hacer sin entender todo el sistema --
+"mini jobs". Cierra tres hilos que llevaban abiertos toda la sesión:
+
+1. El campo `CONSENTIDO_POR`/`FECHA` se había descartado como
+   "sociocracia todavía no real, porque con un solo operador no hay
+   grupo que decidir" -- un grupo de Telegram con workers humanos **es**
+   el grupo que faltaba para activar sociocracia de verdad, no solo un
+   marcador.
+2. Concilio propone pero nadie más que el promotor verifica ni alimenta
+   el Acervo -- un worker humano que revisa/ejecuta/documenta cierra ese
+   circuito.
+3. "No construir sin señal real" encuentra aquí su mecanismo perfecto:
+   cada mini-job humano completado es una señal real, no una simulación.
+
+### Investigación: qué está ya probado
+
+- **Decisión híbrida humano-IA (2025-2026)**: la línea de trabajo actual
+  (frameworks tipo Agentic Smart Design) modela estos sistemas como
+  grafos explícitos que integran IA, humanos y componentes deterministas
+  en un proceso auditable -- el mismo patrón que ya usa el generador
+  (Switch por acción, puerta humana explícita), ahora con un nodo humano
+  real en el grafo.
+- **Descomposición en microtareas (crowdsourcing)**: la atomización de
+  tareas es difícil y solo mejora iterando -- se prueba, se ve dónde
+  falla, se ajusta, hasta que el problema desaparece. Implicación de
+  diseño: no empezar con tareas abiertas, empezar con 2-3 plantillas muy
+  cerradas y solo generalizar cuando funcionen sin fricción.
+- **DisCO (Distributed Cooperative Organization)** -- marco cooperativo/
+  feminista/de comunes (alternativa a las DAO) que distingue
+  explícitamente tres tipos de trabajo con métricas complementarias:
+  **pro-bono, de cuidados, y remunerado**, en vez de fingir que todo es
+  "voluntariado" o todo es "empleo". Encaja con la situación real del
+  promotor (tiempo libre) y evita un riesgo legal concreto: pago
+  disfrazado de "colaboración" sin declarar la relación puede derivar en
+  "falso autónomo"/trabajo no declarado. Marcar el tipo de cada mini-job
+  desde el primer registro es la mitigación, no burocracia.
+- **Bots de Telegram para reparto de tareas** (Kaban, Corcava,
+  DoForMeBot): patrón ya resuelto por terceros -- un grupo, cada tarea es
+  un mensaje con botón "reclamar", el que la reclama la marca "hecha" al
+  terminar. Mismo estilo de botones que ya funcionó en Taller (evitó el
+  problema de texto libre/parseo de Telegram).
+
+### Propuesta concreta: "Cuadrilla"
+
+Nombre coherente con el vocabulario gremial ya establecido (Concilio
+delibera, Vigilia vigila de noche, Acervo almacena, Taller construye,
+Feria muestra) -- una Cuadrilla es el equipo de manos que ejecuta.
+
+- Tabla nueva `CUADRILLA_TAREA`: `TITULO`, `DESCRIPCION` (autocontenida,
+  sin jerga del sistema -- requisito no negociable), `TIPO_TRABAJO`
+  (pro_bono/cuidado/remunerado, siguiendo DisCO), `ESTADO`
+  (pendiente/reclamada/hecha/verificada), `ASIGNADO_A` (usuario
+  Telegram), `RESULTADO`, `ORIGEN` (qué decisión de Concilio la generó),
+  fechas.
+- Cuando Concilio+Vigilia produce una decisión que requiere trabajo
+  humano, el generador la descompone en 1-3 mini-jobs de una plantilla
+  cerrada y las postea en el grupo de Telegram con botón "Reclamar".
+- Al completarse, el resultado vuelve a `CUADRILLA_TAREA` y pasa por la
+  misma puerta humana ya existente (el promotor verifica) antes de
+  entrar en el Acervo real -- dos capas: quien hace la tarea, quien la
+  valida.
+- Para decisiones (no ejecución), el bot postea la propuesta de Concilio
+  con un botón de consentimiento sociocrático real: no "me gusta", sino
+  "¿objeción razonada?" -- sociocracia bien aplicada no busca entusiasmo
+  unánime, busca ausencia de objeción, y por fin tiene sentido porque
+  hay un grupo real, no un operador solo.
+
+### Límites y honestidad
+
+- Nada de esto está construido todavía -- es investigación y valoración,
+  ninguna tabla ni workflow se ha tocado.
+- No inventar tareas abiertas de entrada -- la literatura es clara en
+  que la atomización falla sin iterar con casos reales; empezar con 1-2
+  personas reales y 2-3 plantillas cerradas antes de generalizar.
+- Riesgo legal de trabajo no declarado si cualquier mini-job remunerado
+  se trata informalmente -- la distinción de tipo DisCO desde el primer
+  registro es la mitigación necesaria, no un adorno opcional.
+- Coordinar personas reales cuesta tiempo -- el cuello de botella humano
+  ya identificado en la estimación de usuarios se vuelve más agudo antes
+  de aliviarse, al menos en la fase de arranque.
+- Ningún dato personal sensible de las asociaciones de neurodivergencia
+  investigadas debería pasar nunca por el grupo de Telegram de la
+  Cuadrilla mientras el mecanismo no esté maduro -- mantener esta capa
+  separada de cualquier dato de participación real.
+
+### Pendiente
+
+- Reclutar 1 persona de confianza para el primer piloto manual.
+- Definir 2-3 plantillas de mini-job muy cerradas (p. ej. revisar/pulir
+  el texto de un capítulo ya generado por Vigilia).
+- Probarlo a mano en un chat de Telegram normal antes de automatizar
+  nada -- mismo patrón de "verificar a mano antes de automatizar" que
+  Canvas+DAFO.
+- Solo si el piloto manual funciona, construir `CUADRILLA_TAREA` y el
+  flujo de botones en el generador.
