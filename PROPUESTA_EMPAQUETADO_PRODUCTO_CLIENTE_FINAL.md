@@ -4583,3 +4583,54 @@ tras el arreglo, las tres con registro real verificado en Baserow.**
   no solo pruebas.
 - Una pantalla o acción para consultar el gasto acumulado sin entrar a
   Baserow directamente.
+
+## Concilio, primera ejecución real (2026-08-30)
+
+### Lo construido, versión mínima deliberada
+
+Sin rondas de debate (la corrección ya decidida: el debate abierto
+empeora resultados) -- una sola pasada por Acervo:
+
+- **Tabla `ACERVO`** (Baserow, id 286) -- el almacén en sí, listo para
+  guardar personajes, giros y contexto real reutilizable (vacío todavía).
+- **Dos personas de Acervo**, hoy fijas en código: *Acervo Rural* (campo,
+  oficios, estaciones) y *Acervo Urbano* (barrio, vecindad, ciudad) --
+  cada una propone su idea con el modelo local, gratis.
+- **Una síntesis final con DeepSeek** combina ambas propuestas en una
+  sola idea coherente -- con el mismo tope de gasto ya construido
+  comprobado antes de llamar.
+
+### Prueba real
+
+Tema: *"un huerto comunitario que nadie sabe muy bien de quién es"*.
+Resultado: una propuesta integrada real, con elementos rurales y
+comunitarios entrelazados (memoria oral, reparto sin propietario,
+relevo generacional) -- coste real registrado: **$0,00055**. Sin
+desarrollar todavía -- la nota final del propio Concilio deja explícito
+que hace falta decisión humana antes de pasar esto a `proponer_tareas`
+(software/proyecto) o `proponer_plantillas_mision` (historia/Escenario).
+
+### Límites y honestidad
+
+- Las dos personas de Acervo están fijas en código, no en una tabla --
+  para más de dos, o para que se puedan editar sin tocar el workflow,
+  hace falta una tabla `ACERVO_PERSONA`.
+- La tabla `ACERVO` existe pero está vacía -- nada de lo generado hoy se
+  ha guardado ahí todavía como recurso reutilizable.
+- El "consentimiento humano" antes de desarrollar la idea sigue siendo
+  informal (el operador decide a ojo) -- no hay ningún circuito
+  sociocrático real todavía, solo el principio aplicado de palabra.
+- Solo probado una vez -- no hay todavía evidencia de que la calidad se
+  mantenga con temas más complejos o ambiguos.
+
+### Pendiente
+
+- Tabla `ACERVO_PERSONA` para más voces y para poder editarlas sin tocar
+  el workflow.
+- Guardar de verdad en `ACERVO` los elementos reutilizables de una
+  propuesta ya desarrollada.
+- El circuito de consentimiento real (hoy es "el operador decide", no
+  sociocracia de un grupo).
+- Probar con un tema orientado a software, no solo a comunidad/historia,
+  para confirmar que el mismo mecanismo sirve para los tres dominios que
+  se pedían (cuento, software, cooperativa).
