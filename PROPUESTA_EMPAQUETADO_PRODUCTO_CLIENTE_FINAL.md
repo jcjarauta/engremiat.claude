@@ -2980,3 +2980,154 @@ del paraguas de la asociación.
   lógico antes de construir nada de esta sección.
 - Loomio no evaluado técnicamente (instalación, integración con el resto del
   stack) -- solo evaluado como candidato de mercado.
+
+## Jerarquía general: un mismo patrón para organización, geografía y competencia (2026-08-30)
+
+### El problema que expuso `asociacionismo.yaml`
+
+La decisión de arquitectura que quedó abierta ayer -- ¿`PAQUETE_CLIENTE` se
+aplica a la `ASOCIACION` en cascada, o cada `SOCIO` conserva el suyo? -- no es
+un problema aislado de ese módulo. Es un síntoma de haber modelado
+`ASOCIACION`/`SOCIO` como un par fijo de dos niveles, cuando la realidad ya
+apuntada hoy es una cadena mucho más larga: **usuario -> familia -> grupo ->
+asociación -> federación -> confederación**, y no hay ninguna razón para que
+esa cadena se detenga ahí -- una confederación puede agrupar federaciones de
+distintas regiones, un grupo de apoyo mutuo (ya descrito en
+`PROPUESTA_APOYO_AUTONOMIA_NEURODIVERGENCIA.md`, 3-8 hogares) puede o no
+pertenecer a una asociación formal, etc.
+
+La instrucción de hoy generaliza esto correctamente: la misma necesidad de
+"escalado jerárquico" no es exclusiva de lo organizativo. Aparece igual en:
+
+- **Espacio geográfico**: un nodo opera en un barrio, que pertenece a un
+  municipio, que pertenece a una comarca/provincia, que pertenece a una
+  comunidad autónoma, que pertenece a un país. Las sinergias entre nodos
+  (ya diseñadas para Ágora) dependen de saber si dos nodos están "cerca" en
+  esta jerarquía, no solo de una distancia en línea recta.
+- **Intereses/competencias**: el ejemplo dado hoy es exacto -- un carpintero
+  puede o no ser ebanista; puede especializarse en puertas, ventanas,
+  muebles o suelos. Un herrero especializado en calderería no hace lo mismo
+  que uno especializado en forja. Un desarrollador de software puede ser
+  backend, frontend o de redes -- son ramas distintas de un mismo árbol de
+  "carpintería" o "desarrollo de software", no la misma habilidad con
+  distinto nombre.
+
+Construir tres jerarquías distintas a mano (una tabla `ASOCIACION` con
+`PADRE_ID`, otra `REGION` con `PADRE_ID`, otra `OFICIO` con `PADRE_ID`) sería
+repetir tres veces la misma estructura de datos. La mejora real es reconocer
+que es **un solo patrón, aplicado a tres dominios**.
+
+### Precedente real: no inventar la taxonomía de competencias
+
+Para el árbol organizativo y el geográfico no hace falta ningún estándar
+externo -- son jerarquías propias del cliente (su propia asociación, su
+propio territorio). Pero para **competencias/intereses**, inventar una
+taxonomía desde cero (decidir a mano si "ebanistería" cuelga de
+"carpintería" o es un oficio aparte, para cada oficio posible) es exactamente
+el tipo de trabajo que ya existe hecho, mantenido y gratuito:
+
+- **[ESCO](https://esco.ec.europa.eu/en/about-esco/what-esco)** (European
+  Skills, Competences, Qualifications and Occupations) -- clasificación
+  multilingüe oficial de la Comisión Europea, desarrollada desde 2010.
+  Describe 3.039 ocupaciones y cerca de 14.000 competencias/habilidades
+  ligadas a ellas, traducidas a 28 idiomas, en formato abierto y descargable
+  gratis. La rama de habilidades ("skills pillar") está organizada en una
+  jerarquía real -- exactamente el "carpintero puede o no ser ebanista" del
+  ejemplo de hoy ya existe codificado en ESCO como nodos distintos del árbol
+  de ocupaciones/habilidades. ([Wikipedia](https://en.wikipedia.org/wiki/European_Skills,_Competences,_Qualifications_and_Occupations),
+  [CEDEFOP](https://www.cedefop.europa.eu/en/news/esco-taxonomy-classification-european-skills-competences-qualifications-and-occupations-just))
+- **[SFIA](https://sfia-online.org/en)** (Skills Framework for the
+  Information Age) -- para el caso concreto de "desarrollo de software:
+  backend/frontend/redes" del ejemplo de hoy, SFIA ya modela exactamente
+  eso: habilidades TIC organizadas en categorías y subcategorías (p.ej.
+  "Development and implementation" con sub-habilidades diferenciadas), cada
+  una además con 7 niveles de responsabilidad/autonomía -- útil si en algún
+  momento Engremiat necesita no solo "sabe backend sí/no" sino "a qué nivel".
+
+Decisión propuesta: usar **ESCO como fuente de verdad para el árbol de
+competencias/oficios en general** (carpintería, herrería, agricultura,
+cuidados, etc. -- cualquier oficio manual o de servicios que aparezca en
+comunidades reales) y reservar **SFIA solo para el subárbol de competencias
+de desarrollo de software**, si Engremiat llega a necesitar ese nivel de
+detalle para sus propios colaboradores técnicos. Ninguno de los dos se monta
+todavía -- es la fuente que se referenciaría, no un sistema instalado.
+
+### Un solo patrón de datos para los tres árboles
+
+Un patrón de árbol autorreferenciado (`PADRE_ID` apuntando a la misma tabla)
+resuelve los tres casos sin duplicar estructura:
+
+```
+ENTIDAD_ORGANIZATIVA
+  ID, NOMBRE, TIPO_NIVEL (usuario/familia/grupo/asociacion/federacion/confederacion),
+  PADRE_ID (-> ENTIDAD_ORGANIZATIVA.ID, NULL si es la raíz),
+  PAQUETE_CLIENTE_ID (NULL = hereda el de su padre; con valor = lo sobreescribe)
+
+UBICACION_GEOGRAFICA
+  ID, NOMBRE, TIPO_NIVEL (barrio/municipio/comarca/provincia/comunidad/pais),
+  PADRE_ID (-> UBICACION_GEOGRAFICA.ID, NULL si es la raíz)
+
+COMPETENCIA
+  ID, NOMBRE, CODIGO_ESCO (URI de ESCO si existe; NULL si es una rama propia
+    no cubierta por ESCO, p.ej. la subrama de SFIA para desarrollo software),
+  PADRE_ID (-> COMPETENCIA.ID, NULL si es la raíz)
+
+PERSONA_COMPETENCIA   -- tabla puente muchos-a-muchos
+  ID, PERSONA_ID, COMPETENCIA_ID, NIVEL (declarado por la propia persona,
+    no evaluado por nadie más -- mismo principio de autorreporte que
+    CAPACIDAD_DECLARADA en DISPONIBILIDAD, red_social.yaml)
+```
+
+Con esto:
+
+- **La pregunta abierta de `asociacionismo.yaml` se resuelve con el mismo
+  patrón que ya usa cualquier sistema de permisos jerárquico (CSS, ACLs de
+  ficheros): un valor `NULL` en `PAQUETE_CLIENTE_ID` hereda el de su
+  ancestro más cercano que sí lo tenga; un valor explícito lo sobreescribe.**
+  No hace falta decidir "asociación o socio" como una disyuntiva -- ambos
+  casos son el mismo mecanismo de cascada, aplicado en un punto distinto del
+  árbol.
+- El modelo de permisos de tres niveles (Operador/Nodo/Común) ya diseñado
+  antes deja de ser un caso especial fijo -- es simplemente un fragmento
+  corto de este mismo árbol (`confederación` y `federación` no existen
+  todavía en el caso de un solo nodo, pero la tabla no cambia el día que
+  aparezcan).
+- Las "sinergias entre nodos" ya diseñadas para Ágora pueden calcular
+  cercanía real recorriendo `UBICACION_GEOGRAFICA` (mismo municipio > misma
+  comarca > misma provincia) en vez de comparar solo texto libre.
+- El emparejamiento de Ágora/Oportunidad por habilidad deja de depender de
+  texto libre ("hace muebles", "carpintero") y pasa a comparar nodos reales
+  del árbol de `COMPETENCIA` -- un socio que declara "ebanistería" aparece
+  automáticamente también en búsquedas de "carpintería" si el árbol lo
+  modela como hijo, sin tener que declarar ambas cosas a mano.
+
+### Límites y honestidad
+
+- Nada de esto está construido -- ni las tres tablas, ni la importación de
+  ESCO, ni el mecanismo de herencia de `PAQUETE_CLIENTE_ID`. Es un patrón de
+  modelo de datos propuesto para sustituir el diseño previo de
+  `ASOCIACION`/`SOCIO` como par fijo.
+- Importar el árbol completo de ESCO (14.000 competencias) sería excesivo
+  para el volumen real de cualquier cliente actual -- la importación
+  correcta es bajo demanda (solo los nodos del árbol que un socio o nodo
+  real llega a declarar), no una carga masiva inicial.
+- El mecanismo de herencia por `PADRE_ID` nulo en cascada es un patrón común
+  y probado (así funciona la resolución de permisos de ficheros Unix o de
+  CSS), pero no se ha probado todavía con datos reales en Baserow -- hay que
+  verificar que las fórmulas/consultas de Baserow soportan bien la
+  recursividad antes de asumir que "se puede simplemente consultar".
+- Esto reemplaza el diseño de `ASOCIACION`/`SOCIO` de `asociacionismo.yaml`
+  -- ese manifiesto necesita revisión para usar `ENTIDAD_ORGANIZATIVA` en
+  vez de dos tablas fijas; no reescrito todavía, solo señalado aquí.
+
+### Pendiente, no resuelto todavía
+
+- `asociacionismo.yaml` y `red_social.yaml` siguen usando el diseño previo
+  (`ASOCIACION`/`SOCIO` fijo, `INTERES` en texto libre) -- no actualizados
+  todavía a este patrón general, solo el manifiesto nuevo `jerarquia.yaml`
+  documenta el patrón en sí.
+- No decidido si `UBICACION_GEOGRAFICA` se puebla a mano por cliente o se
+  importa de un catálogo oficial (p.ej. códigos INE para España) -- ninguna
+  de las dos cosas está hecha.
+- No probado en Baserow real ningún recorrido de árbol autorreferenciado ni
+  la cascada de herencia de `PAQUETE_CLIENTE_ID`.
