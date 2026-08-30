@@ -3374,14 +3374,17 @@ hoy: una petición de salida, sin exponer nada suyo), recibe el resultado
 100% autónomo y local. Ningún cliente necesita ver ni alojar el generador
 para operar su propio Engremiat.
 
-**En marcha (2026-08-30)**: levantado un contenedor n8n nuevo y separado,
-`engremiat-generador-n8n` (puerto 5680, solo accesible en `127.0.0.1` -- ni
-siquiera visible en la red local, a diferencia del n8n compartido que sí
-escucha en la LAN). Pendiente de que el operador cree la cuenta inicial
-(paso que no puedo hacer yo -- crear cuentas con contraseña está fuera de
-lo que puedo ejecutar) y genere una API key para poder migrar allí el
-workflow `Cronista - Segmentar documento en tareas`, hoy todavía en el n8n
-compartido.
+**Hecho (2026-08-30)**: contenedor n8n separado levantado
+(`engremiat-generador-n8n`, `127.0.0.1:5680`, sin acceso ni desde la LAN) y
+el workflow `Cronista - Segmentar documento en tareas` migrado ahí de
+verdad -- la copia del n8n compartido del PC quedó desactivada. En el
+camino se detectó y corrigió un error real: la primera clave de API que se
+generó estaba creada en el n8n de la Pi, el mismo que aloja el workflow de
+cara al cliente -- justo lo que había que evitar. Corregido antes de
+construir nada encima. Detalle completo, con las tres rutas del workflow
+migrado (`proponer_tareas`/`proponer_tareas_premium`/`confirmar_tareas`) y
+sus pruebas reales, en `ROADMAP_BASELINE_ENGREMIAT.md`, sección "Generador
+migrado de verdad a su propia infraestructura".
 
 ### Límites y honestidad
 

@@ -345,3 +345,40 @@ manual operador+Claude Code en un tercer nivel de negocio con nombre propio
 - El nivel "Claude manual" no necesita construirse -- ya está disponible
   cada vez que el operador abre una sesión de Claude Code para un cliente
   concreto. Sí falta decidir cómo se factura/empaqueta como oferta.
+
+## Generador migrado de verdad a su propia infraestructura (2026-08-30)
+
+Al preparar el nodo de DeepSeek apareció el problema que ya se había
+anotado como pendiente: la clave de API que el operador generó primero
+estaba creada en el n8n de la Pi (`192.168.8.230:5678`) -- el mismo n8n
+donde vive `Plaza - backend (Pi nativo)`, el workflow real de cara al
+cliente. Corregido antes de construir nada encima: se creó la cuenta y la
+clave en el contenedor realmente aislado
+(`engremiat-generador-n8n`, `127.0.0.1:5680`, sin acceso ni siquiera desde
+la LAN) levantado antes ese mismo día, y el workflow
+`Cronista - Segmentar documento en tareas (con puerta humana)` se migró
+ahí -- **la copia del n8n compartido del PC quedó desactivada**.
+
+El workflow migrado tiene ahora tres rutas reales, no dos:
+
+- `proponer_tareas` -- solo el borrador local, gratis. Probado: no llama a
+  DeepSeek (campo `verificado_por` ausente en la respuesta).
+- `proponer_tareas_premium` -- borrador local + verificación DeepSeek.
+  Probado con éxito: **19 tareas limpias**, las 6 reales de la Fase 1
+  completas, sin duplicados de Fase 4, y esta vez DeepSeek no solo eliminó
+  el recordatorio narrativo de la Fase 5 (fallo de la prueba anterior) sino
+  que lo convirtió en una tarea real derivada en vez de colarlo tal cual --
+  mejor resultado que el de la prueba directa de antes, gracias a reforzar
+  la instrucción ("elimínalo aunque el borrador lo incluyera"). Coste real
+  medido: 5.907 tokens de entrada, 2.036 de salida (~$0,003-0,005).
+- `confirmar_tareas` -- sin cambios de lógica, sí de credencial (nueva,
+  propia de esta instancia). Probado: fila real creada en `TAREA` (id 5).
+
+**Pendiente**:
+- Sustituir la clave de DeepSeek prestada por una propia de Engremiat.
+- Decidir qué hacer con el workflow vacío `engremiat-generador-n8n` que
+  quedó, por el malentendido inicial, en el n8n de la Pi -- no es peligroso
+  (sin nodos), pero es ruido a limpiar.
+- La copia desactivada en el n8n compartido del PC (`140Zt0iiSfjMl7dD`)
+  podría borrarse una vez se confirme que la migrada funciona de forma
+  sostenida -- de momento se deja desactivada, no borrada, por si acaso.
