@@ -2781,3 +2781,89 @@ alto además del claro/oscuro ya implementado.
 - El sistema de tokens personalizables (acento, tamaño de texto, contraste
   alto) no está construido -- hoy Plaza solo distingue claro/oscuro por
   preferencia del sistema.
+
+## De 1 persona a red social: diseñar atómico, preparado para escalar (2026-08-30)
+
+### La idea del operador, aterrizada
+
+Hoy el cliente es una persona (1 persona = 1 usuario). Pero el diseño final
+para este perfil no es un gestor de tareas personal -- es una **red social**:
+eventos, actividades, calendarios compartidos, intereses comunes entre
+personas neurodivergentes. La instrucción del operador es correcta y barata
+de aplicar ahora: **diseñar el modelo de datos ya pensando en red, aunque hoy
+solo exista un nodo con una persona** -- evita una migración costosa después.
+
+### No construir una red social desde cero -- ya existe, es libre y federada
+
+**Mobilizon** (Framasoft, código abierto, parte del Fediverse vía ActivityPub)
+es exactamente la pieza que falta: gestión de eventos, grupos, RSVP,
+discusión de grupo y directorio de recursos -- diseñado explícitamente como
+alternativa ética a Facebook Events/Meetup. Datos reales: 79 instancias
+activas, más de 4.000 grupos, más de 376.000 eventos creados. Autoalojable,
+coherente con toda la soberanía de este documento -- y al ser federado vía
+ActivityPub, **encaja de forma literal con las "sinergias entre nodos" ya
+diseñadas** (la misma idea que llevó a usar Community Exchange System como
+referencia para Ágora): cada nodo/hogar podría tener su propia instancia
+Mobilizon, federada con las demás, sin que nadie dependa de un servidor
+central ajeno.
+
+**Reparto de responsabilidades, sin solapar**: Ágora (ya diseñada) resuelve el
+intercambio de recursos/habilidades; Mobilizon resolvería eventos/actividades/
+calendario compartido -- dos capas complementarias de la misma federación
+entre nodos, no dos proyectos distintos.
+
+### Qué aportan las apps específicas para población neurodivergente (investigadas, no copiadas literalmente)
+
+Existen ya productos comerciales enfocados en esta audiencia concreta
+(Synchrony, Kaboose, ND Connect, Blausm) -- ninguno es código abierto, así
+que no se adoptan como pieza, pero sus decisiones de diseño sí son evidencia
+útil de qué funciona con esta población real:
+
+- **Notificaciones de baja presión**: comunicación pensada para no generar
+  urgencia ni ansiedad -- nunca insignias rojas ni recordatorios que se
+  sientan como una exigencia (coherente con *"consent beats compliance"* ya
+  fijado en el documento de neurodivergencia).
+- **Preferencias de comunicación individuales**: no todo el mundo se
+  comunica igual -- alguien prefiere texto, otro voz, otro un formato visual
+  -- el sistema debe permitir elegir, no imponer un único canal.
+- **Filtrado por interés y sensibilidad, no solo geografía**: emparejar
+  actividades y personas por afinidad real e incluso por sensibilidades
+  concretas (ruido, luz, aforo), no solo por cercanía.
+
+### Diseño del modelo de datos: atómico hoy, listo para red mañana
+
+Para que escalar de 1 persona a una red no exija rehacer nada, las entidades
+nuevas (`INTERES`, `DISPONIBILIDAD`, `EVENTO`) se diseñan desde ya con una
+referencia a `PERSONA_ID`/`NODO_ID`, aunque hoy solo exista una fila -- el
+mismo principio de "capacidad diaria autorreportada" (spoon theory) ya
+recogido en el documento de neurodivergencia se convierte, con esta
+referencia, en el dato que después permite proponer actividades que encajen
+con la capacidad real de cada persona ese día, no solo con su interés
+declarado.
+
+**Módulo nuevo en el catálogo de manifiestos**: `red-social` (o el nombre que
+se decida), dependiente de `nucleo` y con Mobilizon como servicio externo
+integrado -- **deliberadamente no se construye ahora**, seguirá el mismo
+criterio ya fijado hoy de "no tocar módulos nuevos sin señal real de
+necesidad": mientras exista un solo nodo/persona, no hay red que gestionar.
+
+### Límites, heredados del documento de neurodivergencia
+
+- Cualquier dato de intereses/disponibilidad/sensibilidades es información
+  personal sensible si se cruza con condición de salud -- mismo aviso de RGPD
+  artículo 9 ya señalado, reforzado aquí porque una red social implica
+  visibilidad entre personas, no solo almacenamiento privado.
+- Ninguna conexión entre personas o nodos debe ser automática -- opt-in
+  explícito siempre, mismo principio ya aplicado a Oportunidad y a la
+  biblioteca común.
+
+### Pendiente, no resuelto todavía
+
+- Mobilizon no está instalado ni probado en ningún nodo -- diseño de
+  intención, no validado técnicamente.
+- El módulo `red-social` no tiene manifiesto escrito todavía.
+- Las entidades `INTERES`/`DISPONIBILIDAD`/`EVENTO` no existen en ninguna
+  Baserow real -- diseño conceptual únicamente.
+- No se ha decidido si Mobilizon corre por nodo (un hogar = una instancia) o
+  centralizado para varios hogares -- decisión de arquitectura real, pendiente
+  de con cuántos hogares reales se empiece a probar.
