@@ -4457,3 +4457,72 @@ tratarse como una migración, no como una edición trivial.
   aparecen en Feria), no solo a las misiones dentro de uno ya elegido.
 - Construir una validación que impida promocionar una versión incompleta
   (falta alguna misión respecto al total esperado).
+
+## Diccionario de términos y "Concilio" con presupuesto y sociocracia real (2026-08-30)
+
+### Diccionario
+
+El vocabulario ya no cabe en la cabeza -- creado
+[`DICCIONARIO_ENGREMIAT.md`](DICCIONARIO_ENGREMIAT.md), referencia rápida
+de cada término (Cronista, Ejecutor, Ágora, Pregonero, Oportunidad, Plaza,
+Feria, Taller, Escenario, Acervo, Concilio...) con una línea de qué es y si
+está construido o solo diseñado. Se actualiza según crece el sistema.
+
+### "Concilio", nombrado y comparado con frameworks reales
+
+Nombre elegido para el multiciclo de varios Acervos deliberando
+internamente antes de que una idea llegue a Cronista -- funciona igual
+para un cuento, un proyecto de software o una cooperativa de aceitunas.
+Comparado con lo que ya existe en el mercado: **AutoGen** (grupo de
+agentes con gestor de turno), **CrewAI** (crew de roles con objetivo
+propio), **Mixture-of-Agents** (ICLR 2025 -- varios proponen, uno
+sintetiza, mejora medible), **Multiagent Debate** (MIT -- rondas de
+crítica mutua). Corrección real incorporada: el paper *"Talk Isn't Always
+Cheap"* (2025) demuestra que el debate sin límite **empeora** el resultado
+frente a algo tan simple como votar -- Concilio usa rondas acotadas (2-3)
+más una síntesis final, nunca debate abierto.
+
+### Presupuesto medible y anticipable -- la lección de OpenClaw, aplicada
+
+Ya investigamos OpenClaw el 2026-08-29 y encontramos casos reales de
+facturas de **más de $3.600 en un mes** por bucles de agente sin control.
+Concilio se diseña para que el coste se calcule *antes* de ejecutar, no se
+descubra después:
+
+```
+coste_estimado = numero_de_acervos × rondas × coste_medio_por_llamada (~$0,005 con DeepSeek, ya medido hoy) + 1 síntesis
+```
+
+Para 3 Acervos × 2 rondas + síntesis, del orden de **$0,035 por ejecución**
+-- el riesgo real no es una ejecución, es la repetición sin límite.
+Mitigación: tope de gasto real en LiteLLM (ya disponible de fábrica, sin
+configurar todavía con un límite explícito para Concilio) más el gate
+sociocrático de abajo.
+
+### Sociocracia, puesta a funcionar de verdad -- de forma reflexiva
+
+La sociocracia (ya diseñada para "Semilla Cooperativa") se aplica ahora al
+propio Engremiat: el resultado sintetizado de Concilio **no pasa
+automáticamente a desarrollarse de verdad** -- antes necesita el mismo
+gate de consentimiento humano ("nadie tiene objeción razonada") que se
+exigiría a cualquier grupo real. Evita que Concilio genere muchas ideas
+baratas y las desarrolle todas sin criterio solo porque "salió barato
+generarlas".
+
+### Límites y honestidad
+
+- Nada de Concilio está construido -- diseño con precedente real
+  verificado, no una promesa de resultado.
+- El tope de gasto de LiteLLM existe de fábrica pero no está configurado
+  todavía con un límite explícito para este uso.
+- La estimación de coste es una aproximación razonada sobre datos ya
+  medidos, no una factura real de Concilio (que no existe todavía).
+
+### Pendiente
+
+- Configurar el tope de gasto explícito en LiteLLM antes de construir
+  ninguna ejecución real de Concilio.
+- Diseñar el mecanismo concreto de consentimiento (¿quién da el "sí" hoy,
+  mientras solo hay un operador?).
+- Mantener `DICCIONARIO_ENGREMIAT.md` actualizado con cada pieza nueva --
+  no se actualiza solo.
