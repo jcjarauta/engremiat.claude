@@ -2075,3 +2075,119 @@ que faltan (`listar_documentos`, `preguntar_ia`, `listar_recursos_agora`,
   se pierde) no está diseñado en detalle, solo el principio general.
 - No se ha decidido el idioma/localización de las pantallas -- pensar en ello
   desde el principio de la construcción, no añadirlo después.
+
+## Normalizar el paquete cliente y centralizar la experiencia Engremiat en una plataforma (2026-08-30)
+
+### El motor de saldos, como primer caso de un patrón general
+
+El operador decide dejar el motor de crédito mutuo de Ágora como **opción
+personalizable según tipo de cliente** (ninguno / manual / Cyclos), en vez de
+un componente fijo. Esa misma idea, generalizada, es la respuesta a la pregunta
+de fondo de esta ronda: **Engremiat no es un producto único y cerrado, es un
+núcleo más una serie de módulos activables por cliente** -- Ágora es el primer
+módulo donde esto se hace explícito, pero debería aplicar a todos: no todos los
+clientes necesitan Oportunidad, ni Pregonero, ni siquiera la bóveda Obsidian.
+
+### Comparación de mercado: quién ya resuelve "muchos servicios, una sola plataforma"
+
+Investigado explícitamente para esta pregunta -- existen productos maduros que
+resuelven exactamente el problema de fondo (varios servicios autoalojados en un
+Pi, presentados bajo una única experiencia coherente, instalables como
+"aplicaciones"):
+
+| Plataforma | Qué resuelve | Relevancia para Engremiat |
+|---|---|---|
+| **UmbrelOS** | Panel pulido sobre contenedores Docker, tienda de 300+ apps (incluye Nextcloud, Home Assistant, **Ollama**), soporta oficialmente Raspberry Pi 5 | La más cercana de todas -- el propio stack de Engremiat (n8n, Baserow, Ollama) ya son contenedores Docker, exactamente lo que Umbrel sabe empaquetar y presentar |
+| **YunoHost** | Catálogo de 500+ apps, más comunitario, corre en Pi 3/4/5, pensado explícitamente para gente sin conocimientos técnicos | Precedente de que "autoalojar muchos servicios con una instalación simple" ya tiene una comunidad grande resolviendo el mismo problema |
+| **Home Assistant** | Automatización local-first, la referencia de "panel único y amigable sobre integraciones dispares" en el mundo domótico | Modelo de referencia de UX -- un panel (Lovelace) que oculta la complejidad de decenas de integraciones distintas |
+| **Cloudron** | Gestión de apps de nivel profesional/equipo, con SSO y correo -- de pago | Menos relevante (orientado a empresas en VPS, no a comunidades en hardware propio) |
+
+**Conclusión**: no hay que construir un gestor de contenedores, un sistema de
+actualizaciones ni una tienda de apps desde cero -- **ese problema ya está
+resuelto por Umbrel (el más afín, dado que ya usa Docker+Ollama) o YunoHost**.
+Lo que Engremiat aporta y ningún de ellos tiene es el contenido específico:
+el esquema de entidades, los ciclos (Ejecutor/Cronista/Pregonero/Oportunidad/
+Ágora), y Plaza como interfaz de comunidad -- no de administración de apps.
+
+### Diseño: paquete cliente normalizado
+
+**Núcleo, siempre incluido en cualquier cliente**:
+- Motor: n8n + Baserow (o Sheets, para clientes cloud) + Ollama vía LiteLLM.
+- Esquema base: `PROYECTO`/`TAREA`/`RECURSO`/`DOCUMENTO`/`INCIDENCIA`.
+- Interfaz cliente: **Plaza**, mostrando solo los módulos contratados.
+- Interfaz operador: **Consola** (gobierno del ecosistema).
+
+**Módulos opcionales, cada uno instalable/desinstalable de forma independiente**
+(cada uno definido por un **manifiesto** -- ver más abajo):
+
+| Módulo | Qué añade | Configuración por cliente |
+|---|---|---|
+| Ejecutor | Ciclo de cierre de tareas de desarrollo | Solo clientes con código propio |
+| Cronista | Documentación desde datos reales | Casi cualquier cliente |
+| Pregonero | Contenido de redes sociales | Solo si el cliente hace difusión externa |
+| Oportunidad | Detección de negocio/subvención/voluntariado | Solo clientes con foco de crecimiento |
+| Ágora | Intercambio de recursos entre usuarios/nodos | Motor de saldo: Ninguno / Manual / Cyclos, a elegir |
+| Ejecutor Local | Mantenimiento offline con IA local | Solo nodos con conectividad poco fiable |
+| Bóveda Obsidian | Notas enlazadas para el operador/cliente avanzado | Opcional |
+| Bot Telegram | Onboarding y avisos cuando hay internet | Opcional, nunca dependencia única |
+
+**El manifiesto de un módulo**, formato propuesto (inspirado directamente en
+cómo Umbrel define sus apps -- un `manifest.yml` sencillo, no un formato
+inventado desde cero):
+
+```yaml
+modulo: cronista
+version: 1
+tablas_baserow:
+  - nombre: DOCUMENTO
+    csv_semilla: DOCUMENTO_import.csv
+workflows_n8n:
+  - archivo: cronista_documentacion.json
+pantallas_plaza:
+  - biblioteca
+```
+
+Esto convierte "instalar un módulo para un cliente" en un proceso **repetible y
+documentado** -- exactamente lo que hoy hacemos a mano (importar un CSV,
+escribir un workflow a mano, tocar `index.html`) pero con un registro
+explícito de qué incluye cada módulo, en vez de reconstruirlo de memoria cada
+vez.
+
+### Cómo gestiona y opera el sistema, de un vistazo
+
+```
+Cliente nuevo → Consola (operador) elige el paquete (núcleo + módulos)
+             → cada módulo aplica su manifiesto (tablas + workflows + pantallas)
+             → Plaza del cliente muestra solo lo contratado
+             → el cliente opera su día a día sin saber que existen "módulos"
+             → el operador, desde la Consola, puede activar un módulo nuevo
+               más adelante sin reconstruir nada desde cero
+```
+
+### Propuesta generosa: hacia dónde crece esto
+
+Con el núcleo y los cinco ciclos ya diseñados (y varios ya probados con datos
+reales), la pieza que falta para hablar de "una plataforma" y no de "un
+conjunto de prototipos conectados a mano" es exactamente esta capa de
+normalización -- y es deliberadamente la más aburrida de las propuestas de esta
+ronda, precisamente porque su valor no es una función nueva sino la
+**repetibilidad**: poder dar de alta al décimo cliente con la misma fiabilidad
+que al primero, sin que cada instalación dependa de que alguien recuerde a
+mano qué CSV había que importar. Una plataforma no se distingue de un montón de
+prototipos por tener más funciones, sino por que las mismas funciones se
+puedan entregar una y otra vez sin reinventar el proceso cada vez.
+
+### Pendiente, no resuelto todavía
+
+- Ningún manifiesto de módulo está escrito todavía -- ejemplo ilustrativo, no
+  implementado.
+- No existe todavía ninguna tabla `PAQUETE_CLIENTE` que registre qué módulos
+  tiene activados cada cliente -- Plaza no oculta módulos no contratados
+  todavía, solo muestra "sin conectar" para todo lo no construido.
+- No se ha decidido si construir el "instalador de módulos" como scripts
+  propios (como se ha hecho hasta ahora) o adoptar directamente Umbrel/YunoHost
+  como capa de infraestructura debajo de Engremiat -- decisión de arquitectura
+  real, no tomada en esta ronda.
+- No se ha definido el catálogo de tiers comerciales (qué combinación de
+  módulos se vende como "Básico"/"Comunitario"/"Avanzado") -- esbozado en la
+  tabla de módulos, no cerrado como oferta comercial.
