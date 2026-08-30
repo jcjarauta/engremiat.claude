@@ -4369,3 +4369,33 @@ que ve cualquier grupo real (`publicado`).
   barrio".
 - Decidir si vale la pena una acción n8n dedicada para "promocionar" en
   vez de editar el campo `ESTADO` a mano en Baserow.
+
+### Cuatro fallos reales, corregidos hasta que funcionó de verdad (2026-08-30)
+
+Construir `/taller` costó más intentos de los esperados -- documentado con
+honestidad porque cada fallo enseña algo real:
+
+1. **Teclado dinámico del nodo Telegram de n8n**: el parámetro
+   `inlineKeyboard.rows` no acepta sustituirse entero por una expresión
+   (`={{ $json.rows }}`) -- el mensaje salía sin botones, sin error visible.
+   Solución: llamar directamente a la API de Telegram vía `httpRequest`,
+   con control total del JSON del teclado.
+2. **Índices de conexión desalineados**: al añadir una tercera regla al
+   `Switch` de callbacks, las conexiones de las dos rutas siguientes
+   quedaron cruzadas -- el botón de Taller caía en el gestor de "voto
+   anotado" y viceversa. Solución: recalcular el orden real
+   (reglas explícitas primero, en el orden declarado; el `fallbackOutput`
+   siempre al final) en vez de asumirlo.
+3. **Guion bajo interpretado como Markdown**: `(taller_ref:N)` y nombres
+   como `atlas_vivo_del_barrio` rompían el parseo de Telegram (`_` abre
+   cursiva en Markdown sin cerrar). Solución: quitar el guion bajo del
+   marcador (`tallerref:`) y mandar los mensajes de misión también por
+   `httpRequest` directo, sin `parse_mode`, para no depender de escapar
+   cada carácter especial que aparezca en contenido dinámico.
+4. **El mismo bug de saltos de línea reales dentro de una expresión** (ya
+   visto varias veces hoy) reapareció en los nodos nuevos, por seguir
+   editándolos con comandos de una sola línea en la terminal en vez de con
+   un fichero de script real. Ya corregido, y la lección aplicada
+   definitivamente: cualquier texto con `\n` dentro de una expresión se
+   edita a partir de ahora solo mediante ficheros `.mjs`, nunca con
+   comandos sueltos.
