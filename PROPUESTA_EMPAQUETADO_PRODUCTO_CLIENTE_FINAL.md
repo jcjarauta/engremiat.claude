@@ -872,3 +872,35 @@ límite de 7 fotogramas) en vez de presentarlos con falsa confianza.
   (Edge headless, `img2img`), fuera del contenedor de n8n. Conectar ambos mundos
   (que n8n dispare esos scripts del host) es el siguiente paso, no resuelto en esta
   ronda.
+
+## Conectado: n8n ya dispara el renderizado del host (2026-08-30)
+
+Se cierra el pendiente anterior. Nueva pieza: **`render-worker.py`** (FastAPI,
+`G:\Mi unidad\DEVS\engremiat-litellm\render-worker.py`, puerto 8001 en el host) --
+mismo patrón exacto que LiteLLM (`host.docker.internal`, nunca expuesto fuera del
+PC). Carga el modelo de imagen una sola vez al arrancar (no en cada petición) y
+expone:
+
+- `POST /pdf` -- recibe HTML, ejecuta Edge headless, devuelve el PDF ya generado.
+- `POST /imagen/texto` y `POST /imagen/estilizar` -- generación e `img2img`, mismo
+  modelo (`sd-turbo`) ya probado antes, ahora como servicio persistente en vez de
+  un script suelto.
+
+Cronista se amplió con dos nodos nuevos (construir el HTML del informe a partir del
+JSON del worker local, y llamar a `render-worker`), y el propio webhook de n8n se
+configuró para devolver el binario del PDF como respuesta -- no solo el JSON
+intermedio. **Probado en vivo, de punta a punta, con los dos proyectos reales**:
+la llamada al webhook devuelve directamente un PDF descargable
+(`content-type: application/pdf`, ~33KB), generado sin ninguna intervención manual
+entre el disparo y el resultado.
+
+**Detalle técnico real que costó encontrar**: por defecto, el modo de respuesta
+`lastNode` del nodo Webhook de n8n serializa el último dato JSON visto, no el
+binario adjunto de un nodo HTTP -- hay que decirle explícitamente que responda con
+`firstEntryBinary` apuntando a la propiedad binaria correcta (`data`, el nombre por
+defecto de n8n para la respuesta de un `httpRequest` en modo fichero).
+
+**Pendiente real, ya acotado, no resuelto todavía**: la infografía (SVG/plantilla)
+y la escritura del `DOCUMENTO` de vuelta al Sheet -- mismo patrón ya disponible
+(`render-worker` puede exponer un endpoint más, la escritura reutiliza las acciones
+de cliente ya existentes en el webhook de Apps Script), solo falta cablearlo.
