@@ -4526,3 +4526,60 @@ generarlas".
   mientras solo hay un operador?).
 - Mantener `DICCIONARIO_ENGREMIAT.md` actualizado con cada pieza nueva --
   no se actualiza solo.
+
+## Tope de gasto real, construido (2026-08-30)
+
+### Hallazgo antes de construir nada
+
+LiteLLM tiene un sistema de presupuesto nativo, pero **no hace nada sin una
+base de datos conectada** -- sin ella, el límite se ignora en silencio (un
+aviso al arrancar, ninguna petición bloqueada). Configurarlo tal cual habría
+sido la misma trampa ya señalada con OpenClaw ("asumir que ya está
+cubierto"). Decisión, con el operador: registro propio en Baserow, sin
+infraestructura nueva.
+
+### Lo construido
+
+- **Tabla `GASTO_API`** (Baserow, id 285): cada llamada real a DeepSeek
+  registra tokens de entrada/salida y coste estimado (tarifa "punta"
+  conservadora, la misma ya usada en las mediciones de hoy).
+- **Comprobación antes de llamar**: el generador suma el gasto de los
+  últimos 30 días antes de cada llamada a DeepSeek -- si supera el tope
+  ($5 USD, ajustable en el código), **no llama a DeepSeek**, devuelve el
+  borrador local sin verificar con un aviso explícito.
+- Aplicado a las dos rutas que usan DeepSeek: segmentación de tareas
+  (`proponer_tareas_premium`) y autoría de misiones en Taller
+  (`proponer_plantillas_mision`).
+
+### Un fallo real, instructivo, corregido en el camino
+
+El primer intento usó `await` dentro de un nodo Code para escribir en
+Baserow -- **funcionaba de forma intermitente**, sin ningún error visible:
+a veces la fila se creaba, a veces no, según una condición de carrera real
+del sandbox de ejecución de n8n (el nuevo "task runner" no garantiza
+esperar una llamada HTTP externa dentro de un nodo Code en todos los
+casos). Verificado con un diagnóstico explícito antes de descartar la
+hipótesis. Solución: mover la escritura a un nodo HTTP Request real (el
+mismo mecanismo ya usado con éxito en todo lo demás construido hoy), nunca
+un `await` suelto dentro de un nodo Code. Un segundo fallo menor
+-- el campo de coste tiene 6 decimales y el cálculo generaba más --
+corregido redondeando antes de guardar. **Probado tres veces seguidas
+tras el arreglo, las tres con registro real verificado en Baserow.**
+
+### Límites y honestidad
+
+- El tope ($5/mes) es una cifra de partida razonable, no una cifra
+  validada contra ningún presupuesto real del operador.
+- La tarifa usada para estimar el coste es la "punta" (peor caso) de
+  DeepSeek -- el gasto real acumulado probablemente sea algo menor.
+- No hay ninguna alerta ni notificación cuando se acerca al tope, solo el
+  corte al superarlo.
+
+### Pendiente
+
+- Aplicar el mismo mecanismo si Claude llega a automatizarse alguna vez
+  (hoy sigue siendo manual, sin coste de API que vigilar).
+- Decidir si $5/mes es el tope correcto una vez haya uso real sostenido,
+  no solo pruebas.
+- Una pantalla o acción para consultar el gasto acumulado sin entrar a
+  Baserow directamente.
