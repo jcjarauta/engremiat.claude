@@ -4081,3 +4081,32 @@ documento), hecho concreto en vez de abstracto.
   `asociación` y genera su primera fila de `PROYECTO` real.
 - Ninguna comunidad real (vivienda, asociación) ha pedido este Escenario
   todavía.
+
+### Cierre de circuito: la entrada de Cronista puede ser el propio grupo (2026-08-30)
+
+Aclaración del operador sobre "Semilla Cooperativa": la entrada de
+Cronista no tiene por qué escribirla un operador -- puede ser **la propia
+deliberación colectiva del grupo** (un hilo de decisión de Loomio ya
+cerrado, un resumen de lo acordado jugando). Es el mismo pipeline ya en
+producción (`proponer_tareas`/`confirmar_tareas` en
+`engremiat-generador-n8n`) -- no hace falta construir nada nuevo, solo
+cambia de dónde viene `documento_texto`: de una persona que escribe, a un
+grupo que decide. Es la forma concreta de que la inteligencia colectiva de
+cualquier grupo proponga proyectos reales al sistema, con seguimiento,
+sin que Engremiat tenga que escribir nada por ellos.
+
+## Misiones encadenadas: "Cuento Cooperativo" ya es una partida completa (2026-08-30)
+
+Se encadenó la secuencia fija de misiones de "Cuento Cooperativo" en
+Feria: personaje → escenario → conflicto → primer párrafo por turnos →
+revisión del guardián del canon → cierre de partida. Cada misión completada
+calcula y crea automáticamente la siguiente (`TAREA_PREDECESORA_ID`
+enlazando cada una con la anterior), con su propio botón de "marcar como
+hecho" -- todo determinista, sin IA, coherente con el nivel "catálogo" de
+coste cero. Al llegar al final del catálogo, se envía un mensaje de cierre
+en vez de una misión nueva.
+
+**Límite honesto**: el catálogo de misiones está fijo en el código del
+workflow (`Determinar siguiente mision`), no en una tabla editable -- para
+cambiar el guion de "Cuento Cooperativo" hoy hay que tocar el workflow, no
+un fichero de configuración.
