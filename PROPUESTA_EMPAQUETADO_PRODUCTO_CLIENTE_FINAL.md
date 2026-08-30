@@ -1391,6 +1391,86 @@ workflow no contiene ninguna llamada a Google, pero la prueba definitiva
 todavía porque exige cortar la conexión de la máquina de trabajo -- pendiente de
 que el operador la ejecute cuando quiera confirmarlo de la forma más exigente.
 
+## Distinción crítica que destapa el intento de desconexión: construir vs. operar (2026-08-30)
+
+Al intentar desconectar la red para repetir la prueba, aparece una objeción del
+propio operador, certera: **si no hay internet, Claude tampoco puede ejecutar
+nada** -- Claude Code es un servicio en la nube; sin conexión, no hay sesión, no
+hay `Bash`, no hay forma de que yo dispare el webhook ni lea el resultado. Esto
+es cierto y hay que separarlo con precisión de lo que sí se ha demostrado,
+porque son dos capas distintas que se estaban mezclando sin darse cuenta:
+
+| Capa | Qué es | ¿Necesita a Claude/internet para FUNCIONAR? |
+|---|---|---|
+| **Construcción/mantenimiento** | Diseñar, depurar y modificar los workflows de n8n, la tabla de Baserow, el `render-worker` | Sí -- hoy se hace con Claude Code, en la nube. Es trabajo de desarrollo puntual, no la operación diaria del nodo. |
+| **Operación real del nodo** | Un usuario dispara un webhook de n8n, n8n lee/escribe en Baserow, opcionalmente llama a Ollama | **No.** n8n, Baserow y Ollama son procesos que ya corren localmente y no dependen de Claude para ejecutarse -- una vez montado el workflow, cualquier persona en la red local del nodo puede dispararlo (con un móvil, un formulario del portal, o `curl` desde otra máquina de la misma LAN) sin que Claude intervenga para nada. |
+
+**Lo que de verdad se demostró en el piloto**: la capa de OPERACIÓN (n8n +
+Baserow) no contiene ninguna llamada a Google -- eso sigue siendo cierto e
+independiente de si Claude está disponible o no. Lo que NO se pudo demostrar
+hoy es exactamente lo que el operador señaló: que YO pueda verificarlo por él
+sin conexión -- eso es estructuralmente imposible mientras la verificación la
+haga un agente en la nube. La forma correcta de validar "cero Google" con la
+red del PC apagada de verdad es que una persona dispare el webhook a mano
+(móvil conectado al Wi-Fi local del nodo, o el propio editor de n8n abierto en
+el navegador) mientras el PC está desconectado de internet -- sin que Claude
+tenga que estar despierto para comprobarlo.
+
+## Propuesta: worker local programable ("Ejecutor Local", en la Pi)
+
+### Lo que ya existe y ya cumple parte de la función
+
+n8n **ya es** un worker local programable -- ejecuta lógica (código JS,
+llamadas HTTP, condicionales) sin depender de ningún servicio en la nube, y ya
+corre en el mismo stack Docker del operador. Ollama (`local-potente`,
+`devstral-dev`) es la pieza de razonamiento/generación que puede vivir junto a
+él. Para la OPERACIÓN diaria de un nodo comunitario, esta pareja (n8n + Ollama)
+ya es el "worker local" que hace falta -- no hay que inventar nada nuevo para
+que el nodo funcione sin Claude ni sin internet.
+
+### Lo que sí falta: un asistente de desarrollo/mantenimiento offline
+
+Donde el operador tiene razón en señalar un hueco real: si un técnico está
+físicamente en una comunidad sin ninguna conectividad y algo se rompe (un
+workflow mal configurado, una tabla con un dato erróneo), hoy la única forma de
+arreglarlo con ayuda de una IA es traer a Claude, que exige internet. Un
+**"Ejecutor Local"** -- una versión reducida del propio Ejecutor, pero corriendo
+contra `devstral-dev` (ya probado, ya vive en el worker local de Graphify, ver
+[[proyecto_worker_local_devstral]]) en vez de contra Claude -- cubriría ese
+hueco: un bucle simple (leer el problema, proponer un cambio en un workflow o en
+una fila de Baserow, aplicarlo, verificar) ejecutado enteramente en el PC/Pi del
+nodo, sin ninguna llamada externa.
+
+**Con qué construirlo, sin reinventar**: proyectos de código abierto ya resuelven
+"agente de código apuntando a un modelo local" -- Continue.dev, Aider, o incluso
+un bucle propio sencillo en Python/Node que llame a `local-codigo`
+(`devstral-dev`) vía LiteLLM (ya montado, ya funcionando). No hace falta
+construir un "mini-Claude" desde cero: la pieza de razonamiento ya existe
+(LiteLLM + Ollama), solo falta el bucle que decida qué archivo tocar y verifique
+el resultado -- alcance mucho más modesto que Ejecutor completo, pensado para
+arreglos puntuales in situ, no para desarrollo nuevo.
+
+### Honestidad sobre el límite real
+
+Un modelo local de 8-14B (los que corren cómodos en el hardware descrito) es
+sensiblemente más limitado que Claude para razonar sobre problemas complejos o
+ambiguos -- el "Ejecutor Local" debe entenderse como una red de seguridad para
+arreglos simples y acotados (reactivar un workflow, corregir un valor,
+reintentar una acción), no como un reemplazo de Claude para el desarrollo real
+del producto. La distinción de la tabla de arriba (construir vs. operar) es la
+que importa: mientras el desarrollo serio de Engremiat siga necesitando a
+Claude, seguirá necesitando internet -- y eso está bien, porque el desarrollo no
+ocurre en tiempo real dentro de una comunidad aislada. Lo único que debe
+funcionar sin internet es la OPERACIÓN diaria, y esa ya no depende de Claude.
+
+### Pendiente, no resuelto todavía
+
+- No se ha construido ningún "Ejecutor Local" -- diseño de alto nivel únicamente,
+  nacido directamente de la objeción del operador en esta misma conversación.
+- No se ha repetido la prueba del piloto con la red realmente desconectada --
+  sigue pendiente, y ahora con el método correcto: una persona disparando el
+  webhook a mano, no Claude verificándolo por control remoto.
+
 ## Propuesta: "Pregonero" -- el cuarto ciclo, entre Cronista y Oportunidad (2026-08-30)
 
 ### La idea del operador
