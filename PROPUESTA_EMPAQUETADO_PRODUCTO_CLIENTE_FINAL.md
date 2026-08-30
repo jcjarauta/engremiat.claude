@@ -3592,6 +3592,26 @@ ninguna comunidad real que los haya pedido -- mismo principio de "no
 construir sin señal real" ya aplicado a Pregonero/Oportunidad/red_social
 en todo este documento.
 
+### Verificación independiente de la investigación (2026-08-30)
+
+La investigación aportada por el operador se verificó con búsquedas
+propias, no se aceptó tal cual. Confirmado: StoriumEdu sigue activo en
+2026 (no es un precedente obsoleto de 2019). Confirmado: Upwelling
+(Ink & Switch) es un prototipo de investigación parado desde 2023-2024,
+nunca fue producto. **Hallazgo nuevo**: las herramientas de escritura con
+IA de 2026 (Sudowrite Story Bible, NovelCrafter Codex, Jenova) sí resuelven
+memoria de canon vía IA, pero todas para un autor o equipo cerrado --
+ninguna resuelve gobernanza entre grupos ni auditoría de decisiones. El
+hueco de mercado sigue exactamente igual de abierto en 2026 pese a la
+explosión de IA de escritura -- Engremiat no competiría con Sudowrite,
+competiría en un hueco que Sudowrite no toca. **Candidato nuevo evaluado**:
+Kanka.io (375.000+ usuarios, wiki de mundos autoalojable) como posible
+motor de la "biblia narrativa" -- con un límite real: licencia Commons
+Clause, no libre de verdad (restringe uso comercial del propio software),
+a diferencia de Loomio/Mobilizon. Alternativa más segura sin dependencia de
+terceros: construir la biblia narrativa como tablas Baserow propias,
+reutilizando el mismo patrón de árbol autorreferenciado de `jerarquia.yaml`.
+
 ### Límites y honestidad
 
 - Nada de este módulo está construido -- ni `AUDITORIA`, ni `ROL_PROYECTO`,
