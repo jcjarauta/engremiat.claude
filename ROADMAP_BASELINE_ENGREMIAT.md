@@ -259,6 +259,51 @@ por API después, no solo por la respuesta del webhook.
   trocear por fase antes de mandarlo al modelo, y esperar que un humano
   revise cada lote antes de `confirmar_tareas`, sin excepción.
 - Probar si un modelo más grande (o resumir el documento antes de
-  segmentar) reduce estos fallos -- no probado todavía.
+  segmentar) reduce estos fallos -- **probado, ver siguiente sección**.
 - Las únicas tareas reales en `TAREA` hoy son las 2 confirmadas a mano
   (ids 3 y 4) -- el resto de este roadmap sigue sin convertirse en filas.
+
+## Cascada real, primera medición de coste (2026-08-30, DeepSeek)
+
+Antes de tener lista la separación de infraestructura del generador (en
+curso, ver más abajo) y mientras falta `ANTHROPIC_API_KEY` en el entorno,
+se probó la cascada propuesta con **DeepSeek** como verificador -- mismo
+rol que se había diseñado para Claude, mismo formato de entrada/salida,
+resultado real medido en vez de estimado.
+
+**Prompt**: se le dio a DeepSeek el documento completo + el borrador
+defectuoso ya generado por el modelo local (el de la "segunda prueba, peor
+que la primera") y se le pidió corregirlo contra el documento, no
+regenerarlo desde cero.
+
+**Resultado**: 24 tareas -- recuperó las 5 tareas reales de la Fase 1 que
+el modelo local había omitido (login aparte), corrigió las 3 tareas mal
+etiquetadas como Fase 1 cuando eran de Fase 4, y explicó cada cambio
+realizado. Un fallo real: mantuvo la tarea de la Fase 5 ("No construir sin
+señal real") pese a que el prompt decía explícitamente que ese texto
+narrativo no debía incluirse como tarea -- DeepSeek decidió conservarla "por
+fidelidad al documento", en contra de la instrucción dada. Mejora clara
+sobre el borrador local, no una corrección perfecta.
+
+**Coste real, medido, no estimado**: la respuesta de la API incluyó el uso
+real de tokens -- 5.517 de entrada, 2.433 de salida. Con las tarifas
+públicas de DeepSeek vigentes desde el 16 de agosto de 2026 (`deepseek-chat`
+es hoy un alias de V4-Flash, $0,22-0,44 por millón de tokens de entrada y
+$0,66-1,32 por millón de salida según hora punta/valle -- fuente:
+búsqueda pública de tarifas, no facturación propia todavía), esta llamada
+concreta cuesta **entre $0,003 y $0,006** -- menos de un céntimo de dólar.
+Más barato incluso que la estimación aproximada de la sección anterior.
+
+**Consecuencia para la propuesta de negocio**: DeepSeek es un candidato
+serio para esta cascada, no solo un sustituto temporal de Claude mientras
+falta la clave -- el coste es tan bajo que ni siquiera hace falta razonar
+en términos de "gasto de marketing asumible", es marginal de verdad. Sigue
+pendiente la comparación con Claude cuando `ANTHROPIC_API_KEY` esté
+disponible, para decidir si la diferencia de calidad justifica su coste
+mayor en algún nivel de servicio (ver siguiente sección para la separación
+de infraestructura del generador).
+
+**Límite honesto de esta prueba**: se usó una clave de DeepSeek de otro
+proyecto (`DEV_PRUEBAS/codex-trigger-piloto`), prestada solo para esta
+comprobación puntual -- para uso real y sostenido de Engremiat hace falta
+una clave propia, en el `.env` de `engremiat-litellm`, no una prestada.

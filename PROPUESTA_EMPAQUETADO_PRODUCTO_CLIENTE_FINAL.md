@@ -3374,6 +3374,15 @@ hoy: una petición de salida, sin exponer nada suyo), recibe el resultado
 100% autónomo y local. Ningún cliente necesita ver ni alojar el generador
 para operar su propio Engremiat.
 
+**En marcha (2026-08-30)**: levantado un contenedor n8n nuevo y separado,
+`engremiat-generador-n8n` (puerto 5680, solo accesible en `127.0.0.1` -- ni
+siquiera visible en la red local, a diferencia del n8n compartido que sí
+escucha en la LAN). Pendiente de que el operador cree la cuenta inicial
+(paso que no puedo hacer yo -- crear cuentas con contraseña está fuera de
+lo que puedo ejecutar) y genere una API key para poder migrar allí el
+workflow `Cronista - Segmentar documento en tareas`, hoy todavía en el n8n
+compartido.
+
 ### Límites y honestidad
 
 - Nada de esta separación arquitectónica está construida -- hoy el
@@ -3503,7 +3512,8 @@ bien cuidada.
 
 - Añadir el nodo de verificación con Claude al workflow
   `Cronista - Segmentar documento en tareas`, como segundo paso opcional
-  antes de la puerta humana.
+  antes de la puerta humana -- bloqueado hoy por falta de
+  `ANTHROPIC_API_KEY` en el entorno.
 - Medir el coste real de al menos 5-10 llamadas de verificación reales,
   antes de fijar cualquier precio de la opción de pago.
 - Definir la política de cuántas pasadas gratuitas incluye el onboarding
@@ -3511,3 +3521,14 @@ bien cuidada.
 - Decidir dónde vive la clave de API de Claude del operador de forma
   segura, coherente con la separación ya propuesta del generador en su
   propia infraestructura.
+
+### Primera medición real, con DeepSeek (2026-08-30)
+
+Mientras se resuelve el acceso a Claude, se probó la misma cascada con
+DeepSeek como verificador -- resultado y coste real (no estimado) en
+`ROADMAP_BASELINE_ENGREMIAT.md`, sección "Cascada real, primera medición de
+coste". Resumen: mejora clara sobre el borrador local (recuperó tareas
+omitidas, corrigió fases mal etiquetadas), un fallo real (mantuvo una tarea
+narrativa que se le pidió excluir), y un coste medido de **$0,003-0,006 por
+llamada** -- tan bajo que DeepSeek pasa a ser candidato serio para esta
+cascada por derecho propio, no solo un sustituto temporal de Claude.
