@@ -762,3 +762,52 @@ no de cómputo.
 `ffmpeg`, `yt-dlp`, Pandoc y Edge headless, ahora también `torch`+`diffusers` para
 generación de imagen -- todo corriendo en el mismo PC que hará de "worker local" en
 la arquitectura de esta propuesta.
+
+## Estándar visual: img2img sobre un fotograma real, no generación desde cero (2026-08-30)
+
+El operador señaló, con razón, que una imagen generada desde texto no se parece a la
+realidad del proyecto concreto. Mejora aplicada: en vez de `text2img` (prompt →
+imagen), usar **`img2img`** -- se parte de un fotograma real ya extraído (mismo
+mecanismo que el análisis visual de esta propuesta), y se transforma manteniendo la
+composición y estructura reales, repintado en un estilo propio.
+
+**Corrección de rumbo sobre el estilo concreto**: se descarta explícitamente imitar
+el estilo de un estudio de animación conocido (el propio estudio se ha posicionado
+públicamente en contra de que la IA imite su look) -- en su lugar, un estilo propio y
+neutro: *"ilustración de manual, textura de acuarela suave, paleta cálida, sin
+fotorrealismo, sin texto"*. Mismo resultado deseado (calidez, trazo dibujado) sin
+apropiarse de la identidad visual de terceros que ya han manifestado su rechazo a
+este uso.
+
+**Probado en vivo con éxito** sobre un fotograma real del muro de bahareque (no el
+del amigurumi, deliberadamente -- ver más abajo): 2 pasos de inferencia, <1 segundo,
+`strength=0.55` (conserva la composición real -- tejado, muro, árboles -- mientras
+cambia el acabado visual). Mismo modelo ya instalado (`sd-turbo`), sin coste adicional
+de infraestructura.
+
+**Por qué el fotograma de prueba fue el muro y no el amigurumi**: hacer `img2img`
+sobre el fotograma real de Stitch habría agravado el problema de marca ya señalado
+antes, no evitado -- el resultado seguiría siendo reconociblemente el personaje con
+licencia, solo que en otro estilo. Regla para el estándar: `img2img` sobre un
+fotograma real es la vía por defecto para proyectos sin personajes con marca; para
+proyectos con personaje con licencia, seguir limitándose a texto+enlaces (como ya
+hace el manual del amigurumi), nunca generar ninguna representación visual del
+personaje, estilizada o no.
+
+### El estándar, en concreto
+
+| Material | Método | Herramienta |
+|---|---|---|
+| Imagen de proyecto | `img2img` sobre 1 fotograma real representativo, estilo de casa fijo (ver prompt arriba) | `sd-turbo` (local, GPU) |
+| Infografía | Datos reales (worker local) + plantilla SVG propia -- nunca generación de imagen libre | LiteLLM (texto) + plantilla SVG/Inkscape |
+| Informe final | Plantilla HTML/CSS propia (ya construida) → PDF | Edge headless |
+| Registro | Cada material generado se registra como un `DOCUMENTO` más, vinculado al `PROYECTO` -- mismo patrón ya usado para `DOC-0001`/`DOC-0002`/`DOC-0003` | Sheet (webhook ya existente) |
+
+## Confirmación: sí, esto se convierte en un ciclo tipo Ejecutor (2026-08-30)
+
+Sin cambios de diseño respecto a lo ya propuesto (ver sección de n8n más arriba) --
+esta ronda solo confirma que las piezas necesarias ya funcionan por separado y con
+éxito: extracción (`yt-dlp`/`ffmpeg`), estructuración (worker local vía LiteLLM),
+imagen (`img2img`, ahora con estilo propio definido), infografía (plantilla + datos),
+informe (Edge headless). Lo único que falta es montar el flujo en n8n -- no hay
+ningún obstáculo técnico nuevo que resolver antes de eso.
