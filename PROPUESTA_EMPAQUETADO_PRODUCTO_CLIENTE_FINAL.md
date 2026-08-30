@@ -4399,3 +4399,61 @@ honestidad porque cada fallo enseña algo real:
    definitivamente: cualquier texto con `\n` dentro de una expresión se
    edita a partir de ahora solo mediante ficheros `.mjs`, nunca con
    comandos sueltos.
+
+## Versionado real: producción y mejora en paralelo (2026-08-30)
+
+### Lo construido
+
+- **Campo `VERSION`** añadido a `PLANTILLA_MISION` y a `TAREA` -- una
+  misma historia puede tener varias versiones coexistiendo como filas
+  distintas, sin que una sobreescriba a la otra.
+- **Tercer estado, `archivado`**, junto a `en_construccion`/`publicado` --
+  una versión retirada no se borra, queda marcada.
+- **Cada grupo queda anclado a la versión con la que empezó**: al crear la
+  primera misión se guarda su `VERSION`; cada misión siguiente se busca
+  filtrando por esa misma `VERSION`, no por "lo que esté publicado ahora".
+- **Nueva acción `promocionar_version`** en el generador: archiva de golpe
+  toda la versión publicada actual y publica la nueva -- una sola llamada,
+  con puerta humana (quien decide promocionar eres tú, no se hace solo).
+
+### Prueba real, con las dos condiciones que importaban
+
+1. Se creó una v2 real de "Cuento Cooperativo" (5 misiones,
+   `en_construccion`) vía `confirmar_plantillas_mision`.
+2. Se creó un grupo de prueba con la v1 todavía vigente (anclado a
+   `VERSION=1`).
+3. Se promocionó la v2 -- v1 pasó a `archivado`, v2 a `publicado`.
+4. **Un grupo nuevo, a partir de ese momento, ve la v2** (verificado:
+   "...v2, mejorada", `VERSION=2`).
+5. **El grupo creado antes de promocionar sigue encontrando su misión 2 en
+   la v1**, aunque esas filas ya estén `archivado` -- verificado leyendo
+   Baserow directamente, no solo confiando en el diseño.
+
+### Un fallo real grave, corregido en el momento
+
+Al añadir la opción `archivado` al campo `ESTADO`, Baserow regeneró los
+IDs internos de las tres opciones -- **todas las filas de
+`PLANTILLA_MISION` perdieron su valor de `ESTADO`** (quedaron en `null`),
+dejando "Cuento Cooperativo" sin ninguna misión publicada en producción
+durante varios minutos. Corregido reasignando el estado correcto a cada
+fila con los IDs nuevos, y actualizando los 6 nodos de Feria/generador que
+tenían los IDs viejos escritos a mano. Lección real: cualquier cambio a
+las opciones de un campo `single_select` que ya tiene datos reales debe
+tratarse como una migración, no como una edición trivial.
+
+### Límites y honestidad
+
+- La promoción exige que la nueva versión tenga TODAS las misiones del
+  Escenario en `en_construccion` antes de promocionar -- si falta alguna,
+  un grupo que llegue a ese punto se quedará sin siguiente misión.
+- Solo implementado para "Cuento Cooperativo" -- el resto de Escenarios
+  (cuando los haya) necesitarán lo mismo si se les aplica versionado.
+- No hay ninguna pantalla para ver "qué grupos siguen en qué versión" --
+  solo consultando Baserow directamente.
+
+### Pendiente
+
+- Extender el versionado al catálogo de Escenarios en sí (qué botones
+  aparecen en Feria), no solo a las misiones dentro de uno ya elegido.
+- Construir una validación que impida promocionar una versión incompleta
+  (falta alguna misión respecto al total esperado).
