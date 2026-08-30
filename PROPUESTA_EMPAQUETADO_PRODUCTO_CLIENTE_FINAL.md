@@ -3924,3 +3924,70 @@ definido (catálogo vs. personalizado).
   mecanismo, prompt nuevo.
 - Decidir si esta personalización es gratuita (parte de subir de escalón)
   o ya es el primer punto de cobro real -- no decidido todavía.
+
+## Consolidar el primer cliente real: valoración y una decisión de arquitectura expuesta (2026-08-30)
+
+### La propuesta del operador
+
+Cuatro pasos para consolidar el grupo real ya creado hoy vía Feria: alta en
+Gestor de Proyectos, enlazar el bot Feria, diseñar la arquitectura de
+Obsidian, y empaquetar la interacción del usuario vía peticiones al bot.
+
+### El hallazgo que reordena el plan
+
+`Gestor de Proyectos` resultó ser un sistema **distinto y más antiguo**
+que todo lo construido hoy: Google Sheets + Apps Script, con una carpeta
+por cliente (`test-cliente-2026-08-29.claude/` como plantilla real vista
+en Drive) -- separado del sistema nuevo (Baserow + `ENTIDAD_ORGANIZATIVA`
++ Feria + generador aislado, todo probado hoy mismo). No se pudo leer su
+Sheet desde esta sesión -- es un fichero de Drive "solo en la nube", sin
+compartir con la cuenta de servicio disponible aquí.
+
+Esto expone una decisión de arquitectura que el plan daba por resuelta sin
+estarlo: **¿este cliente vive en Gestor de Proyectos o en Baserow?**
+Meterlo en los dos sería duplicar la fuente de verdad.
+
+### Decisión recomendada
+
+Para este tipo de cliente -- ligero, entra por Telegram, empieza jugando
+-- **Baserow es la fuente de verdad**: ya tiene la fila real (id 4), ya
+tiene Feria escribiendo en ella, ya tiene el generador probado. Gestor de
+Proyectos queda reservado para cuando este cliente necesite de verdad su
+maquinaria pesada (campañas, presupuestos, procesos formales) -- no antes,
+mismo principio de "no construir sin señal real" de todo el documento. Si
+hace falta más adelante, se sincroniza, no se duplica desde el día uno.
+
+### Lo que sí se hizo hoy, sin bloqueos
+
+`manifiestos/obsidian.yaml` -- arquitectura de un vault de Obsidian **de
+solo lectura** como espejo legible en markdown de lo que ya vive en
+Baserow (biblia narrativa, tareas, documentos, decisiones). Reutiliza
+Obsidian (gratis, sin servidor, sin cuenta obligatoria) en vez de construir
+un lector propio -- coherente con "no reinventar" ya aplicado a
+Loomio/Mobilizon. Sincronización propuesta vía Syncthing o Git, nunca vía
+el servicio de pago de Obsidian, para no depender de un tercero con los
+datos reales. Editar en Obsidian y que vuelva a Baserow queda
+deliberadamente fuera de alcance -- problema de conflicto de versiones
+real, no resuelto ni necesario todavía.
+
+### Límites y honestidad
+
+- Nada de esto está construido -- ni el endpoint de exportación a
+  Obsidian, ni ninguna sincronización con Gestor de Proyectos.
+- La columna `MODULO_OBSIDIAN` existe en `PAQUETE_CLIENTE` desde el diseño
+  original sin que nadie la especificara hasta hoy -- y sigue sin ningún
+  cliente real que la haya pedido.
+- No se intentó forzar acceso a Gestor de Proyectos sin compartirlo
+  primero -- coherente con no tocar sistemas sin verificar acceso real.
+
+### Pendiente
+
+- Compartir el Sheet de Gestor de Proyectos con la cuenta de servicio (o
+  que el operador confirme que no hace falta todavía) antes de plantear
+  cualquier sincronización real.
+- Construir el endpoint de exportación a Obsidian cuando exista una razón
+  real para consultar el grupo 4 fuera de Baserow/Plaza/Telegram.
+- "Empaquetar la interacción vía petición al bot" -- en la práctica ya es
+  lo que hace Feria hoy; lo que falta es solo conectar la primera misión
+  real tras crear el grupo (ya señalado como pendiente en la sección de
+  Feria), no un empaquetado nuevo.
