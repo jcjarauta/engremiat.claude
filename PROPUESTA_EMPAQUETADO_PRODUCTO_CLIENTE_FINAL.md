@@ -2195,11 +2195,23 @@ verificado visualmente, y restaurado el valor original después.
 red), Plaza deja todo visible en vez de ocultarlo -- fallar abierto, nunca
 esconderle a un cliente algo que sí tiene contratado por un error transitorio.
 
+### Manifiestos de módulo: escritos (2026-08-30)
+
+Siete manifiestos reales en `G:\Mi unidad\DEVS\engremiat-litellm\manifiestos\`
+(`nucleo`, `paquete_cliente`, `cronista`, `agora`, `ejecutor_local`,
+`pregonero`, `oportunidad`), cada uno documentando de verdad -- tablas
+concretas con sus IDs reales de Baserow, acciones de n8n existentes, bugs
+reales ya corregidos, y honestamente marcados `construido_y_probado` o
+`solo_disenado` según corresponda (Pregonero y Oportunidad son placeholders
+explícitos, sin nada instalado). No son un instalador automático -- son la
+especificación que hoy se sigue a mano, documentada para no depender de la
+memoria de una sesión concreta.
+
 ### Pendiente, no resuelto todavía
 
-- Ningún manifiesto de módulo está escrito todavía -- ejemplo ilustrativo, no
-  implementado; la tabla `PAQUETE_CLIENTE` registra el estado final (qué está
-  activo), no el proceso de instalación en sí.
+- Los manifiestos son documentación, no ejecutables -- no existe ningún script
+  que lea un `.yaml` y aplique sus cambios automáticamente; el proceso de
+  instalación sigue siendo manual, solo que ahora está escrito.
 - Solo hay un paquete/cliente de prueba -- falta decidir cómo Plaza sabe qué
   fila de `PAQUETE_CLIENTE` corresponde a qué usuario que ha iniciado sesión
   (hoy toma siempre la primera fila).
