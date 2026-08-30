@@ -1882,3 +1882,106 @@ siguiente.
   fuera del alcance técnico de este documento, requiere asesoría legal real.
 - No existe todavía ninguna instalación física real que grabar para generar el
   primer onboarding -- depende de que el operador haga esa primera instalación.
+
+## Diseño: "Plaza" -- el portal local para el cliente (2026-08-30)
+
+### Por qué necesita nombre propio y no es solo "una web"
+
+Se llama **Plaza**, pareja natural de Ágora: si Ágora es el motor de intercambio,
+Plaza es el sitio físico/digital donde la gente del nodo entra cada día -- ver
+sus tareas, preguntar algo a la IA, mirar el estado del nodo, proponer un
+intercambio. No es la Consola Engremiat (esa es gobierno del ecosistema para el
+operador, ver sección anterior) -- Plaza es para el usuario final de una
+comunidad, alguien que puede no saber qué es una API ni un Sheet.
+
+### Precedente de mercado (ya investigado, no asumido de nuevo)
+
+Todos los competidores serios de esta categoría (Internet-in-a-Box con Kolibri/
+Moodle/Nextcloud/WordPress, RACHEL, Project NOMAD) resuelven exactamente este
+problema de la misma forma: un navegador apuntando a una dirección local
+(`http://caja.local`, `http://rachel.local`), sin instalar nada, porque
+cualquier móvil o portátil ya trae un navegador. Plaza sigue ese mismo patrón
+probado -- no hay motivo para inventar una app nativa que alguien tendría que
+instalar.
+
+### Principios de diseño, no solo pantallas
+
+- **Cero fricción de acceso**: sin contraseña que se pueda olvidar sin internet
+  para recuperarla. Login por **PIN corto + nombre**, o una tarjeta con **QR
+  personal** entregada en el onboarding presencial (mismo mecanismo ya previsto
+  para el "onboarding completamente local" de la sección de Telegram) -- nunca
+  email/contraseña tradicional como único camino.
+- **Diseño para el hardware real**: móviles de gama baja, conexión Wi-Fi local
+  compartida entre 10-30 personas (límite ya estimado para el nodo) -- páginas
+  ligeras, imágenes comprimidas, sin frameworks pesados que tarden en cargar en
+  una red saturada.
+- **Táctil primero**: botones grandes, poco texto por pantalla -- pensado para
+  usarse de pie con un móvil, no sentado con teclado.
+- **Todo lo que no cambia a menudo, cacheado para funcionar sin red en absoluto**
+  (Ayuda, documentos ya vistos) vía Service Worker de PWA -- para que Plaza siga
+  funcionando incluso si el propio nodo tiene un problema puntual de Wi-Fi.
+- **Nunca un panel de administración disfrazado**: si una pantalla necesita
+  explicar "qué es un campo" o "qué es un workflow", es la pantalla equivocada
+  para Plaza -- eso vive en la Consola, para el operador.
+
+### Las seis pantallas
+
+1. **Inicio**: estado del nodo en tres semáforos simples -- conexión, energía
+   (batería/solar), servicios (¿todo funciona?) -- nada de gráficas técnicas,
+   solo verde/ámbar/rojo con una frase.
+2. **Mis tareas**: lista de `TAREA` asignadas o visibles para el usuario, con
+   un botón para marcar avance -- lectura y escritura mínima contra Baserow, el
+   mismo patrón ya probado en el piloto (`leer_tarea`/`crear_tarea`, aquí
+   extendido a `actualizar_tarea`).
+3. **Biblioteca**: los `DOCUMENTO` generados por Cronista + el contenido
+   reutilizado de Internet-in-a-Box/NOMAD (Wikipedia, manuales) -- una sola
+   pantalla de búsqueda, sin distinguir para el usuario de dónde viene cada
+   cosa.
+4. **Preguntar**: chat sencillo contra Ollama (vía LiteLLM, `local-potente`),
+   respondiendo solo con lo que hay en la Biblioteca del propio nodo y citando
+   qué documento usó -- mismo principio de honestidad ya aplicado en Oportunidad
+   ("nunca inventar sin fuente").
+5. **Ágora**: recursos ofrecidos/necesitados del nodo, el saldo/reputación
+   propio, y un botón para proponer un intercambio -- la interfaz de usuario
+   del quinto ciclo diseñado arriba.
+6. **Avisar de un problema**: un formulario de una sola pregunta ("¿qué falla?")
+   que registra una `INCIDENCIA` -- y si Ejecutor Local está disponible, es la
+   misma entrada que usaría un técnico para empezar a diagnosticar.
+
+### Arquitectura, sin reinventar nada ya construido
+
+Plaza es deliberadamente **solo la interfaz** -- toda la lógica ya vive en n8n
+y los datos en Baserow, ambos ya probados en el piloto de esta misma ronda.
+Un HTML+JS estático (sin build, sin framework pesado, instalable como PWA)
+que llama directamente a los webhooks de n8n como si fueran su API -- el mismo
+patrón `leer_tarea`/`crear_tarea` ya verificado, ampliado con las operaciones
+que faltan (`listar_documentos`, `preguntar_ia`, `listar_recursos_agora`,
+`proponer_intercambio`, `registrar_incidencia`). Servido por el propio n8n
+(o un servidor estático mínimo en el mismo Pi) -- sin infraestructura nueva.
+
+### Límites, en la misma línea que el resto del sistema
+
+- **Nunca confirmar un intercambio de Ágora sin un paso de confirmación
+  explícito** -- ni siquiera dentro de la misma comunidad, aunque el roce
+  social actúe como control adicional.
+- **El chat de "Preguntar" nunca debe inventar** cuando la Biblioteca no tiene
+  la respuesta -- debe decir "no lo sé, esto no está en los documentos del
+  nodo" en vez de alucinar, mismo principio ya aplicado en todos los ciclos
+  anteriores.
+- **El PIN/QR de acceso no sustituye ninguna medida de seguridad seria** para
+  datos sensibles -- es una barrera de fricción para el uso diario, no una
+  autenticación robusta; si el nodo maneja datos sensibles de verdad, hace
+  falta una capa adicional, no resuelta aquí.
+
+### Pendiente, no resuelto todavía
+
+- Ningún componente de Plaza está construido -- diseño de alto nivel, nacido
+  directamente de identificar este hueco en la ronda anterior.
+- Faltan las operaciones nuevas en n8n (`actualizar_tarea`, `listar_documentos`,
+  `preguntar_ia`, `listar_recursos_agora`, `proponer_intercambio`,
+  `registrar_incidencia`) -- ninguna existe todavía, solo las dos del piloto
+  original.
+- El mecanismo exacto de PIN/QR (cómo se genera, cómo se entrega, qué pasa si
+  se pierde) no está diseñado en detalle, solo el principio general.
+- No se ha decidido el idioma/localización de las pantallas -- pensar en ello
+  desde el principio de la construcción, no añadirlo después.
