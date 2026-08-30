@@ -2677,6 +2677,25 @@ Límite honesto: el documento en sí no se ha pasado todavía por Cronista --
 es el contenido de entrada, la ejecución real (punto 12 de su Fase 3) sigue
 pendiente.
 
+### Primera prueba real, y una corrección de documentación (2026-08-30)
+
+Al intentar ejecutar el punto 12 de la Fase 3 aparecieron dos hallazgos
+reales, documentados con detalle en `ROADMAP_BASELINE_ENGREMIAT.md`,
+sección "Primera prueba real de segmentación":
+
+- **Corrección**: no existe todavía ningún workflow n8n que segmente un
+  documento en tareas vía LLM -- varios manifiestos (`asociacionismo.yaml`)
+  daban esto por construido cuando no lo estaba. Ya corregido en el propio
+  manifiesto.
+- **Prueba directa contra LiteLLM** (sin esperar al workflow): se creó la
+  fila `ENTIDAD_ORGANIZATIVA` para Engremiat en la Pi (id 3) y se probó la
+  segmentación llamando al modelo local con el prompt que Cronista debería
+  usar. Resultado: 18 tareas limpias, sin fusiones ni cortes, con un solo
+  fallo real -- una tarea tomó el nombre de fichero equivocado, cruzado
+  desde una tabla 60 líneas más abajo en el mismo documento. Confirma la
+  necesidad de la "puerta humana" antes de escribir nada en `TAREA`, no
+  invalida el enfoque.
+
 ## El cliente concreto ya existe: interfaz normalizada por fase, mobile-first (2026-08-30)
 
 ### Quién es el cliente, para que el diseño deje de ser abstracto

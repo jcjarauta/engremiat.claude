@@ -171,3 +171,43 @@ una fecha fija.
 de que exista una nueva versión de este documento, se corrige aquí mismo con
 fecha, no se espera al siguiente roadmap completo -- la baseline es un
 espejo del estado real, no un compromiso fijo.
+
+---
+
+## Primera prueba real de segmentación (2026-08-30)
+
+Antes de ejecutar la Fase 3, se descubrió que **no existe todavía ningún
+workflow n8n que segmente un documento en tareas vía LLM** -- lo que varios
+manifiestos describían como "el mismo pipeline de Cronista/Ejecutor ya
+construido" para convertir un tutorial en tareas no está desplegado; lo que
+sí existe son un generador de resúmenes/PDF, un generador de imagen por
+tarea, y CRUD manual de tareas en Plaza. Corregir esta afirmación en los
+manifiestos que la repiten queda como pendiente nuevo (ver abajo).
+
+Para responder la pregunta real -- ¿este documento segmenta limpio? -- se
+llamó directamente al modelo local (`local-potente` vía LiteLLM) con el
+prompt de segmentación que Cronista debería usar, contra el texto completo
+de este fichero. Resultado: **18 tareas, ninguna fusionada, ninguna cortada
+a mitad de frase, fase de origen correcta en todas, y el texto narrativo
+(propuesta de valor, recordatorio de Fase 5) correctamente excluido**.
+
+Un fallo real: la tarea de la Fase 3 sobre "pasar este documento por
+Cronista" salió con el nombre equivocado de fichero --
+`PROPUESTA_APOYO_AUTONOMIA_NEURODIVERGENCIA.md` en vez de
+`ROADMAP_BASELINE_ENGREMIAT.md` -- tomado por confusión de la tabla
+baseline, 60 líneas más abajo en el mismo documento. No es ambigüedad del
+texto -- es una alucinación real del modelo local. Confirma por qué ninguna
+tarea generada debe escribirse en `TAREA` sin pasar antes por revisión
+humana (mismo principio de "puerta humana" ya usado en el workflow de
+documentación).
+
+**Pendiente añadido por esta prueba**:
+- Construir de verdad el workflow n8n de segmentación (hoy solo probado
+  como llamada directa a LiteLLM) -- con puerta humana antes de crear filas
+  reales en `TAREA`.
+- Corregir `asociacionismo.yaml` y otros manifiestos que dan por hecho que
+  este pipeline de segmentación ya está construido.
+- Al construirlo, evitar mandar el documento entero de una vez si contiene
+  tablas con nombres de fichero de otras secciones -- trocear por fase, o
+  quitar tablas de referencia antes de segmentar, para reducir el riesgo de
+  que el modelo cruce nombres entre secciones distintas.
