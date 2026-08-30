@@ -3776,3 +3776,26 @@ jugando.
 - Nada de esto está construido -- ni el bot "Feria", ni el workflow, ni la
   escalera de escalones como flujo real dentro del sistema. Es la
   propuesta comercial y su nombre, no la implementación.
+
+### Construido y probado de verdad (2026-08-30)
+
+`@EngremiatFeria_bot` existe en Telegram y el workflow
+`Feria - puerta de entrada (Telegram)` corre en el n8n compartido del PC
+(único de los tres n8n con salida real a internet, vía el túnel ngrok ya
+usado por Taller Trobaila -- ni la Pi ni el generador aislado pueden
+recibir webhooks de Telegram). Probado en vivo: `/start` responde con el
+menú de Escenarios (teclado inline), y elegir "Cuento Cooperativo" creó de
+verdad la primera fila de grupo (`ENTIDAD_ORGANIZATIVA` id 4, "Grupo
+Telegram -- JC", `TIPO_NIVEL=grupo`, con el `chat_id` de Telegram guardado)
+-- verificado leyendo Baserow por API, no solo por la respuesta del bot.
+Los botones "Próximamente, vótalo" responden con acuse de recibo pero
+todavía no registran el voto en ninguna tabla real.
+
+**Pendiente real, ajustado tras la prueba**:
+- Persistir los votos de interés en una tabla real (hoy solo se acusa
+  recibo por Telegram, no queda ningún registro consultable).
+- Tras crear el grupo, todavía no se dispara la primera misión real -- el
+  mensaje de confirmación lo promete, pero Cronista no se ha conectado
+  todavía a este flujo.
+- Probado con un solo usuario (el operador) -- sin ningún grupo real de
+  Telegram (varias personas) todavía.
