@@ -2329,3 +2329,122 @@ conexión, no una función nueva.
   mencionada como necesaria, no especificada.
 - No se ha decidido durante cuánto tiempo o bajo qué condiciones se ofrece la
   demo alojada antes de pedir que el cliente decida.
+
+## Permisos, visión global del operador, e inteligencia colectiva entre nodos (2026-08-30)
+
+### Las dos preguntas de fondo del operador
+
+1. ¿Quién ve qué, cuando existan muchos nodos-cliente y un operador que los
+   supervisa a todos?
+2. ¿Cómo hace un tutorial generado en UN nodo (el ejemplo del operador: cómo
+   construir un gallinero) para convertirse en conocimiento reutilizable por
+   CUALQUIER otro nodo, sin romper la soberanía de cada uno?
+
+Son la misma pregunta vista desde dos ángulos: **soberanía por defecto,
+compartición explícita**.
+
+### Modelo de permisos, tres niveles
+
+| Nivel | Quién | Qué ve |
+|---|---|---|
+| **Operador** | El operador del ecosistema (tú) | Vista agregada de todos los nodos -- salud, actividad, qué módulos tiene cada uno (mismo patrón ya en uso en `tools/registro_ecosistema.json`/`salud_ecosistema.mjs`, generalizado ahora de "prompts y triggers" a "nodos cliente") |
+| **Nodo/Cliente** | Cada comunidad/cliente | Solo sus propios datos -- aislamiento por defecto, ni siquiera el operador debería necesitar leer el contenido privado de un nodo para operar el ecosistema, solo su estado |
+| **Común compartido** | Cualquier nodo que decida publicar | Contenido explícitamente marcado para compartir -- nunca automático |
+
+Esto no es una tabla nueva aislada -- es una extensión natural de
+`PAQUETE_CLIENTE` (que ya registra qué módulos tiene cada cliente) añadiendo
+quién puede ver qué, y del propio patrón de registro del ecosistema que ya
+existe para otra cosa.
+
+### La biblioteca común: no inventar el concepto, ya existe y es maduro
+
+El ejemplo del operador -- un tutorial de cómo construir un gallinero,
+aportando a una "inteligencia colectiva" -- es exactamente lo que ya resuelven
+dos proyectos reales, maduros, sin ánimo de lucro:
+
+- **Appropedia** ("la wiki de la sostenibilidad"): comunidad global que
+  documenta soluciones colaborativas de tecnología apropiada -- literalmente
+  planos de bombas de agua, molinos, dispositivos solares, y cualquier
+  solución práctica de bajo coste -- bajo licencia Creative Commons
+  Compartir-Igual. Además, **ya tiene integración con Kiwix/ZIM en marcha**
+  para acceso offline, exactamente el mismo mecanismo de biblioteca offline ya
+  recomendado para el Nodo Operativo Comunitario.
+- **Open Source Ecology / Global Village Construction Set**: red de
+  colaboradores distribuidos documentando de forma modular las 50 máquinas
+  necesarias para una civilización pequeña y sostenible -- el precedente
+  exacto de "comunidades distintas aportando conocimiento práctico a un fondo
+  común, cada una construyendo sobre lo que aportó otra".
+
+**Conclusión de mercado**: no hay que inventar "una wiki de conocimiento
+comunitario" desde cero -- Appropedia ya lo es, ya es libre, y ya se puede
+empaquetar offline. El trabajo de Engremiat no es construir el común, es
+**conectar la generación automática de contenido (Cronista) con ese común ya
+existente**, y complementarlo con un común propio para lo que sea demasiado
+específico de Engremiat para vivir en Appropedia.
+
+### Diseño: de un tutorial de un nodo a conocimiento colectivo
+
+1. **Base offline compartida por todos los nodos, desde el primer día**: un
+   mirror ZIM de Appropedia (mismo patrón que NOMAD/RACHEL/IIAB ya
+   recomendado) -- todo nodo arranca con este conocimiento colectivo ya
+   incorporado, sin depender de que nadie lo haya generado antes.
+2. **Un tutorial nuevo (el gallinero) nace privado**, como cualquier
+   `DOCUMENTO` generado por Cronista -- visible solo en la Plaza de ese nodo.
+3. **Publicar al común es una decisión explícita**, nunca automática: un botón
+   "Compartir con la comunidad Engremiat" en la Biblioteca de Plaza -- el
+   mismo principio de puerta humana ya aplicado en Cronista/Oportunidad/
+   Pregonero, aquí aplicado a compartir conocimiento en vez de publicar
+   contenido externo.
+4. **Sincronización oportunista**: como cualquier nodo offline, la
+   publicación al común (y la recepción de lo que otros nodos compartieron) se
+   sincroniza solo cuando hay conexión -- internet sigue siendo "una visita
+   ocasional, no el jefe", el mismo principio que abre este documento.
+5. **Formato de destino**: contenido genuinamente universal (una técnica de
+   construcción, un proceso agrícola) se propone para subir a Appropedia
+   directamente -- beneficia a todo el mundo, no solo a la red Engremiat.
+   Contenido específico de la metodología Engremiat (cómo estructurar un
+   proyecto de taller, plantillas de proceso) vive en un común propio, más
+   pequeño, entre nodos Engremiat.
+
+### Sinergias entre comunidades: Ágora, pero entre nodos
+
+Ágora ya se diseñó con **Community Exchange System** como referencia -- una
+red que federa 339 intercambios locales independientes en 34 países, cada uno
+soberano, conectados solo cuando quieren intercambiar entre sí. Generalizar
+Ágora de "intercambio dentro de un nodo" a "intercambio y relación ENTRE
+nodos" es aplicar esa misma federación, con el motor de matching que ya tiene
+Oportunidad: en vez de comparar un nodo contra un prospecto externo, compara
+**el perfil de un nodo contra el perfil de otro** -- "el Nodo A tiene
+excedente de conocimiento en crochet y recursos de Ágora sin cubrir; el Nodo B
+declaró una necesidad parecida" -- y **propone** la relación, nunca la
+ejecuta sola.
+
+### Límites, no negociables
+
+- **Privacidad por defecto, siempre** -- ningún dato de un nodo es visible
+  para otro (ni para el operador, más allá de su estado agregado) sin una
+  decisión explícita de compartir.
+- **Nunca publicar datos personales al común** -- solo conocimiento práctico
+  genérico (técnicas, procesos, planos), nunca información que identifique a
+  personas concretas de una comunidad.
+- **Toda relación propuesta entre nodos pasa por aprobación humana de ambos
+  lados** -- mismo principio ya establecido para Oportunidad, heredado aquí
+  sin excepción.
+- **Revisar la licencia exacta antes de subir nada a Appropedia** -- Creative
+  Commons Compartir-Igual tiene implicaciones reales (cualquier reuso debe
+  mantener la misma licencia) que hay que entender antes de contribuir, no
+  asumir.
+
+### Pendiente, no resuelto todavía
+
+- Ninguna tabla de permisos ni de común compartido está construida -- diseño
+  de alto nivel, nacido de esta conversación.
+- No se ha probado la integración Kiwix/ZIM con Appropedia en la práctica --
+  la propia Appropedia describe esa integración como "en marcha", no como
+  garantizada y estable.
+- El matching nodo-a-nodo reutiliza el motor de Oportunidad conceptualmente,
+  pero no se ha adaptado el código real para comparar dos perfiles de nodo en
+  vez de un nodo contra un prospecto externo.
+- No se ha decidido el mecanismo técnico exacto de sincronización oportunista
+  entre nodos y el común (qué protocolo, con qué frecuencia, quién aloja el
+  punto de encuentro cuando ningún nodo tiene IP pública).
