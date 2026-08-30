@@ -5231,3 +5231,104 @@ Feria muestra) -- una Cuadrilla es el equipo de manos que ejecuta.
   Canvas+DAFO.
 - Solo si el piloto manual funciona, construir `CUADRILLA_TAREA` y el
   flujo de botones en el generador.
+
+## Cuadrilla v2: Concilio conversacional -- resolver problemas con un humano, no solo repartirle tareas (2026-08-30)
+
+### La mejora sobre el diseño anterior
+
+Propuesta del promotor: que el worker humano de la Cuadrilla no se limite a
+reclamar mini-jobs sueltos, sino que **converse con un Concilio
+especializado para resolver un problema real de forma cooperativa** --
+el mismo patrón que esta propia conversación (un asesor con contexto,
+un problema real, acciones que emergen y se ejecutan o delegan). De esa
+conversación deben poder salir tareas que se deleguen a workers locales
+(automatizables) o a otros humanos de la Cuadrilla, de forma
+descentralizada -- varios hilos en paralelo, sin coordinación central.
+
+### Aviso legal -- parte central del diseño, no una nota al margen
+
+El planteamiento original incluía que "el worker humano no tiene por qué
+saber que habla con bots". **Esto no es viable tal cual**: el
+Reglamento de IA de la Unión Europea, **Artículo 50, en vigor desde el 2
+de agosto de 2026** (ya vigente, no es una norma futura), obliga a que
+cualquier sistema de chat o asistente que interactúe con personas
+**informe de que están hablando con una IA**, como muy tarde en la
+primera interacción. La excepción (interacción "obvia sin ninguna duda
+razonable") no aplica aquí y se interpreta de forma restrictiva.
+
+La corrección no debilita la propuesta -- la mejora: un mensaje de
+presentación cálido y honesto en el primer contacto de cada hilo nuevo
+("Este es el Concilio de Engremiat: un espacio de conversación asistido
+por IA para pensar juntos un problema real. No es una persona, y
+cualquier decisión final la revisa siempre alguien del equipo antes de
+aplicarse") cumple la ley, refuerza la confianza del worker, y encaja
+de forma natural con la puerta humana que ya es principio del sistema.
+**Este mensaje de divulgación es un requisito de diseño desde el primer
+prototipo, no un añadido posterior.**
+
+### Fundamentos investigados
+
+- **Modelo "centauro" (colaboración humano-IA)**: la IA funciona como
+  asesor independiente o, en modo más integrado, forma con el humano una
+  unidad de decisión estrecha -- la IA propone y detecta inconsistencias,
+  el humano aporta intuición, ética y decisión final. Es el rol que
+  jugaría Concilio frente al worker de Cuadrilla: acompaña, no
+  reemplaza el juicio.
+- **Memoria conversacional con estado**: el Concilio actual es de un
+  solo disparo (propone + sintetiza, una vez). Sostener una conversación
+  real exige memoria persistente por hilo -- guardar cada turno y
+  recuperar el historial relevante en cada llamada siguiente, patrón ya
+  estándar (memoria respaldada en base de datos, ventana de contexto).
+  Es una pieza nueva, no una reutilización directa de lo ya construido.
+
+### Arquitectura propuesta
+
+- **Divulgación obligatoria** en el primer mensaje de cualquier hilo
+  nuevo (cumple Art. 50 y da confianza desde el principio).
+- **Tabla nueva `CONCILIO_CONVERSACION`**: un hilo por usuario/problema,
+  con historial de turnos -- quién habló, qué dijo, qué personas de
+  Acervo respondieron.
+- **Presupuesto por conversación, no solo por llamada**: comprobar el
+  gasto acumulado del hilo completo antes de cada turno nuevo, para que
+  una conversación larga no se dispare sin control -- el control de
+  presupuesto ya existente (GASTO_API + tope mensual) se extiende con
+  un tope por hilo.
+- **Detección de tarea emergente**: al final de cada turno, un paso
+  ligero revisa si surgió una acción concreta y, si es así, **propone**
+  crear una entrada en `CUADRILLA_TAREA` -- propone, nunca crea ni
+  asigna directamente. Pasa siempre por la puerta humana antes de
+  delegarse a otro worker, local o humano.
+- **Descentralización real**: varios hilos de Concilio en paralelo, cada
+  uno con su par de personas de Acervo especializadas, varios workers
+  humanos resolviendo problemas distintos a la vez sin coordinación
+  central -- misma lógica que las colas independientes de Vigilia,
+  aplicada a conversación en vez de generación por lotes.
+
+### Límites y honestidad
+
+- **Expectativa realista de calidad**: esta conversación funciona porque
+  corre sobre Claude Sonnet 5 con todo el contexto de la sesión. Un
+  Concilio conversacional sobre DeepSeek/modelos locales (lo que el
+  presupuesto real permite hoy) no sostendrá el mismo nivel de
+  profundidad en una conversación larga -- hay que comunicarlo con
+  honestidad a cualquier worker que lo use, no vender una experiencia
+  que el coste actual no puede dar de forma sostenida.
+- Nada de esto está construido -- es diseño, ninguna tabla ni workflow
+  se ha tocado todavía.
+- El riesgo de coste acumulado en conversaciones largas es real y
+  necesita el control de presupuesto por hilo antes de lanzar nada, no
+  como reacción a un primer susto de gasto.
+- Si la detección de tarea emergente llegara a crear o asignar sin pasar
+  por la puerta humana, se perdería la garantía que hace segura toda la
+  Cuadrilla -- esto no es negociable en ninguna versión futura del
+  diseño.
+
+### Pendiente
+
+- Redactar el mensaje de divulgación inicial (cumplimiento Art. 50)
+  antes de cualquier prototipo -- es la primera pieza a escribir, no la
+  última.
+- Diseñar `CONCILIO_CONVERSACION` y el control de presupuesto por hilo.
+- Probar un primer hilo a mano (el promotor simulando ambos lados, como
+  ya se hizo con Canvas+DAFO) antes de dárselo a la primera persona real
+  de Cuadrilla.
