@@ -5332,3 +5332,118 @@ prototipo, no un añadido posterior.**
 - Probar un primer hilo a mano (el promotor simulando ambos lados, como
   ya se hizo con Canvas+DAFO) antes de dárselo a la primera persona real
   de Cuadrilla.
+
+## "Ramas": modelo tipo git para explorar varias direcciones sin caos (2026-08-30/31)
+
+### La idea y la corrección de rumbo que necesitaba
+
+A raíz de valorar si escalar Vigilia x20 (una jornada completa), el
+promotor propuso evitar "trabajar en muchos proyectos en paralelo sin
+estructura" copiando la lógica de git: ramas por momento/diseño/tema,
+unidas a la función de versiones que ya existe para las historias.
+Corrección necesaria antes de construir nada: **una narrativa no se
+fusiona como el código** -- no tiene sentido combinar automáticamente
+dos ramas de una historia, saldría una mezcla incoherente. Lo que sí
+tiene sentido, y es lo que realmente resuelve el problema planteado, es
+**ramas = exploraciones paralelas de un mismo punto de partida**, y
+**"fusionar" = el promotor elige cuál se vuelve canónica**, no una
+combinación automática. Las ramas no elegidas no se borran -- quedan
+archivadas como exploración documentada, con valor propio para el
+Acervo.
+
+### Las cuentas reales antes de comprometerse a x20
+
+Con los datos medidos la noche anterior (11 elementos, $0.015, 44
+minutos):
+- 220 elementos (x20) costarían ≈ **$0.30** -- de sobra dentro del tope
+  de $5/mes como jornada puntual, pero **$9/mes si se repitiera todos
+  los días** -- no es sostenible como ritmo constante sin subir el tope.
+- En tiempo real, sería ≈ **14-15 horas de proceso continuo** en
+  secuencia estricta -- el dinero no es el límite, el reloj sí.
+- Generar 20x contenido no reduce la carga de revisión humana, la
+  multiplica -- salvo que el propio modelo de ramas permita **no leer
+  las ramas que no se eligen**. Ahí está el ahorro real, no en el
+  volumen bruto.
+
+### Diseño: reutilizar la plumbing ya construida, no inventar de cero
+
+El primitivo ya existe -- es el mismo patrón construido esta misma
+sesión para las plantillas de misión de Taller (`VERSION` + `ESTADO`
+en_construccion/publicado/archivado + la acción `promocionar_version`).
+El modelo de ramas para `VIGILIA_TAREA` es ese mismo patrón aplicado a
+historias/ideas en vez de a misiones:
+- Campo nuevo `RAMA` (texto) en `VIGILIA_TAREA` -- agrupa elementos por
+  exploración (p. ej. "Reparto-A-SoloFisico", "Reparto-B-Pi-SMS",
+  "Reparto-C-AppCloud").
+- Campo nuevo `RAMA_ELEGIDA` (booleano) -- marca qué rama ganó tras la
+  revisión humana.
+- Una futura acción `fusionar_rama` (hermana de `promocionar_version`,
+  todavía no construida) marcaría la rama ganadora y copiaría su
+  resultado al Acervo real -- pero esto es deliberadamente **posterior**
+  a tener contenido real que decidir, no un mecanismo automático de
+  decisión.
+
+### Incidente real: el token de Baserow no tiene permiso de esquema
+
+Al intentar crear los dos campos nuevos, tanto el token de fila usado
+para lecturas/escrituras como la credencial del generador (mismo token
+subyacente) devolvieron `ERROR_NO_PERMISSION_TO_TABLE` al intentar
+`POST /api/database/fields/table/287/` -- confirmado con un nodo
+temporal de prueba en el generador, luego eliminado. El token actual
+solo tiene permiso de lectura/escritura de filas, no de gestión de
+esquema (crear/editar campos) sobre esta tabla. Los campos `VERSION` de
+sesiones anteriores se crearon con un acceso distinto que ya no está
+disponible en esta sesión. **Los dos campos (`RAMA`, `RAMA_ELEGIDA`) no
+se han podido crear todavía** -- pendiente de que el promotor los añada
+manualmente en Baserow (30 segundos, tipo texto y booleano) o facilite
+un token con permiso de esquema.
+
+### Efecto colateral corregido: el aviso de correo se reenviaba en bucle
+
+Con la cola de Vigilia vacía y el disparador de seguridad de 15 minutos
+todavía activo, el correo de resumen se estaba **reenviando cada 15
+minutos indefinidamente** desde que se corrigió el error 431 -- no había
+ningún mecanismo para no reenviar un resumen ya enviado. Corregido de
+forma inmediata (spam activo a la bandeja del promotor, mismo criterio
+que la corrección urgente del bug de `ESTADO` en sesiones anteriores):
+se desactivó el nodo del disparador de 15 minutos hasta que haya un
+nuevo lote real que procesar. Pendiente de diseño: una condición real de
+"no reenviar si ya se notificó este mismo lote" antes de reactivar el
+disparador de forma permanente.
+
+### Primer lote preparado (pendiente de los dos campos para sembrarse)
+
+Diseñado y listo para insertar en cuanto existan los campos: 3 ramas de
+diseño para la idea de software ya explorada (reparto de tareas
+vecinales), cada una con 3 pasos encadenados (idea adaptada a la
+variante, versión mínima concreta, Canvas+DAFO) -- 9 elementos en total,
+deliberadamente modesto (no 220, no siquiera 30-40) para probar el
+mecanismo de ramas en sí mismo antes de escalarlo:
+- **Reparto-A-SoloFisico**: sin ningún dispositivo, tablón físico +
+  código QR opcional, coste mínimo absoluto.
+- **Reparto-B-Pi-SMS**: la variante ya explorada (Raspberry Pi + módulo
+  GSM), como referencia conocida.
+- **Reparto-C-AppCloud**: app móvil ligera con backend en la nube, sin
+  hardware dedicado.
+
+### Límites y honestidad
+
+- Nada de esto está sembrado todavía -- bloqueado por el permiso de
+  esquema, no por diseño.
+- `fusionar_rama` es una acción diseñada, no construida -- se construirá
+  solo si el primer lote de 9 elementos demuestra que el mecanismo de
+  ramas aporta claridad real, no solo más contenido.
+- El disparador de 15 minutos de Vigilia queda desactivado hasta que se
+  siembre el próximo lote real -- no reactivar sin antes resolver el
+  reenvío en bucle del correo.
+
+### Pendiente
+
+- Que el promotor añada los campos `RAMA` (texto) y `RAMA_ELEGIDA`
+  (booleano) en `VIGILIA_TAREA` (tabla 287), o facilite un token con
+  permiso de esquema.
+- Sembrar el lote de 9 elementos en cuanto existan los campos.
+- Reactivar el disparador de 15 minutos solo después de resolver el
+  reenvío en bucle del correo de resumen.
+- Si el lote de ramas funciona bien, diseñar y construir `fusionar_rama`
+  con el contenido real ya generado como referencia.
