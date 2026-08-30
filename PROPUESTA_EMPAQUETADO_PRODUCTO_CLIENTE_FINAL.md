@@ -4219,3 +4219,66 @@ solo editar una fila de Baserow.
 - Migrar también el catálogo de Escenarios a una tabla real.
 - Decidir si Taller necesita interfaz propia o basta con Baserow mientras
   el contenido sea poco.
+
+## "Acervo": el ciclo mayor, explicado sin tecnicismos (2026-08-30)
+
+### La imagen que lo explica
+
+Engremiat funciona como un taller de gremio medieval: varios oficiales
+trabajan cada uno en lo suyo -- Ejecutor hace seguimiento de encargos,
+Cronista convierte ideas sueltas en planes de trabajo, Oportunidad sale a
+buscar clientes y material interesante por el pueblo, Pregonero anuncia lo
+ya terminado. **Acervo es el almacén común del taller** -- no es un
+oficial más, es el sitio donde todos dejan y recogen material. Cada vez
+que un oficial termina algo que vale la pena guardar, lo deja en el
+almacén antes de olvidarlo, para que cualquier otro lo use mañana sin
+inventarlo de nuevo. No es un inventario que se revisa una vez al mes --
+se llena y se consulta en cada interacción, de forma continua: es lo que
+hace que el sistema se sienta "vivo por interacción".
+
+### Cómo se convierte una historia en tareas reales, paso a paso
+
+1. Alguien tiene una chispa de idea -- juega en Feria, propone algo en
+   Taller, o una conversación revela un detalle interesante.
+2. Cronista escucha esa chispa y la ordena en una lista corta de pasos
+   concretos.
+3. Una persona de confianza revisa esa lista antes de que se dé por buena
+   -- puerta humana, sin excepción.
+4. Esos pasos se convierten en tareas reales, y Ejecutor las vigila hasta
+   completarse.
+5. Si algo de ese proceso resultó especialmente bueno, pasa al almacén
+   (Acervo) para que la siguiente historia no empiece de cero.
+
+### Los dos sentidos del tráfico
+
+- **De abajo hacia arriba** (ya funciona, orgánico): una persona juega,
+  decide, propone -- esa materia prima sube y se convierte en algo del
+  almacén común.
+- **De arriba hacia abajo** (pendiente, lo genuinamente nuevo): cuando el
+  operador decide activar un nicho de mercado concreto (cooperativas de
+  vivienda, familias con hijos neurodivergentes...), en vez de esperar a
+  que alguien juegue algo sobre ese tema, **le encarga directamente a
+  Cronista construir una historia a medida** para ese público, usando lo
+  que ya hay en Acervo más lo que Oportunidad encuentre de real sobre ese
+  nicho en ese momento. Es encargar el traje a medida en vez de esperar a
+  que alguien deje uno bonito en el almacén.
+
+### Límites y honestidad
+
+- Nada de Acervo está construido -- ni una tabla, ni el mecanismo de
+  propuesta de candidatas, ni el encargo de arriba hacia abajo.
+- El sentido "de arriba hacia abajo" es el único componente genuinamente
+  nuevo -- todo lo demás (Cronista, Oportunidad, la puerta humana) ya
+  existe y solo hay que conectarlo.
+- Ningún nicho de mercado activado todavía que necesite esto de verdad --
+  diseño anticipado, no una necesidad confirmada.
+
+### Pendiente
+
+- Diseñar la tabla real de Acervo y sus categorías (personajes-arquetipo,
+  giros narrativos, contexto real de zona, patrones de segmentación
+  validados).
+- Construir el mecanismo de encargo de arriba hacia abajo: el operador
+  describe un nicho, Cronista devuelve una primera historia para revisar.
+- Decidir si Cronista propone candidatas a Acervo automáticamente al
+  cerrar cada partida, o si la curación es siempre manual y a demanda.
