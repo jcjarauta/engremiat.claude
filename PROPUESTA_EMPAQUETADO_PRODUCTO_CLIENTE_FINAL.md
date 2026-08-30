@@ -1828,34 +1828,54 @@ mecánica debe reflejar una contribución real medible en el propio Sheet:
 
 ### El modelo, sin autoengaños
 
-Dropshipping clásico (comprar barato en AliExpress, revender con margen) no
-encaja aquí -- Engremiat no vende un producto genérico, vende un **kit
-preconfigurado** (Raspberry Pi con el software ya instalado, SD ya flasheada,
-cliente ya aprovisionado en el Sheet/Baserow). Eso es más parecido a
-"build-to-order" que a dropshipping puro -- alguien tiene que tocar físicamente
-cada unidad antes de enviarla (flashear la SD, probar que arranca). La
-automatización real está en TODO LO QUE RODEA ese único paso manual, no en
-eliminarlo con humo.
+### Corrección importante: sí puede ser dropshipping real, si se traslada el
+### único paso manual al propio cliente
 
-### Diseño del flujo, reutilizando lo ya construido
+La primera versión de esta sección concluía que hacía falta tocar cada unidad a
+mano (flashear la SD, probar que arranca) antes de enviarla -- un cuello de
+botella humano que no escala y contradice "sin stock". El operador señala la
+corrección correcta: **si el objetivo es máxima autonomía del cliente, ese paso
+no lo hace un operario, lo hace el propio cliente al recibir el kit** -- y en
+cuanto se traslada, el hardware que se envía vuelve a ser 100% genérico
+(Raspberry Pi + fuente + caja, sin nada preconfigurado), lo que sí permite
+dropshipping real de componentes estándar, sin inventario propio.
 
-1. **Tienda**: Shopify (rápido de montar, sin construir un e-commerce propio) --
-   consciente de la ironía de usar un SaaS cloud para la tienda mientras el
-   producto es "soberanía", pero es un compromiso razonable porque la tienda no
-   maneja datos sensibles del cliente, solo el pedido.
-2. **Pedido → aprovisionamiento automático** (ya construido esta misma serie de
-   sesiones, solo falta conectar el disparador): un webhook de Shopify llega a
-   n8n, que llama a las acciones YA EXISTENTES del dispatcher de Apps Script
-   (`crear_solicitud_montaje`, `instalar_estructura_cliente`) -- el mismo
-   pipeline que ya se usó para dar de alta TEST-Cliente-2026-08-29.
-3. **Kit físico**: una checklist (impresa o en la propia Consola) para la
-   persona que prepara físicamente cada unidad -- flashear, probar arranque,
-   pegar una etiqueta con el nombre del cliente y una URL/QR de onboarding.
-4. **Onboarding automático generado por Cronista** -- ver más abajo, es la pieza
-   que faltaba por decidir de dónde sale el contenido.
-5. **Mantenimiento**: una vez en manos del cliente, Ejecutor Local (o soporte
-   remoto vía el mismo n8n) cubre incidencias -- reutilización directa de lo ya
-   diseñado y probado, no una pieza nueva.
+### Diseño del flujo, cero intervención humana en la ruta por defecto
+
+1. **Tienda**: Shopify -- sin cambios respecto a la versión anterior.
+2. **Pedido → envío genérico automático**: el pedido en Shopify dispara el
+   envío de un kit sin personalizar (Raspberry Pi, fuente, caja, cable) desde un
+   proveedor de dropshipping de electrónica estándar -- nadie de Engremiat toca
+   la unidad física. El pedido también genera, vía n8n, un **código de
+   activación único** para ese cliente (no una unidad física personalizada).
+3. **El cliente flashea su propia tarjeta**, con **Raspberry Pi Imager**
+   (herramienta oficial de la Fundación Raspberry Pi, gratuita, ya diseñada para
+   que cualquier persona sin conocimientos técnicos flashee una imagen
+   correctamente) -- se le indica una URL donde descargar la imagen de
+   Engremiat ya preparada (sistema + Baserow + n8n + Ollama incluidos), no un
+   proceso de instalación manual.
+4. **Primer arranque autogestionado**: al arrancar por primera vez, la Pi
+   levanta su propia red Wi-Fi temporal de configuración (patrón ya estándar en
+   routers domésticos y en el propio LibreRouter) -- el cliente conecta su móvil,
+   Plaza se abre automáticamente en modo "Primer arranque" (una extensión del
+   mismo portal ya construido, no una herramienta aparte) y le pide solo:
+   su **código de activación** (del paso 2) y, si hace falta, las credenciales
+   del Wi-Fi de la vivienda/local para salida a internet.
+5. **Auto-aprovisionamiento, sin persona de por medio**: al confirmar el código,
+   Plaza llama directamente a las acciones YA EXISTENTES del dispatcher de Apps
+   Script (`crear_solicitud_montaje`, `instalar_estructura_cliente`) -- el mismo
+   pipeline que ya se usó para dar de alta TEST-Cliente-2026-08-29, disparado
+   esta vez por el propio cliente, no por el operador.
+6. **Autodiagnóstico como "prueba de arranque"**: los mismos tres semáforos ya
+   construidos en Plaza (conexión/datos/IA) hacen de comprobación de que "todo
+   funciona" -- sustituyen al operario que antes probaba cada unidad a mano.
+7. **Onboarding guiado por el contenido generado por Cronista** -- ver más abajo.
+8. **Soporte y seguimiento, como valor añadido opcional, no como paso
+   obligatorio**: la ruta por defecto no necesita a nadie -- pero se ofrece un
+   nivel de servicio superior (contratable aparte) donde una persona real
+   acompaña la instalación por videollamada o revisa el nodo en remoto vía
+   Ejecutor Local -- así el trabajo humano se convierte en producto vendible,
+   no en un coste oculto de cada venta.
 
 ### El contenido del primer tutorial de onboarding sale de la primera instalación real
 
@@ -1874,14 +1894,62 @@ siguiente.
 
 - Ágora es diseño de alto nivel, sin ningún componente construido -- ni
   siquiera se ha instalado Cyclos para probarlo.
-- El "portal.local" (interfaz cliente amigable) sigue siendo un boceto, no
-  existe ningún prototipo -- es honestamente el hueco más grande de todos los
-  identificados en esta ronda.
+- El modo "Primer arranque" de Plaza (red Wi-Fi temporal de configuración +
+  formulario de código de activación) no está construido -- solo diseñado; el
+  prototipo de Plaza construido esta misma ronda (ver sección siguiente) cubre
+  el portal ya en uso normal, no el asistente de primera puesta en marcha.
 - No se ha definido el marco legal/fiscal de vender un kit físico con software
   (¿se factura hardware + servicio? ¿garantía? ¿RGPD del cliente final?) --
   fuera del alcance técnico de este documento, requiere asesoría legal real.
 - No existe todavía ninguna instalación física real que grabar para generar el
   primer onboarding -- depende de que el operador haga esa primera instalación.
+- No se ha buscado todavía ningún proveedor real de dropshipping de
+  electrónica estándar (Raspberry Pi + fuente + caja) -- el diseño asume que
+  existe uno viable, no se ha verificado con una cotización real.
+
+## "Plaza" -- prototipo construido y probado con éxito (2026-08-30)
+
+El diseño del portal se construyó de verdad: `G:\Mi unidad\DEVS\engremiat-litellm\plaza\`
+(HTML+CSS+JS estático, sin build, instalable como PWA), más tres acciones
+nuevas añadidas al backend de n8n (`listar_tareas`, `actualizar_tarea`,
+`preguntar_ia`, sumadas a `leer_tarea`/`crear_tarea` del piloto anterior --
+mismo workflow, renombrado "Plaza - backend (Baserow + IA local)").
+
+**Probado en el navegador, de punta a punta, con datos reales**:
+
+- **Acceso**: pantalla de entrada con nombre (el PIN real y el QR de onboarding
+  quedan pendientes de construir -- el prototipo guarda el nombre localmente
+  para personalizar la sesión).
+- **Inicio**: los tres semáforos (conexión/datos/IA) funcionan de verdad --
+  reflejan si Baserow responde, no son decorativos.
+- **Mis tareas**: carga las tareas reales de Baserow (`TAR-0008`, `TAR-0009`),
+  y el control de avance (deslizador táctil) escribe de vuelta en Baserow al
+  soltar -- verificado leyendo la fila directamente después de mover el
+  deslizador.
+- **Preguntar**: chat real contra `local-potente` vía LiteLLM -- probado con
+  "¿Cómo voy con mis tareas?", respondió con honestidad que no tiene acceso a
+  esos datos (el chat todavía no está conectado a la Biblioteca ni a las
+  tareas del propio usuario -- pendiente real, no un fallo).
+- **Avisar de un problema**: guarda el aviso (de momento en local, pendiente de
+  tabla `INCIDENCIA` en Baserow).
+- **Biblioteca** y **Ágora**: muestran honestamente "todavía sin conectar en
+  este prototipo" en vez de simular datos falsos.
+
+### Pendiente, no resuelto todavía
+
+- Login real por PIN/QR contra una tabla de usuarios -- el prototipo no
+  autentica a nadie todavía.
+- Conectar Biblioteca y Ágora en cuanto existan sus tablas correspondientes en
+  Baserow.
+- Conectar el chat de "Preguntar" con el contenido real de la Biblioteca y las
+  tareas del usuario, para que pueda responder con datos propios citando la
+  fuente (principio ya establecido en Oportunidad).
+- Crear la tabla `INCIDENCIA` en Baserow y conectar "Avisar de un problema" de
+  verdad, en vez de guardarlo solo en el navegador del cliente.
+- El modo "Primer arranque" descrito en la sección de venta sin stock es una
+  extensión de Plaza todavía no construida.
+- No probado en un móvil real ni en la Raspberry Pi real, solo en navegador de
+  escritorio.
 
 ## Diseño: "Plaza" -- el portal local para el cliente (2026-08-30)
 
