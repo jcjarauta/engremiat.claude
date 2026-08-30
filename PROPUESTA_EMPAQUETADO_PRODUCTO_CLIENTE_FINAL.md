@@ -3153,3 +3153,68 @@ usar `jerarquia.yaml` en vez del diseño previo:
 
 Nada de esto se ha creado todavía en ninguna Baserow real (ni PC ni Pi) --
 son ediciones de los ficheros `.yaml` de especificación, no tablas nuevas.
+
+## Sistematizar la creación de tablas en Baserow (2026-08-30)
+
+### El problema
+
+Cada módulo nuevo (`jerarquia`, `red_social`, `oportunidad`,
+`asociacionismo`...) necesita tablas en Baserow, y hasta hoy el único camino
+era: generar un CSV, mandártelo, que tú lo importes a mano en la interfaz.
+Funciona, pero no escala -- con 9 módulos ya catalogados y varios todavía
+por diseñar, ese paso manual se iba a repetir indefinidamente.
+
+### La causa técnica y la solución
+
+Confirmado contra el esquema OpenAPI real de la instancia local de Baserow
+(`http://localhost/api/schema.json`, no documentación de terceros): los
+tokens de API personales solo dan acceso a filas (`GET/POST/PATCH/DELETE`
+de datos), nunca a esquema. Crear una tabla o una columna exige un JWT de
+sesión de usuario -- `POST /api/user/token-auth/` (email+contraseña),
+refrescable con `POST /api/user/token-refresh/`.
+
+Se ha construido `baserow-schema.mjs` (cliente mínimo de ese API de
+esquema) y `crear_tabla_desde_manifiesto.mjs` (CLI que lee un fichero
+`<modulo>.tablas.json` -- versión machine-readable de
+`tablas_baserow_propuestas`, con el tipo de cada columna explícito -- y
+crea la tabla y cada campo por llamadas reales al API). Ambos en
+`G:\Mi unidad\DEVS\engremiat-litellm\`. `manifiestos/jerarquia.tablas.json`
+es la primera definición real, con las cuatro tablas de `jerarquia.yaml`.
+
+**La contraseña de Baserow nunca la manejo yo**: el script la pide por
+terminal solo la primera vez, y guarda únicamente el `refresh_token`
+resultante en disco (revocable desde tu propia cuenta Baserow) -- mismo
+principio ya aplicado con el token de la Pi.
+
+### Límites y honestidad
+
+- Verificado hasta sintaxis (`node --check`) y contra la documentación
+  OpenAPI real de los tres endpoints que usa -- **no ejecutado todavía de
+  extremo a extremo contra una Baserow real**, porque el login es
+  intencionadamente interactivo (email+contraseña por terminal) y ese paso
+  no puede automatizarse ni probarse desde aquí sin que lo ejecutes tú.
+- El mecanismo para borrar los campos de fábrica (`Notes`/`Active`) que
+  Baserow crea por defecto y renombrar el campo primario según el primer
+  campo declarado está escrito y es lógicamente consistente con la
+  documentación del API, pero tampoco probado contra datos reales todavía.
+- `tablas_existentes` (ids de tablas ya creadas, para poder enlazar
+  `link_row` a ellas) hay que rellenarlo a mano por entorno -- PC y Pi
+  tienen ids distintos para la misma tabla lógica, el script no los
+  adivina.
+- Los módulos ya construidos (`cronista`, `agora`, `paquete_cliente`,
+  `ejecutor_local`) siguen con sus tablas creadas por CSV -- este script
+  solo se ha usado, de momento, para preparar la definición de `jerarquia`,
+  no para recrear nada ya existente.
+
+### Pendiente, no resuelto todavía
+
+- Ejecutar `crear_tabla_desde_manifiesto.mjs` una vez de verdad, con tu
+  login, contra la Baserow del PC o de la Pi, para confirmar que el flujo
+  completo (crear tabla, borrar campos de fábrica, renombrar el primario,
+  crear el resto de campos, enlazar `link_row`) funciona tal cual está
+  escrito.
+- Escribir el `.tablas.json` para el resto de módulos `solo_disenado`
+  (`red_social`, `asociacionismo`, `oportunidad`, `pregonero`) -- solo
+  existe para `jerarquia` de momento.
+- Decidir si, una vez probado, este mecanismo sustituye también el proceso
+  CSV de módulos futuros ya construidos, o convive con él.
