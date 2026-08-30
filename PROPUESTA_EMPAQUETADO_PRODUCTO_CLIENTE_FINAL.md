@@ -957,24 +957,36 @@ generados - Cronista` dentro de `gestordeproyectos.claude`
 del archivo ya sincronizado (requeriría una segunda pasada con la cuenta personal,
 no la de servicio, para leer el `fileId` tras la sincronización).
 
-**Bug real encontrado y corregido -- bucle de n8n disparándose de más**: la primera
-ejecución completa del nuevo workflow, con el patrón estándar de bucle de n8n
-(`SplitInBatches` con su salida "loop" recorriendo la cadena y volviendo a
-conectarse a su propia entrada), procesó las 10 tareas reales **tres veces
-seguidas** antes de terminar (30 filas `DOCUMENTO` en vez de 10, aunque cada
-imagen en disco quedó bien porque el nombre de archivo es el mismo y se
-sobreescribe). La ejecución sí terminó sola (no fue un bucle infinito real) y
-n8n la marcó como `success`, lo cual la hace fácil de pasar por alto. Corregido
-sobrescribiendo también la salida "done" (índice 0) de `SplitInBatches`, que había
-quedado sin conectar a ningún nodo -- conectarla a un `NoOp` terminal es la
-recomendación estándar de n8n para que el nodo reconozca sin ambigüedad el final
-del lote. **No se ha vuelto a ejecutar el flujo completo tras este cambio** para no
-generar más filas duplicadas de prueba; las 20 filas sobrantes (`DOC-0014` a
-`DOC-0033`) ya se borraron a mano del Sheet. Antes de confiar en este flujo para
-un cliente real, **verificar en la próxima ejecución que el número de filas nuevas
-coincide exactamente con el número de tareas** -- si se repite el patrón de
-triplicado, el bucle de n8n necesita un rediseño distinto (por ejemplo, un único
-nodo Code que itere y llame HTTP secuencialmente, en vez de `SplitInBatches`).
+**Bug real, causa raíz encontrada y corregida (actualizado 2026-08-30, la primera
+hipótesis era incorrecta)**: la primera ejecución completa procesó las 10 tareas
+reales varias veces seguidas (llegó a multiplicar hasta por 13, 130 filas
+`DOCUMENTO` en una sola ejecución). La sospecha inicial fue el patrón de bucle de
+`SplitInBatches` -- se probaron tres arreglos distintos sobre esa hipótesis
+(conectar su salida "done", sustituirlo por un nodo Code con `fetch()`, sustituirlo
+por un nodo Code con `$helpers.httpRequest()`) y **el duplicado seguía
+ocurriendo incluso sin ningún nodo de bucle en el diseño**, lo que descartó esa
+hipótesis del todo. La causa real: el nodo `Leer TAREAS del proceso` estaba
+encadenado DESPUÉS de `Leer DOCUMENTOS existentes` (13 filas reales) -- en n8n,
+un nodo estándar se ejecuta una vez POR CADA ITEM que recibe de entrada, así que
+`Leer TAREAS del proceso` se re-ejecutaba 13 veces (una por cada fila de
+`DOCUMENTOS`), devolviendo sus 10 filas reales cada vez -- 13×10=130. Nada que ver
+con bucles. **Corregido** poniendo ambas lecturas de Sheets en paralelo (las dos
+cuelgan directamente de `Entrada: PROCESO_ID`, que tiene un solo item) en vez de
+encadenarlas; el nodo de preparación sigue leyendo `Leer DOCUMENTOS existentes`
+por referencia con `$('Leer DOCUMENTOS existentes').all()` aunque ya no esté en
+su cadena de entrada directa. **Verificado limpio con una ejecución final**:
+recuento de items confirmado en 10 en cada nodo de la cadena, 10 filas
+`DOCUMENTO` correctas y sin duplicar -- luego borradas por ser de prueba
+(quedan `DOC-0004`-`DOC-0013` como las reales, generadas en la ronda anterior).
+
+**Lección general**: encadenar una lectura de Sheets con N filas justo por
+delante de otra lectura la multiplica por N, aunque la segunda lectura no
+dependa realmente de los datos de la primera. La regla de "encadenar en
+secuencia" documentada más arriba (para el Cronista original) sigue siendo
+correcta cuando el nodo siguiente necesita AMBAS ramas como entrada directa --
+pero si solo necesita una rama como entrada y consulta la otra por nombre
+(`$('Nombre del nodo')`), esa otra rama debe quedar en paralelo, nunca por
+delante.
 
 **Cómo aplicar en general**: el patrón "extraer fotograma real → transformarlo con
 `img2img` → registrarlo como `DOCUMENTO` vinculado a la entidad exacta (`Tarea`,
