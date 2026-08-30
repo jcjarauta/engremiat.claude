@@ -4007,7 +4007,16 @@ demo). Verificado leyendo Baserow por API: fila `TAREA` id 6, `PROCESO_ID`
 "Enviado automáticamente con n8n" que Telegram añadía por defecto a los
 mensajes de Feria (`appendAttribution: false`).
 
-**Pendiente**: la misión se crea en Baserow pero el grupo todavía no tiene
-forma de marcarla como completada desde el propio Telegram -- ese es el
-siguiente eslabón real antes de que la escalera de confianza funcione de
-punta a punta sin salir del chat.
+**Pendiente resuelto en la misma jornada**: el mensaje de confirmación
+ahora incluye un botón "✅ Ya elegimos personaje -- marcar como hecho" que
+actualiza la fila real de `TAREA` (`ESTADO=Completada`,
+`PORCENTAJE_AVANCE=100`, `MODIFICADO_POR` con el nombre real de quien
+pulsó) -- probado en vivo y verificado leyendo Baserow (fila 9,
+`PROCESO_ID` 8). **El ciclo completo -- elegir escenario, crear grupo,
+crear misión, completar misión -- funciona de punta a punta sin salir de
+Telegram**, con cada paso verificado contra datos reales, no solo por la
+respuesta del bot.
+
+Pendiente real que queda: tras completar la primera misión no se genera
+todavía una segunda -- el ciclo se cierra en uno solo, tendría que
+encadenarse para que la partida siga.
