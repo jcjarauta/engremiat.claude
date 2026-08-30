@@ -811,3 +811,64 @@ esta ronda solo confirma que las piezas necesarias ya funcionan por separado y c
 imagen (`img2img`, ahora con estilo propio definido), infografía (plantilla + datos),
 informe (Edge headless). Lo único que falta es montar el flujo en n8n -- no hay
 ningún obstáculo técnico nuevo que resolver antes de eso.
+
+## "Cronista": el ciclo montado y probado en vivo (2026-08-30)
+
+Nombre elegido para este ciclo: **Cronista** -- el que convierte lo ya trabajado
+(documentos, procesos, tareas de un proyecto) en algo presentable, igual que
+"Ejecutor" es el que trabaja el código. Montado en n8n, no solo diseñado.
+
+**Descubrimiento importante al montarlo**: ya existía un stack `engremiat-*`
+completo corriendo en Docker desde hace semanas -- n8n, ngrok, Open WebUI, Baserow,
+Typebot -- con un ecosistema real de workflows activos para "Taller Trobaila"
+(aprobación humana, Telegram, notificaciones, informes trimestrales). Cronista se
+construyó reutilizando sus credenciales ya configuradas (cuenta de servicio de
+Google, patrón de credencial de cabecera HTTP) en vez de crear infraestructura
+paralela.
+
+### Diseño del flujo
+
+`Webhook (POST /webhook/cronista, {proyecto_id})` → leer `PROYECTO` (`02_PROYECTOS`)
+→ leer sus `DOCUMENTOS` vinculados (`14_DOCUMENTOS`, filtro `ENTIDAD_ID`) → leer
+`RECURSOS` disponibles (`23_RECURSO`, "espacios" del taller) → combinar todo en un
+solo payload real → **worker local** (`local-potente`/qwen3:14b, vía LiteLLM,
+`host.docker.internal:4000` desde dentro del contenedor) redacta un resumen
+presentable (título, resumen, puntos clave, recursos relevantes) → **puerta humana**
+(nodo de control, sin escritura automática todavía -- ver más abajo).
+
+**Probado en vivo con dos proyectos reales, con éxito**: `PRO-0025` (amigurumi) y
+`PRO-0026` (bahareque). En ambos casos el resumen generado es fiel a los datos
+reales -- incluye la corrección real de materiales del amigurumi, y reproduce
+correctamente los avisos de honestidad del informe del bahareque (paso inferido,
+límite de 7 fotogramas) en vez de presentarlos con falsa confianza.
+
+### Dos bugs reales encontrados y corregidos al montarlo (quedan documentados para la próxima vez)
+
+1. **Permisos de Drive**: la cuenta de servicio de n8n nunca había sido compartida
+   con el Sheet de Gestor de Proyectos (solo tenía acceso a un Sheet de pruebas
+   público) -- 403 al leer. Resuelto compartiendo la carpeta raíz `engremiat.claude`
+   completa con esa cuenta -- Google Drive propaga el acceso a todo lo que ya vive
+   dentro, no hace falta compartir archivo por archivo. Nota real: esto cubre lo que
+   ya está dentro de la carpeta -- un Sheet de cliente nuevo se crea primero en la
+   raíz del Drive personal y se mueve después a su carpeta; mientras acabe dentro
+   del árbol compartido, hereda el acceso igual.
+2. **Ramas paralelas sin sincronizar**: conectar tres lecturas de Sheet en paralelo
+   a un mismo nodo de código no garantiza que las tres hayan terminado antes de que
+   el código se ejecute -- n8n dispara el nodo en cuanto llega la primera rama.
+   Corregido encadenando las lecturas en secuencia. Un `RECURSO` vacío (el Sheet no
+   tiene ese módulo instalado) también cortaba la cadena -- corregido con
+   `alwaysOutputData` y un código defensivo (`try/catch`) en vez de asumir que
+   siempre habrá datos.
+
+### Pendiente, deliberadamente no resuelto todavía
+
+- **Escritura de vuelta al Sheet**: el flujo termina en un nodo de control ("Puerta
+  humana: revisar antes de guardar"), sin escritura automática de un nuevo
+  `DOCUMENTO` -- mismo principio de esta propuesta desde el principio: nada se
+  escribe solo hasta confirmar el formato exacto de salida con datos reales
+  (ya hecho en esta ronda), no antes.
+- **Renderizado final a PDF/imagen**: Cronista hoy entrega el contenido estructurado
+  (JSON), no el PDF/infografía terminados -- esos pasos corren hoy en el PC anfitrión
+  (Edge headless, `img2img`), fuera del contenedor de n8n. Conectar ambos mundos
+  (que n8n dispare esos scripts del host) es el siguiente paso, no resuelto en esta
+  ronda.
