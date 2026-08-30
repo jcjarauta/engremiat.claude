@@ -3131,3 +3131,25 @@ Con esto:
   de las dos cosas está hecha.
 - No probado en Baserow real ningún recorrido de árbol autorreferenciado ni
   la cascada de herencia de `PAQUETE_CLIENTE_ID`.
+
+### Manifiestos actualizados al patrón (2026-08-30)
+
+`asociacionismo.yaml` (v1) y `red_social.yaml` (v1) quedan reescritos para
+usar `jerarquia.yaml` en vez del diseño previo:
+
+- `asociacionismo.yaml`: `ASOCIACION`/`SOCIO` desaparecen como tablas
+  propias -- son ahora filas de `ENTIDAD_ORGANIZATIVA` con `TIPO_NIVEL`
+  distinto (`asociacion`/`usuario`), y `DECISION_GRUPO` referencia
+  `ENTIDAD_ORGANIZATIVA_ID` en vez de `ASOCIACION_ID`. La decisión de
+  arquitectura que quedó abierta ayer queda marcada como
+  **resuelta sobre el papel** (mecanismo de herencia de
+  `PAQUETE_CLIENTE_ID`), no como implementada -- sigue sin probarse en
+  Baserow real.
+- `red_social.yaml`: `INTERES` gana una columna `COMPETENCIA_ID` que
+  referencia el árbol de `jerarquia.yaml` (respaldado por ESCO), con
+  `NOMBRE_LIBRE` como vía de escape mientras ese árbol no cubra un interés
+  concreto -- ningún dato existente se pierde, es una columna añadida, no
+  una migración destructiva.
+
+Nada de esto se ha creado todavía en ninguna Baserow real (ni PC ni Pi) --
+son ediciones de los ficheros `.yaml` de especificación, no tablas nuevas.
