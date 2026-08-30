@@ -981,3 +981,160 @@ nodo Code que itere y llame HTTP secuencialmente, en vez de `SplitInBatches`).
 `Proyecto`, etc.)" es ahora reutilizable para cualquier video con timestamps ya
 anotados en sus tareas -- no hace falta repetir el trabajo de análisis de video
 para reutilizar la generación de imagen.
+
+## Propuesta: "Oportunidad" -- un tercer ciclo, hermano de Ejecutor y Cronista (2026-08-30)
+
+### El salto que pide el operador
+
+Hasta ahora, Ejecutor cierra código y Cronista convierte datos reales en
+documentación presentable -- ambos actúan sobre trabajo que **ya existe** (un
+proyecto, un video, un dato del Sheet). La pregunta nueva es distinta: ¿puede el
+mismo patrón (ciclo programado, lectura de datos reales, worker local, puerta
+humana, salida en el Sheet) **encontrar trabajo que todavía no existe** -- un
+cliente potencial, una subvención a la que se puede optar, una organización a la
+que ofrecer o pedir voluntariado técnico -- y dejarlo ya elaborado, listo para que
+el operador solo tenga que decidir sí o no?
+
+Eso es "Oportunidad": no una herramienta nueva, sino la **tercera aplicación del
+mismo motor** (LiteLLM + Sheet + render-worker + puerta humana) a un problema
+distinto: en vez de "documentar lo que hicimos", "detectar y preparar lo que
+podríamos hacer a continuación".
+
+### Qué existe ya en el mercado para cada pieza (para no reinventar, y para saber
+qué grado de ambición es razonable)
+
+- **Detección de oportunidad + perfil ideal de cliente (ICP)**: las herramientas de
+  prospección con IA (Salesforce Agentforce, Apollo, Artisan, ZoomInfo,
+  PhantomBuster) codifican un "perfil ideal" con tres tipos de señal --
+  firmográfica (tamaño, sector, geografía), tecnográfica (qué usa ya, qué podría
+  estar sustituyendo) y de comportamiento (contrataciones, cambios recientes) -- y
+  puntúan cada cuenta nueva contra ese perfil antes de gastar tiempo humano en
+  ella.
+- **Demo/propuesta personalizada por prospecto**: plataformas como Walnut y
+  Demostack generan automáticamente una demo distinta para cada prospecto
+  (ajustando qué se muestra según su sector/rol), y miden qué parte de la demo
+  mira cada uno para afinar la siguiente. Herramientas de ABM (Tofu y similares)
+  van un paso más allá y generan directamente una landing page HTML propia por
+  cuenta objetivo, con su lenguaje y su caso de uso.
+- **Matching y redacción de subvenciones**: plataformas como Instrumentl (450.000+
+  perfiles de financiadores) o Fundsprout (275.000+ convocatorias activas)
+  analizan la misión y capacidad de una organización y devuelven una lista
+  puntuada de convocatorias que encajan, con un primer borrador de propuesta ya
+  generado -- nunca envían nada solas.
+- **Voluntariado técnico por habilidades**: Catchafire hace de intermediario --
+  una organización publica una necesidad concreta (diseño, IT, comunicación) y el
+  sistema empareja por habilidad, experiencia y valoraciones previas, con un
+  tiempo medio de match de 5 días. El patrón de fondo es el mismo: **necesidad
+  descrita + perfil de quien puede cubrirla + un match automático**, no una
+  conversación de venta.
+
+La conclusión práctica: el "sistema encuentra y elabora la oportunidad, la persona
+decide y firma" **ya es el estándar del sector** en los tres frentes (venta,
+subvención, voluntariado) -- Engremiat no está inventando el concepto, está
+uniendo las tres piezas bajo un único motor que el operador ya controla y aloja
+él mismo, en vez de pagar tres SaaS distintos que además se quedan con el dato.
+
+### Diseño propuesto
+
+**Una entidad nueva, `OPORTUNIDAD`** (pestaña nueva del Sheet, mismo patrón que
+`CAMPANA`/`PROYECTO`/`DOCUMENTO`): `ID, TIPO (Cliente/Subvencion/Voluntariado),
+PERFIL_OBJETIVO_ID, NOMBRE_ENTIDAD_DETECTADA, FUENTE, NIVEL_CONFIANZA,
+RESUMEN_OPORTUNIDAD, PROPUESTA_GENERADA_DOC_ID, ESTADO
+(Detectada/En_revision/Aprobada/Descartada/Contactada), FECHA_DETECCION,
+OBSERVACIONES`. Vive junto a `DOCUMENTO` y `PROYECTO` como cualquier otra
+entidad -- nada nuevo en cuanto a esquema, solo una tabla más.
+
+**Un `PERFIL_OBJETIVO` reutilizable** (justo lo que pide el operador: "un tipo de
+perfil con características que pueden ser compartidas para otros perfiles
+parecidos"): en vez de definir cada oportunidad desde cero, se define una vez un
+perfil-tipo (ej. "taller de manualidades pequeño, <5 personas, sin presencia
+digital fuerte, activo en redes locales") con sus rasgos firmográficos y de
+comportamiento, y cualquier organización real detectada se compara contra la
+lista de perfiles-tipo existentes, no contra un enunciado libre cada vez -- así
+un perfil bueno, una vez afinado, sirve para docenas de detecciones futuras.
+
+**El ciclo "Oportunidad" en tres fases, calcado del patrón Cronista**:
+
+1. **Explorar** (worker local + búsqueda web con dominio acotado): dado un
+   `PERFIL_OBJETIVO` y un ámbito (ej. "talleres de manualidades en un radio de
+   30km", "convocatorias de subvención cultural de la Generalitat 2026",
+   "organizaciones locales que ya hacen voluntariado tecnológico"), el sistema
+   busca candidatos reales y los puntúa contra el perfil -- exactamente el
+   patrón de ICP scoring ya descrito arriba, pero corriendo sobre `local-potente`
+   en vez de un SaaS de pago.
+2. **Elaborar** (LiteLLM + render-worker, reutilizando TODO lo ya construido):
+   para cada candidato que supera el umbral, generar automáticamente: un resumen
+   de por qué encaja (texto), una propuesta de mejora o de intercambio concreta
+   (texto, en el mismo formato que ya usa Cronista para sus informes), y un
+   "kit de identidad visual" ligero -- paleta de color derivada de una semilla
+   (rotación HSL, no requiere IA), una sugerencia de tipografía de una lista
+   curada propia (nunca inventada por el LLM, para evitar fuentes que no
+   existen), y un logo/imagen de referencia vía el mismo pipeline `img2img` o
+   `text2img` que ya genera fotogramas e infografías. Con esto se cierra el PDF
+   final con `render-worker /pdf`, igual que un informe de Cronista.
+3. **Puerta humana, sin excepción** (igual que el nodo "revisar antes de guardar"
+   de Cronista, pero aquí es innegociable, no solo prudente): la fila
+   `OPORTUNIDAD` se crea en estado `Detectada`, con la propuesta ya redactada y
+   el PDF ya generado, pero **nada se envía a nadie, nunca, sin que el operador
+   la pase manualmente a `Aprobada`**. El sistema deja el trabajo hecho; la
+   decisión de contactar sigue siendo humana en el 100% de los casos.
+
+**Reutilización real, no nueva infraestructura**: el ciclo completo corre sobre
+piezas que ya existen -- `LiteLLM` (razonamiento), `render-worker` (PDF/imagen),
+el patrón n8n de `SplitInBatches` corregido esta misma ronda, y el Sheet como
+única fuente de verdad. La única pieza genuinamente nueva es el endpoint
+`render-worker /identidad-visual` (paleta + logo + tipografía) y la pestaña
+`OPORTUNIDAD`/`PERFIL_OBJETIVO`.
+
+### Por qué la puerta humana aquí es más estricta que en Cronista
+
+Cronista actúa sobre datos que el propio cliente ya nos dio -- el riesgo de
+equivocarse es interno. "Oportunidad" analiza e implica a **terceros que no han
+pedido nada**: una empresa real, un ayuntamiento, una organización de
+voluntariado. Tres límites que no son negociables, y que hay que dejar escritos
+desde el diseño, no añadidos después de un incidente:
+
+- **Nunca contacto automático**: el sistema redacta, nunca envía. Ningún email,
+  mensaje o formulario sale sin que una persona pulse enviar -- el mismo
+  principio ya aplicado a Cronista, pero aquí con consecuencias reales fuera de
+  Engremiat si se salta (spam, mala imagen, y en la UE cuestiones de RGPD/LSSI-CE
+  si hay datos personales de por medio).
+- **Solo información pública y de organizaciones, nunca de personas**: el
+  `PERFIL_OBJETIVO` describe organizaciones (talleres, entidades, convocatorias),
+  no personas concretas -- no se construye un perfil de "Fulanito de tal",
+  aunque su nombre aparezca en una web pública. Si una fase futura necesita
+  datos personales (un contacto concreto dentro de la organización), eso vuelve
+  a pasar por el mismo tipo de decisión que ya se tomó con el Telegram ID del
+  operador: explícita, mínima, documentada.
+- **Ninguna solicitud de subvención se presenta sola**: el borrador que genera el
+  sistema es un punto de partida para que una persona con capacidad de firma lo
+  revise y complete -- las convocatorias reales exigen representación legal,
+  cuentas justificativas y compromisos que el sistema no puede asumir en nombre
+  de nadie.
+
+### Cómo se generaliza a los tres casos que pide el operador
+
+El mismo motor, tres `PERFIL_OBJETIVO` distintos y tres fuentes de "explorar"
+distintas -- nada más cambia:
+
+| | Preventa comercial | Subvenciones | Voluntariado técnico |
+|---|---|---|---|
+| Fuente en "Explorar" | búsqueda web acotada + directorios locales/sectoriales | portales de convocatorias (autonómicos, estatales, UE) | redes de voluntariado tipo Catchafire, asociaciones locales |
+| Qué genera "Elaborar" | demo/propuesta de producto + kit de marca + oferta de intercambio o venta | borrador de memoria + argumentario de encaje con la convocatoria | propuesta de colaboración (qué ofrecemos / qué necesitamos) |
+| Puerta humana | aprobar antes de contactar | revisar y completar antes de firmar/presentar | aprobar antes de proponer el contacto |
+
+### Pendiente, deliberadamente no resuelto todavía
+
+- **`render-worker /identidad-visual`**: no implementado en esta ronda -- diseño
+  acotado arriba (paleta programática + tipografía de lista curada + imagen vía
+  `img2img`/`text2img` ya probados), pendiente de construir cuando haya un primer
+  `PERFIL_OBJETIVO` real con el que probarlo.
+- **De dónde sale el primer `PERFIL_OBJETIVO` real**: esta ronda documenta el
+  diseño, no crea todavía ningún perfil concreto ni ninguna búsqueda real de
+  clientes/convocatorias/voluntariado -- eso requiere que el operador defina el
+  primer perfil objetivo real (empezando, probablemente, por el caso más simple:
+  talleres de manualidades parecidos al piloto del amigurumi).
+- **Límite legal de la búsqueda automatizada**: antes de programar cualquier
+  "Explorar" real contra webs de terceros, revisar los términos de uso de cada
+  fuente (muchos directorios y portales de convocatorias prohíben explícitamente
+  el scraping automatizado) -- no asumido, a confirmar caso por caso.
