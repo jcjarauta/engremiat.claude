@@ -3294,3 +3294,110 @@ Dos fallos reales, corregidos sobre la marcha:
 Nada de esto se ha creado todavía en el Baserow del PC -- solo en la Pi.
 Las tablas existen vacías: ninguna fila de datos, ninguna acción n8n ni
 pantalla de Plaza las usa todavía.
+
+## Modelo de negocio: nosotros ofrecemos la personalización, protegemos el generador (2026-08-30)
+
+### La idea, en una frase
+
+Hasta ahora todo el diseño trataba "soberanía" y "todo abierto" como
+sinónimos. No lo son. Lo que el cliente tiene que controlar es **su
+infraestructura y sus datos** (ya es la decisión central de este documento,
+ver arriba) -- no hace falta que controle también el motor que decide *cómo
+se configura* esa infraestructura la primera vez. Esa segunda pieza --
+llamémosla el **generador de experiencias**: la lógica que convierte "una
+persona neurodivergente que necesita orden" o "una asociación de artesanos"
+en una `ENTIDAD_ORGANIZATIVA` bien configurada, un `PAQUETE_CLIENTE`
+correcto, una hoja de estilos de Plaza ajustada, y un primer lote de tareas
+-- puede quedarse como servicio nuestro, protegido, y cobrarse aparte.
+
+### Precedente real, no una idea nueva
+
+Este patrón ya existe y funciona comercialmente hoy: **v0.dev (Vercel)** genera
+aplicaciones React completas que el usuario se lleva enteras -- código
+propio, exportable, inspeccionable -- pero el generador en sí (los prompts,
+la orquestación, el modelo ajustado) es propiedad de Vercel y nunca se
+entrega. Mismo patrón en Cursor Composer o Replit Agent: el resultado es
+100% del usuario, el motor que lo produjo no. Es el mismo principio que
+"open core" (GitLab, Sentry, Mattermost: el producto desplegado es libre,
+la capa de valor añadido alrededor es comercial) aplicado no a
+funcionalidad sino al proceso de generación inicial.
+
+### Qué se protege y qué NO -- la línea que no se cruza
+
+- **Se protege**: la lógica de generación (prompts de segmentación, reglas
+  de qué manifiestos activar según el tipo de cliente, plantillas de
+  paquete) -- vive en un servicio nuestro, no se copia al hardware del
+  cliente.
+- **NO se protege, nunca**: los datos del cliente, su instancia de
+  Baserow/n8n/Plaza ya desplegada, ni el código de esa instancia una vez
+  entregada -- eso sigue siendo enteramente suyo, inspeccionable y
+  modificable, exactamente como se ha defendido en todo este documento.
+  Cruzar esta línea (esconder algo del sistema que el cliente ya opera)
+  rompería la promesa de soberanía que es el diferenciador real -- no es
+  negociable.
+- Analogía exacta: el cliente es dueño absoluto de la casa construida; el
+  arquitecto no le regala su forma de trabajar, solo la casa terminada.
+
+### Dos vías comerciales, no una
+
+1. **Catálogo** -- paquetes de experiencia ya diseñados, probados y
+   deterministas: en la práctica, cada manifiesto de `manifiestos/` es ya
+   un ingrediente de catálogo (jerarquía + un set de `PAQUETE_CLIENTE` +
+   una hoja de estilos + tareas de arranque). Provisionar un cliente desde
+   el catálogo no necesita LLM -- es exactamente lo que ya hace
+   `crear_tabla_desde_manifiesto.mjs` más una carga de filas plantilla.
+   **Coste marginal casi cero**, apto para un nivel de entrada barato o
+   incluido.
+2. **Personalizado** -- el cliente describe algo que no está en el
+   catálogo; el generador de experiencias lo interpreta y produce una
+   configuración a medida. Aquí hay una decisión de coste real:
+   - **Vía modelo local** (Ollama, sin coste de API): gratis de operar, pero
+     la propia prueba de hoy (ver "Workflow real construido, y una segunda
+     prueba peor que la primera" en `ROADMAP_BASELINE_ENGREMIAT.md`)
+     demuestra en vivo que el modelo local pierde fidelidad con textos
+     largos o casos menos estándar -- evidencia real, no una suposición.
+   - **Vía API de pago** (Claude/GPT): coste real por generación, pero de
+     orden de magnitud pequeño frente al valor del servicio -- una
+     llamada de segmentación de un documento del tamaño del roadmap de hoy
+     (~3.000 tokens) cuesta del orden de céntimos de dólar, no euros.
+     Justifica cobrar un precio por la vía personalizada muy por encima de
+     ese coste marginal, con margen real y sin necesidad de disimularlo.
+
+### Arquitectura necesaria para que esto sea real, no solo discurso
+
+El generador (`Cronista - Segmentar documento en tareas`, hoy construido
+en el n8n compartido del PC) tendría que vivir en un n8n **propio del
+operador**, no en el mismo n8n donde corre el resto de la operación de un
+cliente -- el cliente llama a este servicio (como llama a la API de Claude
+hoy: una petición de salida, sin exponer nada suyo), recibe el resultado
+(filas concretas para importar), y a partir de ahí su sistema vuelve a ser
+100% autónomo y local. Ningún cliente necesita ver ni alojar el generador
+para operar su propio Engremiat.
+
+### Límites y honestidad
+
+- Nada de esta separación arquitectónica está construida -- hoy el
+  workflow de segmentación vive en el mismo n8n que el resto de la
+  operación de prueba, no en un servicio aislado del operador.
+- El "catálogo" no existe todavía como tal -- los manifiestos son la
+  materia prima, pero nadie los ha empaquetado como oferta comercial con
+  precio.
+- Cobrar por la vía personalizada exige que la calidad sea consistente --
+  la prueba de hoy demuestra que con el modelo local todavía no lo es;
+  vender "personalización premium" antes de resolver eso sería vender algo
+  que no se puede garantizar.
+- Este modelo de negocio no sustituye la venta de hardware/soporte ya
+  esbozada antes en este documento -- la complementa: una cosa es cómo se
+  entrega el nodo físico, otra cómo se configura su contenido inicial.
+
+### Pendiente
+
+- Separar el generador de experiencias en su propio n8n/infraestructura,
+  distinto del de cualquier cliente.
+- Diseñar el primer catálogo real (2-3 paquetes de experiencia ya
+  probados, con precio) a partir de los manifiestos existentes.
+- Decidir el precio de la vía personalizada con margen real sobre el coste
+  de API, una vez la calidad de la segmentación sea fiable.
+- Nada de esto se activa antes de tener un catálogo probado -- mismo
+  principio de "no construir sin señal real" ya aplicado en todo este
+  documento.
