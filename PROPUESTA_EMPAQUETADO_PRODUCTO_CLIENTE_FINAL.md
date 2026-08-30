@@ -2561,3 +2561,26 @@ investigación**:
 - No se ha simulado este ciclo completo con un cliente real de principio a
   fin -- sigue siendo, en su mayoría, piezas construidas por separado y
   conectadas sobre el papel.
+
+## Primera descentralización real: núcleo desplegado en la Raspberry Pi física (2026-08-30)
+
+Ya no es solo diseño de papel: el núcleo (n8n + Baserow) corre de verdad en la
+Raspberry Pi física del operador, no solo en su PC. Se dejó configurado, de
+forma reutilizable: acceso SSH sin contraseña, sudo acotado sin contraseña
+(solo `apt-get`/`apt`/`docker`/`systemctl`, nunca root total), Claude Code
+instalado y autenticado con Remote Control activo, y el propio repo
+`engremiat.claude` clonado en la Pi -- cualquier sesión futura de Claude Code
+ahí arranca con todo el contexto de este documento, sin transferir ninguna
+conversación.
+
+**Hallazgo real que hay que incorporar al diseño del kit físico**: el primer
+arranque completo (descarga de imágenes + extracción + las ~600 migraciones
+de base de datos de Baserow) tardó **más de una hora** en la tarjeta microSD
+de serie de la Pi -- confirmado que no fue un cuelgue, solo la velocidad de
+escritura de una SD genérica siendo el cuello de botella real. Esto obliga a
+un ajuste concreto en el diseño de "Primer arranque" de Plaza (sección de
+venta sin stock): **hay que avisar al cliente de que la primera puesta en
+marcha puede tardar más de una hora**, y recomendar en la ficha del producto
+una microSD clasificada A1/A2 (o un SSD por USB) en vez de la que suele venir
+de fábrica -- no es un detalle menor, es la diferencia entre que el cliente
+piense que el kit viene roto o que sepa que es normal esperar.
