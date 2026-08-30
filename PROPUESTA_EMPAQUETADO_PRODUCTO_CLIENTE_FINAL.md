@@ -3610,3 +3610,102 @@ en todo este documento.
   sin inventar entidades nuevas más allá de las dos señaladas.
 - No diseñar con más detalle el resto del catálogo mientras no aparezca
   una comunidad real interesada en un Escenario concreto.
+
+## Telegram como puerta de entrada: cartera de clientas y sensor de demanda real (2026-08-30)
+
+### La propuesta del operador
+
+El sistema ya tiene madurez suficiente para empezar a captar los primeros
+grupos de prueba. La idea: usar Telegram como interfaz ligera -- sin
+instalar nada, sin cuenta nueva, sin fricción -- para ofrecer un catálogo
+de Escenarios/juegos entre los que un grupo pueda elegir, como base
+estable y motivadora antes de escalar a experiencias personalizadas.
+
+### Por qué Telegram, con datos reales del mercado
+
+- Telegram supera los 1.000 millones de usuarios activos, con 500 millones
+  interactuando ya con Mini Apps -- el catálogo de Mini Apps pasó de 2.200
+  a mediados de 2024 a casi 5.800 en octubre de 2025 (+162%), con más de
+  200.000 desarrolladores registrados
+  ([GramBase](https://grambase.ai/blog/telegram-mini-apps-2026)).
+- El engagement de Telegram es **10 veces superior** al de Facebook o
+  Instagram, con una tasa de interacción del 28%
+  ([Magnetto](https://magnetto.com/blog/telegram-by-the-numbers)).
+- Más del 95% de las Mini Apps con tracción real son juegos o utilidades
+  gamificadas, no comercio -- mecánicas sociales como clasificaciones,
+  "clanes" o retos de grupo son las que retienen usuarios. Casos con
+  tracción real: Catizen (34M usuarios, 7M diarios), Major (70M usuarios,
+  40M mensuales) ([PixelPlex](https://pixelplex.io/blog/viral-mechanics-on-telegram-apps/)).
+- Los bots con flujo de bienvenida automatizado retienen significativamente
+  más miembros que los grupos sin onboarding guiado
+  ([Metricgram](https://metricgram.com/blog/best-telegram-bots-for-groups)).
+
+Conclusión de mercado: elegir Telegram no es una apuesta -- es ir donde ya
+está la tracción demostrada, con el tipo de mecánica (elección gamificada
+entre escenarios, con progreso visible) que ya funciona a millones de
+usuarios en otros contextos.
+
+### El hallazgo que reduce el riesgo a casi cero: ya está construido
+
+Se auditó el n8n real del operador -- existe ya un bot de Telegram activo
+y probado en producción (`Taller Trobaila - Etapa 6 - Telegram`), con
+exactamente los nodos que hacen falta para esta propuesta: disparador de
+Telegram, teclados inline con callbacks (`Es callback?` /
+`Answer Query a callback`), envío de documentos y mensajes de estado. **No
+hay que investigar ni prototipar la integración con Telegram -- ya existe,
+funciona, y se reutiliza el mismo patrón**, solo con un bot y un workflow
+nuevos para Engremiat.
+
+### Diseño propuesto
+
+1. **Bot de Engremiat en Telegram**: mensaje de bienvenida + teclado inline
+   con el catálogo de Escenarios (`escenario.yaml`) -- incluido "Cuento
+   Cooperativo" (con cliente real) y el resto del catálogo (exploración).
+2. **Cada Escenario elegido crea una fila real**: `ENTIDAD_ORGANIZATIVA`
+   (tipo `grupo`) para el grupo que elige, y Cronista con puerta humana
+   genera el primer lote de misiones (`TAREA`) -- reutilización directa de
+   todo lo construido y probado hoy, ningún componente nuevo.
+3. **El grupo interactúa desde el propio Telegram** al principio -- marcar
+   misiones completas, ver progreso, sin necesitar instalar Plaza todavía.
+   Es la versión más ligera posible del embudo ya diseñado antes en este
+   documento ("bot de onboarding → demo → conversión"), ahora con canal
+   concreto y tecnología ya probada, no solo diseño.
+4. **Doble función del catálogo -- también es sensor de demanda real**: no
+   hace falta construir los 18 Escenarios para ofrecerlos. Un botón "Próximamente
+   -- vótalo" en los que no tienen desarrollo real todavía convierte el menú
+   en una encuesta de demanda genuina -- se construye lo que los grupos
+   reales pidan, no lo que parezca más interesante desde fuera. Coherente
+   con "no construir sin señal real": esto ES el mecanismo para obtener
+   esa señal, barato y ya con tecnología probada.
+5. **Graduación**: un grupo que quiere personalización profunda o
+   soberanía de datos (su propio nodo/Pi) escala hacia Plaza -- Telegram
+   capta y engancha, Plaza y el hardware propio son el destino final para
+   quien lo quiera.
+
+### Límites y honestidad
+
+- Nada de esto está construido todavía -- ni el bot de Engremiat, ni el
+  workflow, ni el catálogo mostrado como teclado inline. Existe el
+  precedente técnico probado (Taller Trobaila), no el bot nuevo en sí.
+- El "botón de votación" para Escenarios sin construir es una hipótesis de
+  diseño, no probada -- hay que verificar que la gente entiende que
+  "Próximamente" no es un error ni una promesa de fecha.
+- Captar grupos de prueba reales implica RGPD desde la primera interacción
+  (el ID de Telegram y el nombre del grupo ya son datos personales) --
+  igual de aplicable aquí que en el resto del documento.
+- Telegram sigue siendo una plataforma de un tercero -- coherente con
+  "salida controlada, sin depender de una nube ajena para los datos
+  reales", el bot es solo la puerta de entrada, los datos del grupo viven
+  en el Baserow del operador desde el primer mensaje, no en Telegram.
+
+### Pendiente
+
+- Crear el bot de Telegram de Engremiat (token propio, no reutilizar el de
+  Taller Trobaila) y el workflow n8n, reutilizando el patrón ya probado.
+- Decidir cuántos Escenarios del catálogo se ofrecen "reales" desde el día
+  uno (recomendado: solo "Cuento Cooperativo", el resto como votación) y
+  cuántos como sensor de demanda.
+- Diseñar el flujo mínimo de alta de grupo desde Telegram hasta la fila
+  real de `ENTIDAD_ORGANIZATIVA` y el primer lote de misiones.
+- Ninguna captación real de grupos ha empezado -- esto es la propuesta,
+  no una campaña en marcha.
