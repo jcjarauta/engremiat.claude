@@ -4722,3 +4722,57 @@ mientras el resto descansa). Construido:
   hacia la sociocracia real.
 - Etiquetar de verdad las salidas de Concilio como `demo_onboarding` o
   `desarrollo_real`, y conectar las de demo con Pregonero.
+
+## Vigilia ampliada: cola encadenada sin espera, tres dominios en paralelo (2026-08-30)
+
+### La mejora sobre el diseño anterior
+
+El disparador cada 15 minutos desperdiciaba casi todo ese tiempo esperando,
+cuando cada ciclo tarda segundos. Corregido: **`Guardar resultado en
+Vigilia` vuelve a conectar con `Buscar siguiente Vigilia pendiente`** en
+vez de terminar -- en cuanto un elemento se procesa, empieza el siguiente
+de inmediato. El disparador programado (cada 15 min) queda como red de
+seguridad para arrancar la cola o recuperarla si algo la detiene, no como
+el ritmo de trabajo real.
+
+### Personas de Acervo, ahora configurables por petición
+
+`concilio_proponer` acepta un campo `personas` opcional -- si no se manda,
+usa Rural/Urbano por defecto (compatibilidad con lo ya probado). La cola
+de Vigilia guarda qué personas usar por elemento (`PERSONAS_JSON`),
+permitiendo comparar dominios con voces adecuadas a cada uno en el mismo
+lote, sin tocar código para cada prueba.
+
+### El lote sembrado esta noche -- tres dominios reales, no solo uno
+
+- **Huerto del Abuelo** (capítulos 2-4, Rural + Urbano) -- termina la
+  historia ya empezada hoy.
+- **Reparto de tareas vecinales** (3 pasos, Acervo Backend + Acervo
+  Frontend) -- un caso de software real, con voces técnicas adecuadas
+  esta vez, no las mismas de la historia.
+- **Taller de oficios adaptado** (3 pasos, Acervo Cuidados + Acervo
+  Patrimonio) -- un caso de cooperativa/Semilla Cooperativa, con voces
+  desde la diversidad funcional y la memoria de oficios.
+
+9 elementos en total, en tres cadenas independientes (rangos de `ORDEN`
+separados para que cada una encuentre su propio capítulo anterior sin
+mezclarse con las otras).
+
+### Límites y honestidad
+
+- El encadenado sin espera no se ha visto correr todavía de verdad -- solo
+  desplegado y razonado, pendiente de la primera vez que el disparador lo
+  arranque.
+- Las voces de Acervo (Backend/Frontend/Cuidados/Patrimonio) son nuevas,
+  escritas hoy mismo, sin ninguna prueba previa aislada -- esta es su
+  primera prueba real.
+- Sigue sin existir ninguna tabla `ACERVO_PERSONA` -- las voces siguen
+  viajando como JSON en el cuerpo de la petición, no como catálogo
+  reutilizable.
+
+### Pendiente
+
+- Revisar mañana las tres cadenas completas -- calidad, coherencia,
+  si las voces nuevas encajan mejor que Rural/Urbano en sus dominios.
+- Si funciona bien, convertir `PERSONAS_JSON` en referencias a una tabla
+  `ACERVO_PERSONA` real en vez de JSON suelto por fila.
