@@ -3547,3 +3547,66 @@ en un servicio de mayor contacto y precio ("asesoría experta de
 personalización"), no en una tarea de infraestructura pendiente. Detalle
 completo en `ROADMAP_BASELINE_ENGREMIAT.md`, sección "Decisión: tres
 niveles, no dos".
+
+## "Escenario": motor de proyectos cooperativos entre comunidades (2026-08-30)
+
+### Origen
+
+Investigación externa (no repetida aquí, ver `manifiestos/escenario.yaml`
+para el resumen completo) sobre un sistema de creación cooperativa de
+cuentos con gobernanza, auditoría, tutoría y publicación -- generalizada
+por el operador en un catálogo de 18 "Escenarios" posibles: entornos
+cooperativos digitales, limitados en el tiempo, donde comunidades asumen
+roles, completan misiones y producen un bien común verificable.
+
+### Valoración técnica -- lo que ya está construido cubre casi todo
+
+El hallazgo principal no es que haga falta un sistema nuevo -- es que
+**el patrón que pide la investigación ya se construyó hoy, con otro
+nombre**: `jerarquia.yaml` demostró que un mismo árbol autorreferenciado
+sirve a tres dominios distintos; "Escenario" es el mismo principio
+aplicado a proyectos cooperativos con gobernanza. Mapeo real contra tablas
+ya construidas y probadas:
+
+- Comunidad participante → `ENTIDAD_ORGANIZATIVA` (sin cambios).
+- Misión con dependencias → `TAREA` (ya tiene `TAREA_PREDECESORA_ID`,
+  `ORDEN_SECUENCIA`, `ESTADO` -- exactamente lo que hace falta).
+- Recurso intercambiado → `AGORA` (sin cambios).
+- Artefacto producido → `DOCUMENTO` + render-worker (sin cambios).
+- Decisión de grupo / canon → `DECISION_GRUPO` + Loomio, ya diseñado en
+  `asociacionismo.yaml`.
+- Segmentar idea en misiones → el workflow Cronista con puerta humana,
+  construido y probado hoy mismo.
+
+Solo dos huecos reales, y ninguno exclusivo de este módulo: una tabla
+`AUDITORIA` genérica (no existe nada parecido hoy, y serviría igual a la
+trazabilidad del cliente neurodivergente y a las decisiones de
+asociacionismo) y un `ROL_PROYECTO` más fino que el actual modelo de
+permisos de tres niveles.
+
+### Distinción que hay que mantener
+
+Solo el primer caso -- "Escenario: Cuento Cooperativo" -- tiene un cliente
+real detrás. Los otros 17 del catálogo son exploración creativa, sin
+ninguna comunidad real que los haya pedido -- mismo principio de "no
+construir sin señal real" ya aplicado a Pregonero/Oportunidad/red_social
+en todo este documento.
+
+### Límites y honestidad
+
+- Nada de este módulo está construido -- ni `AUDITORIA`, ni `ROL_PROYECTO`,
+  ni ninguna configuración de un Escenario concreto.
+- No introducir blockchain para la trazabilidad -- versiones y eventos
+  inmutables en `AUDITORIA` bastan, con mucho menos coste.
+- Riesgo real señalado por la propia investigación: sobregestionar la
+  creatividad si cada aportación necesita aprobación formal -- gobernanza
+  proporcional (libertad en el borrador, control solo en canon).
+
+### Pendiente
+
+- Diseñar `AUDITORIA` y `ROL_PROYECTO` como manifiestos transversales,
+  antes de construir nada de "Escenario" en sí.
+- Concretar "Cuento Cooperativo" reutilizando las tablas ya existentes,
+  sin inventar entidades nuevas más allá de las dos señaladas.
+- No diseñar con más detalle el resto del catálogo mientras no aparezca
+  una comunidad real interesada en un Escenario concreto.
