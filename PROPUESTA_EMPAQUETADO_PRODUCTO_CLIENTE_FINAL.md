@@ -904,3 +904,80 @@ defecto de n8n para la respuesta de un `httpRequest` en modo fichero).
 y la escritura del `DOCUMENTO` de vuelta al Sheet -- mismo patrón ya disponible
 (`render-worker` puede exponer un endpoint más, la escritura reutiliza las acciones
 de cliente ya existentes en el webhook de Apps Script), solo falta cablearlo.
+
+## Cerrado: infografía dinámica y registro de imágenes por tarea (2026-08-30)
+
+Se cierra el pendiente anterior. `render-worker.py` gana dos endpoints nuevos:
+
+- **`POST /infografia`** -- recibe `{titulo, fases: [{nombre, pasos}]}` y construye
+  un SVG paramétrico (círculos numerados + texto envuelto a ancho fijo), lo
+  convierte a PNG con Inkscape en modo headless. Ya no es una plantilla fija
+  hardcodeada como en la primera prueba con el amigurumi -- cualquier flujo puede
+  mandarle su propia lista de fases. Probado con datos reales del proceso
+  `PCS-0012` (preparación / cuerpo y cabeza / acabado), PNG de 49KB, correcto a la
+  primera.
+- **`POST /fotograma-estilizado`** -- recibe `{video_url, timestamp_segundos,
+  prompt, ruta_guardado?}`. Descarga el video en baja resolución UNA vez (cache en
+  disco por ID de video, nunca se redistribuye), extrae con `ffmpeg` el fotograma
+  exacto del segundo indicado, lo pasa por el pipeline `img2img` ya existente y
+  devuelve el PNG resultante. Si se indica `ruta_guardado`, además lo escribe en esa
+  ruta del host (pensado para guardar directamente dentro de una carpeta de Drive
+  sincronizada localmente -- ver más abajo).
+
+**Segmentación de tutorial → imagen registrada por tarea, de punta a punta**: se
+descubrió que cada `TAREA` del proceso `PCS-0012` (amigurumi) ya llevaba su propio
+timestamp de video incrustado en `DESCRIPCION` (ej. `...Video:
+https://youtu.be/DDzRMern12c?t=115`), puesto ahí en la ronda anterior sin pensar
+todavía en este uso. Nuevo workflow n8n **"Cronista de Tareas - imagenes por
+tarea"** (id `GOIMqlw0QKC1xgk8`, webhook `POST /webhook/cronista-tareas`, body
+`{proceso_id}`): lee las `TAREA` del proceso, extrae el timestamp de cada una por
+regex, llama a `/fotograma-estilizado` una vez por tarea, y añade una fila en
+`14_DOCUMENTOS` por cada imagen generada (`ENTIDAD_TIPO=Tarea`,
+`ENTIDAD_ID=<TAR-ID>`, `TIPO_DOCUMENTO=Imagen`). **Probado con éxito de punta a
+punta contra los 10 pasos reales del amigurumi** (`TAR-0008` a `TAR-0017`): 10
+imágenes generadas, 10 filas `DOCUMENTO` (`DOC-0004` a `DOC-0013`) escritas con los
+datos correctos.
+
+**Decisión de arquitectura -- por qué NO se sube la imagen vía la API de Drive**:
+el primer intento usó el nodo `Google Drive` de n8n con la misma cuenta de
+servicio ya usada para Sheets, y falló con `403 storageQuotaExceeded`. Es una
+limitación real y conocida de Google: una cuenta de servicio no tiene cuota de
+almacenamiento propia y no puede crear archivos nuevos en el "Mi unidad" de un
+usuario normal (solo podría en una Unidad Compartida, que requiere Google
+Workspace -- no es el caso de esta cuenta personal). Solución aplicada: puesto que
+este mismo PC ya tiene la carpeta `engremiat.claude` sincronizada localmente vía
+Google Drive para escritorio (`G:\Mi unidad\engremiat.claude\...`), `render-worker`
+escribe el PNG directamente en esa ruta local (parámetro `ruta_guardado`) y Drive
+sincroniza el archivo a la nube por su cuenta, sin que ninguna cuenta de servicio
+necesite tocar la API de Drive. Carpeta destino creada para esto: `Documentos
+generados - Cronista` dentro de `gestordeproyectos.claude`
+(id `16c1_cxgCkhp_XQcELAY5_yd8tHLe95PA`). La fila `DOCUMENTO` queda con `URL` vacía
+(igual que otros documentos ya existentes en el Sheet) y la ruta exacta anotada en
+`DESCRIPCION` -- **pendiente real, no resuelto**: obtener el enlace real de Drive
+del archivo ya sincronizado (requeriría una segunda pasada con la cuenta personal,
+no la de servicio, para leer el `fileId` tras la sincronización).
+
+**Bug real encontrado y corregido -- bucle de n8n disparándose de más**: la primera
+ejecución completa del nuevo workflow, con el patrón estándar de bucle de n8n
+(`SplitInBatches` con su salida "loop" recorriendo la cadena y volviendo a
+conectarse a su propia entrada), procesó las 10 tareas reales **tres veces
+seguidas** antes de terminar (30 filas `DOCUMENTO` en vez de 10, aunque cada
+imagen en disco quedó bien porque el nombre de archivo es el mismo y se
+sobreescribe). La ejecución sí terminó sola (no fue un bucle infinito real) y
+n8n la marcó como `success`, lo cual la hace fácil de pasar por alto. Corregido
+sobrescribiendo también la salida "done" (índice 0) de `SplitInBatches`, que había
+quedado sin conectar a ningún nodo -- conectarla a un `NoOp` terminal es la
+recomendación estándar de n8n para que el nodo reconozca sin ambigüedad el final
+del lote. **No se ha vuelto a ejecutar el flujo completo tras este cambio** para no
+generar más filas duplicadas de prueba; las 20 filas sobrantes (`DOC-0014` a
+`DOC-0033`) ya se borraron a mano del Sheet. Antes de confiar en este flujo para
+un cliente real, **verificar en la próxima ejecución que el número de filas nuevas
+coincide exactamente con el número de tareas** -- si se repite el patrón de
+triplicado, el bucle de n8n necesita un rediseño distinto (por ejemplo, un único
+nodo Code que itere y llame HTTP secuencialmente, en vez de `SplitInBatches`).
+
+**Cómo aplicar en general**: el patrón "extraer fotograma real → transformarlo con
+`img2img` → registrarlo como `DOCUMENTO` vinculado a la entidad exacta (`Tarea`,
+`Proyecto`, etc.)" es ahora reutilizable para cualquier video con timestamps ya
+anotados en sus tareas -- no hace falta repetir el trabajo de análisis de video
+para reutilizar la generación de imagen.
