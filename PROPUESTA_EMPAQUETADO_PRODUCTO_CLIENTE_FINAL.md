@@ -2657,3 +2657,127 @@ diseñada que superficie usada**. La prioridad no es construir más, es:
 4. **Cuando llegue el SSD**, migrar antes de seguir añadiendo carga al nodo --
    la molestia de la SD lenta ya se sintió hoy, no conviene repetirla con más
    datos reales encima.
+
+## El cliente concreto ya existe: interfaz normalizada por fase, mobile-first (2026-08-30)
+
+### Quién es el cliente, para que el diseño deje de ser abstracto
+
+Ya existe un documento propio (`PROPUESTA_APOYO_AUTONOMIA_NEURODIVERGENCIA.md`,
+2026-08-25) que define el caso real: personas neurodivergentes que necesitan
+**orden y acompañamiento**, con principios ya fijados que ahora deben
+traducirse en interfaz -- no repetirlos aquí, pero sí que la interfaz los
+respete: *"normalizar lo mínimo para poder llegar a hacer un poquito más"*,
+capacidad diaria variable (no fija), *"consent beats compliance"* (ningún
+recordatorio se impone), y el principio de que **el diseño se valida en los
+márgenes, no en el usuario promedio** -- diseñar para esta persona primero
+sirve mejor a todos los demás clientes que diseñar genérico y adaptar después.
+
+### Precedente de mercado que valida el enfoque, con evidencia real
+
+**Tiimo** (planificador visual para TDAH/autismo, más de 500.000 usuarios
+activos, certificación NHS) es la referencia directa -- ya validada
+clínicamente, no una intuición de diseño:
+
+- **Cronología visual, no lista de texto**: organiza las actividades en una
+  línea de tiempo visual -- qué toca ahora, qué viene después -- en vez de una
+  lista plana. Reduce la carga cognitiva de "traducir" texto a plan mental.
+- **Sistema personalizable, no un estilo único**: más de 3.000 colores e
+  iconos personalizables para que cada persona construya el sistema visual que
+  funciona para su cabeza -- no hay un "diseño correcto" universal.
+- **Accesibilidad integrada de fábrica, no añadida después**: VoiceOver,
+  control por voz, texto ampliable, modo oscuro -- tratados como núcleo del
+  producto, no como opción avanzada escondida.
+- **Diseño sensorial deliberado**: reduce el desbordamiento sensorial de
+  forma explícita, no solo "se ve bonito".
+
+**Conclusión de mercado**: no hay que inventar cómo diseñar para esta
+audiencia -- ya hay un producto maduro, clínicamente validado, con 500k
+usuarios, que demuestra qué funciona. La `Mis tareas` de Plaza (hoy una lista
+plana de tarjetas) debería evolucionar hacia una **línea de tiempo visual**
+al estilo Tiimo, no seguir siendo una lista de texto con barra de progreso.
+
+### Telegram como canal, con patrones reales investigados
+
+El bot de onboarding (Telegram) ya diseñado necesita reglas de UI concretas,
+no solo "hacer preguntas" -- investigado contra la documentación real de la
+plataforma:
+
+- **Teclado de respuesta (Reply Keyboard) para el menú persistente** -- igual
+  papel que la barra de navegación inferior de Plaza, para que cambiar de
+  Telegram a Plaza no obligue a reaprender nada.
+- **Teclado en línea (Inline Keyboard) solo para acciones puntuales** ligadas
+  a un mensaje concreto (confirmar, elegir una opción) -- nunca como menú
+  general.
+- **Editar el mensaje en el sitio (`editMessageText`) en vez de mandar
+  mensajes nuevos** -- evita que el chat se llene de mensajes acumulados, un
+  factor de sobrecarga real para alguien con función ejecutiva afectada, no
+  solo una preferencia estética.
+- **Paginar cualquier lista de más de ~5 elementos** -- un teclado demasiado
+  alto empuja el mensaje fuera de pantalla, mala UX documentada por la propia
+  plataforma.
+- **Máximo 4 columnas de botones** si una parte relevante de los usuarios
+  puede estar en escritorio -- límite real de la plataforma, no una elección
+  de estilo.
+
+### La hoja de estilos normalizada, ligada a la fase del cliente
+
+La pregunta de fondo del operador -- "qué ve y qué puede hacer cada tipo de
+cliente según la fase del onboarding" -- ya tiene la pieza de datos resuelta
+(`PAQUETE_CLIENTE`, ya construida) pero le falta una dimensión: hoy solo dice
+qué MÓDULOS están activos (Cronista sí/no, Ágora sí/no); falta una **fase de
+complejidad**, independiente del módulo, que decida cuánto de cada módulo se
+muestra. Confirmado por la investigación de mercado 2026: el onboarding
+estructurado y progresivo mejora la retención un 50% frente a paneles vacíos
+o completos desde el primer día -- Stripe, como referencia citada, revela
+complejidad solo cuando el usuario está listo para ella, nunca antes.
+
+**Diseño propuesto -- tres fases, no una activación binaria**:
+
+| Fase | Qué ve el cliente | Principio que aplica |
+|---|---|---|
+| **1. Arranque** | Solo Inicio + Mis tareas (línea de tiempo visual, pocas tareas a la vez) | "Normalizar lo mínimo" -- ni Ágora ni Biblioteca existen todavía para este cliente |
+| **2. Estable** | + Biblioteca, + Preguntar | Se añade cuando la fase 1 ya es rutina, nunca por defecto desde el día uno |
+| **3. Ampliar** | + Ágora, + Pedir una mejora | Solo si el cliente (o su red de apoyo, con consentimiento explícito) decide escalar |
+
+Esto no sustituye a `PAQUETE_CLIENTE` -- lo completa con una columna nueva
+(`FASE_CLIENTE`) que Plaza ya sabe leer (mismo mecanismo de
+`aplicarPaquete()` ya construido y probado hoy), sin rediseñar nada desde
+cero.
+
+**La hoja de estilos como sistema de tokens, no solo CSS suelto**: Plaza ya
+usa variables CSS para color/tema -- formalizarlo como lo hacen los sistemas
+de diseño white-label reales investigados (Atlassian, Salesforce, Shopify
+publican los suyos abiertos bajo este mismo modelo): un token de acento
+personalizable por cliente (como los 3.000 colores de Tiimo, pero acotado a
+una paleta accesible predefinida, no libre del todo -- para no comprometer
+contraste ni legibilidad), tamaño de texto ajustable, y modo de contraste
+alto además del claro/oscuro ya implementado.
+
+### Límites y honestidad
+
+- Ninguna de estas mejoras (línea de tiempo visual, fases de complejidad,
+  tokens personalizables) está construida todavía -- diseño de alto nivel
+  nacido de esta conversación.
+- El bot de Telegram sigue siendo el diseñado en rondas anteriores
+  (`bot-local.mjs`) -- no se le han aplicado todavía los patrones de UI reales
+  encontrados hoy (editar en el sitio, paginación, teclados diferenciados).
+- Cualquier trabajo con datos reales de discapacidad/salud de un cliente
+  concreto requiere la consulta legal ya señalada en el documento de
+  neurodivergencia (RGPD artículo 9) -- no asumido, sigue pendiente.
+- No se ha decidido si Engremiat necesita distribución como app nativa
+  (tiendas de aplicaciones) o basta con la PWA ya construida en Plaza -- dado
+  el principio de soberanía de todo este documento, la PWA autoalojada es la
+  opción por defecto, no la app nativa con gatekeeper de terceros, salvo que
+  aparezca una necesidad concreta que lo justifique.
+
+### Pendiente, no resuelto todavía
+
+- La columna `FASE_CLIENTE` no existe en `PAQUETE_CLIENTE` -- diseño, no
+  implementación.
+- La "línea de tiempo visual" de Mis tareas no está construida -- Plaza sigue
+  mostrando una lista de tarjetas plana.
+- Los patrones de Telegram (editar en el sitio, paginación, teclados
+  diferenciados) no se han aplicado al bot real todavía.
+- El sistema de tokens personalizables (acento, tamaño de texto, contraste
+  alto) no está construido -- hoy Plaza solo distingue claro/oscuro por
+  preferencia del sistema.
