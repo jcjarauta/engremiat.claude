@@ -4282,3 +4282,47 @@ hace que el sistema se sienta "vivo por interacción".
   describe un nicho, Cronista devuelve una primera historia para revisar.
 - Decidir si Cronista propone candidatas a Acervo automáticamente al
   cerrar cada partida, o si la curación es siempre manual y a demanda.
+
+## El ciclo local→DeepSeek, implantado en Taller (2026-08-30)
+
+### Lo que se construyó
+
+Dos acciones nuevas en el generador aislado (`engremiat-generador-n8n`),
+reutilizando exactamente el mismo patrón ya probado con el roadmap de
+Engremiat:
+
+- `proponer_plantillas_mision` -- dado el nombre de un Escenario y una
+  idea breve, el modelo local redacta un borrador de misiones y DeepSeek
+  lo verifica y corrige (orden correlativo, una acción concreta por
+  misión, `tipo_captura` bien razonado). No escribe nada en Baserow.
+- `confirmar_plantillas_mision` -- guarda las plantillas ya aprobadas en
+  `PLANTILLA_MISION`, siempre con `ESTADO=en_construccion` -- nunca
+  `publicado` directamente, ni aunque la IA las diera por buenas. La
+  promoción a `publicado` sigue siendo una decisión humana en Baserow.
+
+### Prueba real
+
+Probado con un Escenario nuevo, "Atlas vivo del barrio": el borrador local
+más la verificación de DeepSeek propusieron 4 misiones coherentes (orden
+correlativo, `tipo_captura` bien justificado -- "texto" cuando hace falta
+escribir algo real, "botón" cuando solo hay que confirmar). Confirmadas 2
+de ellas -- filas reales creadas en `PLANTILLA_MISION` (ids 8 y 9),
+verificado leyendo Baserow, en `en_construccion`.
+
+### Límites y honestidad
+
+- El resto del catálogo (menú de Escenarios de Feria) sigue sin usar este
+  mecanismo -- de momento solo autoria el contenido de misiones dentro de
+  un Escenario ya elegido.
+- Ningún modo de prueba real todavía para *jugar* una plantilla en
+  `en_construccion` antes de publicarla -- sigue siendo el pendiente ya
+  señalado en `taller.yaml`.
+- Coste real de la prueba: 383 tokens de entrada, 336 de salida en la
+  verificación de DeepSeek -- del mismo orden de céntimos ya medido antes.
+
+### Pendiente
+
+- Aplicar el mismo mecanismo para regenerar/mejorar el catálogo de
+  "Cuento Cooperativo" ya publicado, no solo para Escenarios nuevos.
+- Construir el modo de prueba de Taller que permita jugar
+  `en_construccion` antes de promocionar a `publicado`.
