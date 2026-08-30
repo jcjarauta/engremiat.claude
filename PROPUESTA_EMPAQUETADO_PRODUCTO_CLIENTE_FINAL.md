@@ -1337,3 +1337,97 @@ dispatcher.
   Docker actual corre en el PC del operador, no en la Pi de 4GB que sería el
   hardware real del nodo; falta confirmar que Baserow (que gestiona su propia
   Postgres) cabe cómodamente en esa RAM junto al resto de servicios del nodo.
+
+## Propuesta: "Pregonero" -- el cuarto ciclo, entre Cronista y Oportunidad (2026-08-30)
+
+### La idea del operador
+
+Cronista ya convierte datos reales de un proyecto en documentación presentable.
+Oportunidad detecta a quién le interesa Engremiat. Falta la pieza que conecta
+ambas hacia fuera: **un ciclo que tome lo que Cronista ya generó (informes,
+manuales, infografías, fotogramas estilizados) y lo transforme en contenido de
+redes sociales real, con IA local, orientado a alimentar el trabajo de
+Oportunidad** -- no publicidad genérica, sino piezas que demuestran capacidad
+real ante el tipo de organización que Oportunidad ya está intentando detectar.
+
+### Qué existe en el mercado (investigado, no asumido)
+
+- **Repurposing de contenido con IA** (Distribution.ai, Repurpose.io, Castmagic,
+  Descript): convierten un post/podcast/video largo en piezas cortas para varias
+  redes -- transcriben, resumen y adaptan tono por plataforma. Son SaaS de pago,
+  en la nube, exactamente el tipo de dependencia externa que este documento lleva
+  todo el rato evitando.
+- **Publicación y programación de redes, autoalojada**: **Postiz**
+  (github.com/gitroomhq/postiz-app) es la pieza más relevante encontrada -- código
+  abierto, más de 32.000 estrellas en GitHub, publica en 33+ redes (X, Instagram,
+  TikTok, LinkedIn, Mastodon, Bluesky, YouTube, Reddit...), tiene API pública,
+  **integración nativa con n8n**, generación de imagen/video con IA integrada, y
+  la versión autoalojada tiene las mismas funciones que la de pago -- sin cuota
+  mensual, sin dependencia de un proveedor cloud para publicar.
+
+**Conclusión de mercado**: la parte de "generar el contenido a partir de datos
+reales con IA" no conviene comprarla (rompería la coherencia de todo lo
+construido esta ronda -- LiteLLM local + render-worker ya hacen exactamente eso
+sin depender de nadie). La parte de "publicar y programar en 33 redes distintas"
+sí conviene reutilizarla -- reconstruir integraciones con las APIs de todas esas
+redes sociales sería un proyecto en sí mismo, y Postiz ya lo resuelve gratis y
+autoalojado, coherente con el resto del stack (mismo patrón que Internet-in-a-Box/
+NOMAD para la capa de biblioteca: no competir donde ya hay una solución libre
+madura).
+
+### Diseño del ciclo
+
+1. **Fuente**: un `DOCUMENTO` ya generado por Cronista (informe, manual,
+   infografía) o una `OPORTUNIDAD` con su propuesta ya redactada.
+2. **Adaptar** (LiteLLM `local-potente`): a partir del contenido real del
+   `DOCUMENTO`, generar 3-5 "ganchos" cortos, uno por plataforma/tono (LinkedIn
+   profesional, Instagram/TikTok más visual, X más directo) -- nunca inventar
+   datos que no estén en el documento fuente, mismo principio de honestidad ya
+   aplicado en Cronista.
+3. **Ilustrar** (`render-worker`, ya construido): reutilizar directamente
+   `/infografia`, `/imagen/texto` o los fotogramas estilizados ya generados para
+   ese proyecto -- no se genera contenido visual nuevo desde cero si ya existe
+   uno reutilizable.
+4. **Puerta humana** (innegociable, más estricta incluso que en Cronista): un
+   informe interno mal redactado se corrige; un post público mal redactado ya se
+   ha visto y no se puede retirar del todo. Ninguna publicación sale sin
+   aprobación explícita.
+5. **Publicar** (Postiz, autoalojado, vía su API o el nodo n8n oficial): una vez
+   aprobado, programar/publicar en los canales configurados.
+
+### El enlace con Oportunidad
+
+Dos direcciones de uso, no una sola:
+
+- **General → capta**: contenido que demuestra capacidad real (el informe del
+  amigurumi, la infografía del proceso) construye visibilidad de marca antes de
+  que Oportunidad detecte a nadie en concreto -- cuando detecte una organización
+  real, es más probable que ya la conozca.
+- **Dirigida → convierte**: cuando `OPORTUNIDAD` ya tiene una propuesta concreta
+  para una organización real, Pregonero puede generar una pieza pensada
+  específicamente para el lenguaje/canal de ESA organización (reutilizando el
+  mismo "kit de identidad visual" que genera Oportunidad), como material de apoyo
+  para el contacto humano que finalmente decide -- nunca como sustituto del
+  contacto, solo como material de apoyo ya preparado.
+
+### Límites, en la misma línea que Oportunidad
+
+- **Nunca publicación automática de material dirigido a una organización
+  concreta** sin aprobación -- el riesgo reputacional de publicar algo dirigido a
+  alguien sin que lo revise una persona es mayor que el de un informe interno.
+- **Nunca inventar métricas ni resultados** que el documento fuente no respalde
+  -- la tentación en marketing de "redondear" cifras es real y hay que
+  descartarla explícitamente desde el diseño.
+- **Revisar los términos de cada red social** antes de automatizar publicación
+  vía Postiz -- algunas plataformas restringen la publicación totalmente
+  automatizada sin supervisión (ya señalado como límite general en la sección de
+  Oportunidad, aplica igual aquí).
+
+### Pendiente, no resuelto todavía
+
+- Nombre de trabajo únicamente ("Pregonero") -- a confirmar o cambiar por el
+  operador, igual que se hizo con "Cronista".
+- No se ha instalado Postiz todavía ni probado su integración real con n8n --
+  diseño de alto nivel, no validado con datos reales.
+- Falta decidir qué canales/redes son prioritarios antes de configurar nada --
+  no tiene sentido integrar 33 redes si el operador solo usa 2 o 3.
