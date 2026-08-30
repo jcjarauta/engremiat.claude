@@ -2867,3 +2867,102 @@ necesidad": mientras exista un solo nodo/persona, no hay red que gestionar.
 - No se ha decidido si Mobilizon corre por nodo (un hogar = una instancia) o
   centralizado para varios hogares -- decisión de arquitectura real, pendiente
   de con cuántos hogares reales se empiece a probar.
+
+## Manifiesto escrito y valoración estratégica: producto B2B para asociaciones (2026-08-30)
+
+### El manifiesto de `red_social`, escrito
+
+`G:\Mi unidad\DEVS\engremiat-litellm\manifiestos\red_social.yaml` -- documenta
+Mobilizon como servicio a integrar, tres tablas nuevas (`INTERES`,
+`DISPONIBILIDAD`, `EVENTO`, todas con referencia a `PERSONA_ID`/`NODO_ID`
+desde el diseño), las acciones y pantalla de Plaza propuestas, y dejó
+explícito un hueco: falta el manifiesto hermano `asociacionismo`, que nace de
+la valoración estratégica siguiente.
+
+### El giro de modelo de negocio, aterrizado
+
+La observación del operador cambia quién es el cliente que paga: existe ya
+mucho asociacionismo real (familias, adultos TEA y otras neurodivergencias
+organizados en asociaciones) -- el producto comercial no es "una app para una
+persona", es **un servicio de integración por proyectos cooperativos**, donde
+**la asociación es el cliente institucional** (paga, se da de alta, tiene
+socios) y las personas neurodivergentes son las usuarias finales de Plaza,
+cooperando entre sí y con socios de OTRAS asociaciones vía proyectos de
+formación y construcción cooperativa.
+
+### Comparación de mercado: el hueco real, verificado
+
+| Categoría | Quién ya lo hace | Qué le falta a esa solución |
+|---|---|---|
+| Gestión de socios/asociaciones | WildApricot, Member365, MemberClicks, YourMembership, AMO | Resuelven cuotas, eventos, comunicación -- **ninguno ejecuta proyectos cooperativos reales entre socios**, son gestión administrativa, no producción |
+| Decisión de grupo / deliberación cooperativa | **Loomio** (AGPL, cooperativa de trabajadores, usado en 100+ países por cooperativas y ONGs) | Resuelve cómo un grupo decide qué hacer (propuestas, votaciones, decisiones por tiempo) -- no ejecuta ni documenta el proyecto una vez decidido |
+| Eventos/calendario entre asociaciones | Mobilizon (ya evaluado arriba) | Resuelve la convocatoria, no la ejecución del proyecto en sí |
+| Ejecución y documentación de proyectos cooperativos reales | **Ninguna encontrada** | Este es el hueco -- exactamente lo que Cronista + Ejecutor + manifiestos de módulo ya hacen |
+
+**Conclusión de mercado, la más clara de toda esta serie de sesiones**: el
+software de gestión de asociaciones (categoría madura, muchos competidores) y
+el software de deliberación cooperativa (Loomio, maduro y libre) **no se
+solapan con lo que Engremiat ya sabe hacer** -- convertir un proyecto real
+(un tutorial, una idea, una convocatoria decidida en grupo) en tareas
+estructuradas, documentación generada y seguimiento real. Nadie identificado
+en la investigación une las tres piezas.
+
+### Diseño del producto comercial
+
+1. **`ASOCIACION`** (nueva entidad, cliente institucional) -- tiene su propio
+   `PAQUETE_CLIENTE`, igual que hoy lo tiene un nodo/persona, pero paga por
+   el conjunto de sus socios, no por persona individual.
+2. **`SOCIO`** -- persona vinculada a una `ASOCIACION`, con sus propios
+   `INTERES`/`DISPONIBILIDAD` (módulo `red_social` ya manifestado).
+3. **Loomio (nuevo, a evaluar)** para que los socios decidan en grupo qué
+   proyecto de formación/construcción cooperativa emprender -- antes de que
+   nada se documente, el grupo lo decide, nunca una persona lo impone (mismo
+   principio ya fijado: *"consent beats compliance"*).
+4. **Cronista + Ejecutor (ya construidos)** convierten la decisión del grupo
+   en un plan de proyecto real, con tareas ajustadas a interés y capacidad
+   declarada de cada socio (mismo mecanismo ya diseñado para el caso
+   individual, ahora aplicado a un grupo).
+5. **Mobilizon (ya evaluado)** organiza las sesiones presenciales del
+   proyecto, dentro de la asociación y federado con otras.
+6. **Ágora (ya construido)** permite intercambiar recursos/habilidades entre
+   socios de la misma asociación o de asociaciones distintas.
+7. **Oportunidad (ya diseñado)** cierra el círculo -- ayuda a la propia
+   asociación a encontrar la subvención o el voluntariado técnico que
+   financia estos proyectos, no solo a Engremiat a encontrar clientes.
+
+### Por qué esto es coherente y no una pieza suelta
+
+Ningún componente de este producto es nuevo -- **es la reorganización de
+seis piezas ya construidas o diseñadas esta misma serie de sesiones**
+(Cronista, Ejecutor, Ágora, Mobilizon/red_social, Oportunidad, el sistema de
+manifiestos) alrededor de un cliente institucional en vez de individual. El
+valor de esta ronda es la reorganización comercial, no una función técnica
+nueva -- coherente con el propio principio ya fijado hoy: la plataforma no se
+distingue por tener más funciones, sino por poder entregarlas de forma
+repetible a un cliente distinto.
+
+### Límites y honestidad
+
+- Ninguna pieza de este producto (`ASOCIACION`/`SOCIO`, Loomio) está
+  construida -- valoración estratégica y de mercado, no implementación.
+- El tratamiento de datos de socios de una asociación de personas con
+  discapacidad/neurodivergencia entra de lleno en RGPD artículo 9 -- la
+  asociación como cliente institucional probablemente ya tiene su propio
+  responsable de tratamiento y protocolo, hay que integrarse con eso, no
+  asumir que Engremiat parte de cero en cumplimiento.
+- No se ha contactado ni validado con ninguna asociación real todavía -- toda
+  la sección es una hipótesis de mercado bien fundamentada, no una necesidad
+  confirmada por un cliente institucional real.
+- Cobrar por asociación (no por socio) es una hipótesis de modelo de precio,
+  no una decisión cerrada -- depende del tamaño real de las asociaciones que
+  se aborden primero.
+
+### Pendiente, no resuelto todavía
+
+- Manifiesto `asociacionismo` (entidades `ASOCIACION`/`SOCIO`, integración
+  Loomio) -- no escrito todavía, queda acotado para la próxima ronda.
+- Ninguna conversación real con una asociación de familias/personas TEA u
+  otras neurodivergencias -- validar esta hipótesis de mercado es el paso
+  lógico antes de construir nada de esta sección.
+- Loomio no evaluado técnicamente (instalación, integración con el resto del
+  stack) -- solo evaluado como candidato de mercado.
