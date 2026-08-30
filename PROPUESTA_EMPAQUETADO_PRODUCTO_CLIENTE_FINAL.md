@@ -2177,13 +2177,32 @@ mano qué CSV había que importar. Una plataforma no se distingue de un montón 
 prototipos por tener más funciones, sino por que las mismas funciones se
 puedan entregar una y otra vez sin reinventar el proceso cada vez.
 
+### Tabla `PAQUETE_CLIENTE`: creada y conectada (2026-08-30)
+
+Se creó la tabla real en Baserow (id `835`, vía el mismo procedimiento CSV de
+siempre), con una columna `SI`/`NO` por módulo (`MODULO_CRONISTA`,
+`MODULO_AGORA`, `AGORA_MOTOR_SALDO`, etc.) y una fila de ejemplo. Nueva acción
+de backend `leer_paquete`. Plaza ahora **oculta de verdad** de la barra de
+navegación cualquier módulo no contratado -- no solo muestra un aviso de "sin
+conectar" como antes.
+
+**Probado en el navegador**: se desactivó temporalmente `MODULO_AGORA` en la
+tabla, se recargó Plaza, y el botón "Ágora" desapareció de la barra de
+navegación (quedaron solo Inicio/Tareas/Biblioteca/Preguntar/Avisar) --
+verificado visualmente, y restaurado el valor original después.
+
+**Decisión de diseño explícita**: si `leer_paquete` falla (por ejemplo, sin
+red), Plaza deja todo visible en vez de ocultarlo -- fallar abierto, nunca
+esconderle a un cliente algo que sí tiene contratado por un error transitorio.
+
 ### Pendiente, no resuelto todavía
 
 - Ningún manifiesto de módulo está escrito todavía -- ejemplo ilustrativo, no
-  implementado.
-- No existe todavía ninguna tabla `PAQUETE_CLIENTE` que registre qué módulos
-  tiene activados cada cliente -- Plaza no oculta módulos no contratados
-  todavía, solo muestra "sin conectar" para todo lo no construido.
+  implementado; la tabla `PAQUETE_CLIENTE` registra el estado final (qué está
+  activo), no el proceso de instalación en sí.
+- Solo hay un paquete/cliente de prueba -- falta decidir cómo Plaza sabe qué
+  fila de `PAQUETE_CLIENTE` corresponde a qué usuario que ha iniciado sesión
+  (hoy toma siempre la primera fila).
 - No se ha decidido si construir el "instalador de módulos" como scripts
   propios (como se ha hecho hasta ahora) o adoptar directamente Umbrel/YunoHost
   como capa de infraestructura debajo de Engremiat -- decisión de arquitectura
