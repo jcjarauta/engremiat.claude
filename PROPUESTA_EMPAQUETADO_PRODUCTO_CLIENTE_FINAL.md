@@ -2584,3 +2584,76 @@ marcha puede tardar más de una hora**, y recomendar en la ficha del producto
 una microSD clasificada A1/A2 (o un SSD por USB) en vez de la que suele venir
 de fábrica -- no es un detalle menor, es la diferencia entre que el cliente
 piense que el kit viene roto o que sepa que es normal esperar.
+
+## Cierre de jornada -- consolidado, pendiente y prioridades (2026-08-30)
+
+### Lo consolidado hoy, no solo diseñado -- probado con datos y hardware reales
+
+- **Primera descentralización real**: la Raspberry Pi física dejó de ser un
+  concepto -- tiene SSH sin contraseña, sudo acotado y auditable, Claude Code
+  instalado y autenticado con Remote Control, y el repo clonado con todo el
+  contexto de este documento.
+- **El núcleo (n8n + Baserow) corre en la Pi**, no solo en el PC -- con el
+  hallazgo real del tiempo de primer arranque en microSD, ya incorporado al
+  diseño del kit.
+- **Plaza corre en la Pi, con sus propias tablas, y las seis pantallas
+  funcionan de verdad**, incluida la IA -- verificado en el navegador, con
+  datos reales, después de resolver dos bugs de infraestructura genuinos (el
+  onboarding roto de Baserow, y el perfil de red "Público" de Windows/Avast
+  bloqueando todo el tráfico entrante).
+- **Almacenamiento externo montado y persistente** (disco de 1TB, estructura
+  de carpetas lista para cuando llegue el SSD de 4TB).
+- **Todo verificado como realmente local**, por auditoría de código, no por
+  suposición -- ni Plaza ni el workflow de n8n contactan ningún host de
+  internet.
+
+### Lo que queda pendiente, priorizado con honestidad
+
+**Bloqueante o casi -- hace falta para que el prototipo sea presentable**:
+1. Login real por PIN/QR (hoy es un campo sin validar).
+2. Tabla `INCIDENCIA` en Baserow -- "Avisar de un problema" solo guarda en el
+   navegador del cliente, no llega a ningún sitio todavía.
+3. Migrar los volúmenes de Docker (Baserow/n8n) al SSD en cuanto llegue --
+   la microSD ya demostró ser un cuello de botella real, no conviene seguir
+   operando el nodo sobre ella a medio plazo.
+
+**Importante pero no bloqueante -- mejora la experiencia, no impide probar
+el sistema**:
+4. Conectar "Preguntar" con el contenido real de la Biblioteca y las tareas
+   del usuario (citando la fuente, nunca inventando).
+5. Biblioteca offline real (mirror Kiwix/Appropedia) -- hoy solo hay 3
+   documentos de ejemplo.
+6. Prueba de aceptación final desconectando el WAN del router (no solo
+   auditoría de código) -- la validación más exigente, todavía no hecha.
+
+**Diseñado pero deliberadamente sin construir -- esperar a necesidad real**:
+7. Ágora con motor de saldo real (Cyclos) -- queda como opción configurable,
+   no se construye hasta que un cliente concreto lo pida.
+8. Pregonero y Oportunidad -- diseño completo, cero código, correctamente
+   marcados como tal en sus manifiestos.
+9. El modo "Primer arranque" autogestionado de Plaza (red Wi-Fi temporal +
+   activación) -- necesario para vender sin stock, no construido todavía.
+
+### La prioridad real, mientras se analizan las necesidades del cliente
+
+El error más caro en este punto sería seguir añadiendo módulos nuevos
+(Pregonero, Oportunidad, el motor de Ágora) antes de tener un cliente real
+que diga cuál de ellos hace falta primero -- ya se ha dicho varias veces en
+este documento y hoy es el día en que más se nota: **hay más superficie
+diseñada que superficie usada**. La prioridad no es construir más, es:
+
+1. **Convertir el despliegue de hoy en la primera pieza real de onboarding**
+   -- literalmente grabar (o documentar paso a paso) esta misma sesión de
+   instalación y pasarla por Cronista, exactamente como se diseñó en la
+   sección del embudo de venta. Ya existe el caso de uso real, hoy, no hace
+   falta esperar a un cliente para generarlo.
+2. **Cerrar los tres pendientes "bloqueantes"** (login, incidencias, migración
+   a SSD) antes de enseñarle esto a nadie externo -- son los que harían que un
+   cliente real notara que "algo no está terminado".
+3. **No tocar Pregonero, Oportunidad ni el motor de Ágora** hasta que un
+   cliente real (o un piloto con una comunidad concreta) diga cuál de los tres
+   necesita antes -- diseñarlos ya fue el trabajo de hoy; construirlos sin esa
+   señal sería adivinar.
+4. **Cuando llegue el SSD**, migrar antes de seguir añadiendo carga al nodo --
+   la molestia de la SD lenta ya se sintió hoy, no conviene repetirla con más
+   datos reales encima.
