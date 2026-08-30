@@ -706,3 +706,45 @@ documento -- nada se publica al taller sin revisión):
 Pendiente de construir, no de diseñar: el workflow de n8n en sí (nodo por paso), y
 decidir qué modelo multimodal local usar para el paso 3 antes de depender de Claude ahí
 de forma permanente -- por coste y por soberanía, igual que el resto de esta propuesta.
+
+## De "qué se hace" a "cuánto se hace": refinar el nivel de detalle del patrón (2026-08-30)
+
+El operador señaló un límite real de la primera versión del manual del amigurumi:
+saber que un paso es "tejer el cuerpo" no sirve para tejerlo -- un patrón de
+crochet real necesita el **conteo de puntos y vueltas** de cada pieza. Se hizo una
+segunda pasada sobre la transcripción completa (no solo los capítulos) para extraer
+esos números.
+
+**Resultado real**: se recuperaron vueltas clave verificadas para cuerpo (anillo
+mágico → aumentos hasta 36 puntos → disminuciones hasta 18), brazos (patrón completo,
+12 puntos, una pieza que se repite para la segunda), pies (patrón completo, técnica de
+tejer "por la hebra interna" dejando la externa libre), uñas (técnica confirmada: se
+bordan a crochet sobre esa hebra libre, **no son de fieltro** como decía la lista de
+materiales original) y cabeza (hasta 42 puntos, la pieza más grande). Actualizado en
+`TAR-0009` a `TAR-0016` y en `DOC-0002` (nueva versión del PDF).
+
+**Honestidad sobre el límite alcanzado, otra vez**: no todo quedó al mismo nivel --
+la secuencia exacta de disminuciones vuelta-a-vuelta en cuerpo y cabeza, y el patrón
+completo de la nariz, no se verificaron con el mismo detalle (requeriría escuchar el
+tramo completo, no solo localizar líneas con números). El manual marca explícitamente
+qué pasos están "verificados" y cuáles solo tienen "hitos" -- en los segundos, se avisa
+de mirar el vídeo en paralelo, no confiar solo en el documento.
+
+**Corrección real encontrada de paso**: la lista de materiales original incluía
+fieltro para las uñas -- la transcripción reveló que en realidad se bordan a crochet
+directamente sobre la pieza del pie. Un ejemplo real de por qué la verificación
+técnica profunda importa: una lista de materiales superficialmente correcta puede
+llevar a comprar/preparar algo que no hace falta.
+
+## Generación de imagen local: primer intento, primer tropiezo real de infraestructura (2026-08-30)
+
+Al instalar `torch`+`diffusers` para probar generación de imagen local (GPU real:
+RTX 4060 Ti, 16GB), un error de `pip` clásico hizo que se instalara por accidente la
+versión **CPU** de `torch` en vez de la versión CUDA -- mezclar `--index-url` (para
+la rueda de PyTorch) con `--extra-index-url` (para el resto de paquetes de PyPI) deja
+que el resolutor de pip elija una versión más "nueva" del índice equivocado si no se
+fija la versión exacta. Corrección: instalar `torch` con versión exacta fijada
+(`torch==2.5.1+cu121`) en un paso separado, antes de instalar el resto de paquetes.
+Lección para el instalador de la Fase 1.5 (Docker Compose): fijar versiones exactas
+de cada pieza, no dejar que el resolutor de dependencias decida -- mismo principio de
+fiabilidad que ya se recomendó para los contenedores de Ollama/LiteLLM.
