@@ -2448,3 +2448,116 @@ ejecuta sola.
 - No se ha decidido el mecanismo técnico exacto de sincronización oportunista
   entre nodos y el común (qué protocolo, con qué frecuencia, quién aloja el
   punto de encuentro cuando ningún nodo tiene IP pública).
+
+## Simulación del ciclo completo del cliente + UX de adopción para público no técnico (2026-08-30)
+
+### El ciclo completo, de principio a fin, con las piezas ya construidas
+
+1. **Descubrimiento**: bot de onboarding (Telegram) -- 1-2 preguntas, perfila
+   al cliente.
+2. **`PAQUETE_CLIENTE` elegido**: según el perfil, el sistema propone qué
+   módulos activar (manifiestos ya escritos).
+3. **Demo local sin compra**: el cliente prueba su Plaza personalizada en su
+   propio ordenador.
+4. **Compra**: Shopify → autoaprovisionamiento (`crear_solicitud_montaje`,
+   ya construido) → kit genérico enviado sin personalizar.
+5. **"Primer arranque"**: el cliente flashea su propia SD (Raspberry Pi
+   Imager), Plaza levanta el asistente de primera puesta en marcha,
+   autodiagnóstico con los tres semáforos.
+6. **Uso diario**: Plaza -- tareas, biblioteca, preguntar, ágora, según lo
+   contratado.
+7. **Escalar y personalizar -- la pieza nueva de esta ronda**: el cliente pide
+   una mejora ("quiero llevar un inventario de material", "necesito un módulo
+   nuevo") **sin saber que existen módulos, tablas o workflows** -- solo lo
+   describe en su propio lenguaje.
+
+### Diseño del paso 7: "Pedir una mejora", conectado al bus de trabajo ya existente
+
+Nueva pantalla de Plaza, reutilizando **el mismo `92_BUS_TRABAJO`** que ya
+gobierna el ciclo Ejecutor (reclamada → en_progreso → lista_para_revisión →
+verificada) -- no se inventa un sistema de tickets nuevo, se generaliza el que
+ya existe de "tareas de desarrollo interno" a "solicitudes de cliente":
+
+1. El cliente describe lo que quiere, en texto o **nota de voz** (ver más
+   abajo por qué la voz importa aquí especialmente).
+2. Se crea un item en el bus de trabajo, visible para el operador y para
+   Ejecutor Local.
+3. **Ejecutor Local intenta resolver lo que esté dentro de su catálogo
+   acotado** (activar un módulo ya manifestado, ajustar un campo) --
+   confirmando con el cliente antes de aplicar, igual que ya hace.
+4. **Lo que exceda ese catálogo se encola para el operador** (o para una
+   sesión de Claude/Ejecutor completo cuando haya conexión) -- el cliente no
+   necesita saber la diferencia, solo ve el estado de su solicitud.
+
+### Investigación: qué funciona de verdad para adopción digital en público no técnico
+
+No es una cuestión de opinión de diseño -- hay evidencia real y contundente:
+
+- **Digital Green** (extensión agrícola por vídeo participativo en India):
+  aumentó la adopción de prácticas agrícolas **7 veces** frente al método
+  clásico de extensión, y fue **10 veces más rentable por dólar invertido**,
+  en un ensayo con 1.470 hogares en 16 pueblos. El hallazgo clave: la gente
+  adopta mejor viendo a **personas parecidas a ellos mismos** (vecinos, otros
+  agricultores) en vídeo, no a expertos ni funcionarios -- y funciona mejor
+  con **mediación humana local** (alguien de la propia comunidad que pone el
+  vídeo, pausa, y genera conversación), no como una herramienta puramente
+  autoservicio.
+- **Onboarding visual**: según Forrester, el onboarding visual aumenta la
+  comprensión un 80% frente a onboarding solo de texto.
+- **Onboarding progresivo**: introducir funciones gradualmente, cuando son
+  relevantes para el momento del usuario, evita la sobrecarga cognitiva --
+  principio de diseño 2026 confirmado, no una moda.
+- **Interfaces con voz**: para usuarios con baja alfabetización o poca
+  comodidad con el teclado, la voz reduce la barrera de entrada de forma
+  medible.
+
+### Cómo esto corrige y mejora el diseño ya hecho
+
+**Corrección importante sobre "mínima intervención humana"**: la evidencia de
+Digital Green sugiere que eliminar TODA mediación humana puede, de hecho,
+**reducir** la adopción en el público objetivo de Engremiat -- la solución no
+es cero personas, es trasladar la mediación humana **de fuera hacia dentro de
+la propia comunidad**: proponer, como parte del kit, identificar a una
+**persona de referencia del nodo** (no necesariamente técnica, solo alguien
+de confianza local) que acompañe a los demás -- coste cero para el operador,
+pero con el efecto multiplicador que muestra la evidencia.
+
+**Mejoras concretas a Plaza y Cronista/Pregonero, derivadas de esta
+investigación**:
+- El contenido que Cronista/Pregonero genera para mostrar el producto debería
+  priorizar **vídeos/casos de otros clientes reales** (parecidos al prospecto)
+  sobre material de marketing genérico -- mismo principio que multiplicó por 7
+  la adopción en Digital Green.
+- **Onboarding progresivo real en Plaza**: no mostrar las seis pantallas desde
+  el primer día -- revelar Biblioteca/Ágora/Pedir-una-mejora conforme el
+  usuario ya se siente cómodo con Tareas y Preguntar, no todo de golpe.
+- **Entrada por voz** en "Preguntar" y en "Pedir una mejora" -- transcripción
+  local (un modelo de voz a texto vía Ollama, no probado todavía) para no
+  depender de que el usuario escriba bien o rápido.
+- **Más imagen, menos texto**: reutilizar las imágenes que `render-worker` ya
+  genera (infografías, fotogramas estilizados) también dentro de la propia
+  Plaza, no solo en la Biblioteca -- cada pantalla debería apoyarse en un
+  icono/imagen antes que en un párrafo.
+
+### Límites y honestidad
+
+- El "coste cero" de la mediación humana comunitaria es una simplificación --
+  en la práctica, alguien tiene que identificar y motivar a esa persona de
+  referencia, que sí es trabajo del operador en el arranque de cada nodo, no
+  gratis del todo.
+- La entrada por voz añade una dependencia técnica nueva (transcripción local)
+  no probada todavía en este stack.
+- No se ha verificado que el bus de trabajo (`92_BUS_TRABAJO`, diseñado para
+  trabajo interno de desarrollo) escale bien a solicitudes de muchos clientes
+  distintos a la vez -- diseño extrapolado, no probado a ese volumen.
+
+### Pendiente, no resuelto todavía
+
+- Ninguna pantalla "Pedir una mejora" está construida en Plaza -- diseño de
+  alto nivel.
+- No se ha decidido el mecanismo de identificar/incentivar a la "persona de
+  referencia del nodo" -- mencionado como necesario, no especificado.
+- No se ha probado transcripción de voz local en este stack.
+- No se ha simulado este ciclo completo con un cliente real de principio a
+  fin -- sigue siendo, en su mayoría, piezas construidas por separado y
+  conectadas sobre el papel.
