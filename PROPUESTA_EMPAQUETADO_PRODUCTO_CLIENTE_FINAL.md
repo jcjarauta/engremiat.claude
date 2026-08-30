@@ -3991,3 +3991,23 @@ real, no resuelto ni necesario todavía.
   lo que hace Feria hoy; lo que falta es solo conectar la primera misión
   real tras crear el grupo (ya señalado como pendiente en la sección de
   Feria), no un empaquetado nuevo.
+
+## Primera misión real conectada (2026-08-30)
+
+Cerrado el pendiente: al elegir "Cuento Cooperativo", Feria ahora también
+crea una fila real de `TAREA` ("Elegid el primer personaje de vuestra
+historia", vinculada al grupo recién creado vía `PROCESO_ID`) --
+**deterministica, sin pasar por Cronista ni por ningún modelo de IA**,
+porque la primera misión de un Escenario de catálogo es conocida de
+antemano y no necesita generarse: coste cero, coherente con el nivel
+"catálogo" del modelo de negocio ya definido (la vía con IA queda
+reservada para personalización real, no para el contenido fijo de la
+demo). Verificado leyendo Baserow por API: fila `TAREA` id 6, `PROCESO_ID`
+5 (el grupo de la prueba), `ESTADO=Pendiente`. También se quitó la firma
+"Enviado automáticamente con n8n" que Telegram añadía por defecto a los
+mensajes de Feria (`appendAttribution: false`).
+
+**Pendiente**: la misión se crea en Baserow pero el grupo todavía no tiene
+forma de marcarla como completada desde el propio Telegram -- ese es el
+siguiente eslabón real antes de que la escalera de confianza funcione de
+punta a punta sin salir del chat.
