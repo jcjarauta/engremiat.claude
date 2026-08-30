@@ -4020,3 +4020,64 @@ respuesta del bot.
 Pendiente real que queda: tras completar la primera misión no se genera
 todavía una segunda -- el ciclo se cierra en uno solo, tendría que
 encadenarse para que la partida siga.
+
+## "Semilla Cooperativa": del juego a proyectos cooperativos reales (2026-08-30)
+
+### La propuesta del operador
+
+Una capa posterior a "Cuento Cooperativo": la misma mecánica de juego,
+pero orientada a formar cooperativas reales -- vivienda, asociaciones,
+comunidades. Grupos semilla que, jugando con reglas de gobernanza, generan
+la documentación que arranca un proyecto real dentro de Engremiat.
+
+### Investigación real que respalda la idea
+
+- La **sociocracia** (gobernanza por consentimiento -- "nadie tiene una
+  objeción razonada", no mayoría simple) es el método real que usan
+  decenas de cooperativas de vivienda y ecoaldeas, y es **más fácil de
+  implantar precisamente en un grupo que se está formando**
+  ([Sociocracy For All](https://www.sociocracyforall.org/sociocracy-in-intentional-community/)).
+  Coincide casi literalmente con el "grupo semilla" propuesto.
+- Precedente académico de que las simulaciones gamificadas son un entorno
+  seguro para practicar decisión cooperativa antes de lanzar una
+  iniciativa real
+  ([ScienceDirect](https://www.sciencedirect.com/science/article/pii/S1877050919320575)).
+- Precedente de que un proceso guiado con plantillas produce de verdad
+  borradores de estatutos: **Start.coop**, con su
+  ["Bylaws Starter Kit"](https://www.start.coop/bylaws).
+- Casualidad favorable: **Loomio**, ya elegido como motor de decisiones en
+  `asociacionismo.yaml`, **ya soporta procesos de consentimiento
+  nativamente** -- no hace falta construir nada nuevo para adoptar
+  sociocracia, solo usar una capacidad ya prevista.
+
+### El diseño
+
+Un nuevo Escenario (`escenario.yaml`, catálogo), con una diferencia clave
+frente a "Cuento Cooperativo": decisiones estructurales por consentimiento
+sociocrático, no por votación mayoritaria. Las misiones no son narrativas
+-- son: acordar valores compartidos, definir criterios de socio, redactar
+estructura de gobernanza, identificar un proyecto o solar real. El
+resultado final no es un cuento -- es una fila real de `PROYECTO`,
+sembrada con las decisiones y roles ya auditados durante el "juego". Es
+el Escalón 3 de la escalera de confianza (ya diseñada antes en este
+documento), hecho concreto en vez de abstracto.
+
+### Límites y honestidad
+
+- Nada de lo que genere este Escenario sustituye a un abogado o notario
+  -- el sistema prepara un borrador sólido y bien documentado, nunca una
+  constitución legal de cooperativa.
+- Sociocracia tiene curva de aprendizaje -- el rol de tutor/facilitador
+  importa aquí más todavía que en "Cuento Cooperativo".
+- Cero clientes reales lo han pedido -- exploración con buen respaldo de
+  investigación, no una necesidad confirmada. Mismo principio de "no
+  construir sin señal real" de todo este documento.
+
+### Pendiente
+
+- Diseñar el circuito sociocrático concreto sobre `DECISION_GRUPO`/Loomio
+  -- hoy solo está descrito, no construido.
+- Definir cómo una `ENTIDAD_ORGANIZATIVA` de tipo `grupo` "gradúa" a
+  `asociación` y genera su primera fila de `PROYECTO` real.
+- Ninguna comunidad real (vivienda, asociación) ha pedido este Escenario
+  todavía.
