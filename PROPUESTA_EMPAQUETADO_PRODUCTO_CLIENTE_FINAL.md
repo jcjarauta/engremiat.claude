@@ -748,3 +748,17 @@ fija la versión exacta. Corrección: instalar `torch` con versión exacta fijad
 Lección para el instalador de la Fase 1.5 (Docker Compose): fijar versiones exactas
 de cada pieza, no dejar que el resolutor de dependencias decida -- mismo principio de
 fiabilidad que ya se recomendó para los contenedores de Ollama/LiteLLM.
+
+**Resultado final, ya con la versión CUDA correcta**: primera imagen generada
+localmente con éxito (`stabilityai/sd-turbo`, RTX 4060 Ti, **menos de 1 segundo de
+inferencia** una vez cargado el modelo). Prompt deliberadamente genérico ("amigurumi
+azul tipo alien, orejas grandes, ojos redondos") -- nunca se pidió "Stitch" ni
+personajes con marca, coherente con el aviso legal de esta misma sección. Confirma
+que la GPU disponible es más que suficiente para este uso -- el cuello de botella
+real de esta ronda fue de instalación (SSL/certificados, mezcla de índices de pip),
+no de cómputo.
+
+**Pieza final añadida al catálogo de herramientas locales confirmadas**: además de
+`ffmpeg`, `yt-dlp`, Pandoc y Edge headless, ahora también `torch`+`diffusers` para
+generación de imagen -- todo corriendo en el mismo PC que hará de "worker local" en
+la arquitectura de esta propuesta.
