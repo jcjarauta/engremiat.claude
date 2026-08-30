@@ -1700,3 +1700,185 @@ Dos direcciones de uso, no una sola:
   diseño de alto nivel, no validado con datos reales.
 - Falta decidir qué canales/redes son prioritarios antes de configurar nada --
   no tiene sentido integrar 33 redes si el operador solo usa 2 o 3.
+
+## Cuadrar la propuesta: propuesta de valor, huecos reales y quinto ciclo (2026-08-30)
+
+### Propuesta de valor, en una frase
+
+Con todo lo construido hasta ahora, la frase que resume Engremiat, verificable
+pieza por pieza (no aspiracional):
+
+> **Un sistema operativo de comunidad, propiedad y alojado por quien lo usa, que
+> gestiona su trabajo real (proyectos, tareas, recursos), documenta y difunde lo
+> que hace con IA local, encuentra quién puede apoyarlo o financiarlo, y permite
+> intercambiar recursos entre personas y nodos -- sin depender de ningún
+> proveedor cloud para funcionar día a día.**
+
+Cada cláusula de esa frase es un ciclo o pieza ya construida y probada esta
+misma serie de sesiones: "gestiona su trabajo real" = el esquema de entidades
+(`PROYECTO`/`TAREA`/`RECURSO`/`INCIDENCIA`); "documenta y difunde" = Cronista +
+Pregonero; "encuentra quién puede apoyarlo" = Oportunidad; "intercambiar
+recursos entre nodos" = el quinto ciclo que se diseña más abajo; "sin depender
+de ningún proveedor cloud" = el piloto Baserow + Ejecutor Local, ya probados.
+
+### Comparación de mercado, consolidada (todo lo investigado esta serie de sesiones)
+
+| Categoría | Quién ya lo hace | Qué le falta a esa solución que Engremiat sí tiene |
+|---|---|---|
+| Infraestructura offline + IA local | Project NOMAD, RACHEL 6, Internet-in-a-Box | Ninguna gestiona tareas/proyectos/recursos ni detecta financiación |
+| Redes comunitarias físicas | **LibreRouter/AlterMundi** (routers open-hardware para comunidades rurales de Latinoamérica) | Resuelve la RED, no el software de gestión ni el contenido; es infraestructura de conectividad, no de operación |
+| Demos/propuestas personalizadas | Walnut, Demostack | SaaS cloud, sin capa de datos propia del cliente |
+| Matching de subvenciones | Instrumentl, Fundsprout | No conectado a ninguna capa operativa real del solicitante |
+| Voluntariado por habilidades | Catchafire | Sin infraestructura física ni gestión de proyectos propia |
+| Publicación en redes | Postiz | Resuelve solo la distribución, no la generación desde datos reales |
+| **Intercambio/moneda comunitaria** | **Cyclos** (motor de crédito mutuo LETS/Timebank, usado por Sardex y Tradaq), **Community Exchange System** (339 redes federadas en 34 países) | Resuelven la contabilidad del intercambio, no la gestión de proyectos, la IA local, ni el hardware -- son solo el "libro de cuentas" |
+
+**Conclusión, la misma de las rondas anteriores reforzada con este dato nuevo**:
+no existe ningún competidor que combine las seis piezas a la vez. Cada pieza por
+separado tiene un actor maduro y probado (a menudo gratuito) que conviene
+reutilizar en vez de reconstruir -- la propuesta de valor de Engremiat no es
+ninguna pieza individual, es la integración de todas bajo un único esquema de
+datos que el cliente controla.
+
+### Qué falta de verdad para "cuadrar" la propuesta
+
+**1. Interfaz operativa amigable para el cliente -- hueco real, no resuelto.**
+Existe la **Consola Engremiat** (`tools/consola/consola-engremiat.html`,
+publicada como artefacto "Mesa de Revisión"), pero es una herramienta de
+**gobierno del ecosistema para el operador**, no un portal pensado para que un
+usuario final de una comunidad la use a diario. El "portal.local" esbozado en
+la sección del Nodo Operativo Comunitario sigue siendo solo un boceto -- **esta
+es la pieza que de verdad falta para que un cliente no técnico pueda usar el
+sistema sin depender de Telegram ni de la terminal**. Debería ser el punto de
+entrada único: ver tareas, documentos, el estado del nodo, y ahora también el
+nuevo ciclo de intercambio.
+
+**2. Quinto ciclo: intercambio y cooperación -- diseñado a continuación.**
+
+**3. Ventas del hardware sin stock, con onboarding automático -- diseñado a
+continuación.**
+
+## Propuesta: "Ágora" -- el quinto ciclo (intercambio, cooperación, gamificación)
+
+### La idea del operador, aterrizada
+
+Gamificar la experiencia Engremiat sobre un modelo cooperativo: optimizar
+recursos e impulsar el intercambio entre usuarios y entre nodos completos (no
+solo dentro de una comunidad, sino entre comunidades distintas que usan
+Engremiat). El nombre propuesto, en la línea de Ejecutor/Cronista/Pregonero/
+Oportunidad: **Ágora** -- la plaza pública donde en la antigua Grecia se
+comerciaba, se debatía y se organizaba la comunidad, exactamente las tres
+funciones que se le piden a este ciclo.
+
+### No reinventar la contabilidad del intercambio -- ya existe, madura y libre
+
+El error caro sería construir un sistema de puntos/moneda desde cero. **Cyclos**
+(GPL, motor para LETS/Timebank/moneda complementaria, en producción real detrás
+de Sardex y Tradaq) ya resuelve exactamente el "libro de cuentas" de crédito
+mutuo que necesita este ciclo: cada usuario/nodo tiene un saldo que puede ir a
+negativo dentro de un límite (a diferencia del dinero tradicional, nadie
+necesita "tener" primero para poder ofrecer), y cada intercambio queda
+registrado con trazabilidad completa. El **Community Exchange System** aporta
+el patrón de FEDERACIÓN entre redes independientes (339 exchanges en 34 países)
+-- relevante para cuando Engremiat tenga más de un nodo comunitario y quieran
+intercambiar entre sí, no solo puertas adentro.
+
+**Diseño**: Cyclos (o su patrón, si autoalojarlo completo resulta demasiado para
+el hardware del nodo) como motor de saldos y transacciones; el Sheet/Baserow
+sigue siendo donde viven `RECURSO`/`NECESIDAD`/`PERFIL_OBJETIVO` con el mismo
+patrón de siempre; n8n conecta ambos mundos, igual que ya conecta Baserow con
+n8n en el piloto ya probado.
+
+### Elementos de gamificación, con propósito, no decoración
+
+Nunca gamificar por gamificar (el "sistema de puntos que no significa nada" es
+la crítica más común y justificada a la gamificación mal hecha) -- cada
+mecánica debe reflejar una contribución real medible en el propio Sheet:
+
+- **Reputación por contribución real**: completar una `TAREA`, compartir un
+  `RECURSO`, resolver una `INCIDENCIA` de otro usuario -- ya son eventos que
+  existen en el esquema de datos, solo hace falta que generen saldo/reputación.
+- **Insignias por rol cumplido, no por actividad vacía**: "primer intercambio",
+  "mentor" (ayudó a resolver incidencias de otros), "nodo puente" (facilitó un
+  intercambio entre dos comunidades distintas) -- cada insignia cuenta algo
+  verdadero sobre lo que esa persona/nodo aportó.
+- **Visibilidad del recurso ocioso**: el valor real para "optimización de
+  recursos" es simplemente hacer visible qué `RECURSO` está infrautilizado en
+  un nodo y qué `NECESIDAD` sin cubrir hay en otro -- el matching automático
+  (mismo patrón de scoring ya diseñado para Oportunidad) es más valioso que
+  cualquier insignia.
+
+### Límites, en la misma línea que el resto de ciclos
+
+- **Nunca inventar valor de la nada**: el saldo de crédito mutuo debe reflejar
+  intercambios reales ya ocurridos y confirmados por ambas partes, no
+  estimaciones ni promesas -- el riesgo de un sistema de crédito mutuo mal
+  diseñado es la inflación de confianza sin respaldo real.
+- **Puerta humana en cualquier intercambio entre nodos distintos** (no dentro de
+  la misma comunidad, donde el roce social ya actúa como control): un
+  intercambio que cruza la frontera de una comunidad a otra debe confirmarse
+  explícitamente por una persona de cada lado, igual que cualquier oferta de
+  Oportunidad.
+- **Revisar la regulación aplicable a monedas complementarias/crédito mutuo en
+  España/UE** antes de operar con saldos reales entre organizaciones --  no
+  asumido, a confirmar (Cyclos y CES ya operan legalmente en muchos países,
+  pero el marco exacto aplicable depende de cómo se estructure cada despliegue).
+
+## Automatizar la venta del hardware: sin stock, con onboarding automático
+
+### El modelo, sin autoengaños
+
+Dropshipping clásico (comprar barato en AliExpress, revender con margen) no
+encaja aquí -- Engremiat no vende un producto genérico, vende un **kit
+preconfigurado** (Raspberry Pi con el software ya instalado, SD ya flasheada,
+cliente ya aprovisionado en el Sheet/Baserow). Eso es más parecido a
+"build-to-order" que a dropshipping puro -- alguien tiene que tocar físicamente
+cada unidad antes de enviarla (flashear la SD, probar que arranca). La
+automatización real está en TODO LO QUE RODEA ese único paso manual, no en
+eliminarlo con humo.
+
+### Diseño del flujo, reutilizando lo ya construido
+
+1. **Tienda**: Shopify (rápido de montar, sin construir un e-commerce propio) --
+   consciente de la ironía de usar un SaaS cloud para la tienda mientras el
+   producto es "soberanía", pero es un compromiso razonable porque la tienda no
+   maneja datos sensibles del cliente, solo el pedido.
+2. **Pedido → aprovisionamiento automático** (ya construido esta misma serie de
+   sesiones, solo falta conectar el disparador): un webhook de Shopify llega a
+   n8n, que llama a las acciones YA EXISTENTES del dispatcher de Apps Script
+   (`crear_solicitud_montaje`, `instalar_estructura_cliente`) -- el mismo
+   pipeline que ya se usó para dar de alta TEST-Cliente-2026-08-29.
+3. **Kit físico**: una checklist (impresa o en la propia Consola) para la
+   persona que prepara físicamente cada unidad -- flashear, probar arranque,
+   pegar una etiqueta con el nombre del cliente y una URL/QR de onboarding.
+4. **Onboarding automático generado por Cronista** -- ver más abajo, es la pieza
+   que faltaba por decidir de dónde sale el contenido.
+5. **Mantenimiento**: una vez en manos del cliente, Ejecutor Local (o soporte
+   remoto vía el mismo n8n) cubre incidencias -- reutilización directa de lo ya
+   diseñado y probado, no una pieza nueva.
+
+### El contenido del primer tutorial de onboarding sale de la primera instalación real
+
+Aplicando exactamente el patrón ya probado con el amigurumi y el bahareque:
+**grabar la primera instalación física real (Raspberry + nodo principal + uso
+móvil) con el móvil, y pasarla por Cronista** -- extraer fotogramas de cada
+paso, generar el manual con `render-worker`, exactamente el mismo pipeline ya
+construido y probado esta ronda para el amigurumi (`TAR-0008` a `TAR-0017`).
+No hace falta inventar un proceso de documentación distinto para el
+onboarding -- es el mismo Cronista, aplicado a un caso más, con el beneficio
+añadido de que la primera instalación real deja de ser solo trabajo interno y
+se convierte directamente en el material de venta/onboarding para el cliente
+siguiente.
+
+### Pendiente, no resuelto todavía
+
+- Ágora es diseño de alto nivel, sin ningún componente construido -- ni
+  siquiera se ha instalado Cyclos para probarlo.
+- El "portal.local" (interfaz cliente amigable) sigue siendo un boceto, no
+  existe ningún prototipo -- es honestamente el hueco más grande de todos los
+  identificados en esta ronda.
+- No se ha definido el marco legal/fiscal de vender un kit físico con software
+  (¿se factura hardware + servicio? ¿garantía? ¿RGPD del cliente final?) --
+  fuera del alcance técnico de este documento, requiere asesoría legal real.
+- No existe todavía ninguna instalación física real que grabar para generar el
+  primer onboarding -- depende de que el operador haga esa primera instalación.
