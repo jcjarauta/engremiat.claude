@@ -202,12 +202,63 @@ humana (mismo principio de "puerta humana" ya usado en el workflow de
 documentación).
 
 **Pendiente añadido por esta prueba**:
-- Construir de verdad el workflow n8n de segmentación (hoy solo probado
-  como llamada directa a LiteLLM) -- con puerta humana antes de crear filas
-  reales en `TAREA`.
 - Corregir `asociacionismo.yaml` y otros manifiestos que dan por hecho que
-  este pipeline de segmentación ya está construido.
+  este pipeline de segmentación ya está construido -- ya corregido.
 - Al construirlo, evitar mandar el documento entero de una vez si contiene
   tablas con nombres de fichero de otras secciones -- trocear por fase, o
   quitar tablas de referencia antes de segmentar, para reducir el riesgo de
   que el modelo cruce nombres entre secciones distintas.
+
+## Workflow real construido, y una segunda prueba peor que la primera (2026-08-30)
+
+Se construyó de verdad `Cronista - Segmentar documento en tareas (con
+puerta humana)` (n8n, id `140Zt0iiSfjMl7dD`, activo), con dos rutas por
+`accion` en el mismo webhook `/webhook/cronista-segmentar`:
+
+- `proponer_tareas` -- llama a LiteLLM con el prompt de segmentación y
+  **responde con la lista propuesta, sin escribir nada en Baserow**.
+- `confirmar_tareas` -- recibe la lista ya revisada (y editable) por un
+  humano, y ahí sí crea una fila real por tarea en `TAREA` (tabla 278, Pi),
+  con `CREADO_POR: "Cronista (confirmado por humano)"` para que quede
+  rastro de que pasó por revisión.
+
+Un fallo real de la primera versión, corregido antes de la prueba: el
+código que interpreta la respuesta de LiteLLM no soportaba que el modelo
+envolviera el JSON en \```json ... \``` ni que usara claves alternativas
+(`phase`/`task` en vez de `fase`/`titulo`) -- corregido con limpieza de
+markdown y normalización de claves.
+
+**Segunda prueba real de `proponer_tareas`, contra este mismo documento ya
+ampliado**: peor que la primera (ver "Primera prueba real de segmentación"
+más arriba). Dos fallos nuevos, no el mismo de antes:
+
+1. Incluyó como tarea el recordatorio explícito de la Fase 5
+   ("No construir sin señal real") -- pese a que el prompt dice
+   textualmente que el texto narrativo no debe convertirse en tarea.
+2. Etiquetó contenido real de la Fase 4 (tablas de `jerarquia` en el PC,
+   `.tablas.json` de `red_social`/`asociacionismo`) como si fuera de la
+   Fase 1, duplicándolo -- y de las 6 tareas reales de la Fase 1, solo
+   generó 1 correctamente; las otras 5 (login QR aparte, faltaron
+   `INCIDENCIA`, Preguntar+Biblioteca, biblioteca offline, SSD, prueba WAN)
+   no aparecieron.
+
+Hipótesis más probable: el documento creció (se le añadieron las propias
+secciones de esta prueba) y el modelo local, más largo el texto, pierde
+fidelidad sobre las secciones de en medio -- un patrón conocido en modelos
+pequeños ("lost in the middle"). **No se confirmó esta lista** -- es
+exactamente la prueba en vivo de por qué existe la puerta humana, no un
+motivo para desconfiar del diseño.
+
+**Prueba del tramo de escritura**: se llamó `confirmar_tareas` con una
+lista curada a mano (2 tareas reales de la Fase 1) -- las dos filas se
+crearon correctamente en `TAREA` (ids 3 y 4), verificado leyendo Baserow
+por API después, no solo por la respuesta del webhook.
+
+**Pendiente real, con evidencia de por qué**:
+- No usar `proponer_tareas` contra el documento completo tal cual está --
+  trocear por fase antes de mandarlo al modelo, y esperar que un humano
+  revise cada lote antes de `confirmar_tareas`, sin excepción.
+- Probar si un modelo más grande (o resumir el documento antes de
+  segmentar) reduce estos fallos -- no probado todavía.
+- Las únicas tareas reales en `TAREA` hoy son las 2 confirmadas a mano
+  (ids 3 y 4) -- el resto de este roadmap sigue sin convertirse en filas.

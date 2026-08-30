@@ -2696,6 +2696,18 @@ sección "Primera prueba real de segmentación":
   necesidad de la "puerta humana" antes de escribir nada en `TAREA`, no
   invalida el enfoque.
 
+### El workflow con puerta humana, construido de verdad (2026-08-30)
+
+Construido y activo: `Cronista - Segmentar documento en tareas (con puerta
+humana)` (n8n, id `140Zt0iiSfjMl7dD`) -- `proponer_tareas` nunca escribe en
+Baserow, solo devuelve la lista para revisión; `confirmar_tareas` escribe
+solo lo que un humano ya aprobó. Detalle completo, incluida una **segunda
+prueba de segmentación peor que la primera** (incluyó como tarea un
+recordatorio que no lo era, mezcló fases, omitió tareas reales) y la
+verificación real del tramo de escritura (2 filas creadas y confirmadas en
+`TAREA`, ids 3 y 4), en `ROADMAP_BASELINE_ENGREMIAT.md`, sección "Workflow
+real construido, y una segunda prueba peor que la primera".
+
 ## El cliente concreto ya existe: interfaz normalizada por fase, mobile-first (2026-08-30)
 
 ### Quién es el cliente, para que el diseño deje de ser abstracto
