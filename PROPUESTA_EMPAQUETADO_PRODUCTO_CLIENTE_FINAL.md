@@ -1539,15 +1539,73 @@ Claude, seguirá necesitando internet -- y eso está bien, porque el desarrollo 
 ocurre en tiempo real dentro de una comunidad aislada. Lo único que debe
 funcionar sin internet es la OPERACIÓN diaria, y esa ya no depende de Claude.
 
+## Prototipo construido y probado con éxito (2026-08-30)
+
+El diseño de arriba se construyó de verdad, no un bucle propio genérico sino el
+prototipo mínimo exacto descrito: `ejecutor-local.py`
+(`G:\Mi unidad\DEVS\engremiat-litellm\ejecutor-local.py`), un bucle Python de
+~250 líneas contra `local-codigo` (`devstral-dev`) vía LiteLLM, con el catálogo
+de 8 herramientas acotadas ya definidas arriba y confirmación humana obligatoria
+antes de cualquier escritura.
+
+**Confirmado primero lo básico**: `devstral-dev` (via Ollama/LiteLLM) soporta
+tool-calling en formato OpenAI de forma nativa y limpia -- no hizo falta ningún
+prompt-engineering especial para que eligiera la herramienta correcta.
+
+**Prueba real, sobre un problema real**: se le planteó "el workflow 'Piloto
+Baserow - sin Google' debería estar activo pero no responde, revísalo y
+arréglalo si hace falta" -- el mismo workflow que se dejó desactivado tras el
+piloto de la sección anterior. Resultado, con una sola confirmación humana:
+
+1. Listó los 21 workflows reales del n8n del operador (no un entorno de
+   prueba aislado) y localizó el correcto entre ellos.
+2. Revisó sus últimas 3 ejecuciones (2 éxitos, 1 error) antes de proponer nada
+   -- diagnosticó antes de actuar, como pedía el diseño.
+3. Propuso **una sola vez** `n8n_activar_workflow` -- tras confirmar, lo
+   activó. Verificado por API: `active: true`.
+4. Sesión completa registrada en `ejecutor_local_log.jsonl` para revisión
+   posterior.
+
+**Dos bugs reales encontrados y corregidos en la primera pasada** (típicos de
+que un modelo local de 8-14B razona peor que Claude, tal y como advertía el
+diseño):
+
+1. **Repetición de la misma acción de escritura**: en la primera ejecución, el
+   modelo propuso `n8n_activar_workflow` con los mismos argumentos **cuatro
+   veces seguidas** en vez de reconocer que ya se había resuelto tras la
+   primera -- agotó las confirmaciones "sí" que se le habían preparado y acabó
+   crasheando con `EOFError` al pedir una quinta. Corregido con una memoria de
+   "llamadas ya ejecutadas en esta sesión" (misma herramienta + mismos
+   argumentos) que responde "ya ejecutado, no se repite" en vez de volver a
+   escribir.
+2. **Pérdida del registro si la sesión se corta a mitad**: el log solo se
+   escribía al final del todo -- si el proceso crasheaba (como en el bug
+   anterior), la sesión entera se perdía sin dejar rastro, justo lo contrario
+   del principio de trazabilidad de todo el sistema. Corregido con
+   `try/finally` para que el log se guarde siempre, incluso ante un error o una
+   interrupción.
+
+**Verificación de "cero red externa", con el método correcto** (auditoría del
+proceso, no desconexión del adaptador -- ver la corrección de método más
+arriba): revisión estática de todo el código en busca de cualquier host
+referenciado -- **solo aparecen tres destinos, los tres locales**:
+`localhost:4000` (LiteLLM), `localhost:5678` (n8n) y `192.168.65.254` (Baserow,
+vía el gateway interno de Docker Desktop). Ningún dominio externo, ninguna
+llamada a Anthropic ni a ningún servicio en la nube -- confirmado sin
+desconectar nada ni depender de que esta conversación siguiera viva.
+
 ### Pendiente, no resuelto todavía
 
-- No se ha construido ningún "Ejecutor Local" -- diseño de alto nivel únicamente,
-  nacido directamente de la objeción del operador en esta misma conversación.
-- No se ha repetido la prueba del piloto de ninguna de las dos formas
-  discutidas -- ni con una persona disparando el webhook a mano con el PC
-  desconectado, ni con la auditoría de red por proceso propuesta arriba (esta
-  segunda, una vez exista Ejecutor Local, es la que no requiere desconectar
-  nada ni depende de que esta conversación siga viva).
+- El catálogo de herramientas cubre solo n8n/Baserow/Docker -- falta añadir
+  `render-worker` si algún día un arreglo in situ necesita regenerar un
+  documento o una imagen.
+- No se ha probado con un problema real que el modelo NO sepa resolver -- falta
+  verificar en la práctica que `registrar_incidencia_offline` se dispara
+  correctamente en vez de que el modelo alucine una solución fuera de catálogo.
+- No se ha probado en la Raspberry Pi real, solo en el PC del operador.
+- El prototipo vive sin versionar en `G:\Mi unidad\DEVS\engremiat-litellm\`,
+  mismo patrón que `render-worker.py` y `bot-local.mjs` -- pendiente de decidir
+  si este código pasa a un repositorio versionado cuando madure.
 
 ## Propuesta: "Pregonero" -- el cuarto ciclo, entre Cronista y Oportunidad (2026-08-30)
 
