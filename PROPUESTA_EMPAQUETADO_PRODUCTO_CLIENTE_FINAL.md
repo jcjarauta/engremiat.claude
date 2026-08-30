@@ -2658,6 +2658,25 @@ diseñada que superficie usada**. La prioridad no es construir más, es:
    la molestia de la SD lenta ya se sintió hoy, no conviene repetirla con más
    datos reales encima.
 
+### Roadmap y baseline, para autogestión asistida (2026-08-30)
+
+El punto 1 de la lista anterior ("pasar el despliegue de hoy por Cronista")
+queda desarrollado como documento propio, no como una idea suelta:
+[`ROADMAP_BASELINE_ENGREMIAT.md`](ROADMAP_BASELINE_ENGREMIAT.md) --
+escrito deliberadamente en el mismo formato que un tutorial real (fases con
+intención breve + tareas atómicas), para que pueda pasar literalmente por
+el workflow Cronista contra una `ENTIDAD_ORGANIZATIVA` que representa a
+Engremiat como su propio operador. Incluye la propuesta de valor generosa
+pedida, una generalización explícita de la metodología de alta de cliente
+(el mismo bot/formulario para una persona, una familia o una asociación,
+sin ramas de código separadas), y una tabla baseline con el estado real de
+cada pieza a día de hoy, pensada para compararse contra futuras revisiones
+del roadmap en vez de reescribirse desde cero cada vez.
+
+Límite honesto: el documento en sí no se ha pasado todavía por Cronista --
+es el contenido de entrada, la ejecución real (punto 12 de su Fase 3) sigue
+pendiente.
+
 ## El cliente concreto ya existe: interfaz normalizada por fase, mobile-first (2026-08-30)
 
 ### Quién es el cliente, para que el diseño deje de ser abstracto
