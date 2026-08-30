@@ -2222,3 +2222,110 @@ memoria de una sesión concreta.
 - No se ha definido el catálogo de tiers comerciales (qué combinación de
   módulos se vende como "Básico"/"Comunitario"/"Avanzado") -- esbozado en la
   tabla de módulos, no cerrado como oferta comercial.
+
+## El embudo completo: bot de onboarding → demo local sin compra → conversión (2026-08-30)
+
+### El caso de uso del operador, aterrizado
+
+Un cliente potencial habla con un bot de onboarding, que actúa de asistente de
+personalización. Antes de comprar nada, puede **descargar una demo de su
+experiencia Engremiat personalizada y probarla en su propio ordenador**. Solo
+cuando ya ha probado su propia experiencia decide comprar el kit físico y los
+servicios complementarios. Todo esto, escalable y con mínima intervención
+humana.
+
+### Precedente de mercado que valida el patrón exacto
+
+**Home Assistant** resuelve, hardware incluido, prácticamente el mismo
+problema: el software (Home Assistant OS) se descarga gratis y se prueba en
+cualquier máquina que el usuario ya tenga -- solo cuando decide que quiere algo
+"listo para usar" compra el hardware oficial (**Home Assistant Green**, 199 USD,
+plug-and-play) o una versión más flexible (**Home Assistant Yellow**). Es
+literalmente "prueba el software gratis, compra el hardware cuando te
+convenzas" -- el mismo embudo que propone el operador, ya validado en un
+producto de referencia del propio mundo del autoalojamiento.
+
+La investigación de tendencias 2026 en producto (PLG -- product-led growth)
+confirma además el porqué funciona: los usuarios que llegan a un **hito de
+activación real** durante una prueba convierten por encima del 80%, frente a
+menos del 10% de quienes no lo alcanzan -- y los productos que exigen
+configuración manual pierden usuarios de prueba frente a la competencia que
+automatiza el arranque. Esto no es una opinión de diseño, es el dato que debe
+guiar cómo se construye la demo: **tiene que funcionar sola, y tiene que
+mostrar algo relevante para ESE cliente en los primeros minutos**, no una
+pantalla vacía genérica.
+
+### Diseño del embudo, reutilizando todo lo ya construido esta ronda
+
+1. **Bot de onboarding** (Telegram, patrón híbrido ya diseñado): 1-2 preguntas
+   como máximo -- "¿qué tipo de proyecto tienes?" (taller, cooperativa, ONG,
+   vecinal...) y "¿cuántas personas aproximadamente?" -- perfilado progresivo,
+   nunca un formulario largo de golpe.
+2. **El bot elige un `PAQUETE_CLIENTE`** ya perfilado según la respuesta --
+   reutiliza directamente el sistema de manifiestos de módulos ya construido:
+   un taller de manualidades recibe Cronista+Ágora activados, una cooperativa
+   con vocación de crecer recibe además Oportunidad, etc. Cero trabajo humano
+   -- es exactamente para esto que se normalizó el paquete cliente.
+3. **Demo local descargable, sin compra**: el bot entrega un paquete
+   autoinstalable (un `docker-compose` con n8n+Baserow+Ollama+Plaza) **ya
+   sembrado con datos de ejemplo relevantes al sector que el cliente indicó**
+   -- no una plaza vacía, sino una que ya tiene tareas, documentos y recursos
+   de Ágora con sentido para su caso (el mismo principio que ya se aplicó al
+   piloto del amigurumi, generalizado a cualquier sector con contenido de
+   muestra generado por IA local si no hay un piloto real de ese sector
+   todavía).
+4. **El cliente prueba su Plaza personalizada en su propio ordenador** -- sin
+   comprar nada, sin dato personal expuesto a nadie, sin que el operador
+   intervenga.
+5. **Conversión, dentro de la propia demo**: la misma Plaza que está probando
+   incluye un aviso persistente y discreto -- "¿te gusta cómo funciona?
+   consigue tu nodo físico" -- que enlaza directamente con el flujo de compra
+   sin stock ya diseñado (Shopify → autoaprovisionamiento → "Primer arranque").
+6. **Continuidad real, no un señuelo**: la demo y el producto real son **el
+   mismo software con el mismo paquete de módulos** -- no una versión recortada
+   que luego "sorprende" con funciones bloqueadas. Al comprar el kit físico, se
+   aprovisiona exactamente el mismo `PAQUETE_CLIENTE` que ya probó, sin volver
+   a pasar por el onboarding desde cero.
+
+### Por qué esto es coherente con todo lo demás, no una pieza suelta
+
+Este embudo no añade ninguna pieza nueva -- **conecta cinco cosas ya
+construidas o diseñadas esta ronda**: el bot de onboarding (ya diseñado en la
+sección de Telegram), Oportunidad (perfil objetivo, aunque aquí el cliente se
+autoidentifica en vez de ser detectado), el sistema de manifiestos de módulo
+(recién escrito), Plaza (ya construida y probada), y el flujo de venta sin
+stock con "Primer arranque" (ya diseñado). El valor de esta ronda es la
+conexión, no una función nueva.
+
+### Límites y riesgos, honestos
+
+- **La fricción técnica de "descargar y ejecutar Docker" es real** -- el
+  público de Engremiat (comunidades, talleres, cooperativas) puede no tener a
+  nadie cómodo con la línea de comandos. Un instalador de un solo clic (que
+  empaquete Docker Desktop + el compose) es imprescindible, no un detalle --
+  si no existe, se pierde exactamente al perfil de cliente que más necesita el
+  producto.
+- **Alternativa complementaria, para el perfil menos técnico**: ofrecer también
+  una demo **alojada temporalmente por el operador** (una instancia efímera,
+  sin descarga) para quien no pueda o no quiera instalar nada -- cuesta
+  recursos del operador por sesión, así que no sustituye a la demo
+  descargable, la complementa para el segmento que la necesita.
+- **Los datos de ejemplo de la demo deben quedar marcados sin ambigüedad como
+  ficticios** -- nunca mezclar contenido de muestra con datos reales de otro
+  cliente, ni sugerir que la IA "ya conoce" al cliente antes de que exista una
+  relación real.
+- **Ninguna decisión de compra debe presionarse dentro del propio producto**
+  más allá de un aviso discreto -- llenar la demo de banners de venta rompería
+  la confianza que se busca transmitir precisamente con la soberanía de datos.
+
+### Pendiente, no resuelto todavía
+
+- No existe ningún `docker-compose` empaquetable ni instalador de un clic --
+  diseño de alto nivel únicamente.
+- No se ha decidido cómo generar contenido de muestra realista para sectores
+  sin un piloto real todavío (solo existe el ejemplo del amigurumi) -- probable
+  candidato para el propio LiteLLM local, no probado con este fin.
+- No se ha diseñado la demo alojada temporal (la alternativa sin descarga) --
+  mencionada como necesaria, no especificada.
+- No se ha decidido durante cuánto tiempo o bajo qué condiciones se ofrece la
+  demo alojada antes de pedir que el cliente decida.
