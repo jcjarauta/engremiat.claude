@@ -117,6 +117,34 @@ intercambiables. Domain-agnostic, construido y validado dos veces.
   (ver sección siguiente -- puede que ese cliente real sea el propio
   Engremiat).
 
+## Trama interactiva, capítulo a capítulo (2026-08-31)
+
+Hallazgo real tras el primer Ciclo 3 completo ("El vecino del banco"):
+generar 8 capítulos encadenados sin ningún punto de control intermedio
+deja que el modelo se desvíe del tono acordado sin que nadie lo note
+hasta el final -- en la práctica, apareció una imagen fuera de lugar,
+una ruptura de continuidad, y un final que incumplía la regla de "sin
+magia" pactada en la Urdimbre (ver
+`diario-navegacion/2026-08-31-vecino-del-banco/hilo-conductor.md`).
+
+**Corrección de diseño, no solo parche**: en vez de generar la Trama
+completa en lote, un bot (extensión de `/telar`, reutilizando Cuadrilla
+v2) presenta 2-3 direcciones posibles en cada capítulo y un humano
+elige en vivo -- el punto de control deja de ser "al final", pasa a ser
+"en cada paso", por construcción. El propio menú de opciones puede
+recordar el tono de la Urdimbre en cada elección, actuando como barrera
+contra la deriva.
+
+Consecuencia estratégica: la misma herramienta que un co-creador usa
+para *construir* una historia es, arquitectónicamente, la misma que un
+jugador usaría para *vivir* una historia ya construida -- un "modo
+autor" y un "modo jugador" sobre un único motor, no dos productos
+distintos. Coherente con el origen real de "Elige tu propia aventura"
+(Edward Packard la inventó contándola en vivo a sus hijas, el libro
+vino después como formalización).
+
+No construido todavía -- diseño únicamente.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
