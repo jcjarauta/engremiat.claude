@@ -113,9 +113,18 @@ da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
 - **Pendiente, no verificable en remoto**: confirmar en la BIOS/UEFI
   del PC que "Wake on LAN"/"Power On By PCI-E" está activado --
   requiere entrar en la BIOS en el próximo reinicio natural.
-- **No probado de extremo a extremo todavía** -- probar significa
-  apagar el PC de verdad y despertarlo desde la Pi, no se ha hecho
-  esta noche para no cortar la propia sesión de trabajo.
+- **Wake-on-LAN Pi→PC**: sigue sin probarse de extremo a extremo --
+  probarlo significa apagar el PC de verdad y despertarlo desde la Pi,
+  no se ha hecho esta noche para no cortar la propia sesión de
+  trabajo.
+- **Ciclo apagado/encendido de la Pi con el enchufe inteligente:
+  probado con éxito (2026-08-31)**. Secuencia real: `apagar_pi_seguro.sh`
+  → corte de corriente por el enchufe Google Home → reconexión →
+  arranque automático → verificado por HTTP que n8n
+  (`GET /healthz` → `{"status":"ok"}`) y Baserow (`GET /` → 302) vuelven
+  solos, sin intervención manual -- los contenedores tienen
+  `restart: unless-stopped` y arrancan con el propio Docker al boot.
+  No hizo falta ni una sola contraseña ni comando de recuperación.
 
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
