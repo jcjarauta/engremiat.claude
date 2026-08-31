@@ -760,6 +760,36 @@ correctamente como "existe en `DOCUMENTO`, sospechoso" en vez de un
 falso "verificado". Corrección real, validada contra los mismos casos
 que descubrieron el fallo.
 
+### Cableado real en el generador -- probado de extremo a extremo (2026-08-31)
+
+El verificador ya no es solo un prototipo de línea de comandos --
+está insertado de verdad en el flujo de n8n, entre la síntesis de
+Concilio y el guardado en Baserow (`Llamar a Concilio (interno)` →
+**`Verificar contra esquema real`** → `Guardar resultado en Vigilia`).
+Dos campos nuevos en `VIGILIA_TAREA`: `TABLA_RELEVANTE` (si está vacío,
+se salta la verificación -- no aplica a preguntas narrativas) y
+`VERIFICACION_DETERMINISTA` (donde se guarda el veredicto).
+
+**Bug real de la propia construcción, corregido antes de confiar en
+ello**: la primera versión del nodo se guardó corrompida -- el shell
+de bash interpretó `$('Construir tema con contexto')` y `\b` como
+sintaxis propia y se comió los caracteres, dejando el código roto sin
+avisar. Corregido escribiendo el código en un fichero aparte y
+subiéndolo sin pasar por comillas de bash.
+
+**Prueba real de extremo a extremo**: fila de prueba con una pregunta
+que mezclaba campos reales de `VIGILIA_TAREA` con uno inventado
+(`CAMPO_INVENTADO_PRUEBA`) a propósito. Resultado real del propio n8n
+en producción: detectó `CAMPO_INVENTADO_PRUEBA` como fabricación y
+`VERIFICACION_DETERMINISTA` como campo real verificado.
+
+**Limitación nueva, encontrada solo en esta prueba en vivo, no antes**:
+se le escaparon `NOMBRE` y `ESTADO` -- el patrón solo detecta palabras
+compuestas con guion bajo (`campo_con_guion`), no campos reales de una
+sola palabra. Pendiente: añadir una segunda pasada que compare
+palabras sueltas contra la lista exacta de campos reales, no solo el
+patrón de guion bajo.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
