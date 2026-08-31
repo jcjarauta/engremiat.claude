@@ -212,6 +212,54 @@ demasiado grande para lo que hace falta hoy.
   queda explícitamente para después de consolidar esta base -- decisión
   del propio promotor, no una limitación técnica.
 
+## Patrón base, más amplio que Telar (2026-08-31)
+
+El bucle conversacional que hace funcionar a Telar (saludar → informar
++ preguntar → responder → repetir hasta objetivo) no es específico de
+historias -- es la plantilla base de cualquier bot de Engremiat.
+Documentado aquí tal cual, como referencia técnica, sin forzar un
+nombre gremial nuevo -- no todo necesita vocabulario propio.
+
+**Los 4 movimientos**: (1) saludar -- honesto, con aviso de interacción
+con IA (Art. 50 UE); (2) informar brevemente + preguntar (dos mensajes
+cortos, no uno largo -- ver hallazgo de bienvenida concisa); (3)
+responder -- la entrada del usuario, libre o por botón; (4) repetir
+hasta que el objetivo se cumpla, no un número fijo de turnos.
+
+**Dónde ya encajaría, sin construir nada nuevo todavía**:
+- **Cuadrilla v2** (Concilio conversacional, diseñado, no construido) --
+  mismo bucle exacto.
+- **Taller** (ya construido, lógica propia) -- podría reescribirse sobre
+  esta máquina de estados genérica, sin urgencia de tocar algo que
+  funciona.
+- Cualquier interacción futura de **Oportunidad** con un coordinador.
+
+## Cierre dinámico del bucle: por objetivo conseguido, no por contador (2026-08-31)
+
+El esqueleto de 8 pasos del Story Circle es una **guía de referencia**,
+no un contador rígido -- tratarlo como fijo es arbitrario, no viene de
+ningún principio real. Un reto sencillo puede resolver su arco en 4
+pasos; uno complejo (una propuesta de gobernanza) puede necesitar más.
+
+**Mecanismo propuesto**: cada capítulo devuelve, junto al texto, un
+juicio explícito -- ¿esta historia ha llegado a su cierre natural, o
+necesita más desarrollo? -- en la misma llamada que ya escribe el
+capítulo (un campo más en el JSON, sin coste extra real), en vez de que
+el sistema cuente ciegamente hasta 8.
+
+**Límites de seguridad, dinámico no significa sin control**: mínimo de
+pasos (p. ej. 3, evita cierres triviales) y máximo (p. ej. 12, evita que
+un reto complejo se alargue sin fin y dispare coste sin control -- el
+mismo principio de tope de presupuesto, aplicado ahora también a la
+duración). El indicador de progreso debería dejar de fingir un total
+fijo (`[Capítulo N]`, no `[Capítulo N/8]`) -- honesto sobre que la
+duración real no se conoce hasta que la historia decide que ha
+terminado.
+
+**No construido esta madrugada** -- diseño confirmado, primer trabajo
+real de la próxima sesión junto con la migración de capítulos a `TAREA`
+(ver `RUEDA_DEL_GREMIO.md`).
+
 ## Ciclo 1 en vivo: wizard de 3 preguntas, sin opciones prediseñadas (2026-08-31)
 
 Corrección real tras la primera prueba: el menú de "reto" (rutinas/
