@@ -5,19 +5,27 @@ entorno de desarrollo frente a lo que sería el producto real para un
 cliente. Ver `PENDIENTES_JORNADA_2026-08-30-31.md` para el contexto de
 por qué se creó esto.
 
+## Roles reales, redefinidos (2026-08-31)
+
+Decisión explícita del promotor: a partir de ahora se trabaja **sobre
+el VPS**, que pasa a ser el que registra datos reales y hace los
+backups -- ya no es solo "entorno de pruebas mientras la Pi es lo
+real", como se documentó unas horas antes esta misma noche. La Pi (y
+el futuro SSD/hub externo) pasan a ser el **banco de pruebas de
+concepto** -- donde se valida que algo funciona de verdad antes de
+entregárselo a un cliente, nunca donde vive el dato de producción de
+Engremiat mismo.
+
+**Sigue sin ser el producto para un cliente real.** Cuando se hable de
+oferta a FCAFA-TDAH u otro, el sistema tiene que vivir en hardware
+propio del cliente o una nube que ellos controlen -- coherente con el
+discurso de soberanía. Ni el VPS ni la Pi son ese destino final, los
+dos siguen siendo infraestructura de Engremiat como operador.
+
 ## VPS de desarrollo: Hetzner (2026-08-31)
 
-**Por qué existe**: mientras se trabaja en solitario probando el
-sistema, mantener la Raspberry Pi encendida todo el tiempo no compensa
--- se decidió un VPS barato siempre disponible como entorno de
-desarrollo, con la Pi como destino de backup/despliegue real más
-adelante. Ver `TELAR.md` para el análisis de mercado (Hetzner vs.
+Ver `TELAR.md` para el análisis de mercado (Hetzner vs.
 Contabo/DigitalOcean, y por qué no pay-per-use).
-
-**No es el producto.** Cuando se hable de oferta a un cliente real
-(FCAFA-TDAH u otro), el sistema tiene que vivir en hardware del propio
-cliente o una nube que ellos controlen -- coherente con el discurso de
-soberanía. Este VPS es solo para probar mientras se construye.
 
 - **Proveedor**: Hetzner Cloud, proyecto `engremiat-dev`.
 - **Servidor**: `ubuntu-4gb-hel1-2`, CX23 (2 vCPU, 4 GB RAM, 40 GB SSD),
@@ -75,6 +83,39 @@ alimentación -- un disco mecánico de 2,5"/1 TB puede no recibir
 corriente suficiente directo de los puertos USB de la Pi. **Pendiente:
 conseguir un hub USB alimentado (con fuente propia)** entre el disco y
 la Pi antes de reintentarlo.
+
+## Encendido/apagado seguro de la Pi + despertar el PC (2026-08-31)
+
+**Permiso sudo limitado, no completo**: `/etc/sudoers.d/nodo-admin-engremiat`
+da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
+`tailscale` -- nada más. Validado con `visudo -c` antes de aplicarse.
+
+- **`~/apagar_pi_seguro.sh`** (en la Pi): hace `sudo shutdown -h now`
+  con registro en `~/apagados.log`. Se dispara a mano (por SSH) cuando
+  se termina de trabajar -- **todavía no hay detección automática de
+  inactividad**, es un paso deliberado, no un temporizador.
+- **Enchufe inteligente (Google Home, ya en propiedad del promotor)**:
+  pendiente de programar horario/rutina en la app de Google Home --
+  debe cortar corriente **varios minutos después** de lanzar el
+  apagado seguro, nunca a la vez, para no cortar la Pi a mitad de
+  apagarse y arriesgar la tarjeta SD.
+- **`~/despertar_pc.sh`** (en la Pi): `wakeonlan 10:FF:E0:AA:EA:BC`
+  (MAC real del PC operador, adaptador Realtek). Pensado para
+  disparse desde la Pi (siempre en la misma LAN que el PC) cuando se
+  necesite encenderlo estando fuera de casa, conectando primero a la
+  Pi por Tailscale.
+- **Lado del PC, verificado esta noche**: "Reactivar en Magic Packet"
+  ya estaba activado en el adaptador de red. Se encontró y corrigió
+  **Inicio rápido activado** (`HiberbootEnabled=1`), causa típica de
+  que el WoL falle tras un apagado completo -- desactivado por el
+  promotor (`powercfg /hibernate off` + registro puesto a `0`
+  directamente, el primer comando no lo limpió por sí solo).
+- **Pendiente, no verificable en remoto**: confirmar en la BIOS/UEFI
+  del PC que "Wake on LAN"/"Power On By PCI-E" está activado --
+  requiere entrar en la BIOS en el próximo reinicio natural.
+- **No probado de extremo a extremo todavía** -- probar significa
+  apagar el PC de verdad y despertarlo desde la Pi, no se ha hecho
+  esta noche para no cortar la propia sesión de trabajo.
 
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
