@@ -715,6 +715,39 @@ real y honesto para escribir mejores prompts -- ninguna decisión de
 estructura se aplica hasta que el promotor resuelva la contradicción
 OBS1/OBS3 y se repita OBS5.
 
+## Verificador determinista -- primer prototipo, probado y validado (2026-08-31)
+
+Primera pieza de la propuesta de ciclos exponenciales más seguros
+(sección anterior), construida y probada contra un caso ya conocido
+antes de confiar en ella.
+
+**Mecanismo**: extrae del texto de una respuesta cualquier palabra con
+forma `snake_case` (mayúsculas o minúsculas) y la compara contra el
+esquema real completo de Baserow (137 campos, 17 tablas, capturado en
+vivo vía API) -- no contra el juicio de otro modelo.
+
+**Validación real**: probado contra `G2` (la respuesta de hace unas
+horas que inventó campos de Baserow) -- **acierto total, sin falsos
+negativos**: detectó como no verificados exactamente los 10 campos
+inventados (`id_elemento`, `tipo_concilio`, `fecha_cierre_relevo`...),
+y reconoció `GASTO_API` como tabla real (no como campo sospechoso).
+Probado también contra `OBS1` (respuesta sólida) para comprobar que no
+da falsos positivos con contenido real -- confirmado.
+
+**Limitación real encontrada en la propia validación, no teórica**:
+`TIPO_DOCUMENTO` aparece como "verificado" en la prueba contra OBS1,
+pero pertenece a la tabla `DOCUMENTO`, no a `DOCUMENTO_ENGREMIAT`, de
+la que hablaba esa respuesta -- el prototipo comprueba existencia **en
+cualquier tabla**, no en la tabla concreta de la que se habla. Es una
+coincidencia de nombre, no una confirmación real. **Pendiente antes de
+confiar en él para el encadenado automático de ciclos**: acotar la
+verificación a la tabla mencionada en el contexto de la pregunta, no
+al esquema global.
+
+**Estado**: prototipo de línea de comandos (`verificador_determinista.mjs`),
+no integrado todavía en el flujo de Vigilia/Concilio -- ese cableado
+es el siguiente paso, no hecho esta noche.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
