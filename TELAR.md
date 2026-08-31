@@ -672,6 +672,49 @@ detectado esta noche? Investigación real antes de proponer:
 **Nada de esto se construye sin que se pida explícitamente** -- queda
 como propuesta con investigación real detrás, no como intuición.
 
+## Relevo: 5 preguntas sobre organización del vault de Obsidian (2026-08-31)
+
+Lote real (rama `Organizacion-Vault-Obsidian-2026-08-31`, tabla
+`VIGILIA_TAREA` id 287 en el Baserow del VPS), pensado explícitamente
+como material en bruto para escribir mejores prompts de Vigilia, no
+para aplicar. Relevo honesto:
+
+- **OBS1, OBS2, OBS4: sólidas.** Ancladas en campos reales
+  (`PROYECTO`, `RUTA`, `TEMA`, `HUECO_DETECTADO`, `SUPERADO_POR`),
+  razonan el porqué de cada decisión (tal como se pidió), y OBS4 da un
+  patrón concreto y accionable (`[CLIENTE]_[PROYECTO]`) para
+  documentar un cliente nuevo desde cero.
+- **OBS3: sólida pero con lógica inventada sin avisar.** Propone reglas
+  de mapeo concretas (`ESTADO: revisar → _cuadrilla_concilio/`,
+  `HUECO_DETECTADO no vacío → _oportunidad/`) que no vienen de ningún
+  dato real que se le diera -- es diseño original del Acervo,
+  presentado con el mismo tono que el resto de la respuesta, sin
+  distinguir "esto lo propongo yo" de "esto se deriva de datos reales".
+  No es fabricación grave (no inventa que algo *ya existe*), pero es
+  el mismo patrón de fondo que hay que vigilar.
+- **Contradicción real entre OBS1 y OBS3, no detectada por ninguna de
+  las dos**: OBS1 concluye que las estaciones de la Rueda deben ser
+  **metadato en el frontmatter**, nunca carpetas ("duplicar archivos
+  rompería la trazabilidad"). OBS3 concluye lo contrario: las 7
+  estaciones deben ser **directorios de primer nivel**
+  (`_oportunidad/`, `_relevo/`...). Dos Acervos distintos, mismo lote,
+  conclusiones estructuralmente incompatibles -- exactamente el tipo
+  de conflicto real que el Relevo humano tiene que resolver antes de
+  construir nada, y que ninguna de las dos respuestas por separado
+  podía detectar.
+- **OBS5: fallo real, sin resultado.** `ESTADO` quedó en `procesado`
+  pero `RESULTADO` es `null` -- el pipeline terminó pero no generó
+  contenido, sin diagnosticar la causa exacta esta noche. Pendiente:
+  repetir la pregunta 5 (criterio para subdividir en subcarpetas) en
+  el próximo ciclo.
+
+**Conclusión honesta**: 3 sólidas, 1 sólida con matiz a vigilar
+(lógica inventada sin distinguir), 1 contradicción real entre dos
+respuestas del mismo lote, 1 fallo silencioso sin resultado. Material
+real y honesto para escribir mejores prompts -- ninguna decisión de
+estructura se aplica hasta que el promotor resuelva la contradicción
+OBS1/OBS3 y se repita OBS5.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
