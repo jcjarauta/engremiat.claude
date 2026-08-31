@@ -829,6 +829,45 @@ real. Pendiente: definir si esto se convierte en un ritual repetible
 (cada cierre de lote de Vigilia con Relevo revisa qué hallazgos
 merecen pasar a incidencia real) o se hace caso por caso.
 
+## Decisión de fondo: migrar el gobierno de Ejecutor+Consola hacia el Holon (2026-08-31, no ejecutada)
+
+Corrección real hecha en el propio proceso: el artefacto de la Consola
+("Mesa de Revisión", `7f075613-6072-4e42-b41a-66ca41d4f089`) **no es
+redundante con Vigilia/Concilio** -- es el panel de control operativo
+real del Ejecutor (Play/Stop/Tarea puntual, horario, cola de
+solicitudes por actor: `{ humano: ['decision'], claude: ['valorar'],
+worker: [], ejecutor: ['ciclo','backlog'] }`). Cumple una función
+distinta a Vigilia, no se "desplaza" a Concilio sin más.
+
+**Dato real que motivó la decisión**: el ciclo del Ejecutor lleva sin
+avanzar desde el **28-08** (`95_DIARIO_NAVEGACION`, última entrada) --
+3 días, no 9 como sugería a primera vista el propio artefacto
+(`metricsDia` marcaba `2026-08-22`, dato desactualizado). No es
+abandono claro, fue una decisión consciente del promotor no inferida
+por Claude.
+
+**Decisión explícita del promotor, con esta evidencia delante**: migrar
+de verdad la función de gobierno de Ejecutor+Consola hacia el Holon
+(Baserow/Vigilia/Concilio), en vez de mantener dos paneles de control
+paralelos. **No ejecutada esta noche** -- es demasiado grande y toca
+gobierno real en marcha para improvisarla a estas horas. Esbozo de
+fases para retomar con la cabeza despejada:
+
+1. **Hecho ya**: Holon base (Vigilia/Concilio, verificador
+   determinista, `DOCUMENTO_ENGREMIAT`, vault de Obsidian,
+   infraestructura VPS/Pi, protocolo probado hacia `13_INCIDENCIAS`
+   con `INC-0067`).
+2. **Siguiente**: representar en Baserow lo que hoy solo vive en la
+   Consola -- horario de ciclo, cola de solicitudes por actor,
+   métricas -- antes de tocar el artefacto.
+3. **Más delicado**: el Ejecutor hoy no tiene acceso a Baserow (solo a
+   Sheets/artefacto/repo) -- decidir si se le da acceso nuevo o si
+   sigue pasando por Claude como puente, igual que con
+   `13_INCIDENCIAS`.
+4. **Último**: retirar formalmente la Consola cuando el Holon cubra
+   sus funciones reales, sin perder el histórico (Sheet y diario
+   quedan como archivo).
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
