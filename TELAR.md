@@ -542,6 +542,55 @@ necesitaría un workflow de n8n que regenere el bloque Mermaid solo,
 cada vez que se cierra un Relevo. Queda como el siguiente paso concreto
 si se decide construir esta pieza de verdad.
 
+## Vigilia sobre plantillas de Capa 2: hallazgo real distinto a los anteriores (2026-08-31)
+
+Lanzadas 5 preguntas (rama `Diseno-Capa2-Grafo-2026-08-31`, Acervo
+Técnico/Lógico/Narrativo/Usuario/Logístico/Filosófico) sobre estilo,
+tipo de dato, relevancia, disparo y escala a meses de la Capa 2. Relevo
+honesto: **el problema esta vez no es contaminación de contexto ni
+condición de carrera -- es invención de datos técnicos con lenguaje
+seguro y concreto que no corresponde a nada real.**
+
+- **G2 (mapeo de campos)** describe campos que **no existen** en
+  Baserow: `id_elemento`, `veredicto`, `tipo_concilio`,
+  `fecha_cierre_relevo`, `costo_estimado` en `VIGILIA`; relaciones
+  `id_origen`/`id_destino`/`intensidad_relacion` en `TAREA`. Los
+  campos reales de `VIGILIA` (tabla 287) son `NOMBRE`, `ORDEN`, `TEMA`,
+  `ESTADO`, `RESULTADO`, `FECHA_PROCESADO`, `PERSONAS_JSON`, `ACCION`,
+  `RAMA`, `RAMA_ELEGIDA` -- ninguno de los nombres que usa G2 coincide.
+  Justo el Acervo Técnico, cuyo enfoque es "desconfiar de las ideas
+  bonitas sin plan de construcción", es el que inventó el plan sin
+  comprobar el esquema real.
+- **G1** inventa una taxonomía de "Concilio Mayor / Menor / Abierto"
+  que no existe en el vocabulario de Engremiat -- suena a jerga
+  genérica de participación ciudadana, no a este proyecto.
+- **G3** hereda los campos inventados de G2 y añade umbrales
+  arbitrarios ("costo_estimado > 1000") sin unidad ni justificación.
+- **G4** repite, sin resolverlo, el mismo punto ciego que ya se marcó
+  en el Relevo de `BUG-CONCURRENCIA`: propone un "lock transaccional"
+  sin confirmar si Baserow soporta de verdad una escritura condicional
+  atómica.
+- **G5** propone "bloqueo exclusivo Redis" -- **infraestructura nueva
+  no pedida**, justo lo que ya se descartó al diseñar las 4 capas
+  ("no hace falta una base de datos de grafos nueva, sería peso muerto
+  en el Pi"). El mismo razonamiento aplica a Redis.
+
+**Conclusión honesta, más importante que el resultado de estas 5
+preguntas en sí**: cuando se le pide a Concilio detalle técnico
+concreto (nombres de campo, umbrales, mecanismos de bloqueo) sin
+inyectarle el esquema real de Baserow como contexto, **rellena los
+huecos con lenguaje plausible en vez de admitir que no lo sabe**. No es
+el mismo bug que la contaminación de `ORDEN` o la carrera del
+dispatcher -- es el motivo exacto por el que hace falta un Relevo
+humano/Claude antes de construir nada a partir de una Vigilia técnica:
+un promotor no técnico no puede distinguir un campo real de uno
+inventado, y aquí la respuesta sonaba igual de segura en ambos casos.
+**Nada de G1-G5 se usa como especificación literal** -- sirve como
+inspiración de dirección (símbolos redundantes al color, capas
+semanal/trimestral, disparo tras el Relevo), no como plan técnico.
+Antes de repetir este tipo de pregunta, habría que inyectar el esquema
+real de las tablas en el contexto de la pregunta, no solo sus nombres.
+
 ## Vigilia software: revisión de las 2 propuestas de arreglo de mecanismo (2026-08-31)
 
 Los dos bugs de mecanismo del piloto Holon (arrastre de contexto entre
