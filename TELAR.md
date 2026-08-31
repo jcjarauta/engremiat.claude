@@ -87,6 +87,36 @@ probado (3 decisiones cómodas, 8 el siguiente paso razonable):
   contenido de un solo uso -- coherente con lo que Acervo ya pretendía
   ser desde el principio de la sesión.
 
+## Arquitectura núcleo + capas (2026-08-31)
+
+Las 7 preguntas de Urdimbre no son específicas de narrativa -- son
+domain-agnostic con vocabulario disfrazado de historia. Tabla de
+equivalencia atómica:
+
+| # | Pregunta atómica | Historia | Software/Negocio | Proyecto comunitario |
+|---|---|---|---|---|
+| 1 | ¿Desde qué perspectiva? | Punto de vista narrativo | Usuario final vs. operador | Quién convoca, quién decide |
+| 2 | ¿Qué se pide vs. qué hace falta de verdad? | Quiere vs. necesita (Harmon) | Petición del cliente vs. problema real | Demanda explícita vs. necesidad real de gobernanza |
+| 3 | ¿Es sensible? | Población vulnerable, tono | Dato sensible, RGPD | Consentimiento, poder real en el grupo |
+| 4 | ¿Qué define el cierre? | Filosofía del final | Definición de éxito/MVP | Qué cuenta como "acuerdo" real |
+| 5 | ¿Enlaza a algo real? | Recurso real | Alianzas estratégicas | Red real de apoyo/financiación |
+| 6 | ¿En qué contexto vive? | Escenario | Mercado/comunidad de clientes | Territorio o colectivo concreto |
+| 7 | ¿Cuál es el conflicto central? | Complicaciones | DAFO / problema real | Tensión de poder o de recursos |
+
+**Núcleo**: las 4 fases (Urdimbre → Trama → Hilo conductor → Parte de
+Vigilia/Relevo) + Ramas + Diario de Navegación + personas de Acervo
+intercambiables. Domain-agnostic, construido y validado dos veces.
+
+**Capas**:
+- **Historia** -- construida (Feria/Taller).
+- **Software/Negocio** -- ya construida, sin saberlo: `generar_canvas_dafo`
+  es esta capa con vocabulario de producto. No requiere reconstrucción,
+  solo reconocimiento retroactivo.
+- **Proyecto comunitario** -- diseñada, no construida. Construir solo
+  cuando haya un cliente o proyecto cooperativo real que la necesite
+  (ver sección siguiente -- puede que ese cliente real sea el propio
+  Engremiat).
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
