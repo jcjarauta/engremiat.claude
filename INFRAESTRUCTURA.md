@@ -201,10 +201,60 @@ volúmenes (backup, ~86 MB), no una restauración -- restaurar desde uno
 de estos `.tgz` a un contenedor vivo no se ha probado. Tampoco hay
 rotación automática (los backups antiguos se acumulan sin borrarse).
 
+## Migración real de Baserow: Pi → VPS (2026-08-31)
+
+Volcado real (no vacío ya) del volumen `nucleo_baserow_data` de la Pi
+al VPS -- 114 MB, transferido en dos saltos (Pi→PC→VPS, la conexión
+directa Pi→VPS por Tailscale con streaming en un solo comando falló,
+sin diagnosticar por qué). Verificado con datos reales tras la
+restauración: tabla `VIGILIA` con 66 filas reales, incluido contenido
+real de Telar ("Cap.1 - Conflicto").
+
+**Consecuencia real sin resolver todavía**: la Pi y el VPS tienen ahora
+la misma foto histórica, pero **van a divergir** -- cualquier workflow
+que siga apuntando a `192.168.8.230` (el generador en el PC operador,
+por ejemplo) sigue escribiendo en la Pi, no en el VPS. Pendiente:
+repasar y actualizar esas URLs para que todo escriba de verdad en el
+VPS, o la migración no cumple su propósito.
+
+**Nota de seguridad, sin deshacer**: para poder ejecutar la migración
+se amplió el sudo sin contraseña de `nodo-admin` en la Pi para incluir
+`docker` -- esto equivale de facto a acceso root completo (un
+contenedor puede montar cualquier ruta del host), mucho más amplio que
+`shutdown`/`tailscale`. Decisión consciente del promotor, documentada
+para quien lo revise después.
+
+## Grafo real de documentación: DOCUMENTO_ENGREMIAT (2026-08-31)
+
+Primera aplicación real del patrón de 4 capas a la propia
+documentación del proyecto (no solo a Vigilia). Tabla `DOCUMENTO_ENGREMIAT`
+en Baserow (VPS, tabla 1038), sembrada con 46 filas reales -- resultado
+de que 4 agentes en paralelo leyeran de verdad ~50 documentos del
+repositorio y sintetizaran su estado (`vigente`/`superado`/`histórico`/
+`revisar`/`caducado`), con campo `PROYECTO` explícito.
+
+**Hallazgo real solo por tener el campo `PROYECTO`**: la mayoría del
+corpus que parecía "de Engremiat en general" es en realidad de La
+Troballa (cita código real: `Formularios.js`, `06_TAREAS`) -- confirma
+que mezclar documentación de núcleo y de cliente sin distinguir era
+parte del desorden real, no una percepción.
+
+- **Vault de Obsidian creado**: `G:\Mi unidad\engremiat.claude\Obsidian-Engremiat`
+  -- dentro de Drive for Desktop ya montado en este PC (sincronización
+  a nivel de sistema operativo, no un plugin de sync de Obsidian con
+  Drive, que la investigación de mercado desaconsejó por resolución de
+  conflictos automática sin aviso). 46 notas generadas **desde**
+  Baserow con `[[wikilinks]]` reales en `superado_por` -- documento
+  fuente de verdad sigue siendo Baserow, el vault es una vista, nunca
+  se edita a mano.
+- **Grafo Mermaid real** publicado en el Artifact "Holon de Engremiat",
+  agrupado por `PROYECTO`, mismo esquema de color que el de Vigilia.
+- **Pendiente, no hecho todavía**: instalar los plugins de Obsidian
+  (Smart Connections + Copilot for Obsidian, apuntados a Ollama local)
+  -- requiere interacción manual en la app, que no se puede automatizar
+  desde aquí.
+
 ## Límites y honestidad
 
-- El VPS está probado y responde (n8n 200, Baserow 302 -- verificado
-  desde este PC vía Tailscale), pero está vacío -- no hay ninguna
-  Vigilia, tarea ni dato real ahí todavía.
 - El enchufe inteligente para encender/apagar la Pi a demanda sigue sin
   resolver -- ver `PENDIENTES_JORNADA_2026-08-30-31.md`.

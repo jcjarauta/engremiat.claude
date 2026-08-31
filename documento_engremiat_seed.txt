@@ -1,0 +1,47 @@
+NOMBRE	RUTA	PROYECTO	ESTADO	SUPERADO_POR	TEMA	HUECO_DETECTADO
+DICCIONARIO_ENGREMIAT.md	DICCIONARIO_ENGREMIAT.md	Engremiat-nucleo	vigente		Vocabulario y estado de madurez de cada pieza	Documento mas honesto y actualizado -- usar como indice cruzado
+RUEDA_DEL_GREMIO.md	RUEDA_DEL_GREMIO.md	Engremiat-nucleo	vigente		Ciclo circular de 7 estaciones del desarrollo de proyectos	Ninguna estacion recorrida de punta a punta todavia
+MANUAL_MARCO_FUNDAMENTAL.md	MANUAL_MARCO_FUNDAMENTAL.md	La Troballa	historico		Marco 8 preguntas + Taller de Produccion en Sheets	No menciona Engremiat/Baserow/n8n -- anterior al pivote de nomenclatura
+VISION_MISION.md	VISION_MISION.md	Engremiat-nucleo	revisar		Mision, principios, arquitectura 4 capas, estrategia comercial Workaway	Contradice a MAPA_DOMINIOS_DATOS: trata el Sheet como memoria operativa central, ya superado por el pivote a Baserow/Pi
+GUIA_DISENO_ENGREMIAT.md	GUIA_DISENO_ENGREMIAT.md	La Troballa	historico		Checklist WCAG/heuristicas para dialogos HTML de Apps Script	Solo cubre Sheets/Apps Script, no Baserow/n8n/Telegram/Plaza ya construidos despues
+MAPA_DOMINIOS_DATOS.md	MAPA_DOMINIOS_DATOS.md	Engremiat-nucleo	vigente		Que vive en Sheets (clientes) vs Baserow/Pi (nucleo soberano)	Documento de gobernanza mas reciente, contradice a VISION_MISION sin que nadie lo resuelva
+ROADMAP_IMPLEMENTACION.md	ROADMAP_IMPLEMENTACION.md	La Troballa	superado	BACKLOG_CONSOLIDADO.md	Roadmap original auditoria de integridad, fases A-J	Cerrado, remite el mismo a BACKLOG_CONSOLIDADO.md
+BACKLOG_CONSOLIDADO.md	BACKLOG_CONSOLIDADO.md	La Troballa	vigente		Cierre de prueba operativa real, 98 fricciones agrupadas en Tiers 0-5	Fuente real que ROADMAP_BACKLOG_MEJORAS.md ejecuta fase a fase
+ROADMAP_BACKLOG_MEJORAS.md	ROADMAP_BACKLOG_MEJORAS.md	La Troballa	vigente		Continuacion numerada del roadmap de auditoria (fases L+)	El mas vivo y ejecutado de la linea tecnica
+ROADMAP_BASELINE_ENGREMIAT.md	ROADMAP_BASELINE_ENGREMIAT.md	Engremiat-nucleo	vigente		Fases 1-5 para que Engremiat se autogestione via Cronista	Solapa sin fusionar con ROADMAP_PROYECTO_0.md
+ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md	ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md	Engremiat-nucleo	vigente		Ampliacion de producto: entidad CLIENTE, bot Telegram, ventas	En ejecucion parcial, no fusionado con los otros 2 roadmaps de producto
+ROADMAP_ECOSISTEMA_AGENTICO.md	ROADMAP_ECOSISTEMA_AGENTICO.md	Engremiat-nucleo	superado	PROPUESTA_ECOSISTEMA_AGENTICO_HIBRIDO.md	Como se organiza el desarrollo con IA/workers	Superado por version mas completa y con datos reales posteriores
+ROADMAP_PROYECTO_0.md	ROADMAP_PROYECTO_0.md	Engremiat-nucleo	vigente		Puente vision-backlog: gestionar el propio desarrollo con IA interna	Angulo distinto a BASELINE_ENGREMIAT, nadie los ha fusionado
+ROADMAP_AUDITORIA_UX.md	ROADMAP_AUDITORIA_UX.md	La Troballa	revisar	PROPUESTA_MODULARIZACION_LIBRERIA.md	Titulo dice auditoria UX, contenido real es el log del empaquetador	Plan UX real (5 bloques) nunca empezado, titulo no corresponde al 90% del contenido
+PROPUESTA_ECOSISTEMA_AGENTICO_HIBRIDO.md	PROPUESTA_ECOSISTEMA_AGENTICO_HIBRIDO.md	Engremiat-nucleo	vigente		Bus de eventos, coste por agente, independencia de proveedor	Version mas completa del tema, abierta como incidencia a valorar
+PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md	PROPUESTA_PRODUCTO_LOCAL_INDEPENDIENTE.md	Engremiat-nucleo	superado	PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md	Producto local independiente, pausado 25-08	Ya fusionado en el texto del documento sustituto, falta marca formal
+PROPUESTA_MODULARIZACION_LIBRERIA.md	PROPUESTA_MODULARIZACION_LIBRERIA.md	Engremiat-nucleo	vigente		Core como libreria Apps Script protegida, patron cascaron	Completado y verificado con POC real
+PROPUESTA_SIGUIENTES_LINEAS_TRABAJO.md	PROPUESTA_SIGUIENTES_LINEAS_TRABAJO.md	La Troballa	vigente		Valoracion global periodica tras primer lote a workers	Sintesis ejecutiva, no compite con los demas
+PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md	PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md	Engremiat-nucleo	vigente		Bitacora viva 29-31 ago: soberania de datos, LiteLLM, Vigilia, ramas	Activa y sin cerrar, incidentes sin resolver (webhook intermitente)
+PROPUESTA_INCIDENCIA_ALTA.md	PROPUESTA_INCIDENCIA_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad INCIDENCIA	Diseno sin construir
+PROPUESTA_PRODUCTO_ALTA.md	PROPUESTA_PRODUCTO_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad PRODUCTO	Diseno sin construir
+PROPUESTA_TAREA_ALTA.md	PROPUESTA_TAREA_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad TAREA	Diseno sin construir, verificado contra 06_TAREAS real
+PROPUESTA_DOCUMENTO_ALTA.md	PROPUESTA_DOCUMENTO_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad DOCUMENTO	Diseno sin construir
+PROPUESTA_PROCESO_ALTA.md	PROPUESTA_PROCESO_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad PROCESO	Diseno sin construir
+PROPUESTA_PROVEEDOR_ALTA.md	PROPUESTA_PROVEEDOR_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad PROVEEDOR	Diseno sin construir
+PROPUESTA_RECURSO_MATERIAL.md	PROPUESTA_RECURSO_MATERIAL.md	La Troballa	revisar		Abstraccion RECURSO evolucion de MATERIAL	El mas especulativo, escrito antes de verificar, NO_GO explicito contra migrar ahora
+PROPUESTA_CAMPANA_ALTA_PLANIFICACION.md	PROPUESTA_CAMPANA_ALTA_PLANIFICACION.md	La Troballa	vigente		Diseno de esquema para entidad CAMPANA	Diseno sin construir, con gates explicitos antes de tocar codigo
+PROPUESTA_PROYECTO_ALTA_PLANIFICACION.md	PROPUESTA_PROYECTO_ALTA_PLANIFICACION.md	La Troballa	vigente		Diseno de esquema para entidad PROYECTO	Diseno sin construir
+PROPUESTA_DECISION_ALTA.md	PROPUESTA_DECISION_ALTA.md	La Troballa	vigente		Diseno de esquema para entidad DECISION	Diseno sin construir
+PROPUESTA_PROYECTO_PRODUCTO_RELACION.md	PROPUESTA_PROYECTO_PRODUCTO_RELACION.md	La Troballa	vigente		Relacion N:M PROYECTO_PRODUCTO	Unico caso que corrige un error propio via verificacion empirica real
+PROPUESTA_APOYO_AUTONOMIA_NEURODIVERGENCIA.md	PROPUESTA_APOYO_AUTONOMIA_NEURODIVERGENCIA.md	Engremiat-nucleo	revisar		Engremiat como apoyo personal/familiar neurodivergencia	No menciona FCAFA-TDAH, caso piloto distinto al cliente primario real
+PROPUESTA_EXPERIENCIAS_INTERACTIVAS_MULTIMEDIA.md	PROPUESTA_EXPERIENCIAS_INTERACTIVAS_MULTIMEDIA.md	Engremiat-nucleo	vigente		Analisis TTS/audio interactivo, explicitamente no urgente	Sin construir, aparcado
+AUDITORIA_POR_BLOQUES.md	AUDITORIA_POR_BLOQUES.md	La Troballa	revisar		Marco de auditoria bloque a bloque (Personas, Espacios...)	Marco diseñado, 5 de 5 bloques sin ejecutar todavia
+SALUD_ECOSISTEMA.md	SALUD_ECOSISTEMA.md	Engremiat-nucleo	vigente		Ritual de deteccion de desincronizaciones al empezar sesion	Activo, automatizable via salud_ecosistema.mjs
+CICLO_AUDITORIA_ENGREMIAT.md	CICLO_AUDITORIA_ENGREMIAT.md	Engremiat-nucleo	vigente		Metodologia de 4 fases reutilizable	Documento de proceso, no de resultados
+INFORME_CIERRE_AUDITORIA_GLOBAL.md	INFORME_CIERRE_AUDITORIA_GLOBAL.md	La Troballa	historico		Cierre formal 31-07, 62/62 reglas de integridad	Pendiente declarado: 10 formularios sin verificacion visual
+ACTA_CIERRE_SESION.md	ACTA_CIERRE_SESION.md	La Troballa	historico		Acta detallada del mismo cierre, con 3 bugs reales encontrados	Evidencia real de que verificacion visual humana encontro bugs que tests no vieron
+CLAIMS_LOTE1.md	CLAIMS_LOTE1.md	La Troballa	historico		Reparto de 8 incidencias entre 2 workers IA sin solapar	Operativo puntual, no auditoria en si
+HASHES_CIERRE.md	HASHES_CIERRE.md	La Troballa	historico		SHA-256 de 31 ficheros src/ en el cierre	Evidencia de integridad de codigo, no de comportamiento
+BASELINE_DESARROLLO.md	BASELINE_DESARROLLO.md	La Troballa	historico		Snapshot de estado del repo por fases A-J	Incluye decisiones de gobierno explicitas: git local, gate humano obligatorio
+PRUEBA_PILOTO_END_TO_END.md	PRUEBA_PILOTO_END_TO_END.md	La Troballa	vigente		Recorrido funcional simulado campana-tarea-informe	19 de 27 hallazgos implementados y verificados
+PRUEBA_REAL_CAMPANA.md	PRUEBA_REAL_CAMPANA.md	La Troballa	vigente		Campana real (no simulada), 98 fricciones, 1 bug real confirmado	La prueba de extremo a extremo mas ambiciosa y real del corpus
+PROMPT_EJECUTOR.md	PROMPT_EJECUTOR.md	Engremiat-nucleo	caducado		Prompt operativo del agente Ejecutor, exige revision cada 7 dias	Ultima revision 23-08, hoy 31-08 -- 8 dias fuera de su propio plazo
+TELAR.md	TELAR.md	Engremiat-nucleo	vigente		Metodologia Telar + piloto Holon + infraestructura de Concilio	Construido y probado esta noche, no enlazado desde ningun documento anterior
+INFRAESTRUCTURA.md	INFRAESTRUCTURA.md	Engremiat-nucleo	vigente		VPS, Tailscale, backups, Wake-on-LAN	Construido y probado esta noche, no enlazado desde ningun documento anterior
+PENDIENTES_JORNADA_2026-08-30-31.md	PENDIENTES_JORNADA_2026-08-30-31.md	Engremiat-nucleo	vigente		Consolidado de pendientes de la jornada	Documento de seguimiento activo de esta sesion
