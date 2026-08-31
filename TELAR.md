@@ -631,6 +631,47 @@ que dice cerrar. Mientras tanto, la mitigación real que ya funciona es
 operativa, no de código: disparar Vigilia de una en una (cron cada 15
 min, sin disparos manuales solapados).
 
+## Propuesta: verificador determinista + Acervo Prompter + Graphify (2026-08-31, solo propuesta)
+
+Nace de una pregunta real del promotor: ¿se pueden encadenar ciclos de
+Vigilia de forma "exponencial" sin el riesgo de RSI/fabricación ya
+detectado esta noche? Investigación real antes de proponer:
+
+- **Verificación entre modelos de lenguaje no es fiable para esto,
+  confirmado por la industria en 2026** -- sistemas multi-agente como
+  MARCH usan varios roles (Solver/Proposer/Checker) precisamente
+  porque un verificador basado en LLM cae en **sesgo de confirmación**
+  ("atajos cognitivos") -- el mismo punto ciego que medimos con datos
+  reales esta noche (revisor GPT: 9/12, fallando justo en las
+  contaminaciones). "La verificación no es opcional en sistemas
+  agénticos de producción -- es la línea entre una demo bonita y un
+  producto fiable" (consenso 2026).
+- **La respuesta real es un verificador determinista**, no otro LLM:
+  comprueba afirmaciones concretas contra el estado real del sistema
+  (¿existe este campo en Baserow? ¿existe este fichero?), no contra el
+  juicio de otro modelo. Esto sí se puede encadenar entre rondas con
+  seguridad -- lo fabricado se filtra antes de contaminar la siguiente
+  generación, en vez de acumularse.
+- **Acervo Prompter**: aplicaría *meta-prompting* (técnica real,
+  documentada) -- convertir una necesidad en la estructura del
+  razonamiento (pasos, restricciones), no en contenido específico.
+  Mejora medida en la literatura: eficiencia de tokens y precisión de
+  tarea. Sistematizaría lo que esta noche se hizo a mano (contexto
+  real + pedir el porqué, no solo el qué).
+- **Obsidian+LLM local como fuente de contexto del Prompter**: el
+  vault ya tiene 46 documentos reales con embeddings locales (Smart
+  Connections, sin construir sus plugins todavía) -- el Prompter
+  consultaría ese contexto real antes de escribir un prompt nuevo, en
+  vez de partir de cero. Es la Capa 4 (recorrido por IA) ya diseñada
+  esta madrugada, aplicada a un uso concreto por fin.
+- **Graphify infrautilizado**: ya hace selección determinista de
+  contexto de código -- sería el motor real detrás del verificador
+  determinista y del Prompter, no una pieza aparte. Hueco real
+  detectado por el propio promotor, no construido todavía.
+
+**Nada de esto se construye sin que se pida explícitamente** -- queda
+como propuesta con investigación real detrás, no como intuición.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
