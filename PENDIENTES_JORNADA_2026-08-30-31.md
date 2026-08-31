@@ -102,6 +102,24 @@ completo. Organizado por urgencia/tipo, no por orden cronológico.
 - Tabla `ACERVO_PERSONA` real -- las personas de Acervo siguen viajando
   como JSON en cada petición, no como catálogo reutilizable.
 
+## 7. Investigación Vigilia sobre Telar -- cerrada, sin aplicar todavía
+
+- **15 elementos en total** (12 de la primera tanda + 3 de "visión
+  global"), documentados en
+  `diario-navegacion/2026-08-31-investigacion-telar/documento-base.md`.
+  **Nada de esto se ha aplicado al bot** -- es base para que el
+  promotor y Claude decidan juntos en el próximo Relevo real.
+- **Bug real encontrado, sin arreglar**: el mecanismo "buscar capítulo
+  anterior" de Vigilia filtra por `ORDEN - 1` sin distinguir `RAMA` --
+  contaminó 3 de las 12 respuestas de la primera tanda. Arreglar antes
+  de reutilizar el mecanismo de profundización.
+- **Nivel de revisión automático con GPT-5.6 -- construido y probado**,
+  9/12 aciertos contra revisión manual, se le escapan justo las
+  contaminaciones por colisión de `ORDEN` (el error más importante de
+  detectar). Sirve como filtro barato, no sustituye la revisión humana.
+- La "visión global" (V1-V3) dejó **5 preguntas nuevas abiertas**, sin
+  lanzar -- no lanzar sin pedirlo explícitamente el promotor.
+
 ## Dónde está cada cosa (índice de documentos de esta jornada)
 
 - `PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md` -- diario completo,
@@ -113,3 +131,6 @@ completo. Organizado por urgencia/tipo, no por orden cronológico.
 - `DIARIO_DE_NAVEGACION.md` -- git como grafo de decisiones.
 - `diario-navegacion/2026-08-31-vecino-del-banco/` -- Urdimbre, Tramas,
   hilo conductor completo con revisión editorial.
+- `diario-navegacion/2026-08-31-investigacion-telar/documento-base.md`
+  -- las 15 respuestas de Vigilia sobre el rediseño de Telar, con
+  valoración honesta de cada una.

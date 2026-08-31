@@ -131,3 +131,36 @@ mecanismo (procesa el lote completo, coste real ~$0,00015/revisión) pero
 **no es fiable todavía para el tipo de error que más importa detectar**
 -- la contaminación de contexto. Sirve como primer filtro barato, no
 como sustituto de la revisión humana en el Relevo real.
+
+## Segunda tanda: visión global (rama `VisionGlobal-Telar-2026-08-31`)
+
+Tres preguntas, alimentadas con el contexto real de Engremiat (Rueda
+del Gremio, Telar, hallazgos de la primera tanda, FCAFA-TDAH como
+cliente primario). **Las tres sólidas, sin contaminación.**
+
+**V1 -- caso de uso óptimo**: recorrido completo Oportunidad → Cuadrilla
++Concilio (familias co-creando, no solo IA proponiendo) → Relevo (Consola
+de Relevo revisando si cumple el objetivo) → Cronista+Ejecutor (árbol
+de navegación, lenguaje adaptativo) → Pregonero+Ágora (publicación,
+retroalimenta nuevas Oportunidades). El acierto real: la IA como
+*"facilitador silencioso, nunca decide por ellos"* -- coherente con
+todo lo ya decidido esta noche sobre soberanía y co-creación.
+
+**V2 -- datos valiosos a registrar**: métricas de participación y flujo
+(sesión, capítulo, elección de rama, tiempo, punto de abandono) en
+Baserow anonimizado, efectividad narrativa por rama, informes de
+impacto colectivo para FCAFA-TDAH -- explícito en no tocar nunca datos
+clínicos, solo de uso y adaptación.
+
+**V3 -- preguntas nuevas urgentes** (sin responder todavía, quedan
+como semilla del siguiente ciclo, con Relevo antes de lanzarlas):
+1. Cómo equilibrar co-creación humana vs. sugerencia algorítmica sin
+   que la IA "coloniche" la creatividad de las familias.
+2. Qué hacer con ramas narrativas abandonadas -- cuándo es una rama
+   inútil y cuándo necesita más apoyo, sin sacrificar autenticidad.
+3. Cómo mantener el propósito colectivo cuando cada familia toma un
+   camino narrativo distinto.
+4. Si formalizar capítulos en `TAREA` arriesga convertir la co-creación
+   en algo burocrático, perdiendo valor terapéutico.
+5. Cómo incorporar innovaciones de las familias sin romper la Urdimbre
+   fija -- y quién decide cuándo una desviación es una mejora legítima.
