@@ -7,7 +7,7 @@ import { readFileSync } from 'node:fs';
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
 const DEEPSEEK_KEY = readFileSync('G:/Mi unidad/DEVS/engremiat-litellm/.deepseek_key', 'utf-8').trim();
 const BASE = 'http://100.107.171.88';
-const TOKEN = 'Token 62HhkmjmvMSf7tPyIzFwYCoNphM3Sops';
+const TOKEN = readFileSync('G:/Mi unidad/DEVS/engremiat-litellm/.baserow_token', 'utf-8').trim();
 
 async function cargarCatalogoReal() {
   const r = await fetch(BASE + '/api/database/rows/table/1038/?user_field_names=true&filter__TIPO__equal=mecanismo_real&size=100', { headers: { Authorization: TOKEN } });

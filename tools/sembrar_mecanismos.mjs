@@ -1,4 +1,5 @@
-const TOKEN = 'Token 62HhkmjmvMSf7tPyIzFwYCoNphM3Sops';
+import { readFileSync } from 'node:fs';
+const TOKEN = readFileSync('G:/Mi unidad/DEVS/engremiat-litellm/.baserow_token', 'utf-8').trim();
 const BASE = 'http://100.107.171.88';
 const TABLA = 1038;
 
