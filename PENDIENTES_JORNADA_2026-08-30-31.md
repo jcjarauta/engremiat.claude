@@ -5,6 +5,15 @@ Rueda del Gremio -- para no perder nada entre los múltiples documentos
 generados. Cada punto enlaza al documento fuente con el detalle
 completo. Organizado por urgencia/tipo, no por orden cronológico.
 
+## RELEVO COMPLETO DE CIERRE -- ver `diario-navegacion/2026-08-31-relevo-completo/informe.md`
+
+Informe de cierre de toda la sesión (infraestructura, laboratorio
+Vigilia/Concilio, conexión a `13_INCIDENCIAS`, benchmark real
+local/DeepSeek/GPT, coste real ~$0,10 en APIs, hallazgo importante sin
+resolver: la fabricación de arquitectura/capacidades inexistentes no
+la detecta el verificador determinista todavía). Léelo antes de decidir
+el próximo ciclo amplio con API.
+
 ## 1. Bugs reales, sin resolver de fondo
 
 - **Webhook `notificar-humano` deja de estar registrado de forma
