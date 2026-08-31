@@ -134,15 +134,26 @@ da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
   (`id_ed25519_apagar_pi`) con `command=` forzado en la Pi a **solo**
   `apagar_pi_seguro.sh` -- el mismo patrón de mínimo privilegio que la
   clave de backup.
-- **Alimentación del enchufe inteligente: dato ambiguo, no resuelto**.
-  Primer ciclo de prueba real: el ventilador giraba pero **ningún LED**
-  se encendió durante varios minutos (sugiere subvoltaje). Segundo
-  ciclo, mismo enchufe, mismo día: arranque limpio y rápido (`up 0
-  min`, n8n y Baserow sanos en segundos). La inconsistencia entre
-  ambos intentos **no confirma que el enchufe esté bien** -- apunta
-  más bien a una alimentación marginal/intermitente, que puede ser peor
-  que un fallo binario porque no es predecible. No dar el enchufe por
-  válido para uso diario sin más ciclos de prueba.
+- **Alimentación del enchufe inteligente: causa real identificada
+  (2026-08-31)**. Tres ciclos de encendido el mismo día: dos con
+  fallo real (ventilador gira, **ningún LED**, varios minutos sin
+  arrancar) y uno limpio. La diferencia real entre los intentos: el
+  enchufe estaba conectado **a través de un SAI**. Al quitar el SAI de
+  en medio (enchufe directo a la pared), la Pi arrancó bien
+  (`up 1 min`, n8n y Baserow sanos). Hipótesis más probable: el SAI
+  introduce una caída de tensión o una onda de salida que no le sienta
+  bien a la fuente conmutada de la Pi, no el enchufe inteligente en sí.
+  **Recomendación**: no alimentar la Pi (ni el enchufe inteligente) a
+  través del SAI hasta comprobarlo con más ciclos.
+- **Webhook de despertar el PC -- construido (2026-08-31, sin probar
+  de extremo a extremo)**: servicio `despertar-pc-webhook` en el VPS
+  (mismo patrón que el de apagado, puerto `100.107.171.88:8091`,
+  `GET /despertar-pc`) -- SSH con clave dedicada
+  (`id_ed25519_despertar_pc`, `command=` forzado a **solo**
+  `despertar_pc.sh`) hacia la Pi, que envía el paquete mágico WoL al
+  PC operador. No probado de extremo a extremo todavía porque el PC
+  seguía encendido (la propia sesión de trabajo) -- pendiente probarlo
+  apagando el PC del todo y disparando el webhook desde el móvil.
 
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
