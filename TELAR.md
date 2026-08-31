@@ -260,6 +260,31 @@ terminado.
 real de la próxima sesión junto con la migración de capítulos a `TAREA`
 (ver `RUEDA_DEL_GREMIO.md`).
 
+## Retomar o empezar nueva (2026-08-31)
+
+Gap real encontrado: sin esto, cualquier mensaje mientras hay una
+historia a medias se interpretaba automáticamente como respuesta a la
+pregunta pendiente -- no había forma de preguntar "¿dónde estaba?" ni de
+elegir empezar otra sin perder la actual sin querer.
+
+**Construido**: `/telar` enviado explícitamente mientras hay una
+historia en curso (en cualquier estado del wizard o de la Trama) ofrece
+elegir -- *"Continuar donde lo dejé"* o *"Empezar una nueva"*. Continuar
+reenvía la pregunta u opciones pendientes tal como estaban. Empezar
+nueva **archiva primero** la historia en curso en `TELAR_BIBLIOTECA`
+(`ESTADO: pausada`, con su Urdimbre/progreso tal cual) antes de
+reiniciar la sesión -- no se pierde, aunque hoy solo exista una fila de
+sesión activa a la vez (limitación real, ver abajo).
+
+### Límite honesto
+
+Sigue siendo **una sola sesión activa por bot** (`TELAR_SESION`, fila
+única) -- "empezar nueva" no permite tener dos historias corriendo en
+paralelo, solo pausar una y archivarla antes de sustituirla. Soporte
+real multi-sesión (varias historias activas a la vez, o varios
+participantes) sigue pendiente de diseño -- no confundir esta pieza con
+eso.
+
 ## Ciclo 1 en vivo: wizard de 3 preguntas, sin opciones prediseñadas (2026-08-31)
 
 Corrección real tras la primera prueba: el menú de "reto" (rutinas/
