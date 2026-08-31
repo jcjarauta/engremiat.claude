@@ -1063,10 +1063,46 @@ artefacto de calibración distinto en el verificador de campos).
 diseño-propuesto de afirmación-de-existencia sin volver a caer en
 ninguno de los dos errores anteriores (ni sobre-marcar diseño legítimo
 ni dejar pasar fabricación real), verificado con un caso de regresión
-real capturado antes de confiarlo. Sigue sin haber ningún caso
-"LIMPIO" en este lote -- 0 de 5 se han atomizado todavía, así que el
-Coordinador sigue sin haber demostrado su función principal
-(atomización automática) con datos reales, solo su freno de seguridad.
+real capturado antes de confiarlo.
+
+## Verificador de campos -- mismo problema, arreglo determinista sin LLM (2026-09-01)
+
+Revisión manual de los 3 "campos fabricados" pendientes (`BOVEDA3`:
+`mecanismo_real`; `BOVEDA4`: `mecanismo_real`, `nombre_original_hash`;
+`BOVEDA5`: `ultima_sincronizacion`) encontró que **ninguno era
+fabricación real** -- dos causas distintas, ambas en `verificarCampos`
+(pura regex, sin LLM):
+
+1. `TIPO=mecanismo_real` es el **valor** de un campo real (`TIPO`), no
+   una afirmación de que existe un campo llamado `mecanismo_real`. El
+   regex no distinguía "candidato tras un `=` de campo real" de
+   "candidato como nombre de campo propio".
+2. `nombre_original_hash` y `ultima_sincronizacion` son nombres de
+   campo **propuestos** dentro de respuestas a preguntas que pedían
+   explícitamente diseñar un script de migración/sincronización --
+   mismo problema de diseño-vs-existencia que el extractor de
+   capacidades, pero aquí sin ninguna clasificación de tipo de
+   pregunta que lo filtrase.
+
+**Arreglo aplicado** (en `tools/coordinador.mjs` y en
+`tools/verificador_determinista.mjs`, el script real usado por el
+workflow n8n de Vigilia): dos filtros deterministas por proximidad de
+texto, sin llamada a LLM -- (a) excluir candidatos que aparecen como
+`CAMPOREAL=candidato`; (b) excluir candidatos precedidos, a menos de
+60 caracteres, de una señal de propuesta ("se añade", "generar",
+"nuevo campo", "propongo", "nombres únicos"...). Coherente con el
+principio de la noche: la corrección es una regla determinista, no
+delegar el criterio a otro modelo.
+
+**Resultado final, mismas 5 respuestas de `BOVEDA1-5`**: 3 de 5 pasan
+limpias y se atomizan con sub-preguntas reales y bien dirigidas
+(`BOVEDA3`, `BOVEDA4`, `BOVEDA5` -- las sub-preguntas generadas
+referencian correctamente los campos propuestos, ej. "¿cómo se
+garantiza que `ultima_sincronizacion` no sea manipulado...?"). 2 de 5
+siguen a Relevo por la fabricación de capacidad ya confirmada a mano
+(`BOVEDA1`, `BOVEDA2`). Es el primer resultado del Coordinador donde
+la atomización automática se demuestra con datos reales, no solo el
+freno de seguridad.
 
 ## Límites y honestidad
 

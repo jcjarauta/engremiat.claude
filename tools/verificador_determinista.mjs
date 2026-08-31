@@ -20,9 +20,41 @@ const tablasReales = new Set(esquemaReal.map(c => c.tabla.toUpperCase()));
 
 const PATRON_CAMPO = /\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+){1,5}\b/g;
 const RUIDO = new Set(['UE', 'IA', 'JSON', 'API', 'URL', 'ID', 'UI', 'UX', 'WCAG', 'HTML', 'CSS', 'SQL', 'HTTP', 'HTTPS', 'CRUD', 'REST']);
+// Señales de que el candidato es una PROPUESTA de campo nuevo (parte de un diseño
+// pedido por la pregunta), no una afirmación de que ya existe -- mismo problema
+// que se corrigio en el extractor de capacidades del Coordinador, aplicado aqui
+// de forma determinista (regex de proximidad, sin LLM).
+const SENAL_PROPUESTA = /(se añade|añadir|nuevo campo|nuevos campos|propongo|propone|generar|crear un campo|crear campo|nombres? únicos?)/i;
+const VENTANA_CONTEXTO = 60; // caracteres antes del candidato en los que se busca la señal
+
+function esValorDeCampoReal(texto, indice, candidato) {
+  // Detecta patron "CAMPOREAL=candidato" o "CAMPOREAL = candidato" -- el candidato
+  // es un VALOR de un campo real, no una afirmacion de que "candidato" es un campo.
+  const antes = texto.slice(Math.max(0, indice - 40), indice);
+  const m = antes.match(/([A-Za-z][A-Za-z0-9_]*)\s*=\s*$/);
+  if (!m) return false;
+  return camposDeLaTabla.has(m[1].toUpperCase()) || camposEnOtrasTablas.has(m[1].toUpperCase());
+}
+
+function esPropuestaDeDiseno(texto, indice) {
+  const antes = texto.slice(Math.max(0, indice - VENTANA_CONTEXTO), indice);
+  return SENAL_PROPUESTA.test(antes);
+}
 
 function verificar(texto) {
-  const candidatos = [...new Set((texto.match(PATRON_CAMPO) || []))].filter(c => !RUIDO.has(c.toUpperCase()));
+  const vistos = new Set();
+  const candidatos = [];
+  const propuestos = [];
+  for (const m of texto.matchAll(PATRON_CAMPO)) {
+    const c = m[0];
+    const C = c.toUpperCase();
+    if (RUIDO.has(C)) continue;
+    if (esValorDeCampoReal(texto, m.index, c)) continue; // es un valor, no una afirmacion de campo
+    if (esPropuestaDeDiseno(texto, m.index)) { if (!vistos.has(C)) { propuestos.push(c); vistos.add(C); } continue; }
+    if (vistos.has(C)) continue;
+    vistos.add(C);
+    candidatos.push(c);
+  }
   const verificadoEnTabla = [];
   const existeEnOtraTabla = [];
   const tablaMencionada = [];
@@ -34,7 +66,7 @@ function verificar(texto) {
     else if (tablasReales.has(C)) tablaMencionada.push(c);
     else noExiste.push(c);
   }
-  return { candidatos: candidatos.length, verificadoEnTabla, existeEnOtraTabla, tablaMencionada, noExiste };
+  return { candidatos: candidatos.length, verificadoEnTabla, existeEnOtraTabla, tablaMencionada, noExiste, propuestos };
 }
 
 const textoArg = readFileSync(process.argv[2], 'utf-8');
@@ -54,3 +86,6 @@ console.log(r.tablaMencionada.length ? r.tablaMencionada.map(c=>'  --  '+c).join
 
 console.log('\nNO EXISTEN en ningún sitio del esquema real (fabricado):');
 console.log(r.noExiste.length ? r.noExiste.map(c=>'  ??  '+c).join('\n') : '  (ninguno)');
+
+console.log('\nPROPUESTOS como campo nuevo (señal de diseño detectada, no cuentan como fabricación):');
+console.log(r.propuestos.length ? r.propuestos.map(c=>'  ->  '+c).join('\n') : '  (ninguno)');

@@ -26,13 +26,40 @@ async function cargarCatalogoMecanismos() {
   return j.results.map(row => ({ nombre: row.NOMBRE, descripcion: row.TEMA }));
 }
 
+// Señales de que el candidato es una PROPUESTA de campo nuevo (parte de un
+// diseño pedido por la pregunta), no una afirmación de que ya existe --
+// deteccion determinista por proximidad de texto, sin LLM.
+const SENAL_PROPUESTA = /(se añade|añadir|nuevo campo|nuevos campos|propongo|propone|generar|crear un campo|crear campo|nombres? únicos?)/i;
+const VENTANA_CONTEXTO = 60;
+
 function verificarCampos(texto, tablaRelevante, esquema) {
   if (!tablaRelevante) return { aplica: false };
   const T = tablaRelevante.toUpperCase();
   const camposDeLaTabla = new Set(esquema.filter(c => c.tabla === T).map(c => c.campo));
+  const camposEnCualquierTabla = new Set(esquema.map(c => c.campo));
   const tablasReales = new Set(esquema.map(c => c.tabla));
   const RUIDO = new Set(['UE','IA','JSON','API','URL','ID','UI','UX','WCAG','HTML','CSS','SQL','HTTP','HTTPS','CRUD','REST']);
-  const candidatos = [...new Set((texto.match(/\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+){1,5}\b/g) || []))].filter(c => !RUIDO.has(c.toUpperCase()));
+
+  function esValorDeCampoReal(indice) {
+    const antes = texto.slice(Math.max(0, indice - 40), indice);
+    const m = antes.match(/([A-Za-z][A-Za-z0-9_]*)\s*=\s*$/);
+    if (!m) return false;
+    return camposEnCualquierTabla.has(m[1].toUpperCase());
+  }
+  function esPropuestaDeDiseno(indice) {
+    return SENAL_PROPUESTA.test(texto.slice(Math.max(0, indice - VENTANA_CONTEXTO), indice));
+  }
+
+  const vistos = new Set();
+  const candidatos = [];
+  for (const m of texto.matchAll(/\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+){1,5}\b/g)) {
+    const c = m[0]; const C = c.toUpperCase();
+    if (RUIDO.has(C) || vistos.has(C)) continue;
+    if (esValorDeCampoReal(m.index)) continue;
+    if (esPropuestaDeDiseno(m.index)) continue;
+    vistos.add(C);
+    candidatos.push(c);
+  }
   const fabricados = candidatos.filter(c => { const C = c.toUpperCase(); return !camposDeLaTabla.has(C) && !tablasReales.has(C); });
   return { aplica: true, fabricados };
 }
