@@ -790,6 +790,45 @@ sola palabra. Pendiente: añadir una segunda pasada que compare
 palabras sueltas contra la lista exacta de campos reales, no solo el
 patrón de guion bajo.
 
+## Cierra el círculo: laboratorio Baserow → gobierno real del Sheet (2026-08-31)
+
+Decisión de fondo del promotor: el Sheet (Ejecutor + `13_INCIDENCIAS` +
+Mesa de Revisión) sigue siendo el **gobierno real** -- Baserow/Vigilia/
+Concilio es el **laboratorio** donde se investiga y valida antes de
+proponer, no una segunda autoridad paralela. La Consola Engremiat
+queda pendiente de revisión (puede que su función de panel de revisión
+ya la cubra el propio ciclo Vigilia→Relevo, sin comprobar todavía si
+aporta algo más -- no se da por obsoleta sin verificarlo).
+
+**Protocolo real, no inventado**: `PROMPT_EJECUTOR.md` ya decía que el
+Ejecutor no tiene escritura en Sheets y publica hallazgos para que
+"Claude los registre al verlos" -- ese mismo protocolo, ya existente,
+es el que cierra el círculo: hallazgos validados del laboratorio se
+registran como incidencias reales en `13_INCIDENCIAS`, sin construir
+ningún puente nuevo.
+
+**Primera prueba real, hecha esta noche**: `INC-0067` -- el hallazgo
+del verificador determinista, registrado en `13_INCIDENCIAS` del Sheet
+real (`Gestor de Proyectos - LaTroballa Software`,
+`142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ`) siguiendo el formato
+real de incidencia (OBJETIVO/RESULTADO_ESPERADO/CRITERIOS_ACEPTACION/
+DEFINITION_OF_DONE).
+
+**Bug real cometido y corregido en el propio acto de escribir**: la
+primera escritura se quedó corta un valor en blanco (faltó
+`FECHA_RESOLUCION`), desplazando todas las columnas siguientes una
+posición -- `ORIGEN_CREACION` quedó vacío y el resto desalineado.
+Detectado al releer la fila, corregido con una reescritura completa y
+verificado columna por columna antes de darlo por bueno. Recordatorio
+real de por qué escribir en producción exige releer siempre lo escrito,
+no solo confiar en que la llamada respondió 200.
+
+**Estado**: el Ejecutor recogerá `INC-0067` en su próximo ciclo de
+triaje normal -- no se ha forzado nada, solo se ha alimentado la cola
+real. Pendiente: definir si esto se convierte en un ritual repetible
+(cada cierre de lote de Vigilia con Relevo revisa qué hallazgos
+merecen pasar a incidencia real) o se hace caso por caso.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
