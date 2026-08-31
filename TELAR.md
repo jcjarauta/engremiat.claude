@@ -1023,6 +1023,51 @@ que todo sigue funcionando con el valor nuevo. Recordatorio real: el
 `.gitignore` no habría evitado esto -- la disciplina de nunca escribir
 un secreto literal en código, sí.
 
+## Coordinador -- extractor refinado, dos rondas reales de corrección (2026-08-31/09-01)
+
+Primera corrección al fallo de calibración anterior: se pasó la
+pregunta original al extractor (`extraerAfirmaciones(pregunta, texto)`)
+y se añadió una regla explícita para no confundir lenguaje de diseño
+propuesto ("diseña el script...") con afirmaciones de existencia.
+
+**Resultado de la primera corrección, probado contra las mismas 5
+respuestas**: `BOVEDA1` y `BOVEDA2` pasaron a "LIMPIO" y se atomizaron
+en 3 sub-preguntas reales cada una. Antes de dar esto por bueno, se
+comprobó a mano si era una mejora real o una sobrecorrección -- y lo
+era: `BOVEDA1` repite literalmente la misma fabricación ya detectada
+en `PEND1` ("permite que Baserow filtre y agrupe notas dinámicamente"),
+en una pregunta que pedía explicar **basándose en hechos verificables**,
+no diseñar nada. La regla nueva eximía cualquier presente relacionado
+con el tema, no solo el de preguntas de diseño -- **regresión real**:
+el extractor pasó de sobre-marcar a dejar pasar fabricaciones
+conocidas sin marcarlas.
+
+**Segunda corrección**: se separó la regla en dos casos explícitos --
+(a) preguntas de diseño/propuesta, donde el presente del diseño no
+cuenta como afirmación de existencia; (b) preguntas de
+explicación/justificación ("basándote en hechos verificables"),
+donde cualquier afirmación en presente de que algo ya funciona sí
+cuenta, incluso si el propio texto dice que lo ha "verificado".
+
+**Resultado final, mismas 5 respuestas**: las 5 vuelven a marcarse
+para Relevo, pero ahora por motivos distintos y verificados a mano --
+`BOVEDA1`/`BOVEDA2` por fabricación de capacidad real (confirmado:
+el catálogo real solo registra "notas de Obsidian generadas desde
+Baserow como vista de solo lectura", no el filtrado activo que
+afirman ambas respuestas); `BOVEDA3`/`BOVEDA4`/`BOVEDA5` por campos
+fabricados (1, 2 y 1 respectivamente -- **pendiente**: aún no
+revisados a mano uno por uno, podría ser fabricación real o un
+artefacto de calibración distinto en el verificador de campos).
+
+**Conclusión honesta**: el extractor de capacidades ya distingue
+diseño-propuesto de afirmación-de-existencia sin volver a caer en
+ninguno de los dos errores anteriores (ni sobre-marcar diseño legítimo
+ni dejar pasar fabricación real), verificado con un caso de regresión
+real capturado antes de confiarlo. Sigue sin haber ningún caso
+"LIMPIO" en este lote -- 0 de 5 se han atomizado todavía, así que el
+Coordinador sigue sin haber demostrado su función principal
+(atomización automática) con datos reales, solo su freno de seguridad.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
