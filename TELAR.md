@@ -158,6 +158,60 @@ del escenario (a diferencia del lote generado la noche anterior), coste
 $0,000508. Avanzó correctamente al capítulo 2 con nuevas opciones
 basadas en el capítulo 1 real como contexto.
 
+## Telar-Taller y Telar-Feria: separar quién prepara de quién juega (2026-08-31)
+
+Hallazgo tras la primera prueba real de flujo completo: mezclar en un
+solo bot la preparación de un reto (coordinador/tutor, ve todo el
+proceso) y su desarrollo (participante, solo debería ver el reto ya
+aprobado) confunde la experiencia. **No hace falta inventar dos bots
+desde cero -- es el mismo patrón que ya existe entre Taller y Feria**,
+aplicado aquí:
+
+- **Telar-Taller** (coordinador/tutor) -- el bot ya construido
+  (`@EngremiatTelar_bot`). Prepara retos: elige capa, reto temático,
+  registro de lenguaje, revisa el desarrollo completo antes de que
+  nadie más lo vea. Es, literalmente, la misma función que ya cumple
+  Taller para las misiones de Feria.
+- **Telar-Feria** (participante) -- todavía no construido. Solo vería
+  retos ya marcados `aprobado`, sin menú de configuración, con el
+  lenguaje ya ajustado al registro elegido por el coordinador.
+
+### Progresión de estado de un reto en `TELAR_BIBLIOTECA`
+
+`pendiente` (coordinador preparando) → `aprobado` (listo para
+participantes) → `en_uso` → `completado`.
+
+### Registro de lenguaje -- estándar real, no inventado
+
+Adoptado **Lectura Fácil / Plain Language** (marco europeo de
+accesibilidad cognitiva, el mismo universo que TEACCH) como los 3
+niveles reales, en vez de "más simple para niños" ad hoc: **Lectura
+Fácil** (infantil/necesidades cognitivas), **Estándar**, **Elaborado**
+(gobernanza/filosófico). Campo `REGISTRO` en `TELAR_BIBLIOTECA`,
+elegido por el coordinador al preparar el reto.
+
+### Capa Proyecto comunitario -- patrón Polis, no la plataforma entera
+
+Para casos como *"coordinador de comunidad quiere tomar el pulso antes
+de lanzar una propuesta de trabajo colaborativo con sociocracia"*: se
+adopta el **patrón** de Polis (compdemocracy.org) -- afirmaciones cortas
++ de acuerdo/en desacuerdo/paso, usado en gobernanza real (vTaiwan) como
+capa de "sensemaking" previa a una propuesta formal -- como un tipo de
+hito más dentro de la capa comunitaria de Telar, generado por
+Concilio/Vigilia y aprobado por el coordinador. No se adopta Polis
+como plataforma completa (tiene su propio motor de clustering) --
+demasiado grande para lo que hace falta hoy.
+
+### Límites y honestidad de esta pieza
+
+- Telar-Feria no se construye todavía -- no hay ningún participante real
+  esperando probarlo, y construirlo sin eso sería especular sobre una
+  UX que nadie ha validado.
+- El hito tipo Polis para la capa comunitaria es diseño, no código.
+- Accesibilidad avanzada (texto a voz, presentaciones, avatares)
+  queda explícitamente para después de consolidar esta base -- decisión
+  del propio promotor, no una limitación técnica.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
