@@ -145,15 +145,18 @@ da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
   bien a la fuente conmutada de la Pi, no el enchufe inteligente en sí.
   **Recomendación**: no alimentar la Pi (ni el enchufe inteligente) a
   través del SAI hasta comprobarlo con más ciclos.
-- **Webhook de despertar el PC -- construido (2026-08-31, sin probar
-  de extremo a extremo)**: servicio `despertar-pc-webhook` en el VPS
-  (mismo patrón que el de apagado, puerto `100.107.171.88:8091`,
-  `GET /despertar-pc`) -- SSH con clave dedicada
+- **Webhook de despertar el PC -- construido y probado de extremo a
+  extremo con éxito (2026-08-31)**: servicio `despertar-pc-webhook` en
+  el VPS (mismo patrón que el de apagado, puerto
+  `100.107.171.88:8091`, `GET /despertar-pc`) -- SSH con clave dedicada
   (`id_ed25519_despertar_pc`, `command=` forzado a **solo**
   `despertar_pc.sh`) hacia la Pi, que envía el paquete mágico WoL al
-  PC operador. No probado de extremo a extremo todavía porque el PC
-  seguía encendido (la propia sesión de trabajo) -- pendiente probarlo
-  apagando el PC del todo y disparando el webhook desde el móvil.
+  PC operador. Confirmado por el promotor: **ciclo completo
+  funcionando de punta a punta** -- enchufe enciende la Pi (sin SAI) →
+  webhook de despertar-pc desde el móvil → PC operador arranca por WoL
+  → trabajo por Chrome Remote Desktop → webhook de apagar-pi cuando se
+  termina. Las piezas de encendido/apagado remoto de la infraestructura
+  quedan cerradas.
 
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
