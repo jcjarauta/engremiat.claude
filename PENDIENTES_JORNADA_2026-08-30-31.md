@@ -117,8 +117,36 @@ completo. Organizado por urgencia/tipo, no por orden cronológico.
   9/12 aciertos contra revisión manual, se le escapan justo las
   contaminaciones por colisión de `ORDEN` (el error más importante de
   detectar). Sirve como filtro barato, no sustituye la revisión humana.
-- La "visión global" (V1-V3) dejó **5 preguntas nuevas abiertas**, sin
-  lanzar -- no lanzar sin pedirlo explícitamente el promotor.
+- La "visión global" (V1-V3) dejó **5 preguntas nuevas abiertas**;
+  **ya lanzadas y respondidas** como piloto Holon sobre Telar (ver
+  abajo).
+
+## 8. Piloto Holon sobre Telar -- cerrado, con 2 hallazgos reales nuevos
+
+- **4 de 5 respuestas sólidas** (H1 co-creación, H2 ramas abandonadas,
+  H3 propósito colectivo, H4 `TAREA`/burocracia) -- ver
+  `diario-navegacion/2026-08-31-investigacion-telar/documento-base.md`,
+  sección "Piloto Holon sobre Telar".
+- **H5 tiene un error de contenido real**: propone "consenso del 80%"
+  para sociocracia, lo que contradice la propia definición de
+  sociocracia ya documentada en `DICCIONARIO_ENGREMIAT.md` (decisión
+  por consentimiento, no por mayoría/umbral). No usar tal cual.
+- **Bug de mecanismo nuevo, sin arreglar**: "buscar capítulo anterior"
+  se aplicó entre preguntas de investigación independientes del mismo
+  lote (pensado solo para capítulos de una misma Trama) -- H3/H4/H5
+  arrastran vocabulario de H2 sin venir a cuento. Corregir antes de
+  lanzar más lotes de preguntas independientes.
+- **Bug de concurrencia real, sin arreglar**: el dispatcher de Vigilia
+  no bloquea el elemento "pendiente" mientras lo procesa -- disparos
+  manuales seguidos hicieron que varias ejecuciones compitieran por la
+  misma pregunta, gastando presupuesto de más. Pendiente: aplicar el
+  mismo lock (`ESTADO: 'procesando'`) que ya usa el modo interactivo de
+  Trama.
+- **Cuadrilla v2 (Concilio visible en grupo de Telegram)** -- diseñada
+  esta noche a partir de una propuesta del promotor, conecta con lo ya
+  descrito en `DICCIONARIO_ENGREMIAT.md`. Ver `TELAR.md`. No construida
+  -- decisión explícita de no apilar una feature nueva sobre un worker
+  que estaba saturado en el momento del diseño.
 
 ## Dónde está cada cosa (índice de documentos de esta jornada)
 

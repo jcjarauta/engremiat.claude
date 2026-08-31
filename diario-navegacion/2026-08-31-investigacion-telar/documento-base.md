@@ -164,3 +164,71 @@ como semilla del siguiente ciclo, con Relevo antes de lanzarlas):
    en algo burocrático, perdiendo valor terapéutico.
 5. Cómo incorporar innovaciones de las familias sin romper la Urdimbre
    fija -- y quién decide cuándo una desviación es una mejora legítima.
+
+## Piloto Holon sobre Telar: las 5 preguntas de V3, respondidas (2026-08-31)
+
+Las 5 preguntas anteriores se lanzaron como piloto real de Concilio
+ampliado con enrutado por tema (detalle completo del mecanismo, los 2
+Acervos nuevos -- Logístico y Sociocracia -- y el bug de condición de
+carrera encontrado en el dispatcher, en `TELAR.md`, sección "Piloto
+real: Holon presupuestado sobre Telar"). Aquí solo el Relevo de
+contenido: ¿son buenas respuestas o no?
+
+**Las 5 responden de verdad a su pregunta -- ninguna sufre la
+contaminación cruzada de lotes distintos que rompió 3 de las 12
+respuestas anteriores** (el rango `ORDEN` 1000-1004, elegido a
+propósito para no colisionar con lotes anteriores, funcionó).
+
+**Pero aparece un problema nuevo, más sutil, dentro del mismo lote**:
+el mecanismo "buscar capítulo anterior" (pensado para que los
+capítulos de una Trama mantengan continuidad) también se aplicó aquí,
+donde H1-H5 son 5 preguntas de investigación **independientes**, no
+capítulos de una misma historia. Resultado real: H3, H4 y H5 heredan
+literalmente el vocabulario de H2 ("relevos en pausa", "etiqueta como
+suspensas en Baserow", "no como fracasos") aunque su pregunta no tenga
+nada que ver con ramas abandonadas -- H4 es sobre burocracia y H5 sobre
+la Urdimbre, y ambas acaban mencionando "relevos en espera" de todos
+modos. No es la contaminación grave de antes (tema totalmente ajeno),
+es un sesgo de continuidad indebido: **el mecanismo de contexto de
+Vigilia solo debería aplicarse a capítulos de una misma Trama, nunca a
+preguntas de investigación independientes dentro del mismo lote.**
+
+**Hallazgo de contenido, no de mecanismo, en H5**: la síntesis de
+"Acervo Sociocracia" propone un umbral de "3 aprobaciones" y "consenso
+del 80%" para legitimar una desviación de la Urdimbre -- **esto
+contradice la definición de sociocracia que el propio proyecto ya tiene
+documentada** (`DICCIONARIO_ENGREMIAT.md:146-148`: decisión por
+consentimiento -- "nadie tiene objeción razonada" -- no por mayoría ni
+por umbral porcentual). Un Acervo Sociocracia que propone un porcentaje
+de votos no está aplicando sociocracia real, está aplicando una
+votación con otro nombre. Antes de usar esta respuesta para nada,
+habría que corregirla o repetirla con una definición de sociocracia más
+estricta en su `enfoque`.
+
+**Valoración por pregunta**:
+- **H1 (co-creación vs. colonización): sólida.** Tres opciones
+  explícitas en cada punto de decisión (sugerencia, propuesta libre,
+  alternativa neutral), consentimiento granular, IA como "guardián de
+  coherencia" nunca autora -- concreto y accionable.
+- **H2 (ramas abandonadas): sólida.** Tres caminos reales (reanudar,
+  transformar, archivar), distingue bloqueo técnico/emocional de
+  desinterés real, decisión final siempre de la familia.
+- **H3 (propósito colectivo): sólida en el fondo, contaminada de forma
+  leve en la forma** -- el "Hilo de Resonancia" es una idea real y
+  nueva, pero arrastra vocabulario de H2 que no pidió nadie.
+- **H4 (burocratización de `TAREA`): sólida**, con el límite concreto
+  que se pedía (campos mínimos, pausa/transformación en tiempo real,
+  nunca obligatorio) -- también con el mismo arrastre leve de H2.
+- **H5 (innovación vs. Urdimbre fija): mecanismo interesante (Relevo
+  Paralelo en tabla separada) pero con el error de contenido real
+  señalado arriba** -- no usable tal cual sin corregir la definición de
+  consentimiento.
+
+**Conclusión honesta**: 4 de 5 sólidas en el fondo, 1 con un error de
+contenido real que contradice una definición ya fijada del proyecto, y
+un patrón de arrastre de vocabulario entre preguntas del mismo lote que
+hay que corregir en el mecanismo antes de fiarse de lotes de preguntas
+independientes en el futuro. Nada de esto se aplica a Telar todavía --
+queda para que el promotor decida en el próximo Relevo real qué se
+construye (el lock de concurrencia en el dispatcher es más urgente que
+cualquiera de estas 5 respuestas).
