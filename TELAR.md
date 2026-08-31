@@ -927,6 +927,34 @@ más fabricación de arquitectura que el camino híbrido -- dato real
 para decidir qué camino usar según el tipo de pregunta, no una
 preferencia.
 
+## Acervo Prompter -- construido y probado con un caso real (2026-08-31)
+
+Primera versión real (`tools/acervo_prompter.mjs`), motor DeepSeek.
+Convierte una necesidad vaga + contexto real en una pregunta de
+Vigilia estructurada (meta-prompting: da la forma del razonamiento
+-- contexto, pregunta con "porqué" explícito, personas sugeridas del
+roster real, tabla relevante -- nunca el contenido de la respuesta).
+
+**Bug real encontrado y corregido en la propia primera prueba**: al
+generar una pregunta a partir de `INC-0067`, puso `tabla_relevante:
+"13_INCIDENCIAS"` -- una tabla del **Sheet**, no de Baserow. El
+verificador determinista solo conoce el esquema de Baserow -- si esto
+se hubiera sembrado tal cual, habría marcado todo como "no existe" por
+confusión de origen, no por fabricación real. Corregido explicitando
+en el prompt que `tabla_relevante` es exclusivamente de Baserow, nunca
+del Sheet aunque se mencione en el contexto. Reprobado: esta vez dejó
+el campo vacío correctamente (la pregunta es sobre un patrón de
+código, no sobre esquema de Baserow).
+
+**Cerrado el círculo con un caso real, no solo generado**: la pregunta
+resultante se sembró de verdad en Vigilia (`PROMPTER-TEST1`, rama
+`Acervo-Prompter-2026-08-31`) y queda en la misma cola que el resto,
+protegida por el lock y el verificador ya construidos esta noche.
+
+**Tiempo/coste real**: ~4s por pregunta generada, ~700-800 tokens
+entrada / ~500 salida, coste insignificante (misma tarifa DeepSeek ya
+medida esta noche).
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
