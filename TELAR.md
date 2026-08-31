@@ -631,6 +631,30 @@ que dice cerrar. Mientras tanto, la mitigación real que ya funciona es
 operativa, no de código: disparar Vigilia de una en una (cron cada 15
 min, sin disparos manuales solapados).
 
+### Arreglo real del lock -- construido y probado con una carrera de verdad (2026-08-31)
+
+El bug de concurrencia queda cerrado de verdad, no solo mitigado. Campo
+nuevo `PROCESANDO_DESDE` (texto, en `VIGILIA_TAREA`) en vez de tocar el
+`ESTADO` real (evita el bug conocido de editar opciones de
+`single_select`). Nuevo nodo **`Bloquear elemento pendiente (lock)`**
+entre `Buscar siguiente Vigilia pendiente` (ahora trae 20 candidatos,
+no 1) y `¿Hay Vigilia pendiente?`: recorre los candidatos, elige el
+primero sin bloqueo activo (o con bloqueo de más de 10 minutos --
+recuperación automática si algo se cuelga), y marca
+`PROCESANDO_DESDE` en el mismo paso antes de devolver el elemento.
+
+**Probado con una condición de carrera real, no solo en teoría**: dos
+disparos del webhook con 5 segundos de diferencia mientras el primer
+elemento (`PEND1`) seguía bloqueado -- el segundo disparo cogió
+`PEND2`, no repitió `PEND1`. Confirma que el lock funciona bajo carga
+concurrente real.
+
+**Decisión explícita sobre el intervalo del cron**: se deja en 15
+minutos por ahora, a propósito -- "ser generosos con el tiempo hasta
+tener datos reales de duración/coste del worker local". Acortarlo se
+hará con datos reales del Relevo (tiempos y coste medidos), no a
+ciegas, aunque el lock ya lo permite con seguridad.
+
 ## Propuesta: verificador determinista + Acervo Prompter + Graphify (2026-08-31, solo propuesta)
 
 Nace de una pregunta real del promotor: ¿se pueden encadenar ciclos de
