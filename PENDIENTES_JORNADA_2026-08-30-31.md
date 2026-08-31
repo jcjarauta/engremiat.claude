@@ -63,9 +63,13 @@ completo. Organizado por urgencia/tipo, no por orden cronológico.
   sociocrático aplicado a cada nivel, Grafana+Prometheus para hardware,
   panel radial a medida para la actividad -- diseño completo, nada
   construido.
-- **`NODO_ENGREMIAT`** -- tabla de infraestructura real (Pi, PC, worker
-  local, chat_id) diseñada, bloqueada por el límite de esquema del
-  punto 1 -- pendiente de que el promotor la cree en la UI.
+- **`NODO_ENGREMIAT`** (tabla 289) -- **creada y sembrada** con los 4
+  nodos reales (Raspberry Pi, PC operador, worker local, chat operador).
+  Resuelto el bloqueo de esquema con un método nuevo: Claude genera un
+  `.txt` separado por tabulaciones, el usuario lo pega directamente en
+  "Pegar los datos de la tabla" de Baserow -- crea la tabla completa
+  con datos en un solo paso, sin campo-por-campo. Documentado como
+  método de trabajo por defecto para cualquier tabla nueva futura.
 - **Enchufe inteligente para la Pi a demanda** -- explícitamente
   aparcado hasta concretar el Relevo del todo.
 
