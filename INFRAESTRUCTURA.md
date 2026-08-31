@@ -163,8 +163,23 @@ da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
 `/root/backup_to_pi.sh` en el VPS: empaqueta los volúmenes Docker de
 `n8n` y `baserow` (`docker run` con `alpine` + `tar`, sin depender de
 comandos internos de cada app) y los envía por `rsync` sobre Tailscale
-a `~/backups/` en la Pi. Programado por `cron` a las 23:00 cada noche
-(`/root/backup.log` para revisar si falló).
+a `~/backups/` en la Pi. Programado por `cron` a las **9:05** cada
+mañana (`/root/backup.log` para revisar si falló).
+
+**Ciclo completo con la Pi apagada por defecto -- diseñado y probado
+en vivo (2026-08-31)**: como la Pi ya no está encendida todo el día
+(ver ciclo de encendido/apagado remoto arriba), el script ahora:
+1. Espera hasta 5 minutos a que la Pi responda por el puerto 22 --
+   si no aparece en ese tiempo, **cancela el backup y lo deja escrito
+   en el log**, nunca falla en silencio.
+2. Hace el backup normal.
+3. **Apaga la Pi él mismo al terminar** (misma clave restringida que
+   el webhook de apagado), sin depender de un segundo horario en el
+   enchufe para el apagado.
+
+Solo hace falta programar **un** horario en el enchufe inteligente
+(encendido, ej. 9:00-10:00) -- el resto se encadena solo. Probado en
+vivo: arranque, backup y apagado automático completos en 45 segundos.
 
 **Acceso restringido de verdad, no solo "clave SSH nueva"**: la clave
 `id_ed25519_backup_to_pi` (generada en el VPS) está en el
