@@ -260,6 +260,42 @@ terminado.
 real de la próxima sesión junto con la migración de capítulos a `TAREA`
 (ver `RUEDA_DEL_GREMIO.md`).
 
+## Principio guía: contexto real, no solo continuidad narrativa (2026-08-31)
+
+Distinción explícita entre dos capas: **bloquear la sesión** (fiabilidad,
+evita bugs como dobles clics) no es lo mismo que **acompañar de verdad**
+(lo que diferencia un bot con base IA de uno programado). Continuidad
+de contenido (`HISTORIAL` como contexto) ya existe -- falta continuidad
+de la persona. Principio transversal, a aplicar en cualquier pieza nueva
+de Telar o Cuadrilla, no una tarea puntual:
+
+- **Registro adaptativo, no fijo** -- detectar el nivel de complejidad de
+  las propias respuestas del usuario, no preguntarlo de antemano.
+- **Memoria entre sesiones** -- reconocer a un coordinador que vuelve,
+  no tratarlo como si fuera la primera vez siempre.
+- **Reconocimiento dosificado** (ya diseñado para el wizard) -- aplicarlo
+  de forma consistente en todo el recorrido, no solo al principio.
+
+## Investigación acotada sobre el propio Telar (2026-08-31)
+
+Primer uso real de Vigilia como motor de **investigación**, no de
+decisión automática -- mismo patrón que `generar_canvas_dafo` (análisis
+estructurado que un humano revisa después, no cambios automáticos al
+bot en producción). Equipo de Concilio ampliado a 5 personas: Técnico,
+Filosófico, Lógico, Narrativo, Usuario/Cotidiano -- cada una con fricción
+real con las demás, no cosmética.
+
+**Lote sembrado**: 12 elementos (`Investigacion-Telar-2026-08-31`, ids
+42-53), 6 preguntas concretas × 2 pasos (propuesta + profundización) --
+migración a `TAREA`, cierre dinámico del bucle, árbol de navegación en
+Telegram, registro adaptativo, memoria entre sesiones, y diseño de la
+Consola de Relevo. Presupuesto asignado: €2 -- coste medido de sobra
+dentro de margen (~$0,0007/llamada).
+
+**Resultado esperado**: un documento base que el promotor y Claude
+revisan juntos (Relevo real) para afinar la propuesta final de cada
+pieza -- no una decisión automática de cómo debe ser Telar.
+
 ## Retomar o empezar nueva (2026-08-31)
 
 Gap real encontrado: sin esto, cualquier mensaje mientras hay una
