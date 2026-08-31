@@ -64,6 +64,18 @@ Sigue siendo la instancia real con los datos de esta noche (`VIGILIA`,
 `docker-compose.yml` en `/home/nodo-admin/nucleo/`. IP LAN
 `192.168.8.230`, ahora también en Tailscale (100.125.52.52).
 
+**Almacenamiento**: solo hay microSD (119 GB, `mmcblk0`) -- sistema y
+backups en el mismo disco físico, sin aislamiento entre ambos. Hay un
+disco externo Toshiba de 1 TB disponible para separar "lo nuclear" (SD)
+de los backups/datos (externo), pero **no se detecta de forma estable
+en la Pi** -- se vio una vez por `dmesg` y se desconectó solo
+(`USB disconnect`); tras cambiar de puerto y de cable, cero eventos
+nuevos en el log del kernel. Diagnóstico: probable problema de
+alimentación -- un disco mecánico de 2,5"/1 TB puede no recibir
+corriente suficiente directo de los puertos USB de la Pi. **Pendiente:
+conseguir un hub USB alimentado (con fuente propia)** entre el disco y
+la Pi antes de reintentarlo.
+
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
 `/root/backup_to_pi.sh` en el VPS: empaqueta los volúmenes Docker de
