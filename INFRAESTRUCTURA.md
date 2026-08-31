@@ -125,6 +125,24 @@ da a `nodo-admin` permiso sin contraseña **solo** para `shutdown` y
   solos, sin intervención manual -- los contenedores tienen
   `restart: unless-stopped` y arrancan con el propio Docker al boot.
   No hizo falta ni una sola contraseña ni comando de recuperación.
+- **Webhook de apagado remoto -- construido y probado (2026-08-31)**:
+  servicio `apagar-pi-webhook` en el VPS (`systemd`, Python
+  `http.server`, atado solo a `100.107.171.88:8090`) -- una petición
+  `GET http://100.107.171.88:8090/apagar-pi` desde el móvil (dentro de
+  Tailscale) ejecuta el apagado seguro de la Pi sin que el promotor
+  necesite terminal ni SSH. Usa una clave dedicada
+  (`id_ed25519_apagar_pi`) con `command=` forzado en la Pi a **solo**
+  `apagar_pi_seguro.sh` -- el mismo patrón de mínimo privilegio que la
+  clave de backup.
+- **Alimentación del enchufe inteligente: dato ambiguo, no resuelto**.
+  Primer ciclo de prueba real: el ventilador giraba pero **ningún LED**
+  se encendió durante varios minutos (sugiere subvoltaje). Segundo
+  ciclo, mismo enchufe, mismo día: arranque limpio y rápido (`up 0
+  min`, n8n y Baserow sanos en segundos). La inconsistencia entre
+  ambos intentos **no confirma que el enchufe esté bien** -- apunta
+  más bien a una alimentación marginal/intermitente, que puede ser peor
+  que un fallo binario porque no es predecible. No dar el enchufe por
+  válido para uso diario sin más ciclos de prueba.
 
 ## Backup real VPS→Pi (2026-08-31, construido y probado)
 
