@@ -981,6 +981,48 @@ aplicar los dos verificadores (campos + capacidades) a cada síntesis,
 no solo revisar a ojo -- es precisamente el tema donde ya se detectó
 una fabricación real esta noche.
 
+## Coordinador -- primera versión real, probada contra las 5 respuestas de BOVEDA (2026-08-31)
+
+Primera implementación (`tools/coordinador.mjs`). Diseño: aplica los
+dos verificadores (campos + capacidades) a una respuesta ya procesada;
+si está limpia, pide al Prompter que la **atomice** en 2-3 sub-
+preguntas (un solo nivel de profundidad esta primera vez, con tope);
+si no, la deja para Relevo humano, sin atomizar. Nunca decide publicar
+nada -- responde a la propuesta del promotor de "autociclo de Relevo
+exponencial" con el freno explícito ya acordado.
+
+**Resultado real de la primera prueba (5 respuestas de `BOVEDA1-5`):
+0 de 5 pasaron el filtro, las 5 a Relevo.** Revisadas a mano: en
+`BOVEDA1`/`BOVEDA2` el filtro acierta (afirman capacidades presentes
+que no existen, como antes). En `BOVEDA3`/`BOVEDA4`/`BOVEDA5` **el
+extractor confunde lenguaje de diseño propuesto en presente ("el
+script compara...", "se añade un campo...") con afirmaciones de que
+algo ya existe** -- un fallo de calibración real del extractor, no
+fabricaciones reales detectadas.
+
+**Conclusión honesta**: el Coordinador funciona en la dirección
+segura -- nunca deja pasar algo dudoso sin revisión, todo lo que no
+está seguro va a Relevo -- pero es **demasiado estricto para ser
+eficiente todavía**. Pendiente real: enseñar al extractor a distinguir
+"esto se propone construir" de "esto ya funciona hoy" antes de confiar
+la atomización automática a este primer filtro.
+
+## Bug real encontrado y corregido durante esta misma construcción: fuga de credencial (2026-08-31)
+
+Mientras se construía el Coordinador, GitGuardian alertó de un Bearer
+Token de Baserow expuesto en GitHub -- dos scripts commiteados esta
+noche (`tools/sembrar_mecanismos.mjs`, `tools/verificador_capacidades.mjs`)
+tenían el token real escrito directamente en el código, en vez de
+leerlo de un fichero local como el resto de credenciales de la sesión.
+**Corregido de inmediato**: token rotado en Baserow (tres tokens
+reales existían, solo uno estaba expuesto -- el promotor lo confirmó
+tras rotarlos), código de ambos scripts corregido para leer de
+`.baserow_token` (fichero local, fuera del repo), credencial
+actualizada en n8n, y verificado dos veces (n8n y scripts locales)
+que todo sigue funcionando con el valor nuevo. Recordatorio real: el
+`.gitignore` no habría evitado esto -- la disciplina de nunca escribir
+un secreto literal en código, sí.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
