@@ -105,3 +105,29 @@ P5.2 -- sirven como principio, no como especificación).
 partida (todas las `.1`). Las profundizaciones habría que repetirlas
 con el bug de `ORDEN` corregido antes de confiar en ellas -- no se
 recomienda usar P1.2/P2.2/P3.2 para nada.
+
+## Nivel de revisión automático (GPT-5.6 Luna) -- construido y probado
+
+Tras esta primera investigación, se construyó un nivel de revisión
+automático (`revisar_relevo`, generador) que usa un modelo de familia
+distinta a DeepSeek/local (GPT-5.6 Luna, OpenAI) para juzgar cada
+respuesta como sólida/contaminada/abstracta -- formaliza lo que hasta
+ahora hacía Claude a mano en cada Relevo.
+
+**Bug real encontrado y corregido durante la construcción**: el Code
+node que extraía el veredicto corría en modo "una vez para todos los
+items" en vez de "una vez por item", así que de 12 tareas a revisar solo
+procesaba la primera. Corregido fijando el modo explícitamente.
+
+**Resultado de la prueba real, comparado contra la revisión manual ya
+conocida (esta misma investigación)**: **9 de 12 aciertos**. Acertó las
+7 sólidas, la abstracta P5.2, y una de las tres contaminadas (P2.2).
+**Se le escaparon 2 de las 3 contaminaciones reales** (marcó P1.2 y
+P3.2 como sólidas, cuando estaban contaminadas por la colisión de
+`ORDEN`) y confundió P4.2 (abstracta) con sólida.
+
+**Conclusión honesta**: el nivel de revisión automático funciona como
+mecanismo (procesa el lote completo, coste real ~$0,00015/revisión) pero
+**no es fiable todavía para el tipo de error que más importa detectar**
+-- la contaminación de contexto. Sirve como primer filtro barato, no
+como sustituto de la revisión humana en el Relevo real.

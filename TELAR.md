@@ -296,6 +296,21 @@ dentro de margen (~$0,0007/llamada).
 revisan juntos (Relevo real) para afinar la propuesta final de cada
 pieza -- no una decisión automática de cómo debe ser Telar.
 
+## Nivel de revisión automático con GPT (2026-08-31)
+
+Construido `revisar_relevo` (generador) -- usa GPT-5.6 Luna (OpenAI,
+familia distinta a DeepSeek/local) para juzgar cada resultado de una
+rama de Vigilia como sólido/contaminado/abstracto. Bug real encontrado
+y corregido: un Code node en modo "una vez para todos los items" solo
+procesaba 1 de 12 -- corregido a "una vez por item".
+
+**Prueba real sobre la investigación de Telar ya conocida**: 9 de 12
+aciertos frente a la revisión manual. **Se le escaparon 2 de las 3
+contaminaciones reales** -- funciona como primer filtro barato
+(~$0,00015/revisión), no sustituye la revisión humana para el tipo de
+error que más importa (contaminación de contexto). Detalle completo en
+`diario-navegacion/2026-08-31-investigacion-telar/documento-base.md`.
+
 ## Retomar o empezar nueva (2026-08-31)
 
 Gap real encontrado: sin esto, cualquier mensaje mientras hay una
