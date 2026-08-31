@@ -159,15 +159,37 @@ benchmark + Acervo Prompter)**: aproximadamente **$0,10**.
 - Migración Ejecutor+Consola→Holon: decidida, no ejecutada (4 fases
   esbozadas en `TELAR.md`).
 
-## 9. Recomendación para el próximo ciclo amplio con API
+## 9. El hueco de la sección 5 -- cerrado tras escribir este informe
 
-Antes de lanzar un ciclo grande con DeepSeek+GPT como motor principal
-(la propuesta que se está valorando en paralelo a este cierre):
-**el hallazgo de la sección 5 debería resolverse primero, o al menos
-mitigarse**, porque un ciclo más grande y más rápido con el mismo
-punto ciego (fabricación de arquitectura/capacidades no detectada)
-simplemente produce el mismo error a más escala y más rápido. El
-verificador determinista necesita una segunda capa -- no solo "¿existe
-este campo?", sino "¿existe esta capacidad/mecanismo que se afirma que
-existe?" -- antes de confiar el ciclo grande a la velocidad de la API
-sin ese freno.
+Justo después de escribir la recomendación de abajo, se construyó y
+probó la segunda capa que pedía: **verificador de capacidades**
+(`tools/verificador_capacidades.mjs`) -- extrae afirmaciones de
+capacidad/arquitectura de un texto (con DeepSeek, no hay patrón regex
+posible para lenguaje natural) y comprueba cada una contra un
+**catálogo real de mecanismos** (extensión de `DOCUMENTO_ENGREMIAT`
+con `TIPO: mecanismo_real`, 10 mecanismos reales sembrados de esta
+misma noche), no contra el juicio libre de otra IA.
+
+**Probado con dos controles cruzados**: contra `PEND1` (la fabricación
+ya conocida) -- las 4 afirmaciones extraídas, ninguna coincide con el
+catálogo real, correctamente marcadas. Contra un control positivo (3
+afirmaciones sobre mecanismos reales + 1 claramente inventada) -- las
+3 reales reconocidas con el nombre exacto del catálogo, la inventada
+correctamente sin coincidencia.
+
+**Limitación honesta**: la extracción y la comprobación siguen usando
+DeepSeek (no hay forma determinista de parsear lenguaje natural) -- lo
+que se mantiene determinista es que la comprobación final es contra
+una **lista cerrada y real**, no contra el criterio libre de otra IA.
+Es una mitigación real, no una solución perfecta. El catálogo necesita
+mantenerse -- cada mecanismo nuevo que se construya debe añadirse ahí.
+
+## 10. Recomendación para el próximo ciclo amplio con API
+
+Con el verificador de capacidades ya construido y probado, el hallazgo
+de la sección 5 deja de ser un bloqueo total -- pero **el catálogo de
+mecanismos reales tiene que mantenerse al día** para que siga
+funcionando. Antes de lanzar un ciclo grande con DeepSeek+GPT como
+motor principal, aplicar ambos verificadores (campos + capacidades) a
+cada síntesis antes de guardarla, no solo el de campos como hasta
+ahora.
