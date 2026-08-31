@@ -499,6 +499,49 @@ Pendiente: cerrar el piloto cuando el worker esté libre, escribir la
 síntesis honesta de las 5 respuestas y decidir junto al promotor si
 Facilitador/Coordinador se construyen como roles reales de Concilio.
 
+## Sistema de grafos operativo: propuesta de 4 capas (2026-08-31, solo diseñada)
+
+Propuesta del promotor: encontrar los límites reales del sistema
+(cuánto se puede producir, en cuánto tiempo, qué depende del humano y
+qué se puede delegar) requiere poder ver -- y recorrer -- el histórico
+real de decisiones, no solo documentos sueltos. Investigación real
+antes de proponer (no adoptar herramientas nuevas por moda):
+
+- **Capa 1 -- fuente de verdad**: Baserow ya es un grafo (`NODO_PADRE`,
+  `RAMA`/`ORDEN`, relaciones de `TAREA`) -- no hace falta una base de
+  datos de grafos nueva, sería peso muerto en el Pi.
+- **Capa 2 -- visualización para humanos: Mermaid generado, no dibujado
+  a mano.** Patrón real confirmado (n8n tiene nodos de comunidad y
+  ejemplos documentados para esto). **Construida la primera prueba
+  real** -- ver siguiente sección.
+- **Capa 3 -- navegación en Obsidian: Bases**, no Dataview -- de fábrica
+  en 2026, sin plugin de terceros que mantener.
+- **Capa 4 -- recorrido para IA: generalizar Graphify**, no adoptar
+  LangGraph ni un framework de agentes nuevo -- Graphify ya puntúa y
+  selecciona contexto relevante para código, la misma lógica aplicada a
+  las filas de Vigilia/Ramas/Relevos como grafo de decisiones.
+
+El Concilio de supervisión/optimización que se planteó antes en la
+noche depende de esto -- sin histórico real consultable, opinaría a
+ciegas sobre su propio sistema.
+
+## Primera prueba real de Capa 2: grafo Mermaid generado desde datos reales (2026-08-31)
+
+Primer Mermaid generado a partir de la tabla `VIGILIA` (287) y
+`GASTO_API` (285), no dibujado a mano -- publicado como sección nueva
+en el Artifact "Holon de Engremiat". Representa los 22 elementos reales
+de los 4 lotes de esta noche (Investigación Telar, Visión global,
+Piloto Holon, Vigilia software), coloreados por el veredicto real del
+Relevo hecho a mano sobre cada uno (sólida / contaminada / abstracta /
+necesita corrección). Coste real total del día: **$0,054** (70 líneas
+en `GASTO_API`).
+
+**Límite honesto**: generado a mano esta vez (consulta puntual +
+edición del HTML), no automatizado todavía -- la Capa 2 completa
+necesitaría un workflow de n8n que regenere el bloque Mermaid solo,
+cada vez que se cierra un Relevo. Queda como el siguiente paso concreto
+si se decide construir esta pieza de verdad.
+
 ## Vigilia software: revisión de las 2 propuestas de arreglo de mecanismo (2026-08-31)
 
 Los dos bugs de mecanismo del piloto Holon (arrastre de contexto entre
