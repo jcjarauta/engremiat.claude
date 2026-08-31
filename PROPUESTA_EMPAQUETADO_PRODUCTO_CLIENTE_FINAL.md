@@ -5447,3 +5447,72 @@ mecanismo de ramas en sí mismo antes de escalarlo:
   reenvío en bucle del correo de resumen.
 - Si el lote de ramas funciona bien, diseñar y construir `fusionar_rama`
   con el contenido real ya generado como referencia.
+
+## Cierre del primer piloto de ramas (2026-08-31)
+
+### Los dos campos, sembrados y procesados con éxito
+
+El promotor creó `RAMA` y `RAMA_ELEGIDA` manualmente en Baserow (guía
+paso a paso incluida esta vez, tras dos intentos fallidos: primero se
+crearon como filas en vez de columnas, luego se eligió el tipo de campo
+equivocado en el desplegable). Sembradas las 9 filas (ids 16-24, 3
+ramas × 3 pasos) y lanzada la cadena con un disparo manual único (el
+disparador de 15 minutos seguía desactivado a propósito). Las 9 filas
+terminaron `procesado` en ~9 minutos -- más rápido que la estimación de
+la noche anterior.
+
+### Contenido real de las tres ramas -- comparables, no repetidas
+
+- **Reparto-A-SoloFisico**: "encaje alto", razonado como puente entre lo
+  físico y lo digital (inclusión de colectivos no digitalizados),
+  recomienda piloto en 5 comunidades antes de escalar.
+- **Reparto-B-Pi-SMS**: "encaje alto", con una advertencia que ninguna
+  otra rama planteó -- la obsolescencia de las redes 2G como riesgo real
+  a planificar.
+- **Reparto-C-AppCloud**: "encaje alto", con el argumento más concreto
+  (reutiliza infraestructura Firebase ya existente) y la recomendación
+  más directa: priorizar su desarrollo.
+
+Las tres llegaron a "encaje alto" pero con matices genuinamente
+distintos entre sí -- el mecanismo de ramas demuestra su valor real: da
+alternativas comparables, no una plantilla repetida con nombres
+cambiados.
+
+### Incidente real, repetido dos noches seguidas -- no resuelto de fondo
+
+El correo de resumen falló **las dos veces** que se probó, por la misma
+causa raíz: el webhook `notificar-humano` deja de tener registrado el
+método `POST` de forma intermitente entre los dos n8n (generador
+aislado en 5680, compartido en 5678), y requiere desactivar/reactivar el
+workflow para que se vuelva a registrar. Se corrigió manualmente las dos
+veces (confirmado: el correo real llegó tras la reactivación), pero
+**esto no es un arreglo definitivo** -- es un síntoma de fragilidad en la
+comunicación entre los dos n8n, no resuelto de raíz.
+
+### Límites y honestidad
+
+- El mecanismo de ramas está validado con contenido real por primera
+  vez, pero solo una vez -- falta ver si se sostiene con temas
+  distintos al ya conocido (reparto de tareas vecinales).
+- El fallo del webhook `notificar-humano` es un patrón repetido, no un
+  incidente aislado -- no debe tratarse como resuelto hasta encontrar la
+  causa raíz (posible pérdida de registro de webhook al hacer `PUT` con
+  el workflow activo, sin forzar reactivación).
+- El disparador de 15 minutos de Vigilia sigue desactivado a propósito
+  -- no debe reactivarse para una jornada desatendida de verdad hasta
+  resolver esto de fondo, solo parchearlo cada vez que aparece no es
+  suficiente para confiarle una noche sin supervisión.
+
+### Pendiente
+
+- Investigar la causa raíz del fallo intermitente de registro del
+  webhook `notificar-humano` (¿pérdida de registro al hacer `PUT` sobre
+  un workflow activo sin desactivar/reactivar?) antes de volver a
+  confiar el disparador de 15 minutos a un uso desatendido.
+- Decidir, con las tres ramas ya generadas, si alguna merece
+  desarrollarse de verdad o si el ejercicio se queda como validación del
+  mecanismo -- construir `fusionar_rama` solo si hay una decisión real
+  que registrar.
+- Probar el modelo de ramas con un tema distinto (no una variante de
+  diseño de la misma idea, sino una exploración narrativa o de otro
+  dominio) para confirmar que generaliza.
