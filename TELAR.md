@@ -388,6 +388,117 @@ ya terminadas, para reutilizar más adelante.
   DeepSeek (antes las opciones ya usaban el worker local, gratis) --
   coste extra pequeño pero real.
 
+## Cuadrilla v2: Concilio visible en un grupo de Telegram (2026-08-31, solo diseñada)
+
+Propuesta del promotor durante el piloto Holon sobre Telar: en vez de
+recibir solo la síntesis final de un ciclo de Concilio, poder ver a los
+Acervos "hablar" entre ellos en tiempo real dentro de un grupo de
+Telegram, y poder añadir la propia opinión en medio del debate antes de
+que se cierre. **No es una idea nueva** -- es la primera vez que se
+conecta con un mecanismo concreto de construcción para lo que ya
+estaba descrito como "Cuadrilla v2" en `DICCIONARIO_ENGREMIAT.md:58-65`
+(conversación cooperativa humano-Concilio vía grupo de Telegram, con
+divulgación obligatoria de interacción con IA desde el primer mensaje,
+Art. 50 del Reglamento de IA de la UE).
+
+**Mecanismo propuesto**:
+
+- Cada Acervo publica su propuesta como un mensaje propio en el grupo,
+  no como bloque único al final -- etiquetado por nombre (`🔧 Acervo
+  Técnico: ...`, `📜 Acervo Narrativo: ...`), la etiqueta identifica
+  quién habla, no decora. `sendChatAction` (typing) entre mensajes da
+  sensación real de debate en curso, en vez de un silencio opaco
+  seguido de un bloque de texto.
+- **Punto de entrada humano explícito, no interrupción libre en
+  cualquier momento** -- reutiliza el mismo patrón de puerta ya probado
+  en el wizard interactivo de Trama (confirmar/pedir ajuste): tras cada
+  ronda de propuestas, el bot pausa y pregunta explícitamente si el
+  coordinador quiere añadir su voz antes de la síntesis, con ventana de
+  tiempo. La respuesta humana entra como una voz más, con el mismo peso
+  que un Acervo IA, antes de que el Coordinador (ver más abajo) cierre
+  con la síntesis.
+- Encaja directamente con el "Facilitador" y "Coordinador" propuestos
+  el mismo día como ampliación del Concilio base (enrutado por tema
+  hacia el Acervo experto, tope de acervos invitados por ronda, cierre
+  obligatorio en síntesis) -- ver sección siguiente para el piloto real
+  de esos dos roles.
+
+**Por qué vale la pena, con evidencia real de esta misma noche**: el
+piloto Holon sobre Telar (ver más abajo) se quedó colgado 5 minutos
+por pregunta con el worker local saturado, sin ninguna señal visible
+más que sondear Baserow a ciegas. Con este mecanismo montado, esa
+misma espera se habría visto en el grupo como "🔧 Acervo Técnico está
+escribiendo..." colgado 5 minutos -- información útil en vez de
+opacidad, sin cambiar nada del coste real en tokens (es forma de
+presentación, no más llamadas a IA salvo que el humano decida
+intervenir).
+
+**Decisión explícita de no construir todavía**: el worker local está
+saturado en el momento de este diseño (piloto Holon en curso, ver
+abajo) -- construir una feature nueva de UI en vivo encima de un worker
+que ya está fallando repite el mismo error que la deriva de "El vecino
+del banco": apilar trabajo nuevo sobre una base que no ha demostrado
+estar sana todavía. Queda documentada para construir cuando el worker
+esté descansado y el piloto actual haya cerrado.
+
+## Piloto real: Holon presupuestado sobre Telar (2026-08-31)
+
+Primera prueba real de la propuesta de "Holon" (ciclo de investigación
+con presupuesto fijo, artefactos verificables como evidencia -- no
+autoinformes del propio sistema -- y alarmas con disparador definido de
+antemano, no discrecionales). Piloto elegido: las 5 preguntas abiertas
+de la "visión global" de Vigilia (ver
+`diario-navegacion/2026-08-31-investigacion-telar/documento-base.md`),
+pasadas por una versión ampliada de Concilio con enrutado por tema
+(rama `Piloto-Holon-Telar-2026-08-31`, tabla 287, `ORDEN` 1000-1004,
+rango elegido para no colisionar con lotes anteriores tras el bug de
+contaminación cruzada ya documentado).
+
+**Enrutado por tema (el "Facilitador" en la práctica -- una tabla
+explícita, no una IA adivinando a quién invitar)**:
+
+- H1 (co-creación vs. sugerencia algorítmica) -> Acervo Filosófico +
+  Acervo Usuario.
+- H2 (ramas narrativas abandonadas) -> Acervo Técnico + **Acervo
+  Logístico** (nuevo).
+- H3 (propósito colectivo entre familias) -> Acervo Narrativo + Acervo
+  Filosófico.
+- H4 (burocratización de `TAREA`) -> Acervo Técnico + Acervo Usuario.
+- H5 (innovaciones de familias vs. Urdimbre fija) -> **Acervo
+  Sociocracia** (nuevo) + Acervo Filosófico.
+
+Dos Acervos nuevos creados para este piloto: **Acervo Logístico**
+("ve el flujo real de trabajo -- quién hace qué, cuándo, con qué
+recursos -- pregunta si una idea es sostenible con la gente y las
+herramientas que de verdad hay") y **Acervo Sociocracia** ("juzga por
+consentimiento, no por mayoría -- pregunta quién tiene una objeción
+razonada, y si el proceso para decidir es legítimo, no solo si el
+resultado es bueno"). El rol de **Coordinador** (síntesis + relanzar lo
+sin resolver a la siguiente ronda) no se ha aplicado todavía a un nodo
+propio -- por precaución, no se ha tocado el nodo compartido "Preparar
+sintesis Concilio" (usado por todo el generador) solo para probar un
+piloto; la síntesis honesta de este lote la hace Claude a mano, como
+Relevo real.
+
+**Bug real encontrado durante el piloto, no relacionado con el
+diseño**: los primeros disparos manuales (espaciados 12s) provocaron
+una condición de carrera real -- varias ejecuciones paralelas
+recuperaban el mismo elemento "pendiente" antes de que la anterior
+terminara de marcarlo `procesado`, gastando presupuesto de más en
+repetir la misma pregunta en vez de avanzar. El dispatcher de Vigilia
+no tiene bloqueo de concurrencia. Corregido operativamente disparando
+uno a uno; **pendiente real: añadir un lock (ESTADO `procesando` antes
+de empezar, como ya hace el modo interactivo de Trama) al dispatcher de
+Vigilia para que esto no dependa de la disciplina de quien dispara**.
+
+**Estado en el momento de escribir esto**: H1 procesado. H2-H5 en cola,
+bloqueados por saturación real del worker local (`local-potente`,
+timeout de 5 minutos en la llamada de propuesta de persona,
+confirmado en las ejecuciones de n8n, no es un fallo de código nuevo).
+Pendiente: cerrar el piloto cuando el worker esté libre, escribir la
+síntesis honesta de las 5 respuestas y decidir junto al promotor si
+Facilitador/Coordinador se construyen como roles reales de Concilio.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
