@@ -44,17 +44,16 @@ soberanía. Este VPS es solo para probar mientras se construye.
 ## Red privada: Tailscale
 
 Red mallada gratuita (cuenta `sacandofilo@gmail.com`) que conecta el
-VPS, este PC y (pendiente) la Pi, sin exponer nada a internet abierto.
+VPS, este PC y la Pi, sin exponer nada a internet abierto.
 
 - `engremiat-dev-hetzner` -- 100.107.171.88 (el VPS de arriba).
-- `pc-operador-engremiat` -- 100.118.79.49 (este PC, instalado y
-  conectado esta noche).
+- `pc-operador-engremiat` -- 100.118.79.49 (este PC).
+- `nodo-pi-engremiat` -- 100.125.52.52 (la Pi, instalada y conectada
+  esta noche -- `sudo tailscale up` requiere contraseña de
+  `nodo-admin`, ejecutado por el promotor directamente).
 - `desktop-rfpg5f6`, `galaxy-a22-5g` -- dispositivos previos del
   promotor, desconectados desde hace 76-77 días, sin relación con
   Engremiat.
-- **Pendiente**: instalar Tailscale en la Raspberry Pi para que forme
-  parte de la misma red privada -- necesario antes de poder hacer
-  backups automáticos VPS→Pi sin abrir puertos en el router de casa.
 
 ## Raspberry Pi (núcleo original)
 
@@ -63,14 +62,40 @@ Sigue siendo la instancia real con los datos de esta noche (`VIGILIA`,
 `diario-navegacion/` se generó aquí, no en el VPS). Acceso: alias SSH
 `nodo-pi` (usuario `nodo-admin`, clave `~/.ssh/id_ed25519_pi`),
 `docker-compose.yml` en `/home/nodo-admin/nucleo/`. IP LAN
-`192.168.8.230`, sin Tailscale todavía (pendiente, ver arriba).
+`192.168.8.230`, ahora también en Tailscale (100.125.52.52).
+
+## Backup real VPS→Pi (2026-08-31, construido y probado)
+
+`/root/backup_to_pi.sh` en el VPS: empaqueta los volúmenes Docker de
+`n8n` y `baserow` (`docker run` con `alpine` + `tar`, sin depender de
+comandos internos de cada app) y los envía por `rsync` sobre Tailscale
+a `~/backups/` en la Pi. Programado por `cron` a las 23:00 cada noche
+(`/root/backup.log` para revisar si falló).
+
+**Acceso restringido de verdad, no solo "clave SSH nueva"**: la clave
+`id_ed25519_backup_to_pi` (generada en el VPS) está en el
+`authorized_keys` de la Pi con un `command=` forzado que **solo**
+permite `rsync` hacia `~/backups/` -- aunque esa clave se filtrara, no
+sirve para nada más en la Pi (ni shell, ni otros directorios).
+
+**Bug real encontrado y corregido en la propia construcción**: la
+primera versión guardaba los archivos en una subcarpeta con fecha
+(`~/backups/2026-08-31_1603/`), pero el `command=` forzado en la Pi
+ignora la ruta de destino que pide el cliente y siempre escribe en
+`~/backups/` a secas -- cada backup nuevo habría **sobrescrito** al
+anterior en vez de acumular histórico. Corregido poniendo la fecha en
+el nombre de archivo (`baserow_data_2026-08-31_1604.tgz`) en vez de en
+una carpeta.
+
+**Límite real, no resuelto todavía**: es un volcado completo de los
+volúmenes (backup, ~86 MB), no una restauración -- restaurar desde uno
+de estos `.tgz` a un contenedor vivo no se ha probado. Tampoco hay
+rotación automática (los backups antiguos se acumulan sin borrarse).
 
 ## Límites y honestidad
 
 - El VPS está probado y responde (n8n 200, Baserow 302 -- verificado
   desde este PC vía Tailscale), pero está vacío -- no hay ninguna
   Vigilia, tarea ni dato real ahí todavía.
-- No hay backup automático VPS→Pi todavía -- diseñado en la
-  conversación (pg_dump + export de workflows por SSH), no construido.
 - El enchufe inteligente para encender/apagar la Pi a demanda sigue sin
   resolver -- ver `PENDIENTES_JORNADA_2026-08-30-31.md`.
