@@ -76,6 +76,12 @@ diseñado a fecha de 2026-08-31. Se actualiza según se añaden piezas nuevas.
   una plantilla de preguntas sistemáticas reutilizable. No se ramifica.
 - **Trama** -- Ciclo 2: varias exploraciones posibles sobre la misma
   Urdimbre (modelo "elige, no fusiones", igual que Ramas).
+- **Rueda del Gremio** -- el ciclo completo de desarrollo de un proyecto
+  real: Oportunidad → Cuadrilla+Concilio/Vigilia(Telar) → Relevo →
+  Cronista → Ejecutor → Pregonero → Ágora, y Ágora retroalimenta a
+  Oportunidad -- no es una cadena con final, es circular. **Documentada**
+  (`RUEDA_DEL_GREMIO.md`), nunca recorrida entera en un proyecto real
+  todavía.
 - **Diario de Navegación** -- el historial de git usado como grafo de
   decisiones (Decision Graph): cada Parte de Vigilia es un commit, cada
   Rama de exploración puede ser una rama git real. No sustituye a
