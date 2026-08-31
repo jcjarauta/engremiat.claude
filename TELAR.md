@@ -748,6 +748,18 @@ al esquema global.
 no integrado todavía en el flujo de Vigilia/Concilio -- ese cableado
 es el siguiente paso, no hecho esta noche.
 
+### Corrección real: acotado por tabla (2026-08-31)
+
+Arreglada la limitación anterior -- el verificador ahora recibe la
+tabla relevante como parámetro y distingue 3 categorías, no 2:
+**verificado en la tabla** / **existe pero en otra tabla (sospechoso,
+a revisar)** / **no existe en ningún sitio (fabricado)**. Reprobado
+contra los mismos dos casos: `G2` sigue detectando las 10
+fabricaciones al 100%, y `TIPO_DOCUMENTO` en `OBS1` ahora aparece
+correctamente como "existe en `DOCUMENTO`, sospechoso" en vez de un
+falso "verificado". Corrección real, validada contra los mismos casos
+que descubrieron el fallo.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
