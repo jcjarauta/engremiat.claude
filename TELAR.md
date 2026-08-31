@@ -892,6 +892,41 @@ fases para retomar con la cabeza despejada:
    sus funciones reales, sin perder el histórico (Sheet y diario
    quedan como archivo).
 
+## Benchmark real: worker local vs. DeepSeek-solo, mismas 13 preguntas (2026-08-31)
+
+Comparativa real, no estimada -- las mismas 13 preguntas (pendientes +
+recorrido FCAFA-TDAH) lanzadas por dos caminos distintos para medir
+velocidad, coste y calidad de verdad.
+
+**Camino A -- worker local (qwen3:14b) + síntesis DeepSeek**, ya en
+marcha por el dispatcher de Vigilia: minutos por elemento, coste casi
+nulo (solo electricidad). Con `OLLAMA_NUM_PARALLEL=2` recién activado,
+**confirmado paralelismo real** -- dos ejecuciones (`2839`/`2840`)
+arrancaron con 0,2s de diferencia y ambas completaron sin error en la
+misma ventana de ~65s.
+
+**Camino B -- DeepSeek para todo (propuesta + síntesis) + revisión
+GPT**, script aparte, sin tocar el flujo de producción: **183,9s en
+total para las 13 preguntas, 14,1s de media por elemento** -- muchísimo
+más rápido que el worker local. Coste real: **16.349/11.597 tokens
+entrada/salida, ~$0,0095 DeepSeek + ~$0,0024 GPT de revisión = ~$0,012
+el lote completo de 13 preguntas.**
+
+**Hallazgo real, no esperado**: el revisor GPT marcó **11 de 13 como
+"contaminado"**, muy por debajo de la calidad vista antes con el
+camino híbrido (local propone, DeepSeek sintetiza). Comprobado a mano
+(no dando el veredicto automático por bueno sin más, tal como marca la
+disciplina de esta noche): esta vez el revisor acertó -- `PEND1`
+("contaminado") inventaba una arquitectura real que no existe (que
+13_INCIDENCIAS "alimenta a n8n y Baserow leyendo campos" -- lo que de
+verdad existe es un puente manual mío, no lectura automática);
+`FCAFA5` ("sólido") sí está bien fundamentada, sin inventar
+infraestructura. **Conclusión real**: que DeepSeek proponga y
+sintetice sin pasar por varias voces locales primero parece producir
+más fabricación de arquitectura que el camino híbrido -- dato real
+para decidir qué camino usar según el tipo de pregunta, no una
+preferencia.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
