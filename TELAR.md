@@ -499,6 +499,46 @@ Pendiente: cerrar el piloto cuando el worker esté libre, escribir la
 síntesis honesta de las 5 respuestas y decidir junto al promotor si
 Facilitador/Coordinador se construyen como roles reales de Concilio.
 
+## Vigilia software: revisión de las 2 propuestas de arreglo de mecanismo (2026-08-31)
+
+Los dos bugs de mecanismo del piloto Holon (arrastre de contexto entre
+preguntas independientes, condición de carrera en el dispatcher) se
+lanzaron como Vigilia técnica (rama `Investigacion-BugsVigilia-2026-08-31`,
+Acervo Técnico + Acervo Lógico). Relevo real de las dos propuestas --
+ninguna de las dos está lista para aplicar tal cual.
+
+**BUG-CONTEXTO (arrastre entre preguntas independientes)**: propone un
+campo `TIPO_ENTRADA` (`trama`/`investigacion`) explícito -- correcto,
+esa es la solución de fondo -- pero además propone **clasificarlo
+automáticamente inspeccionando si `TEMA` contiene palabras clave
+narrativas** ("capítulo", "historia", "personaje"). **Esto repite
+exactamente el error que se busca corregir**: inferir en silencio en
+vez de que el tipo sea una señal explícita al crear la fila. Si esa
+heurística falla igual que falló la del `ORDEN`, tendremos el mismo bug
+con otro nombre. **Corrección antes de implementar**: `TIPO_ENTRADA` lo
+fija quien crea el lote (humano o script), nunca se infiere del
+contenido.
+
+**BUG-CONCURRENCIA (condición de carrera)**: el núcleo es correcto y es
+justo el patrón que ya usa el modo interactivo de Trama (marcar
+`procesando` antes de operar). Pero **no cierra la carrera de verdad**:
+seguir siendo "recuperar fila, luego actualizar estado" dos pasos
+separados dejan la misma ventana de carrera, solo más corta -- si la
+API de Baserow no soporta una escritura condicional atómica ("solo
+actualiza si sigue en pendiente, dime si no"), dos ejecuciones
+simultáneas pueden seguir leyendo `pendiente` antes de que cualquiera
+escriba. La propuesta no lo reconoce. El punto 5 (recuperar filas
+`procesando` colgadas por timeout) sí es un acierto real, útil aparte
+del resto.
+
+**Conclusión honesta**: las dos propuestas dan un punto de partida
+correcto en la dirección general, pero ninguna es segura de aplicar
+sin corrección -- una reintroduce inferencia silenciosa donde hace
+falta una señal explícita, la otra no demuestra que cierra la carrera
+que dice cerrar. Mientras tanto, la mitigación real que ya funciona es
+operativa, no de código: disparar Vigilia de una en una (cron cada 15
+min, sin disparos manuales solapados).
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
