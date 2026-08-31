@@ -66,6 +66,23 @@ diseñado a fecha de 2026-08-31. Se actualiza según se añaden piezas nuevas.
 - **Concilio conversacional** -- ver Cuadrilla v2; requiere memoria de
   hilo con estado persistente (`CONCILIO_CONVERSACION`, aún no
   construida) y presupuesto por hilo, no solo por llamada.
+- **Telar** -- el constructor de historias: cuatro ciclos de Vigilia
+  (Urdimbre → Trama → Hilo conductor → Parte de Vigilia/Relevo),
+  validados contra el pipeline real de la industria narrativa (story
+  bible → beat sheet → draft → pase editorial). **Documentado**
+  (`TELAR.md`), primera Urdimbre real preparada, nada más construido.
+- **Urdimbre** -- Ciclo 1 del Telar: arquitectura fija de una historia
+  (personajes, escenario, tono, final, complicaciones), respondida vía
+  una plantilla de preguntas sistemáticas reutilizable. No se ramifica.
+- **Trama** -- Ciclo 2: varias exploraciones posibles sobre la misma
+  Urdimbre (modelo "elige, no fusiones", igual que Ramas).
+- **Diario de Navegación** -- el historial de git usado como grafo de
+  decisiones (Decision Graph): cada Parte de Vigilia es un commit, cada
+  Rama de exploración puede ser una rama git real. No sustituye a
+  Baserow (fuente de verdad del contenido de producción), es la capa
+  paralela de memoria navegable. **Construido**, con las tres ramas del
+  piloto de Reparto de Tareas como primer ejemplo real
+  (`DIARIO_DE_NAVEGACION.md`).
 
 ## Cara al cliente
 
