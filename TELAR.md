@@ -212,6 +212,58 @@ demasiado grande para lo que hace falta hoy.
   queda explícitamente para después de consolidar esta base -- decisión
   del propio promotor, no una limitación técnica.
 
+## Ciclo 1 en vivo: wizard de 3 preguntas, sin opciones prediseñadas (2026-08-31)
+
+Corrección real tras la primera prueba: el menú de "reto" (rutinas/
+organización/social/emocional) y la biblioteca pre-sembrada hacían que
+Ciclo 1 se sintiera como "elegir de una lista", no como construir algo.
+Investigación aplicada:
+
+- **"Struggle Premium"** -- el valor percibido de contenido con ayuda de
+  IA depende más de que se *vea* el proceso de construcción que del
+  resultado pulido. Ciclo 1 tenía que dejar de ser invisible.
+- **Reconocimiento en formularios conversacionales** -- cada respuesta
+  se usa para formular la siguiente pregunta (no un guion fijo), con
+  reconocimiento dosificado, no en cada turno (el propio hallazgo
+  advierte que forzarlo demasiado cansa en vez de construir).
+- **Creación de personaje en juegos** -- pocas decisiones de alto
+  impacto primero, mostrar algo concreto pronto (el "boceto") antes de
+  cualquier detalle fino.
+
+### Diseño construido
+
+Tres preguntas libres, encadenadas, sin botones prediseñados:
+1. *"¿Quién la vive? ¿Desde qué perspectiva la contamos?"* (punto de vista)
+2. *"¿Qué quiere a simple vista? ¿Qué necesita de verdad?"* (quiere/necesita)
+3. *"¿Cuál es el conflicto central?"* (complicación)
+
+Tras la tercera respuesta, DeepSeek estructura las tres respuestas en
+una Urdimbre coherente (mismo patrón que Canvas+DAFO: estructura datos
+reales, no inventa desde cero), se muestra como **boceto visible** al
+coordinador, y el Ciclo 3 (Trama interactiva, ya construido) arranca
+directamente sobre esa Urdimbre recién construida.
+
+### El etiquetado para reutilizar viene después, no antes
+
+Decisión explícita del promotor: no hacen falta categorías de "reto"
+prediseñadas todavía -- el contexto real de las historias que se vayan
+construyendo dará las etiquetas para Acervo, a posteriori, sobre
+contenido real. `TELAR_BIBLIOTECA` deja de ser una cola de la que tirar
+al empezar -- pasa a ser un archivo donde guardar y etiquetar historias
+ya terminadas, para reutilizar más adelante.
+
+### Límites y honestidad de esta pieza
+
+- No probado todavía de extremo a extremo con el wizard nuevo -- la
+  reconstrucción anterior sí se probó, esta versión está desplegada
+  pero pendiente de la primera prueba real.
+- El "boceto" se muestra una vez, sin posibilidad de pedir un ajuste
+  antes de empezar a jugar -- si el coordinador no está conforme, hoy
+  tiene que reiniciar la sesión entera, no hay un paso de "corregir".
+- La construcción de la Urdimbre ahora cuesta una llamada real a
+  DeepSeek (antes las opciones ya usaban el worker local, gratis) --
+  coste extra pequeño pero real.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
