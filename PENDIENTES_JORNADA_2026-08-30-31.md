@@ -46,13 +46,13 @@ completo. Organizado por urgencia/tipo, no por orden cronológico.
 - **`/telar` (wizard de Urdimbre por Telegram)** -- diseñado, para que
   un humano responda las 7 preguntas sistemáticas sin pasar por Claude
   Code cada vez.
-- **Modo interactivo de Trama, capítulo a capítulo** -- la corrección
-  más reciente al problema de deriva de tono: en vez de generar 8
-  capítulos en lote, un bot presenta 2-3 direcciones en cada capítulo y
-  un humano elige en vivo -- el mismo motor que construiría historias
-  también las dejaría jugables. Reutiliza Cuadrilla v2. **Este es un
-  pendiente nuevo de esta misma conversación, todavía sin documentar en
-  `TELAR.md` -- hay que incorporarlo ahí explícitamente.**
+- **Modo interactivo de Trama, capítulo a capítulo -- CONSTRUIDO Y
+  PROBADO** (2026-08-31). Workflow "Telar Interactivo" en el generador,
+  bot dedicado `@EngremiatTelar_bot` (sondeo cada 15s, no webhook, para
+  no exponer el generador aislado). Primera prueba real: capítulo 1 de
+  "El vecino del banco" generado tras elección humana, tono correcto,
+  sin desviación. Pendiente real: probar los 8 capítulos completos y
+  comparar calidad contra el lote generado en bloque la noche anterior.
 - **Consola de Relevo** -- HTML autocontenido con escritura real a
   Baserow (token gestionado con seguridad, nunca en el fichero) y
   métrica de "decisiones por Relevo" para calibrar el tamaño de los

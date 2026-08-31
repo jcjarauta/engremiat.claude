@@ -143,7 +143,20 @@ distintos. Coherente con el origen real de "Elige tu propia aventura"
 (Edward Packard la inventó contándola en vivo a sus hijas, el libro
 vino después como formalización).
 
-No construido todavía -- diseño únicamente.
+**Construido y probado en vivo el 2026-08-31.** Workflow "Telar
+Interactivo" (generador, id `4VSsZ98zNPZ5tGnN`), bot dedicado
+`@EngremiatTelar_bot` -- separado de Feria/Taller, cero riesgo para
+producción. Como el generador está deliberadamente aislado (sin acceso
+ni desde la LAN), no puede recibir webhooks de Telegram -- se implementó
+por **sondeo** (`getUpdates`, cada 15 segundos) en vez de webhook,
+manteniendo el aislamiento intacto. Tabla `TELAR_SESION` (id 290) guarda
+el estado (capítulo actual, historial acumulado, opciones pendientes).
+
+Primera prueba real: capítulo 1 de "El vecino del banco" generado tras
+elegir una opción -- texto concreto, digno, sin desviarse del tono ni
+del escenario (a diferencia del lote generado la noche anterior), coste
+$0,000508. Avanzó correctamente al capítulo 2 con nuevas opciones
+basadas en el capítulo 1 real como contexto.
 
 ## Límites y honestidad
 
