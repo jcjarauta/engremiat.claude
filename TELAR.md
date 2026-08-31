@@ -955,6 +955,32 @@ protegida por el lock y el verificador ya construidos esta noche.
 entrada / ~500 salida, coste insignificante (misma tarifa DeepSeek ya
 medida esta noche).
 
+## Segundo lote real generado por el Acervo Prompter (2026-08-31)
+
+Primer uso a escala del Prompter (5 preguntas, no 1) -- alimentado con
+los resultados reales anteriores (OBS1-4 sólidas, OBS3 contradice
+OBS1, PEND1 resuelve pero con fabricación detectada, PEND2 con el
+umbral de 30 documentos) para que refine en vez de repetir.
+
+Preguntas generadas (rama `Diseno-Bovedas-Obsidian-2026-08-31`,
+`BOVEDA1-5`): revalidar frontmatter-vs-carpetas sin apoyarse en la
+fabricación de PEND1; una bóveda o varias por proyecto/cliente; cómo
+representar `TIPO=mecanismo_real` en el vault; diseño del script real
+de migración; automatizar la regeneración sin arriesgar ediciones
+humanas futuras. Las 5 correctamente apuntan `TABLA_RELEVANTE:
+DOCUMENTO_ENGREMIAT` (real), y piden explícitamente el porqué.
+
+**Observación real, no ideal**: 4 de las 5 preguntas eligieron el
+mismo par de personas (Técnico+Lógico) -- poca diversidad de voces en
+un lote generado por el propio Prompter. Pendiente de refinar el
+system prompt del Prompter para forzar más variedad cuando genere
+varias preguntas de una vez, no solo una.
+
+**Pendiente real antes de confiar en los resultados de este lote**:
+aplicar los dos verificadores (campos + capacidades) a cada síntesis,
+no solo revisar a ojo -- es precisamente el tema donde ya se detectó
+una fabricación real esta noche.
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
