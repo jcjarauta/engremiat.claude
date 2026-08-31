@@ -9,7 +9,7 @@ const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
 const DEEPSEEK_KEY = readFileSync('G:/Mi unidad/DEVS/engremiat-litellm/.deepseek_key', 'utf-8').trim();
 const BASE = 'http://100.107.171.88';
 const TOKEN = readFileSync('G:/Mi unidad/DEVS/engremiat-litellm/.baserow_token', 'utf-8').trim();
-const TOPE_PROFUNDIDAD = 1; // solo un nivel de atomizacion en esta primera prueba
+const TOPE_PROFUNDIDAD = 2; // niveles de atomizacion permitidos antes de forzar Relevo humano
 
 async function cargarEsquemaBaserow() {
   const tablas = await (await fetch(BASE + '/api/database/tables/all-tables/', { headers: { Authorization: TOKEN } })).json();
@@ -110,13 +110,16 @@ async function atomizar(nombreOrigen, tema, resultado) {
 }
 
 async function main() {
-  const filas = JSON.parse(readFileSync('C:/Users/pc/AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/boveda_resultados.json', 'utf-8'));
+  const rutaEntrada = process.argv[2] || 'C:/Users/pc/AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/boveda_resultados.json';
+  const rutaSalida = process.argv[3] || 'C:/Users/pc/AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/coordinador_informe.json';
+  const filas = JSON.parse(readFileSync(rutaEntrada, 'utf-8'));
   const esquema = await cargarEsquemaBaserow();
   const catalogo = await cargarCatalogoMecanismos();
 
   const informe = [];
   for (const fila of filas) {
-    console.log('=== ' + fila.NOMBRE + ' ===');
+    const profundidad = fila.PROFUNDIDAD || 1; // profundidad de ESTA fila (1 = primer nivel, ya atomizado desde una pregunta raiz)
+    console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + ') ===');
     const vCampos = verificarCampos(fila.RESULTADO, fila.TABLA_RELEVANTE, esquema);
     const afirmaciones = await extraerAfirmaciones(fila.TEMA, fila.RESULTADO);
     const vCapacidades = [];
@@ -126,23 +129,31 @@ async function main() {
     }
     const sospechosasCapacidad = vCapacidades.filter(v => !v.coincide);
     const limpio = (!vCampos.aplica || vCampos.fabricados.length === 0) && sospechosasCapacidad.length === 0;
+    const bajoTope = profundidad < TOPE_PROFUNDIDAD;
 
     console.log('  campos fabricados:', vCampos.aplica ? vCampos.fabricados.length : 'n/a');
     console.log('  capacidades sin confirmar:', sospechosasCapacidad.length, sospechosasCapacidad.map(s=>s.afirmacion));
-    console.log('  veredicto:', limpio ? 'LIMPIO -> atomizar' : 'REVISAR -> a Relevo, no atomizar');
 
-    const entrada = { nombre: fila.NOMBRE, limpio, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion) };
+    const entrada = { nombre: fila.NOMBRE, profundidad, limpio, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion) };
 
-    if (limpio) {
+    if (limpio && bajoTope) {
+      console.log('  veredicto: LIMPIO, bajo tope -> atomizar a profundidad ' + (profundidad + 1));
       const subPreguntas = await atomizar(fila.NOMBRE, fila.TEMA, fila.RESULTADO);
-      entrada.sub_preguntas_generadas = subPreguntas;
+      entrada.veredicto = 'atomizado';
+      entrada.sub_preguntas_generadas = subPreguntas.map(sp => ({ texto: sp, profundidad: profundidad + 1 }));
       console.log('  sub-preguntas:', subPreguntas.length);
       for (const sp of subPreguntas) console.log('    -', sp);
+    } else if (limpio && !bajoTope) {
+      console.log('  veredicto: LIMPIO pero tope de profundidad (' + TOPE_PROFUNDIDAD + ') alcanzado -> a Relevo humano, NO se atomiza mas');
+      entrada.veredicto = 'limpio_tope_alcanzado';
+    } else {
+      console.log('  veredicto: REVISAR -> a Relevo, no atomizar');
+      entrada.veredicto = 'revisar';
     }
     informe.push(entrada);
   }
 
-  writeFileSync('C:/Users/pc/AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad/coordinador_informe.json', JSON.stringify(informe, null, 1));
-  console.log('\nInforme guardado.');
+  writeFileSync(rutaSalida, JSON.stringify(informe, null, 1));
+  console.log('\nInforme guardado en ' + rutaSalida);
 }
 main();

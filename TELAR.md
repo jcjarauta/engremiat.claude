@@ -1104,6 +1104,61 @@ siguen a Relevo por la fabricación de capacidad ya confirmada a mano
 la atomización automática se demuestra con datos reales, no solo el
 freno de seguridad.
 
+## Coordinador -- tope de profundidad real y primera prueba de nivel 2 (2026-09-01)
+
+Hasta ahora `TOPE_PROFUNDIDAD` existía como constante pero nunca se
+usaba -- el Coordinador atomizaba sin llevar la cuenta de en qué nivel
+estaba. Corregido: cada fila lleva su propia `profundidad`, y solo se
+atomiza si `profundidad < TOPE_PROFUNDIDAD` (subido de 1 a 2 para esta
+prueba). Si está limpia pero ya alcanzó el tope, va a Relevo humano
+sin generar más sub-preguntas -- el freno de seguridad se aplica
+también a la profundidad, no solo a la limpieza del contenido.
+
+**Prueba real de segundo nivel**: se sembraron en `VIGILIA_TAREA` las
+9 sub-preguntas generadas en el primer nivel (3 de `BOVEDA3`, 3 de
+`BOVEDA4`, 3 de `BOVEDA5`) y se dispararon por el pipeline real de
+Vigilia (worker local + síntesis DeepSeek), no simuladas a mano.
+
+**Dos bugs reales de infraestructura encontrados y corregidos por el
+camino, ninguno relacionado con el Coordinador en sí**:
+1. El nodo de bloqueo de concurrencia (`Bloquear elemento pendiente
+   (lock)`) tenía el token de Baserow **ya filtrado y rotado** (el
+   mismo del incidente de GitGuardian) escrito directamente en su
+   código -- la limpieza de esa noche solo revisó el repo de git, no
+   los workflows de n8n, que no están versionados. Al revisar,
+   aparecieron **5 nodos más** con el mismo token viejo hardcodeado
+   (`Comprobar presupuesto...` x4, `Verificar contra esquema real`,
+   `Promocionar version`). Corregidos los 6 de una vez.
+2. Bug real de concurrencia distinto al ya conocido: el nodo
+   `Construir tema con contexto` seguía leyendo
+   `$('Buscar siguiente Vigilia pendiente').item.json.results[0]`
+   -- la primera fila de la búsqueda original -- en vez de la fila
+   que el nodo de lock realmente había bloqueado. El lock sí
+   reservaba filas distintas correctamente, pero el trabajo real
+   (pregunta a responder y fila donde guardar el resultado) siempre
+   caía en la primera pendiente, no en la elegida. Detectado porque,
+   tras disparar los 9 ciclos, solo 1 de 9 filas quedó realmente
+   procesada -- las otras 8 quedaron bloqueadas sin resultado.
+   Corregido el nodo para leer de `$('Bloquear elemento pendiente
+   (lock)')`. **Nota honesta**: el test de concurrencia real de esta
+   madrugada verificó que el lock reserva filas distintas, pero nunca
+   verificó que el CONTENIDO guardado correspondiera a la fila
+   correcta -- un hueco real en aquella verificación.
+
+**Resultado del Coordinador sobre las 9 respuestas reales de nivel 2**:
+5 de 9 salen limpias pero **se frenan por el tope de profundidad** (no
+se atomizan a nivel 3, van a Relevo humano) -- primera vez que se ve
+el freno de profundidad actuar de verdad, no solo el de limpieza. Las
+otras 4 se marcan: 3 por campos fabricados (`BASEROW_ID`,
+`ruta_obsidian`, `ultima_sincronizacion` -- estos últimos probablemente
+son señales de propuesta heredadas del nivel 1 que el nivel 2 no repite
+explícitamente, así que el verificador los marca de forma conservadora;
+pendiente de revisar si conviene propagar el contexto de "ya propuesto"
+entre niveles) y 1 por fabricación de capacidad muy clara
+(`BOVEDA5N2-2`: inventa "tokens de integridad asincrónicos", "3 nodos
+específicos", "~120h y ~$3.500 mensuales" -- ningún dato de esto existe
+en el catálogo real).
+
 ## Límites y honestidad
 
 - Nada de esto está construido en el generador todavía -- es
