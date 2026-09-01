@@ -1429,3 +1429,40 @@ intervención manual paso a paso para un lote conocido -- pero sigue
 sin haber un disparador que decida *cuándo* sembrar el siguiente lote
 o encadenar niveles solo; eso sigue siendo responsabilidad de Claude o
 del promotor.
+
+## Siguiente mejora propuesta: cerrar el círculo vía incidencias (2026-09-01, sin construir)
+
+Propuesta del promotor: que el sistema detecte lotes nuevos a través
+de `13_INCIDENCIAS` (el gobierno real), haga el trabajo (Vigilia +
+Coordinador), y devuelva los resultados otra vez como incidencias --
+cerrando el círculo de autogestión sin que Claude tenga que decidir a
+mano cuándo sembrar el siguiente lote.
+
+**Valoración**: la mitad de lectura (detectar incidencias marcadas
+para Vigilia y usarlas para sembrar `VIGILIA_TAREA` + disparar
+`ciclo_autonomo.mjs`) es segura y buena idea -- ya construible sin
+tocar ningún principio de seguridad. La mitad de escritura (devolver
+resultados como incidencias nuevas automáticamente) **no debería
+escribir directo al Sheet real sin supervisión**, aunque se marquen
+como "a valorar" -- el protocolo real ya existente
+(`PROMPT_EJECUTOR.md`) deja esa escritura exclusivamente a Claude, en
+un acto deliberado y supervisado (así se registró `INC-0067`), y hay
+precedente real del riesgo de automatizarlo sin ese filtro: el bug de
+desalineación de columnas que corrompió las fechas de `INC-0050`.
+
+**Diseño propuesto, tres pasos, solo el primero construible ya
+mismo sin fricción**:
+1. Lector que detecta incidencias marcadas para Vigilia en
+   `13_INCIDENCIAS`, siembra `VIGILIA_TAREA`, dispara
+   `ciclo_autonomo.mjs`.
+2. El Coordinador deja las incidencias-propuesta ya redactadas
+   (título, descripción, criterios) en una zona de staging en Baserow,
+   no en el Sheet directamente.
+3. Un solo paso de confirmación humana (Claude o el promotor) que
+   revisa el lote entero y lo escribe de verdad en `13_INCIDENCIAS` --
+   mismo gesto que `INC-0067`, pero sobre un lote preparado en vez de
+   uno a uno.
+
+**Pendiente real, sin construir**: ninguno de los tres pasos está
+implementado todavía. Es la siguiente mejora candidata, no una tarea
+en curso.

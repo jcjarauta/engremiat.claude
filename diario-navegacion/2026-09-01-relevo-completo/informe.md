@@ -171,7 +171,14 @@ cualquier corrida futura del Coordinador quedará contabilizada.
   segunda, ya corregido, proceso 2/2 sin ninguna intervención manual.
   **Sigue faltando**: qué dispara el PRIMER paso (sembrar un lote
   nuevo) -- eso sigue siendo decisión de Claude o del promotor, no
-  automático todavía.
+  automático todavía. **Siguiente mejora propuesta, sin construir**:
+  cerrar el círculo vía `13_INCIDENCIAS` (detectar incidencias
+  marcadas, sembrar y disparar solo; devolver resultados como
+  propuesta en staging, con un solo paso de confirmación humana antes
+  de escribir en el Sheet real -- nunca escritura automática directa
+  al gobierno real). Detalle completo y el porqué de la reserva sobre
+  la escritura automática en `TELAR.md`, sección "Siguiente mejora
+  propuesta: cerrar el círculo vía incidencias".
 - **Migrar el hardcode de token en Code node a nodos HTTP Request
   nativos** -- pendiente real, documentado, sin resolver por límite del
   sandbox de esta versión de n8n.
