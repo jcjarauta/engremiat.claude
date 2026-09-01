@@ -82,18 +82,43 @@ PASO 2 -- aplica la regla segun el tipo:
 - Si es (a) DISENO: la descripcion del diseno propuesto (aunque este en presente, ej. "el script compara...") NO cuenta como afirmacion de existencia.
 - Si es (b) EXPLICACION/JUSTIFICACION: CUALQUIER afirmacion en presente de que un mecanismo ya hace algo (ej. "permite que Baserow filtre y agrupe notas dinamicamente", "el campo ya es consultable") SI cuenta como afirmacion de existencia y debe extraerse, INCLUSO si suena tecnica o plausible, INCLUSO si el texto dice explicitamente que se ha "verificado". Que el texto afirme haber verificado algo no exime de comprobarlo -- extrae la afirmacion igual.
 
+PASO 3 -- exclusiones, aplican SIEMPRE independientemente del paso 1/2:
+- NUNCA extraigas una NEGACION (ej. "no existe campo que respalde X", "Baserow no puede hacer Y") -- decir que algo NO existe no es una afirmacion de existencia, es lo contrario.
+- NUNCA extraigas razonamiento logico/comparativo general sin un mecanismo o capacidad concreta y nombrable (ej. "las carpetas requieren mantenimiento manual que no escala" es una opinion de diseno, no una afirmacion de que existe un mecanismo).
+- Si la afirmacion cita explicitamente un mecanismo por su nombre real (ej. "el Verificador determinista de campos", "mecanismo 2"), extraela igualmente -- se comprobara contra el catalogo real, no la des por buena ni la descartes aqui.
+
 Ejemplos:
 - Pregunta "diseña el script de migracion" + Respuesta "el script compara fechas y decide si sobrescribir" -> NO es afirmacion de existencia (es la propuesta pedida, tipo a).
 - Pregunta "explica por que X, basandote en hechos verificables" + Respuesta "esto es posible porque Baserow ya filtra y agrupa notas dinamicamente" -> SI es afirmacion de existencia (tipo b), extraerla tal cual.
 - Respuesta (sin que se pregunte por ello) "Baserow ya filtra notas en tiempo real" -> SI es afirmacion de existencia.
+- Respuesta "no existe campo ni tabla que respalde esa afirmacion en el esquema real" -> NO extraer (es una negacion).
+- Respuesta "las carpetas requieren mantenimiento manual que no escala" -> NO extraer (opinion de diseno sin mecanismo nombrable).
 
 Responde SOLO JSON: {"afirmaciones": [...]}. Si no hay ninguna afirmacion real de existencia actual, {"afirmaciones": []}.` },
       { role: 'user', content: 'PREGUNTA: ' + pregunta + '\n\nRESPUESTA: ' + texto } ] }) });
   const j = await r.json();
-  return JSON.parse(j.choices[0].message.content.replace(/```json|```/g,'').trim()).afirmaciones;
+  const afirmaciones = JSON.parse(j.choices[0].message.content.replace(/```json|```/g,'').trim()).afirmaciones;
+  // filtro determinista de respaldo: el LLM no siempre respeta la exclusion de negaciones
+  // pedida en el prompt -- nunca confiar solo en la instruccion, comprobar el patron.
+  const PATRON_NEGACION = /\bno\s+(existe|hay|puede|permite|hace|funciona|est[aá])\b/i;
+  return afirmaciones.filter(a => !PATRON_NEGACION.test(a));
+}
+
+function solapamientoPalabras(a, b) {
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').match(/[a-z0-9]+/g) || [];
+  const wa = new Set(norm(a)), wb = norm(b);
+  if (!wb.length) return 0;
+  const comunes = wb.filter(w => wa.has(w)).length;
+  return comunes / wb.length;
 }
 
 async function comprobarAfirmacion(afirmacion, catalogo) {
+  // chequeo determinista primero: si la afirmacion cita el nombre real de un mecanismo del
+  // catalogo (aunque sea parcialmente, ej. formateo distinto), se confirma sin depender del
+  // juicio semantico de DeepSeek.
+  const citaDirecta = catalogo.find(m => solapamientoPalabras(afirmacion, m.nombre) >= 0.7);
+  if (citaDirecta) return { coincide: true, mecanismo: citaDirecta.nombre, nota: 'confirmado por cita directa del nombre real' };
+
   const lista = catalogo.map((m,i)=>(i+1)+'. '+m.nombre+': '+m.descripcion).join('\n');
   const r = await fetch(DEEPSEEK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + DEEPSEEK_KEY },
     body: JSON.stringify({ model: 'deepseek-chat', temperature: 0, messages: [

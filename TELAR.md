@@ -1236,3 +1236,43 @@ solo prohibir inventar sin darle con qué contrastar.
 construida todavía.** Pendiente real: sigue siendo cierto que cada
 prueba de esta noche es un veredicto puntual sin registro histórico;
 no se ha construido el contador de fabricaciones/total por lote.
+
+## Punto 1 resuelto de verdad: síntesis anclada al catálogo real (2026-09-01)
+
+Siguiendo la hipótesis anotada arriba, se corrigió "Preparar síntesis
+Concilio" para que cargue en vivo el catálogo real de
+`DOCUMENTO_ENGREMIAT` (`TIPO=mecanismo_real`) y lo inyecte en el
+propio prompt, en vez de solo prohibir inventar en abstracto -- con
+instrucción explícita de marcar como "propuesta" (no como hecho)
+cualquier cosa fuera de ese catálogo.
+
+**Prueba real, mismo caso de control (`BOVEDA1`) que falló con la
+prohibición abstracta**: la fabricación original desapareció. La
+nueva respuesta cita el mecanismo real correcto ("el Verificador
+determinista de campos, mecanismo 2") en vez de inventar un filtrado
+dinámico de Baserow, y enmarca la única idea especulativa como
+"quedaría por construir" en vez de afirmarla como hecho.
+
+**Efecto secundario real, no anticipado**: al mejorar la calidad de la
+síntesis (ahora cita mecanismos reales por nombre, razona con
+negaciones explícitas -- "no existe campo que respalde X"), el
+extractor de afirmaciones del verificador de capacidades empezó a
+marcar como "sin confirmar" cosas que en realidad NO son fabricación:
+negaciones ("no existe X") y citas directas del catálogo con
+formato ligeramente distinto. Corregido con dos arreglos deterministas
+(no delegados a otro juicio de LLM): (a) filtro de negaciones por
+patrón regex tras la extracción, de respaldo aunque el LLM ya reciba
+la instrucción de excluirlas; (b) comprobación de cita directa al
+catálogo por solapamiento de palabras (≥70%), no por substring exacto,
+para que reformatos menores (negrita, orden de palabras) no rompan el
+match. Resultado final sobre el mismo caso: de 5 "capacidades sin
+confirmar" iniciales a 2, ambas casos límite razonables de revisión
+humana (afirmaciones de diseño encadenadas al mecanismo real citado),
+no fabricación clara.
+
+**Conclusión honesta**: el punto 1 de la propuesta funciona -- ancla
+la fuente, no solo el freno. El coste fue que expuso una imprecisión
+ya latente en el extractor de capacidades (no distinguía negaciones de
+afirmaciones), que también se ha corregido esta noche con el mismo
+principio de siempre: arreglo determinista, no otro LLM juzgando en
+libertad.
