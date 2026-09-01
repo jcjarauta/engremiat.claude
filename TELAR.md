@@ -1194,3 +1194,45 @@ rotos en producción desde la rotación sin que nadie lo notara.
 Corregidos. El export final a git tiene todo valor de token (actual y
 viejo) sustituido por el marcador `__BASEROW_TOKEN__` -- nunca se
 commitea un secreto real, ni siquiera uno ya invalidado.
+
+## Tres mejoras al ecosistema externo, probadas con datos reales (2026-09-01)
+
+Tras la valoración de los resultados de nivel 1 y 2, se propusieron y
+probaron tres mejoras concretas.
+
+**1) Propagar contexto "ya propuesto" entre niveles del Coordinador --
+funciona, confirmado.** `verificarCampos` ahora acepta una lista de
+campos ya propuestos en el nivel padre (`CAMPOS_YA_PROPUESTOS`) y no
+los vuelve a marcar como fabricados aunque el nivel hijo no repita la
+señal léxica de propuesta. Probado retroactivamente contra las 9
+respuestas de nivel 2 ya generadas: los 3 falsos positivos de campos
+heredados (`nombre_original_hash` en `BOVEDA4N2-*`,
+`ultima_sincronizacion` en `BOVEDA5N2-1/3`) desaparecen; la fabricación
+de capacidad real en `BOVEDA5N2-2` sigue correctamente marcada (no se
+perdió sensibilidad); `BOVEDA3N2-2/3` siguen marcadas por campos
+nuevos genuinos de ese nivel (`BASEROW_ID`, `ruta_obsidian`), que no
+vienen del padre y por tanto es correcto que se revisen.
+
+**2) Instrucción anti-fabricación en el prompt de síntesis DeepSeek --
+probada, NO funciona por sí sola.** Se añadió una regla explícita al
+`system prompt` de "Preparar síntesis Concilio" prohibiendo afirmar
+capacidades/cifras que no vengan en las propuestas recibidas. Prueba
+real: se relanzó la pregunta exacta de `BOVEDA1` (la que producía "permite
+que Baserow filtre y agrupe notas dinámicamente") por el pipeline real
+con la regla ya activa. **Resultado honesto: la misma fabricación
+reaparece, solo reformulada** ("los metadatos... son indexables por
+Baserow", "consultas transversales... sin alterar la estructura de
+carpetas"). El verificador de capacidades la sigue detectando (4
+afirmaciones sin confirmar), así que el freno de seguridad sigue
+funcionando -- pero la instrucción de prompt sola no reduce la tasa de
+fabricación en la fuente. Hipótesis para la próxima iteración: pedirle
+a DeepSeek que "no invente" en abstracto no basta si no tiene el
+catálogo real de mecanismos delante para comprobar contra qué -- el
+paso siguiente lógico es inyectar el mismo catálogo real que usa el
+verificador de capacidades directamente en el prompt de síntesis, no
+solo prohibir inventar sin darle con qué contrastar.
+
+**3) Métrica de tasa de fabricación en Baserow -- diseñada, no
+construida todavía.** Pendiente real: sigue siendo cierto que cada
+prueba de esta noche es un veredicto puntual sin registro histórico;
+no se ha construido el contador de fabricaciones/total por lote.

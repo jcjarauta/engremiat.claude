@@ -32,12 +32,13 @@ async function cargarCatalogoMecanismos() {
 const SENAL_PROPUESTA = /(se añade|añadir|nuevo campo|nuevos campos|propongo|propone|generar|crear un campo|crear campo|nombres? únicos?)/i;
 const VENTANA_CONTEXTO = 60;
 
-function verificarCampos(texto, tablaRelevante, esquema) {
+function verificarCampos(texto, tablaRelevante, esquema, yaPropuestos = []) {
   if (!tablaRelevante) return { aplica: false };
   const T = tablaRelevante.toUpperCase();
   const camposDeLaTabla = new Set(esquema.filter(c => c.tabla === T).map(c => c.campo));
   const camposEnCualquierTabla = new Set(esquema.map(c => c.campo));
   const tablasReales = new Set(esquema.map(c => c.tabla));
+  const permitidosHeredados = new Set(yaPropuestos.map(c => c.toUpperCase()));
   const RUIDO = new Set(['UE','IA','JSON','API','URL','ID','UI','UX','WCAG','HTML','CSS','SQL','HTTP','HTTPS','CRUD','REST']);
 
   function esValorDeCampoReal(indice) {
@@ -52,16 +53,20 @@ function verificarCampos(texto, tablaRelevante, esquema) {
 
   const vistos = new Set();
   const candidatos = [];
+  const propuestos = [];
   for (const m of texto.matchAll(/\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+){1,5}\b/g)) {
     const c = m[0]; const C = c.toUpperCase();
     if (RUIDO.has(C) || vistos.has(C)) continue;
     if (esValorDeCampoReal(m.index)) continue;
-    if (esPropuestaDeDiseno(m.index)) continue;
+    if (esPropuestaDeDiseno(m.index)) { propuestos.push(c); vistos.add(C); continue; }
     vistos.add(C);
     candidatos.push(c);
   }
-  const fabricados = candidatos.filter(c => { const C = c.toUpperCase(); return !camposDeLaTabla.has(C) && !tablasReales.has(C); });
-  return { aplica: true, fabricados };
+  const fabricados = candidatos.filter(c => {
+    const C = c.toUpperCase();
+    return !camposDeLaTabla.has(C) && !tablasReales.has(C) && !permitidosHeredados.has(C);
+  });
+  return { aplica: true, fabricados, propuestos };
 }
 
 async function extraerAfirmaciones(pregunta, texto) {
@@ -119,8 +124,9 @@ async function main() {
   const informe = [];
   for (const fila of filas) {
     const profundidad = fila.PROFUNDIDAD || 1; // profundidad de ESTA fila (1 = primer nivel, ya atomizado desde una pregunta raiz)
-    console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + ') ===');
-    const vCampos = verificarCampos(fila.RESULTADO, fila.TABLA_RELEVANTE, esquema);
+    const yaPropuestos = fila.CAMPOS_YA_PROPUESTOS || []; // heredados del nivel padre, para no re-marcarlos por no repetir la señal de propuesta localmente
+    console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + (yaPropuestos.length ? ', ' + yaPropuestos.length + ' campos heredados' : '') + ') ===');
+    const vCampos = verificarCampos(fila.RESULTADO, fila.TABLA_RELEVANTE, esquema, yaPropuestos);
     const afirmaciones = await extraerAfirmaciones(fila.TEMA, fila.RESULTADO);
     const vCapacidades = [];
     for (const a of afirmaciones) {
@@ -134,13 +140,15 @@ async function main() {
     console.log('  campos fabricados:', vCampos.aplica ? vCampos.fabricados.length : 'n/a');
     console.log('  capacidades sin confirmar:', sospechosasCapacidad.length, sospechosasCapacidad.map(s=>s.afirmacion));
 
-    const entrada = { nombre: fila.NOMBRE, profundidad, limpio, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion) };
+    const propuestosAqui = vCampos.aplica ? vCampos.propuestos : [];
+    const propuestosAcumulados = [...new Set([...yaPropuestos, ...propuestosAqui])];
+    const entrada = { nombre: fila.NOMBRE, profundidad, limpio, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion), campos_propuestos_aqui: propuestosAqui };
 
     if (limpio && bajoTope) {
       console.log('  veredicto: LIMPIO, bajo tope -> atomizar a profundidad ' + (profundidad + 1));
       const subPreguntas = await atomizar(fila.NOMBRE, fila.TEMA, fila.RESULTADO);
       entrada.veredicto = 'atomizado';
-      entrada.sub_preguntas_generadas = subPreguntas.map(sp => ({ texto: sp, profundidad: profundidad + 1 }));
+      entrada.sub_preguntas_generadas = subPreguntas.map(sp => ({ texto: sp, profundidad: profundidad + 1, camposYaPropuestos: propuestosAcumulados }));
       console.log('  sub-preguntas:', subPreguntas.length);
       for (const sp of subPreguntas) console.log('    -', sp);
     } else if (limpio && !bajoTope) {
