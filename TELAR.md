@@ -1315,3 +1315,12 @@ para campos) -- no se ha podido persistir esto en Baserow todavía.
 Pendiente: crear manualmente una tabla `METRICA_FABRICACION` (o
 decidir otro destino) para que el resumen deje de vivir solo en
 JSON local y se pueda comparar en el tiempo.
+
+**Cerrado**: tabla `METRICA_FABRICACION` (id 1039) creada a mano por
+el promotor vía pegado tabulado, con la primera fila real ya cargada
+(el lote de corrección de esta noche, 3 casos). El Coordinador ahora
+escribe el resumen ahí automáticamente al final de cada corrida
+(`guardarMetricaEnBaserow`), verificado con una escritura de prueba
+real y limpiada después. Las tres mejoras del autociclo propuestas
+esta noche quedan cerradas: ancladas al catálogo real, probadas, y con
+su propio registro histórico.

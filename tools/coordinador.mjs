@@ -21,6 +21,28 @@ async function cargarEsquemaBaserow() {
   return todos;
 }
 
+const TABLA_METRICA_FABRICACION = 1039;
+
+async function guardarMetricaEnBaserow(nombreLote, resumen) {
+  const body = {
+    NOMBRE: nombreLote,
+    FECHA: resumen.fecha.slice(0, 10),
+    TOTAL_RESPUESTAS: String(resumen.total_respuestas),
+    LIMPIAS_SIN_CORRECCION: String(resumen.limpias_sin_correccion),
+    CORREGIDAS_CON_EXITO: String(resumen.corregidas_con_exito),
+    CORRECCION_FALLIDA_A_RELEVO: String(resumen.correccion_fallida_a_relevo),
+    REVISAR_SIN_INTENTO_CORRECCION: String(resumen.revisar_sin_intento_correccion),
+    TOTAL_CAMPOS_FABRICADOS: String(resumen.total_campos_fabricados),
+    TOTAL_CAPACIDADES_SIN_CONFIRMAR: String(resumen.total_capacidades_sin_confirmar),
+    TASA_FABRICACION: String(resumen.tasa_fabricacion)
+  };
+  const r = await fetch(BASE + '/api/database/rows/table/' + TABLA_METRICA_FABRICACION + '/?user_field_names=true', {
+    method: 'POST', headers: { Authorization: TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  if (r.status >= 400) { console.log('AVISO: no se pudo guardar la metrica en Baserow (' + r.status + ')'); return; }
+  console.log('Metrica guardada en METRICA_FABRICACION (tabla ' + TABLA_METRICA_FABRICACION + ').');
+}
+
 async function cargarCatalogoMecanismos() {
   const j = await (await fetch(BASE + '/api/database/rows/table/1038/?user_field_names=true&filter__TIPO__equal=mecanismo_real&size=100', { headers: { Authorization: TOKEN } })).json();
   return j.results.map(row => ({ nombre: row.NOMBRE, descripcion: row.TEMA }));
@@ -237,5 +259,8 @@ async function main() {
   writeFileSync(rutaSalida.replace(/\.json$/, '_resumen.json'), JSON.stringify(resumen, null, 1));
   console.log('\nInforme guardado en ' + rutaSalida);
   console.log('Resumen:', JSON.stringify(resumen, null, 1));
+
+  const nombreLote = process.argv[4] || ('Lote-' + rutaEntrada.split(/[\\/]/).pop().replace(/\.json$/, '') + '-' + resumen.fecha.slice(0, 10));
+  await guardarMetricaEnBaserow(nombreLote, resumen);
 }
 main();
