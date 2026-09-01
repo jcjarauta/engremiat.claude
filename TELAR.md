@@ -1353,3 +1353,37 @@ de fallar o inventar un valor no válido.
 (`extraer_afirmaciones`, `comprobar_afirmacion` ×2, `corregir`,
 `atomizar`) y por contexto (nombre de la fila). Verificado en Baserow
 antes de limpiar las filas de prueba.
+
+## Lote real de cierre: "Autociclo-Mejoras", primera prueba de todo el sistema junto (2026-09-01)
+
+Lote nuevo (`tools/prompter_lote_autociclo.mjs`), 5 preguntas reales
+generadas por el Acervo Prompter sobre los propios pendientes de esta
+sesión (automatizar el disparo, migrar el hardcode de token, variar el
+roster de Acervos, criterio para subir el tope de profundidad,
+reintento seguro ante fallos). Diversidad de personas algo mejor que
+el lote anterior (una pareja Filosófico+Usuario, no las 5 idénticas).
+
+Sembrado en `VIGILIA_TAREA` (rama `Autociclo-Mejoras-2026-09-01`),
+procesado secuencialmente por el pipeline real (síntesis ya anclada al
+catálogo), y pasado por el Coordinador completo -- primera vez que se
+prueban juntos en una sola corrida: síntesis anclada, verificadores,
+ciclo de corrección, tope de profundidad, métrica y gasto
+instrumentado.
+
+**Resultado real**: 5 de 5 limpias (3 sin necesitar corrección, 2
+corregidas con éxito -- afirmaciones sobre capacidades de n8n que no
+estaban confirmadas se reescribieron en condicional: "n8n podría
+ofrecer...", "sugiere que es viable", "quedaría por construir"). 0
+campos fabricados, 0 capacidades sin confirmar tras corrección, tasa
+de fabricación final 0.0. Gasto real: 20 llamadas, $0,014489,
+registrado en `GASTO_API` por modelo/acción/contexto. Las 5 se
+atomizaron en 3 sub-preguntas reales cada una.
+
+**Conclusión honesta**: es la primera corrida donde todo el sistema
+construido esta sesión (síntesis anclada, dos verificadores, ciclo de
+corrección, tope de profundidad, métrica, gasto) funcionó junto sobre
+un lote nuevo sin ningún caso irresoluble. Sigue siendo cierto que el
+disparo (sembrar → disparar el webhook → esperar → limpiar locks →
+leer) lo hizo Claude a mano, no el propio sistema -- ese sigue siendo
+el pendiente real más importante antes de llamarlo un autociclo de
+verdad.
