@@ -1276,3 +1276,42 @@ ya latente en el extractor de capacidades (no distinguía negaciones de
 afirmaciones), que también se ha corregido esta noche con el mismo
 principio de siempre: arreglo determinista, no otro LLM juzgando en
 libertad.
+
+## Punto 2: ciclo de corrección antes de Relevo, probado y funcionando (2026-09-01)
+
+Añadida `corregir()` al Coordinador: cuando una respuesta sale
+REVISAR, se le devuelve a DeepSeek con la lista exacta de campos
+fabricados y capacidades sin confirmar detectadas (por los
+verificadores deterministas, no por juicio libre), pidiendo que
+reescriba SOLO esos puntos -- como propuesta explícita si aplica, o
+quitándolos si no aportan. Se re-verifica una vez; si sale limpia, se
+trata como LIMPIO (puede atomizarse); si no, va a Relevo con el
+intento documentado. Nunca se publica nada directamente -- el freno de
+Relevo humano sigue intacto, esto solo reduce cuántos casos mueren en
+el primer intento por un matiz corregible.
+
+**Prueba real contra 3 casos REVISAR reales de esta noche**
+(`TESTANTIFAB2` con capacidades límite, `BOVEDA3N2-2`/`BOVEDA3N2-3` con
+campos fabricados reales -- `BASEROW_ID`, `ruta_obsidian`, nombres que
+no existen en el esquema): los 2 casos de campo fabricado se
+corrigieron de forma consistente en dos corridas repetidas -- el
+texto corregido de `BOVEDA3N2-2` quita el nombre de campo inventado y
+lo reescribe como propuesta explícita ("se podría añadir un campo
+dedicado para esto"), sin gutear el resto del argumento. El caso límite
+de capacidades (`TESTANTIFAB2`) fue inconsistente entre corridas: una
+vez se corrigió, otra vez no y fue correctamente a Relevo con el
+intento documentado -- **comportamiento honesto y esperado**, el
+ciclo no fuerza un LIMPIO falso cuando la corrección no basta de
+verdad.
+
+## Punto 3: cálculo de tasa de fabricación, sin persistir todavía (2026-09-01)
+
+El informe del Coordinador ahora calcula un resumen por lote
+(`*_resumen.json`): limpias sin corrección, corregidas con éxito,
+corrección fallida a Relevo, total de campos/capacidades fabricadas,
+tasa de fabricación. **Bloqueo real**: el token de Baserow no tiene
+permiso para crear tablas nuevas vía API (mismo límite ya conocido
+para campos) -- no se ha podido persistir esto en Baserow todavía.
+Pendiente: crear manualmente una tabla `METRICA_FABRICACION` (o
+decidir otro destino) para que el resumen deje de vivir solo en
+JSON local y se pueda comparar en el tiempo.

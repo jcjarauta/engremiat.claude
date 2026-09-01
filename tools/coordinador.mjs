@@ -130,6 +130,19 @@ async function comprobarAfirmacion(afirmacion, catalogo) {
   catch { return { coincide: false, mecanismo: null, nota_parseo: bruto.slice(0, 150) }; }
 }
 
+async function corregir(tema, resultadoOriginal, camposFabricados, capacidadesSinConfirmar, catalogo) {
+  const lista = catalogo.map((m,i)=>(i+1)+'. '+m.nombre+': '+m.descripcion).join('\n');
+  const problemas = [];
+  if (camposFabricados.length) problemas.push('Nombres de campo mencionados que NO existen en el esquema real de Baserow: ' + camposFabricados.join(', ') + '. Si son una propuesta de diseño, dejalo explicito con lenguaje de propuesta ("se podria añadir un campo..."); si no aportan nada al argumento, quitalos.');
+  if (capacidadesSinConfirmar.length) problemas.push('Afirmaciones de que algo YA EXISTE o YA FUNCIONA que NO se pudieron confirmar contra el catalogo real de mecanismos: ' + capacidadesSinConfirmar.map(a=>'"'+a+'"').join('; ') + '. Reescribelas como propuesta explicita ("se podria...", "una posible extension seria..."), nunca como hecho ya confirmado.');
+  const r = await fetch(DEEPSEEK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + DEEPSEEK_KEY },
+    body: JSON.stringify({ model: 'deepseek-chat', temperature: 0.2, messages: [
+      { role: 'system', content: 'Eres el corrector de Concilio en Engremiat. Se te da una respuesta ya escrita y una lista de problemas concretos detectados por un verificador determinista contra hechos reales (no contra el juicio libre de otro modelo). Reescribe la respuesta corrigiendo SOLO esos problemas -- sin inventar nada nuevo, sin cambiar el resto del contenido mas de lo necesario, manteniendo el mismo tono y longitud aproximada.\n\nCATALOGO REAL Y COMPLETO de mecanismos que existen hoy -- no existe nada mas que esto:\n' + lista },
+      { role: 'user', content: 'PREGUNTA ORIGINAL: ' + tema + '\n\nRESPUESTA A CORREGIR:\n' + resultadoOriginal + '\n\nPROBLEMAS A CORREGIR:\n' + problemas.join('\n') } ] }) });
+  const j = await r.json();
+  return j.choices[0].message.content.trim();
+}
+
 async function atomizar(nombreOrigen, tema, resultado) {
   const r = await fetch(DEEPSEEK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + DEEPSEEK_KEY },
     body: JSON.stringify({ model: 'deepseek-chat', temperature: 0.3, messages: [
@@ -146,13 +159,9 @@ async function main() {
   const esquema = await cargarEsquemaBaserow();
   const catalogo = await cargarCatalogoMecanismos();
 
-  const informe = [];
-  for (const fila of filas) {
-    const profundidad = fila.PROFUNDIDAD || 1; // profundidad de ESTA fila (1 = primer nivel, ya atomizado desde una pregunta raiz)
-    const yaPropuestos = fila.CAMPOS_YA_PROPUESTOS || []; // heredados del nivel padre, para no re-marcarlos por no repetir la señal de propuesta localmente
-    console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + (yaPropuestos.length ? ', ' + yaPropuestos.length + ' campos heredados' : '') + ') ===');
-    const vCampos = verificarCampos(fila.RESULTADO, fila.TABLA_RELEVANTE, esquema, yaPropuestos);
-    const afirmaciones = await extraerAfirmaciones(fila.TEMA, fila.RESULTADO);
+  async function verificar(tema, resultado, tablaRelevante, yaPropuestos) {
+    const vCampos = verificarCampos(resultado, tablaRelevante, esquema, yaPropuestos);
+    const afirmaciones = await extraerAfirmaciones(tema, resultado);
     const vCapacidades = [];
     for (const a of afirmaciones) {
       const v = await comprobarAfirmacion(a, catalogo);
@@ -160,18 +169,44 @@ async function main() {
     }
     const sospechosasCapacidad = vCapacidades.filter(v => !v.coincide);
     const limpio = (!vCampos.aplica || vCampos.fabricados.length === 0) && sospechosasCapacidad.length === 0;
-    const bajoTope = profundidad < TOPE_PROFUNDIDAD;
+    return { vCampos, sospechosasCapacidad, limpio };
+  }
 
+  const informe = [];
+  for (const fila of filas) {
+    const profundidad = fila.PROFUNDIDAD || 1; // profundidad de ESTA fila (1 = primer nivel, ya atomizado desde una pregunta raiz)
+    const yaPropuestos = fila.CAMPOS_YA_PROPUESTOS || []; // heredados del nivel padre, para no re-marcarlos por no repetir la señal de propuesta localmente
+    console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + (yaPropuestos.length ? ', ' + yaPropuestos.length + ' campos heredados' : '') + ') ===');
+
+    let resultado = fila.RESULTADO;
+    let { vCampos, sospechosasCapacidad, limpio } = await verificar(fila.TEMA, resultado, fila.TABLA_RELEVANTE, yaPropuestos);
     console.log('  campos fabricados:', vCampos.aplica ? vCampos.fabricados.length : 'n/a');
     console.log('  capacidades sin confirmar:', sospechosasCapacidad.length, sospechosasCapacidad.map(s=>s.afirmacion));
 
+    let correccionIntentada = false;
+    if (!limpio && (vCampos.fabricados.length || sospechosasCapacidad.length)) {
+      console.log('  -> intentando UNA correccion antes de mandar a Relevo...');
+      correccionIntentada = true;
+      const corregido = await corregir(fila.TEMA, resultado, vCampos.fabricados, sospechosasCapacidad.map(s=>s.afirmacion), catalogo);
+      const reverificacion = await verificar(fila.TEMA, corregido, fila.TABLA_RELEVANTE, yaPropuestos);
+      console.log('  tras corregir -> campos fabricados:', reverificacion.vCampos.aplica ? reverificacion.vCampos.fabricados.length : 'n/a', '| capacidades sin confirmar:', reverificacion.sospechosasCapacidad.length);
+      if (reverificacion.limpio) {
+        console.log('  -> la correccion funciono, se trata como LIMPIO');
+        resultado = corregido;
+        ({ vCampos, sospechosasCapacidad, limpio } = reverificacion);
+      } else {
+        console.log('  -> la correccion NO fue suficiente, se manda a Relevo con el intento documentado');
+      }
+    }
+    const bajoTope = profundidad < TOPE_PROFUNDIDAD;
+
     const propuestosAqui = vCampos.aplica ? vCampos.propuestos : [];
     const propuestosAcumulados = [...new Set([...yaPropuestos, ...propuestosAqui])];
-    const entrada = { nombre: fila.NOMBRE, profundidad, limpio, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion), campos_propuestos_aqui: propuestosAqui };
+    const entrada = { nombre: fila.NOMBRE, profundidad, limpio, correccion_intentada: correccionIntentada, resultado_final: resultado, campos_fabricados: vCampos.aplica ? vCampos.fabricados : [], capacidades_sin_confirmar: sospechosasCapacidad.map(s=>s.afirmacion), campos_propuestos_aqui: propuestosAqui };
 
     if (limpio && bajoTope) {
       console.log('  veredicto: LIMPIO, bajo tope -> atomizar a profundidad ' + (profundidad + 1));
-      const subPreguntas = await atomizar(fila.NOMBRE, fila.TEMA, fila.RESULTADO);
+      const subPreguntas = await atomizar(fila.NOMBRE, fila.TEMA, resultado);
       entrada.veredicto = 'atomizado';
       entrada.sub_preguntas_generadas = subPreguntas.map(sp => ({ texto: sp, profundidad: profundidad + 1, camposYaPropuestos: propuestosAcumulados }));
       console.log('  sub-preguntas:', subPreguntas.length);
@@ -186,7 +221,21 @@ async function main() {
     informe.push(entrada);
   }
 
+  const resumen = {
+    fecha: new Date().toISOString(),
+    total_respuestas: informe.length,
+    limpias_sin_correccion: informe.filter(e => e.limpio && !e.correccion_intentada).length,
+    corregidas_con_exito: informe.filter(e => e.limpio && e.correccion_intentada).length,
+    correccion_fallida_a_relevo: informe.filter(e => !e.limpio && e.correccion_intentada).length,
+    revisar_sin_intento_correccion: informe.filter(e => !e.limpio && !e.correccion_intentada).length,
+    total_campos_fabricados: informe.reduce((s, e) => s + (e.campos_fabricados ? e.campos_fabricados.length : 0), 0),
+    total_capacidades_sin_confirmar: informe.reduce((s, e) => s + (e.capacidades_sin_confirmar ? e.capacidades_sin_confirmar.length : 0), 0)
+  };
+  resumen.tasa_fabricacion = resumen.total_respuestas ? +((resumen.revisar_sin_intento_correccion + resumen.correccion_fallida_a_relevo) / resumen.total_respuestas).toFixed(2) : 0;
+
   writeFileSync(rutaSalida, JSON.stringify(informe, null, 1));
+  writeFileSync(rutaSalida.replace(/\.json$/, '_resumen.json'), JSON.stringify(resumen, null, 1));
   console.log('\nInforme guardado en ' + rutaSalida);
+  console.log('Resumen:', JSON.stringify(resumen, null, 1));
 }
 main();
