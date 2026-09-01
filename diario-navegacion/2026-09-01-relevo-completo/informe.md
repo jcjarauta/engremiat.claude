@@ -148,15 +148,16 @@ resuelto de verdad" hasta el final.
 acumuladas desde el `2026-08-31` (104 al cierre del relevo anterior +
 29 nuevas esta sesión), coste total acumulado **$0,10527**.
 
-**Hueco real, sin resolver**: las docenas de llamadas a DeepSeek hechas
-por el propio `tools/coordinador.mjs` en sus pruebas de esta noche
-(extracción de afirmaciones, comprobación contra catálogo, corrección,
-atomización) **no se registran en `GASTO_API`** -- el Coordinador
-llama a DeepSeek directamente, sin pasar por el nodo de registro de
-gasto de n8n. La cifra de $0,10527 es real pero está **incompleta**
-para el coste total de esta sesión. Pendiente: que el Coordinador
-registre su propio gasto, o mover sus llamadas por el mismo camino
-instrumentado.
+**Cerrado tras escribir este informe**: las llamadas a DeepSeek del
+propio `tools/coordinador.mjs` (extracción de afirmaciones,
+comprobación, corrección, atomización) ahora se registran en
+`GASTO_API` (`registrarUso`/`guardarGastoEnBaserow`), con la misma
+fórmula de coste real que usa producción, diferenciando por `MODELO` y
+`SERVICIO` -- listo para sumar GPT/Claude el día que se usen sin
+rediseñar nada. Verificado con una corrida real (6 llamadas,
+$0,004648). La cifra de $0,10527 de arriba sigue sin incluir el gasto
+de las pruebas de esta noche (fue anterior a este arreglo), pero
+cualquier corrida futura del Coordinador quedará contabilizada.
 
 ## 7. Pendientes reales, sin resolver
 
@@ -168,7 +169,6 @@ instrumentado.
 - **Migrar el hardcode de token en Code node a nodos HTTP Request
   nativos** -- pendiente real, documentado, sin resolver por límite del
   sandbox de esta versión de n8n.
-- **Coste de las llamadas del Coordinador sin instrumentar** (sección 6).
 - **Extensión del tope de profundidad más allá de 2** -- no probado
   todavía, y no debería probarse hasta tener más confianza en la
   calibración del verificador de capacidades a profundidades altas.

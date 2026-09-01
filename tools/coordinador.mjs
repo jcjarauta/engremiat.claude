@@ -21,6 +21,55 @@ async function cargarEsquemaBaserow() {
   return todos;
 }
 
+const TABLA_GASTO_API = 285;
+const gastoLote = []; // acumula el gasto real de esta corrida (cualquier proveedor), para instrumentar lo que antes no se registraba
+
+// Precios reales por millon de tokens (entrada/salida), por MODELO -- mismas cifras que usan
+// los nodos reales de n8n ("Calcular coste Concilio" para deepseek-chat, "Extraer veredicto" +
+// "Registrar gasto revision" para gpt-5.6-luna). SERVICIO distingue el proveedor para poder
+// comparar; MODELO es el dato real que ya se usa en produccion para filtrar/agrupar en Baserow.
+const PRECIOS_POR_MODELO = {
+  'deepseek-chat': { servicio: 'deepseek', entrada: 0.44, salida: 1.32 },
+  'gpt-5.6-luna': { servicio: null, entrada: 0.15, salida: 0.60 } // SERVICIO va null en las filas reales existentes -- el single_select de Baserow no tiene opcion "gpt" todavia
+  // 'claude-...': añadir aqui el dia que el Coordinador (u otro mecanismo) llame a la API de Claude
+};
+
+function registrarUso(accion, contexto, j, modelo = 'deepseek-chat') {
+  const usage = j.usage || {};
+  const tokensEntrada = usage.prompt_tokens || 0;
+  const tokensSalida = usage.completion_tokens || 0;
+  const precio = PRECIOS_POR_MODELO[modelo] || PRECIOS_POR_MODELO['deepseek-chat'];
+  const coste = Number(((tokensEntrada / 1e6) * precio.entrada + (tokensSalida / 1e6) * precio.salida).toFixed(6));
+  gastoLote.push({ accion, contexto, modelo, servicio: precio.servicio, tokensEntrada, tokensSalida, coste });
+}
+
+async function guardarGastoEnBaserow() {
+  if (!gastoLote.length) { console.log('Sin gasto de API que registrar (solo coincidencias deterministas).'); return; }
+  const fecha = new Date().toISOString().slice(0, 10);
+  const totalesPorModelo = {};
+  let total = 0;
+  for (const g of gastoLote) {
+    total += g.coste;
+    totalesPorModelo[g.modelo] = (totalesPorModelo[g.modelo] || 0) + g.coste;
+    const body = {
+      NOMBRE: 'coordinador_' + g.accion,
+      MODELO: g.modelo,
+      TOKENS_ENTRADA: g.tokensEntrada,
+      TOKENS_SALIDA: g.tokensSalida,
+      COSTE_ESTIMADO_USD: g.coste,
+      ACCION: g.accion,
+      CONTEXTO: g.contexto,
+      FECHA: fecha
+    };
+    if (g.servicio) body.SERVICIO = g.servicio; // omitir si no hay opcion real en el single_select (ver PRECIOS_POR_MODELO)
+    const r = await fetch(BASE + '/api/database/rows/table/' + TABLA_GASTO_API + '/?user_field_names=true', {
+      method: 'POST', headers: { Authorization: TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    });
+    if (r.status >= 400) console.log('AVISO: no se pudo registrar gasto de "' + g.accion + '" (' + r.status + ')');
+  }
+  console.log('Gasto real de esta corrida registrado en GASTO_API: ' + gastoLote.length + ' llamadas, $' + total.toFixed(6) + ' total, por modelo: ' + JSON.stringify(totalesPorModelo));
+}
+
 const TABLA_METRICA_FABRICACION = 1039;
 
 async function guardarMetricaEnBaserow(nombreLote, resumen) {
@@ -91,7 +140,7 @@ function verificarCampos(texto, tablaRelevante, esquema, yaPropuestos = []) {
   return { aplica: true, fabricados, propuestos };
 }
 
-async function extraerAfirmaciones(pregunta, texto) {
+async function extraerAfirmaciones(pregunta, texto, contexto) {
   const r = await fetch(DEEPSEEK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + DEEPSEEK_KEY },
     body: JSON.stringify({ model: 'deepseek-chat', temperature: 0.1, messages: [
       { role: 'system', content: `Extrae SOLO afirmaciones de que un mecanismo YA EXISTE Y FUNCIONA HOY, fuera de lo que la propia pregunta pedia proponer/disenar.
@@ -119,6 +168,7 @@ Ejemplos:
 Responde SOLO JSON: {"afirmaciones": [...]}. Si no hay ninguna afirmacion real de existencia actual, {"afirmaciones": []}.` },
       { role: 'user', content: 'PREGUNTA: ' + pregunta + '\n\nRESPUESTA: ' + texto } ] }) });
   const j = await r.json();
+  registrarUso('extraer_afirmaciones', contexto, j);
   const afirmaciones = JSON.parse(j.choices[0].message.content.replace(/```json|```/g,'').trim()).afirmaciones;
   // filtro determinista de respaldo: el LLM no siempre respeta la exclusion de negaciones
   // pedida en el prompt -- nunca confiar solo en la instruccion, comprobar el patron.
@@ -134,7 +184,7 @@ function solapamientoPalabras(a, b) {
   return comunes / wb.length;
 }
 
-async function comprobarAfirmacion(afirmacion, catalogo) {
+async function comprobarAfirmacion(afirmacion, catalogo, contexto) {
   // chequeo determinista primero: si la afirmacion cita el nombre real de un mecanismo del
   // catalogo (aunque sea parcialmente, ej. formateo distinto), se confirma sin depender del
   // juicio semantico de DeepSeek.
@@ -147,12 +197,13 @@ async function comprobarAfirmacion(afirmacion, catalogo) {
       { role: 'system', content: 'Catalogo REAL y COMPLETO. No existe nada mas. JSON: {"coincide": true/false, "mecanismo": "..." o null}.\n\n'+lista },
       { role: 'user', content: 'AFIRMACION: '+afirmacion } ] }) });
   const j = await r.json();
+  registrarUso('comprobar_afirmacion', contexto, j);
   const bruto = j.choices[0].message.content.replace(/```json|```/g,'').trim();
   try { return JSON.parse(bruto); }
   catch { return { coincide: false, mecanismo: null, nota_parseo: bruto.slice(0, 150) }; }
 }
 
-async function corregir(tema, resultadoOriginal, camposFabricados, capacidadesSinConfirmar, catalogo) {
+async function corregir(tema, resultadoOriginal, camposFabricados, capacidadesSinConfirmar, catalogo, contexto) {
   const lista = catalogo.map((m,i)=>(i+1)+'. '+m.nombre+': '+m.descripcion).join('\n');
   const problemas = [];
   if (camposFabricados.length) problemas.push('Nombres de campo mencionados que NO existen en el esquema real de Baserow: ' + camposFabricados.join(', ') + '. Si son una propuesta de diseño, dejalo explicito con lenguaje de propuesta ("se podria añadir un campo..."); si no aportan nada al argumento, quitalos.');
@@ -162,6 +213,7 @@ async function corregir(tema, resultadoOriginal, camposFabricados, capacidadesSi
       { role: 'system', content: 'Eres el corrector de Concilio en Engremiat. Se te da una respuesta ya escrita y una lista de problemas concretos detectados por un verificador determinista contra hechos reales (no contra el juicio libre de otro modelo). Reescribe la respuesta corrigiendo SOLO esos problemas -- sin inventar nada nuevo, sin cambiar el resto del contenido mas de lo necesario, manteniendo el mismo tono y longitud aproximada.\n\nCATALOGO REAL Y COMPLETO de mecanismos que existen hoy -- no existe nada mas que esto:\n' + lista },
       { role: 'user', content: 'PREGUNTA ORIGINAL: ' + tema + '\n\nRESPUESTA A CORREGIR:\n' + resultadoOriginal + '\n\nPROBLEMAS A CORREGIR:\n' + problemas.join('\n') } ] }) });
   const j = await r.json();
+  registrarUso('corregir', contexto, j);
   return j.choices[0].message.content.trim();
 }
 
@@ -171,6 +223,7 @@ async function atomizar(nombreOrigen, tema, resultado) {
       { role: 'system', content: 'Eres el Coordinador de Engremiat. Dada una pregunta ya respondida y verificada (sin fabricaciones), identifica 2-3 aspectos que quedan abiertos, ambiguos, o que merecen profundizarse -- NO repitas la pregunta original, atomiza en sub-preguntas mas concretas. Responde SOLO JSON: {"sub_preguntas": ["...", "...", "..."]}.' },
       { role: 'user', content: 'PREGUNTA ORIGINAL: ' + tema + '\n\nRESPUESTA VERIFICADA: ' + resultado } ] }) });
   const j = await r.json();
+  registrarUso('atomizar', nombreOrigen, j);
   return JSON.parse(j.choices[0].message.content.replace(/```json|```/g,'').trim()).sub_preguntas;
 }
 
@@ -181,12 +234,12 @@ async function main() {
   const esquema = await cargarEsquemaBaserow();
   const catalogo = await cargarCatalogoMecanismos();
 
-  async function verificar(tema, resultado, tablaRelevante, yaPropuestos) {
+  async function verificar(tema, resultado, tablaRelevante, yaPropuestos, contexto) {
     const vCampos = verificarCampos(resultado, tablaRelevante, esquema, yaPropuestos);
-    const afirmaciones = await extraerAfirmaciones(tema, resultado);
+    const afirmaciones = await extraerAfirmaciones(tema, resultado, contexto);
     const vCapacidades = [];
     for (const a of afirmaciones) {
-      const v = await comprobarAfirmacion(a, catalogo);
+      const v = await comprobarAfirmacion(a, catalogo, contexto);
       vCapacidades.push({ afirmacion: a, ...v });
     }
     const sospechosasCapacidad = vCapacidades.filter(v => !v.coincide);
@@ -201,7 +254,7 @@ async function main() {
     console.log('=== ' + fila.NOMBRE + ' (profundidad ' + profundidad + (yaPropuestos.length ? ', ' + yaPropuestos.length + ' campos heredados' : '') + ') ===');
 
     let resultado = fila.RESULTADO;
-    let { vCampos, sospechosasCapacidad, limpio } = await verificar(fila.TEMA, resultado, fila.TABLA_RELEVANTE, yaPropuestos);
+    let { vCampos, sospechosasCapacidad, limpio } = await verificar(fila.TEMA, resultado, fila.TABLA_RELEVANTE, yaPropuestos, fila.NOMBRE);
     console.log('  campos fabricados:', vCampos.aplica ? vCampos.fabricados.length : 'n/a');
     console.log('  capacidades sin confirmar:', sospechosasCapacidad.length, sospechosasCapacidad.map(s=>s.afirmacion));
 
@@ -209,8 +262,8 @@ async function main() {
     if (!limpio && (vCampos.fabricados.length || sospechosasCapacidad.length)) {
       console.log('  -> intentando UNA correccion antes de mandar a Relevo...');
       correccionIntentada = true;
-      const corregido = await corregir(fila.TEMA, resultado, vCampos.fabricados, sospechosasCapacidad.map(s=>s.afirmacion), catalogo);
-      const reverificacion = await verificar(fila.TEMA, corregido, fila.TABLA_RELEVANTE, yaPropuestos);
+      const corregido = await corregir(fila.TEMA, resultado, vCampos.fabricados, sospechosasCapacidad.map(s=>s.afirmacion), catalogo, fila.NOMBRE);
+      const reverificacion = await verificar(fila.TEMA, corregido, fila.TABLA_RELEVANTE, yaPropuestos, fila.NOMBRE + '_recorreccion');
       console.log('  tras corregir -> campos fabricados:', reverificacion.vCampos.aplica ? reverificacion.vCampos.fabricados.length : 'n/a', '| capacidades sin confirmar:', reverificacion.sospechosasCapacidad.length);
       if (reverificacion.limpio) {
         console.log('  -> la correccion funciono, se trata como LIMPIO');
@@ -262,5 +315,6 @@ async function main() {
 
   const nombreLote = process.argv[4] || ('Lote-' + rutaEntrada.split(/[\\/]/).pop().replace(/\.json$/, '') + '-' + resumen.fecha.slice(0, 10));
   await guardarMetricaEnBaserow(nombreLote, resumen);
+  await guardarGastoEnBaserow();
 }
 main();

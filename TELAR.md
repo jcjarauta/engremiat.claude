@@ -1324,3 +1324,32 @@ escribe el resumen ahí automáticamente al final de cada corrida
 real y limpiada después. Las tres mejoras del autociclo propuestas
 esta noche quedan cerradas: ancladas al catálogo real, probadas, y con
 su propio registro histórico.
+
+## Instrumentado el gasto propio del Coordinador en GASTO_API (2026-09-01)
+
+Pendiente real anotado en el Relevo de esta sesión: las llamadas a
+DeepSeek del propio `tools/coordinador.mjs` (extracción de
+afirmaciones, comprobación contra catálogo, corrección, atomización)
+no se registraban en `GASTO_API` -- solo el pipeline de producción vía
+n8n lo hacía. Cerrado: `registrarUso()` captura tokens reales de cada
+llamada y `guardarGastoEnBaserow()` escribe una fila por llamada al
+final de cada corrida, con la misma fórmula de coste real que usan los
+nodos de producción (`$0.44/$1.32` por millón de tokens
+entrada/salida para `deepseek-chat`).
+
+**A petición explícita del promotor**: el registro ya diferencia por
+`MODELO` y `SERVICIO`, con una tabla de precios (`PRECIOS_POR_MODELO`)
+lista para añadir GPT (`gpt-5.6-luna`, mismos precios reales que usa
+`Registrar gasto revision` en n8n: $0.15/$0.60) o Claude el día que el
+Coordinador (u otro mecanismo) los use, sin tener que rediseñar nada.
+Nota real: el campo `SERVICIO` de Baserow es un `single_select` que
+solo tiene las opciones `deepseek`/`claude` -- las filas reales de GPT
+ya existentes en producción lo dejan en `null` porque no hay opción
+`gpt`; el registro del Coordinador respeta esa misma convención en vez
+de fallar o inventar un valor no válido.
+
+**Probado con una corrida real** (`TESTANTIFAB2`, reprocesada):
+6 llamadas reales registradas, $0.004648 total, desglosado por acción
+(`extraer_afirmaciones`, `comprobar_afirmacion` ×2, `corregir`,
+`atomizar`) y por contexto (nombre de la fila). Verificado en Baserow
+antes de limpiar las filas de prueba.
