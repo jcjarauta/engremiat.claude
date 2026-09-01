@@ -1618,24 +1618,6 @@
       }
     },
     {
-      "id": "e4",
-      "name": "Enviar correo de resumen",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        1780,
-        1180
-      ],
-      "parameters": {
-        "method": "POST",
-        "url": "http://localhost:5678/webhook/notificar-humano",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ asunto: $json.asunto, mensaje: $json.mensaje }) }}",
-        "options": {}
-      }
-    },
-    {
       "id": "kick_vision",
       "name": "TEMP kick vision global",
       "type": "n8n-nodes-base.webhook",
@@ -2534,13 +2516,7 @@
     },
     "Construir correo de resumen": {
       "main": [
-        [
-          {
-            "node": "Enviar correo de resumen",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "TEMP kick vision global": {

@@ -161,11 +161,17 @@ cualquier corrida futura del Coordinador quedará contabilizada.
 
 ## 7. Pendientes reales, sin resolver
 
-- **El "autociclo" sigue siendo manual de principio a fin** -- cada
-  disparo, cada limpieza de lock colgado, cada verificación de
-  resultado la hice yo a mano esta noche. No hay todavía un disparador
-  automático (cron en VPS, o un nodo n8n que encadene "Coordinador →
-  siembra del siguiente nivel → dispara" sin intervención).
+- **Cerrado tras escribir este informe**: construido
+  `tools/ciclo_autonomo.mjs` -- dado el nombre de una rama, dispara,
+  espera, limpia solo los locks realmente estancados (por antigüedad
+  real en Baserow, no por el estado de ejecución de n8n, que resultó
+  no ser fiable por un nodo de correo roto sin relación -- eliminado)
+  y llama al Coordinador al terminar. Probado dos veces con preguntas
+  nuevas: la primera prueba destapó el bug del nodo de correo: la
+  segunda, ya corregido, proceso 2/2 sin ninguna intervención manual.
+  **Sigue faltando**: qué dispara el PRIMER paso (sembrar un lote
+  nuevo) -- eso sigue siendo decisión de Claude o del promotor, no
+  automático todavía.
 - **Migrar el hardcode de token en Code node a nodos HTTP Request
   nativos** -- pendiente real, documentado, sin resolver por límite del
   sandbox de esta versión de n8n.

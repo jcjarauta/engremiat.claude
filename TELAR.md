@@ -1387,3 +1387,45 @@ disparo (sembrar → disparar el webhook → esperar → limpiar locks →
 leer) lo hizo Claude a mano, no el propio sistema -- ese sigue siendo
 el pendiente real más importante antes de llamarlo un autociclo de
 verdad.
+
+## Disparo del ciclo automatizado -- construido, roto en la primera prueba, corregido, validado sin intervención (2026-09-01)
+
+`tools/ciclo_autonomo.mjs`: dado el nombre de una rama de
+`VIGILIA_TAREA`, dispara el webhook, espera, y si no hay avance
+reintenta -- hasta que todo esté procesado o se agote un límite de
+tiempo (con un tope de intentos seguidos sin avance para no quedarse
+colgado para siempre). Al terminar, exporta los resultados y llama al
+Coordinador automáticamente. Es el intento de cerrar el pendiente más
+repetido de esta sesión: todo el disparo lo hacía Claude a mano.
+
+**Primera prueba real, 2 preguntas nuevas**: el ciclo se auto-detuvo
+correctamente en una fila tras 5 intentos sin avance, sin colgarse ni
+fingir éxito -- **pero la fila en realidad SÍ se había procesado
+bien**, solo que la ejecución de n8n reportaba "error" por el nodo
+terminal `Enviar correo de resumen` (llamaba a `localhost:5678` desde
+dentro del contenedor del workflow, que no es la misma red que el host
+-- roto de fondo, sin relación con el disparo). El script confiaba en
+el estado de ejecución de n8n como señal de "hay que limpiar el lock",
+una señal que resultó no ser fiable: limpió locks perfectamente sanos
+varias veces sin necesidad.
+
+**Corregido**: (1) eliminado el nodo `Enviar correo de resumen`
+(terminal, nada dependía de su salida, a petición explícita del
+promotor de evitar más errores en vez de arreglar un envío de correo
+que no se estaba usando de verdad). (2) La detección de bloqueo ya no
+mira el estado de ejecución de n8n -- mira la antigüedad real del
+campo `PROCESANDO_DESDE` en Baserow, y solo limpia locks con más de
+90s sin resolver.
+
+**Segunda prueba real, 2 preguntas distintas**: 2/2 procesadas en el
+primer ciclo de espera, sin ningún lock estancado detectado, sin
+intervención manual en ningún paso -- lancé el script una vez y
+terminó solo, con el Coordinador corriendo automáticamente al final
+(1 corrección real aplicada con éxito, gasto instrumentado). Workflow
+re-exportado a `tools/n8n-workflows/` sin el nodo roto.
+
+**Conclusión honesta**: el disparo del ciclo ya no requiere
+intervención manual paso a paso para un lote conocido -- pero sigue
+sin haber un disparador que decida *cuándo* sembrar el siguiente lote
+o encadenar niveles solo; eso sigue siendo responsabilidad de Claude o
+del promotor.
