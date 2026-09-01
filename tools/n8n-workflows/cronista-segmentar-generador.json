@@ -1,0 +1,2641 @@
+{
+  "id": "dQNg9dBsFngFu4lF",
+  "name": "Cronista - Segmentar documento en tareas (con puerta humana)",
+  "active": true,
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "Webhook Cronista Segmentar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "path": "cronista-segmentar",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "webhookId": "cronista-segmentar-generador-webhook"
+    },
+    {
+      "id": "n2",
+      "name": "Ruta por accion",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        220,
+        0
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "proponer_tareas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "gratis"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "proponer_tareas_premium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "premium"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "confirmar_tareas",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "confirmar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "proponer_plantillas_mision",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "proponer_plantillas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "confirmar_plantillas_mision",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "confirmar_plantillas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "promocionar_version",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "promocionar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "concilio_proponer",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "concilio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "generar_canvas_dafo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "canvas"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.accion }}",
+                    "rightValue": "revisar_relevo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "revisar_relevo"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "n2b",
+      "name": "Fijar modo (gratis)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -220
+      ],
+      "parameters": {
+        "jsCode": "return { json: { ...$json, modo: 'gratis' } };"
+      }
+    },
+    {
+      "id": "n2c",
+      "name": "Fijar modo (premium)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        -100
+      ],
+      "parameters": {
+        "jsCode": "return { json: { ...$json, modo: 'premium' } };"
+      }
+    },
+    {
+      "id": "n3",
+      "name": "Preparar prompt de segmentacion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const documento = $json.body.documento_texto;\nconst proceso_id = $json.body.proceso_id;\nconst modo = $json.modo;\nconst systemPrompt = \"Eres Cronista, el asistente de Engremiat que convierte un documento de tutorial/roadmap en tareas atomicas y accionables. Reglas: cada tarea debe ser una sola accion verificable (un verbo, un resultado concreto); no fusiones dos acciones en una tarea; no cortes ninguna tarea a mitad de frase; conserva la fase de origen si el documento la menciona; si una linea es narrativa (vision, principios, advertencias) y no una tarea ejecutable, no la incluyas como tarea. Trabaja SOLO con el contenido dado, no inventes tareas ni nombres de fichero que no esten en el texto que se te ha dado. Responde SOLO con JSON valido, sin bloques de codigo markdown, exactamente con esta forma: {\\\"tareas\\\": [{\\\"fase\\\": \\\"...\\\", \\\"titulo\\\": \\\"...\\\", \\\"descripcion\\\": \\\"...\\\"}]}\";\nreturn { json: { proceso_id, systemPrompt, documento, modo } };"
+      }
+    },
+    {
+      "id": "n4",
+      "name": "Cronista: segmentar via LiteLLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        -160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'local-potente', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.documento } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MWY76MuBjtpNZ9C9",
+          "name": "LiteLLM API Key - Generador"
+        }
+      }
+    },
+    {
+      "id": "n5",
+      "name": "Extraer tareas propuestas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -160
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet datos;\nlet error_parseo = null;\ntry {\n  const parseado = JSON.parse(limpio);\n  datos = Array.isArray(parseado) ? parseado : (parseado.tareas || []);\n} catch (e) {\n  datos = [];\n  error_parseo = contenidoBruto;\n}\nconst tareas = datos.map(t => ({\n  fase: t.fase || t.phase || '',\n  titulo: t.titulo || t.task || t.title || '',\n  descripcion: t.descripcion || t.description || ''\n}));\nconst previo = $('Preparar prompt de segmentacion').item.json;\nreturn { json: { proceso_id: previo.proceso_id, modo: previo.modo, documento: previo.documento, tareas_propuestas: tareas, error_parseo, nota: 'Revisa y edita esta lista antes de llamar a confirmar_tareas -- ninguna tarea se ha guardado todavia en Baserow.' } };"
+      }
+    },
+    {
+      "id": "n6",
+      "name": "¿Modo premium?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        -160
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.modo }}",
+              "rightValue": "premium",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "n7",
+      "name": "Preparar verificacion DeepSeek",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        -260
+      ],
+      "parameters": {
+        "jsCode": "const documento = $json.documento;\nconst borrador = $json.tareas_propuestas;\nconst proceso_id = $json.proceso_id;\nconst systemPrompt = 'Eres un verificador de calidad. Se te da un DOCUMENTO original y una LISTA DE TAREAS que otro modelo genero a partir de el, con posibles errores: tareas narrativas que no deberian estar (recordatorios, principios, advertencias), tareas etiquetadas con la fase equivocada, o tareas reales del documento que faltan. Tu trabajo: corregir la lista contra el documento, siguiendo TODAS las reglas anteriores sin excepcion -- si algo es narrativo, elimínalo aunque el borrador lo incluyera. Responde SOLO con JSON valido, sin bloques de codigo markdown, con esta forma exacta: {\"tareas_corregidas\": [{\"fase\": \"...\", \"titulo\": \"...\", \"descripcion\": \"...\"}], \"cambios_realizados\": [\"...\"]}';\nconst userPrompt = 'DOCUMENTO:\\n' + documento + '\\n\\nLISTA DE TAREAS A VERIFICAR:\\n' + JSON.stringify(borrador, null, 1);\nreturn { json: { proceso_id, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "n8",
+      "name": "DeepSeek: verificar y corregir",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        -260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "n9",
+      "name": "Extraer tareas verificadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        -260
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $('DeepSeek: verificar y corregir').item.json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet datos;\nlet error_parseo = null;\ntry { datos = JSON.parse(limpio); } catch (e) { datos = { tareas_corregidas: [], cambios_realizados: [] }; error_parseo = contenidoBruto; }\nconst proceso_id = $('Preparar verificacion DeepSeek').item.json.proceso_id;\nconst usage = $('DeepSeek: verificar y corregir').item.json.usage || {};\nreturn { json: { proceso_id, tareas_propuestas: datos.tareas_corregidas || [], cambios_realizados: datos.cambios_realizados || [], verificado_por: 'deepseek-chat', uso_tokens: usage, error_parseo, nota: 'Revisado por DeepSeek. Sigue pendiente de aprobacion humana antes de confirmar_tareas.' } };"
+      }
+    },
+    {
+      "id": "n10",
+      "name": "Expandir tareas confirmadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        150
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.all()[0].json.body;\nconst proceso_id = body.proceso_id;\nconst tareas = Array.isArray(body.tareas) ? body.tareas : [];\nif (tareas.length === 0) {\n  return [{ json: { proceso_id, titulo: null, descripcion: null, fase: null, sin_tareas: true } }];\n}\nreturn tareas.map(t => ({ json: { proceso_id, titulo: t.titulo, descripcion: t.descripcion || '', fase: t.fase || '' } }));"
+      }
+    },
+    {
+      "id": "n11",
+      "name": "Crear fila TAREA en Baserow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        150
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/278/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: $json.titulo, DESCRIPCION: $json.descripcion, PROCESO_ID: String($json.proceso_id), ESTADO: 'Pendiente', ACTIVO: 'SI', CREADO_POR: 'Cronista (confirmado por humano)', FECHA_CREACION: new Date().toISOString(), OBJETIVO: $json.fase }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "n12",
+      "name": "Resumen de tareas creadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        150
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst ids = items.map(i => i.json.id).filter(x => x !== undefined);\nconst proceso_id = items[0] ? items[0].json.PROCESO_ID : null;\nreturn [{ json: { proceso_id, tareas_creadas_ids: ids, total: ids.length } }];"
+      }
+    },
+    {
+      "id": "n13",
+      "name": "Respuesta gratis (final)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        -60
+      ],
+      "parameters": {
+        "jsCode": "return { json: $json };"
+      }
+    },
+    {
+      "id": "n14",
+      "name": "Preparar prompt de plantillas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const escenario = $json.body.escenario;\nconst ideaBreve = $json.body.idea_breve;\nconst numMisiones = $json.body.num_misiones || 5;\nconst systemPrompt = 'Eres Cronista, el autor de Taller para Engremiat. Se te da la idea breve de un Escenario (un juego cooperativo por misiones) y tienes que proponer un guion de ' + numMisiones + ' misiones en orden, cada una una accion concreta que un grupo pueda completar en una sesion corta. Cada mision tiene: orden (numero), nombre (corto), descripcion (una frase clara de que hacer), tipo_captura (\\'texto\\' si la mision pide que el grupo escriba/responda algo real, \\'boton\\' si solo se marca como hecha). Responde SOLO con JSON valido, sin bloques de codigo markdown: {\"plantillas\": [{\"orden\":1,\"nombre\":\"...\",\"descripcion\":\"...\",\"tipo_captura\":\"texto\"}]}';\nconst userPrompt = 'Escenario: ' + escenario + '\\nIdea breve: ' + ideaBreve;\nreturn { json: { escenario, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "n15",
+      "name": "Local: borrador de plantillas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'local-potente', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MWY76MuBjtpNZ9C9",
+          "name": "LiteLLM API Key - Generador"
+        }
+      }
+    },
+    {
+      "id": "n16",
+      "name": "Extraer plantillas borrador",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet plantillas = [];\ntry { const p = JSON.parse(limpio); plantillas = p.plantillas || []; } catch (e) { plantillas = []; }\nconst previo = $('Preparar prompt de plantillas').item.json;\nreturn { json: { escenario: previo.escenario, plantillasBorrador: plantillas } };"
+      }
+    },
+    {
+      "id": "n17",
+      "name": "Preparar verificacion DeepSeek (plantillas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const systemPrompt = 'Eres un verificador de calidad de guiones de juego cooperativo. Se te da un borrador de misiones. Corrige: que cada mision sea una sola accion concreta, que el orden sea correcto y correlativo empezando en 1, que tipo_captura sea texto solo si de verdad hace falta que el grupo escriba algo (no solo decidir). Responde SOLO con JSON valido, sin bloques de codigo markdown: {\"plantillas_corregidas\": [{\"orden\":1,\"nombre\":\"...\",\"descripcion\":\"...\",\"tipo_captura\":\"texto\"}], \"cambios_realizados\": [\"...\"]}';\nconst userPrompt = 'BORRADOR:\\n' + JSON.stringify($json.plantillasBorrador, null, 1);\nreturn { json: { escenario: $json.escenario, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "n18",
+      "name": "DeepSeek: verificar plantillas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "n19",
+      "name": "Extraer plantillas verificadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $('DeepSeek: verificar plantillas').item.json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet datos;\ntry { datos = JSON.parse(limpio); } catch (e) { datos = { plantillas_corregidas: [], cambios_realizados: [] }; }\nconst escenario = $('Preparar verificacion DeepSeek (plantillas)').item.json.escenario;\nconst usage = $('DeepSeek: verificar plantillas').item.json.usage || {};\nreturn { json: { escenario, plantillas_propuestas: datos.plantillas_corregidas || [], cambios_realizados: datos.cambios_realizados || [], verificado_por: 'deepseek-chat', uso_tokens: usage, nota: 'Sin guardar todavia -- revisa y llama a confirmar_plantillas_mision con las que apruebes.' } };"
+      }
+    },
+    {
+      "id": "n20",
+      "name": "Expandir plantillas confirmadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.all()[0].json.body;\nconst escenario = body.escenario;\nconst version = body.version || 1;\nconst plantillas = Array.isArray(body.plantillas) ? body.plantillas : [];\nreturn plantillas.map(p => ({ json: { escenario, version, orden: p.orden, nombre: p.nombre, descripcion: p.descripcion || '', tipo_captura: p.tipo_captura || 'boton' } }));"
+      }
+    },
+    {
+      "id": "n21",
+      "name": "Crear fila PLANTILLA_MISION",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        560
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/284/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: $json.nombre, ESCENARIO: $json.escenario, ORDEN: $json.orden, VERSION: $json.version, DESCRIPCION: $json.descripcion, TIPO_CAPTURA: $json.tipo_captura, ESTADO: 'en_construccion' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "n22",
+      "name": "Resumen de plantillas creadas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst ids = items.map(i => i.json.id).filter(x => x !== undefined);\nreturn [{ json: { total: ids.length, ids_creados: ids, nota: 'Guardadas en en_construccion -- promocionar a publicado a mano en Baserow tras validarlas en Taller.' } }];"
+      }
+    },
+    {
+      "id": "p1",
+      "name": "Promocionar version",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        720
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst body = $input.all()[0].json.body;\nconst escenario = body.escenario;\nconst versionNueva = body.version_nueva;\nconst BASE = 'http://100.107.171.88/api/database/rows/table/284/';\n\nasync function listar(filtro) {\n  const j = await this.helpers.httpRequest({ method: 'GET', url: BASE + '?user_field_names=true&' + filtro, json: true });\n  return j.results || [];\n}\nasync function patch(id, campos) {\n  return this.helpers.httpRequest({ method: 'PATCH', url: BASE + id + '/?user_field_names=true', headers: { Authorization: TOKEN, 'Content-Type': 'application/json' }, body: campos, json: true });\n}\n\nconst publicadasActuales = await listar.call(this, 'filter__ESCENARIO__equal=' + encodeURIComponent(escenario) + '&filter__ESTADO__single_select_equal=1074');\nconst nuevasEnConstruccion = await listar.call(this, 'filter__ESCENARIO__equal=' + encodeURIComponent(escenario) + '&filter__VERSION__equal=' + versionNueva + '&filter__ESTADO__single_select_equal=1073');\n\nif (nuevasEnConstruccion.length === 0) {\n  return [{ json: { error: 'No hay ninguna plantilla en_construccion con esa version para ese escenario -- no se ha archivado nada, revisa antes de reintentar.' } }];\n}\n\nconst archivadas = [];\nfor (const fila of publicadasActuales) { await patch.call(this, fila.id, { ESTADO: 'archivado' }); archivadas.push(fila.id); }\nconst publicadasNuevas = [];\nfor (const fila of nuevasEnConstruccion) { await patch.call(this, fila.id, { ESTADO: 'publicado' }); publicadasNuevas.push(fila.id); }\n\nreturn [{ json: { escenario, version_nueva: versionNueva, archivadas_ids: archivadas, publicadas_ids: publicadasNuevas, nota: 'Las partidas ya en curso con la version anterior siguen viendo su version -- solo las partidas nuevas veran la version nueva.' } }];"
+      }
+    },
+    {
+      "id": "b1",
+      "name": "Comprobar presupuesto DeepSeek (tareas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        -320
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...$json, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD, gastoAcumuladoUsd: gastoAcumulado, topeMensualUsd: TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "b2",
+      "name": "¿Presupuesto disponible? (tareas)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        -320
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "b3",
+      "name": "Calcular coste DeepSeek (tareas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        -360
+      ],
+      "parameters": {
+        "jsCode": "const usage = $json.usage || {};\nconst entrada = usage.prompt_tokens || 0;\nconst salida = usage.completion_tokens || 0;\nconst coste = Number(((entrada / 1e6) * 0.44 + (salida / 1e6) * 1.32).toFixed(6));\nreturn { json: { entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "b4",
+      "name": "Presupuesto agotado (tareas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        -260
+      ],
+      "parameters": {
+        "jsCode": "const local = $('Extraer tareas propuestas').item.json;\nconst presupuesto = $json;\nreturn { json: { proceso_id: local.proceso_id, tareas_propuestas: local.tareas_propuestas, verificado_por: null, uso_tokens: null, error_parseo: null, aviso: 'Tope mensual de DeepSeek alcanzado (' + presupuesto.gastoAcumuladoUsd.toFixed(4) + ' USD de ' + presupuesto.topeMensualUsd + ' USD) -- se devuelve el borrador local SIN verificar por DeepSeek.', nota: 'Revisa con mas cuidado de lo habitual antes de confirmar_tareas -- no paso por la verificacion.' } };"
+      }
+    },
+    {
+      "id": "b5",
+      "name": "Comprobar presupuesto DeepSeek (plantillas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        480
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...$json, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD, gastoAcumuladoUsd: gastoAcumulado, topeMensualUsd: TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "b6",
+      "name": "¿Presupuesto disponible? (plantillas)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        480
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "b7",
+      "name": "Calcular coste DeepSeek (plantillas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        440
+      ],
+      "parameters": {
+        "jsCode": "const usage = $json.usage || {};\nconst entrada = usage.prompt_tokens || 0;\nconst salida = usage.completion_tokens || 0;\nconst coste = Number(((entrada / 1e6) * 0.44 + (salida / 1e6) * 1.32).toFixed(6));\nreturn { json: { entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "b8",
+      "name": "Presupuesto agotado (plantillas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        540
+      ],
+      "parameters": {
+        "jsCode": "const local = $('Extraer plantillas borrador').item.json;\nconst presupuesto = $json;\nreturn { json: { escenario: local.escenario, plantillas_propuestas: local.plantillasBorrador, verificado_por: null, aviso: 'Tope mensual de DeepSeek alcanzado (' + presupuesto.gastoAcumuladoUsd.toFixed(4) + ' USD de ' + presupuesto.topeMensualUsd + ' USD) -- se devuelve el borrador local SIN verificar por DeepSeek.', nota: 'Revisa con mas cuidado de lo habitual antes de confirmar_plantillas_mision -- no paso por la verificacion.' } };"
+      }
+    },
+    {
+      "id": "b3b",
+      "name": "Registrar gasto DeepSeek (tareas)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        -360
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'DeepSeek ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'proponer_tareas_premium', CONTEXTO: String($('Preparar verificacion DeepSeek').item.json.proceso_id), FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "b7b",
+      "name": "Registrar gasto DeepSeek (plantillas)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1420,
+        440
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'DeepSeek ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'proponer_plantillas_mision', CONTEXTO: String($('Preparar verificacion DeepSeek (plantillas)').item.json.escenario), FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "c1",
+      "name": "Fijar personas de Concilio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        900
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const body = $input.all()[0].json.body;\nconst tema = body.tema;\nconst personasPorDefecto = [\n  { nombre: 'Acervo Rural', enfoque: 'Ve el mundo desde el campo: oficios en peligro, vida de pueblo, relacion con la tierra y las estaciones. Propone ideas ancladas en lo rural, nunca en una ciudad generica.' },\n  { nombre: 'Acervo Urbano', enfoque: 'Ve el mundo desde el barrio: vecindad, transporte, espacio publico compartido, diversidad de la ciudad. Propone ideas ancladas en lo urbano concreto, nunca en el campo.' }\n];\nconst personas = (Array.isArray(body.personas) && body.personas.length) ? body.personas : personasPorDefecto;\nreturn personas.map(p => ({ json: { tema, personaNombre: p.nombre, personaEnfoque: p.enfoque } }));"
+      }
+    },
+    {
+      "id": "c2",
+      "name": "Concilio: persona propone (local)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        900
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'local-potente', messages: [ { role: 'system', content: 'Eres ' + $json.personaNombre + ', una voz de Acervo dentro de Engremiat. ' + $json.personaEnfoque + ' Se te da un tema y propones, en 3-4 frases, una idea concreta de proyecto o historia sobre ese tema, desde tu enfoque propio. No generico -- anclado en tu perspectiva.' }, { role: 'user', content: $json.tema } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MWY76MuBjtpNZ9C9",
+          "name": "LiteLLM API Key - Generador"
+        }
+      }
+    },
+    {
+      "id": "c3",
+      "name": "Extraer propuesta de persona",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        900
+      ],
+      "parameters": {
+        "jsCode": "const contenido = $json.choices[0].message.content;\nconst previo = $('Fijar personas de Concilio').item.json;\nreturn { json: { personaNombre: previo.personaNombre, propuesta: contenido, tema: previo.tema } };"
+      }
+    },
+    {
+      "id": "c4",
+      "name": "Agregar propuestas de Concilio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        900
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all();\nconst tema = items[0].json.tema;\nconst propuestas = items.map(i => i.json.personaNombre + ': ' + i.json.propuesta).join('\\n\\n');\nreturn [{ json: { tema, propuestas } }];"
+      }
+    },
+    {
+      "id": "c5",
+      "name": "Comprobar presupuesto Concilio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        900
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...$json, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD, gastoAcumuladoUsd: gastoAcumulado, topeMensualUsd: TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "c6",
+      "name": "¿Presupuesto disponible? (Concilio)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        900
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "c7",
+      "name": "Preparar sintesis Concilio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        840
+      ],
+      "parameters": {
+        "jsCode": "const systemPrompt = 'Eres el sintetizador de Concilio en Engremiat. Se te dan varias propuestas de distintas voces (Acervos) sobre el mismo tema. Tu trabajo: combinar lo mejor de cada una en UNA sola idea concreta y coherente, de 4-6 frases, lista para desarrollarse como historia o proyecto. No elijas una sola voz -- integra elementos reales de todas.';\nconst userPrompt = 'TEMA: ' + $json.tema + '\\n\\nPROPUESTAS:\\n' + $json.propuestas;\nreturn { json: { tema: $json.tema, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "c8",
+      "name": "DeepSeek: sintetizar Concilio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        840
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0.3 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "c9",
+      "name": "Calcular coste Concilio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        840
+      ],
+      "parameters": {
+        "jsCode": "const usage = $json.usage || {};\nconst entrada = usage.prompt_tokens || 0;\nconst salida = usage.completion_tokens || 0;\nconst coste = Number(((entrada / 1e6) * 0.44 + (salida / 1e6) * 1.32).toFixed(6));\nreturn { json: { entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "c10",
+      "name": "Registrar gasto Concilio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        840
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'Concilio ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'concilio_proponer', CONTEXTO: String($('Preparar sintesis Concilio').item.json.tema), FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "c11",
+      "name": "Extraer sintesis final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2660,
+        840
+      ],
+      "parameters": {
+        "jsCode": "const contenido = $('DeepSeek: sintetizar Concilio').item.json.choices[0].message.content;\nconst tema = $('Preparar sintesis Concilio').item.json.tema;\nreturn { json: { tema, propuesta_sintetizada: contenido, sintetizado_por: 'deepseek-chat', nota: 'Sin desarrollar todavia -- decide tu (consentimiento humano) si esto pasa a proponer_tareas o a proponer_plantillas_mision.' } };"
+      }
+    },
+    {
+      "id": "c12",
+      "name": "Concilio sin presupuesto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        960
+      ],
+      "parameters": {
+        "jsCode": "const presupuesto = $json;\nreturn { json: { tema: $json.tema, propuestas_sin_sintetizar: $json.propuestas, sintetizado_por: null, aviso: 'Tope mensual de DeepSeek alcanzado (' + presupuesto.gastoAcumuladoUsd.toFixed(4) + ' USD de ' + presupuesto.topeMensualUsd + ' USD) -- se devuelven las propuestas de cada Acervo SIN sintetizar.' } };"
+      }
+    },
+    {
+      "id": "v1",
+      "name": "Vigilia: cada 15 minutos",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        460,
+        1100
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "disabled": true
+    },
+    {
+      "id": "v2",
+      "name": "Buscar siguiente Vigilia pendiente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        1100
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/287/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            },
+            {
+              "name": "filter__ESTADO__single_select_equal",
+              "value": "1082"
+            },
+            {
+              "name": "order_by",
+              "value": "ORDEN"
+            },
+            {
+              "name": "size",
+              "value": "20"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "v3",
+      "name": "¿Hay Vigilia pendiente?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.results.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "v4",
+      "name": "Buscar capitulo anterior",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1040
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/287/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            },
+            {
+              "name": "filter__ORDEN__equal",
+              "value": "={{ $json.results[0].ORDEN - 1 }}"
+            },
+            {
+              "name": "size",
+              "value": "1"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "v5",
+      "name": "Construir tema con contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        1040
+      ],
+      "parameters": {
+        "jsCode": "const pendiente = $('Bloquear elemento pendiente (lock)').item.json.results[0];\nconst anteriores = $json.results || [];\nconst contexto = anteriores.length && anteriores[0].RESULTADO ? ('\\n\\nCONTEXTO PREVIO:\\n' + anteriores[0].RESULTADO) : '';\nlet personas;\ntry { personas = pendiente.PERSONAS_JSON ? JSON.parse(pendiente.PERSONAS_JSON) : undefined; } catch (e) { personas = undefined; }\nreturn { json: { vigiliaId: pendiente.id, tema: pendiente.TEMA + contexto, personas, accion: pendiente.ACCION || 'concilio_proponer', tablaRelevante: pendiente.TABLA_RELEVANTE || '' } };"
+      }
+    },
+    {
+      "id": "v6",
+      "name": "Llamar a Concilio (interno)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        1040
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/cronista-segmentar",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify(Object.assign({ accion: $json.accion || 'concilio_proponer', tema: $json.tema }, ($json.accion === 'generar_canvas_dafo') ? {} : { personas: $json.personas || undefined })) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "v7",
+      "name": "Guardar resultado en Vigilia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        1040
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'http://100.107.171.88/api/database/rows/table/287/' + $('Construir tema con contexto').item.json.vigiliaId + '/' }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ RESULTADO: $json.propuesta_sintetizada || ($json.canvas ? ('PDF guardado en: ' + ($json.pdf_guardado_en || 'no guardado') + '\\n\\nEncaje Engremiat: ' + $json.encaje_engremiat + '\\n\\n' + JSON.stringify({ canvas: $json.canvas, dafo: $json.dafo, plan_negocio: $json.plan_negocio, presupuesto_estimado: $json.presupuesto_estimado, alianzas_estrategicas: $json.alianzas_estrategicas }, null, 1)) : null) || $json.aviso || 'Sin resultado', ESTADO: 'procesado', FECHA_PROCESADO: new Date().toISOString().slice(0,10), VERIFICACION_DETERMINISTA: $json.verificacionDeterminista || '' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "d1",
+      "name": "Local: borrador Canvas+DAFO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        1260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:4000/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'local-potente', messages: [ { role: 'system', content: 'Eres analista de negocio de Engremiat. Se te da la descripcion de una idea de producto o proyecto. Genera: un Business Model Canvas (9 bloques: Segmentos de clientes, Propuesta de valor, Canales, Relacion con clientes, Fuentes de ingresos, Recursos clave, Actividades clave, Socios clave, Estructura de costes); un DAFO (Debilidades, Amenazas, Fortalezas, Oportunidades); un resumen de plan de negocio en 4-6 frases (que se vende, a quien, como se sostiene); un presupuesto estimado de puesta en marcha (partidas principales y orden de magnitud, no cifras exactas inventadas); y alianzas estrategicas reales posibles (que tipo de organizacion, asociacion o proveedor tendria sentido como aliado, y por que). Evalua ademas explicitamente si esto encajaria como un modulo nuevo de Engremiat (si/no y por que, en una frase). Responde SOLO con JSON valido, sin bloques de codigo markdown: {\\\"canvas\\\": {\\\"segmentos_clientes\\\":\\\"...\\\", \\\"propuesta_valor\\\":\\\"...\\\", \\\"canales\\\":\\\"...\\\", \\\"relacion_clientes\\\":\\\"...\\\", \\\"fuentes_ingresos\\\":\\\"...\\\", \\\"recursos_clave\\\":\\\"...\\\", \\\"actividades_clave\\\":\\\"...\\\", \\\"socios_clave\\\":\\\"...\\\", \\\"estructura_costes\\\":\\\"...\\\"}, \\\"dafo\\\": {\\\"debilidades\\\":\\\"...\\\", \\\"amenazas\\\":\\\"...\\\", \\\"fortalezas\\\":\\\"...\\\", \\\"oportunidades\\\":\\\"...\\\"}, \\\"plan_negocio\\\": \\\"...\\\", \\\"presupuesto_estimado\\\": \\\"...\\\", \\\"alianzas_estrategicas\\\": \\\"...\\\", \\\"encaje_engremiat\\\": \\\"...\\\"}' }, { role: 'user', content: $json.body.tema } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MWY76MuBjtpNZ9C9",
+          "name": "LiteLLM API Key - Generador"
+        }
+      }
+    },
+    {
+      "id": "d2",
+      "name": "Extraer borrador Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        1260
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nconst tema = $('Webhook Cronista Segmentar').item.json.body.tema;\nreturn { json: { tema, borradorBruto: limpio } };"
+      }
+    },
+    {
+      "id": "d3",
+      "name": "Preparar verificacion Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1260
+      ],
+      "parameters": {
+        "jsCode": "const systemPrompt = 'Eres un verificador de calidad de analisis de negocio. Se te da un borrador de Business Model Canvas, DAFO, plan de negocio, presupuesto estimado y alianzas estrategicas. Corrige incoherencias, completa bloques vacios o genericos, y se mas concreto en el veredicto de encaje con Engremiat. Responde SOLO con JSON valido, sin bloques de codigo markdown, misma forma que el borrador (canvas, dafo, plan_negocio, presupuesto_estimado, alianzas_estrategicas, encaje_engremiat), mas un campo cambios_realizados (lista de strings).';\nconst userPrompt = 'TEMA: ' + $json.tema + '\\n\\nBORRADOR:\\n' + $json.borradorBruto;\nreturn { json: { tema: $json.tema, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "d4",
+      "name": "Comprobar presupuesto Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1260
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...$json, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD, gastoAcumuladoUsd: gastoAcumulado, topeMensualUsd: TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "d5",
+      "name": "¿Presupuesto disponible? (Canvas)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        1260
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "d6",
+      "name": "DeepSeek: verificar Canvas+DAFO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        1200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0.2 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "d7",
+      "name": "Calcular coste Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const usage = $json.usage || {};\nconst entrada = usage.prompt_tokens || 0;\nconst salida = usage.completion_tokens || 0;\nconst coste = Number(((entrada / 1e6) * 0.44 + (salida / 1e6) * 1.32).toFixed(6));\nreturn { json: { entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "d8",
+      "name": "Registrar gasto Canvas+DAFO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        1200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'CanvasDafo ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'generar_canvas_dafo', CONTEXTO: String($('Preparar verificacion Canvas+DAFO').item.json.tema).slice(0,190), FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "d9",
+      "name": "Extraer Canvas+DAFO final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const contenidoBruto = $('DeepSeek: verificar Canvas+DAFO').item.json.choices[0].message.content;\nconst limpio = contenidoBruto.replace(/^```(?:json)?\\s*/i, '').replace(/```\\s*$/i, '').trim();\nlet datos;\ntry { datos = JSON.parse(limpio); } catch (e) { datos = { canvas: {}, dafo: {}, plan_negocio: '', presupuesto_estimado: '', alianzas_estrategicas: '', encaje_engremiat: 'Error de parseo', cambios_realizados: [] }; }\nreturn { json: datos };"
+      }
+    },
+    {
+      "id": "d11",
+      "name": "Construir HTML del Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const d = $json;\nconst c = d.canvas || {};\nconst dafo = d.dafo || {};\nconst bloque = (t, v) => '<div style=\"border:1px solid #ccc;padding:10px;margin-bottom:8px;\"><b>' + t + '</b><p>' + (v || '-') + '</p></div>';\nconst html = '<html><head><meta charset=\"utf-8\"><style>body{font-family:sans-serif;max-width:800px;margin:auto;}h1{border-bottom:2px solid #333;}</style></head><body>' +\n  '<h1>Canvas, DAFO y plan de negocio -- Engremiat</h1>' +\n  '<h2>Business Model Canvas</h2>' +\n  bloque('Segmentos de clientes', c.segmentos_clientes) + bloque('Propuesta de valor', c.propuesta_valor) +\n  bloque('Canales', c.canales) + bloque('Relacion con clientes', c.relacion_clientes) +\n  bloque('Fuentes de ingresos', c.fuentes_ingresos) + bloque('Recursos clave', c.recursos_clave) +\n  bloque('Actividades clave', c.actividades_clave) + bloque('Socios clave', c.socios_clave) +\n  bloque('Estructura de costes', c.estructura_costes) +\n  '<h2>DAFO</h2>' +\n  bloque('Debilidades', dafo.debilidades) + bloque('Amenazas', dafo.amenazas) +\n  bloque('Fortalezas', dafo.fortalezas) + bloque('Oportunidades', dafo.oportunidades) +\n  '<h2>Plan de negocio</h2><p>' + (d.plan_negocio || '-') + '</p>' +\n  '<h2>Presupuesto estimado</h2><p>' + (d.presupuesto_estimado || '-') + '</p>' +\n  '<h2>Alianzas estrategicas posibles</h2><p>' + (d.alianzas_estrategicas || '-') + '</p>' +\n  '<h2>Encaje como modulo Engremiat</h2><p><b>' + (d.encaje_engremiat || '-') + '</b></p>' +\n  '<p style=\"color:#888;font-size:0.8em;\">Generado por el generador de Engremiat (local + DeepSeek), ' + new Date().toISOString() + ' -- borrador para revision humana, no un documento final.</p>' +\n  '</body></html>';\nconst nombreArchivo = 'canvas_dafo_' + Date.now() + '.pdf';\nconst rutaGuardado = 'G:\\\\Mi unidad\\\\DEVS\\\\engremiat-litellm\\\\documentos-generados\\\\' + nombreArchivo;\nreturn { json: { ...d, html, rutaGuardado, nombreArchivo } };"
+      }
+    },
+    {
+      "id": "d12",
+      "name": "Exportar PDF Canvas+DAFO",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        1200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8001/pdf",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ html: $json.html, ruta_guardado: $json.rutaGuardado }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "d13",
+      "name": "Confirmar export Canvas+DAFO",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const previo = $('Construir HTML del Canvas+DAFO').item.json;\nconst { html, ...resto } = previo;\nreturn { json: { ...resto, pdf_guardado_en: previo.rutaGuardado } };"
+      }
+    },
+    {
+      "id": "d10",
+      "name": "Sin presupuesto (Canvas)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        1320
+      ],
+      "parameters": {
+        "jsCode": "let datos;\ntry { datos = JSON.parse($json.borradorBruto); } catch (e) { datos = { canvas: {}, dafo: {}, encaje_engremiat: 'Sin verificar (presupuesto agotado)' }; }\nreturn { json: { ...datos, aviso: 'Tope mensual de DeepSeek alcanzado -- Canvas/DAFO sin verificar, solo borrador local.' } };"
+      }
+    },
+    {
+      "id": "e1",
+      "name": "Resumen final de Vigilia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1180
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/287/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            },
+            {
+              "name": "filter__ESTADO__single_select_equal",
+              "value": "1083"
+            },
+            {
+              "name": "order_by",
+              "value": "ORDEN"
+            },
+            {
+              "name": "size",
+              "value": "100"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "e2",
+      "name": "Resumen de gasto de hoy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        1180
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            },
+            {
+              "name": "filter__FECHA__date_equal",
+              "value": "2026-08-30"
+            },
+            {
+              "name": "size",
+              "value": "200"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "e3",
+      "name": "Construir correo de resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        1180
+      ],
+      "parameters": {
+        "jsCode": "const items = $('Resumen final de Vigilia').item.json.results || [];\nconst gastos = $json.results || [];\nconst totalCoste = gastos.reduce((s, g) => s + (parseFloat(g.COSTE_ESTIMADO_USD) || 0), 0);\nconst totalEntrada = gastos.reduce((s, g) => s + (parseInt(g.TOKENS_ENTRADA) || 0), 0);\nconst totalSalida = gastos.reduce((s, g) => s + (parseInt(g.TOKENS_SALIDA) || 0), 0);\nconst timestamps = gastos\n  .map(g => (g.NOMBRE || '').split(' ').pop())\n  .filter(Boolean)\n  .filter(t => !Number.isNaN(new Date(t).getTime()))\n  .sort();\nlet minutos = null;\nif (timestamps.length >= 2) { minutos = Math.round((new Date(timestamps[timestamps.length-1]) - new Date(timestamps[0])) / 60000); }\nlet cuerpo = '<h2>Vigilia completada</h2>';\ncuerpo += '<p><b>' + items.length + '</b> elementos procesados. Coste real: <b>$' + totalCoste.toFixed(4) + '</b> (' + totalEntrada + ' tokens entrada, ' + totalSalida + ' salida). Tiempo entre la primera y la ultima llamada a DeepSeek: <b>' + (minutos !== null ? minutos + ' minutos' : 'no calculable') + '</b>.</p>';\nfor (const it of items) {\n  cuerpo += '<h3>' + it.NOMBRE + '</h3><p>' + String(it.RESULTADO || '').replace(/\\n/g,'<br>') + '</p>';\n}\ncuerpo += '<p>Revisa el detalle completo en Baserow, tabla VIGILIA_TAREA (id 287) y GASTO_API (id 285).</p>';\nreturn { json: { asunto: 'Vigilia completada -- ' + items.length + ' elementos, $' + totalCoste.toFixed(4), mensaje: cuerpo } };"
+      }
+    },
+    {
+      "id": "e4",
+      "name": "Enviar correo de resumen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        1180
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5678/webhook/notificar-humano",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ asunto: $json.asunto, mensaje: $json.mensaje }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "kick_vision",
+      "name": "TEMP kick vision global",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        200,
+        1800
+      ],
+      "parameters": {
+        "path": "temp-kick-vision-global",
+        "options": {}
+      },
+      "webhookId": "f6606952-5272-4b80-80c3-4c16143f9799"
+    },
+    {
+      "id": "rev1",
+      "name": "Buscar tareas de la rama",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        2000
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/287/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            },
+            {
+              "name": "filter__RAMA__equal",
+              "value": "={{ $json.body.rama }}"
+            },
+            {
+              "name": "size",
+              "value": "200"
+            }
+          ]
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "rev2",
+      "name": "Separar tareas en items",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        680,
+        2000
+      ],
+      "parameters": {
+        "fieldToSplitOut": "results",
+        "options": {}
+      }
+    },
+    {
+      "id": "rev3",
+      "name": "Revisar con GPT",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        2000
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'gpt-5.6-luna', messages: [ { role: 'system', content: 'Eres un revisor de calidad independiente. Se te da una pregunta de investigacion y una respuesta generada por otro sistema de IA. Evalua si la respuesta responde de verdad a la pregunta (no esta contaminada con un tema distinto y ajeno), si es concreta y accionable (no solo metafora abstracta sin pasos claros), y da un veredicto. Responde SOLO con JSON valido: {\"veredicto\": \"solido\" o \"contaminado\" o \"abstracto\", \"comentario\": \"una frase breve explicando por que\"}' }, { role: 'user', content: 'Pregunta: ' + $json.TEMA + '\\n\\nRespuesta: ' + $json.RESULTADO } ] }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "luxAY5BIhE05bVmy",
+          "name": "OpenAI API Key - Generador (nivel de revision)"
+        }
+      }
+    },
+    {
+      "id": "rev4",
+      "name": "Extraer veredicto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        2000
+      ],
+      "parameters": {
+        "jsCode": "const tarea = $('Separar tareas en items').item.json;\nconst u = $json.usage || {};\nconst entrada = u.prompt_tokens || 0;\nconst salida = u.completion_tokens || 0;\nlet texto = $json.choices[0].message.content.trim();\ntexto = texto.replace(/```json|```/g, '').trim();\nlet veredicto;\ntry { veredicto = JSON.parse(texto); } catch (e) { veredicto = { veredicto: 'error_parseo', comentario: texto.slice(0,100) }; }\nreturn { json: { nombreTarea: tarea.NOMBRE, veredicto: veredicto.veredicto, comentario: veredicto.comentario, entrada, salida } };",
+        "mode": "runOnceForEachItem"
+      }
+    },
+    {
+      "id": "rev5",
+      "name": "Registrar gasto revision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        2000
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'Revision ' + new Date().toISOString(), MODELO: 'gpt-5.6-luna', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: Number(((($json.entrada||0)/1e6)*0.15 + (($json.salida||0)/1e6)*0.6).toFixed(6)), ACCION: 'revisar_relevo', CONTEXTO: $json.nombreTarea + ' :: veredicto=' + $json.veredicto + ' :: ' + $json.comentario, FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "v8",
+      "name": "Verificar contra esquema real",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        1200
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst tablaRelevante = ($('Construir tema con contexto').item.json.tablaRelevante || '').toUpperCase();\nconst texto = $json.propuesta_sintetizada || '';\nif (!tablaRelevante) { return { json: { ...$json, verificacionDeterminista: 'No aplica (sin TABLA_RELEVANTE, pregunta no tecnica)' } }; }\nconst esquema = await this.helpers.httpRequest({ method: 'GET', url: 'http://100.107.171.88/api/database/tables/all-tables/', headers: { Authorization: TOKEN }, json: true });\nconst todosCampos = [];\nfor (const t of esquema) { const cf = await this.helpers.httpRequest({ method: 'GET', url: 'http://100.107.171.88/api/database/fields/table/' + t.id + '/', headers: { Authorization: TOKEN }, json: true }); for (const c of cf) todosCampos.push({ tabla: t.name.toUpperCase(), campo: c.name.toUpperCase() }); }\nconst camposDeLaTabla = new Set(todosCampos.filter(c => c.tabla === tablaRelevante).map(c => c.campo));\nconst camposEnOtras = new Map();\nfor (const c of todosCampos) { if (c.tabla === tablaRelevante) continue; if (!camposEnOtras.has(c.campo)) camposEnOtras.set(c.campo, []); camposEnOtras.get(c.campo).push(c.tabla); }\nconst tablasReales = new Set(todosCampos.map(c => c.tabla));\nconst RUIDO = new Set(['UE','IA','JSON','API','URL','ID','UI','UX','WCAG','HTML','CSS','SQL','HTTP','HTTPS','CRUD','REST']);\nconst candidatos = [...new Set((texto.match(/\\b[A-Za-z][A-Za-z0-9]*(?:_[A-Za-z0-9]+){1,5}\\b/g) || []))].filter(c => !RUIDO.has(c.toUpperCase()));\nconst verificados = [], sospechosos = [], fabricados = [];\nfor (const c of candidatos) { const C = c.toUpperCase(); if (camposDeLaTabla.has(C)) verificados.push(c); else if (camposEnOtras.has(C)) sospechosos.push(c + ' (existe en ' + camposEnOtras.get(C).join(',') + ')'); else if (!tablasReales.has(C)) fabricados.push(c); }\nconst resumen = 'Verificados: ' + (verificados.join(', ') || 'ninguno') + ' | Sospechosos (otra tabla): ' + (sospechosos.join(', ') || 'ninguno') + ' | NO EXISTEN (posible fabricacion): ' + (fabricados.join(', ') || 'ninguno');\nreturn { json: { ...$json, verificacionDeterminista: resumen } };\n"
+      }
+    },
+    {
+      "id": "v9",
+      "name": "Bloquear elemento pendiente (lock)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        790,
+        1100
+      ],
+      "parameters": {
+        "jsCode": "const TOKEN = '__BASEROW_TOKEN__';\nconst candidatos = $json.results || [];\nconst AHORA = Date.now();\nconst DIEZ_MIN = 10 * 60 * 1000;\n\nlet elegido = null;\nfor (const c of candidatos) {\n  const bloqueadoDesde = c.PROCESANDO_DESDE ? Date.parse(c.PROCESANDO_DESDE) : null;\n  const bloqueado = bloqueadoDesde && (AHORA - bloqueadoDesde) < DIEZ_MIN;\n  if (!bloqueado) { elegido = c; break; }\n}\n\nif (!elegido) {\n  return { json: { results: [] } };\n}\n\nconst nuevoTimestamp = new Date().toISOString();\nawait this.helpers.httpRequest({\n  method: 'PATCH',\n  url: 'http://100.107.171.88/api/database/rows/table/287/' + elegido.id + '/',\n  qs: { user_field_names: 'true' },\n  headers: { Authorization: TOKEN, 'Content-Type': 'application/json' },\n  body: { PROCESANDO_DESDE: nuevoTimestamp },\n  json: true\n});\n\nelegido.PROCESANDO_DESDE = nuevoTimestamp;\nreturn { json: { results: [elegido] } };\n"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Cronista Segmentar": {
+      "main": [
+        [
+          {
+            "node": "Ruta por accion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ruta por accion": {
+      "main": [
+        [
+          {
+            "node": "Fijar modo (gratis)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fijar modo (premium)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expandir tareas confirmadas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar prompt de plantillas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expandir plantillas confirmadas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Promocionar version",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fijar personas de Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Local: borrador Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar tareas de la rama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fijar modo (gratis)": {
+      "main": [
+        [
+          {
+            "node": "Preparar prompt de segmentacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fijar modo (premium)": {
+      "main": [
+        [
+          {
+            "node": "Preparar prompt de segmentacion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar prompt de segmentacion": {
+      "main": [
+        [
+          {
+            "node": "Cronista: segmentar via LiteLLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cronista: segmentar via LiteLLM": {
+      "main": [
+        [
+          {
+            "node": "Extraer tareas propuestas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer tareas propuestas": {
+      "main": [
+        [
+          {
+            "node": "¿Modo premium?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Modo premium?": {
+      "main": [
+        [
+          {
+            "node": "Preparar verificacion DeepSeek",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respuesta gratis (final)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar verificacion DeepSeek": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto DeepSeek (tareas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: verificar y corregir": {
+      "main": [
+        [
+          {
+            "node": "Calcular coste DeepSeek (tareas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir tareas confirmadas": {
+      "main": [
+        [
+          {
+            "node": "Crear fila TAREA en Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear fila TAREA en Baserow": {
+      "main": [
+        [
+          {
+            "node": "Resumen de tareas creadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar prompt de plantillas": {
+      "main": [
+        [
+          {
+            "node": "Local: borrador de plantillas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local: borrador de plantillas": {
+      "main": [
+        [
+          {
+            "node": "Extraer plantillas borrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer plantillas borrador": {
+      "main": [
+        [
+          {
+            "node": "Preparar verificacion DeepSeek (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar verificacion DeepSeek (plantillas)": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto DeepSeek (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: verificar plantillas": {
+      "main": [
+        [
+          {
+            "node": "Calcular coste DeepSeek (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expandir plantillas confirmadas": {
+      "main": [
+        [
+          {
+            "node": "Crear fila PLANTILLA_MISION",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear fila PLANTILLA_MISION": {
+      "main": [
+        [
+          {
+            "node": "Resumen de plantillas creadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto DeepSeek (tareas)": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto disponible? (tareas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto disponible? (tareas)": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: verificar y corregir",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Presupuesto agotado (tareas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto DeepSeek (tareas)": {
+      "main": [
+        [
+          {
+            "node": "Extraer tareas verificadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto DeepSeek (plantillas)": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto disponible? (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto disponible? (plantillas)": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: verificar plantillas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Presupuesto agotado (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto DeepSeek (plantillas)": {
+      "main": [
+        [
+          {
+            "node": "Extraer plantillas verificadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular coste DeepSeek (tareas)": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto DeepSeek (tareas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular coste DeepSeek (plantillas)": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto DeepSeek (plantillas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fijar personas de Concilio": {
+      "main": [
+        [
+          {
+            "node": "Concilio: persona propone (local)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Concilio: persona propone (local)": {
+      "main": [
+        [
+          {
+            "node": "Extraer propuesta de persona",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer propuesta de persona": {
+      "main": [
+        [
+          {
+            "node": "Agregar propuestas de Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agregar propuestas de Concilio": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto Concilio": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto disponible? (Concilio)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto disponible? (Concilio)": {
+      "main": [
+        [
+          {
+            "node": "Preparar sintesis Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Concilio sin presupuesto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar sintesis Concilio": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: sintetizar Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: sintetizar Concilio": {
+      "main": [
+        [
+          {
+            "node": "Calcular coste Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular coste Concilio": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto Concilio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto Concilio": {
+      "main": [
+        [
+          {
+            "node": "Extraer sintesis final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Vigilia: cada 15 minutos": {
+      "main": [
+        [
+          {
+            "node": "Buscar siguiente Vigilia pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar siguiente Vigilia pendiente": {
+      "main": [
+        [
+          {
+            "node": "Bloquear elemento pendiente (lock)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay Vigilia pendiente?": {
+      "main": [
+        [
+          {
+            "node": "Buscar capitulo anterior",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Resumen final de Vigilia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar capitulo anterior": {
+      "main": [
+        [
+          {
+            "node": "Construir tema con contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir tema con contexto": {
+      "main": [
+        [
+          {
+            "node": "Llamar a Concilio (interno)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Llamar a Concilio (interno)": {
+      "main": [
+        [
+          {
+            "node": "Verificar contra esquema real",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar resultado en Vigilia": {
+      "main": [
+        [
+          {
+            "node": "Buscar siguiente Vigilia pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local: borrador Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Extraer borrador Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer borrador Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Preparar verificacion Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar verificacion Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto disponible? (Canvas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto disponible? (Canvas)": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: verificar Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin presupuesto (Canvas)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: verificar Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Calcular coste Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular coste Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Extraer Canvas+DAFO final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer Canvas+DAFO final": {
+      "main": [
+        [
+          {
+            "node": "Construir HTML del Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir HTML del Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Exportar PDF Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exportar PDF Canvas+DAFO": {
+      "main": [
+        [
+          {
+            "node": "Confirmar export Canvas+DAFO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen final de Vigilia": {
+      "main": [
+        [
+          {
+            "node": "Resumen de gasto de hoy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen de gasto de hoy": {
+      "main": [
+        [
+          {
+            "node": "Construir correo de resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir correo de resumen": {
+      "main": [
+        [
+          {
+            "node": "Enviar correo de resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEMP kick vision global": {
+      "main": [
+        [
+          {
+            "node": "Buscar siguiente Vigilia pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar tareas de la rama": {
+      "main": [
+        [
+          {
+            "node": "Separar tareas en items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar tareas en items": {
+      "main": [
+        [
+          {
+            "node": "Revisar con GPT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Revisar con GPT": {
+      "main": [
+        [
+          {
+            "node": "Extraer veredicto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer veredicto": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto revision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar contra esquema real": {
+      "main": [
+        [
+          {
+            "node": "Guardar resultado en Vigilia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bloquear elemento pendiente (lock)": {
+      "main": [
+        [
+          {
+            "node": "¿Hay Vigilia pendiente?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Vigilia: cada 15 minutos": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": {},
+  "tags": []
+}

@@ -1167,3 +1167,30 @@ en el catálogo real).
   primer caso real, preparado a mano antes de automatizar nada.
 - La cifra de "19 nodos" es una estimación de diseño, no una medición --
   el primer Relevo real dirá si es un tamaño cómodo o hay que ajustar.
+
+## Workflows n8n exportados a git, con un hallazgo real más de credenciales (2026-09-01)
+
+Al exportar los 2 workflows reales de la instancia n8n "generador"
+(`tools/n8n-workflows/`) para tenerlos versionados -- hasta ahora solo
+vivían dentro de n8n, sin diff ni historial -- se intentó primero
+eliminar el hardcode de token de los 7 nodos corregidos esa misma
+noche, usando `this.getCredentials()` y luego
+`this.helpers.httpRequestWithAuthentication()`. **Ninguna de las dos
+funciona**: esta versión del Code node de n8n corre en un sandbox de
+task-runner que no permite acceso a credenciales de ningún tipo desde
+código. Revertido a token en claro (funcional, verificado con una fila
+de prueba real) -- el hardcode sigue siendo un hueco real pendiente de
+resolver como es debido (convertir estas llamadas a nodos HTTP Request
+nativos con la credencial `httpHeaderAuth`), documentado en
+`tools/n8n-workflows/README.md`.
+
+Al exportar, se hizo un `grep` de verificación antes de comitear (regla
+de esta noche: nunca asumir que una redacción fue completa sin
+comprobarlo) y apareció **un hallazgo más**: el workflow "Telar
+Interactivo" -- no tocado hasta ahora -- tenía el mismo token viejo ya
+filtrado (el del incidente GitGuardian) hardcodeado en 2 nodos más
+(`Comprobar presupuesto Telar`, `Comprobar presupuesto Urdimbre`),
+rotos en producción desde la rotación sin que nadie lo notara.
+Corregidos. El export final a git tiene todo valor de token (actual y
+viejo) sustituido por el marcador `__BASEROW_TOKEN__` -- nunca se
+commitea un secreto real, ni siquiera uno ya invalidado.

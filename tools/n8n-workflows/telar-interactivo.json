@@ -1,0 +1,2092 @@
+{
+  "id": "a6NcRV6TOlLFWOv5",
+  "name": "Telar Interactivo",
+  "active": true,
+  "nodes": [
+    {
+      "id": "p1",
+      "name": "Sondeo Telar",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -440,
+        400
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 15
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "p2",
+      "name": "Obtener actualizaciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -220,
+        400
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/getUpdates",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "timeout",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "p3",
+      "name": "Normalizar Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const updates = $json.result || [];\nif (updates.length === 0) return [];\nconst maxId = Math.max(...updates.map(u => u.update_id));\ntry { await this.helpers.httpRequest({ method: 'GET', url: 'https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/getUpdates?offset=' + (maxId+1) + '&timeout=0', json: true }); } catch (e) {}\nconst salida = [];\nfor (const body of updates) {\n  const esCallback = !!body.callback_query;\n  const chatId = esCallback ? body.callback_query.message.chat.id : (body.message && body.message.chat.id);\n  const nombre = esCallback ? (body.callback_query.from.first_name || '') : ((body.message && body.message.from.first_name) || '');\n  const texto = esCallback ? '' : ((body.message && body.message.text) || '');\n  const callbackData = esCallback ? body.callback_query.data : '';\n  const callbackQueryId = esCallback ? body.callback_query.id : '';\n  if (esCallback) { try { await this.helpers.httpRequest({ method: 'POST', url: 'https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/answerCallbackQuery', body: { callback_query_id: callbackQueryId }, json: true }); } catch (e) {} }\n  salida.push({ json: { esCallback, chatId: String(chatId), nombre, texto, callbackData } });\n}\nreturn salida;"
+      }
+    },
+    {
+      "id": "p4",
+      "name": "Buscar sesion actual",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        220,
+        400
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "p5",
+      "name": "Enrutar por estado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        440,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const cb = $('Normalizar Update').item.json;\nconst sesion = $json;\nconst estado = sesion.ESTADO;\nconst enCurso = ['esperando_pv','esperando_necesita','esperando_conflicto','esperando_confirmacion','esperando_ajuste','esperando_eleccion'].includes(estado);\nlet accion = 'ignorar';\nlet opcionTexto = '';\nif (!cb.esCallback) {\n  if (cb.texto === '/estado') accion = 'estado';\n  else if (cb.texto === '/telar' && enCurso) accion = 'retomar_o_nueva';\n  else if (estado === 'inactivo' || estado === 'terminado' || !estado) accion = 'saludar';\n  else if (estado === 'esperando_pv' && cb.texto && !cb.texto.startsWith('/')) { accion = 'respuesta_pv'; opcionTexto = cb.texto; }\n  else if (estado === 'esperando_necesita' && cb.texto && !cb.texto.startsWith('/')) { accion = 'respuesta_necesita'; opcionTexto = cb.texto; }\n  else if (estado === 'esperando_conflicto' && cb.texto && !cb.texto.startsWith('/')) { accion = 'respuesta_conflicto'; opcionTexto = cb.texto; }\n  else if (estado === 'esperando_ajuste' && cb.texto && !cb.texto.startsWith('/')) { accion = 'respuesta_ajuste'; opcionTexto = cb.texto; }\n  else if (estado === 'esperando_eleccion' && cb.texto && !cb.texto.startsWith('/')) { accion = 'capitulo_elegido'; opcionTexto = cb.texto; }\n} else {\n  if (cb.callbackData === 'telar_retomar') accion = 'retomar';\n  else if (cb.callbackData === 'telar_nueva') accion = 'empezar_nueva';\n  else if (cb.callbackData === 'telar_confirmar' && estado === 'esperando_confirmacion') accion = 'confirmar_urdimbre';\n  else if (cb.callbackData === 'telar_ajustar' && estado === 'esperando_confirmacion') accion = 'pedir_ajuste';\n  else if ((cb.callbackData === 'telar_A' || cb.callbackData === 'telar_B') && estado === 'esperando_eleccion') {\n    accion = 'capitulo_elegido';\n    opcionTexto = cb.callbackData === 'telar_A' ? sesion.OPCION_A : sesion.OPCION_B;\n  }\n}\nreturn { json: { chatId: cb.chatId, nombre: cb.nombre, callbackData: cb.callbackData, sesion, accion, opcionTexto } };"
+      }
+    },
+    {
+      "id": "p6",
+      "name": "Rama de accion",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        660,
+        400
+      ],
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "saludar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "saludar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "respuesta_pv",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "respuesta_pv"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "respuesta_necesita",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "respuesta_necesita"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "respuesta_conflicto",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "respuesta_conflicto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "confirmar_urdimbre",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "confirmar_urdimbre"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "pedir_ajuste",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "pedir_ajuste"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "respuesta_ajuste",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "respuesta_ajuste"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "capitulo_elegido",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "capitulo_elegido"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "estado",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "estado"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "retomar_o_nueva",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "retomar_o_nueva"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "retomar",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "retomar"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.accion }}",
+                    "rightValue": "empezar_nueva",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "outputKey": "empezar_nueva"
+            }
+          ]
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "s1",
+      "name": "Construir prompt opciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const PASOS = [\"Tu (zona de confort)\",\"Necesidad\",\"Ir\",\"Buscar\",\"Encontrar\",\"Tomar (el sacrificio)\",\"Volver\",\"Cambiado (final)\"];\nconst sesion = $json;\nconst chatId = sesion.CHAT_ID;\nconst numCap = parseInt(sesion.CAPITULO_ACTUAL);\nconst pasoActual = PASOS[numCap - 1];\nconst etiqueta = '[Capitulo ' + numCap + '/8 · ' + pasoActual + ']';\nconst marker = 'URDIMBRE:: ';\nconst hist = sesion.HISTORIAL || '';\nconst idx = hist.indexOf('\\n\\n');\nconst urdimbre = hist.startsWith(marker) ? hist.slice(marker.length, idx) : '';\nconst historiaSoFar = hist.startsWith(marker) ? hist.slice(idx + 2) : hist;\nconst prompt = 'Eres coautor de una historia interactiva de Engremiat. ' + urdimbre + ' Historia hasta ahora:\\n' + (historiaSoFar || '(inicio de la historia)') + '\\n\\nPropon EXACTAMENTE 2 direcciones distintas y breves (1-2 frases cada una) para el capitulo ' + numCap + ' (' + pasoActual + '). Responde SOLO con JSON valido: {\"opcion_a\": \"...\", \"opcion_b\": \"...\"}';\nreturn { json: { chatId, prompt, etiqueta } };"
+      }
+    },
+    {
+      "id": "s2",
+      "name": "DeepSeek: generar opciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'user', content: $('Construir prompt opciones').item.json.prompt } ], temperature: 0.5 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "s3",
+      "name": "Extraer opciones",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2660,
+        420
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Construir prompt opciones').item.json;\nconst u = $json.usage || {};\nconst entrada = u.prompt_tokens || 0;\nconst salida = u.completion_tokens || 0;\nconst coste = Number(((entrada/1e6)*0.44 + (salida/1e6)*1.32).toFixed(6));\nlet texto = $json.choices[0].message.content.trim();\ntexto = texto.replace(/```json|```/g, '').trim();\nlet opciones;\ntry { opciones = JSON.parse(texto); } catch (e) { opciones = { opcion_a: 'Continuar con cautela', opcion_b: 'Actuar con decision' }; }\nreturn { json: { chatId: prep.chatId, opcionA: opciones.opcion_a, opcionB: opciones.opcion_b, etiqueta: prep.etiqueta, entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "s4",
+      "name": "Guardar opciones en sesion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        420
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ OPCION_A: $json.opcionA, OPCION_B: $json.opcionB, ESTADO: 'esperando_eleccion' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "s5",
+      "name": "Enviar opciones a Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3100,
+        420
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Extraer opciones').item.json.chatId, text: $('Extraer opciones').item.json.etiqueta + '\\n\\nA) ' + $('Extraer opciones').item.json.opcionA + '\\n\\nB) ' + $('Extraer opciones').item.json.opcionB + '\\n\\n¿Que pasa ahora? (o escribe tu propia idea)', reply_markup: { inline_keyboard: [[ { text: 'Elegir A', callback_data: 'telar_A' }, { text: 'Elegir B', callback_data: 'telar_B' } ]] } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "t1",
+      "name": "Preparar desarrollo capitulo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        640
+      ],
+      "parameters": {
+        "jsCode": "const PASOS = [\"Tu (zona de confort)\",\"Necesidad\",\"Ir\",\"Buscar\",\"Encontrar\",\"Tomar (el sacrificio)\",\"Volver\",\"Cambiado (final)\"];\nconst r = $json;\nconst sesion = r.sesion;\nconst numCap = parseInt(sesion.CAPITULO_ACTUAL);\nconst pasoActual = PASOS[numCap - 1];\nconst marker = 'URDIMBRE:: ';\nconst hist = sesion.HISTORIAL || '';\nconst idx = hist.indexOf('\\n\\n');\nconst urdimbre = hist.startsWith(marker) ? hist.slice(marker.length, idx) : '';\nconst historiaSoFar = hist.startsWith(marker) ? hist.slice(idx + 2) : hist;\nconst systemPrompt = 'Eres coautor de una historia interactiva de Engremiat. ' + urdimbre + ' Escribe SOLO el texto del capitulo ' + numCap + ' (' + pasoActual + '), desarrollando la direccion elegida por el jugador. Un parrafo, tono consistente con los capitulos anteriores. No repitas capitulos anteriores, continua desde ahi.';\nconst userPrompt = 'Historia hasta ahora:\\n' + (historiaSoFar || '(inicio de la historia)') + '\\n\\nDireccion elegida para este capitulo: ' + r.opcionTexto;\nreturn { json: { chatId: r.chatId, numCap, historialPrevio: hist, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "t2",
+      "name": "Comprobar presupuesto Telar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        640
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Preparar desarrollo capitulo').item.json;\nconst TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...prep, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "t3",
+      "name": "¿Presupuesto disponible? (Telar)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        640
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "t4",
+      "name": "Sin presupuesto (Telar)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        760
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: 'Se alcanzo el tope de presupuesto mensual. Avisa al operador.' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "t5",
+      "name": "DeepSeek: desarrollar capitulo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        620
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0.5 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "t6",
+      "name": "Calcular coste Telar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1780,
+        620
+      ],
+      "parameters": {
+        "jsCode": "const u = $json.usage || {};\nconst entrada = u.prompt_tokens || 0;\nconst salida = u.completion_tokens || 0;\nconst coste = Number(((entrada/1e6)*0.44 + (salida/1e6)*1.32).toFixed(6));\nreturn { json: { entrada, salida, coste } };"
+      }
+    },
+    {
+      "id": "t7",
+      "name": "Registrar gasto Telar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        620
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'Telar ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'telar_interactivo', CONTEXTO: 'Telar -- capitulo interactivo', FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "t8",
+      "name": "Extraer capitulo final",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2220,
+        620
+      ],
+      "parameters": {
+        "jsCode": "const resp = $('DeepSeek: desarrollar capitulo').item.json;\nconst prep = $('Preparar desarrollo capitulo').item.json;\nconst texto = resp.choices[0].message.content.trim();\nreturn { json: { chatId: prep.chatId, numCap: prep.numCap, historialPrevio: prep.historialPrevio, capituloTexto: texto } };"
+      }
+    },
+    {
+      "id": "t9",
+      "name": "Actualizar sesion (nuevo capitulo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        620
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ CAPITULO_ACTUAL: $json.numCap + 1, HISTORIAL: ($json.historialPrevio ? $json.historialPrevio + '\\n\\n' : '') + 'Cap.' + $json.numCap + ': ' + $json.capituloTexto, OPCION_A: '', OPCION_B: '' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "t10",
+      "name": "Enviar capitulo al usuario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        620
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Extraer capitulo final').item.json.chatId, text: '[Capitulo ' + $('Extraer capitulo final').item.json.numCap + '/8]\\n' + $('Extraer capitulo final').item.json.capituloTexto }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "t11",
+      "name": "¿Es el ultimo capitulo?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2880,
+        620
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.CAPITULO_ACTUAL }}",
+              "rightValue": 8,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "t12",
+      "name": "Enviar cierre historia",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3100,
+        560
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Extraer capitulo final').item.json.chatId, text: 'Historia terminada. Mas informacion: https://www.arrels.cat\\n\\nEnvia /telar para empezar una historia nueva.' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "t13",
+      "name": "Marcar sesion terminada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3320,
+        560
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ESTADO: 'terminado' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "e1",
+      "name": "Buscar sesion (estado)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        820
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "e2",
+      "name": "Enviar estado",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        820
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Enrutar por estado').item.json.chatId, text: 'Estado: ' + $json.ESTADO + (($json.CAPITULO_ACTUAL) ? (' · Capitulo ' + $json.CAPITULO_ACTUAL + '/8') : '') }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "ux1",
+      "name": "Mostrar escribiendo (opciones)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2330,
+        380
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendChatAction",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, action: 'typing' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "ux2",
+      "name": "Mostrar escribiendo (capitulo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1230,
+        640
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendChatAction",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Preparar desarrollo capitulo').item.json.chatId, action: 'typing' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "fix1",
+      "name": "Recuperar sesion tras envio",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2770,
+        620
+      ],
+      "parameters": {
+        "jsCode": "return { json: $('Actualizar sesion (nuevo capitulo)').item.json };"
+      }
+    },
+    {
+      "id": "gasto_op",
+      "name": "Registrar gasto opciones",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'Telar-opciones ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: $json.entrada, TOKENS_SALIDA: $json.salida, COSTE_ESTIMADO_USD: $json.coste, ACCION: 'telar_interactivo', CONTEXTO: 'Telar -- opciones de capitulo', FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w1",
+      "name": "Preguntar punto de vista",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        160
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: 'Primera pregunta: ¿quien la vive? ¿desde que perspectiva la contamos? (responde con tus propias palabras)' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "w2",
+      "name": "Fijar estado esperando_pv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        160
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ESTADO: 'esperando_pv', HISTORIAL: '', CHAT_ID: String($('Enrutar por estado').item.json.chatId) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w3",
+      "name": "Guardar PV, preguntar necesidad",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        900
+      ],
+      "parameters": {
+        "jsCode": "const r = $json;\nreturn { json: { chatId: r.chatId, pv: r.opcionTexto } };"
+      }
+    },
+    {
+      "id": "w4",
+      "name": "Fijar HISTORIAL con PV",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        900
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ HISTORIAL: 'WIZARD:: pv=' + $json.pv + '\\n', ESTADO: 'esperando_necesita' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w5",
+      "name": "Preguntar necesidad",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        900
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Guardar PV, preguntar necesidad').item.json.chatId, text: 'Esa persona, ¿que quiere conseguir a simple vista? ¿y que necesita de verdad, mas alla de eso?' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "w6",
+      "name": "Guardar necesidad, preguntar conflicto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1040
+      ],
+      "parameters": {
+        "jsCode": "const r = $json;\nconst hist = r.sesion.HISTORIAL || '';\nreturn { json: { chatId: r.chatId, histPrevio: hist, necesidad: r.opcionTexto } };"
+      }
+    },
+    {
+      "id": "w7",
+      "name": "Fijar HISTORIAL con necesidad",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1040
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ HISTORIAL: $json.histPrevio + 'necesita=' + $json.necesidad + '\\n', ESTADO: 'esperando_conflicto' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w8",
+      "name": "Preguntar conflicto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        1040
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Guardar necesidad, preguntar conflicto').item.json.chatId, text: 'Ultima pregunta antes de empezar: ¿cual es el conflicto central? ¿que hace dificil que consiga lo que necesita?' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "w9",
+      "name": "Preparar construccion Urdimbre",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1180
+      ],
+      "parameters": {
+        "jsCode": "const r = $json;\nconst hist = r.sesion.HISTORIAL || '';\nconst respuestas = hist + 'conflicto=' + r.opcionTexto;\nconst systemPrompt = 'Convierte estas tres respuestas en una Urdimbre coherente de 3-4 frases para una historia interactiva de Engremiat -- mismo estilo que: \"Punto de vista: un vecino del Raval que acompana a Ramon...\". No inventes elementos que no se deriven de las respuestas dadas. Incluye siempre: mantente concreto, sin metaforas abstractas ni cambios de escenario, y un final sin resolucion magica.';\nreturn { json: { chatId: r.chatId, systemPrompt, userPrompt: respuestas } };"
+      }
+    },
+    {
+      "id": "w10",
+      "name": "Comprobar presupuesto Urdimbre",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        1180
+      ],
+      "parameters": {
+        "jsCode": "const prep = $('Preparar construccion Urdimbre').item.json;\nconst TOKEN = '__BASEROW_TOKEN__';\nconst TOPE_MENSUAL_USD = 5;\nconst desde = new Date(); desde.setDate(desde.getDate() - 30);\nconst url = 'http://100.107.171.88/api/database/rows/table/285/?user_field_names=true&filter__SERVICIO__single_select_equal=1076&filter__FECHA__date_after_or_equal=' + desde.toISOString().slice(0,10) + '&size=200';\nconst j = await this.helpers.httpRequest({ method: 'GET', url, headers: { Authorization: TOKEN }, json: true });\nconst gastoAcumulado = (j.results || []).reduce((s, r) => s + (parseFloat(r.COSTE_ESTIMADO_USD) || 0), 0);\nreturn { json: { ...prep, presupuestoOk: gastoAcumulado < TOPE_MENSUAL_USD } };"
+      }
+    },
+    {
+      "id": "w11",
+      "name": "¿Presupuesto Urdimbre?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        1180
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.presupuestoOk }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      }
+    },
+    {
+      "id": "w12",
+      "name": "DeepSeek: construir Urdimbre",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        1140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.deepseek.com/chat/completions",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'deepseek-chat', messages: [ { role: 'system', content: $json.systemPrompt }, { role: 'user', content: $json.userPrompt } ], temperature: 0.4 }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1BhfjYDGJ1RqJ03a",
+          "name": "DeepSeek API Key - Generador (PRESTADA, sustituir)"
+        }
+      }
+    },
+    {
+      "id": "w13",
+      "name": "Sin presupuesto (Urdimbre)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        1260
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: 'Se alcanzo el tope de presupuesto mensual. Avisa al operador.' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "w14",
+      "name": "Registrar gasto Urdimbre",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1780,
+        1140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/285/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ NOMBRE: 'Telar-urdimbre ' + new Date().toISOString(), SERVICIO: 'deepseek', MODELO: 'deepseek-chat', TOKENS_ENTRADA: ($json.usage && $json.usage.prompt_tokens) || 0, TOKENS_SALIDA: ($json.usage && $json.usage.completion_tokens) || 0, COSTE_ESTIMADO_USD: Number(((( ($json.usage && $json.usage.prompt_tokens) || 0)/1e6)*0.44 + ((($json.usage && $json.usage.completion_tokens) || 0)/1e6)*1.32).toFixed(6)), ACCION: 'telar_interactivo', CONTEXTO: 'Telar -- construccion de Urdimbre en vivo', FECHA: new Date().toISOString().slice(0,10) }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w15",
+      "name": "Guardar Urdimbre y mostrar boceto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        1140
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ HISTORIAL: 'URDIMBRE:: ' + $('DeepSeek: construir Urdimbre').item.json.choices[0].message.content.trim() + '\\n\\n', CAPITULO_ACTUAL: 1, ESTADO: 'esperando_confirmacion' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "w16",
+      "name": "Enviar boceto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2220,
+        1140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Preparar construccion Urdimbre').item.json.chatId, text: 'Asi queda tu historia:\\n\\n' + $('DeepSeek: construir Urdimbre').item.json.choices[0].message.content.trim() + '\\n\\n¿Empezamos asi, o quieres ajustar algo?', reply_markup: { inline_keyboard: [[{ text: 'Empezar asi', callback_data: 'telar_confirmar' }], [{ text: 'Ajustar', callback_data: 'telar_ajustar' }]] } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "ux3",
+      "name": "Mostrar escribiendo (urdimbre)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1010,
+        1180
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendChatAction",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, action: 'typing' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "rn1",
+      "name": "Preguntar retomar o nueva",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        1400
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: 'Tienes una historia sin terminar (capitulo ' + $json.sesion.CAPITULO_ACTUAL + '). ¿Que quieres hacer?', reply_markup: { inline_keyboard: [[{ text: 'Continuar donde lo deje', callback_data: 'telar_retomar' }], [{ text: 'Empezar una nueva', callback_data: 'telar_nueva' }]] } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "rn2",
+      "name": "Reenviar pregunta pendiente",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        1520
+      ],
+      "parameters": {
+        "jsCode": "const r = $json;\nconst s = r.sesion;\nconst preguntas = {\n  esperando_pv: '¿Quien la vive? ¿Desde que perspectiva la contamos?',\n  esperando_necesita: '¿Que quiere a simple vista? ¿Que necesita de verdad?',\n  esperando_conflicto: '¿Cual es el conflicto central?'\n};\nlet texto;\nif (s.ESTADO === 'esperando_eleccion') {\n  texto = '[Capitulo ' + s.CAPITULO_ACTUAL + '] Retomamos donde lo dejaste.\\n\\nA) ' + s.OPCION_A + '\\n\\nB) ' + s.OPCION_B + '\\n\\n¿Que pasa ahora? (o escribe tu propia idea)';\n} else {\n  texto = 'Retomamos donde lo dejaste.\\n\\n' + (preguntas[s.ESTADO] || 'Continua respondiendo a la ultima pregunta.');\n}\nreturn { json: { chatId: r.chatId, texto, tieneBotones: s.ESTADO === 'esperando_eleccion', opcionA: s.OPCION_A, opcionB: s.OPCION_B } };"
+      }
+    },
+    {
+      "id": "rn3",
+      "name": "Enviar pregunta pendiente",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1520
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.tieneBotones ? JSON.stringify({ chat_id: $json.chatId, text: $json.texto, reply_markup: { inline_keyboard: [[ { text: 'Elegir A', callback_data: 'telar_A' }, { text: 'Elegir B', callback_data: 'telar_B' } ]] } }) : JSON.stringify({ chat_id: $json.chatId, text: $json.texto }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "rn4a",
+      "name": "Archivar historia pausada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        1640
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "http://100.107.171.88/api/database/rows/table/292/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "user_field_names",
+              "value": "true"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ TITULO: 'Pausada ' + new Date().toISOString(), TEMA: $json.sesion.HISTORIAL || '(sin urdimbre construida todavia)', PRESENTACION: 'Historia pausada para empezar otra -- capitulo ' + ($json.sesion.CAPITULO_ACTUAL || 1) + ', estado ' + $json.sesion.ESTADO, REGISTRO: 'estandar', ESTADO: 'pausada' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "rn4",
+      "name": "Reiniciar y saludar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        1640
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ CAPITULO_ACTUAL: 1, HISTORIAL: '', ESTADO: 'esperando_tipo', OPCION_A: '', OPCION_B: '' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "rn5",
+      "name": "Enviar menu (nueva historia)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1340,
+        1640
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $('Reiniciar y saludar').item.json.CHAT_ID, text: 'Empezamos una historia nueva -- la anterior queda guardada como pausada, no perdida (podras retomarla mas adelante desde la biblioteca). ¿Que quieres construir?', reply_markup: { inline_keyboard: [[{ text: '📖 Historia', callback_data: 'telar_menu_historia' }], [{ text: '💻 Software o negocio', callback_data: 'telar_menu_software' }], [{ text: '🤝 Proyecto comunitario', callback_data: 'telar_menu_comunitario' }]] } }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "g1",
+      "name": "Enviar saludo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        100
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: 'Hola' + ($json.nombre ? ' ' + $json.nombre : '') + ' -- soy el Telar de Engremiat, un espacio de conversacion asistido por IA para construir historias juntos, no una persona.' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "cf1",
+      "name": "Confirmar y empezar Trama",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        1140
+      ],
+      "parameters": {
+        "jsCode": "return { json: $('Guardar Urdimbre y mostrar boceto').item.json };"
+      }
+    },
+    {
+      "id": "aj1",
+      "name": "Preguntar ajuste",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2440,
+        1300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.telegram.org/bot8808566374:AAHr_dTaSo--UPsEV0iYgeuO7hHWdRBkyjk/sendMessage",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ chat_id: $json.chatId, text: '¿Que cambiarias del planteamiento?' }) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "aj2",
+      "name": "Fijar estado esperando_ajuste",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2660,
+        1300
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ESTADO: 'esperando_ajuste' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    },
+    {
+      "id": "aj3",
+      "name": "Reconstruir Urdimbre con ajuste",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2440,
+        1440
+      ],
+      "parameters": {
+        "jsCode": "const r = $json;\nconst hist = r.sesion.HISTORIAL || '';\nconst marker = 'URDIMBRE:: ';\nconst urdimbreActual = hist.startsWith(marker) ? hist.slice(marker.length).split('\\n\\n')[0] : hist;\nconst systemPrompt = 'Ajusta esta Urdimbre segun el comentario del coordinador. Devuelve la Urdimbre completa ya ajustada, 3-4 frases, mismo estilo, sin explicar el cambio.';\nconst userPrompt = 'Urdimbre actual: ' + urdimbreActual + '\\n\\nAjuste pedido: ' + r.opcionTexto;\nreturn { json: { chatId: r.chatId, systemPrompt, userPrompt } };"
+      }
+    },
+    {
+      "id": "lock1",
+      "name": "Bloquear sesion (procesando capitulo)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        780
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "http://100.107.171.88/api/database/rows/table/290/1/?user_field_names=true",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ESTADO: 'procesando' }) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "U2E4Y1n6fN1IYuKG",
+          "name": "Baserow API Token - Pi (Generador)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Sondeo Telar": {
+      "main": [
+        [
+          {
+            "node": "Obtener actualizaciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener actualizaciones": {
+      "main": [
+        [
+          {
+            "node": "Normalizar Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar Update": {
+      "main": [
+        [
+          {
+            "node": "Buscar sesion actual",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar sesion actual": {
+      "main": [
+        [
+          {
+            "node": "Enrutar por estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrutar por estado": {
+      "main": [
+        [
+          {
+            "node": "Rama de accion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rama de accion": {
+      "main": [
+        [
+          {
+            "node": "Enviar saludo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardar PV, preguntar necesidad",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Guardar necesidad, preguntar conflicto",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar construccion Urdimbre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Confirmar y empezar Trama",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preguntar ajuste",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reconstruir Urdimbre con ajuste",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar desarrollo capitulo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Buscar sesion (estado)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preguntar retomar o nueva",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reenviar pregunta pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Archivar historia pausada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construir prompt opciones": {
+      "main": [
+        [
+          {
+            "node": "Mostrar escribiendo (opciones)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer opciones": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar opciones en sesion": {
+      "main": [
+        [
+          {
+            "node": "Enviar opciones a Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar desarrollo capitulo": {
+      "main": [
+        [
+          {
+            "node": "Bloquear sesion (procesando capitulo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto Telar": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto disponible? (Telar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto disponible? (Telar)": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: desarrollar capitulo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin presupuesto (Telar)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: desarrollar capitulo": {
+      "main": [
+        [
+          {
+            "node": "Calcular coste Telar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular coste Telar": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto Telar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto Telar": {
+      "main": [
+        [
+          {
+            "node": "Extraer capitulo final",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer capitulo final": {
+      "main": [
+        [
+          {
+            "node": "Actualizar sesion (nuevo capitulo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Actualizar sesion (nuevo capitulo)": {
+      "main": [
+        [
+          {
+            "node": "Enviar capitulo al usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar capitulo al usuario": {
+      "main": [
+        [
+          {
+            "node": "Recuperar sesion tras envio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Es el ultimo capitulo?": {
+      "main": [
+        [
+          {
+            "node": "Enviar cierre historia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Construir prompt opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar cierre historia": {
+      "main": [
+        [
+          {
+            "node": "Marcar sesion terminada",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar sesion (estado)": {
+      "main": [
+        [
+          {
+            "node": "Enviar estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mostrar escribiendo (opciones)": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: generar opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mostrar escribiendo (capitulo)": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto Telar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recuperar sesion tras envio": {
+      "main": [
+        [
+          {
+            "node": "¿Es el ultimo capitulo?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: generar opciones": {
+      "main": [
+        [
+          {
+            "node": "Extraer opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto opciones": {
+      "main": [
+        [
+          {
+            "node": "Guardar opciones en sesion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preguntar punto de vista": {
+      "main": [
+        [
+          {
+            "node": "Fijar estado esperando_pv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar PV, preguntar necesidad": {
+      "main": [
+        [
+          {
+            "node": "Fijar HISTORIAL con PV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fijar HISTORIAL con PV": {
+      "main": [
+        [
+          {
+            "node": "Preguntar necesidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar necesidad, preguntar conflicto": {
+      "main": [
+        [
+          {
+            "node": "Fijar HISTORIAL con necesidad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fijar HISTORIAL con necesidad": {
+      "main": [
+        [
+          {
+            "node": "Preguntar conflicto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar construccion Urdimbre": {
+      "main": [
+        [
+          {
+            "node": "Mostrar escribiendo (urdimbre)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Comprobar presupuesto Urdimbre": {
+      "main": [
+        [
+          {
+            "node": "¿Presupuesto Urdimbre?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Presupuesto Urdimbre?": {
+      "main": [
+        [
+          {
+            "node": "DeepSeek: construir Urdimbre",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Sin presupuesto (Urdimbre)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek: construir Urdimbre": {
+      "main": [
+        [
+          {
+            "node": "Registrar gasto Urdimbre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Registrar gasto Urdimbre": {
+      "main": [
+        [
+          {
+            "node": "Guardar Urdimbre y mostrar boceto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Urdimbre y mostrar boceto": {
+      "main": [
+        [
+          {
+            "node": "Enviar boceto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar boceto": {
+      "main": []
+    },
+    "Mostrar escribiendo (urdimbre)": {
+      "main": [
+        [
+          {
+            "node": "Comprobar presupuesto Urdimbre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reenviar pregunta pendiente": {
+      "main": [
+        [
+          {
+            "node": "Enviar pregunta pendiente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Archivar historia pausada": {
+      "main": [
+        [
+          {
+            "node": "Reiniciar y saludar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reiniciar y saludar": {
+      "main": [
+        [
+          {
+            "node": "Enviar menu (nueva historia)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar saludo": {
+      "main": [
+        [
+          {
+            "node": "Preguntar punto de vista",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirmar y empezar Trama": {
+      "main": [
+        [
+          {
+            "node": "Construir prompt opciones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preguntar ajuste": {
+      "main": [
+        [
+          {
+            "node": "Fijar estado esperando_ajuste",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reconstruir Urdimbre con ajuste": {
+      "main": [
+        [
+          {
+            "node": "Mostrar escribiendo (urdimbre)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bloquear sesion (procesando capitulo)": {
+      "main": [
+        [
+          {
+            "node": "Mostrar escribiendo (capitulo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:Sondeo Telar": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": {},
+  "tags": []
+}
