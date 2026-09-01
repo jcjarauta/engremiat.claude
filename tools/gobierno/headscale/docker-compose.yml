@@ -1,0 +1,25 @@
+# Headscale -- servidor de coordinacion propio de Tailscale, autoalojado.
+# Etapa 1 del plan (ver conversacion): aditivo, reversible -- se levanta y se verifica,
+# pero ningun nodo real (VPS/Pi/PC) se migra a el todavia. Migrar nodos reales es la
+# Etapa 2, deliberadamente separada por el riesgo real de cortar conectividad viva
+# (backups, webhooks de encendido remoto, etc.) -- requiere autorizacion explicita aparte.
+# Mismo criterio de minimo privilegio que el resto del VPS: atado solo a Tailscale.
+
+services:
+  headscale:
+    image: headscale/headscale:0.23.0
+    container_name: engremiat-headscale
+    restart: unless-stopped
+    command: serve
+    volumes:
+      - ./config.yaml:/etc/headscale/config.yaml:ro
+      - headscale-data:/var/lib/headscale
+      - headscale-run:/var/run/headscale
+    ports:
+      - "100.107.171.88:8081:8081"
+      - "100.107.171.88:50443:50443"
+      - "100.107.171.88:9092:9092"
+
+volumes:
+  headscale-data:
+  headscale-run:

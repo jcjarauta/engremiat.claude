@@ -1,0 +1,46 @@
+# Config minima real de Headscale para Engremiat -- Etapa 1 (aditiva, sin migrar nodos).
+# Basada en el config-example.yaml real del proyecto (juanfont/headscale, main).
+# Servidor de coordinacion propio, autoalojado -- ningun nodo real (VPS/Pi/PC) apunta
+# aqui todavia. Esto solo levanta el servicio para verificarlo antes de decidir migrar.
+
+server_url: http://100.107.171.88:8081
+listen_addr: 0.0.0.0:8081
+metrics_listen_addr: 0.0.0.0:9092
+grpc_listen_addr: 0.0.0.0:50443
+grpc_allow_insecure: false
+
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+
+prefixes:
+  v4: 100.64.0.0/10
+  v6: fd7a:115c:a1e0::/48
+  allocation: sequential
+
+database:
+  type: sqlite
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+
+derp:
+  server:
+    enabled: false
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+  paths: []
+  auto_update_enabled: true
+  update_frequency: 24h
+
+dns:
+  magic_dns: true
+  base_domain: engremiat.internal
+  override_local_dns: false
+  nameservers:
+    global:
+      - 1.1.1.1
+
+unix_socket: /var/run/headscale/headscale.sock
+unix_socket_permission: "0770"
+
+log:
+  level: info
