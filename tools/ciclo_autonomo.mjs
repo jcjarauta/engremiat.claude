@@ -92,9 +92,13 @@ async function main() {
 
   if (procesados === 0) { console.log('Nada procesado -- no se llama al Coordinador.'); return; }
 
+  // PROFUNDIDAD_INICIAL permite pedir solo verificacion+correccion sin atomizar (ponerla ya
+  // en el tope, ej. 2) -- util para lotes de triaje/clasificacion donde no tiene sentido que
+  // el Coordinador genere sub-preguntas de diseño a partir de cada respuesta.
+  const PROFUNDIDAD_INICIAL = Number(process.env.CICLO_AUTONOMO_PROFUNDIDAD_INICIAL || 1);
   const salida = filas
     .filter(f => f.ESTADO.value === 'procesado')
-    .map(f => ({ NOMBRE: f.NOMBRE, TEMA: f.TEMA, RESULTADO: f.RESULTADO, TABLA_RELEVANTE: f.TABLA_RELEVANTE, PROFUNDIDAD: 1 }));
+    .map(f => ({ NOMBRE: f.NOMBRE, TEMA: f.TEMA, RESULTADO: f.RESULTADO, TABLA_RELEVANTE: f.TABLA_RELEVANTE, PROFUNDIDAD: PROFUNDIDAD_INICIAL }));
   const dirSalida = process.env.CICLO_AUTONOMO_DIR_SALIDA || 'C:/Users/pc/AppData/Local/Temp/claude/G--Mi-unidad-DEVS/8d5c5706-0aac-4c2a-9810-71ffffbdee92/scratchpad';
   const rutaEntrada = dirSalida + '/ciclo_autonomo_' + RAMA.replace(/[^A-Za-z0-9_-]/g, '_') + '.json';
   writeFileSync(rutaEntrada, JSON.stringify(salida, null, 1));
