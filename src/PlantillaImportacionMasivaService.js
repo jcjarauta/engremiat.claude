@@ -174,7 +174,9 @@ function obtenerBloquesEntrevistaDeGrupo_(grupo) {
  * gana) y lo inyecta en el PROMPT_IA.txt de cada grupo. Sin escenario
  * activo, el comportamiento es exactamente el de antes (datos ideales).
  * try/catch defensivo: en un Sheet recién actualizado a esta versión,
- * la hoja 92_ESCENARIOS puede no existir todavía hasta que se re-ejecute
+ * la hoja 94_ESCENARIOS (reubicada desde 92 el 2026-09-01 -- 92 colisionaba
+ * con 92_BUS_TRABAJO, un mecanismo real de gobierno de Engremiat ajeno a
+ * esta librería) puede no existir todavía hasta que se re-ejecute
  * "Instalar estructura inicial" -- ausencia de escenario, no error.
  */
 function obtenerEscenarioActivo_() {

@@ -1,2 +1,13 @@
 .claude/
 .aider*
+
+# Refuerzo tras el incidente real del 31/08 (token de Baserow filtrado a GitHub) --
+# nunca deberia hacer falta, pero es la red de seguridad que faltaba.
+*.env
+.env.*
+.baserow_token
+.deepseek_key
+*_token
+*_key
+id_ed25519*
+*.pem

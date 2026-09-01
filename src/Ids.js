@@ -274,12 +274,18 @@ const ENTIDADES_MVP = Object.freeze({
    * fricción esperada por eje (competencia/recurso/ausencia) -- se
    * inyecta en PROMPT_IA.txt de Importación masiva para que la IA deje
    * de generar datos siempre ideales y simule complicaciones reales de
-   * forma coherente entre grupos. Numerada 92 (después de 90_CONFIGURACION/
-   * 91_HISTORIAL) porque es infraestructura de simulación, no una
-   * entidad de negocio más en la cadena Campaña->Tarea.
+   * forma coherente entre grupos. Infraestructura de simulación, no una
+   * entidad de negocio más en la cadena Campaña->Tarea -- por eso numerada
+   * fuera del rango 01-46. Reubicada de 92 a 94 (auditoría de física real,
+   * 2026-09-01): el Sheet en vivo ya usa 92_BUS_TRABAJO para el bus de
+   * eventos de gobierno de Engremiat (tools/gobierno/bus_trabajo.mjs,
+   * fuera de esta librería) -- colisión real de numeración descubierta al
+   * verificar el código contra el Sheet real, no un error de este archivo.
+   * 92_ESCENARIOS nunca llegó a instalarse en ningún Sheet real, así que
+   * mover el número aquí no migra datos de nadie.
    */
   ESCENARIO: Object.freeze({
-    hoja: '92_ESCENARIOS',
+    hoja: '94_ESCENARIOS',
     prefijo: 'ESC'
   })
 });

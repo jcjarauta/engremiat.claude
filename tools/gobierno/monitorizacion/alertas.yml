@@ -1,0 +1,26 @@
+# Alertas reales sobre el equilibrio de recurso (GASTO_API).
+# Ancladas al tope mensual real ya definido en el propio diseno de GASTO_API
+# ($5/mes, comprobado antes de cada llamada -- ver DICCIONARIO_ENGREMIAT.md).
+# No son umbrales inventados para esta pieza: son la misma cifra que el sistema
+# ya usa como limite duro en produccion.
+
+groups:
+  - name: equilibrio_recurso
+    rules:
+      - alert: RitmoDeGastoRompeElEquilibrioMensual
+        expr: engremiat_gasto_api_coste_usd_24h * 30 > 5
+        for: 30m
+        labels:
+          severidad: aviso
+        annotations:
+          resumen: "El ritmo de gasto real de las ultimas 24h, proyectado a 30 dias, supera el tope mensual de $5 ya definido para GASTO_API."
+          descripcion: "engremiat_gasto_api_coste_usd_24h={{ $value | humanize }} extrapolado a un mes. Revisar que el tope por llamada de GASTO_API sigue aplicandose antes de cada llamada real."
+
+      - alert: ExportadorDeGastoSinDatosFrescos
+        expr: engremiat_gasto_api_exportador_ok == 0
+        for: 15m
+        labels:
+          severidad: critico
+        annotations:
+          resumen: "El exportador no pudo leer GASTO_API en la ultima consulta a Baserow."
+          descripcion: "Honestidad del fallo: el panel deja de reflejar el equilibrio real hasta que esto se resuelva -- no debe interpretarse como 'gasto en cero'."

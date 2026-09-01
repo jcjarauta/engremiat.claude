@@ -1,0 +1,10 @@
+global:
+  scrape_interval: 5m   # el gasto real no cambia segundo a segundo -- cada 5 min es honesto con la frecuencia real de escritura en GASTO_API
+
+scrape_configs:
+  - job_name: 'engremiat_gasto_recurso'
+    static_configs:
+      - targets: ['exportador-gasto:9310']
+
+rule_files:
+  - '/etc/prometheus/alertas.yml'
