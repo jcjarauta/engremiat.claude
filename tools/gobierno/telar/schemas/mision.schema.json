@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/mision.schema.json",
+  "title": "Mision",
+  "description": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §3.1 -- esquema ampliado. Una Mision no es una TAREA con piel narrativa: necesidad + afectado + tension + capacidades disponibles + decision humana + consecuencia + memoria.",
+  "type": "object",
+  "required": [
+    "id", "missionVersion", "missionStatus", "origenes", "titulo", "objetivo",
+    "afectados", "criterio_cierre", "conocido", "faltantes", "reversibilidad",
+    "participantes", "coste_estimado", "coste_real", "decision_humana", "memoria"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true, "description": "Presente y true SOLO en fixtures de prueba -- ausente en cualquier Mision real. Nunca confundir contenido de fixture con datos de produccion." },
+    "id": { "type": "string", "minLength": 1 },
+    "missionVersion": { "type": "integer", "minimum": 1 },
+    "missionStatus": {
+      "type": "string",
+      "enum": [
+        "sin_seleccionar", "orientacion", "concilio_convocando", "deliberando",
+        "tejiendo", "esperando_relevo", "devuelta", "aprobada_sin_ejecutar",
+        "puerta_pendiente", "puerta_en_curso", "puerta_ejecutada",
+        "puerta_warn", "puerta_err", "huella"
+      ]
+    },
+    "arquetipo": {
+      "type": "string",
+      "enum": ["Diagnostico", "Reparacion", "Decision", "Creacion", "Conexion", "Cuidado", "Investigacion"]
+    },
+    "intensidad": { "type": "string", "enum": ["hilo_rapido", "telar_completo"] },
+    "preparacion": {
+      "type": "string",
+      "enum": ["preparada", "falta_evidencia", "bloqueada_por_dependencia", "pausa_aconsejada"]
+    },
+    "origenes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sistema", "tipoEntidad", "recordId", "leidoEn", "politicaEscritura"],
+        "additionalProperties": false,
+        "properties": {
+          "sistema": { "type": "string", "minLength": 1 },
+          "tipoEntidad": { "type": "string", "minLength": 1 },
+          "recordId": { "type": "string", "minLength": 1 },
+          "versionOrigen": { "type": "string" },
+          "leidoEn": { "type": "string" },
+          "politicaEscritura": { "type": "string", "enum": ["solo_lectura", "escritura_referencial"] }
+        }
+      }
+    },
+    "reformulacion": { "type": "string" },
+    "titulo": { "type": "string", "minLength": 1 },
+    "objetivo": { "type": "string", "minLength": 1 },
+    "por_que_ahora": { "type": "string" },
+    "afectados": { "type": "array", "items": { "type": "string" } },
+    "personasConsultadas": { "type": "array", "items": { "type": "string" } },
+    "personasPendientesDeConsultar": { "type": "array", "items": { "type": "string" } },
+    "tension": { "type": "string" },
+    "criterio_rector": { "type": "string" },
+    "criterio_cierre": { "type": "string", "minLength": 1 },
+    "restricciones": { "type": "array", "items": { "type": "string" } },
+    "consecuencia_de_esperar": { "type": "string" },
+    "conocido": { "type": "array", "items": { "type": "string" } },
+    "faltantes": { "type": "array", "items": { "type": "string" } },
+    "reversibilidad": {
+      "type": "string",
+      "enum": ["reversible", "parcialmente_reversible", "irreversible", "desconocida"]
+    },
+    "participantes": {
+      "type": "array",
+      "items": { "$ref": "https://engremiat.local/telar/participante.schema.json" }
+    },
+    "contribuciones": {
+      "type": "array",
+      "items": { "$ref": "https://engremiat.local/telar/contribucion.schema.json" }
+    },
+    "coste_estimado": { "type": "number", "minimum": 0 },
+    "coste_real": { "type": "number", "minimum": 0 },
+    "resultado": {
+      "type": ["object", "null"],
+      "properties": {
+        "objetivo": { "type": "string" },
+        "criterio_rector": { "type": "string" },
+        "accion_propuesta": { "type": "string" },
+        "evidencia": { "type": "string" },
+        "riesgo_principal": { "type": "string" },
+        "condicion_exito": { "type": "string" },
+        "responsable": { "type": "string" },
+        "reversibilidad": { "type": "string" },
+        "modo_comprobacion": { "type": "string" },
+        "hilosIncorporados": { "type": "array", "items": { "type": "string" } },
+        "hilosDescartados": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "hiloId": { "type": "string" }, "motivo": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "decision_humana": {
+      "type": "string",
+      "enum": ["pendiente", "aprobar", "devolver", "rechazar", "aplazar", "cerrar_como_aprendizaje"]
+    },
+    "consecuencia_verificada": { "type": ["string", "null"] },
+    "memoria": { "type": "array", "items": { "type": "string" } },
+    "puerta": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": { "type": "string" },
+        "estado": {
+          "type": "string",
+          "enum": ["PROPUESTA", "APROBADA_NO_EJECUTADA", "EJECUCION_EN_CURSO", "EJECUTADA_VERIFICADA", "WARN", "ERR"]
+        },
+        "efecto": { "type": "string" },
+        "destino": { "type": "string" },
+        "datos": { "type": "string" },
+        "reversible": { "type": "boolean" },
+        "versionInspeccionada": { "type": "integer" },
+        "nivelRiesgo": { "type": "string", "enum": ["bajo_reversible", "medio_parcial", "alto_irreversible"] }
+      }
+    }
+  }
+}

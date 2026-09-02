@@ -1,0 +1,10 @@
+{
+  "estadoAnterior": "puerta_en_curso",
+  "decision": "aprobar",
+  "cambioConfirmado": "docker-compose.yml actualizado a `npm ci --omit=dev`; corte de red simulado dos veces, recuperacion automatica confirmada",
+  "participantes": ["visitante-01", "acervo-tecnico", "acervo-logistico"],
+  "disensos": [],
+  "gastoReal": 0.0017,
+  "memoriaCreada": "El Spike ahora usa npm ci -- mantener el lockfile commiteado si se vuelve a tocar docker-compose.yml",
+  "proximoHilo": null
+}

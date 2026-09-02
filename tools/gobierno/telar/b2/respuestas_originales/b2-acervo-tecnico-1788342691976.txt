@@ -1,0 +1,38 @@
+{
+  "vozBreve": "El volumen separado ya existe, pero el problema no es la separación sino que la reinstalación no es idempotente ni resiliente a fallos de red; un reintento simple no basta si el estado queda corrupto.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules ya está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "Un fallo de red durante docker compose up puede interrumpir la instalación de dependencias dejando node_modules incompleto.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada, por lo que se desconoce el comportamiento exacto del contenedor en ese escenario.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Implementar un script de entrada que ejecute npm ci con reintentos con backoff exponencial y verificación de integridad (por ejemplo, npm ci --prefer-offline o verificación de lockfile).",
+    "Añadir un healthcheck en el contenedor que compruebe que node_modules está completo (por ejemplo, que exista un paquete crítico) y que el contenedor no se considere listo hasta que la instalación haya finalizado correctamente.",
+    "Configurar Docker para que el volumen node_modules se monte como tmpfs o se limpie automáticamente antes de cada instalación, garantizando un estado limpio inicial."
+  ],
+  "riesgos": [
+    "Un reintento con backoff puede alargar el tiempo de arranque si la red está caída, pero es preferible a un estado corrupto.",
+    "Verificar la integridad de node_modules puede ser complejo y añadir latencia al arranque.",
+    "Si el fallo ocurre durante la escritura en el volumen, incluso con reintentos podría quedar un estado parcial si no se limpia antes."
+  ],
+  "faltantes": [
+    "Detalles del error exacto que se produjo (código de salida, mensaje de npm, etc.).",
+    "Configuración actual del Dockerfile y del entrypoint del contenedor.",
+    "Si se utiliza npm ci o npm install, y si hay un lockfile presente."
+  ],
+  "disensos": [
+    "Algunos podrían argumentar que un simple reintento es suficiente, pero sin limpieza previa o verificación, no garantiza un estado consistente."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

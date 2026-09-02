@@ -1,0 +1,13 @@
+{
+  "name": "telar-b0",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Fase B0 de Telar (ver PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md): contratos JSON Schema + 5 fixtures deterministas. Sin API, sin conexion a sistemas reales -- ver validar_b0.mjs.",
+  "type": "module",
+  "scripts": {
+    "validar": "node validar_b0.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  }
+}

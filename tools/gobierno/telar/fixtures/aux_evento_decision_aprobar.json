@@ -1,0 +1,8 @@
+{
+  "missionId": "FIX-MISION-001",
+  "expectedMissionVersion": 4,
+  "clientEventId": "cli-evt-0001",
+  "correlationId": "corr-0001",
+  "accion": "decision_aprobar",
+  "motivo": "Lockfile confirmado commiteado en Relevo"
+}

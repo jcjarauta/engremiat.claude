@@ -1,0 +1,39 @@
+{
+  "vozBreve": "El volumen ya está separado, así que el problema no es de diseño sino de robustez en el arranque. Un reintento con backoff es barato y suficiente, pero hay que probarlo con una inyección de fallo controlada.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo de red durante docker compose up dejó node_modules a medias, requiriendo borrado manual del volumen.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "VERIFICADO"
+    }
+  ],
+  "propuestas": [
+    "Implementar un script de entrada que reintente la instalación de dependencias con backoff exponencial (por ejemplo, 3 reintentos con espera de 2, 4, 8 segundos) antes de lanzar el comando principal.",
+    "Añadir una verificación de integridad post-instalación (por ejemplo, comprobar que node_modules/.package-lock.json existe y que el número de paquetes coincide con lo esperado) y si falla, reintentar o abortar con mensaje claro.",
+    "Configurar Docker Compose para que use `--abort-on-container-exit` y `--renew-anon-volumes`? No, mejor: usar `--force-recreate` no es necesario. Lo esencial es el reintento en el contenedor."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede enmascarar fallos persistentes de red, retrasando el arranque sin resolver el problema.",
+    "Si la verificación de integridad es demasiado estricta, podría dar falsos negativos y bloquear el arranque en casos válidos.",
+    "El parche rápido (reintentar sin más) podría no ser suficiente si el fallo ocurre a mitad de la extracción de un paquete, dejando el volumen corrupto."
+  ],
+  "faltantes": [
+    "Detalle del error exacto que se produjo durante el fallo (¿fue un timeout? ¿una descarga parcial? ¿qué comando falló?).",
+    "Configuración actual del Dockerfile y del entrypoint del contenedor para saber dónde insertar la lógica de reintento.",
+    "Tiempo de construcción de la imagen y tamaño de node_modules para calibrar el backoff."
+  ],
+  "disensos": [
+    "Algunos podrían argumentar que separar aún más el volumen (por ejemplo, un volumen para la caché de npm) es necesario, pero creo que con reintento y verificación es suficiente para el caso actual."
+  ],
+  "referencias": [
+    "docker-compose.yml (volumen node_modules)",
+    "Dockerfile (instalación de dependencias)"
+  ]
+}

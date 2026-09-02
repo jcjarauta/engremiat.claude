@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/contribucion.schema.json",
+  "title": "Contribucion (Hilo)",
+  "description": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §3.4 -- contrato estructurado por Acervo. Produce hilos tipados, no un parrafo cerrado.",
+  "type": "object",
+  "required": ["participanteId", "rol", "vozBreve", "hechos", "propuestas", "riesgos", "faltantes", "disensos", "referencias", "respuestaOriginalRef", "estadoContrato"],
+  "additionalProperties": false,
+  "properties": {
+    "participanteId": { "type": "string", "minLength": 1 },
+    "rol": { "type": "string", "minLength": 1 },
+    "vozBreve": { "type": "string", "minLength": 1, "maxLength": 400 },
+    "hechos": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["texto", "estado"],
+        "additionalProperties": false,
+        "properties": {
+          "texto": { "type": "string", "minLength": 1 },
+          "estado": {
+            "type": "string",
+            "enum": ["VERIFICADO", "PENDIENTE_DE_COMPROBAR", "FUENTE_NO_LOCALIZADA", "EVIDENCIA_CONTRADICTORIA", "DATO_OBSOLETO", "INFERENCIA"]
+          },
+          "fuente": { "type": "string" },
+          "fechaObservada": { "type": "string" },
+          "fechaVerificacion": { "type": "string" },
+          "verificadoPor": { "type": "string" },
+          "versionOrigen": { "type": "string" },
+          "sustituyeA": { "type": "string" },
+          "contradiceA": { "type": "string" }
+        }
+      }
+    },
+    "propuestas": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+    "riesgos": { "type": "array", "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+    "faltantes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "disensos": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "referencias": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "respuestaOriginalRef": { "type": "string", "minLength": 1 },
+    "estadoContrato": { "type": "string", "enum": ["ok", "ERR"] },
+    "errorDetalle": { "type": "string" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "estadoContrato": { "const": "ERR" } } },
+      "then": { "required": ["errorDetalle"] }
+    }
+  ]
+}

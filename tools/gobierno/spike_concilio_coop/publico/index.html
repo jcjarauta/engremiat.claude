@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Spike Concilio Cooperativo</title>
+<style>
+  body { background:#1a1c17; color:#ece9df; font-family:'IBM Plex Sans',system-ui,sans-serif; max-width:700px; margin:0 auto; padding:1.5rem; }
+  h1 { font-size:1.3rem; }
+  #estado { font-family:monospace; font-size:0.8rem; color:#b7b4a6; margin-bottom:1rem; }
+  #mensajes { border:1px solid #3a3d33; border-radius:8px; padding:1rem; height:420px; overflow-y:auto; background:#23261f; }
+  .msg { margin-bottom:0.9rem; }
+  .msg .autor { font-weight:600; }
+  .msg.ia .autor { color:#8a4fc2; }
+  .msg.humano .autor { color:#4a8a6b; }
+  .msg.sistema { color:#83816f; font-style:italic; font-size:0.85rem; }
+  form { display:flex; gap:0.5rem; margin-top:1rem; }
+  input { flex:1; padding:0.6rem; border-radius:6px; border:1px solid #3a3d33; background:#23261f; color:#ece9df; }
+  button { padding:0.6rem 1rem; border-radius:6px; border:none; background:#4a8a6b; color:#fff; cursor:pointer; }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  .fila-ciclo { display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem; }
+  #cerrarCiclo { background:#8a4fc2; font-size:0.85rem; padding:0.5rem 0.8rem; }
+  .msg.ciclo { color:#c9a24a; font-weight:600; border-top:1px dashed #3a3d33; padding-top:0.6rem; margin-top:0.6rem; }
+
+  #lobby { display:none; }
+  #lobby p.intro { color:#b7b4a6; font-size:0.9rem; margin-bottom:1rem; }
+  .roster { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; }
+  .asiento { border:1px solid #3a3d33; border-radius:8px; padding:0.8rem; background:#23261f; cursor:pointer; text-align:left; color:#ece9df; font-family:inherit; }
+  .asiento:hover:not(:disabled) { border-color:#4a8a6b; }
+  .asiento:disabled { opacity:0.4; cursor:not-allowed; }
+  .asiento .nombre { font-weight:600; display:block; margin-bottom:0.2rem; }
+  .asiento .marca { font-size:0.75rem; color:#83816f; }
+  #salaPrincipal { display:none; }
+</style>
+</head>
+<body>
+  <h1>Sala del Concilio — Spike cooperativo</h1>
+
+  <div id="lobby">
+    <p class="intro">Elige que Acervo encarnas. Los que nadie elige los lleva DeepSeek con su misma voz real del vault.</p>
+    <div id="roster" class="roster"></div>
+  </div>
+
+  <div id="salaPrincipal">
+    <div id="estado">conectando...</div>
+    <div id="mensajes"></div>
+    <form id="form">
+      <input id="texto" placeholder="Escribe tu propuesta al Concilio..." autocomplete="off">
+      <button id="enviar" type="submit">Proponer</button>
+    </form>
+    <div class="fila-ciclo">
+      <span></span>
+      <button id="cerrarCiclo" type="button" disabled>Cerrar ciclo (deja huella en 92_BUS_TRABAJO)</button>
+    </div>
+  </div>
+
+  <script>
+    const divLobby = document.getElementById('lobby');
+    const divRoster = document.getElementById('roster');
+    const divSalaPrincipal = document.getElementById('salaPrincipal');
+    const divMensajes = document.getElementById('mensajes');
+    const divEstado = document.getElementById('estado');
+    const form = document.getElementById('form');
+    const input = document.getElementById('texto');
+    const boton = document.getElementById('enviar');
+    const botonCerrarCiclo = document.getElementById('cerrarCiclo');
+    let hayMensajesEnCiclo = false;
+    let asientoPropio = null;
+
+    const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host);
+
+    function anadir(texto, clase) {
+      const d = document.createElement('div');
+      d.className = 'msg ' + clase;
+      d.innerHTML = texto;
+      divMensajes.appendChild(d);
+      divMensajes.scrollTop = divMensajes.scrollHeight;
+    }
+
+    function pintarRoster(roster, humanosSentados, maxHumanos) {
+      divRoster.innerHTML = '';
+      const salaLlena = humanosSentados >= maxHumanos;
+      for (const asiento of roster) {
+        const b = document.createElement('button');
+        b.className = 'asiento';
+        b.type = 'button';
+        b.disabled = !asiento.libre || salaLlena;
+        b.innerHTML = '<span class="nombre">' + asiento.nombre + '</span><span class="marca">' +
+          (asiento.libre ? 'libre' : 'ocupado por humano') + '</span>';
+        b.onclick = () => ws.send(JSON.stringify({ tipo: 'elegir_personaje', nombre: asiento.nombre }));
+        divRoster.appendChild(b);
+      }
+    }
+
+    ws.onopen = () => { divEstado.textContent = 'conectado.'; };
+    ws.onclose = (e) => { divEstado.textContent = 'desconectado: ' + (e.reason || e.code); boton.disabled = true; };
+
+    ws.onmessage = (ev) => {
+      const m = JSON.parse(ev.data);
+      if (m.tipo === 'lobby') {
+        if (!asientoPropio) {
+          divLobby.style.display = 'block';
+          divSalaPrincipal.style.display = 'none';
+          pintarRoster(m.roster, m.humanosSentados, m.maxHumanos);
+        }
+      } else if (m.tipo === 'bienvenida') {
+        asientoPropio = m.acervo;
+        divLobby.style.display = 'none';
+        divSalaPrincipal.style.display = 'block';
+        divEstado.textContent = 'Eres ' + m.acervo + ' -- ' + m.humanosConectados + ' humano(s) en la sala.';
+        divMensajes.innerHTML = '';
+        for (const msg of m.mensajes) anadir('<span class="autor">' + msg.autor + '</span>: ' + msg.texto, msg.esIA ? 'ia' : 'humano');
+        hayMensajesEnCiclo = m.mensajes.length > 0;
+        botonCerrarCiclo.disabled = !hayMensajesEnCiclo;
+      } else if (m.tipo === 'mensaje') {
+        anadir('<span class="autor">' + m.autor + '</span>: ' + m.texto, m.esIA ? 'ia' : 'humano');
+        hayMensajesEnCiclo = true;
+        botonCerrarCiclo.disabled = false;
+      } else if (m.tipo === 'sistema') {
+        if (asientoPropio) anadir(m.texto, 'sistema');
+      } else if (m.tipo === 'coste') {
+        divEstado.textContent = divEstado.textContent.split(' -- coste')[0] + ' -- coste real acumulado: $' + m.costeTotalUsd.toFixed(6);
+      } else if (m.tipo === 'estado') {
+        boton.disabled = m.deliberando;
+        boton.textContent = m.deliberando ? 'El Concilio delibera...' : 'Proponer';
+        botonCerrarCiclo.disabled = m.deliberando || !hayMensajesEnCiclo;
+      } else if (m.tipo === 'ciclo_cerrado') {
+        anadir('Ciclo cerrado: <strong>' + m.idTarea + '</strong> registrado en 92_BUS_TRABAJO.<br>' + m.resumen, 'ciclo');
+        hayMensajesEnCiclo = false;
+        botonCerrarCiclo.disabled = true;
+      }
+    };
+
+    botonCerrarCiclo.onclick = () => {
+      botonCerrarCiclo.disabled = true;
+      ws.send(JSON.stringify({ tipo: 'cerrar_ciclo' }));
+    };
+
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      if (!input.value.trim()) return;
+      ws.send(JSON.stringify({ tipo: 'proponer', texto: input.value.trim() }));
+      input.value = '';
+    };
+  </script>
+</body>
+</html>

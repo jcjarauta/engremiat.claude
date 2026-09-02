@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/huella.schema.json",
+  "title": "Huella",
+  "description": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §17.2 -- el quinto estado visual del MVP, la consecuencia visible tras el Relevo. Sin esto no se puede probar consecuencia, memoria ni deseo de retorno.",
+  "type": "object",
+  "required": ["estadoAnterior", "decision", "cambioConfirmado", "participantes", "gastoReal", "memoriaCreada"],
+  "additionalProperties": false,
+  "properties": {
+    "estadoAnterior": { "type": "string" },
+    "decision": {
+      "type": "string",
+      "enum": ["aprobar", "devolver", "rechazar", "aplazar", "cerrar_como_aprendizaje"]
+    },
+    "cambioConfirmado": { "type": ["string", "null"] },
+    "participantes": { "type": "array", "items": { "type": "string" } },
+    "disensos": { "type": "array", "items": { "type": "string" } },
+    "gastoReal": { "type": "number", "minimum": 0 },
+    "memoriaCreada": { "type": "string" },
+    "proximoHilo": { "type": ["string", "null"] }
+  }
+}

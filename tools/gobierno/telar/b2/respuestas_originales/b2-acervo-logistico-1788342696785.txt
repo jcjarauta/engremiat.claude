@@ -1,0 +1,37 @@
+{
+  "vozBreve": "El volumen ya está separado, así que el parche rápido no es suficiente: hay que hacer el reintento robusto y reproducible.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "Un fallo de red durante docker compose up dejó node_modules a medias, requiriendo borrar el volumen manualmente.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo de red no se ha reproducido de forma controlada.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Implementar reintento con backoff exponencial en el comando de instalación de dependencias dentro del Dockerfile o script de entrada.",
+    "Crear un volumen separado para node_modules y montarlo en el contenedor, asegurando que la instalación se realice sobre ese volumen.",
+    "Añadir un script de verificación de integridad de node_modules (por ejemplo, comparar checksums o verificar presencia de binarios clave) antes de iniciar la aplicación.",
+    "Documentar el procedimiento de recuperación manual en caso de fallo, pero automatizar la limpieza y reinstalación si se detecta un estado incompleto."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede enmascarar fallos persistentes de red, alargando el tiempo de espera sin éxito.",
+    "Si no se reproduce el fallo, el parche podría no cubrir todos los escenarios de interrupción.",
+    "Añadir verificación de integridad puede aumentar el tiempo de arranque del contenedor."
+  ],
+  "faltantes": [
+    "Detalles del error exacto de red (timeout, conexión reseteada, etc.) para diseñar el reintento adecuado.",
+    "Conocimiento de si la instalación se realiza en el Dockerfile (capa de imagen) o en tiempo de ejecución (entrypoint).",
+    "Políticas de reintento ya existentes en el proyecto o herramientas de orquestación."
+  ],
+  "disensos": [
+    "Aunque el parche rápido es más barato, no resuelve la causa raíz y podría dejar el sistema en un estado inconsistente en otros escenarios."
+  ],
+  "referencias": ["docker-compose.yml"]
+}

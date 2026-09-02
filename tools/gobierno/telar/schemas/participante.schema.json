@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/participante.schema.json",
+  "title": "Participante",
+  "description": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §3.3 -- abstraccion de participante, preparacion para multijugador sin construirlo. Un Acervo no es una categoria tecnica privilegiada.",
+  "type": "object",
+  "required": ["actorId", "participantType", "roleId"],
+  "additionalProperties": false,
+  "properties": {
+    "actorId": { "type": "string", "minLength": 1 },
+    "participantType": { "type": "string", "enum": ["human", "ai", "system"] },
+    "roleId": { "type": "string", "minLength": 1 }
+  }
+}

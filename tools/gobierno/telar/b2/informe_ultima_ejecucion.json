@@ -1,0 +1,22 @@
+{
+  "generado": "2026-09-02T09:51:42.132Z",
+  "mision": "FIX-MISION-001",
+  "rondas": [
+    {
+      "etiqueta": "2 participantes",
+      "participantes": 2,
+      "tasaValidezContrato": "2/2",
+      "costeTotalUsd": 0.001985,
+      "latenciaTotalMs": 683,
+      "latenciaMediaMs": 342
+    },
+    {
+      "etiqueta": "3 participantes",
+      "participantes": 3,
+      "tasaValidezContrato": "3/3",
+      "costeTotalUsd": 0.002779,
+      "latenciaTotalMs": 893,
+      "latenciaMediaMs": 298
+    }
+  ]
+}

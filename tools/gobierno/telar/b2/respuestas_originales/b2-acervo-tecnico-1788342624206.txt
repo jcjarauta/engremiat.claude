@@ -1,0 +1,38 @@
+{
+  "vozBreve": "El volumen ya está separado, así que el estado a medias no debería persistir si el reintento es limpio. Pero sin reproducir el fallo, no puedo validar que el parche rápido baste.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "Un fallo de red durante docker compose up puede dejar node_modules a medias si el contenedor no se reconstruye limpiamente.",
+      "estado": "INFERENCIA"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Implementar reintento con backoff en el script de instalación de node_modules dentro del contenedor.",
+    "Añadir un healthcheck que verifique la integridad de node_modules (por ejemplo, presencia de un marcador) y fuerce reinstalación si falla.",
+    "Documentar el procedimiento de limpieza manual como respaldo, pero no como solución principal."
+  ],
+  "riesgos": [
+    "El reintento sin backoff puede saturar la red o el registro npm si el fallo persiste.",
+    "Si no se reproduce el fallo, el parche rápido podría no cubrir el caso real y dejar el problema latente.",
+    "Añadir lógica de reintento compleja puede aumentar el tiempo de construcción y la complejidad del Dockerfile."
+  ],
+  "faltantes": [
+    "Detalles del error exacto y el punto de fallo en el log de docker compose.",
+    "Configuración de red y condiciones que provocaron el fallo original.",
+    "Tiempo de construcción actual y tolerancia a aumentos por reintentos."
+  ],
+  "disensos": [
+    "Aunque el parche rápido es más barato, sin reproducir el fallo no se puede garantizar que resuelva el problema de raíz; prefiero invertir en una solución robusta con reintento y verificación."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

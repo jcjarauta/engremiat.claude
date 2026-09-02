@@ -1,0 +1,9 @@
+{
+  "name": "spike-concilio-coop",
+  "version": "0.0.2",
+  "description": "Spike real: 1 asiento humano ocupa Acervo Usuario, los otros 6 Acervos deliberantes los lleva DeepSeek. Mide si la asimetria de perspectiva genera comunicacion real, antes de comprometerse a mas. WebSocket puro -- Colyseus (0.16.x/0.18.x) tenia bugs reales encadenados en npm el 2026-09-01, se aparca para cuando el concepto ya este validado.",
+  "type": "module",
+  "main": "servidor.mjs",
+  "scripts": { "start": "node servidor.mjs" },
+  "dependencies": { "ws": "^8.18.0" }
+}

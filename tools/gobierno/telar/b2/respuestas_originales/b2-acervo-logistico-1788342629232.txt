@@ -1,0 +1,42 @@
+{
+  "vozBreve": "El volumen ya está separado, así que el problema no es de mezcla de montajes, sino de que el contenedor arranca con node_modules incompleto y no hay mecanismo de verificación. Un reintento simple no basta: hay que validar la integridad antes de arrancar la app.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo de red durante docker compose up puede interrumpir la instalación de dependencias dejando node_modules incompleto.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El contenedor no tiene un mecanismo para detectar que node_modules está incompleto antes de iniciar la aplicación.",
+      "estado": "INFERENCIA"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Añadir un script de entrada que verifique la integridad de node_modules (por ejemplo, comparando el número de paquetes instalados con package-lock.json) y, si está incompleto, reintente npm ci con backoff exponencial antes de arrancar la app.",
+    "Separar el volumen de node_modules en un volumen con nombre dedicado (ya hecho) y añadir una política de reinicio que reintente el comando de instalación si falla.",
+    "Documentar el procedimiento de recuperación manual (borrar volumen y recrear) como último recurso."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede alargar el tiempo de arranque si la red sigue inestable.",
+    "Verificar la integridad de node_modules puede ser complejo y propenso a falsos negativos si no se hace correctamente.",
+    "Si el fallo persiste, el contenedor podría quedarse en un bucle de reintentos sin llegar a arrancar."
+  ],
+  "faltantes": [
+    "Detalles del fallo de red: ¿fue una interrupción temporal o persistente? ¿En qué paso exacto falló?",
+    "¿Existen logs del incidente que muestren el error de npm?",
+    "¿Cuál es el tamaño actual de node_modules y cuánto tarda npm ci en completarse?"
+  ],
+  "disensos": [
+    "Algunos podrían preferir un parche rápido de reintentar sin más, pero eso no garantiza que node_modules quede completo y podría enmascarar el problema."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

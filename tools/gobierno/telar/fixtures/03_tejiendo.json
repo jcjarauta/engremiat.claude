@@ -1,0 +1,87 @@
+{
+  "_fixture": true,
+  "id": "FIX-MISION-001",
+  "missionVersion": 3,
+  "missionStatus": "tejiendo",
+  "arquetipo": "Reparacion",
+  "intensidad": "telar_completo",
+  "preparacion": "preparada",
+  "origenes": [
+    {
+      "sistema": "Baserow",
+      "tipoEntidad": "TAREA",
+      "recordId": "FIX-TAREA-014",
+      "versionOrigen": "v1",
+      "leidoEn": "2026-09-02T09:00:00Z",
+      "politicaEscritura": "solo_lectura"
+    }
+  ],
+  "reformulacion": "¿Podemos evitar que el volumen de node_modules quede corrupto si `npm install` falla a mitad de una reinstalacion del contenedor del Spike?",
+  "titulo": "Reinstalacion fallida deja node_modules a medias",
+  "objetivo": "Que un fallo de red durante `docker compose up` no deje el contenedor en un estado que solo se arregla borrando el volumen a mano",
+  "por_que_ahora": "Ocurrio una vez durante las pruebas del lobby -- no bloqueo nada, pero no quedo investigado",
+  "afectados": ["Spike Concilio cooperativo", "Operador del VPS"],
+  "personasConsultadas": [],
+  "personasPendientesDeConsultar": [],
+  "tension": "Arreglar bien (volumen separado + reintento con backoff) cuesta mas que un parche rapido (reintentar sin mas)",
+  "criterio_rector": "mantenibilidad",
+  "criterio_cierre": "Un fallo de red simulado durante `npm install` no deja el contenedor en estado irrecuperable sin intervencion manual",
+  "restricciones": ["No tocar el candado anti-condicion-de-carrera ya verificado en produccion"],
+  "consecuencia_de_esperar": "Bajo -- ya ocurrio una vez sin bloquear nada, pero podria coincidir con un reinicio real del VPS",
+  "conocido": ["El volumen node_modules ya esta separado del bind mount de codigo (ver docker-compose.yml real)"],
+  "faltantes": ["No se ha reproducido el fallo de red de forma controlada todavia"],
+  "reversibilidad": "reversible",
+  "participantes": [
+    { "actorId": "visitante-01", "participantType": "human", "roleId": "Visitante" },
+    { "actorId": "acervo-tecnico", "participantType": "ai", "roleId": "Acervo Tecnico" },
+    { "actorId": "acervo-logistico", "participantType": "ai", "roleId": "Acervo Logistico" }
+  ],
+  "contribuciones": [
+    {
+      "participanteId": "acervo-tecnico",
+      "rol": "Acervo Tecnico",
+      "vozBreve": "El fallo real es que `npm install` no es idempotente si se corta a mitad -- deja un lockfile parcial. Un `npm ci` con el lockfile ya commiteado es mas seguro que reinstalar sin mas.",
+      "hechos": [
+        {
+          "texto": "docker-compose.yml del Spike ya usa un volumen con nombre para node_modules, separado del bind mount de codigo",
+          "estado": "VERIFICADO",
+          "fuente": "tools/gobierno/spike_concilio_coop/docker-compose.yml",
+          "fechaVerificacion": "2026-09-02"
+        },
+        {
+          "texto": "El comando actual es `npm install --omit=dev`, no `npm ci`",
+          "estado": "PENDIENTE_DE_COMPROBAR",
+          "fuente": "recordado de memoria, no releido en este ciclo"
+        }
+      ],
+      "propuestas": ["Cambiar el comando a `npm ci --omit=dev` una vez exista un package-lock.json commiteado"],
+      "riesgos": ["Si el lockfile no esta commiteado, `npm ci` falla en vez de generar uno nuevo -- hay que verificarlo antes de aplicar"],
+      "faltantes": [],
+      "disensos": [],
+      "referencias": ["tools/gobierno/spike_concilio_coop/docker-compose.yml"],
+      "respuestaOriginalRef": "fixture-respuesta-tecnico-001",
+      "estadoContrato": "ok"
+    },
+    {
+      "participanteId": "acervo-logistico",
+      "rol": "Acervo Logistico",
+      "vozBreve": "(fallo real: DEEPSEEK_ERROR: el modelo devolvio un JSON sin el campo 'propuestas', reintento agotado)",
+      "hechos": [],
+      "propuestas": [],
+      "riesgos": [],
+      "faltantes": [],
+      "disensos": [],
+      "referencias": [],
+      "respuestaOriginalRef": "fixture-respuesta-logistico-001-fallida",
+      "estadoContrato": "ERR",
+      "errorDetalle": "Contrato JSON invalido tras 1 reintento acotado -- falta el campo obligatorio 'propuestas'"
+    }
+  ],
+  "coste_estimado": 0.002,
+  "coste_real": 0.0017,
+  "resultado": null,
+  "decision_humana": "pendiente",
+  "consecuencia_verificada": null,
+  "memoria": [],
+  "puerta": null
+}

@@ -1,0 +1,37 @@
+{
+  "vozBreve": "El volumen ya está separado, eso es bueno. El problema es que el fallo de red deja el volumen a medias y no hay reintento. Propongo separar la instalación en una fase propia con reintento y verificación de integridad.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "Un fallo de red durante docker compose up dejó node_modules incompleto.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo no se ha reproducido de forma controlada.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Crear un servicio de instalación separado que ejecute npm ci con reintentos y backoff, y que verifique la integridad antes de declarar éxito.",
+    "Añadir un healthcheck que compruebe que node_modules está completo (por ejemplo, verificando la existencia de binarios clave o ejecutando npm ls).",
+    "Usar un volumen temporal para la instalación y luego copiar a node_modules final, o montar node_modules como tmpfs y copiar desde una capa de imagen.",
+    "Documentar el procedimiento de recuperación: si falla, borrar el volumen y reintentar con docker compose up --force-recreate."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede alargar el tiempo de construcción si la red está caída.",
+    "Verificar integridad puede ser complejo y llevar tiempo.",
+    "Si no se reproduce el fallo, es difícil validar la solución."
+  ],
+  "faltantes": [
+    "Detalles del fallo de red: ¿fue intermitente o total? ¿En qué punto falló?",
+    "Configuración actual de docker-compose.yml (para ver si hay algún healthcheck o restart policy).",
+    "Tiempo de construcción actual y tolerancia a aumentos."
+  ],
+  "disensos": [
+    "Aunque el parche rápido (reintentar sin más) es más barato, no garantiza que no vuelva a quedar a medias si la red falla de nuevo. Insisto en la solución robusta con verificación."
+  ],
+  "referencias": ["docker-compose.yml"]
+}

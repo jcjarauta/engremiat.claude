@@ -1,0 +1,42 @@
+{
+  "vozBreve": "El volumen ya está separado; el problema no es de estructura sino de robustez ante fallos transitorios. Un reintento simple es un parche que no resuelve la raíz: la falta de manejo de errores en la instalación.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo ocurrió una vez durante pruebas del lobby y no bloqueó, pero no se investigó.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "Un fallo de red durante 'docker compose up' puede dejar node_modules incompleto si no se maneja el error.",
+      "estado": "INFERENCIA"
+    }
+  ],
+  "propuestas": [
+    "Implementar un script de entrada que ejecute npm install con reintentos con backoff exponencial y verificación de integridad (por ejemplo, npm ci si hay package-lock.json).",
+    "Añadir un healthcheck que verifique que node_modules esté completo (por ejemplo, comprobar la existencia de binarios clave o ejecutar npm ls --depth=0).",
+    "Documentar el procedimiento de recuperación manual (borrar volumen y recrear) como último recurso, pero automatizar la recuperación en el script."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede alargar el tiempo de arranque si la red está caída persistentemente.",
+    "La verificación de integridad puede ser compleja y no cubrir todos los casos.",
+    "Cambiar el flujo de instalación puede introducir nuevos bugs si no se prueba adecuadamente."
+  ],
+  "faltantes": [
+    "Detalles del fallo original: ¿en qué paso falló exactamente? ¿Hubo algún mensaje de error?",
+    "¿Se usa package-lock.json? ¿Se puede usar npm ci para instalaciones reproducibles?",
+    "¿Cuál es el tiempo máximo aceptable para reintentos? ¿Hay algún requisito de tiempo de arranque?"
+  ],
+  "disensos": [
+    "Aunque el parche rápido es tentador, no aborda la causa raíz y podría dar falsa sensación de seguridad. Mantengo que se debe invertir en la solución robusta."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

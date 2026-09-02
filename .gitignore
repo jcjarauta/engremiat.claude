@@ -1,5 +1,6 @@
 .claude/
 .aider*
+node_modules/
 
 # Refuerzo tras el incidente real del 31/08 (token de Baserow filtrado a GitHub) --
 # nunca deberia hacer falta, pero es la red de seguridad que faltaba.
@@ -11,3 +12,5 @@
 *_key
 id_ed25519*
 *.pem
+*credenciales*.json
+*.sheets_credenciales.json

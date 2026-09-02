@@ -1,0 +1,39 @@
+{
+  "vozBreve": "El volumen separado ya está, pero el reintento sin backoff es un parche que no resuelve el estado a medias. Hay que hacer el reintento resiliente y reproducible.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo de red durante docker compose up puede dejar node_modules a medias.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "PENDIENTE_DE_COMPROBAR"
+    }
+  ],
+  "propuestas": [
+    "Implementar reintento con backoff exponencial en el comando de instalación de dependencias dentro del Dockerfile o script de entrada.",
+    "Añadir verificación de integridad de node_modules (por ejemplo, comparar checksums o verificar la existencia de binarios clave) antes de dar por buena la instalación.",
+    "Crear un script de prueba que simule un fallo de red (por ejemplo, usando tc o iptables) y verifique que el contenedor se recupera sin intervención manual.",
+    "Documentar el procedimiento de recuperación manual como respaldo, pero solo como último recurso."
+  ],
+  "riesgos": [
+    "El backoff exponencial puede alargar el tiempo de construcción en caso de fallos persistentes, pero es aceptable si se limita el número de reintentos.",
+    "La verificación de integridad puede añadir complejidad y tiempo de ejecución, pero es necesaria para detectar instalaciones incompletas.",
+    "Si no se reproduce el fallo, el fix podría no cubrir todos los escenarios posibles."
+  ],
+  "faltantes": [
+    "Detalles del error exacto de red (código, mensaje) que ocurrió durante la reinstalación.",
+    "Tiempo de espera actual entre reintentos (si existe) en el script de instalación.",
+    "Configuración exacta del Dockerfile y del script de entrada (entrypoint) para saber dónde insertar el reintento."
+  ],
+  "disensos": [
+    "Algunos podrían preferir un parche rápido (reintentar sin más) por simplicidad, pero no resuelve el estado a medias si el fallo ocurre a mitad de la extracción de un paquete."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "_fixture": true,
+  "id": "FIX-MISION-002",
+  "missionVersion": 1,
+  "missionStatus": "sin_seleccionar",
+  "arquetipo": "Cuidado",
+  "preparacion": "falta_evidencia",
+  "origenes": [
+    {
+      "sistema": "vault",
+      "tipoEntidad": "Decision pendiente",
+      "recordId": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md#19.4",
+      "versionOrigen": "v1.1",
+      "leidoEn": "2026-09-02T10:00:00Z",
+      "politicaEscritura": "solo_lectura"
+    }
+  ],
+  "reformulacion": "¿Qué condición objetiva nos diría que ya es seguro retirar el correo de aviso de Ejecutor, ahora que la Puerta Humana lo sustituye?",
+  "titulo": "Condición de retirada del correo de Ejecutor",
+  "objetivo": "Definir una condición objetiva y verificable, no una fecha arbitraria",
+  "por_que_ahora": "La Puerta Humana ya sustituye el correo en el alcance actual, pero el correo sigue activo en paralelo por seguridad",
+  "afectados": ["Ejecutor", "Operador"],
+  "personasConsultadas": [],
+  "personasPendientesDeConsultar": ["Operador (Visitante) -- decisión pendiente, ver §19"],
+  "tension": "Retirar pronto reduce ruido; retirar tarde es más seguro pero deja dos canales activos indefinidamente",
+  "criterio_cierre": "Existe una condición objetiva escrita y verificable, no solo una promesa de revisarlo más adelante",
+  "restricciones": [],
+  "consecuencia_de_esperar": "Ninguna urgente -- el correo sigue activo en paralelo mientras tanto",
+  "conocido": ["La Puerta Humana ya funciona como pantalla de decisión, verificada en el diseño (no en código todavía)"],
+  "faltantes": ["No hay todavía ni un solo caso real de Puerta Humana ejecutado en producción contra el que medir fiabilidad"],
+  "reversibilidad": "reversible",
+  "participantes": [],
+  "contribuciones": [],
+  "coste_estimado": 0.0015,
+  "coste_real": 0,
+  "resultado": null,
+  "decision_humana": "pendiente",
+  "consecuencia_verificada": null,
+  "memoria": [],
+  "puerta": null
+}

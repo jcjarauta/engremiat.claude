@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Telar — vertical slice (B1)</title>
+<style>
+  :root {
+    --bg: #0d1420;
+    --bg-panel: #141c2b;
+    --bg-panel-alt: #1a2438;
+    --border: #2a3548;
+    --text: #e8ecf3;
+    --text-dim: #93a1b8;
+    --cian: #4fd1c5;
+    --verde: #34d399;
+    --ambar: #f5a623;
+    --rojo: #f87171;
+    --violeta: #a78bfa;
+    --gris-azulado: #64748b;
+    --blanco-calido: #f5f0e6;
+    --laton: #c19a5b;
+    --radio: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0;
+  }
+
+  a { color: var(--cian); }
+
+  button {
+    font-family: inherit;
+    font-size: 0.95rem;
+    background: var(--bg-panel-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0.55rem 0.9rem;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--cian); }
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid var(--cian);
+    outline-offset: 2px;
+  }
+  button.primario { background: var(--cian); color: #06222a; border-color: var(--cian); font-weight: 600; }
+  button.primario:hover { filter: brightness(1.08); }
+  button.laton { background: var(--laton); color: #241a08; border-color: var(--laton); font-weight: 600; }
+  button.fantasma { background: transparent; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* --- Barra de estado global --- */
+  #barra {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    align-items: center;
+    padding: 0.7rem 1.2rem;
+    background: var(--bg-panel);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  #barra strong { color: var(--text); }
+  #barra .marca { font-weight: 700; color: var(--cian); font-size: 1rem; letter-spacing: 0.02em; }
+
+  #ruta {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    background: var(--bg-panel-alt);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+  }
+  #ruta .paso { padding: 0.2rem 0.6rem; border-radius: 999px; color: var(--text-dim); }
+  #ruta .paso.actual { background: var(--cian); color: #06222a; font-weight: 700; }
+  #ruta .paso.hecho { color: var(--verde); }
+
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.2rem;
+  }
+
+  #escenario { min-height: 300px; }
+
+  h1, h2, h3 { text-wrap: balance; margin-top: 0; }
+  h2 { font-size: 1.15rem; }
+  h3 { font-size: 0.95rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: var(--radio);
+    padding: 1rem 1.1rem;
+    margin-bottom: 1rem;
+  }
+
+  /* --- Estados: siempre icono + etiqueta + texto, nunca solo color --- */
+  .estado {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+  .estado.verificado { color: var(--verde); }
+  .estado.pendiente { color: var(--gris-azulado); }
+  .estado.fuente-no-localizada, .estado.dato-obsoleto { color: var(--ambar); }
+  .estado.contradictoria, .estado.error { color: var(--rojo); }
+  .estado.inferencia, .estado.propuesta { color: var(--violeta); }
+  .estado.requiere-humano { color: var(--blanco-calido); border-color: var(--ambar); }
+  .estado.deliberando { color: var(--cian); }
+
+  /* --- Layout de tres columnas (colapsable segun fase, ver §9 revision v0.5) --- */
+  .columnas { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+  @media (min-width: 900px) {
+    .columnas.tres { grid-template-columns: 260px 1fr 300px; }
+  }
+  .columnas.plegado-lateral { grid-template-columns: 1fr; }
+
+  .mision-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radio);
+    padding: 0.8rem;
+    margin-bottom: 0.6rem;
+    background: var(--bg-panel-alt);
+  }
+  .mision-card h3 { color: var(--text); font-size: 1rem; text-transform: none; letter-spacing: 0; margin-bottom: 0.3rem; }
+  .campo { margin: 0.35rem 0; font-size: 0.88rem; }
+  .campo .etq { color: var(--text-dim); }
+
+  /* --- Orbita del Concilio --- */
+  #orbita { display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 1.5rem 0; }
+  .orbita-svg circle.nodo-mision { fill: var(--bg-panel-alt); stroke: var(--cian); stroke-width: 2; }
+  .orbita-svg circle.nodo-acervo { fill: var(--bg-panel-alt); stroke: var(--violeta); stroke-width: 1.5; }
+  .orbita-svg line.conexion { stroke: var(--border); stroke-width: 1.5; }
+  .orbita-svg text { fill: var(--text); font-size: 11px; font-family: inherit; }
+  @media (prefers-reduced-motion: no-preference) {
+    .orbita-svg circle.nodo-mision.pulso { animation: pulso 1.6s ease-in-out infinite; }
+  }
+  @keyframes pulso { 0%,100% { r: 34; opacity: 1; } 50% { r: 38; opacity: 0.85; } }
+
+  /* --- Hilos (Tejido) --- */
+  .hilo-contribucion { border-left: 3px solid var(--violeta); }
+  .hilo-contribucion.error { border-left-color: var(--rojo); }
+  .voz-breve { font-style: italic; color: var(--text-dim); margin: 0.4rem 0 0.7rem; padding-left: 0.6rem; border-left: 2px solid var(--border); }
+  .grupo-hilos { margin: 0.6rem 0; }
+  .grupo-hilos > .titulo-grupo { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 0.3rem; }
+  .hilo-item { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; padding: 0.4rem 0; border-bottom: 1px dashed var(--border); font-size: 0.88rem; }
+  .hilo-item:last-child { border-bottom: none; }
+  .hilo-item.incorporado { opacity: 0.55; }
+  .hilo-texto { flex: 1; }
+
+  details.original { margin-top: 0.5rem; font-size: 0.82rem; color: var(--text-dim); }
+  details.original summary { cursor: pointer; color: var(--cian); }
+
+  #huella-consecuencia { font-size: 1.05rem; padding: 1rem; background: var(--bg-panel-alt); border-radius: var(--radio); border-left: 4px solid var(--laton); }
+
+  .fila-botones { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.9rem; }
+
+  .aviso { padding: 0.7rem 0.9rem; border-radius: var(--radio); background: rgba(245,166,35,0.12); border: 1px solid var(--ambar); color: var(--ambar); font-size: 0.88rem; }
+
+  #puerta-pasos { display: flex; gap: 0.4rem; flex-wrap: wrap; margin: 0.7rem 0; }
+  #puerta-pasos span { font-size: 0.75rem; padding: 0.15rem 0.55rem; border-radius: 999px; color: var(--text-dim); border: 1px solid var(--border); }
+  #puerta-pasos span.hecho { color: var(--laton); border-color: var(--laton); }
+  #puerta-pasos span.actual { color: var(--bg); background: var(--laton); border-color: var(--laton); font-weight: 700; }
+
+  #anuncios { position: absolute; left: -9999px; }
+
+  footer { text-align: center; color: var(--text-dim); font-size: 0.78rem; padding: 1.5rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+  <div id="barra">
+    <span class="marca">Telar</span>
+    <span>Modo <strong>simulación</strong> (fixtures B0, sin conexión real)</span>
+    <span id="barra-mision"></span>
+    <span id="barra-gasto"></span>
+  </div>
+  <nav id="ruta" aria-label="Ciclo actual"></nav>
+
+  <main>
+    <div id="escenario"></div>
+  </main>
+
+  <div id="anuncios" role="status" aria-live="polite"></div>
+
+  <footer>Fase B1 — vertical slice estática. Ver <code>PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md</code>. DOM puro: esta pantalla no depende de Phaser para funcionar (§12).</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var FASES = ['reencuentro', 'encargo', 'concilio', 'tejido', 'relevo', 'huella'];
+  var ETIQUETAS_FASE = {
+    reencuentro: 'Reencuentro', encargo: 'Encargo', concilio: 'Concilio',
+    tejido: 'Tejido', relevo: 'Relevo y Huella (Relevo)', huella: 'Relevo y Huella (Huella)'
+  };
+
+  var estado = {
+    fase: 'reencuentro',
+    fixtures: {},
+    mision: null,          // id de la mision activa: 'FIX-MISION-001'
+    puertaPaso: 'sugerir',
+    tejido: { incorporados: [], descartados: [] }
+  };
+
+  var escenario = document.getElementById('escenario');
+  var anuncios = document.getElementById('anuncios');
+
+  function anunciar(texto) { anuncios.textContent = texto; }
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function cargarFixture(nombre) {
+    if (estado.fixtures[nombre]) return Promise.resolve(estado.fixtures[nombre]);
+    return fetch('/fixtures/' + nombre).then(function (r) { return r.json(); }).then(function (j) {
+      estado.fixtures[nombre] = j;
+      return j;
+    });
+  }
+
+  function precargarTodo() {
+    return Promise.all([
+      cargarFixture('01_sin_seleccionar.json'),
+      cargarFixture('01b_sin_seleccionar_alterna.json'),
+      cargarFixture('02_deliberando.json'),
+      cargarFixture('03_tejiendo.json'),
+      cargarFixture('04_esperando_relevo.json'),
+      cargarFixture('05_huella.json')
+    ]);
+  }
+
+  function estadoHechoInfo(estadoHecho) {
+    var mapa = {
+      VERIFICADO: { clase: 'verificado', icono: '✓', etiqueta: 'Verificado' },
+      PENDIENTE_DE_COMPROBAR: { clase: 'pendiente', icono: '…', etiqueta: 'Pendiente de comprobar' },
+      FUENTE_NO_LOCALIZADA: { clase: 'fuente-no-localizada', icono: '?', etiqueta: 'Fuente no localizada' },
+      EVIDENCIA_CONTRADICTORIA: { clase: 'contradictoria', icono: '⚠', etiqueta: 'Evidencia contradictoria' },
+      DATO_OBSOLETO: { clase: 'dato-obsoleto', icono: '⏳', etiqueta: 'Dato obsoleto' },
+      INFERENCIA: { clase: 'inferencia', icono: '≈', etiqueta: 'Inferencia' }
+    };
+    return mapa[estadoHecho] || { clase: 'pendiente', icono: '?', etiqueta: estadoHecho };
+  }
+
+  function badgeEstado(info) {
+    return '<span class="estado ' + info.clase + '"><span aria-hidden="true">' + info.icono + '</span> ' + esc(info.etiqueta) + '</span>';
+  }
+
+  function pintarRuta() {
+    var nav = document.getElementById('ruta');
+    var idxActual = FASES.indexOf(estado.fase === 'huella' ? 'huella' : estado.fase);
+    nav.innerHTML = FASES.filter(function (f) { return f !== 'huella'; }).map(function (f, i) {
+      var idx = FASES.indexOf(f);
+      var clase = f === estado.fase ? 'actual' : (idx < idxActual ? 'hecho' : '');
+      return '<span class="paso ' + clase + '">' + (i + 1) + '. ' + ETIQUETAS_FASE[f].split(' (')[0] + '</span>';
+    }).join('');
+  }
+
+  function pintarBarra() {
+    var m = estado.mision ? estado.fixtures['01_sin_seleccionar.json'] : null;
+    var fx = misionActivaFixture();
+    document.getElementById('barra-mision').innerHTML = fx ? ('· Misión activa: <strong>' + esc(fx.titulo) + '</strong>') : '';
+    document.getElementById('barra-gasto').innerHTML = fx ? ('· Gasto: <strong>$' + fx.coste_real.toFixed(4) + '</strong> de $' + fx.coste_estimado.toFixed(4) + ' estimado') : '';
+  }
+
+  function misionActivaFixture() {
+    var porFase = {
+      reencuentro: null, encargo: null,
+      concilio: '02_deliberando.json', tejido: '03_tejiendo.json',
+      relevo: '04_esperando_relevo.json', huella: '05_huella.json'
+    };
+    var clave = porFase[estado.fase];
+    return clave ? estado.fixtures[clave] : null;
+  }
+
+  function irA(fase) {
+    estado.fase = fase;
+    pintarRuta();
+    pintarBarra();
+    render();
+    anunciar('Fase: ' + ETIQUETAS_FASE[fase]);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  // --- Narrador: jerarquia fija (§3.5) ---
+  function panelNarrador(fx) {
+    if (!fx) return '';
+    var faltan = (fx.faltantes || []).length ? fx.faltantes.join('; ') : 'nada pendiente por ahora';
+    var verificado = (fx.conocido || []).length ? fx.conocido.join('; ') : 'todavía nada confirmado';
+    return '' +
+      '<div class="panel">' +
+      '<h3>Narrador</h3>' +
+      '<div class="campo"><span class="etq">Qué intentamos resolver:</span> ' + esc(fx.objetivo) + '</div>' +
+      (fx.por_que_ahora ? '<div class="campo"><span class="etq">Por qué ahora:</span> ' + esc(fx.por_que_ahora) + '</div>' : '') +
+      '<div class="campo"><span class="etq">Qué está verificado:</span> ' + esc(verificado) + '</div>' +
+      '<div class="campo"><span class="etq">Qué falta o se discute:</span> ' + esc(faltan) + '</div>' +
+      (fx.consecuencia_verificada ? '<div class="campo"><span class="etq">Qué cambió por tu última acción:</span> ' + esc(fx.consecuencia_verificada) + '</div>' : '') +
+      '</div>';
+  }
+
+  function panelMisiones(activo) {
+    if (!activo) return '';
+    var lista = ['01_sin_seleccionar.json', '01b_sin_seleccionar_alterna.json'].map(function (n) { return estado.fixtures[n]; });
+    return '' +
+      '<div class="panel">' +
+      '<h3>Misiones (' + lista.length + ' de 5 máx.)</h3>' +
+      lista.map(function (m) {
+        return '<div class="campo"><strong>' + esc(m.titulo) + '</strong><br><span class="etq">' + esc(m.arquetipo) + '</span></div>';
+      }).join('') +
+      '</div>';
+  }
+
+  // ============== RENDER POR FASE ==============
+
+  function render() {
+    if (estado.fase === 'reencuentro') return renderReencuentro();
+    if (estado.fase === 'encargo') return renderEncargo();
+    if (estado.fase === 'concilio') return renderConcilio();
+    if (estado.fase === 'tejido') return renderTejido();
+    if (estado.fase === 'relevo') return renderRelevo();
+    if (estado.fase === 'huella') return renderHuella();
+  }
+
+  function renderReencuentro() {
+    var huella = estado.fixtures['05_huella.json'];
+    escenario.innerHTML = '' +
+      '<div class="panel">' +
+      '<h2>Reencuentro</h2>' +
+      '<p>Desde tu última visita: <strong>' + esc(huella.memoria[0]) + '</strong></p>' +
+      '<p>' + esc(huella.consecuencia_verificada) + '</p>' +
+      '<div class="fila-botones">' +
+      '<button class="primario" id="btn-atender">Atender una misión nueva</button>' +
+      '<button id="btn-revisar">Revisar lo que cambió</button>' +
+      '</div>' +
+      '<div id="detalle-revisar" hidden></div>' +
+      '</div>';
+
+    document.getElementById('btn-atender').onclick = function () { irA('encargo'); };
+    document.getElementById('btn-revisar').onclick = function (ev) {
+      var det = document.getElementById('detalle-revisar');
+      var abierto = !det.hidden;
+      det.hidden = abierto;
+      if (!abierto) {
+        det.innerHTML = '<div class="panel" style="margin-top:0.8rem;">' +
+          '<h3>Última Huella</h3>' +
+          '<div class="campo"><span class="etq">Decisión:</span> ' + esc(huella.decision_humana) + '</div>' +
+          '<div class="campo"><span class="etq">Gasto real del ciclo:</span> $' + huella.coste_real.toFixed(4) + '</div>' +
+          (huella.puerta ? '<div class="campo"><span class="etq">Puerta:</span> ' + badgeEstado({ clase: 'verificado', icono: '✓', etiqueta: huella.puerta.estado }) + '</div>' : '') +
+          '<div class="campo"><span class="etq">Memoria creada:</span> ' + huella.memoria.map(esc).join(' · ') + '</div>' +
+          '</div>';
+      }
+    };
+  }
+
+  function renderEncargo() {
+    var m1 = estado.fixtures['01_sin_seleccionar.json'];
+    var m2 = estado.fixtures['01b_sin_seleccionar_alterna.json'];
+
+    function tarjeta(m) {
+      return '' +
+        '<div class="mision-card">' +
+        '<h3>' + esc(m.titulo) + '</h3>' +
+        '<div class="campo"><span class="etq">Arquetipo:</span> ' + esc(m.arquetipo) + '</div>' +
+        '<div class="campo"><span class="etq">Por qué ahora:</span> ' + esc(m.por_que_ahora) + '</div>' +
+        '<div class="campo"><span class="etq">A quién afecta:</span> ' + m.afectados.map(esc).join(', ') + '</div>' +
+        '<div class="campo"><span class="etq">Tensión:</span> ' + esc(m.tension) + '</div>' +
+        '<div class="campo"><span class="etq">Si se aplaza:</span> ' + esc(m.consecuencia_de_esperar) + '</div>' +
+        '<div class="campo"><span class="etq">Condición de cierre:</span> ' + esc(m.criterio_cierre) + '</div>' +
+        '<div class="campo"><span class="etq">Reversibilidad:</span> ' + esc(m.reversibilidad) + '</div>' +
+        '<div class="campo"><span class="etq">Preparación:</span> ' + badgeEstado(
+          m.preparacion === 'preparada'
+            ? { clase: 'verificado', icono: '✓', etiqueta: 'Preparada para deliberar' }
+            : { clase: 'fuente-no-localizada', icono: '⚠', etiqueta: 'Falta evidencia' }
+        ) + '</div>' +
+        '<details class="original"><summary>Ver orígenes</summary>' +
+        m.origenes.map(function (o) { return '<div>' + esc(o.sistema) + ' — ' + esc(o.tipoEntidad) + ' — <code>' + esc(o.recordId) + '</code> (' + esc(o.politicaEscritura) + ')</div>'; }).join('') +
+        '</details>' +
+        '<div class="fila-botones"><button class="primario" data-mision="' + m.id + '">Atender esta misión</button></div>' +
+        '</div>';
+    }
+
+    escenario.innerHTML = '' +
+      '<div class="panel">' +
+      '<h2>Encargo</h2>' +
+      '<p>Dos misiones recomendadas (de las 5 posibles). Elige una para convocar el Concilio.</p>' +
+      '<label for="criterio">Criterio rector (opcional, marco de la decisión, no una puntuación)</label><br>' +
+      '<input id="criterio" type="text" placeholder="ej. mantenibilidad, rapidez, cuidado..." style="width:100%;max-width:420px;padding:0.5rem;margin:0.4rem 0 1rem;background:var(--bg-panel-alt);border:1px solid var(--border);color:var(--text);border-radius:6px;">' +
+      tarjeta(m1) + tarjeta(m2) +
+      '</div>';
+
+    escenario.querySelectorAll('button[data-mision]').forEach(function (btn) {
+      btn.onclick = function () {
+        var id = btn.getAttribute('data-mision');
+        var m = id === m1.id ? m1 : m2;
+        if (m.preparacion !== 'preparada') {
+          escenario.querySelector('.panel').insertAdjacentHTML('beforeend',
+            '<div class="aviso" style="margin-top:1rem;">' +
+            '<strong>Gate de preparación:</strong> esta Misión tiene "falta_evidencia" — el sistema recomienda tratarla como Misión de arquetipo <strong>Investigación</strong> antes de convocar Acervos a especular, en vez de abrir el Concilio directamente. (Este es el gate de §3.1 en acción — no es un fallo, es un desenlace narrativo legítimo.)' +
+            '</div>');
+          anunciar('Gate de preparación: falta evidencia, no se convoca al Concilio todavía.');
+          return;
+        }
+        estado.mision = m.id;
+        irA('concilio');
+      };
+    });
+  }
+
+  function renderConcilio() {
+    var fx = estado.fixtures['02_deliberando.json'];
+    var acervos = fx.participantes.filter(function (p) { return p.participantType === 'ai'; });
+
+    var cx = 220, cy = 130, radio = 90;
+    var nodos = acervos.map(function (a, i) {
+      // Empieza a la derecha (0 rad), no arriba -- con pocos Acervos (2-3, el caso
+      // habitual) reparte los nodos a los lados, aprovechando el viewBox ancho,
+      // en vez de arriba/abajo donde se salen del encuadre.
+      var ang = (i / acervos.length) * Math.PI * 2;
+      var x = cx + radio * Math.cos(ang), y = cy + radio * 0.7 * Math.sin(ang);
+      return { nombre: a.roleId, x: x, y: y };
+    });
+
+    var svg = '<svg class="orbita-svg" viewBox="0 0 440 260" role="img" aria-label="Concilio: ' + esc(fx.titulo) + ' en el centro, rodeada de ' + acervos.length + ' Acervos deliberando">' +
+      nodos.map(function (n) { return '<line class="conexion" x1="' + cx + '" y1="' + cy + '" x2="' + n.x + '" y2="' + n.y + '" />'; }).join('') +
+      '<circle class="nodo-mision pulso" cx="' + cx + '" cy="' + cy + '" r="34" />' +
+      '<text x="' + cx + '" y="' + cy + '" text-anchor="middle" dy="4">Misión</text>' +
+      nodos.map(function (n) {
+        return '<circle class="nodo-acervo" cx="' + n.x + '" cy="' + n.y + '" r="26" />' +
+          '<text x="' + n.x + '" y="' + n.y + '" text-anchor="middle" dy="4">' + esc(n.nombre.replace('Acervo ', '')) + '</text>';
+      }).join('') +
+      '</svg>';
+
+    escenario.innerHTML = '' +
+      '<div class="columnas">' +
+      '<div class="panel">' +
+      '<h2>Concilio</h2>' +
+      '<p>' + esc(fx.titulo) + ' — criterio rector: <strong>' + esc(fx.criterio_rector || 'sin especificar') + '</strong></p>' +
+      '<div id="orbita">' + svg + '</div>' +
+      '<p class="campo"><span class="estado deliberando">● Deliberando</span> ' + acervos.length + '/' + acervos.length + ' Acervos convocados · gasto acumulado $' + fx.coste_real.toFixed(4) + '</p>' +
+      '<div class="fila-botones">' +
+      '<button class="primario" id="btn-ver-posturas">Ver posturas</button>' +
+      '<button id="btn-cancelar-concilio">Cancelar</button>' +
+      '</div>' +
+      '</div>' +
+      panelNarrador(fx) +
+      '</div>';
+
+    document.getElementById('btn-ver-posturas').onclick = function () { irA('tejido'); };
+    document.getElementById('btn-cancelar-concilio').onclick = function () { irA('encargo'); };
+  }
+
+  function renderTejido() {
+    var fx = estado.fixtures['03_tejiendo.json'];
+
+    function hiloAccion(tipo, texto, idHilo) {
+      var yaIncorporado = estado.tejido.incorporados.indexOf(idHilo) !== -1;
+      return '<div class="hilo-item' + (yaIncorporado ? ' incorporado' : '') + '">' +
+        '<span class="hilo-texto">' + esc(texto) + '</span>' +
+        (yaIncorporado
+          ? '<span class="estado verificado">✓ incorporado</span>'
+          : '<button data-hilo="' + idHilo + '" data-tipo="' + tipo + '">Incorporar</button>') +
+        '</div>';
+    }
+
+    var htmlContribuciones = fx.contribuciones.map(function (c, ci) {
+      if (c.estadoContrato === 'ERR') {
+        return '<div class="panel hilo-contribucion error">' +
+          '<h3>' + esc(c.rol) + '</h3>' +
+          '<p>' + badgeEstado({ clase: 'error', icono: '✕', etiqueta: 'ERR — contrato inválido' }) + '</p>' +
+          '<p class="voz-breve">' + esc(c.errorDetalle) + '</p>' +
+          '<div class="fila-botones"><button data-reparar="' + ci + '">Reparar (reintentar)</button></div>' +
+          '</div>';
+      }
+      var idBase = 'c' + ci;
+      var bloques = '';
+      if (c.hechos.length) {
+        bloques += '<div class="grupo-hilos"><div class="titulo-grupo">Hechos</div>' +
+          c.hechos.map(function (h, hi) {
+            var info = estadoHechoInfo(h.estado);
+            var idHilo = idBase + '-hecho-' + hi;
+            var yaIncorporado = estado.tejido.incorporados.indexOf(idHilo) !== -1;
+            return '<div class="hilo-item' + (yaIncorporado ? ' incorporado' : '') + '">' +
+              '<span class="hilo-texto">' + badgeEstado(info) + ' ' + esc(h.texto) + '</span>' +
+              (yaIncorporado ? '' : '<button data-hilo="' + idHilo + '" data-tipo="hecho">Incorporar como fundamento</button>') +
+              '</div>';
+          }).join('') + '</div>';
+      }
+      if (c.propuestas.length) {
+        bloques += '<div class="grupo-hilos"><div class="titulo-grupo">Propuestas</div>' +
+          c.propuestas.map(function (p, pi) { return hiloAccion('propuesta', p, idBase + '-prop-' + pi); }).join('') + '</div>';
+      }
+      if (c.riesgos.length) {
+        bloques += '<div class="grupo-hilos"><div class="titulo-grupo">Riesgos</div>' +
+          c.riesgos.map(function (r, ri) {
+            var idHilo = idBase + '-riesgo-' + ri;
+            var yaIncorporado = estado.tejido.incorporados.indexOf(idHilo) !== -1;
+            return '<div class="hilo-item' + (yaIncorporado ? ' incorporado' : '') + '">' +
+              '<span class="hilo-texto">' + esc(r) + '</span>' +
+              (yaIncorporado ? '<span class="estado verificado">✓ vinculado</span>' : '<button data-hilo="' + idHilo + '" data-tipo="riesgo">Vincular como condición</button>') +
+              '</div>';
+          }).join('') + '</div>';
+      }
+      if (c.faltantes.length) {
+        bloques += '<div class="grupo-hilos"><div class="titulo-grupo">Faltantes</div>' +
+          c.faltantes.map(function (f) { return '<div class="hilo-item"><span class="hilo-texto">' + esc(f) + '</span></div>'; }).join('') + '</div>';
+      }
+      return '<div class="panel hilo-contribucion">' +
+        '<h3>' + esc(c.rol) + '</h3>' +
+        '<p class="voz-breve">"' + esc(c.vozBreve) + '"</p>' +
+        bloques +
+        '<details class="original"><summary>Ver fundamento, fuentes y respuesta original</summary>' +
+        (c.referencias.length ? '<div>Referencias: ' + c.referencias.map(function (r) { return '<code>' + esc(r) + '</code>'; }).join(', ') + '</div>' : '<div>Sin referencias citadas.</div>') +
+        '<div>Respuesta original conservada: <code>' + esc(c.respuestaOriginalRef) + '</code></div>' +
+        '</details>' +
+        '</div>';
+    }).join('');
+
+    escenario.innerHTML = '' +
+      '<div class="columnas">' +
+      '<div>' +
+      '<div class="panel"><h2>Esto han pensado los Acervos</h2><p>Incorpora los hilos que quieras llevar al resultado. Lo que no incorpores queda archivado, no se pierde.</p></div>' +
+      htmlContribuciones +
+      '<div class="fila-botones"><button class="primario" id="btn-a-relevo">Continuar a Relevo</button></div>' +
+      '</div>' +
+      panelNarrador(fx) +
+      '</div>';
+
+    escenario.querySelectorAll('button[data-hilo]').forEach(function (btn) {
+      btn.onclick = function () {
+        estado.tejido.incorporados.push(btn.getAttribute('data-hilo'));
+        anunciar('Hilo incorporado al resultado.');
+        renderTejido();
+      };
+    });
+    escenario.querySelectorAll('button[data-reparar]').forEach(function (btn) {
+      btn.onclick = function () { anunciar('reparar_hilo enviado (simulado) — en B2 esto reintenta la llamada real.'); };
+    });
+    document.getElementById('btn-a-relevo').onclick = function () {
+      estado.tejido.descartados = [];
+      irA('relevo');
+    };
+  }
+
+  function renderRelevo() {
+    var fx = estado.fixtures['04_esperando_relevo.json'];
+    var r = fx.resultado;
+
+    escenario.innerHTML = '' +
+      '<div class="columnas">' +
+      '<div>' +
+      '<div class="panel">' +
+      '<h2>Relevo</h2>' +
+      '<h3>Qué se propone</h3>' +
+      '<div class="campo">' + esc(r.accion_propuesta) + '</div>' +
+      '<h3>Qué se sabe y qué no</h3>' +
+      '<div class="campo"><span class="etq">Evidencia:</span> ' + esc(r.evidencia) + '</div>' +
+      '<div class="campo"><span class="etq">Riesgo principal:</span> ' + esc(r.riesgo_principal) + '</div>' +
+      '<div class="campo"><span class="etq">Hilos incorporados en este ciclo:</span> ' + (estado.tejido.incorporados.length || r.hilosIncorporados.length) + '</div>' +
+      '<h3>Qué acción real podría ocurrir después</h3>' +
+      '<div class="campo"><span class="etq">Condición de éxito:</span> ' + esc(r.condicion_exito) + '</div>' +
+      '<div class="campo"><span class="etq">Reversibilidad:</span> ' + esc(r.reversibilidad) + '</div>' +
+      '<div class="campo"><span class="etq">Cómo se comprobará:</span> ' + esc(r.modo_comprobacion) + '</div>' +
+      '<div class="fila-botones">' +
+      '<button class="laton" id="btn-aprobar">Aprobar la decisión — no ejecuta cambios</button>' +
+      '<button id="btn-devolver">Devolver con una pregunta</button>' +
+      '<button id="btn-aplazar">Aplazar</button>' +
+      '<button id="btn-aprendizaje">Cerrar como aprendizaje</button>' +
+      '</div>' +
+      '<div id="rama-secundaria"></div>' +
+      '</div>' +
+      '</div>' +
+      panelNarrador(fx) +
+      '</div>';
+
+    ['devolver', 'aplazar', 'aprendizaje'].forEach(function (accion) {
+      document.getElementById('btn-' + accion).onclick = function () {
+        document.getElementById('rama-secundaria').innerHTML =
+          '<div class="aviso" style="margin-top:0.8rem;">Decisión registrada: <strong>' + accion + '</strong>. En esta maqueta de B1 solo se detalla el camino de aprobación; en B3 cada rama tendrá su propia pantalla.</div>';
+      };
+    });
+
+    document.getElementById('btn-aprobar').onclick = function () {
+      estado.puertaPaso = 'sugerir';
+      irA('relevo');
+      renderPuerta();
+    };
+  }
+
+  function renderPuerta() {
+    var fx = estado.fixtures['05_huella.json'];
+    var p = fx.puerta;
+    var pasos = ['sugerir', 'inspeccionar', 'autorizar', 'iniciar', 'verificar'];
+    var etiquetasPaso = { sugerir: 'Sugerir', inspeccionar: 'Inspeccionar', autorizar: 'Autorizar', iniciar: 'Ejecutar', verificar: 'Verificar' };
+
+    var idxActual = pasos.indexOf(estado.puertaPaso);
+    var pintaPasos = pasos.map(function (ps, i) {
+      var clase = i < idxActual ? 'hecho' : (i === idxActual ? 'actual' : '');
+      return '<span class="' + clase + '">' + (i + 1) + '. ' + etiquetasPaso[ps] + '</span>';
+    }).join('');
+
+    var cuerpo = '';
+    var botonSiguiente = '';
+
+    if (estado.puertaPaso === 'sugerir') {
+      cuerpo = '<p>' + esc(p.efecto) + '</p>';
+      botonSiguiente = '<button class="laton" id="btn-puerta-siguiente">Inspeccionar</button>';
+    } else if (estado.puertaPaso === 'inspeccionar') {
+      cuerpo = '' +
+        '<div class="campo"><span class="etq">Destino exacto:</span> ' + esc(p.destino) + '</div>' +
+        '<div class="campo"><span class="etq">Cambio:</span> ' + esc(p.datos) + '</div>' +
+        '<div class="campo"><span class="etq">Reversible:</span> ' + (p.reversible ? 'sí' : 'no') + '</div>' +
+        '<div class="campo"><span class="etq">Nivel de riesgo:</span> ' + badgeEstado(
+          p.nivelRiesgo === 'bajo_reversible' ? { clase: 'verificado', icono: '✓', etiqueta: 'Bajo y reversible' } : { clase: 'fuente-no-localizada', icono: '⚠', etiqueta: p.nivelRiesgo }
+        ) + '</div>' +
+        '<div class="campo"><span class="etq">Versión inspeccionada:</span> v' + p.versionInspeccionada + ' (si el contenido cambia después, esta autorización queda inválida)</div>';
+      botonSiguiente = '<button class="laton" id="btn-puerta-siguiente">Autorizar la ejecución en ' + esc(p.destino) + '</button>';
+    } else if (estado.puertaPaso === 'autorizar') {
+      cuerpo = '<p>Autorización registrada para v' + p.versionInspeccionada + '. Ejecutar ahora la realizará un mecanismo independiente de esta aprobación.</p>';
+      botonSiguiente = '<button class="laton" id="btn-puerta-siguiente">Ejecutar ahora</button>';
+    } else if (estado.puertaPaso === 'iniciar') {
+      cuerpo = '<p>Ejecutando… (simulado en B1 — en B3 esto escribe de verdad contra un destino de prueba).</p>';
+      botonSiguiente = '<button class="laton" id="btn-puerta-siguiente">Verificar el resultado</button>';
+    } else if (estado.puertaPaso === 'verificar') {
+      cuerpo = '<p>' + badgeEstado({ clase: 'verificado', icono: '✓', etiqueta: p.estado }) + '</p>';
+      botonSiguiente = '<button class="primario" id="btn-puerta-siguiente">Ver la Huella</button>';
+    }
+
+    // Quita cualquier panel de Puerta previo ANTES de crear el nuevo -- evitar que
+    // dos elementos compartan el mismo id a la vez (bug real encontrado en pruebas:
+    // getElementById cogia el boton viejo, el clic en el boton nuevo no hacia nada).
+    var contenedor = escenario.querySelector('.columnas > div');
+    var previo = contenedor.querySelector('.panel-puerta');
+    if (previo) previo.remove();
+
+    var panel = document.createElement('div');
+    panel.className = 'panel panel-puerta';
+    panel.style.marginTop = '1rem';
+    panel.innerHTML = '<h2>Puerta Humana</h2><div id="puerta-pasos">' + pintaPasos + '</div>' + cuerpo + '<div class="fila-botones"><button class="laton boton-puerta-siguiente">' + '</button></div>';
+    // El texto del boton no puede llevar HTML propio embebido arriba (evitar XSS en
+    // p.destino) -- se pinta aparte, como texto plano, en el propio boton.
+    panel.querySelector('.boton-puerta-siguiente').replaceWith(parsearBoton(botonSiguiente));
+    contenedor.appendChild(panel);
+
+    panel.querySelector('.boton-puerta-siguiente').onclick = function () {
+      var siguiente = { sugerir: 'inspeccionar', inspeccionar: 'autorizar', autorizar: 'iniciar', iniciar: 'verificar', verificar: 'huella' };
+      var s = siguiente[estado.puertaPaso];
+      if (s === 'huella') { irA('huella'); return; }
+      estado.puertaPaso = s;
+      renderPuerta();
+    };
+  }
+
+  function parsearBoton(htmlBoton) {
+    var envoltorio = document.createElement('div');
+    envoltorio.innerHTML = htmlBoton;
+    var boton = envoltorio.firstElementChild;
+    boton.classList.add('boton-puerta-siguiente');
+    boton.removeAttribute('id');
+    return boton;
+  }
+
+  function renderHuella() {
+    var fx = estado.fixtures['05_huella.json'];
+    escenario.innerHTML = '' +
+      '<div class="panel">' +
+      '<h2>Huella</h2>' +
+      '<div id="huella-consecuencia">Este ciclo queda tejido. Cambió <strong>' + esc(fx.consecuencia_verificada) + '</strong>. ' +
+      (fx.faltantes.length ? 'Sigue pendiente <strong>' + esc(fx.faltantes.join('; ')) + '</strong>.' : 'Sin pendientes abiertos.') +
+      '</div>' +
+      '<h3>Participantes</h3><div class="campo">' + fx.participantes.map(function (p) { return esc(p.roleId); }).join(', ') + '</div>' +
+      '<h3>Gasto real</h3><div class="campo">$' + fx.coste_real.toFixed(4) + '</div>' +
+      '<h3>Memoria creada</h3>' + fx.memoria.map(function (m) { return '<div class="campo">· ' + esc(m) + '</div>'; }).join('') +
+      (fx.puerta ? '<h3>Puerta</h3><div class="campo">' + badgeEstado({ clase: 'verificado', icono: '✓', etiqueta: fx.puerta.estado }) + '</div>' : '') +
+      '<div class="fila-botones"><button class="primario" id="btn-volver">Volver al Reencuentro</button></div>' +
+      '</div>';
+
+    document.getElementById('btn-volver').onclick = function () {
+      estado.tejido = { incorporados: [], descartados: [] };
+      irA('reencuentro');
+    };
+  }
+
+  // --- Arranque ---
+  precargarTodo().then(function () {
+    pintarRuta();
+    pintarBarra();
+    render();
+  }).catch(function (e) {
+    escenario.innerHTML = '<div class="aviso">No se pudieron cargar los fixtures: ' + esc(e.message) + '</div>';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "_comentario": "Fuente unica de verdad del ciclo de una Mision -- PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §2. Antes de este fichero convivian tres modelos de estados distintos en el paper; ahora solo hay uno.",
+  "estados": [
+    "sin_seleccionar",
+    "orientacion",
+    "concilio_convocando",
+    "deliberando",
+    "tejiendo",
+    "esperando_relevo",
+    "devuelta",
+    "aprobada_sin_ejecutar",
+    "puerta_pendiente",
+    "puerta_en_curso",
+    "puerta_ejecutada",
+    "puerta_warn",
+    "puerta_err",
+    "huella"
+  ],
+  "estadosVisualesMVP": [
+    "sin_seleccionar",
+    "deliberando",
+    "tejiendo",
+    "esperando_relevo",
+    "huella"
+  ],
+  "transiciones": {
+    "sin_seleccionar": ["orientacion"],
+    "orientacion": ["concilio_convocando"],
+    "concilio_convocando": ["deliberando"],
+    "deliberando": ["tejiendo"],
+    "tejiendo": ["esperando_relevo"],
+    "esperando_relevo": ["devuelta", "aprobada_sin_ejecutar", "huella"],
+    "devuelta": ["tejiendo"],
+    "aprobada_sin_ejecutar": ["puerta_pendiente", "huella"],
+    "puerta_pendiente": ["puerta_en_curso"],
+    "puerta_en_curso": ["puerta_ejecutada", "puerta_warn", "puerta_err"],
+    "puerta_ejecutada": ["huella"],
+    "puerta_warn": ["huella"],
+    "puerta_err": ["puerta_pendiente"],
+    "huella": ["sin_seleccionar"]
+  },
+  "notas": {
+    "esperando_relevo_a_huella": "Camino directo para 'cerrar_como_aprendizaje' -- una Mision de arquetipo Investigacion o Diagnostico puede cerrar bien sin pasar nunca por la Puerta Humana.",
+    "aprobada_sin_ejecutar_a_huella": "Camino directo cuando la decision no requiere ninguna accion externa real (ej. una Decision que solo fija un criterio, sin ejecucion).",
+    "puerta_err_a_puerta_pendiente": "Ante ERR el flujo se detiene y vuelve a pedir Sugerir -> Inspeccionar -> Aprobar -- nunca reintenta Ejecutar directamente sobre el mismo estado fallido."
+  }
+}

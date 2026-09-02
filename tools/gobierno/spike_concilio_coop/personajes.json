@@ -1,0 +1,102 @@
+{
+ "generado": "2026-09-01T19:57:41.284Z",
+ "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat\\02_Personajes",
+ "total": 19,
+ "personajes": [
+  {
+   "id": "Concilio",
+   "estado": "activo",
+   "dialogo": "El multiciclo que reúne a los ocho Acervos, cada uno con un carácter distinto, para deliberar internamente (rondas acotadas + síntesis final) antes de que una idea llegue a Cronista. Funciona igual para un cuento, un proyecto de software o una cooperativa — el mismo mecanismo, sin cambiar de forma según el dominio.\n\nConstruido y probado (acción `concilio_proponer`), con presupuesto controlado vía `GASTO_API` — nunca delibera sin tope de gasto conocido de antemano."
+  },
+  {
+   "id": "Vigilia",
+   "estado": "activo",
+   "dialogo": "La cola nocturna de Concilio — encadenada sin esperar entre elementos: en cuanto termina un ciclo, empieza el siguiente de inmediato. Cierra con un correo de resumen (coste, tiempo, resultado de cada elemento). Construida y probada en dos jornadas reales (11 y 9 elementos procesados de punta a punta).\n\nDentro de Vigilia vive el modelo de Ramas, tomado de git pero corregido: una narrativa no se fusiona automáticamente, se elige cuál se vuelve canónica, y las demás quedan archivadas como material de Acervo — nunca se pierden."
+  },
+  {
+   "id": "Coordinador",
+   "estado": "activo",
+   "dialogo": "Reparte trabajo real entre workers y verifica lo que vuelve antes de darlo por bueno — nunca se fía de una respuesta solo porque suene coherente. Se apoya en Verificador de Campos (¿los campos citados existen de verdad en el esquema real?) y Verificador de Capacidades (¿el mecanismo citado por su nombre existe de verdad en el catálogo real?) antes de dejar pasar cualquier afirmación.\n\nVive de la misma disciplina que luego se descubrió duplicada en la Geografía real: el bus de eventos que reparte tareas entre DeepSeek, Claude y \"(sin asignar)\" (`92_BUS_TRABAJO`, ver la física del universo) es la encarnación operativa de este mismo personaje, funcionando hoy mismo sobre datos reales."
+  },
+  {
+   "id": "Ejecutor",
+   "estado": "activo",
+   "dialogo": "Da seguimiento a las tareas y mantiene el sistema — con confirmación humana obligatoria antes de escribir nada real, sin excepción. Prototipo construido y probado: arregló un workflow real de verdad, no un ejercicio simulado. Existe también en versión Ejecutor Local, contra el worker local en vez de la API.\n\nEs la Puerta Humana hecha personaje — el punto exacto donde el sistema se detiene y espera a alguien."
+  },
+  {
+   "id": "Cronista",
+   "estado": "activo",
+   "dialogo": "Convierte ideas y documentos en tareas y documentación real, por dos vías construidas: segmentación de documentos largos, y generación de informes e imágenes. Su propio workflow de nacimiento tiene un arco real en la cronología del universo (ver Arco del nacimiento del generador) — el modelo local alucinó el nombre de un fichero al generar una tarea, confundiéndolo con una tabla más abajo en el mismo texto. De ahí nace, con dos rutas separadas por diseño, la distinción real entre \"proponer\" (el modelo) y \"confirmar\" (solo un humano, y solo entonces se escribe algo real)."
+  },
+  {
+   "id": "Pregonero",
+   "estado": "activo",
+   "dialogo": "Publica el resultado terminado hacia fuera — redes, PDF. En su versión ampliada produciría vídeo interactivo (H5P), imagen y narración sintetizada (Piper) — solo diseñada todavía, ninguna pieza construida. El último paso de la Rueda del Gremio antes de que algo salga a la Plaza o la Feria."
+  },
+  {
+   "id": "Relevo",
+   "estado": "activo",
+   "dialogo": "El tejido terminado se revisa antes de publicarse — el promotor y Claude confirman juntos y deciden si se continúa la misma historia o se inicia una nueva. Es el cuarto ciclo del Telar (Parte de Vigilia/Relevo), y también el nombre que se usa para cualquier informe de cierre de sesión que un humano tiene que leer antes de que el trabajo se dé por bueno.\n\nEn temas sensibles se adelanta: un Relevo ligero se inserta al final de la propia Urdimbre, antes de invertir tres ciclos enteros en autopiloto — no negociable cuando el tema toca población real vulnerable."
+  },
+  {
+   "id": "Narrador",
+   "estado": "por_construir",
+   "dialogo": "Un Acervo todavía sin construir. A diferencia de los Acervos ya reales (Filosófico, Lógico, Logístico, Narrativo, Prompter), este no delibera dentro del Concilio — su función es contar. Es la figura que acompaña al usuario en su propia aventura por el sistema: quien narra la historia de Engremiat mientras se recorre, no solo quien la archiva después.\n\nDecidido como respuesta a la primera pregunta de la Urdimbre (punto de vista) — ver 00_Mapa y Estilo."
+  },
+  {
+   "id": "Mensajero",
+   "estado": "activo",
+   "dialogo": "Se comunica con el mundo exterior a un continente, o al mundo exterior de Engremiat entero, por caminos seguros — nunca decide, nunca delibera, solo lleva un mensaje concreto de un sitio a otro. A diferencia de Coordinador (que reparte y verifica trabajo interno entre workers), el Mensajero cruza fronteras: entre Baserow y Sheets, entre la malla privada y un móvil, entre Engremiat y un cliente real.\n\nNo es un personaje único — es un rol con varias encarnaciones reales, todas con la misma forma: un camino restringido a un único propósito, que no puede hacer nada más aunque se filtrara.\n\n**Encarnaciones reales, ya construidas antes de tener nombre**:\n- `apagar-pi-webhook` / `despertar-pc-webhook` — clave SSH con `command=` forzado a un único script.\n- El bot de Telegram, con sus dos roles separados desde el principio: filtro de formación (cara externa) y agente social/coordinador (cara interna) — nunca el mismo camino para las dos cosas.\n- El puente Historia↔Leyes propuesto — lee una `TAREA` real de Baserow, escribe solo una referencia en el otro continente si hace falta, deja rastro en `92_BUS_TRABAJO`.\n\n**Su espacio es una cola de trabajo, no una sala de deliberación**: `92_BUS_TRABAJO` es su casa real — el bus de eventos donde cada cruce de frontera queda registrado con quién lo disparó y cuándo, igual que ya se audita cualquier otro trabajo real de este universo."
+  },
+  {
+   "id": "Acervo Tecnico",
+   "estado": "activo",
+   "dialogo": "En el Concilio, su única pregunta es: ¿esto es implementable, mantenible, con coste real de construir? El voto que evita que una idea bonita choque contra la realidad del código."
+  },
+  {
+   "id": "Acervo Logico",
+   "estado": "activo",
+   "dialogo": "Exige cadena de causa-efecto, sin saltarse pasos. En Concilio es quien pregunta \"¿y eso por qué se sigue de lo anterior?\" cuando una síntesis quiere atajar. Coautor, junto a Acervo Narrativo, de las síntesis reales que analizaron la historia propia de este universo."
+  },
+  {
+   "id": "Acervo Logistico",
+   "estado": "activo",
+   "dialogo": "Piensa en flujo real de trabajo: quién, cuándo, con qué recursos. En Concilio es la voz que convierte una buena idea en algo que de verdad se puede ejecutar en el tiempo y con las manos disponibles, no solo en el papel."
+  },
+  {
+   "id": "Acervo Narrativo",
+   "estado": "activo",
+   "dialogo": "Vela por la coherencia de la historia, el tono, la continuidad. Junto a Acervo Logico, coautor real de las síntesis que primero analizaron la propia historia de Engremiat — el Acervo que más cerca trabaja del Narrador todavía por construir."
+  },
+  {
+   "id": "Acervo Filosofico",
+   "estado": "activo",
+   "dialogo": "Pregunta por qué y a quién sirve algo — soberanía, dignidad, \"Nothing About Us Without Us\". La voz que en Concilio devuelve cualquier propuesta a la Misión (ver 00_Mapa) antes de dejarla avanzar: procomún, no contabilidad de deudas."
+  },
+  {
+   "id": "Acervo Usuario",
+   "estado": "activo",
+   "dialogo": "Habla desde la perspectiva de quien usa esto sin saber nada de por dentro — el único Acervo que en Concilio no defiende ningún mecanismo, defiende a quien va a tocar el resultado sin haber leído ni una línea de este universo."
+  },
+  {
+   "id": "Acervo Sociocracia",
+   "estado": "activo",
+   "dialogo": "Defiende la legitimidad del propio proceso de decisión: consentimiento, no mayoría — \"nadie tiene objeción razonada\", no un umbral de votos.\n\n**Hilo abierto real, no resuelto todavía**: en una síntesis real de investigación, este mismo Acervo propuso un umbral de \"3 aprobaciones\" y \"consenso del 80%\" para legitimar una desviación de la Urdimbre — lo cual contradice la propia definición de sociocracia que el universo ya tiene escrita. Un Acervo Sociocracia que propone un porcentaje de votos no está aplicando sociocracia real, está aplicando una votación con otro nombre. Queda anotado tal cual, sin corregir todavía — la honestidad del fallo también aplica a los propios personajes."
+  },
+  {
+   "id": "Acervo Prompter",
+   "estado": "activo",
+   "dialogo": "No delibera dentro de Concilio como los otros siete — trabaja antes que ellos. Convierte una necesidad vaga o una incidencia real en una única pregunta de investigación bien estructurada para Vigilia, aplicando meta-prompting: da la estructura del razonamiento que hace falta, no el contenido de la respuesta. No responde la pregunta — la formula, para que Concilio la responda después."
+  },
+  {
+   "id": "Verificador de Campos",
+   "estado": "activo",
+   "dialogo": "Verificador determinista, no probabilístico — código real (`verificarCampos`), no una opinión de otra IA. Comprueba que cualquier campo citado en una respuesta existe de verdad en el esquema de la tabla relevante de Baserow. Nació para atajar un problema real de raíz: forzar la verificación sobre todos los documentos hacía que se marcaran como fabricados identificadores del lado del Sheet que el verificador nunca podía conocer — de ahí la necesidad de separar primero qué documentos hablan del Sheet y cuáles hablan del propio universo antes de verificar nada."
+  },
+  {
+   "id": "Verificador de Capacidades",
+   "estado": "activo",
+   "dialogo": "Comprueba afirmaciones que citan explícitamente un mecanismo por su nombre real — \"el Verificador determinista de campos\", \"mecanismo 2\" — contra el catálogo real de mecanismos existentes. Ni da la afirmación por buena ni la descarta de entrada: la extrae siempre y la comprueba, la misma disciplina de honestidad del fallo que rige el resto del universo."
+  }
+ ]
+}

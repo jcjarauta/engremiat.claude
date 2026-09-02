@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/evento.schema.json",
+  "title": "Evento (cliente -> servidor)",
+  "description": "PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md §17.1 -- sobre comun a todo comando. La identidad del actor y la marca temporal se asignan/verifican en servidor, nunca se confian al cliente -- por eso no aparecen aqui como campos del payload del cliente.",
+  "type": "object",
+  "required": ["missionId", "expectedMissionVersion", "clientEventId", "correlationId", "accion"],
+  "additionalProperties": true,
+  "properties": {
+    "missionId": { "type": "string", "minLength": 1 },
+    "expectedMissionVersion": { "type": "integer", "minimum": 1 },
+    "clientEventId": { "type": "string", "minLength": 1 },
+    "correlationId": { "type": "string", "minLength": 1 },
+    "accion": {
+      "type": "string",
+      "enum": [
+        "elegir_personaje", "proponer", "convocar", "tejer", "pasar_hilo",
+        "reparar_hilo", "cerrar_ciclo", "relevo_decision",
+        "decision_aprobar", "ejecucion_autorizar", "ejecucion_iniciar",
+        "ejecucion_verificar", "ejecucion_cancelar"
+      ]
+    },
+    "motivo": { "type": "string" }
+  }
+}

@@ -1,0 +1,23 @@
+# Spike Concilio cooperativo -- servidor real, atado solo a Tailscale.
+# Nunca a 0.0.0.0, mismo criterio de minimo privilegio que el resto del VPS.
+services:
+  spike-concilio:
+    image: node:22-alpine
+    container_name: engremiat-spike-concilio
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+      - spike_concilio_node_modules:/app/node_modules
+    environment:
+      - PUERTO=2568
+      - BASEROW_URL=http://100.107.171.88
+      - BASEROW_TOKEN=${BASEROW_TOKEN}
+      - DEEPSEEK_KEY=${DEEPSEEK_KEY}
+      - ENGREMIAT_SHEETS_CREDENTIALS_PATH=/app/.sheets_credenciales.json
+    command: sh -c "npm install --omit=dev && node servidor.mjs"
+    ports:
+      - "100.107.171.88:2568:2568"
+
+volumes:
+  spike_concilio_node_modules:

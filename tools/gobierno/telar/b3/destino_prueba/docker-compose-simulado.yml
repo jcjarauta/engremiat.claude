@@ -1,0 +1,7 @@
+# Destino de prueba de B3 -- NUNCA el docker-compose.yml real del VPS.
+# Copia aislada, solo para verificar que la Puerta Humana escribe y lee de verdad.
+services:
+  spike-concilio:
+    image: node:22-alpine
+    container_name: engremiat-spike-concilio
+    command: sh -c "npm ci --omit=dev && node servidor.mjs"

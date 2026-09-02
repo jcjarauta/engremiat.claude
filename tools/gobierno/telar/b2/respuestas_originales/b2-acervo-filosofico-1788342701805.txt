@@ -1,0 +1,27 @@
+{
+  "vozBreve": "El volumen ya está separado, pero reintentar sin más no basta: hay que hacerlo resiliente a cortes de red, no solo a un fallo puntual.",
+  "hechos": [
+    {"texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.", "estado": "VERIFICADO"},
+    {"texto": "Ocurrió un fallo de red durante docker compose up en pruebas del lobby, sin bloqueo.", "estado": "VERIFICADO"},
+    {"texto": "No se ha reproducido el fallo de red de forma controlada.", "estado": "PENDIENTE_DE_COMPROBAR"}
+  ],
+  "propuestas": [
+    "Implementar reintento con backoff exponencial en el comando de instalación de dependencias (npm ci) dentro del Dockerfile o entrypoint.",
+    "Añadir un healthcheck que verifique la integridad de node_modules (por ejemplo, que exista un marcador de instalación completa) y que el contenedor no se considere listo hasta que pase.",
+    "Crear un script de entrada que, si la instalación falla, limpie solo los paquetes parcialmente descargados (npm cache clean --force y rm -rf node_modules) y reintente, en lugar de dejar el volumen corrupto."
+  ],
+  "riesgos": [
+    "Reintentar sin más puede enmascarar problemas persistentes de red o de caché.",
+    "Limpiar node_modules en cada fallo puede ser costoso en tiempo si el volumen es grande.",
+    "Un healthcheck demasiado estricto podría retrasar el arranque en condiciones normales."
+  ],
+  "faltantes": [
+    "No se tiene un log detallado del fallo original (código de error exacto, etapa de la instalación).",
+    "No se conoce el tamaño del node_modules ni el tiempo típico de instalación.",
+    "No se ha probado el comportamiento actual con un corte de red simulado."
+  ],
+  "disensos": [
+    "Aunque el parche rápido es tentador, no cumple con la misión de evitar estados que requieran borrado manual; por eso mantengo que se necesita una solución más robusta."
+  ],
+  "referencias": ["docker-compose.yml"]
+}

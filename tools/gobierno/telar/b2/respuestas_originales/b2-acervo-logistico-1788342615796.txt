@@ -1,0 +1,39 @@
+{
+  "vozBreve": "El problema real no es el fallo de red, es que el volumen de node_modules se queda a medias y no hay forma de saberlo hasta que algo truena. Separar el volumen ya es buen paso, pero falta un mecanismo de verificación y reintento que no dependa de borrar a mano.",
+  "hechos": [
+    {
+      "texto": "El volumen node_modules está separado del bind mount de código en docker-compose.yml.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "El fallo de red ocurrió una vez durante las pruebas del lobby y no bloqueó nada, pero no quedó investigado.",
+      "estado": "VERIFICADO"
+    },
+    {
+      "texto": "No se ha reproducido el fallo de red de forma controlada.",
+      "estado": "VERIFICADO"
+    }
+  ],
+  "propuestas": [
+    "Añadir un script de entrada que verifique la integridad de node_modules (por ejemplo, que exista un marcador de instalación completa) y si no está completo, reintente la instalación con backoff exponencial.",
+    "Separar el volumen de node_modules en un volumen con nombre para que sea fácil de inspeccionar y, si es necesario, recrear sin afectar el código.",
+    "Documentar el procedimiento de recuperación manual (borrar volumen y recrear) en el README para casos de emergencia.",
+    "Implementar un healthcheck en el contenedor que compruebe que node_modules está completo y que el servicio responde, para detectar el problema temprano."
+  ],
+  "riesgos": [
+    "El reintento con backoff puede alargar el tiempo de arranque si la red sigue fallando, pero es preferible a un estado corrupto.",
+    "Si el volumen se separa, puede haber problemas de permisos si no se configura correctamente.",
+    "El healthcheck puede dar falsos negativos si no se define bien qué es 'completo'."
+  ],
+  "faltantes": [
+    "Detalles del fallo de red: ¿fue intermitente o persistente? ¿En qué paso de `docker compose up` falló exactamente?",
+    "¿Hay algún log del contenedor que muestre el error de instalación?",
+    "¿Qué versión de Docker y docker-compose se está usando?"
+  ],
+  "disensos": [
+    "Algunos podrían argumentar que el parche rápido (reintentar sin más) es suficiente porque el fallo fue raro, pero yo creo que la inversión en un mecanismo robusto es necesaria para evitar futuros dolores de cabeza."
+  ],
+  "referencias": [
+    "docker-compose.yml"
+  ]
+}

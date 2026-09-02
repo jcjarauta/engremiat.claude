@@ -1,0 +1,101 @@
+[
+  {
+    "accion": "tejer",
+    "clientEventId": "test-evt-1-1788346773367",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "hilosIncorporados": 1
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.383Z"
+  },
+  {
+    "accion": "decision_aprobar",
+    "clientEventId": "test-evt-2-1788346773376",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "puerta": {
+        "estado": "EJECUTADA_VERIFICADA",
+        "efecto": "Cambia npm install por npm ci en el destino de prueba",
+        "destino": "b3/destino_prueba/docker-compose-simulado.yml",
+        "reversible": true,
+        "nivelRiesgo": "bajo_reversible",
+        "versionInspeccionada": 6
+      }
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.401Z"
+  },
+  {
+    "accion": "ejecucion_autorizar",
+    "clientEventId": "test-evt-3-1788346773394",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "puerta": {
+        "estado": "EJECUTADA_VERIFICADA",
+        "efecto": "Cambia npm install por npm ci en el destino de prueba",
+        "destino": "b3/destino_prueba/docker-compose-simulado.yml",
+        "reversible": true,
+        "nivelRiesgo": "bajo_reversible",
+        "versionInspeccionada": 6
+      }
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.417Z"
+  },
+  {
+    "accion": "tejer",
+    "clientEventId": "test-evt-4-1788346773410",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "hilosIncorporados": 2
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.431Z"
+  },
+  {
+    "accion": "ejecucion_autorizar",
+    "clientEventId": "test-evt-6-1788346773429",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "puerta": {
+        "estado": "EJECUTADA_VERIFICADA",
+        "efecto": "Cambia npm install por npm ci en el destino de prueba",
+        "destino": "b3/destino_prueba/docker-compose-simulado.yml",
+        "reversible": true,
+        "nivelRiesgo": "bajo_reversible",
+        "versionInspeccionada": 6
+      }
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.446Z"
+  },
+  {
+    "accion": "ejecucion_iniciar",
+    "clientEventId": "test-evt-7-1788346773439",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "escrito": true
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.459Z"
+  },
+  {
+    "accion": "ejecucion_verificar",
+    "clientEventId": "test-evt-9-1788346773483",
+    "correlationId": "corr-test",
+    "resultadoAccion": {
+      "puerta": {
+        "estado": "EJECUTADA_VERIFICADA",
+        "efecto": "Cambia npm install por npm ci en el destino de prueba",
+        "destino": "b3/destino_prueba/docker-compose-simulado.yml",
+        "reversible": true,
+        "nivelRiesgo": "bajo_reversible",
+        "versionInspeccionada": 6
+      },
+      "consecuencia_verificada": "destino_prueba/docker-compose-simulado.yml confirmado con npm ci --omit=dev (releido de disco, no asumido)"
+    },
+    "actor": "visitante-01",
+    "timestamp": "2026-09-02T10:59:33.495Z"
+  }
+]

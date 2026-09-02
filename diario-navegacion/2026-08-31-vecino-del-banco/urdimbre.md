@@ -67,9 +67,8 @@ uno solo.
   quien quiera involucrarse de verdad, sin que la historia pretenda
   haber "resuelto" nada.
 
-## Pendiente
+## Estado
 
-- Confirmar o corregir el escenario y las complicaciones en el Relevo
-  ligero antes de empezar el Ciclo 2 (Trama).
-- Decidir las dos Tramas del Ciclo 2 sobre esta misma Urdimbre una vez
-  confirmada.
+**Confirmada en el Relevo ligero (2026-08-31)** -- escenario (Raval),
+personaje (Ramon) y complicaciones aceptados tal como se propusieron.
+Pasa a Ciclo 2 (Trama). Ver `tramas.md` en esta misma carpeta.
