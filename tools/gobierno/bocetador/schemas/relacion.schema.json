@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/relacion.schema.json",
+  "title": "Relacion",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.2 -- una arista entre dos nodos del Bocetador (Espacio, Participante, Mision...). Sustituye el 'label' de texto libre que usa hoy Arquitectura_Nucleo.canvas por un tipo cerrado: una arista real siempre es una de estas relaciones conocidas, nunca una frase inventada en el momento de dibujar.",
+  "type": "object",
+  "required": ["id", "origenId", "destinoId", "tipo"],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true, "description": "Presente y true SOLO en fixtures de prueba -- ausente en cualquier Relacion real." },
+    "id": { "type": "string", "minLength": 1 },
+    "origenId": { "type": "string", "minLength": 1, "description": "id de un Espacio, Participante u otro nodo del Bocetador." },
+    "destinoId": { "type": "string", "minLength": 1 },
+    "tipo": {
+      "type": "string",
+      "enum": [
+        "gobierna", "gobierna_permisos", "aloja", "opera_dentro_de",
+        "entrada_de_necesidades", "deja_huella", "documenta", "acompana"
+      ],
+      "description": "Vocabulario cerrado, tomado de las aristas reales ya presentes en Arquitectura_Nucleo.canvas -- ampliar esta lista exige revisar el canvas real primero, nunca inventar un tipo nuevo sobre la marcha."
+    },
+    "nota": { "type": "string", "description": "Matiz libre opcional -- nunca sustituye a 'tipo', solo lo aclara." }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "_fixture": true,
+  "id": "e1",
+  "origenId": "constitucion",
+  "destinoId": "espacio_consola",
+  "tipo": "gobierna",
+  "nota": "Arista real e1 de Arquitectura_Nucleo.canvas."
+}

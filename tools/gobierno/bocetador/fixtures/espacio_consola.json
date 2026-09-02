@@ -1,0 +1,10 @@
+{
+  "_fixture": true,
+  "id": "espacio_consola",
+  "nombre": "Consola",
+  "capa": "nucleo",
+  "variabilidad": "capacidad_de_nucleo",
+  "proposito": "Gobernar permisos, módulos, recursos, riesgos y salud del universo.",
+  "moduloRequerido": null,
+  "gobernadoPor": ["ley_autoridad_humana", "ley_recursos_visibles"]
+}

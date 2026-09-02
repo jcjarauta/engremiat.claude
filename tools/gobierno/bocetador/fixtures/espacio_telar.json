@@ -1,0 +1,10 @@
+{
+  "_fixture": true,
+  "id": "espacio_telar",
+  "nombre": "Telar",
+  "capa": "nucleo",
+  "variabilidad": "capacidad_de_nucleo",
+  "proposito": "Deliberar, componer decisiones, preparar Compromisos, dejar la Huella.",
+  "moduloRequerido": null,
+  "gobernadoPor": ["ley_proponer_no_es_decidir", "ley_incertidumbre_explicita", "ley_ninguna_ia_simula_consentimiento"]
+}

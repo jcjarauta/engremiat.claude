@@ -1,0 +1,10 @@
+{
+  "_fixture": true,
+  "id": "espacio_archivo_vivo",
+  "nombre": "Archivo Vivo",
+  "capa": "nucleo",
+  "variabilidad": "capacidad_de_nucleo",
+  "proposito": "Consultar evidencia, decisiones, versiones, Huellas y memoria.",
+  "moduloRequerido": null,
+  "gobernadoPor": ["ley_memoria_revisable_nunca_borrada"]
+}

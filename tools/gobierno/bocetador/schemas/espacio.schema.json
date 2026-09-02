@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/espacio.schema.json",
+  "title": "Espacio",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.2 -- un Espacio del Nucleo Engremiat, nucleo o especifico de un modulo (ver Arquitectura_Nucleo.canvas y PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §5 y §8). No es una figura decorativa: cada Espacio real tiene un proposito unico y pertenece a una capa de variabilidad concreta.",
+  "type": "object",
+  "required": ["id", "nombre", "capa", "variabilidad", "proposito"],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true, "description": "Presente y true SOLO en fixtures de prueba -- ausente en cualquier Espacio real." },
+    "id": { "type": "string", "minLength": 1 },
+    "nombre": { "type": "string", "minLength": 1 },
+    "capa": {
+      "type": "string",
+      "enum": ["nucleo", "especifico"],
+      "description": "nucleo = todo universo lo recibe al crearse; especifico = solo aparece si el modulo correspondiente esta activo."
+    },
+    "variabilidad": {
+      "type": "string",
+      "enum": ["invariante", "capacidad_de_nucleo", "configurable", "modular", "experimental"],
+      "description": "PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §8 -- los 5 estados de variabilidad, aplicados aqui a un Espacio en concreto."
+    },
+    "proposito": { "type": "string", "minLength": 1 },
+    "moduloRequerido": {
+      "type": ["string", "null"],
+      "description": "Solo para capa=especifico -- que modulo activo lo habilita. null si capa=nucleo."
+    },
+    "gobernadoPor": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "IDs de las leyes de la Constitucion que rigen este Espacio -- referencia, nunca copia del texto de la ley."
+    }
+  }
+}

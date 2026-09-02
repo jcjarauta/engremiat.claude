@@ -1,0 +1,16 @@
+# Config real de Headplane (UI de Headscale) -- Etapa C0 de
+# PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md. api_key se rellena aparte
+# (headscale apikeys create), nunca se deja en git en texto plano si el
+# repo se hace publico -- hoy es privado, pero se trata igual por costumbre.
+server:
+  host: "0.0.0.0"
+  port: 3000
+  base_url: "http://100.107.171.88:3002"
+  cookie_secret: "__PENDIENTE_GENERAR_EN_VPS__"   # 32 caracteres reales, solo en el fichero real del VPS -- nunca en git
+  cookie_secure: false
+  data_path: "/var/lib/headplane"
+
+headscale:
+  url: "http://headscale:8081"
+  config_path: "/etc/headscale/config.yaml"
+  api_key: "__PENDIENTE_GENERAR_EN_VPS__"

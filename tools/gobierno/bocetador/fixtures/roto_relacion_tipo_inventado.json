@@ -1,0 +1,8 @@
+{
+  "_fixture": true,
+  "id": "roto_1",
+  "origenId": "espacio_consola",
+  "destinoId": "espacio_telar",
+  "tipo": "conecta_con",
+  "nota": "A proposito invalido: 'conecta_con' no esta en el vocabulario cerrado de tipo -- este fixture debe ser RECHAZADO por validar_bocetador.mjs."
+}

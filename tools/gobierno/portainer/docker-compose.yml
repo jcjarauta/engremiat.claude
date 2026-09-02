@@ -1,0 +1,22 @@
+# Portainer -- panel real de gestion multi-host (VPS + Pi), Etapa C0 de
+# PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md. Mismo criterio de minimo
+# privilegio que el resto del VPS (ver INFRAESTRUCTURA.md): atado solo a
+# la IP de Tailscale, nunca a 0.0.0.0. Puro valor de operacion -- no
+# introduce ninguna ruta nueva hacia datos de negocio (Sheet/Baserow).
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: engremiat-portainer
+    restart: unless-stopped
+    command: -H unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer-data:/data
+    ports:
+      - "100.107.171.88:9443:9443"   # UI (HTTPS autofirmado) -- solo Tailscale
+    # El agente de la Pi expone su propio 9001 (ver portainer/docker-compose.pi.yml);
+    # este servidor se conecta A el, no al reves -- aqui no hace falta publicar 9001.
+
+volumes:
+  portainer-data:

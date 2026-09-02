@@ -7,7 +7,7 @@
 
 services:
   headscale:
-    image: headscale/headscale:0.23.0
+    image: headscale/headscale:0.29.3
     container_name: engremiat-headscale
     restart: unless-stopped
     command: serve
@@ -20,6 +20,24 @@ services:
       - "100.107.171.88:50443:50443"
       - "100.107.171.88:9092:9092"
 
+  # Headplane -- UI real de Headscale, Etapa C0 de
+  # PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md. Anadido, no sustituye
+  # nada -- se conecta a headscale por el nombre de servicio Docker
+  # (misma red de este compose), nunca reinicia headscale por su cuenta.
+  headplane:
+    image: ghcr.io/tale/headplane:latest
+    container_name: engremiat-headplane
+    restart: unless-stopped
+    depends_on:
+      - headscale
+    volumes:
+      - ./headplane-config.yaml:/etc/headplane/config.yaml:ro
+      - ./config.yaml:/etc/headscale/config.yaml:ro
+      - headplane-data:/var/lib/headplane
+    ports:
+      - "100.107.171.88:3002:3000"   # solo Tailscale
+
 volumes:
   headscale-data:
   headscale-run:
+  headplane-data:

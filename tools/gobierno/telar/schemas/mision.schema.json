@@ -32,6 +32,19 @@
       "type": "string",
       "enum": ["preparada", "falta_evidencia", "bloqueada_por_dependencia", "pausa_aconsejada"]
     },
+    "jerarquia": {
+      "type": "object",
+      "description": "Decision 2026-09-02: Producto/Proceso SI entran como niveles propios -- principio 'siempre copiamos la verdad que vive en Sheets', nunca la simplificamos. Cadena real: Campaña (opcional) -> Proyecto -> Producto (opcional) -> Proceso (opcional) -> Tarea. IDs reales del Sheet (ver src/Ids.js, ENTIDADES_MVP), nunca inventados por Telar.",
+      "additionalProperties": false,
+      "required": ["proyectoId", "tareaId"],
+      "properties": {
+        "campanaId": { "type": ["string", "null"] },
+        "proyectoId": { "type": "string", "minLength": 1 },
+        "productoId": { "type": ["string", "null"] },
+        "procesoId": { "type": ["string", "null"] },
+        "tareaId": { "type": "string", "minLength": 1 }
+      }
+    },
     "origenes": {
       "type": "array",
       "items": {
