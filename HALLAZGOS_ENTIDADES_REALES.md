@@ -1,15 +1,15 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:31:00.211Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:38:53.205Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
-## Resumen: 224 entidades candidatas reales
+## Resumen: 225 entidades candidatas reales
 
-- **22 confirmar** -- ficha real ya existente, bien corroborada.
-- **19 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
-- **69 revisar** -- ficha real ya existente pero apenas corroborada fuera de la boveda.
-- **114 descartar** -- evidencia real insuficiente hoy.
+- **46 confirmar** -- ficha real ya existente, bien corroborada.
+- **49 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
+- **46 revisar** -- ficha real ya existente pero apenas corroborada fuera de la boveda.
+- **84 descartar** -- evidencia real insuficiente hoy.
 
 ## Ciclos reales encontrados: 4
 
@@ -26,7 +26,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 |---|---|---|
 | calls | 2994 | apps_script:2994 |
 | contains | 1573 | apps_script:1573 |
-| wikilink | 289 | wikilinks:289 |
+| wikilink | 290 | wikilinks:290 |
 | conexion_n8n | 138 | n8n:138 |
 | indirect_call | 100 | apps_script:100 |
 | toco_en_operacion | 81 | historial:81 |
@@ -53,153 +53,184 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 
 | nombre | corroboracion | fuentes reales | tipo candidato |
 |---|---|---|---|
+| DOCUMENTO | 7 | baserow_estructura, codigo_appsscript, codigo_node, datos_negocio, n8n, sheet_estructura, vault_mencion | recurso_codigo, tabla_baserow |
 | TAREA | 6 | baserow_estructura, codigo_appsscript, codigo_node, datos_negocio, n8n, sheet_estructura | recurso_codigo, tabla_baserow |
-| DOCUMENTO | 6 | baserow_estructura, codigo_appsscript, codigo_node, datos_negocio, n8n, sheet_estructura | recurso_codigo, tabla_baserow |
-| 38_CLIENTE | 4 | baserow_estructura, codigo_node, datos_negocio, sheet_estructura | recurso_codigo, pestana_sheet_negocio |
-| Verificación | 4 | baserow_estructura, datos_negocio, n8n, sheet_estructura | entidad_negocio_proceso |
-| 06_TAREAS | 4 | baserow_estructura, codigo_node, datos_negocio, sheet_estructura | pestana_sheet_negocio |
-| 13_INCIDENCIAS | 3 | codigo_node, datos_negocio, sheet_estructura | recurso_codigo, pestana_sheet_negocio |
-| 18_VINCULO | 3 | codigo_node, datos_negocio, sheet_estructura | recurso_codigo, pestana_sheet_negocio |
-| Acervos | 3 | baserow_estructura, codigo_node, vault_wikilink | referencia_sin_ficha |
-| PLANTILLA_MISION | 3 | baserow_estructura, codigo_node, n8n | recurso_codigo, tabla_baserow |
-| 46_TAREA_RECURSO_NECESIDAD | 3 | codigo_appsscript, codigo_node, sheet_estructura | pestana_sheet_negocio |
-| 02_PROYECTOS | 3 | baserow_estructura, datos_negocio, sheet_estructura | pestana_sheet_negocio |
-| 04_PROYECTO_PRODUCTO | 3 | codigo_appsscript, datos_negocio, sheet_estructura | pestana_sheet_negocio |
-| 11_PERSONAS_EQUIPOS | 3 | codigo_appsscript, datos_negocio, sheet_estructura | pestana_sheet_negocio |
-| STG_TAREA_RECURSO | 3 | codigo_appsscript, codigo_node, sheet_estructura | pestana_sheet_utilidad |
-| 14_DOCUMENTOS | 3 | baserow_estructura, codigo_node, sheet_estructura | pestana_sheet_negocio |
-| 24_TAREA_RECURSO | 3 | codigo_appsscript, codigo_node, sheet_estructura | pestana_sheet_negocio |
-| 34_PERSONA_COMPETENCIA | 3 | baserow_estructura, codigo_appsscript, sheet_estructura | pestana_sheet_negocio |
-| COMPETENCIA | 3 | baserow_estructura, codigo_appsscript, sheet_estructura | tabla_baserow |
-| PERSONA_COMPETENCIA | 3 | baserow_estructura, codigo_appsscript, sheet_estructura | tabla_baserow |
+| 38_CLIENTE | 5 | baserow_estructura, codigo_node, datos_negocio, sheet_estructura, vault_mencion | recurso_codigo, pestana_sheet_negocio |
+| Verificación | 5 | baserow_estructura, datos_negocio, n8n, sheet_estructura, vault_mencion | entidad_negocio_proceso |
+| 06_TAREAS | 5 | baserow_estructura, codigo_node, datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 13_INCIDENCIAS | 4 | codigo_node, datos_negocio, sheet_estructura, vault_mencion | recurso_codigo, pestana_sheet_negocio |
+| 18_VINCULO | 4 | codigo_node, datos_negocio, sheet_estructura, vault_mencion | recurso_codigo, pestana_sheet_negocio |
+| Acervos | 4 | baserow_estructura, codigo_node, vault_mencion, vault_wikilink | referencia_sin_ficha |
+| PLANTILLA_MISION | 4 | baserow_estructura, codigo_node, n8n, vault_mencion | recurso_codigo, tabla_baserow |
+| 46_TAREA_RECURSO_NECESIDAD | 4 | codigo_appsscript, codigo_node, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 02_PROYECTOS | 4 | baserow_estructura, datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 04_PROYECTO_PRODUCTO | 4 | codigo_appsscript, datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 11_PERSONAS_EQUIPOS | 4 | codigo_appsscript, datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| STG_TAREA_RECURSO | 4 | codigo_appsscript, codigo_node, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
+| 14_DOCUMENTOS | 4 | baserow_estructura, codigo_node, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 24_TAREA_RECURSO | 4 | codigo_appsscript, codigo_node, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 34_PERSONA_COMPETENCIA | 4 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| COMPETENCIA | 4 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_mencion | tabla_baserow |
+| PERSONA_COMPETENCIA | 4 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_mencion | tabla_baserow |
+| VIGILIA_TAREA | 3 | baserow_estructura, codigo_node, vault_mencion | recurso_codigo, tabla_baserow |
+| METRICA_FABRICACION | 3 | baserow_estructura, codigo_node, vault_mencion | recurso_codigo, tabla_baserow |
+| PERSONAJE | 3 | baserow_estructura, codigo_node, vault_mencion | recurso_codigo, tabla_baserow |
+| EJECUTOR_LOCAL | 3 | baserow_estructura, datos_negocio, vault_mencion | modulo_real |
+| Telar Interactivo | 3 | codigo_node, n8n, vault_mencion | workflow_n8n |
+| 39_PEDIDO_CLIENTE | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 40_PEDIDO_CLIENTE_LINEA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 42_ENTREGA_LINEA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 43_CONTRATO_SERVICIO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 45_TAREA_COMPETENCIA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 01_CAMPANAS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 03_PRODUCTOS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 05_PROCESOS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 07_TAREA_RESPONSABLE | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 09_PRODUCTO_MATERIAL | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 10_TAREA_MATERIAL | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| STG_EQUIPO_MIEMBRO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
+| STG_TAREA_RESPONSABLE | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
+| 19_MOVIMIENTO_MATERIAL | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 20_EJECUCION_TAREA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 21_PROVEEDOR_MATERIAL | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 22_EQUIPO_MIEMBRO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 25_PEDIDO_PROVEEDOR | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 26_PEDIDO_PROVEEDOR_LINEA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 28_RECEPCION_LINEA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 31_FUENTE_FINANCIACION | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 33_COMPETENCIA | 3 | baserow_estructura, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 35_RECURSO_COMPETENCIA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 37_ETIQUETA_IMPACTO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 98_LOG_GOBIERNO | 3 | codigo_node, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
 
 ## Fichas reales a REVISAR (existen, pero con poca corroboracion cruzada)
 
 | nombre | tipo (vault) | corroboracion | fuentes reales |
 |---|---|---|---|
-| Puerta Humana | regla | 3 | n8n, vault_ficha, vault_wikilink |
-| Acervo Prompter | personaje | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Repository | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Verificador de Capacidades | personaje | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Ventas | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Aprovisionamiento | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Convocatorias | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Economico | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Comunicacion | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Verificar contra hechos | regla | 3 | n8n, vault_ficha, vault_wikilink |
-| EstructuraInicial | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Física | regla | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Compras | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
+| Modulos acoplables | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| 00_Mapa | mapa | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Mensajero | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| VPS y Tailscale | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| El Sheet | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Sesion 2026-09-01 | sesion | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Narrador | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Narrativo | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Estilo | estilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Verificador de Campos | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| El universo no se ha usado sobre si mismo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| La fragua protegida | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| IntegrityService | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Logico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Decidir el tono del universo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Filosofico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Sociocracia | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| El Sheet manda | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Los dos continentes de datos | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Arco del incidente | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Arco de la calibracion | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Arco del cierre del autociclo | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Cerrar el circulo via incidencias | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| El Vault | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Formularios | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| ConfigRepository | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Tecnico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Logistico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Usuario | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Honestidad del fallo | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Arco del bug oculto | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Arco de la construccion del universo | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Unir historia y gobernanza | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| El ciclo de vida remoto | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Headscale | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Gantt | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Operativa | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Seguimiento | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Chequear libreria clientes | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Puente historia leyes | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Chequear consistencia | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Extraer decisiones | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Pregonero | personaje | 3 | baserow_estructura, vault_ficha, vault_wikilink |
-| Cerrar ciclo | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Ejecutar chequeo libreria | oficio | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Exportador de gasto | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
-| Regenerar estatico | oficio | 3 | codigo_node, vault_ficha, vault_wikilink |
+| Arco del nacimiento del generador | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Quien dispara el primer lote | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Migrar el hardcode de token en n8n | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Diversificar el roster de Acervos | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Separar el Holon en notas propias | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | AGORA | recurso, modulo_real, tabla_baserow | 3 | baserow_estructura, datos_negocio, vault_ficha |
-| Modulos acoplables | modulo | 2 | vault_ficha, vault_wikilink |
-| 00_Mapa | mapa | 2 | vault_ficha, vault_wikilink |
-| Mensajero | personaje | 2 | vault_ficha, vault_wikilink |
-| VPS y Tailscale | espacio | 2 | vault_ficha, vault_wikilink |
-| El Sheet | espacio | 2 | vault_ficha, vault_wikilink |
+| Zona de aterrizaje STG | recurso | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Sesion 2026-08-31 | sesion | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | n8n | espacio | 2 | vault_ficha, vault_wikilink |
-| Sesion 2026-09-01 | sesion | 2 | vault_ficha, vault_wikilink |
-| Narrador | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Narrativo | personaje | 2 | vault_ficha, vault_wikilink |
-| Estilo | estilo | 2 | vault_ficha, vault_wikilink |
-| Verificador de Campos | personaje | 2 | vault_ficha, vault_wikilink |
-| El universo no se ha usado sobre si mismo | hilo | 2 | vault_ficha, vault_wikilink |
-| La fragua protegida | espacio | 2 | vault_ficha, vault_wikilink |
-| IntegrityService | modulo | 2 | vault_ficha, vault_wikilink |
-| Acervo Logico | personaje | 2 | vault_ficha, vault_wikilink |
-| Decidir el tono del universo | hilo | 2 | vault_ficha, vault_wikilink |
-| Acervo Filosofico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Sociocracia | personaje | 2 | vault_ficha, vault_wikilink |
-| El Sheet manda | regla | 2 | vault_ficha, vault_wikilink |
-| Los dos continentes de datos | regla | 2 | vault_ficha, vault_wikilink |
-| Arco del incidente | arco | 2 | vault_ficha, vault_wikilink |
-| Arco de la calibracion | arco | 2 | vault_ficha, vault_wikilink |
-| Arco del cierre del autociclo | arco | 2 | vault_ficha, vault_wikilink |
-| Cerrar el circulo via incidencias | hilo | 2 | vault_ficha, vault_wikilink |
-| El Vault | espacio | 2 | vault_ficha, vault_wikilink |
-| Formularios | modulo | 2 | vault_ficha, vault_wikilink |
-| ConfigRepository | modulo | 2 | vault_ficha, vault_wikilink |
-| Acervo Tecnico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Logistico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Usuario | personaje | 2 | vault_ficha, vault_wikilink |
-| Honestidad del fallo | regla | 2 | vault_ficha, vault_wikilink |
-| Arco del bug oculto | arco | 2 | vault_ficha, vault_wikilink |
-| Arco de la construccion del universo | arco | 2 | vault_ficha, vault_wikilink |
-| Unir historia y gobernanza | hilo | 2 | vault_ficha, vault_wikilink |
-| El ciclo de vida remoto | espacio | 2 | vault_ficha, vault_wikilink |
-| Headscale | espacio | 2 | vault_ficha, vault_wikilink |
-| Arco del nacimiento del generador | arco | 2 | vault_ficha, vault_wikilink |
-| Quien dispara el primer lote | hilo | 2 | vault_ficha, vault_wikilink |
-| Migrar el hardcode de token en n8n | hilo | 2 | vault_ficha, vault_wikilink |
-| Diversificar el roster de Acervos | hilo | 2 | vault_ficha, vault_wikilink |
-| Separar el Holon en notas propias | hilo | 2 | vault_ficha, vault_wikilink |
-| Sesion 2026-08-31 | sesion | 2 | vault_ficha, vault_wikilink |
-| 00_Nucleo | sin_tipo | 1 | vault_ficha |
+| 00_Nucleo | sin_tipo | 2 | vault_ficha, vault_mencion |
 
 ## Fichas reales CONFIRMADAS (bien corroboradas por el resto del ecosistema)
 
 | nombre | tipo (vault) | corroboracion | fuentes reales |
 |---|---|---|---|
-| Cliente | modulo | 7 | baserow_estructura, codigo_appsscript, codigo_node, datos_negocio, sheet_estructura, vault_ficha, vault_wikilink |
-| Ejecutor | personaje | 6 | baserow_estructura, codigo_appsscript, datos_negocio, sheet_estructura, vault_ficha, vault_wikilink |
-| Cronista | personaje, modulo_real | 6 | baserow_estructura, codigo_node, datos_negocio, n8n, vault_ficha, vault_wikilink |
-| Concilio | personaje | 5 | codigo_node, n8n, telar, vault_ficha, vault_wikilink |
-| Coordinador | personaje | 5 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
-| Vigilia | personaje | 5 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_wikilink |
-| Relevo | personaje | 5 | baserow_estructura, codigo_node, telar, vault_ficha, vault_wikilink |
+| Cliente | modulo | 8 | baserow_estructura, codigo_appsscript, codigo_node, datos_negocio, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Ejecutor | personaje | 7 | baserow_estructura, codigo_appsscript, datos_negocio, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Cronista | personaje, modulo_real | 7 | baserow_estructura, codigo_node, datos_negocio, n8n, vault_ficha, vault_mencion, vault_wikilink |
+| Concilio | personaje | 6 | codigo_node, n8n, telar, vault_ficha, vault_mencion, vault_wikilink |
+| Coordinador | personaje | 6 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Vigilia | personaje | 6 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_mencion, vault_wikilink |
+| Relevo | personaje | 6 | baserow_estructura, codigo_node, telar, vault_ficha, vault_mencion, vault_wikilink |
+| Oportunidad | modulo | 6 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Ejecucion | modulo | 6 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Baserow | espacio | 5 | codigo_node, n8n, vault_ficha, vault_mencion, vault_wikilink |
+| Acervo | personaje, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| GASTO_API | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | Telar | espacio | 5 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_wikilink |
-| Oportunidad | modulo | 5 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_ficha, vault_wikilink |
-| Ejecucion | modulo | 5 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
-| Baserow | espacio | 4 | codigo_node, n8n, vault_ficha, vault_wikilink |
-| Acervo | personaje, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
-| GASTO_API | recurso, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
+| 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Impacto | modulo | 5 | codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Escenarios | modulo | 5 | baserow_estructura, codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Bus de trabajo | oficio | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Salud del ecosistema | oficio | 5 | codigo_node, datos_negocio, vault_ficha, vault_mencion, vault_wikilink |
+| Actualizar libreria cliente | oficio | 5 | codigo_appsscript, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Consola | espacio | 5 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_mencion |
+| Puerta Humana | regla | 4 | n8n, vault_ficha, vault_mencion, vault_wikilink |
 | CORE | modulo | 4 | codigo_appsscript, datos_negocio, vault_ficha, vault_wikilink |
-| 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 4 | codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
-| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
-| Impacto | modulo | 4 | codigo_appsscript, sheet_estructura, vault_ficha, vault_wikilink |
-| Escenarios | modulo | 4 | baserow_estructura, codigo_appsscript, vault_ficha, vault_wikilink |
-| Bus de trabajo | oficio | 4 | codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
-| Salud del ecosistema | oficio | 4 | codigo_node, datos_negocio, vault_ficha, vault_wikilink |
-| Actualizar libreria cliente | oficio | 4 | codigo_appsscript, codigo_node, vault_ficha, vault_wikilink |
-| Consola | espacio | 4 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha |
+| Acervo Prompter | personaje | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Repository | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Verificador de Capacidades | personaje | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Ventas | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Aprovisionamiento | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Convocatorias | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Economico | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Comunicacion | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Verificar contra hechos | regla | 4 | n8n, vault_ficha, vault_mencion, vault_wikilink |
+| EstructuraInicial | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Física | regla | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Compras | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Operativa | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Seguimiento | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Chequear libreria clientes | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Puente historia leyes | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Chequear consistencia | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Extraer decisiones | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Pregonero | personaje | 4 | baserow_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| Cerrar ciclo | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Ejecutar chequeo libreria | oficio | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| Exportador de gasto | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Regenerar estatico | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 
-## Descartadas hoy (114), por si conviene revisar el criterio
+## Descartadas hoy (84), por si conviene revisar el criterio
 
 No se listan todas por volumen -- ver `censo_entidades.json` completo. Los primeros 20 candidatos descartados con mayor corroboracion (los mas cerca del umbral):
 
 | nombre | corroboracion | fuentes reales |
 |---|---|---|
-| VIGILIA_TAREA | 2 | baserow_estructura, codigo_node |
-| METRICA_FABRICACION | 2 | baserow_estructura, codigo_node |
+| Gestor de proyectos | 2 | datos_negocio, vault_mencion |
+| La Troballa - Taller Ocupacional | 2 | datos_negocio, vault_mencion |
 | TEST-Cliente-2026-08-29 | 2 | codigo_node, datos_negocio |
-| PERSONAJE | 2 | baserow_estructura, codigo_node |
+| Vision Mision | 2 | vault_mencion, vault_wikilink |
 | Proyecto 0 — Catálogo de módulos | 2 | codigo_appsscript, datos_negocio |
-| EJECUTOR_LOCAL | 2 | baserow_estructura, datos_negocio |
-| Telar Interactivo | 2 | codigo_node, n8n |
-| 39_PEDIDO_CLIENTE | 2 | codigo_appsscript, sheet_estructura |
-| 40_PEDIDO_CLIENTE_LINEA | 2 | codigo_appsscript, sheet_estructura |
-| 42_ENTREGA_LINEA | 2 | codigo_appsscript, sheet_estructura |
-| 43_CONTRATO_SERVICIO | 2 | codigo_appsscript, sheet_estructura |
-| 45_TAREA_COMPETENCIA | 2 | codigo_appsscript, sheet_estructura |
-| 01_CAMPANAS | 2 | datos_negocio, sheet_estructura |
+| Diseño | 2 | datos_negocio, vault_mencion |
+| Implementación | 2 | datos_negocio, vault_mencion |
+| Desplegado | 2 | datos_negocio, vault_mencion |
+| Cronista - Segmentar documento en tareas (con puerta humana) | 2 | n8n, vault_mencion |
+| 44_OPORTUNIDAD | 2 | sheet_estructura, vault_mencion |
+| 41_ENTREGA | 2 | sheet_estructura, vault_mencion |
 | SOLICITUDES_MONTAJE | 2 | codigo_appsscript, sheet_estructura |
-| 03_PRODUCTOS | 2 | datos_negocio, sheet_estructura |
-| 05_PROCESOS | 2 | datos_negocio, sheet_estructura |
-| 07_TAREA_RESPONSABLE | 2 | codigo_appsscript, sheet_estructura |
-| 09_PRODUCTO_MATERIAL | 2 | codigo_appsscript, sheet_estructura |
-| 10_TAREA_MATERIAL | 2 | codigo_appsscript, sheet_estructura |
-| STG_EQUIPO_MIEMBRO | 2 | codigo_appsscript, sheet_estructura |
+| 08_MATERIALES | 2 | sheet_estructura, vault_mencion |
+| STG_RECURSO | 2 | sheet_estructura, vault_mencion |
+| STG_PERSONA | 2 | sheet_estructura, vault_mencion |
+| STG_DECISION | 2 | sheet_estructura, vault_mencion |
+| STG_INCIDENCIA | 2 | sheet_estructura, vault_mencion |
+| STG_DOCUMENTO | 2 | sheet_estructura, vault_mencion |
+| STG_HORARIO | 2 | sheet_estructura, vault_mencion |
+| 12_DECISIONES | 2 | sheet_estructura, vault_mencion |
 
 ---
 
@@ -233,24 +264,23 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 
 | acción recomendada | cuántas | qué significa |
 |---|---|---|
-| historico_pestana_sin_huella | 53 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
+| ya_mencionado_en_boveda | 74 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
+| confirmar_ya_solido | 46 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
-| confirmar_ya_solido | 22 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
-| confirmar_codigo_real | 18 | Correspondencia real de código encontrada -- confirmado. |
-| promover_recurso_real | 15 | Pestaña/tabla real bien corroborada -- candidata sólida a ficha de Recurso o a `vinculoReal` en una ficha existente. |
-| revisar_manual_real | 12 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
-| revisar_nombre_narrativo | 10 | Nombre narrativo del universo -- el cruce por texto no alcanza su referente real. No es evidencia de que falte, es un límite del método. Acción: añadir `vinculoReal` explícito. |
-| historico_tabla_sin_huella | 6 | Tabla real de Baserow sin huella real todavía. Histórico, misma nota que PERSONAJE en §8.20. |
-| confirmar_patron_tecnico | 5 | Real en el código, pero NO es un módulo de negocio MVP -- es un patrón técnico interno (Repository, IntegrityService...). Revisar si el `tipo` en la ficha es el correcto. |
-| ya_cubierto_grafo_propio | 5 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
+| revisar_manual_real | 14 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
+| confirmar_codigo_real | 9 | Correspondencia real de código encontrada -- confirmado. |
+| historico_pestana_sin_huella | 4 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
 | descartar_termino_generico | 3 | Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover. |
 | confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
-| hueco_real_ya_resuelto | 3 | Hueco real encontrado y ya resuelto en esta misma sesión: se enriqueció con `## Vínculo real` una ficha existente (Vigilia/Coordinador/Ejecutor), sin crear una ficha redundante. |
-| confirmar_verificado_a_mano | 2 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
-| historico_detalle_implementacion | 2 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
+| ya_cubierto_grafo_propio | 2 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
 | revisar_inconsistencia_nombres | 1 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
-| historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
+| confirmar_verificado_a_mano | 1 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
+| confirmar_patron_tecnico | 1 | Real en el código, pero NO es un módulo de negocio MVP -- es un patrón técnico interno (Repository, IntegrityService...). Revisar si el `tipo` en la ficha es el correcto. |
+| revisar_nombre_narrativo | 1 | Nombre narrativo del universo -- el cruce por texto no alcanza su referente real. No es evidencia de que falte, es un límite del método. Acción: añadir `vinculoReal` explícito. |
 | historico_instancia_ya_catalogada | 1 | Investigado a mano: no era una entidad nueva -- ya es una fila catalogada dentro de un Recurso real (p.ej. DOCUMENTO_ENGREMIAT). Histórico, correctamente no promovido. |
+| historico_detalle_implementacion | 1 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
+| historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
+| historico_tabla_sin_huella | 1 | Tabla real de Baserow sin huella real todavía. Histórico, misma nota que PERSONAJE en §8.20. |
 
 Detalle completo, entidad por entidad, con su razón real: ver `censo_entidades.json` (campos `accionRecomendada` + `accionRazon`) o la vista filtrable en `entidades.html`.

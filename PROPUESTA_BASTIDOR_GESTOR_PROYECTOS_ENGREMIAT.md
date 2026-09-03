@@ -527,6 +527,20 @@ Censo regenerado y desplegado. De los diez, 7 recibieron vinculoReal real y prec
 
 Censo regenerado (224 candidatas, 22 confirmar) y desplegado.
 
+### 8.29 "Valora los 53 historico_pestana_sin_huella" -- el censo tenía un punto ciego real, corregido: de 53 a 5 genuinamente sin cubrir
+
+**Investigando, no solo clasificando**: cruzando los 53 nombres contra el texto completo de la bóveda (no solo wikilinks), 17 YA estaban mencionados de verdad -- dentro de las secciones `## Vínculo real` que se acaban de añadir en los pases anteriores. El censo no los veía porque su fuente `vault_wikilink` solo reconoce `[[wikilinks]]`, nunca una mención en texto plano dentro de una bala `- Sheet: \`X\``. Límite real del método, no del dato.
+
+**Corregido en el propio código del censo, no a mano una vez**: `analizar_entidades_reales.mjs` gana una décima fuente real, `vault_mencion` -- coincidencia de substring literal (umbral 6 caracteres, para no colar palabras comunes) contra el texto completo de las 90+ fichas reales. `consolidar_censo.mjs` gana una nueva acción, `ya_mencionado_en_boveda`, que se aplica antes que "promover"/"histórico sin huella" cuando esta fuente aparece.
+
+**Corrección de exactitud encontrada aplicando la perspectiva del Sheet maestro por completo**: los 10 módulos de negocio que YA tenían ficha antes de hoy (Ventas/Compras/Económico/Convocatorias/Cliente) solo habían recibido el `codigo:` genérico al aplicar §8.24 -- nunca la lista completa de pestañas reales que poseen de verdad, a diferencia de los 4 módulos nuevos (Operativa/Seguimiento/Ejecución/Escenarios), que sí la tenían desde que se crearon. Añadidas las que faltaban: Ventas (`39_PEDIDO_CLIENTE`...`43_CONTRATO_SERVICIO`, 5), Compras (`08_MATERIALES`...`28_RECEPCION_LINEA`, 10), Económico (3), Convocatorias (1). **Bug real encontrado a la vez**: `Cliente.md` tenía `39_PEDIDO_CLIENTE`/`40_PEDIDO_CLIENTE_LINEA` por coincidencia de texto ("Cliente" dentro del nombre) -- pertenecen de verdad a Ventas, no a Cliente. Corregido, movidas.
+
+**Construida `Zona de aterrizaje STG.md`** (`01_Mundo/Recursos/`), la ficha única para los 14 `STG_*` reales, grounded en el diseño real ya documentado en §6.5 (mapeo con IA controlada + Puerta Humana → `insertarRegistroTransaccional`) -- una ficha, no catorce, mismo criterio que ya se aplicó a los módulos.
+
+**`96_PROMPT_EJECUTOR` y `95_DIARIO_NAVEGACION`** añadidas al `vinculoReal` de `Ejecutor.md` -- el segundo verificado citado por nombre en `PROMPT_EJECUTOR.md` ("el diario de coste-resultado").
+
+**Resultado real, verificado con el censo corregido**: de 53, quedan honestamente **5 sin cubrir** -- `SOLICITUDES_MONTAJE` (real, con código propio real ya encontrado: `src/SolicitudMontaje.html` + `src/AprobarSolicitudMontaje.html`, sin dueño real obvio todavía), `93_MAPEO_IDS_TEMPORALES`, `90_CONFIGURACION`, `99_TRIAGE_LOCAL` y `NODO_ENGREMIAT` (Baserow) -- pendientes reales para una próxima pasada, no inventados hoy.
+
 ## 9. Pendiente
 
 ## 9. Pendiente

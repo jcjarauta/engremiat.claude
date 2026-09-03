@@ -138,6 +138,9 @@ function decidirAccionPromover(e) {
     return { accion: 'revisar_inconsistencia_nombres', razon: 'No falta una entidad -- falta consistencia: 7 fichas reales "Acervo X" existen (Filosófico/Lógico/Narrativo/Sociocracia/Técnico/Logístico/Usuario) pero ningún wikilink usa el nombre exacto de ninguna, solo la forma genérica "Acervo"/"Acervos". Acción recomendada: revisar esos wikilinks a mano y apuntarlos a la ficha específica real que corresponda, o crear una ficha-paraguas "Acervo" si de verdad hace falta un concepto agregador.' };
   }
   if (e.tiposCandidato.some(t => t.startsWith('pestana_sheet') || t === 'tabla_baserow' || t === 'recurso_codigo')) {
+    if (e.fuentes.includes('vault_mencion')) {
+      return { accion: 'ya_mencionado_en_boveda', razon: 'Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia, ya está representada.' };
+    }
     return { accion: 'promover_recurso_real', razon: 'Pestaña/tabla real, corroborada por ' + e.corroboracionCruzada + ' fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella).' };
   }
   return { accion: 'revisar_manual_real', razon: 'Corroborada por múltiples fuentes reales pero sin patrón claro aplicable -- revisar a mano antes de decidir.' };
@@ -206,9 +209,15 @@ function decidirAccionDescartar(e) {
     return { accion: 'historico_detalle_implementacion', razon: 'Nombre literal de un workflow n8n concreto, no un concepto nuevo -- ya cubierto por la ficha de su Personaje/Espacio real (Telar, Cronista). No necesita ficha propia.' };
   }
   if (e.tiposCandidato.some(t => t.startsWith('pestana_sheet'))) {
+    if (e.fuentes.includes('vault_mencion')) {
+      return { accion: 'ya_mencionado_en_boveda', razon: 'Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia.' };
+    }
     return { accion: 'historico_pestana_sin_huella', razon: `Pestaña real del Sheet (${e.corroboracionCruzada} fuente(s): ${e.fuentes.join(', ') || 'ninguna'}) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda).` };
   }
   if (e.tiposCandidato.includes('tabla_baserow')) {
+    if (e.fuentes.includes('vault_mencion')) {
+      return { accion: 'ya_mencionado_en_boveda', razon: 'Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia.' };
+    }
     return { accion: 'historico_tabla_sin_huella', razon: `Tabla real de Baserow (${e.corroboracionCruzada} fuente(s): ${e.fuentes.join(', ') || 'ninguna'}) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia.` };
   }
   return { accion: 'historico_sin_accion', razon: 'Evidencia real insuficiente hoy y sin patrón aplicable -- se deja como histórico, no se descarta el nombre del censo.' };
@@ -304,6 +313,7 @@ function main() {
     historico_detalle_implementacion: 'Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico.',
     historico_pestana_sin_huella: 'Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real.',
     historico_tabla_sin_huella: 'Tabla real de Baserow sin huella real todavía. Histórico, misma nota que PERSONAJE en §8.20.',
+    ya_mencionado_en_boveda: 'Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia.',
     historico_sin_accion: 'Evidencia real insuficiente y sin patrón aplicable. Histórico.',
   };
   for (const [k, v] of Object.entries(resumenAccion).sort((a, b) => b[1] - a[1])) {

@@ -11,7 +11,7 @@
  * tiene todavia un grafo de relaciones propio.
  *
  * Por cada entidad candidata calcula, solo con datos ya reales:
- *  - corroboracionCruzada: en cuantas de las 9 fuentes reales aparece
+ *  - corroboracionCruzada: en cuantas de las 10 fuentes reales aparece
  *  - centralidad: grado del nodo en los grafos donde participa como nodo
  *  - decision: promover / revisar / descartar, con la evidencia real al
  *    lado -- nunca una etiqueta sin lista de donde sale
@@ -26,7 +26,7 @@
  *
  * Uso: node analizar_entidades_reales.mjs [--salida-json <ruta>] [--salida-md <ruta>]
  */
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const DIR = import.meta.dirname;
@@ -116,6 +116,26 @@ const idsFichaReal = new Set(wikilinks.nodos.filter(n => n.esFicheroReal).map(n 
 const targetsWikilink = new Set(wikilinks.aristas.map(a => a.target));
 const sourcesWikilink = new Set(wikilinks.aristas.map(a => a.source));
 
+// Mencion textual literal en CUALQUIER ficha real de la boveda -- no solo
+// wikilinks [[...]]. Hueco real encontrado en §8.29: anadir "Sheet:
+// `39_PEDIDO_CLIENTE`" como bala de un "## Vinculo real" no es un
+// [[wikilink]], asi que el censo no lo veia como corroboracion aunque el
+// dato real ya estuviera ahi. Coincidencia por substring literal
+// (case-insensitive), mas estricta que coincide() -- estos son
+// identificadores tipo NOMBRE_TABLA, no texto narrativo.
+const RUTA_VAULT_TEXTO = 'G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat';
+function listarMdParaTexto(ruta) {
+  const out = [];
+  for (const nombre of readdirSync(ruta)) {
+    if (nombre === 'desktop.ini') continue;
+    const completa = join(ruta, nombre);
+    if (statSync(completa).isDirectory()) out.push(...listarMdParaTexto(completa));
+    else if (nombre.endsWith('.md')) out.push(completa);
+  }
+  return out;
+}
+const textoCompletoVault = listarMdParaTexto(RUTA_VAULT_TEXTO).map(f => readFileSync(f, 'utf-8')).join('\n---\n').toLowerCase();
+
 // ---------- 3. Grado (centralidad) real por id, sobre cada grafo relacional ----------
 
 function calcularGrados(aristas) {
@@ -181,9 +201,9 @@ for (const t of estructuraBaserow.tablas) {
   registrar(t.nombre, 'tabla_baserow', 'baserow_estructura', 'baserow:' + t.nombre);
 }
 
-// ---------- 5. Por cada candidato, calcular corroboracion cruzada real (9 fuentes) ----------
+// ---------- 5. Por cada candidato, calcular corroboracion cruzada real (10 fuentes) ----------
 
-const FUENTES = ['vault_ficha', 'vault_wikilink', 'codigo_appsscript', 'codigo_node', 'n8n', 'sheet_estructura', 'baserow_estructura', 'datos_negocio', 'telar'];
+const FUENTES = ['vault_ficha', 'vault_wikilink', 'vault_mencion', 'codigo_appsscript', 'codigo_node', 'n8n', 'sheet_estructura', 'baserow_estructura', 'datos_negocio', 'telar'];
 
 const resultados = [];
 for (const c of candidatos.values()) {
@@ -192,6 +212,11 @@ for (const c of candidatos.values()) {
 
   if (idsFichaReal.has(c.slug)) fuentesConEvidencia.add('vault_ficha');
   if (targetsWikilink.has(c.slug) || sourcesWikilink.has(c.slug)) fuentesConEvidencia.add('vault_wikilink');
+  // Umbral 6, no 4: identificadores reales tipo NN_NOMBRE/STG_NOMBRE
+  // superan de sobra los 6 caracteres; por debajo de eso empiezan a
+  // colarse palabras comunes del castellano (tarea, sheet...) como si
+  // fueran corroboracion real.
+  if (c.nombre.length >= 6 && textoCompletoVault.includes(c.nombre.toLowerCase())) fuentesConEvidencia.add('vault_mencion');
   if (corpusAppsScript.length && algunaCoincide(c.slug, ct, corpusAppsScript)) fuentesConEvidencia.add('codigo_appsscript');
   if (algunaCoincide(c.slug, ct, corpusNode)) fuentesConEvidencia.add('codigo_node');
   if (algunaCoincide(c.slug, ct, corpusN8n)) fuentesConEvidencia.add('n8n');
@@ -333,7 +358,7 @@ function md() {
   const l = [];
   l.push('# Censo real de entidades del universo Engremiat');
   l.push('');
-  l.push('Generado el ' + censo.generadoEn + ' cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.');
+  l.push('Generado el ' + censo.generadoEn + ' cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.');
   l.push('');
   l.push('**Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.');
   l.push('');
