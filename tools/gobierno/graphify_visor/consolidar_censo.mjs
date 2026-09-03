@@ -65,6 +65,12 @@ const CORRESPONDENCIAS_VERIFICADAS_A_MANO = {
   [slug('Verificador de Campos')]: 'tools/verificador_determinista.mjs -- verificado leyendo el fichero real: "Verificador determinista: comprueba afirmaciones de campo de Baserow contra el esquema real". Mismo oficio, nombre distinto en boveda vs. codigo.',
 };
 
+// Fuentes que coinciden por texto pero se verificaron a mano como RUIDO
+// (homonimia), para no confirmar por una evidencia que ya se sabe falsa.
+const FUENTES_RUIDO_CONOCIDO = {
+  [slug('Física')]: 'Ya creada como ficha real (03_Reglas/Física.md), grounded en tres citas reales ya existentes (Estilo.md, Coordinador.md, GASTO_API.md) -- no en su fuente "codigo_appsscript", que es RUIDO verificado a mano: coincide por texto con funciones sobre jerarquía FÍSICA de materiales (`continuarJerarquiaFisicaLaTroballa`), un sentido de la palabra totalmente distinto.',
+};
+
 const TIPOS_NARRATIVOS = new Set(['hilo', 'arco', 'sesion', 'mapa', 'estilo', 'sin_tipo']);
 
 function decidirAccionRevisar(e) {
@@ -73,6 +79,10 @@ function decidirAccionRevisar(e) {
 
   if (tipos.some(t => TIPOS_NARRATIVOS.has(t))) {
     return { accion: 'correcto_narrativo', razon: 'Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción.' };
+  }
+
+  if (FUENTES_RUIDO_CONOCIDO[s]) {
+    return { accion: 'confirmar_verificado_a_mano', razon: FUENTES_RUIDO_CONOCIDO[s] };
   }
 
   if (CORRESPONDENCIAS_VERIFICADAS_A_MANO[s]) {
@@ -148,27 +158,40 @@ function scriptsQueTocan(nombreRecurso) {
   return grafoNode.aristas.filter(a => a.target === nodo.id).map(a => a.source);
 }
 
-const HUECOS_REALES_ENCONTRADOS = {
-  VIGILIA_TAREA: () => `Tabla real de Baserow tocada de verdad por ${scriptsQueTocan('VIGILIA_TAREA').length} scripts reales (${scriptsQueTocan('VIGILIA_TAREA').join(', ')}) -- se quedó bajo el umbral de "promover" (3) solo por no aparecer también en Sheet/n8n/bóveda, no porque falte evidencia real. Candidata real a ficha de Recurso.`,
-  DOCUMENTO_ENGREMIAT: () => `Tabla real de Baserow tocada de verdad por ${scriptsQueTocan('DOCUMENTO_ENGREMIAT').length} scripts reales (${scriptsQueTocan('DOCUMENTO_ENGREMIAT').join(', ')}). Mismo caso que VIGILIA_TAREA: hueco real por debajo del umbral, no ausencia de evidencia.`,
-  METRICA_FABRICACION: () => `Tabla real de Baserow tocada de verdad por ${scriptsQueTocan('METRICA_FABRICACION').length} scripts reales (${scriptsQueTocan('METRICA_FABRICACION').join(', ')}). Mismo caso: hueco real por debajo del umbral.`,
-  AGORA: () => 'Módulo real y ACTIVO para un cliente real (Piloto Plaza, ver grafo_paquete_cliente.json) y tabla real de Baserow -- pero sin ninguna ficha propia en la bóveda. A diferencia de CRONISTA/EJECUTOR_LOCAL (que sí tienen Personaje), AGORA no tiene gobernanza narrativa todavía pese a estar corriendo de verdad. Hueco real concreto.',
-  EJECUTOR_LOCAL: () => 'Módulo real y ACTIVO para un cliente real (Piloto Plaza) -- prototipo ya probado con éxito (ver memoria de sesión "Ejecutor Local (prototipo)"), pero sin ficha propia en la bóveda. Mismo hueco que AGORA.',
+// Los 5 huecos reales encontrados en la primera investigación (§8.23) ya
+// se resolvieron de verdad: VIGILIA_TAREA/METRICA_FABRICACION/
+// EJECUTOR_LOCAL resultaron NO ser entidades nuevas -- investigando se
+// encontró que Vigilia.md/Coordinador.md/Ejecutor.md ya las narraban de
+// verdad, solo les faltaba el vínculo explícito (añadido: sección
+// "## Vínculo real" en cada ficha existente, sin tocar el resto).
+// AGORA y DOCUMENTO_ENGREMIAT sí eran huecos genuinos -- se les creó su
+// ficha real (01_Mundo/Recursos/AGORA.md y DOCUMENTO_ENGREMIAT.md).
+const HUECOS_YA_RESUELTOS = {
+  VIGILIA_TAREA: 'Investigado y resuelto: no era un hueco de entidad, era un hueco de vínculo -- Vigilia.md ya narraba esta tabla de verdad ("la cola nocturna de Concilio", "el modelo de Ramas"). Añadida sección "## Vínculo real" a la ficha existente, sin tocar el resto.',
+  METRICA_FABRICACION: 'Investigado y resuelto: Coordinador.md ya narraba esta métrica de verdad ("verifica lo que vuelve antes de darlo por bueno"). Añadida sección "## Vínculo real" a la ficha existente.',
+  EJECUTOR_LOCAL: 'Investigado y resuelto: Ejecutor.md ya decía explícitamente "Existe también en versión Ejecutor Local, contra el worker local en vez de la API". Añadida sección "## Vínculo real" a la ficha existente -- no se creó una ficha nueva porque hubiera sido redundante.',
 };
 
+// "Física", "AGORA" y "DOCUMENTO_ENGREMIAT" ya no son candidatas: se
+// investigaron y se les creo su ficha real (03_Reglas/Física.md,
+// 01_Mundo/Recursos/AGORA.md, 01_Mundo/Recursos/DOCUMENTO_ENGREMIAT.md).
+// "Vision Mision" se investigo aparte y NO es una entidad nueva: es una
+// fila real ya catalogada dentro de DOCUMENTO_ENGREMIAT (id 4,
+// ARCHIVO_HISTORICO/Documentos/VISION_MISION.md), ya marcada a mano
+// "estado: revisar" y "contradice a MAPA_DOMINIOS_DATOS" -- exactamente
+// el tipo de instancia catalogada que corresponde dejar historica.
 const CANDIDATAS_NUEVA_FICHA = {
-  'Vision Mision': 'Referenciado como documento real externo ("[[Vision Mision|VISION_MISION.md]]", asesoría estratégica, 2026-08-17) en Estilo.md -- existe de verdad, pero no como ficha/fichero dentro de la bóveda todavía. Candidata a integrarse (traer el documento real a la bóveda o dejar una ficha-puente que apunte a él).',
-  'Física': 'Citado en Estilo.md como principio fundacional real ("es el mismo principio que ya rige la Física y las Leyes de este universo"), a la altura de las Reglas -- sin ficha propia. Aviso honesto: su fuente "codigo_appsscript" es RUIDO -- coincide por texto con funciones sobre jerarquía FÍSICA de materiales (ej. `continuarJerarquiaFisicaLaTroballa`), un sentido de la palabra totalmente distinto, no evidencia real de integración.',
+  'Vision Mision': 'Investigado a mano: no es una entidad nueva -- es una fila real ya catalogada dentro de DOCUMENTO_ENGREMIAT (id 4, ver ARCHIVO_HISTORICO/Documentos/VISION_MISION.md), ya marcada por el propio sistema "estado: revisar" y "contradice a MAPA_DOMINIOS_DATOS" (trata el Sheet como memoria central, superado por el pivote a Baserow/Pi). Correctamente histórico, no promovido -- ya cubierto por la ficha real de DOCUMENTO_ENGREMIAT.',
 };
 
 const YA_CUBIERTO_POR_GRAFO_PROPIO = new Set(['91_HISTORIAL', '01_CAMPANAS', '03_PRODUCTOS', '05_PROCESOS', 'PAQUETE_CLIENTE'].map(slug));
 
 function decidirAccionDescartar(e) {
-  if (HUECOS_REALES_ENCONTRADOS[e.nombre]) {
-    return { accion: 'promover_hueco_real_encontrado', razon: HUECOS_REALES_ENCONTRADOS[e.nombre]() };
+  if (HUECOS_YA_RESUELTOS[e.nombre]) {
+    return { accion: 'hueco_real_ya_resuelto', razon: HUECOS_YA_RESUELTOS[e.nombre] };
   }
   if (CANDIDATAS_NUEVA_FICHA[e.nombre]) {
-    return { accion: 'revisar_candidata_nueva_ficha', razon: CANDIDATAS_NUEVA_FICHA[e.nombre] };
+    return { accion: 'historico_instancia_ya_catalogada', razon: CANDIDATAS_NUEVA_FICHA[e.nombre] };
   }
   if (YA_CUBIERTO_POR_GRAFO_PROPIO.has(e.slug)) {
     return { accion: 'ya_cubierto_grafo_propio', razon: 'Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real.' };
@@ -241,15 +264,15 @@ function main() {
   l.push('');
   l.push('`cargar_grafo_wikilinks.mjs` derivaba el destino de una relación desde el NOMBRE DEL FICHERO, no desde el cuerpo real -- para relaciones con varios destinos (p.ej. `Concilio depende_de 7 Acervos-o-mecanismos.md`) esto producía una entidad falsa ("7 Acervos-o-mecanismos") en vez de las 7 aristas reales hacia los 7 Acervos reales que sí están, como wikilinks, en el cuerpo del fichero. Corregido: ahora lee los wikilinks reales del cuerpo. Efecto real: 222→220 candidatas, 2 entidades fantasma menos, 8 aristas reales más.');
   l.push('');
-  l.push('### Los 5 huecos reales concretos encontrados en el grupo descartar (investigado a mano, no por regla)');
+  l.push('### Los 5 huecos reales concretos, investigados y resueltos en esta misma sesión');
   l.push('');
-  l.push('- **VIGILIA_TAREA, DOCUMENTO_ENGREMIAT, METRICA_FABRICACION** -- 3 tablas reales de Baserow tocadas de verdad por scripts reales (`ciclo_autonomo.mjs`, `prompter_lote_autociclo.mjs`, `sembrar_mecanismos.mjs`, `coordinador.mjs`...), que se quedaron por debajo del umbral de "promover" (3 fuentes) solo por no aparecer también en Sheet/n8n/bóveda -- no por falta de evidencia real. Verificado leyendo `grafo_node.json`.');
-  l.push('- **AGORA, EJECUTOR_LOCAL** -- módulos reales y ACTIVOS para el cliente real Piloto Plaza (ver `grafo_paquete_cliente.json`), sin ninguna ficha propia en la bóveda -- a diferencia de CRONISTA, que sí tiene su Personaje. Hueco real de gobernanza: están corriendo de verdad pero sin ficha que los gobierne.');
+  l.push('- **VIGILIA_TAREA, METRICA_FABRICACION, EJECUTOR_LOCAL** -- investigando a fondo (no solo con reglas) se encontró que NO eran entidades nuevas: `Vigilia.md`, `Coordinador.md` y `Ejecutor.md` ya narraban estos tres recursos reales en prosa, solo les faltaba el vínculo explícito. Resuelto añadiendo una sección `## Vínculo real` a cada ficha existente, sin tocar el resto de su contenido -- crear una ficha nueva habría sido redundante.');
+  l.push('- **DOCUMENTO_ENGREMIAT, AGORA** -- estos dos sí eran huecos genuinos: módulos/tablas reales y activos sin ninguna ficha que los narrara. Resuelto creando su ficha real: `01_Mundo/Recursos/DOCUMENTO_ENGREMIAT.md` (grounded en el catálogo real de 56 filas, 46 documentos + 10 mecanismos) y `01_Mundo/Recursos/AGORA.md` (honesto sobre ser nascente: activo para un cliente real, sin código ni narrativa propia todavía más allá de eso).');
   l.push('');
-  l.push('### 2 candidatas reales a ficha nueva (referenciadas de verdad, sin ficha)');
+  l.push('### 2 candidatas a ficha nueva, investigadas -- 1 resuelta con ficha real, 1 resultó no serlo');
   l.push('');
-  l.push('- **"Vision Mision"** -- citado en `Estilo.md` como documento real externo (`VISION_MISION.md`, asesoría estratégica, 2026-08-17), nunca integrado en la bóveda.');
-  l.push('- **"Física"** -- citado en `Estilo.md` como principio fundacional real, a la altura de las Reglas ("el mismo principio que ya rige la Física y las Leyes de este universo"), sin ficha propia. Aviso: su fuente "codigo_appsscript" es ruido -- coincide por texto con funciones de jerarquía FÍSICA de materiales, sentido totalmente distinto.');
+  l.push('- **"Física"** -- sí era un hueco real: citado ya tres veces en fichas reales (`Estilo.md`, `Coordinador.md`, `GASTO_API.md`) como concepto fundacional, nunca con ficha propia. Creada `03_Reglas/Física.md`, reuniendo sin inventar nada las tres citas ya existentes.');
+  l.push('- **"Vision Mision"** -- investigado más a fondo: NO es una entidad nueva. Es una fila real ya catalogada dentro de `DOCUMENTO_ENGREMIAT` (id 4, `ARCHIVO_HISTORICO/Documentos/VISION_MISION.md`), que el propio sistema ya marca "estado: revisar" y "contradice a MAPA_DOMINIOS_DATOS". Correctamente histórico -- ya cubierto por la ficha real de DOCUMENTO_ENGREMIAT recién creada.');
   l.push('');
   l.push('### 5 que YA tienen grafo real propio -- el censo no las veía por cómo se construyó, no por un hueco real');
   l.push('');
@@ -273,8 +296,8 @@ function main() {
     promover_recurso_real: 'Pestaña/tabla real bien corroborada -- candidata sólida a ficha de Recurso o a `vinculoReal` en una ficha existente.',
     revisar_inconsistencia_nombres: 'No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes.',
     descartar_termino_generico: 'Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover.',
-    promover_hueco_real_encontrado: 'Hueco real concreto encontrado investigando el grupo descartar -- evidencia real de código o uso, por debajo del umbral solo por estrechez de fuentes.',
-    revisar_candidata_nueva_ficha: 'Referenciado de verdad en una ficha real, sin ficha propia -- candidata legítima a nueva ficha.',
+    hueco_real_ya_resuelto: 'Hueco real encontrado y ya resuelto en esta misma sesión: se enriqueció con `## Vínculo real` una ficha existente (Vigilia/Coordinador/Ejecutor), sin crear una ficha redundante.',
+    historico_instancia_ya_catalogada: 'Investigado a mano: no era una entidad nueva -- ya es una fila catalogada dentro de un Recurso real (p.ej. DOCUMENTO_ENGREMIAT). Histórico, correctamente no promovido.',
     ya_cubierto_grafo_propio: 'Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real.',
     historico_instancia_negocio: 'Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico.',
     historico_dato_operativo: 'Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico.',

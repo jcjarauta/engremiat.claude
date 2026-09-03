@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T05:54:55.742Z",
+  "generadoEn": "2026-09-03T06:08:11.605Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -89,6 +89,20 @@
     {
       "id": "92_bus_trabajo",
       "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "carpeta": "01_Mundo/Recursos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "documento_engremiat",
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "tipo": "recurso",
+      "carpeta": "01_Mundo/Recursos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "agora",
+      "nombre": "AGORA",
       "tipo": "recurso",
       "carpeta": "01_Mundo/Recursos",
       "esFicheroReal": true
@@ -381,6 +395,13 @@
       "esFicheroReal": true
     },
     {
+      "id": "fisica",
+      "nombre": "Física",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
       "id": "arco_del_incidente",
       "nombre": "Arco del incidente",
       "tipo": "arco",
@@ -600,13 +621,6 @@
     {
       "id": "vision_mision",
       "nombre": "Vision Mision",
-      "tipo": "referencia_sin_ficha",
-      "carpeta": null,
-      "esFicheroReal": false
-    },
-    {
-      "id": "fisica",
-      "nombre": "Física",
       "tipo": "referencia_sin_ficha",
       "carpeta": null,
       "esFicheroReal": false
@@ -861,6 +875,11 @@
     {
       "source": "92_bus_trabajo",
       "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "documento_engremiat",
+      "target": "acervo_prompter",
       "relation": "wikilink"
     },
     {
@@ -1536,6 +1555,21 @@
     {
       "source": "los_dos_continentes_de_datos",
       "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "fisica",
+      "target": "estilo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "fisica",
+      "target": "gasto_api",
+      "relation": "wikilink"
+    },
+    {
+      "source": "fisica",
+      "target": "coordinador",
       "relation": "wikilink"
     },
     {
