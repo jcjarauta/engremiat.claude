@@ -424,6 +424,22 @@
     </div>
   </div>
 
+  <!-- GRAFO MAESTRO -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">§8.38–40</span><h2>El grafo maestro: las 94 fichas, sin filtrar</h2></div>
+    <p class="folio-sub">El Holon solo muestra las fichas con relación funcional. El grafo maestro (<code>grafo_maestro.html</code>) no filtra nada: <b style="color:var(--ink)">94 fichas de entidad reales</b>, <b style="color:var(--ink)">331 aristas</b> — 291 <code>wikilink</code> narrativos + las 40 del Holon, en capas que se pueden apagar por separado.</p>
+    <div class="grid cols-2">
+      <div class="card" style="padding:22px;">
+        <h3 style="margin-bottom:14px;">Comparado con el Graph View de Obsidian</h3>
+        <p style="color:var(--ink-soft); font-size:12.5px; line-height:1.5;">Sin API que lo exporte — la comparación es de configuración real (<code>.obsidian/graph.json</code>), no de dos grafos descargados. Obsidian oculta los wikilinks a fichas que no existen (<code>hideUnresolved</code>); nosotros los señalamos a propósito como <code>referencia_sin_ficha</code> (2). Único adjunto real de toda la bóveda que Obsidian podría ver y nosotros no: <code>Arquitectura_Nucleo.canvas</code> — no <code>.md</code>, fuera del parser.</p>
+      </div>
+      <div class="card" style="padding:22px;">
+        <h3 style="margin-bottom:14px;">Carpetas de Módulos, cruzadas contra Sheets</h3>
+        <p style="color:var(--ink-soft); font-size:12.5px; line-height:1.5;">Los 11 módulos reales de <code>MODULO_POR_ENTIDAD_MVP</code> (<code>src/Ids.js</code>) tienen su ficha — ninguno falta, ninguno sobra. 3 fichas más (Gantt, Comunicación, Aprovisionamiento) no están en ese mapa porque no poseen pestaña propia, no por deriva: las tres ya tienen su <code>vinculoReal</code>. La bóveda ya es consistente con Sheets.</p>
+      </div>
+    </div>
+  </div>
+
   <!-- CIERRE — el censo -->
   <div class="folio">
     <div class="folio-head"><span class="folio-num">§8.23–34</span><h2>El censo que cerró el universo</h2></div>
@@ -445,7 +461,7 @@
 
   <footer>
     <span>Universo Engremiat · bóveda real, Obsidian</span>
-    <span>PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.23–34</span>
+    <span>PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.23–40</span>
   </footer>
 
 </div>
