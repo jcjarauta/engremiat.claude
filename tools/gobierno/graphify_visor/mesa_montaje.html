@@ -30,6 +30,10 @@
   .tipo-rel:hover { background: var(--color-base-borde-suave); }
   #montajesGuardados .fila { display: flex; justify-content: space-between; align-items: center; padding: 5px 6px; border-radius: 5px; font-size: 12px; }
   #montajesGuardados .fila:hover { background: var(--color-base-borde-suave); }
+  .universo-real { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 8px; margin-bottom: 8px; font-size: 12px; }
+  .universo-real .nombre { font-weight: 600; }
+  .universo-real button { width: 100%; margin-top: 6px; font-size: 11.5px; }
+  .gap-real { color: #e8b45c; }
   #capaConexion { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; }
   #capaConexion.activa { display: flex; }
   #cajaConexion { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 18px; width: 320px; }
@@ -54,6 +58,9 @@
   <div id="paleta">
     <h1>Mesa de montaje</h1>
     <p class="hint">Coge piezas reales del almacén (las 91 entidades reales, agrupadas por familia real) y suéltalas en la mesa. Conéctalas solo con los 8 tipos de relación reales del Holon -- nunca una flecha inventada.</p>
+    <h3>Universos reales</h3>
+    <p class="hint">Clientes reales con módulos ya activados (Baserow, PAQUETE_CLIENTE) -- cargar uno coloca sus piezas reales de golpe, en vez de empezar de cero.</p>
+    <div id="listaUniversos" class="hint">Cargando...</div>
     <input type="text" id="buscarPieza" placeholder="Buscar pieza real...">
     <h3>Piezas por familia real</h3>
     <div id="listaPiezas"></div>
@@ -128,6 +135,7 @@ let nodes, edges, network;
 let pendienteOrigen = null;
 let piezaSeleccionada = null;
 let registroEventos = [];
+let origenReal = null; // -- Fase 5 (§8.53): de que cliente/universo real viene este montaje, si viene de uno
 const LLAVE_LOCALSTORAGE = 'engremiat_mesa_montaje_v1';
 
 // -- Fase 4 (§8.52): memoria compartida real, mas alla de este navegador --
@@ -164,6 +172,8 @@ async function cargar() {
     renderPaleta(todosLosMiembros.filter(m => m.nombre.toLowerCase().includes(q)));
   });
 
+  await cargarUniversosReales();
+
   nodes = new vis.DataSet([]);
   edges = new vis.DataSet([]);
   network = new vis.Network(document.getElementById('mesa'), { nodes, edges }, {
@@ -198,6 +208,71 @@ async function cargar() {
 
   await comprobarMemoria();
   await renderMontajesGuardados();
+  actualizarResumen();
+}
+
+// -- Fase 5 (§8.53): "universos completos" -- un montaje que no se construye pieza a pieza
+// desde cero, sino que arranca de la activacion real de un cliente real (Baserow,
+// PAQUETE_CLIENTE, ya exportado en grafo_paquete_cliente.json por cargar_grafo_paquete_cliente.mjs).
+// Reutiliza piezas ya reales del almacen -- nunca las duplica ni inventa una nueva. Si un modulo
+// real activado en Baserow todavia no tiene ficha en el almacen (anatomia/atlas), se dice así,
+// tal cual, en vez de fabricar una pieza que no existe.
+function normalizarNombreReal(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
+}
+function mapearModuloAPiezaReal(nombreModulo) {
+  const norm = normalizarNombreReal(nombreModulo);
+  const candidatos = todosLosMiembros.filter(m => {
+    const ns = normalizarNombreReal(m.slug);
+    return ns === norm || norm.includes(ns) || ns.includes(norm);
+  });
+  return candidatos.length === 1 ? candidatos[0] : null; // ambiguo o sin match -> no se adivina
+}
+
+async function cargarUniversosReales() {
+  const cont = document.getElementById('listaUniversos');
+  let grafo;
+  try {
+    grafo = await (await fetch('grafo_paquete_cliente.json')).json();
+  } catch { cont.innerHTML = '<p class="hint">Sin grafo_paquete_cliente.json real disponible.</p>'; return; }
+
+  const clientes = grafo.nodos.filter(n => n.tipo === 'cliente');
+  if (!clientes.length) { cont.innerHTML = '<p class="hint">Ningún cliente real activado todavía en PAQUETE_CLIENTE.</p>'; return; }
+
+  cont.innerHTML = clientes.map(c => {
+    const modulosIds = grafo.aristas.filter(a => a.source === c.id).map(a => a.target);
+    const modulos = modulosIds.map(id => grafo.nodos.find(n => n.id === id)).filter(Boolean);
+    const conFicha = modulos.map(m => ({ modulo: m, pieza: mapearModuloAPiezaReal(m.nombre) }));
+    const nMatch = conFicha.filter(x => x.pieza).length;
+    return `
+      <div class="universo-real" data-cliente="${c.id}">
+        <div class="nombre">${c.nombre}</div>
+        <div class="hint">${nMatch}/${modulos.length} módulos reales con ficha en el almacén</div>
+        <button data-cargar-universo="${c.id}">Cargar este universo real</button>
+      </div>`;
+  }).join('');
+
+  cont.querySelectorAll('[data-cargar-universo]').forEach(btn => {
+    btn.addEventListener('click', () => cargarUniversoReal(grafo, btn.dataset.cargarUniverso));
+  });
+}
+
+function cargarUniversoReal(grafo, clienteId) {
+  if (nodes.length && !confirm('¿Sustituir el contenido actual de la mesa por este universo real? Se pierde lo no guardado.')) return;
+  vaciarMesa();
+  const cliente = grafo.nodos.find(n => n.id === clienteId);
+  const modulosIds = grafo.aristas.filter(a => a.source === clienteId).map(a => a.target);
+  const modulos = modulosIds.map(id => grafo.nodos.find(n => n.id === id)).filter(Boolean);
+  const conFicha = modulos.map(m => ({ modulo: m, pieza: mapearModuloAPiezaReal(m.nombre) }));
+
+  conFicha.forEach(x => { if (x.pieza) colocarPieza(x.pieza.slug); });
+
+  origenReal = {
+    clienteId, clienteNombre: cliente ? cliente.nombre : clienteId,
+    generadoEn: grafo.generadoEn,
+    modulosSinFicha: conFicha.filter(x => !x.pieza).map(x => x.modulo.nombre),
+  };
+  document.getElementById('nombreMontaje').value = origenReal.clienteNombre;
   actualizarResumen();
 }
 
@@ -309,8 +384,10 @@ function eventosDisponibles(slug) {
 }
 
 function renderFichaPieza(slug) {
-  const n = nodes.get(slug);
   const cont = document.getElementById('fichaPieza');
+  // nodes.get(null) devuelve [] (un array vacio, valor truthy) en vez de null/undefined --
+  // hay que descartar "sin pieza" antes de preguntarle al DataSet, nunca fiarse de !n a solas
+  const n = slug ? nodes.get(slug) : null;
   if (!n) { cont.innerHTML = '<p class="hint">Clic en una pieza de la mesa para ver su estado real y sus eventos disponibles.</p>'; return; }
   const gob = gobernadoresDe(slug);
   const eventos = eventosDisponibles(slug);
@@ -368,9 +445,16 @@ function renderRegistroEventos() {
 function actualizarResumen() {
   const n = nodes.length, e = edges.length;
   document.getElementById('estadoMesa').textContent = `${n} piezas · ${e} vínculos reales`;
-  document.getElementById('resumenMesa').innerHTML = n
+  let resumen = n
     ? `${n} pieza${n === 1 ? '' : 's'} reales colocadas, ${e} vínculo${e === 1 ? '' : 's'} entre ellas.`
     : 'La mesa está vacía -- clic en una pieza del almacén para colocarla.';
+  if (origenReal) {
+    resumen += `<br>Universo real: <b>${origenReal.clienteNombre}</b> (PAQUETE_CLIENTE, ${origenReal.generadoEn.slice(0, 10)}).`;
+    if (origenReal.modulosSinFicha.length) {
+      resumen += `<br><span class="gap-real">⚠ activados en Baserow pero sin ficha en el almacén todavía: ${origenReal.modulosSinFicha.join(', ')}.</span>`;
+    }
+  }
+  document.getElementById('resumenMesa').innerHTML = resumen;
   document.getElementById('listaConexiones').innerHTML = edges.get().map(a =>
     `<div class="conexion-real">${nodes.get(a.from).label} <b>${a.label}</b> → ${nodes.get(a.to).label}</div>`
   ).join('') || '<p class="hint">Clic en dos piezas de la mesa (una y luego otra) para conectarlas.</p>';
@@ -378,7 +462,7 @@ function actualizarResumen() {
 
 function vaciarMesa() {
   nodes.clear(); edges.clear();
-  registroEventos = []; piezaSeleccionada = null;
+  registroEventos = []; piezaSeleccionada = null; origenReal = null;
   renderRegistroEventos(); renderFichaPieza(null);
   actualizarResumen();
 }
@@ -390,6 +474,7 @@ function montajeActual() {
     piezas: nodes.get().map(n => ({ slug: n.id, nombre: n.label, estado: n.estado, agenciaReal: n.agenciaReal, rolPrincipal: n.rolPrincipal })),
     conexiones: edges.get().map(a => ({ origen: a.from, tipo: a.label, destino: a.to })),
     eventos: registroEventos,
+    origenReal, // trazabilidad real -- de que cliente/PAQUETE_CLIENTE viene, si viene de uno
   };
 }
 
@@ -461,6 +546,7 @@ function aplicarMontaje(m) {
     }
   });
   registroEventos = (m.eventos || []).slice();
+  origenReal = m.origenReal || null;
   renderRegistroEventos();
   actualizarResumen();
 }

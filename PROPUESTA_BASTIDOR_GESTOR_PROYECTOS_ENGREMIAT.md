@@ -804,6 +804,22 @@ Fase 4 del plan del Bastidor (la memoria compartida real, "más allá de este na
 
 **Verificado, con un límite honesto**: el servidor responde con datos reales por dos vías independientes -- `curl` real por SSH contra el propio VPS, y navegación directa del navegador a `http://100.107.171.88:9330/api/memoria`. Se añadió la cabecera `Access-Control-Allow-Private-Network` (Chrome trata el rango CGNAT de Tailscale, `100.64.0.0/10`, como red privada a efectos de Private Network Access). Lo que **no** se pudo verificar dentro de esta sesión: el `fetch` cross-origen específico desde la pestaña de automatización de pruebas (herramienta de navegador en sandbox) falla con `ERR_BLOCKED_BY_CLIENT` y sin ninguna traza de red registrada -- un límite del entorno de pruebas automatizado, no del código real (la navegación directa al mismo puerto, desde la misma pestaña, sí funciona). El respaldo local se verificó de extremo a extremo (montaje guardado y listado correctamente con la memoria compartida desconectada). Pendiente: que el operador confirme en su propio navegador real que el mensaje pasa a "conectada".
 
+### 8.53 "Continua Fase 5"
+
+Fase 5 del plan del Bastidor (universos completos), cerrando el ciclo de 5 fases. Sobre la misma mesa de montaje (§8.50-52), no una vista nueva.
+
+**Qué significa "universo completo" en real, no en metáfora**: no un cliente nuevo inventado (La Troballa/Gestor de Proyectos eran solo ejemplos ilustrativos del propio plan, §8.51 en adelante) sino el puente con el dato real que ya existía en el visor desde antes (`grafo_paquete_cliente.json`, "qué módulos reales tiene encendidos cada cliente real", Baserow PAQUETE_CLIENTE). Hoy hay exactamente **un** cliente real ahí: "Piloto Plaza (interno)", con 3 módulos activados.
+
+**Qué se construyó**: sección nueva "Universos reales" en la paleta -- lista cada cliente real con sus módulos, y un botón "Cargar este universo real" que coloca en la mesa las piezas reales del almacén que le corresponden (nunca las duplica, las referencia por slug igual que cualquier otra pieza) y nombra el montaje con el nombre real del cliente. El mapeo módulo→pieza es por normalización de nombre, y si es ambiguo **no adivina** -- lo deja sin ficha antes que inventar una correspondencia falsa.
+
+**La honestidad como parte del diseño, no un añadido**: "Piloto Plaza (interno)" tiene 3 módulos reales activados en Baserow (CRONISTA, AGORA, EJECUTOR_LOCAL), pero el almacén solo tiene ficha real para 2 (Cronista, Ejecutor) -- AGORA no tiene anatomía/atlas todavía. En vez de ocultar esto o inventar una ficha para que cuadre, la mesa lo dice tal cual en pantalla: "activados en Baserow pero sin ficha en el almacén todavía: AGORA". El origen completo (de qué cliente viene, cuándo se generó el dato, qué huecos tiene) viaja con el montaje guardado -- sobrevive a `localStorage` y a la memoria compartida de la Fase 4 por igual.
+
+**Bug real encontrado y corregido durante la propia verificación** (no en el código nuevo de la Fase 5, sino en `vaciarMesa()`, ahí desde la Fase 3): `nodes.get(null)` en vis-network devuelve `[]` -- un array vacío, valor *truthy* -- nunca `null`/`undefined`, así que la guarda `if (!n)` de `renderFichaPieza` no se activaba nunca y `n.estado.replace(...)` fallaba con `n = []`. No se había disparado antes porque el botón "Vaciar mesa" pasa por un `confirm()` que en las pruebas automatizadas previas se saltaba sin ejecutar la función real. Corregido evitando pasarle `null` al `DataSet` en vez de confiar en lo que devuelve.
+
+**Verificado de extremo a extremo**: cargar el universo real de "Piloto Plaza (interno)" coloca 2 piezas reales (Cronista, Ejecutor), muestra el hueco real de AGORA, guarda el montaje con su `origenReal` completo, y al recargarlo (`cargarMontaje`) el hueco y el origen se restauran exactamente igual -- probado con `localStorage` (la memoria compartida seguía con el mismo límite conocido del sandbox de pruebas, §8.52).
+
+**Con esto se cierran las 5 fases del plan del Bastidor** (almacén de piezas → mesa de montaje → motor de estados → memoria compartida → universos completos). El plan original preguntaba "¿podemos hacer máquinas con las piezas de Engremiat para construir universos?" -- la respuesta construida y verificada es sí, con un límite real y explícito: el puente a universos completos existe y funciona, pero solo hay un universo real cargado en Baserow hoy, y una pieza real (AGORA) que el almacén todavía no conoce.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
