@@ -501,6 +501,22 @@ Sin patrón automático aplicable por diseño (por eso cayeron en revisión manu
 
 Censo regenerado y desplegado. De los doce, 3 recibieron vinculoReal real, 2 revelaron su propio hueco explícito (Pregonero/Narrador, ya honestos por diseño), 1 es un hueco genuino real que queda abierto (Acervo Usuario), y el resto está correctamente resuelto sin acción -- ni todo necesitaba vinculoReal, ni todo era un hueco.
 
+### 8.27 "Valora los 10 revisar_nombre_narrativo" -- resuelto: 7 con vinculoReal real, 3 ya fundamentadas por relaciones
+
+Los 10 -- Espacios/Reglas con nombre narrativo ("El Sheet", "n8n", "Headscale"...) cuyo referente real el cruce por texto nunca podía alcanzar. Leídos uno a uno, con referente real preciso cada vez:
+
+- **VPS y Tailscale** -- las 3 IP Tailscale reales de la malla (`engremiat-dev-hetzner` 100.107.171.88, `nodo-pi-engremiat` 100.125.52.52, `pc-operador-engremiat` 100.118.79.49), ya citadas en su propia prosa.
+- **n8n** -- los 2 workflows n8n reales ya exportados + `tools/n8n-workflows/`.
+- **La fragua protegida** -- la instancia n8n aislada real (`engremiat-generador-n8n`, `127.0.0.1:5680`), ya citada en su propia prosa.
+- **El Vault** -- su propia ruta real (`G:\...\Obsidian-Engremiat\Universos\Engremiat`) -- la ficha apunta al sitio donde vive ella misma.
+- **El ciclo de vida remoto** -- los mismos identificadores reales que ya usa `Mensajero.md` (`despertar-pc-webhook`, `apagar-pi-webhook`).
+- **Headscale** -- el mismo VPS real donde está autoalojado (100.107.171.88).
+- **El Sheet** -- **confirmado por cruce real, no adivinado**: el Sheet ID real (`142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ`) tiene `92_BUS_TRABAJO` y no `92_ESCENARIOS` -- exactamente la firma que la propia ficha ya usaba para distinguir cuál de sus cuatro instancias reales es "Gestor de Proyectos - LaTroballa Software". Es el mismo Sheet que usa todo este censo desde §8.23.
+- **Honestidad del fallo** (regla) -- cita `98_LOG_GOBIERNO` por nombre en su propia prosa; añadido como Sheet real.
+- **El Sheet manda, Los dos continentes de datos** (reglas) -- ya suficientemente fundamentadas por relaciones a fichas que ahora sí tienen vinculoReal (`El Sheet`, `Baserow`) y por nombrar tablas reales explícitas en su propia prosa -- no se duplica, mismo criterio que "Verificar contra hechos".
+
+Censo regenerado y desplegado. De los diez, 7 recibieron vinculoReal real y preciso, 3 se quedan correctamente sin él por estar ya fundamentados. Ninguno resultó ser un hueco -- el límite era del método de cruce por texto, no del dato real, exactamente como se anticipó al clasificarlos.
+
 ## 9. Pendiente
 
 ## 9. Pendiente
