@@ -476,6 +476,16 @@ Añadidas también dos fuentes reales más que el barrido no cubría: **`src/`**
 
 **Resultado final, de las 45 confirmadas: 43 tienen vinculoReal real, 2 se quedan sin él a propósito** (Física y Verificar contra hechos -- ambas ya resueltas de otra forma: sus fuentes reales viven en su propia prosa o en las fichas a las que ya enlazan, no necesitan la misma plantilla). Ninguna de las 43 escrituras perdió una sola línea de contenido real previo, verificado leyendo el resultado.
 
+### 8.25 "Valora los 20 promover: cuáles son ficha real" -- investigado, y construidos los 4 módulos reales que faltaban
+
+**La pregunta cambió de forma investigando**: no eran 15-20 fichas de Recurso sueltas por crear -- `recurso.schema.json` ya establece que los Recursos de la bóveda son mecanismos de gobierno, no un espejo 1:1 de cada pestaña de negocio ("primos, no gemelos, nunca se fuerza equivalencia"). El hallazgo real: de los 11 módulos de negocio reales en `MODULO_POR_ENTIDAD_MVP`, **4 no tenían ninguna ficha** -- Operativa, Seguimiento, Ejecución, Escenarios -- verificado con `grep` sobre toda la bóveda (cero mención dedicada), a pesar de que Ventas/Compras/Económico/Convocatorias/Impacto/Oportunidad/Cliente sí las tienen.
+
+**Veredicto real sobre las 20 candidatas**: 3 descartadas (términos genéricos, ya resueltos), 2 sin ficha nueva (Acervo/Acervos, inconsistencia de nombres), 4 ya cubiertas (38_CLIENTE en `Cliente.md`, 06_TAREAS/02_PROYECTOS/04_PROYECTO_PRODUCTO en `CORE.md`), 1 sin ficha propia (PLANTILLA_MISION -- nodo real "Crear fila PLANTILLA_MISION" en el workflow n8n "Telar Interactivo", añadido al `vinculoReal` de `Telar.md` en vez de crear una ficha redundante), y 10 resueltas de golpe creando los 4 módulos reales: **Operativa.md** (dueña real de 11 pestañas -- el hueco más grande de todos, con su propia cita real del código: "fusiona Recursos/Personas + Asignaciones + Horario + Encaje de competencias en un único interruptor"), **Seguimiento.md** (4 pestañas: 12_DECISIONES/13_INCIDENCIAS/14_DOCUMENTOS/18_VINCULO), **Ejecucion.md** (1 pestaña) y **Escenarios.md** (1 pestaña, con su propia cicatriz real ya documentada en `El Sheet.md`: la colisión 92_BUS_TRABAJO/92_ESCENARIOS).
+
+**Corrección honesta encontrada construyendo**: `Modulos acoplables.md` (el índice real) decía "el barrio de los diez módulos de negocio reales" -- ya no es cierto, corregido a "catorce" con nota explícita de por qué cambió, y las 4 fichas nuevas añadidas a sus Relaciones reales.
+
+Verificado leyendo el resultado: censo regenerado (224 candidatas, 21 confirmar) y desplegado en el visor.
+
 ## 9. Pendiente
 
 ## 9. Pendiente

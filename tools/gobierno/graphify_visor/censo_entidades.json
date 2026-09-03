@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T06:38:35.510Z",
+  "generadoEn": "2026-09-03T09:16:30.970Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -12,10 +12,10 @@
     "telar"
   ],
   "totales": {
-    "candidatos": 220,
-    "confirmar": 19,
+    "candidatos": 224,
+    "confirmar": 21,
     "promover": 20,
-    "revisar": 67,
+    "revisar": 69,
     "descartar": 114
   },
   "ciclosReales": [
@@ -47,11 +47,13 @@
       "core",
       "cronista",
       "economico",
+      "ejecucion",
       "ejecutor",
       "el_ciclo_de_vida_remoto",
       "el_sheet",
       "el_sheet_manda",
       "el_vault",
+      "escenarios",
       "estilo",
       "estructurainicial",
       "exportador_de_gasto",
@@ -70,6 +72,7 @@
       "modulos_acoplables",
       "n8n",
       "narrador",
+      "operativa",
       "oportunidad",
       "pregonero",
       "puente_historia_leyes",
@@ -78,6 +81,7 @@
       "relevo",
       "repository",
       "salud_del_ecosistema",
+      "seguimiento",
       "telar",
       "ventas",
       "verificador_de_campos",
@@ -131,9 +135,9 @@
     },
     {
       "tipo": "wikilink",
-      "total": 267,
+      "total": 278,
       "porCapa": {
-        "wikilinks": 267
+        "wikilinks": 278
       }
     },
     {
@@ -302,7 +306,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 7,
+      "centralidad": 8,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -526,6 +530,27 @@
       "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
+      "nombre": "Ejecucion",
+      "slug": "ejecucion",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
       "nombre": "Baserow",
       "slug": "baserow",
       "tiposCandidato": [
@@ -641,6 +666,26 @@
       "fuentes": [
         "codigo_appsscript",
         "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
+      "nombre": "Escenarios",
+      "slug": "escenarios",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
         "vault_ficha",
         "vault_wikilink"
       ],
@@ -1078,8 +1123,65 @@
       "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
+      "nombre": "Operativa",
+      "slug": "operativa",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
+    },
+    {
+      "nombre": "Seguimiento",
+      "slug": "seguimiento",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
+    },
+    {
       "nombre": "Chequear libreria clientes",
       "slug": "chequear_libreria_clientes",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
+    },
+    {
+      "nombre": "Puente historia leyes",
+      "slug": "puente_historia_leyes",
       "tiposCandidato": [
         "oficio"
       ],
@@ -1215,25 +1317,6 @@
     {
       "nombre": "Exportador de gasto",
       "slug": "exportador_de_gasto",
-      "tiposCandidato": [
-        "oficio"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "codigo_node",
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 2,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_codigo_real",
-      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
-    },
-    {
-      "nombre": "Puente historia leyes",
-      "slug": "puente_historia_leyes",
       "tiposCandidato": [
         "oficio"
       ],
@@ -1540,6 +1623,24 @@
       "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
+      "nombre": "Modulos acoplables",
+      "slug": "modulos_acoplables",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 29,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
+    },
+    {
       "nombre": "00_Mapa",
       "slug": "00_mapa",
       "tiposCandidato": [
@@ -1556,24 +1657,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "correcto_narrativo",
       "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
-    },
-    {
-      "nombre": "Modulos acoplables",
-      "slug": "modulos_acoplables",
-      "tiposCandidato": [
-        "modulo"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 21,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
       "nombre": "Mensajero",
@@ -1606,6 +1689,24 @@
         "vault_wikilink"
       ],
       "centralidad": 16,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
+    },
+    {
+      "nombre": "El Sheet",
+      "slug": "el_sheet",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 11,
       "decision": "revisar",
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "revisar_nombre_narrativo",
@@ -1646,24 +1747,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "correcto_narrativo",
       "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
-    },
-    {
-      "nombre": "El Sheet",
-      "slug": "el_sheet",
-      "tiposCandidato": [
-        "espacio"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 10,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_nombre_narrativo",
-      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Narrador",
@@ -4293,17 +4376,17 @@
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T06:38:35.578Z",
+    "generadoEn": "2026-09-03T09:16:31.062Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
       "correspondencias verificadas a mano"
     ],
     "resumenAccion": {
-      "confirmar_ya_solido": 19,
+      "confirmar_ya_solido": 21,
       "descartar_termino_generico": 3,
       "promover_recurso_real": 15,
-      "confirmar_codigo_real": 16,
+      "confirmar_codigo_real": 18,
       "confirmar_patron_tecnico": 5,
       "confirmar_verificado_a_mano": 2,
       "revisar_inconsistencia_nombres": 2,

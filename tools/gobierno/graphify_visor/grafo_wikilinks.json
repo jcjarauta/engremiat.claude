@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T06:38:34.318Z",
+  "generadoEn": "2026-09-03T09:16:29.736Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -222,6 +222,34 @@
     {
       "id": "modulos_acoplables",
       "nombre": "Modulos acoplables",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "operativa",
+      "nombre": "Operativa",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "seguimiento",
+      "nombre": "Seguimiento",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "ejecucion",
+      "nombre": "Ejecucion",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "escenarios",
+      "nombre": "Escenarios",
       "tipo": "modulo",
       "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
       "esFicheroReal": true
@@ -1135,6 +1163,61 @@
     {
       "source": "modulos_acoplables",
       "target": "aprovisionamiento",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "operativa",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "seguimiento",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "ejecucion",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "escenarios",
+      "relation": "wikilink"
+    },
+    {
+      "source": "operativa",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "operativa",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "seguimiento",
+      "target": "puente_historia_leyes",
+      "relation": "wikilink"
+    },
+    {
+      "source": "seguimiento",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ejecucion",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "escenarios",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "escenarios",
+      "target": "modulos_acoplables",
       "relation": "wikilink"
     },
     {
