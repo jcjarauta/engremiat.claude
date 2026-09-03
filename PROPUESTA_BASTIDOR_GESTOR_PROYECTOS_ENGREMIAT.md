@@ -584,6 +584,10 @@ Regenerado el censo (330 aristas de wikilinks, +14 sobre la pasada anterior) y d
 - **Verificador de Capacidades → DOCUMENTO_ENGREMIAT** -- estaba ahí, en su propio código: `tools/verificador_capacidades.mjs` consulta en vivo la tabla Baserow **1038** filtrada por `TIPO=mecanismo_real` -- el mismo ID real que `DOCUMENTO_ENGREMIAT.md` ya documenta (56 filas: 46 documentos + 10 mecanismos). Creada la arista real, regenerado el grafo (29 nodos, 40 aristas).
 - **Pregonero, Narrador** -- releídas sus fichas reales antes de concluir: "ninguna pieza construida" y `estado: por_construir`, ambas explícitas. Confirmado, no hay espacio real al que apunten todavía -- correctamente sin arista, no un olvido.
 
+### 8.35 "¿Merece la pena publicar Física con vinculoReal real?" -- sí, pero no el que se descartó como ruido
+
+`Física.md` se dejó sin `vinculoReal` en §8.24 porque su único hallazgo (`InstaladorJerarquiaFisica.js`) era ruido por homonimia -- jerarquía física de talleres de un cliente, no el concepto filosófico. Revisado de nuevo: el hallazgo real no era un fichero que "hable de" Física, sino que la propia maquinaria del censo construida esta sesión **es** su encarnación operativa -- `analizar_entidades_reales.mjs` cruza cada afirmación contra 10 fuentes reales antes de darla por buena, exactamente "verificarse contra el código o el Sheet reales, no quedar en narrativa suelta" (la cita ya real de `Estilo.md`). Añadido como `vinculoReal` real -- verificado leyendo el resultado, contenido previo intacto.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

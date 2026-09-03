@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T10:34:13.868Z",
+  "generadoEn": "2026-09-03T10:46:45.558Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -4575,7 +4575,7 @@
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T10:34:13.945Z",
+    "generadoEn": "2026-09-03T10:46:45.634Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
