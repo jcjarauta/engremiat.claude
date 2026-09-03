@@ -134,7 +134,22 @@ function listarMdParaTexto(ruta) {
   }
   return out;
 }
-const textoCompletoVault = listarMdParaTexto(RUTA_VAULT_TEXTO).map(f => readFileSync(f, 'utf-8')).join('\n---\n').toLowerCase();
+// Por fichero, no un solo string concatenado -- necesario para excluir la
+// autorreferencia real encontrada en §8.32: "El Sheet manda" coincidia
+// consigo misma (su propio "title:" en su propio fichero) y se marcaba
+// confirmar_codigo_real sin ninguna evidencia externa real.
+const textosPorFichero = listarMdParaTexto(RUTA_VAULT_TEXTO).map(ruta => {
+  const texto = readFileSync(ruta, 'utf-8');
+  const tm = texto.match(/^title:\s*(.+)$/m);
+  return { tituloSlug: tm ? slug(tm[1].trim()) : null, texto: texto.toLowerCase() };
+});
+function mencionadaFueraDeSuPropiaFicha(candidatoSlug, candidatoMinuscula) {
+  for (const f of textosPorFichero) {
+    if (f.tituloSlug === candidatoSlug) continue; // nunca cuenta la propia ficha como su propia evidencia
+    if (f.texto.includes(candidatoMinuscula)) return true;
+  }
+  return false;
+}
 
 // ---------- 3. Grado (centralidad) real por id, sobre cada grafo relacional ----------
 
@@ -216,7 +231,7 @@ for (const c of candidatos.values()) {
   // superan de sobra los 6 caracteres; por debajo de eso empiezan a
   // colarse palabras comunes del castellano (tarea, sheet...) como si
   // fueran corroboracion real.
-  if (c.nombre.length >= 6 && textoCompletoVault.includes(c.nombre.toLowerCase())) fuentesConEvidencia.add('vault_mencion');
+  if (c.nombre.length >= 6 && mencionadaFueraDeSuPropiaFicha(c.slug, c.nombre.toLowerCase())) fuentesConEvidencia.add('vault_mencion');
   if (corpusAppsScript.length && algunaCoincide(c.slug, ct, corpusAppsScript)) fuentesConEvidencia.add('codigo_appsscript');
   if (algunaCoincide(c.slug, ct, corpusNode)) fuentesConEvidencia.add('codigo_node');
   if (algunaCoincide(c.slug, ct, corpusN8n)) fuentesConEvidencia.add('n8n');

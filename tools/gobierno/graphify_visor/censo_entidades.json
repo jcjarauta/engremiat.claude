@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:54:53.594Z",
+  "generadoEn": "2026-09-03T10:12:20.278Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -653,29 +653,6 @@
       "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
-      "nombre": "DOCUMENTO_ENGREMIAT",
-      "slug": "documento_engremiat",
-      "tiposCandidato": [
-        "recurso",
-        "recurso_codigo",
-        "tabla_baserow"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 5,
-      "fuentes": [
-        "baserow_estructura",
-        "codigo_node",
-        "vault_ficha",
-        "vault_mencion",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
-      "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
-      "accionRecomendada": "confirmar_ya_solido",
-      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
-    },
-    {
       "nombre": "Impacto",
       "slug": "impacto",
       "tiposCandidato": [
@@ -1141,6 +1118,28 @@
         "vault_wikilink"
       ],
       "centralidad": 4,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "slug": "documento_engremiat",
+      "tiposCandidato": [
+        "recurso",
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -1744,25 +1743,6 @@
       "accionRazon": "Corroborado por al menos una fuente real fuera de la bóveda."
     },
     {
-      "nombre": "Sesion 2026-09-01",
-      "slug": "sesion_2026_09_01",
-      "tiposCandidato": [
-        "sesion"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "vault_ficha",
-        "vault_mencion",
-        "vault_wikilink"
-      ],
-      "centralidad": 11,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "correcto_narrativo",
-      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
-    },
-    {
       "nombre": "Narrador",
       "slug": "narrador",
       "tiposCandidato": [
@@ -1837,25 +1817,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_verificado_a_mano",
       "accionRazon": "Correspondencia real confirmada leyendo el fichero: tools/verificador_determinista.mjs -- verificado leyendo el fichero real: \"Verificador determinista: comprueba afirmaciones de campo de Baserow contra el esquema real\". Mismo oficio, nombre distinto en boveda vs. codigo."
-    },
-    {
-      "nombre": "El universo no se ha usado sobre si mismo",
-      "slug": "el_universo_no_se_ha_usado_sobre_si_mismo",
-      "tiposCandidato": [
-        "hilo"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "vault_ficha",
-        "vault_mencion",
-        "vault_wikilink"
-      ],
-      "centralidad": 7,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "correcto_narrativo",
-      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "La fragua protegida",
@@ -2508,25 +2469,6 @@
       "accionRazon": "Ficha real con corroboración baja y sin regla específica aplicable -- revisar a mano."
     },
     {
-      "nombre": "Sesion 2026-08-31",
-      "slug": "sesion_2026_08_31",
-      "tiposCandidato": [
-        "sesion"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "vault_ficha",
-        "vault_mencion",
-        "vault_wikilink"
-      ],
-      "centralidad": 1,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "correcto_narrativo",
-      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
-    },
-    {
       "nombre": "PERSONAJE",
       "slug": "personaje",
       "tiposCandidato": [
@@ -3116,6 +3058,42 @@
       "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
+      "nombre": "Sesion 2026-09-01",
+      "slug": "sesion_2026_09_01",
+      "tiposCandidato": [
+        "sesion"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 11,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
+    },
+    {
+      "nombre": "El universo no se ha usado sobre si mismo",
+      "slug": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
+    },
+    {
       "nombre": "Gestor de proyectos",
       "slug": "gestor_de_proyectos",
       "tiposCandidato": [
@@ -3169,6 +3147,24 @@
       "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
       "accionRecomendada": "historico_instancia_negocio",
       "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
+    },
+    {
+      "nombre": "Sesion 2026-08-31",
+      "slug": "sesion_2026_08_31",
+      "tiposCandidato": [
+        "sesion"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Vision Mision",
@@ -3259,24 +3255,6 @@
       "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
       "accionRecomendada": "historico_instancia_negocio",
       "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
-    },
-    {
-      "nombre": "00_Nucleo",
-      "slug": "00_nucleo",
-      "tiposCandidato": [
-        "sin_tipo"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_mencion"
-      ],
-      "centralidad": 0,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "correcto_narrativo",
-      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Cronista - Segmentar documento en tareas (con puerta humana)",
@@ -4575,10 +4553,27 @@
       "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
       "accionRecomendada": "historico_instancia_negocio",
       "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
+    },
+    {
+      "nombre": "00_Nucleo",
+      "slug": "00_nucleo",
+      "tiposCandidato": [
+        "sin_tipo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "vault_ficha"
+      ],
+      "centralidad": 0,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T09:54:53.669Z",
+    "generadoEn": "2026-09-03T10:12:20.348Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",

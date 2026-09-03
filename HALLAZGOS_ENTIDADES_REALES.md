@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:54:53.594Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T10:12:20.278Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -114,12 +114,10 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Mensajero | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | VPS y Tailscale | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | El Sheet | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Sesion 2026-09-01 | sesion | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Narrador | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Narrativo | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Estilo | estilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Verificador de Campos | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| El universo no se ha usado sobre si mismo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | La fragua protegida | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | IntegrityService | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Logico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
@@ -152,9 +150,11 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Separar el Holon en notas propias | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Zona de aterrizaje STG | recurso | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | AGORA | recurso, modulo_real, tabla_baserow | 3 | baserow_estructura, datos_negocio, vault_ficha |
-| Sesion 2026-08-31 | sesion | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | n8n | espacio | 2 | vault_ficha, vault_wikilink |
-| 00_Nucleo | sin_tipo | 2 | vault_ficha, vault_mencion |
+| Sesion 2026-09-01 | sesion | 2 | vault_ficha, vault_wikilink |
+| El universo no se ha usado sobre si mismo | hilo | 2 | vault_ficha, vault_wikilink |
+| Sesion 2026-08-31 | sesion | 2 | vault_ficha, vault_wikilink |
+| 00_Nucleo | sin_tipo | 1 | vault_ficha |
 
 ## Fichas reales CONFIRMADAS (bien corroboradas por el resto del ecosistema)
 
@@ -174,7 +174,6 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | GASTO_API | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | Telar | espacio | 5 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_wikilink |
 | 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
-| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | Impacto | modulo | 5 | codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Escenarios | modulo | 5 | baserow_estructura, codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Bus de trabajo | oficio | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
@@ -194,6 +193,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Verificar contra hechos | regla | 4 | n8n, vault_ficha, vault_mencion, vault_wikilink |
 | EstructuraInicial | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Física | regla | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
+| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
 | Compras | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Operativa | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Seguimiento | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
