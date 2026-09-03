@@ -1,5 +1,5 @@
 {
- "generadoEn": "2026-09-03T14:36:05.595Z",
+ "generadoEn": "2026-09-03T15:23:56.476Z",
  "totalEntidadesConAnatomia": 61,
  "entidades": {
   "baserow": {
@@ -31,7 +31,8 @@
      "entrada": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
      "espina": [
       "tools/gobierno/bocetador/cargar_estructura_baserow.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -841,7 +842,8 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
-     ]
+     ],
+     "agenciaReal": 1
     },
     {
      "tipo": "n8n",
@@ -1473,7 +1475,8 @@
       "Telar Interactivo::Registrar gasto opciones",
       "Telar Interactivo::Guardar opciones en sesion",
       "Telar Interactivo::Enviar opciones a Telegram"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -1545,7 +1548,8 @@
      "entrada": "NODO_ENGREMIAT",
      "espina": [
       "NODO_ENGREMIAT"
-     ]
+     ],
+     "agenciaReal": 5
     }
    ]
   },
@@ -2182,7 +2186,8 @@
       "Telar Interactivo::Registrar gasto opciones",
       "Telar Interactivo::Guardar opciones en sesion",
       "Telar Interactivo::Enviar opciones a Telegram"
-     ]
+     ],
+     "agenciaReal": 1
     },
     {
      "tipo": "baserow_schema",
@@ -2399,7 +2404,8 @@
      "entrada": "TELAR_SESION",
      "espina": [
       "TELAR_SESION"
-     ]
+     ],
+     "agenciaReal": 7
     }
    ]
   },
@@ -2441,7 +2447,8 @@
      "entrada": "97_ESTADO_CONSOLA",
      "espina": [
       "97_ESTADO_CONSOLA"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -2553,7 +2560,8 @@
      "entrada": "GASTO_API",
      "espina": [
       "GASTO_API"
-     ]
+     ],
+     "agenciaReal": 9
     }
    ]
   },
@@ -2597,7 +2605,8 @@
      "entrada": "tools/gobierno/bus_trabajo.mjs",
      "espina": [
       "tools/gobierno/bus_trabajo.mjs"
-     ]
+     ],
+     "agenciaReal": 2
     },
     {
      "tipo": "sheet_schema",
@@ -2746,7 +2755,8 @@
      "espina": [
       "92_BUS_TRABAJO",
       "13_INCIDENCIAS"
-     ]
+     ],
+     "agenciaReal": 13
     }
    ]
   },
@@ -2848,7 +2858,8 @@
      "entrada": "DOCUMENTO_ENGREMIAT",
      "espina": [
       "DOCUMENTO_ENGREMIAT"
-     ]
+     ],
+     "agenciaReal": 8
     }
    ]
   },
@@ -3518,7 +3529,8 @@
       "engremiat_repo_live_concat_obtenergruposcomprobacionhuerfanos",
       "engremiat_repo_live_concat_ejecutarimportacionmasiva",
       "engremiat_repo_live_concat_leerfilaspendientesimportacion"
-     ]
+     ],
+     "agenciaReal": 4
     },
     {
      "tipo": "sheet",
@@ -4456,7 +4468,8 @@
      "espina": [
       "op:82d26483-93a5-42c8-80e8-28357bbee920",
       "ent:CAMPANA:CAM-0001"
-     ]
+     ],
+     "agenciaReal": 1
     },
     {
      "tipo": "sheet_schema",
@@ -4523,7 +4536,8 @@
      "entrada": "93_MAPEO_IDS_TEMPORALES",
      "espina": [
       "93_MAPEO_IDS_TEMPORALES"
-     ]
+     ],
+     "agenciaReal": 5
     }
    ]
   },
@@ -19654,7 +19668,8 @@
       "engremiat_repo_live_concat_listarregistros",
       "engremiat_repo_live_concat_leerfilasentidadcomoobjetos",
       "engremiat_repo_live_concat_obtenerhojaentidad"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -21346,7 +21361,8 @@
       "engremiat_repo_live_concat_detectarduplicidadesrelacionesmaterial",
       "engremiat_repo_live_concat_detectarduplicidadesrelacionmaterial",
       "engremiat_repo_live_concat_detectarproblemasfuncionales_agregar"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -25922,7 +25938,8 @@
       "engremiat_repo_live_concat_construirsubmenumantenimiento",
       "engremiat_repo_live_concat_construirsubmenuinstaladorescatalogo",
       "engremiat_repo_live_concat_moduloinstalado"
-     ]
+     ],
+     "agenciaReal": 4
     }
    ]
   },
@@ -26182,7 +26199,8 @@
       "engremiat_repo_live_concat_instalarestructurainicial",
       "engremiat_repo_live_concat_sembrarcatalogoinicial",
       "engremiat_repo_live_concat_categoriainstalable"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -26529,7 +26547,8 @@
      "entrada": "engremiat_repo_live_concat_obtenercatalogo",
      "espina": [
       "engremiat_repo_live_concat_obtenercatalogo"
-     ]
+     ],
+     "agenciaReal": 0
     },
     {
      "tipo": "sheet_schema",
@@ -26646,7 +26665,8 @@
      "entrada": "90_CONFIGURACION",
      "espina": [
       "90_CONFIGURACION"
-     ]
+     ],
+     "agenciaReal": 10
     }
    ]
   },
@@ -28375,7 +28395,8 @@
       "04_PROYECTO_PRODUCTO",
       "02_PROYECTOS",
       "01_CAMPANAS"
-     ]
+     ],
+     "agenciaReal": 27
     }
    ]
   },
@@ -29019,7 +29040,8 @@
       "41_ENTREGA",
       "39_PEDIDO_CLIENTE",
       "38_CLIENTE"
-     ]
+     ],
+     "agenciaReal": 11
     }
    ]
   },
@@ -29203,7 +29225,8 @@
      "espina": [
       "44_OPORTUNIDAD",
       "38_CLIENTE"
-     ]
+     ],
+     "agenciaReal": 16
     }
    ]
   },
@@ -29376,7 +29399,8 @@
       "tools/constructor/montar-cliente.test.mjs",
       "tools/constructor/montar-cliente.mjs",
       "tools/packager/generate-shell-wrappers.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     },
     {
      "tipo": "sheet",
@@ -29424,7 +29448,8 @@
      "espina": [
       "cliente:PAQ-0001",
       "modulo:CRONISTA"
-     ]
+     ],
+     "agenciaReal": 3
     },
     {
      "tipo": "sheet_schema",
@@ -29671,7 +29696,8 @@
      "entrada": "38_CLIENTE",
      "espina": [
       "38_CLIENTE"
-     ]
+     ],
+     "agenciaReal": 23
     },
     {
      "tipo": "baserow_schema",
@@ -29830,7 +29856,8 @@
      "espina": [
       "PAQUETE_CLIENTE",
       "ENTIDAD_ORGANIZATIVA"
-     ]
+     ],
+     "agenciaReal": 14
     }
    ]
   },
@@ -31210,7 +31237,8 @@
       "27_RECEPCION",
       "25_PEDIDO_PROVEEDOR",
       "15_PROVEEDORES"
-     ]
+     ],
+     "agenciaReal": 12
     }
    ]
   },
@@ -31332,7 +31360,8 @@
      "entrada": "37_ETIQUETA_IMPACTO",
      "espina": [
       "37_ETIQUETA_IMPACTO"
-     ]
+     ],
+     "agenciaReal": 10
     }
    ]
   },
@@ -31534,7 +31563,8 @@
      "entrada": "36_CONVOCATORIA",
      "espina": [
       "36_CONVOCATORIA"
-     ]
+     ],
+     "agenciaReal": 18
     }
    ]
   },
@@ -31978,7 +32008,8 @@
      "espina": [
       "31_FUENTE_FINANCIACION",
       "36_CONVOCATORIA"
-     ]
+     ],
+     "agenciaReal": 16
     }
    ]
   },
@@ -32267,7 +32298,8 @@
       "engremiat_repo_live_concat_dopost",
       "engremiat_repo_live_concat_procesarnotificacionoperador",
       "engremiat_repo_live_concat_resolverdestinatarionotificacion"
-     ]
+     ],
+     "agenciaReal": 8
     }
    ]
   },
@@ -32968,7 +33000,8 @@
       "engremiat_repo_live_concat_crearproyectoscript",
       "engremiat_repo_live_concat_subircontenidoscript",
       "engremiat_repo_live_concat_obtenerversionlibreriamasreciente"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -33758,7 +33791,8 @@
       "engremiat_repo_live_concat_procesarimportacionasignaciones",
       "engremiat_repo_live_concat_ejecutarimportacionasignaciones",
       "engremiat_repo_live_concat_ejecutarimportacionseguimiento_validarobligatorios"
-     ]
+     ],
+     "agenciaReal": 1
     },
     {
      "tipo": "sheet_schema",
@@ -35297,7 +35331,8 @@
      "espina": [
       "07_TAREA_RESPONSABLE",
       "06_TAREAS"
-     ]
+     ],
+     "agenciaReal": 14
     }
    ]
   },
@@ -36117,7 +36152,8 @@
      "espina": [
       "12_DECISIONES",
       "02_PROYECTOS"
-     ]
+     ],
+     "agenciaReal": 22
     }
    ]
   },
@@ -36271,7 +36307,8 @@
      "espina": [
       "20_EJECUCION_TAREA",
       "06_TAREAS"
-     ]
+     ],
+     "agenciaReal": 13
     }
    ]
   },
@@ -36423,7 +36460,8 @@
      "entrada": "VIGILIA_TAREA",
      "espina": [
       "VIGILIA_TAREA"
-     ]
+     ],
+     "agenciaReal": 13
     }
    ]
   },
@@ -36505,7 +36543,8 @@
      "entrada": "99_TRIAGE_LOCAL",
      "espina": [
       "99_TRIAGE_LOCAL"
-     ]
+     ],
+     "agenciaReal": 6
     },
     {
      "tipo": "baserow_schema",
@@ -36622,7 +36661,8 @@
      "entrada": "METRICA_FABRICACION",
      "espina": [
       "METRICA_FABRICACION"
-     ]
+     ],
+     "agenciaReal": 10
     }
    ]
   },
@@ -36799,7 +36839,8 @@
      "entrada": "96_PROMPT_EJECUTOR",
      "espina": [
       "96_PROMPT_EJECUTOR"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -37609,7 +37650,8 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -38035,7 +38077,8 @@
       "engremiat_repo_live_concat_construirinstruccionesescenario",
       "engremiat_repo_live_concat_construirinstruccionesescenario_cuantos",
       "engremiat_repo_live_concat_construirinstruccionesescenario_intensidad"
-     ]
+     ],
+     "agenciaReal": 5
     }
    ]
   },
@@ -38079,7 +38122,8 @@
      "entrada": "tools/acervo_prompter.mjs",
      "espina": [
       "tools/acervo_prompter.mjs"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -38100,7 +38144,8 @@
      "entrada": "tools/verificador_determinista.mjs",
      "espina": [
       "tools/verificador_determinista.mjs"
-     ]
+     ],
+     "agenciaReal": 0
     }
    ]
   },
@@ -38133,7 +38178,8 @@
      "entrada": "tools/verificador_capacidades.mjs",
      "espina": [
       "tools/verificador_capacidades.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -38943,7 +38989,8 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -39005,7 +39052,8 @@
      "entrada": "98_LOG_GOBIERNO",
      "espina": [
       "98_LOG_GOBIERNO"
-     ]
+     ],
+     "agenciaReal": 4
     }
    ]
   },
@@ -39049,7 +39097,8 @@
      "entrada": "tools/gobierno/bocetador/encontrar_huecos.mjs",
      "espina": [
       "tools/gobierno/bocetador/encontrar_huecos.mjs"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -39203,7 +39252,8 @@
      "entrada": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
      "espina": [
       "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs"
-     ]
+     ],
+     "agenciaReal": 12
     }
    ]
   },
@@ -39312,7 +39362,8 @@
      "espina": [
       "tools/gobierno/actualizar_libreria_cliente.mjs",
       "tools/packager/build-packages.mjs"
-     ]
+     ],
+     "agenciaReal": 4
     }
    ]
   },
@@ -39333,7 +39384,8 @@
      "entrada": "tools/gobierno/cerrar_ciclo.mjs",
      "espina": [
       "tools/gobierno/cerrar_ciclo.mjs"
-     ]
+     ],
+     "agenciaReal": 0
     }
    ]
   },
@@ -39442,7 +39494,8 @@
      "espina": [
       "tools/gobierno/actualizar_libreria_cliente.mjs",
       "tools/packager/build-packages.mjs"
-     ]
+     ],
+     "agenciaReal": 4
     }
    ]
   },
@@ -39486,7 +39539,8 @@
      "entrada": "tools/gobierno/bus_trabajo.mjs",
      "espina": [
       "tools/gobierno/bus_trabajo.mjs"
-     ]
+     ],
+     "agenciaReal": 2
     },
     {
      "tipo": "sheet_schema",
@@ -39635,7 +39689,8 @@
      "espina": [
       "92_BUS_TRABAJO",
       "13_INCIDENCIAS"
-     ]
+     ],
+     "agenciaReal": 13
     }
    ]
   },
@@ -39668,7 +39723,8 @@
      "entrada": "tools/gobierno/exportador_prometheus_gasto.mjs",
      "espina": [
       "tools/gobierno/exportador_prometheus_gasto.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -39712,7 +39768,8 @@
      "entrada": "tools/gobierno/puente_historia_leyes.mjs",
      "espina": [
       "tools/gobierno/puente_historia_leyes.mjs"
-     ]
+     ],
+     "agenciaReal": 2
     }
    ]
   },
@@ -39745,7 +39802,8 @@
      "entrada": "tools/consola/chequear_consistencia.mjs",
      "espina": [
       "tools/consola/chequear_consistencia.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -39766,7 +39824,8 @@
      "entrada": "tools/consola/regenerar_estatico.mjs",
      "espina": [
       "tools/consola/regenerar_estatico.mjs"
-     ]
+     ],
+     "agenciaReal": 0
     }
    ]
   },
@@ -39799,7 +39858,8 @@
      "entrada": "tools/consola/extraer_decisiones.mjs",
      "espina": [
       "tools/consola/extraer_decisiones.mjs"
-     ]
+     ],
+     "agenciaReal": 1
     }
    ]
   },
@@ -39820,7 +39880,8 @@
      "entrada": "tools/salud_ecosistema.mjs",
      "espina": [
       "tools/salud_ecosistema.mjs"
-     ]
+     ],
+     "agenciaReal": 0
     }
    ]
   },
@@ -40182,7 +40243,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -40230,13 +40291,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -40248,7 +40309,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -40332,13 +40393,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -41566,14 +41627,12 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "el_sheet",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
-      "telar"
-     ]
+      "el_sheet"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 100
     }
    ]
   },
@@ -41935,7 +41994,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -41983,13 +42042,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -42001,7 +42060,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -42025,7 +42084,7 @@
       {
        "source": "baserow",
        "target": "vps_y_tailscale",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -42037,7 +42096,7 @@
       {
        "source": "el_vault",
        "target": "baserow",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "depende_de"
       },
       {
@@ -42085,13 +42144,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -43319,14 +43378,14 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "el_vault",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
-      "telar"
-     ]
+      "el_vault",
+      "baserow",
+      "vps_y_tailscale"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 50
     }
    ]
   },
@@ -43688,7 +43747,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -43736,13 +43795,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -43754,7 +43813,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -43826,7 +43885,7 @@
       {
        "source": "headscale",
        "target": "vps_y_tailscale",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -43838,13 +43897,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -45072,14 +45131,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "headscale",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
-      "telar"
-     ]
+      "headscale",
+      "vps_y_tailscale"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0
     }
    ]
   },
@@ -45435,7 +45493,7 @@
       {
        "source": "vigilia",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "activa_a"
       },
       {
@@ -45483,7 +45541,7 @@
       {
        "source": "acervo_prompter",
        "target": "vigilia",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "alimenta_a"
       },
       {
@@ -45639,7 +45697,7 @@
       {
        "source": "acervo_prompter",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -46825,14 +46883,14 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "acervo_prompter",
+     "entrada": "concilio",
      "espina": [
-      "acervo_prompter",
-      "vigilia",
       "concilio",
       "acervo_tecnico",
       "telar"
-     ]
+     ],
+     "agenciaReal": 19,
+     "territorioPropio": 0
     }
    ]
   },
@@ -47194,7 +47252,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -47242,13 +47300,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -47260,7 +47318,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -47344,13 +47402,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -47404,7 +47462,7 @@
       {
        "source": "relevo",
        "target": "92_bus_trabajo",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -48578,14 +48636,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "relevo",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
-      "telar"
-     ]
+      "relevo",
+      "92_bus_trabajo"
+     ],
+     "agenciaReal": 6,
+     "territorioPropio": 0
     }
    ]
   },
@@ -48947,7 +49004,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -48995,13 +49052,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -49013,7 +49070,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -49091,19 +49148,19 @@
       {
        "source": "mensajero",
        "target": "92_bus_trabajo",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -50331,14 +50388,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "mensajero",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
-      "telar"
-     ]
+      "mensajero",
+      "92_bus_trabajo"
+     ],
+     "agenciaReal": 10,
+     "territorioPropio": 0
     }
    ]
   },
@@ -50700,7 +50756,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -50748,13 +50804,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -50766,7 +50822,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -50850,7 +50906,7 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -52084,14 +52140,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_tecnico",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
       "acervo_tecnico",
       "telar"
-     ]
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0
     }
    ]
   },
@@ -52453,7 +52508,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -52501,13 +52556,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -52519,7 +52574,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -52603,19 +52658,19 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_logico",
        "target": "telar",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -53837,14 +53892,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_logico",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
+      "acervo_logico",
       "telar"
-     ]
+     ],
+     "agenciaReal": 3,
+     "territorioPropio": 0
     }
    ]
   },
@@ -54206,7 +54260,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -54254,13 +54308,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -54272,7 +54326,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -54356,13 +54410,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -54374,7 +54428,7 @@
       {
        "source": "acervo_logistico",
        "target": "telar",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -55590,14 +55644,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_logistico",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
+      "acervo_logistico",
       "telar"
-     ]
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0
     }
    ]
   },
@@ -55959,7 +56012,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -56007,13 +56060,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -56025,7 +56078,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -56109,13 +56162,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -56133,7 +56186,7 @@
       {
        "source": "acervo_narrativo",
        "target": "telar",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -57343,14 +57396,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_narrativo",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
+      "acervo_narrativo",
       "telar"
-     ]
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": 0
     }
    ]
   },
@@ -57712,7 +57764,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -57760,13 +57812,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -57778,7 +57830,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -57862,13 +57914,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -57892,7 +57944,7 @@
       {
        "source": "acervo_filosofico",
        "target": "telar",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -59096,14 +59148,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_filosofico",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
+      "acervo_filosofico",
       "telar"
-     ]
+     ],
+     "agenciaReal": 3,
+     "territorioPropio": 0
     }
    ]
   },
@@ -59465,7 +59516,7 @@
       {
        "source": "concilio",
        "target": "acervo_tecnico",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "depende_de"
       },
       {
@@ -59513,13 +59564,13 @@
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "verifica_a"
       },
       {
        "source": "coordinador",
        "target": "concilio",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "corrige_a"
       },
       {
@@ -59531,7 +59582,7 @@
       {
        "source": "puerta_humana",
        "target": "coordinador",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "gobierna_a"
       },
       {
@@ -59615,13 +59666,13 @@
       {
        "source": "concilio",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
        "source": "acervo_tecnico",
        "target": "telar",
-       "enEspina": true,
+       "enEspina": false,
        "relacion": "opera_en"
       },
       {
@@ -59657,7 +59708,7 @@
       {
        "source": "acervo_sociocracia",
        "target": "telar",
-       "enEspina": false,
+       "enEspina": true,
        "relacion": "opera_en"
       },
       {
@@ -60849,14 +60900,13 @@
        "relacion": "wikilink"
       }
      ],
-     "entrada": "puerta_humana",
+     "entrada": "acervo_sociocracia",
      "espina": [
-      "puerta_humana",
-      "coordinador",
-      "concilio",
-      "acervo_tecnico",
+      "acervo_sociocracia",
       "telar"
-     ]
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0
     }
    ]
   }

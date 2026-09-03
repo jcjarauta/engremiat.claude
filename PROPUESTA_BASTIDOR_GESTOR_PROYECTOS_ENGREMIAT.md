@@ -701,6 +701,20 @@ Sí -- confirmado antes de hacerlo: `mapear_grafo_node.mjs` recorre todo `tools/
 
 `Física` gana su fuente Node real (`analizar_entidades_reales.mjs`, 13 nodos -- los `.json` reales que lee/escribe: `censo_entidades.json`, `grafo_wikilinks.json`, `PAQUETE_CLIENTE`...). De 60 a **61 entidades con anatomía real de 91**. Ningún otro hueco se cerró con este regenerado -- los 30 restantes siguen siendo el límite honesto ya documentado en §8.42 (narrativas puras o código/infraestructura que Graphify no lee).
 
+### 8.45 "¿Es esto la expresión viva de crecer y decrecer que buscamos? Avanzamos a construirlo así"
+
+Propuesta como asesor técnico y de teoría de grafos, a partir de la captura de `Chequear librería clientes` (9 nodos reales): con el macro (`grafo_maestro.html`) y el micro (anatomía por entidad) ya construidos, la pregunta de fondo pasa a ser **cuál es la unidad mínima real que merece ficha propia** -- no solo tamaño de cuerpo, sino identidad.
+
+**Investigado antes de proponer**: crucé `corroboracionCruzada` (censo) contra tamaño real de cuerpo (anatomía) para las 61 entidades -- son señales casi sin correlación. Oficios de un solo nodo (`Cerrar ciclo`) ya son personajes completos. Pero doce entidades del componente compartido del Holon (Concilio, los 8 Acervos, El Sheet, El Vault, Headscale, Mensajero) devolvían **el mismo cuerpo, cabeza y columna, letra por letra** -- confirmado comparando `Concilio`/`Acervo Tecnico`/`El Sheet`/`Mensajero` a mano. Causa real: `calcularEspina()` elegía el mejor camino GLOBAL del grafo compartido, no el camino desde la posición propia de cada entidad -- un bug real, no una propiedad del universo.
+
+**Propuesta aceptada y construida**: dos preguntas, no una, para que una unidad de código real tenga ficha propia:
+1. **¿Tiene agencia real?** -- aristas reales salientes desde su propia cabeza. Nueva métrica `agenciaReal` en cada fuente.
+2. **¿Tiene una posición propia distinguible?** -- corregido forzando la raíz de `calcularEspina()` en la propia entidad (`raizForzada`) para la fuente relacional, en vez de dejar que el algoritmo elija la mejor entrada global. Nueva métrica `territorioPropio`: de la columna real de una entidad, qué % no aparece en la columna de ninguna otra del mismo componente -- cuánto de su cuerpo es identidad exclusiva frente a sustrato compartido.
+
+**Resultado real, verificado**: `Concilio` ahora tiene su propia cabeza (`concilio`), columna de 3 pasos, agencia 19, territorio propio 0% (honesto: está en el centro del sustrato, casi todo lo comparte). `El Sheet` revela algo nuevo y honesto: columna de 1 solo paso -- no tiene ninguna relación Holon saliente propia, es un espacio que recibe, no que actúa. `Acervo Tecnico` y `Mensajero` ya tienen cuerpos propios, distintos entre sí. Esto es la expresión viva de crecer/decrecer en dos niveles: el *cuerpo* (tamaño, ya vivo desde §8.41 al regenerarse del código real) y ahora la *identidad* (agencia y territorio propio, recalculables cada vez que el censo se regenera) -- un componente puede madurar hacia personaje real o disolverse en el sustrato compartido, medido, no decidido a mano.
+
+Desplegado y verificado en el navegador.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

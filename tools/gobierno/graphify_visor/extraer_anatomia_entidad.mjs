@@ -78,7 +78,15 @@ ficheros.forEach(f => {
 });
 
 // -- espina real: DFS del camino dirigido mas largo desde cada entrada real (sin incoming) --
-function calcularEspina(nodosIds, aristas) {
+// `raizForzada` (§8.45): cuando la propia entidad ES uno de los nodos reales del grafo (caso
+// relacional/Holon), la cabeza tiene que ser ELLA, no la mejor entrada global del componente --
+// si no, dos personajes reales distintos que comparten componente (Puerta Humana/Cronista via
+// n8n no aplica aqui, pero Concilio/los 8 Acervos/El Sheet si, via el respaldo relacional)
+// terminan con el mismo cuerpo, cabeza y columna, letra por letra. Bug real encontrado en vivo
+// comparando Concilio/Acervo Tecnico/El Sheet/Mensajero -- las cuatro devolvian exactamente la
+// misma columna porque el algoritmo elegia el mejor camino GLOBAL del componente compartido,
+// no el camino desde la posicion propia de cada una.
+function calcularEspina(nodosIds, aristas, raizForzada) {
   const idsSet = new Set(nodosIds);
   const salientes = new Map(); // id -> [ids destino]
   const entrantes = new Map(); // id -> contador
@@ -89,8 +97,6 @@ function calcularEspina(nodosIds, aristas) {
       entrantes.set(a.target, (entrantes.get(a.target) || 0) + 1);
     }
   });
-  let entradas = nodosIds.filter(id => (entrantes.get(id) || 0) === 0);
-  if (!entradas.length) entradas = [nodosIds[0]]; // ciclo puro sin entrada real: cae al primero, honesto pero raro
 
   let visitas = 0;
   const TOPE_VISITAS = 20000;
@@ -107,6 +113,14 @@ function calcularEspina(nodosIds, aristas) {
     }
     return mejor;
   }
+
+  if (raizForzada && idsSet.has(raizForzada)) {
+    const espina = caminoMasLargoDesde(raizForzada, new Set([raizForzada]));
+    return { entrada: raizForzada, espina, entradasReales: [raizForzada] };
+  }
+
+  let entradas = nodosIds.filter(id => (entrantes.get(id) || 0) === 0);
+  if (!entradas.length) entradas = [nodosIds[0]]; // ciclo puro sin entrada real: cae al primero, honesto pero raro
 
   let mejorGlobal = [];
   let entradaGanadora = entradas[0];
@@ -338,7 +352,7 @@ function fuenteRelacional(slug) {
   if (idsSet.size < 2) return null; // sin ninguna relación real del Holon, no hay cuerpo que dibujar
   const ids = [...idsSet];
   const internas = holonAristas.filter(a => idsSet.has(a.source) && idsSet.has(a.target));
-  const { entrada, espina } = calcularEspina(ids, internas);
+  const { entrada, espina } = calcularEspina(ids, internas, slug); // raiz forzada: yo soy mi propia cabeza
   const espinaSet = new Set(espina);
   const wikilinkFrontera = wikilinks.aristas.filter(a => a.relation === 'wikilink' && (idsSet.has(a.source) || idsSet.has(a.target)));
   const idANombre = new Map(wikilinks.nodos.map(n => [n.id, n.nombre]));
@@ -357,6 +371,14 @@ function fuenteRelacional(slug) {
   };
 }
 
+// -- agencia real (§8.45): cuantas aristas reales salen de la propia cabeza -- si es 0, esa
+// fuente en concreto no "hace" nada desde su propio punto de entrada, solo es alcanzada por otros.
+// Calculado una vez, igual para las siete fuentes, no reinventado por tipo.
+function conAgenciaReal(fuente) {
+  fuente.agenciaReal = fuente.aristas.filter(a => a.source === fuente.entrada).length;
+  return fuente;
+}
+
 const entidades = {};
 citasPorEntidad.forEach(c => {
   const fuentes = [];
@@ -366,14 +388,31 @@ citasPorEntidad.forEach(c => {
   c.sheet.forEach(clave => { const f = fuenteSheetMecanismo(clave); if (f) fuentes.push(f); });
   if (c.sheetTabs.length) { const f = fuenteSheetSchema(c.sheetTabs); if (f) fuentes.push(f); }
   if (c.baserowTablas.length) { const f = fuenteBaserowSchema(c.baserowTablas); if (f) fuentes.push(f); }
-  if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes };
+  if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes: fuentes.map(conAgenciaReal) };
 });
 
 // -- respaldo relacional: cualquier ficha real de la bóveda que todavía no tenga cuerpo propio --
 wikilinks.nodos.forEach(n => {
   if (entidades[n.id]) return; // ya tiene un cuerpo mas fuerte (codigo/n8n/mecanismo Sheet), no se duplica
   const f = fuenteRelacional(n.id);
-  if (f) entidades[n.id] = { nombre: n.nombre, fuentes: [f] };
+  if (f) entidades[n.id] = { nombre: n.nombre, fuentes: [conAgenciaReal(f)] };
+});
+
+// -- territorio propio (§8.45): de la columna real de cada entidad relacional, que fraccion de
+// nodos NO aparece en la columna de ninguna otra entidad relacional -- mide cuanto de su cuerpo
+// es identidad exclusiva suya frente a sustrato compartido del mismo componente del Holon.
+// Solo tiene sentido para 'relacional', que es donde varias entidades comparten el mismo grafo base.
+const relacionales = Object.entries(entidades).filter(([, e]) => e.fuentes.some(f => f.tipo === 'relacional'));
+relacionales.forEach(([slug, e]) => {
+  const f = e.fuentes.find(x => x.tipo === 'relacional');
+  const nodosDeOtros = new Set();
+  relacionales.forEach(([slugOtro, eOtro]) => {
+    if (slugOtro === slug) return;
+    eOtro.fuentes.find(x => x.tipo === 'relacional').espina.forEach(id => nodosDeOtros.add(id));
+  });
+  const propios = f.espina.filter(id => id !== slug && !nodosDeOtros.has(id));
+  const base = f.espina.length - 1; // excluye la propia cabeza del calculo
+  f.territorioPropio = base > 0 ? Math.round((propios.length / base) * 100) : 100;
 });
 
 const out = { generadoEn: new Date().toISOString(), totalEntidadesConAnatomia: Object.keys(entidades).length, entidades };
