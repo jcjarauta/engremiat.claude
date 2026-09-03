@@ -41,6 +41,17 @@ function listarMd(ruta) {
   return out;
 }
 
+function listarArchivos(ruta, filtro) {
+  const out = [];
+  for (const nombre of readdirSync(ruta)) {
+    if (nombre === 'node_modules' || nombre.startsWith('.git')) continue;
+    const completa = join(ruta, nombre);
+    if (statSync(completa).isDirectory()) out.push(...listarArchivos(completa, filtro));
+    else if (filtro(nombre)) out.push(completa);
+  }
+  return out;
+}
+
 const censo = JSON.parse(readFileSync(join(DIR, 'censo_entidades.json'), 'utf-8'));
 const grafoNode = JSON.parse(readFileSync(join(DIR, 'grafo_node.json'), 'utf-8'));
 const grafoN8n = JSON.parse(readFileSync(join(DIR, 'grafo_n8n.json'), 'utf-8'));
@@ -59,8 +70,33 @@ const corpusAppsScript = graphify ? graphify.nodes.map(n => ({ s: 'appsscript:' 
 
 // Modulos reales de src/Ids.js -- correspondencia mas fuerte que texto.
 const RUTA_IDS = 'C:\\Users\\pc\\Desktop\\engremiat.claude\\src\\Ids.js';
-const bloqueModulos = readFileSync(RUTA_IDS, 'utf-8').match(/MODULO_POR_ENTIDAD_MVP\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\);/)[1];
+const textoIds = readFileSync(RUTA_IDS, 'utf-8');
+const bloqueModulos = textoIds.match(/MODULO_POR_ENTIDAD_MVP\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\);/)[1];
 const modulosRealesCodigo = new Set([...bloqueModulos.matchAll(/:\s*'([A-Z_]+)'/g)].map(m => slug(m[1])));
+
+// Perspectiva del Sheet maestro (propuesta del operador): cada entidad
+// MVP real tiene un modulo dueño real, computado a partir de
+// ENTIDADES_MVP + MODULO_POR_ENTIDAD_MVP -- las que no tienen entrada
+// explicita son CORE por definicion (lo dice el propio CORE.md real:
+// "toda entidad sin modulo asignado en MODULO_POR_ENTIDAD_MVP es CORE").
+// Nunca visto por el barrido anterior porque "CORE" no aparece como
+// substring en ningun nombre de pestana -- es una relacion de propiedad
+// real, no textual.
+const bloqueEntidades = textoIds.match(/const ENTIDADES_MVP = Object\.freeze\(\{([\s\S]*?)\n\}\);/)[1];
+const modPorEntidad = Object.fromEntries([...bloqueModulos.matchAll(/(\w+):\s*'([A-Z_]+)'/g)].map(m => [m[1], m[2]]));
+const HOJA_POR_MODULO_REAL = {}; // modulo -> [hojas reales]
+for (const m of bloqueEntidades.matchAll(/(\w+):\s*Object\.freeze\(\{\s*hoja:\s*'([^']+)'/g)) {
+  const modulo = modPorEntidad[m[1]] || 'CORE';
+  (HOJA_POR_MODULO_REAL[modulo] ||= []).push(m[2]);
+}
+
+// src/ real de Apps Script (161 ficheros con nombre propio, mas
+// granulares que el unico concat.js que ve Graphify) y los .ps1 reales
+// del ecosistema -- dos fuentes que el barrido anterior tampoco cubria.
+const RUTA_SRC = 'C:\\Users\\pc\\Desktop\\engremiat.claude\\src';
+const RUTA_REPO = 'C:\\Users\\pc\\Desktop\\engremiat.claude';
+const corpusSrc = listarArchivos(RUTA_SRC, n => /\.(js|html)$/.test(n)).map(p => ({ s: 'src:' + p.split(/[\\/]/).pop(), label: p.split(/[\\/]/).pop().replace(/\.(js|html)$/, '') }));
+const corpusPs1 = listarArchivos(RUTA_REPO, n => n.endsWith('.ps1')).map(p => ({ s: 'repo:' + p.replace(RUTA_REPO + '\\', '').replace(/\\/g, '/'), label: p.split(/[\\/]/).pop().replace('.ps1', '') }));
 
 // Transcripciones reales de deliberacion en Telar B2 -- misma fuente real
 // que ya uso consolidar_censo.mjs para confirmar_uso_real_telar.
@@ -72,7 +108,23 @@ const ACERVOS_CON_B2_REAL = new Set(
 // Correspondencias ya verificadas a mano en la pasada anterior (§8.23).
 const CORRESPONDENCIAS_VERIFICADAS_A_MANO = {
   [slug('Verificador de Campos')]: 'tools/verificador_determinista.mjs',
+  [slug('Comunicacion')]: 'src/WebhookTelegramService.js',
+  // Multiples, separadas por coma -- Repository.md es especificamente
+  // sobre Repository.js (leido a mano); ConfigRepository.js es un
+  // fichero real distinto con su propia ficha ya existente
+  // (01_Mundo/Modulos/CORE/ConfigRepository.md) -- no se mezclan aunque
+  // el nombre coincida por texto.
+  [slug('Repository')]: 'src/Repository.js, src/Repository_InsertarRegistro.js, src/Tests_Repository.js, src/Tests_Repository2.js',
 };
+
+// Ruido ya verificado a mano: coincide por texto pero es un sentido
+// distinto de la palabra. "Física" -- InstaladorJerarquiaFisica.js es la
+// jerarquia FISICA (espacial) de talleres de un cliente real, no el
+// concepto filosofico ya documentado en Física.md (Estilo/Coordinador/
+// GASTO_API). Misma trampa que ya se encontro en §8.23 con
+// "continuarJerarquiaFisicaLaTroballa" -- esta vez en src/, no en
+// Apps Script, pero el mismo homonimo.
+const NUNCA_VINCULAR = new Set([slug('Física')]);
 
 // Que fichas reales YA tienen "## Vinculo real" escrito.
 const ficherosVault = listarMd(RUTA_VAULT);
@@ -88,12 +140,30 @@ for (const ruta of ficherosVault) {
 
 function evidenciaPara(e) {
   const cs = e.slug, ct = tokens(e.nombre);
+  if (NUNCA_VINCULAR.has(cs)) return {};
   const hits = {};
   if (modulosRealesCodigo.has(cs)) hits.modulo_ids_js = ['src/Ids.js#MODULO_POR_ENTIDAD_MVP.' + e.nombre.toUpperCase()];
-  if (CORRESPONDENCIAS_VERIFICADAS_A_MANO[cs]) hits.verificado_a_mano = [CORRESPONDENCIAS_VERIFICADAS_A_MANO[cs]];
+  // Perspectiva del Sheet maestro: relacion de propiedad real (que hojas
+  // reales tiene cada modulo, via ENTIDADES_MVP+MODULO_POR_ENTIDAD_MVP),
+  // no coincidencia de texto -- por eso CORE nunca aparecia antes: "CORE"
+  // no es substring de ninguna pestana, es su dueno real.
+  if (HOJA_POR_MODULO_REAL[e.nombre.toUpperCase()]) {
+    hits.sheet_maestro = HOJA_POR_MODULO_REAL[e.nombre.toUpperCase()];
+  }
+  if (CORRESPONDENCIAS_VERIFICADAS_A_MANO[cs]) hits.verificado_a_mano = CORRESPONDENCIAS_VERIFICADAS_A_MANO[cs].split(', ');
   if (ACERVOS_CON_B2_REAL.has(cs)) hits.telar_b2_real = ['tools/gobierno/telar/b2/respuestas_originales/'];
-  const nodeHits = [...new Set(corpusNode.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
-  if (nodeHits.length) hits.node = nodeHits;
+  // Si ya hay una correspondencia verificada a mano, no se anade tambien
+  // la coincidencia difusa por texto -- evitaria mezclar, p.ej.,
+  // Repository.js (correcto) con ConfigRepository.js (ficha real
+  // distinta) solo porque el nombre lo contiene.
+  if (!CORRESPONDENCIAS_VERIFICADAS_A_MANO[cs]) {
+    const nodeHits = [...new Set(corpusNode.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
+    if (nodeHits.length) hits.node = nodeHits;
+    const srcHits = [...new Set(corpusSrc.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
+    if (srcHits.length) hits.src = srcHits;
+    const ps1Hits = [...new Set(corpusPs1.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
+    if (ps1Hits.length) hits.ps1 = ps1Hits;
+  }
   const n8nHits = [...new Set(corpusN8n.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
   if (n8nHits.length) hits.n8n = n8nHits;
   const telarHits = [...new Set(corpusTelar.filter(x => coincide(cs, ct, x.label)).map(x => x.s))];
@@ -122,7 +192,7 @@ for (const e of confirmadas) {
   const totalFuentesPrecisas = Object.values(hits).flat().length;
   let estado;
   if (yaTiene) estado = 'ya_tiene';
-  else if (totalFuentesPrecisas >= 1 && Object.keys(hits).some(k => ['modulo_ids_js', 'node', 'n8n', 'baserow', 'sheet', 'telar', 'telar_b2_real', 'verificado_a_mano'].includes(k))) estado = 'evidencia_precisa';
+  else if (totalFuentesPrecisas >= 1 && Object.keys(hits).some(k => ['modulo_ids_js', 'node', 'n8n', 'baserow', 'sheet', 'telar', 'telar_b2_real', 'verificado_a_mano', 'src', 'ps1', 'sheet_maestro'].includes(k))) estado = 'evidencia_precisa';
   else estado = 'evidencia_difusa_revisar_a_mano';
   resultado.push({ nombre: e.nombre, rutaFicha, estado, hits });
 }

@@ -2,33 +2,8 @@
   {
     "nombre": "Cliente",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Cliente.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.CLIENTE"
-      ],
-      "node": [
-        "tools/constructor/montar-cliente.mjs",
-        "tools/constructor/montar-cliente.test.mjs",
-        "tools/gobierno/actualizar_libreria_cliente.mjs",
-        "tools/gobierno/chequear_libreria_clientes.mjs",
-        "tools/gobierno/spike_concilio_coop/prueba_cliente.mjs",
-        "tools/gobierno/spike_concilio_coop/prueba_cliente2.mjs",
-        "dato:clientes.json",
-        "recurso:38_CLIENTE"
-      ],
-      "sheet": [
-        "sheet:39_PEDIDO_CLIENTE",
-        "sheet:40_PEDIDO_CLIENTE_LINEA",
-        "sheet:38_CLIENTE"
-      ],
-      "baserow": [
-        "baserow:PAQUETE_CLIENTE"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Ejecutor",
@@ -39,25 +14,14 @@
   {
     "nombre": "Cronista",
     "rutaFicha": "02_Personajes\\Cronista.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "dato:cronista-segmentar-generador.json"
-      ],
-      "n8n": [
-        "Cronista - Segmentar documento en tareas (con puerta humana)"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Concilio",
     "rutaFicha": "02_Personajes\\Concilio.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "telar": [
-        "telar:concilio_convocando"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Coordinador",
@@ -74,78 +38,48 @@
   {
     "nombre": "Relevo",
     "rutaFicha": "02_Personajes\\Relevo.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "dato:04_esperando_relevo.json"
-      ],
-      "telar": [
-        "telar:esperando_relevo"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Telar",
     "rutaFicha": "01_Mundo\\Espacios\\Telar.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "dato:telar-interactivo.json"
-      ],
-      "n8n": [
-        "Telar Interactivo"
-      ],
-      "baserow": [
-        "baserow:TELAR_SESION",
-        "baserow:TELAR_BIBLIOTECA"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Oportunidad",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Oportunidad.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.OPORTUNIDAD"
-      ],
-      "sheet": [
-        "sheet:44_OPORTUNIDAD"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Baserow",
     "rutaFicha": "01_Mundo\\Espacios\\Baserow.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
-        "dato:estructura_baserow.json"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "GASTO_API",
     "rutaFicha": "01_Mundo\\Recursos\\GASTO_API.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "recurso:GASTO_API"
-      ],
-      "baserow": [
-        "baserow:GASTO_API"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "CORE",
     "rutaFicha": "01_Mundo\\Modulos\\CORE\\CORE.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "sheet_maestro": [
+        "01_CAMPANAS",
+        "02_PROYECTOS",
+        "03_PRODUCTOS",
+        "04_PROYECTO_PRODUCTO",
+        "05_PROCESOS",
+        "06_TAREAS",
+        "16_ASIGNACION",
+        "17_RELACION"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -154,120 +88,68 @@
   {
     "nombre": "92_BUS_TRABAJO",
     "rutaFicha": "01_Mundo\\Recursos\\92_BUS_TRABAJO.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/bus_trabajo.mjs"
-      ],
-      "sheet": [
-        "sheet:92_BUS_TRABAJO"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "DOCUMENTO_ENGREMIAT",
     "rutaFicha": "01_Mundo\\Recursos\\DOCUMENTO_ENGREMIAT.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "recurso:DOCUMENTO_ENGREMIAT"
-      ],
-      "baserow": [
-        "baserow:DOCUMENTO_ENGREMIAT"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Impacto",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Impacto.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.IMPACTO"
-      ],
-      "sheet": [
-        "sheet:37_ETIQUETA_IMPACTO"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Bus de trabajo",
     "rutaFicha": "08_Oficios\\Bus de trabajo.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/bus_trabajo.mjs"
-      ],
-      "sheet": [
-        "sheet:92_BUS_TRABAJO"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Salud del ecosistema",
     "rutaFicha": "08_Oficios\\Salud del ecosistema.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/salud_ecosistema.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Actualizar libreria cliente",
     "rutaFicha": "08_Oficios\\Actualizar libreria cliente.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/actualizar_libreria_cliente.mjs",
-        "tools/gobierno/chequear_libreria_clientes.mjs"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Consola",
     "rutaFicha": "01_Mundo\\Espacios\\Consola.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "sheet": [
-        "sheet:97_ESTADO_CONSOLA"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Puerta Humana",
     "rutaFicha": "03_Reglas\\Puerta Humana.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "n8n": [
-        "Cronista - Segmentar documento en tareas (con puerta humana)"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Acervo Prompter",
     "rutaFicha": "02_Personajes\\Acervos\\Acervo Prompter.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/acervo_prompter.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Repository",
     "rutaFicha": "01_Mundo\\Modulos\\CORE\\Repository.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "verificado_a_mano": [
+        "src/Repository.js",
+        "src/Repository_InsertarRegistro.js",
+        "src/Tests_Repository.js",
+        "src/Tests_Repository2.js"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -276,31 +158,23 @@
   {
     "nombre": "Verificador de Capacidades",
     "rutaFicha": "02_Personajes\\Verificadores\\Verificador de Capacidades.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/verificador_capacidades.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Ventas",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Ventas.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.VENTAS"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Aprovisionamiento",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Aprovisionamiento.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "src": [
+        "src:AprovisionamientoService.js"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -309,34 +183,23 @@
   {
     "nombre": "Convocatorias",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Convocatorias.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.CONVOCATORIAS"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Economico",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Economico.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.ECONOMICO"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Comunicacion",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Comunicacion.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "verificado_a_mano": [
+        "src/WebhookTelegramService.js"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -351,8 +214,12 @@
   {
     "nombre": "EstructuraInicial",
     "rutaFicha": "01_Mundo\\Modulos\\CORE\\EstructuraInicial.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "src": [
+        "src:EstructuraInicialDatos.js",
+        "src:EstructuraInicialService.js"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -362,30 +229,22 @@
     "nombre": "Física",
     "rutaFicha": "03_Reglas\\Física.md",
     "estado": "evidencia_difusa_revisar_a_mano",
-    "hits": {
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "hits": {}
   },
   {
     "nombre": "Compras",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Compras.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "modulo_ids_js": [
-        "src/Ids.js#MODULO_POR_ENTIDAD_MVP.COMPRAS"
-      ],
-      "appsscript": [
-        "appsscript:engremiat-live.concat.js"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Gantt",
     "rutaFicha": "01_Mundo\\Modulos\\Modulos_acoplables\\Gantt.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "src": [
+        "src:GanttPlanReal.html"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -394,49 +253,35 @@
   {
     "nombre": "Chequear libreria clientes",
     "rutaFicha": "08_Oficios\\Chequear libreria clientes.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/actualizar_libreria_cliente.mjs",
-        "tools/gobierno/chequear_libreria_clientes.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Chequear consistencia",
     "rutaFicha": "08_Oficios\\Chequear consistencia.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/consola/chequear_consistencia.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Extraer decisiones",
     "rutaFicha": "08_Oficios\\Extraer decisiones.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/consola/extraer_decisiones.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Cerrar ciclo",
     "rutaFicha": "08_Oficios\\Cerrar ciclo.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/cerrar_ciclo.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Ejecutar chequeo libreria",
     "rutaFicha": "08_Oficios\\Ejecutar chequeo libreria.md",
-    "estado": "evidencia_difusa_revisar_a_mano",
+    "estado": "evidencia_precisa",
     "hits": {
+      "ps1": [
+        "repo:tools/gobierno/ejecutar_chequeo_libreria.ps1"
+      ],
       "appsscript": [
         "appsscript:engremiat-live.concat.js"
       ]
@@ -445,71 +290,43 @@
   {
     "nombre": "Exportador de gasto",
     "rutaFicha": "08_Oficios\\Exportador de gasto.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/exportador_prometheus_gasto.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Puente historia leyes",
     "rutaFicha": "08_Oficios\\Puente historia leyes.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/gobierno/puente_historia_leyes.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Regenerar estatico",
     "rutaFicha": "08_Oficios\\Regenerar estatico.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "node": [
-        "tools/consola/regenerar_estatico.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Verificador de Campos",
     "rutaFicha": "02_Personajes\\Verificadores\\Verificador de Campos.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "verificado_a_mano": [
-        "tools/verificador_determinista.mjs"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Acervo Filosofico",
     "rutaFicha": "02_Personajes\\Acervos\\Acervo Filosofico.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "telar_b2_real": [
-        "tools/gobierno/telar/b2/respuestas_originales/"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Acervo Tecnico",
     "rutaFicha": "02_Personajes\\Acervos\\Acervo Tecnico.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "telar_b2_real": [
-        "tools/gobierno/telar/b2/respuestas_originales/"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   },
   {
     "nombre": "Acervo Logistico",
     "rutaFicha": "02_Personajes\\Acervos\\Acervo Logistico.md",
-    "estado": "evidencia_precisa",
-    "hits": {
-      "telar_b2_real": [
-        "tools/gobierno/telar/b2/respuestas_originales/"
-      ]
-    }
+    "estado": "ya_tiene",
+    "hits": {}
   }
 ]

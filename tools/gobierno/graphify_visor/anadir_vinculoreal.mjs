@@ -27,12 +27,17 @@ const SISTEMA_POR_CLAVE = {
   n8n: 'n8n',
   baserow: 'Baserow',
   sheet: 'Sheet',
+  sheet_maestro: 'Sheet',
   telar: 'Telar',
   telar_b2_real: 'Telar (B2)',
   verificado_a_mano: 'repo',
+  src: 'repo',
+  ps1: 'repo',
 };
 
 function limpiarRecordId(clave, valor) {
+  if (clave === 'src') return 'src/' + valor.replace(/^src:/, '');
+  if (clave === 'ps1') return valor.replace(/^repo:/, '');
   return valor.replace(/^(sheet|baserow|telar|recurso|dato):/, '');
 }
 
