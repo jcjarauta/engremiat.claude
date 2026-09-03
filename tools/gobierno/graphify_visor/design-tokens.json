@@ -59,6 +59,19 @@
       "destino": { "$value": "#14b8a6", "$type": "color", "$extensions": { "engremiat.estado": "reservado, 0 miembros reales hoy" } }
     },
 
+    "relacion": {
+      "$description": "Los 8 verbos reales del Holon (§8.33) + wikilink narrativo -- usados en las aristas de grafo_maestro.html/holon.html. Nota real: 'operador' en color.rol usa un valor distinto de 'opera_en' aqui, aunque el rol Operador se defina como opera_en dominante -- dos paletas construidas en momentos distintos de la sesion para propósitos distintos (leyenda de arista vs. filtro de familia), nunca reconciliadas. Ver $extensions.",
+      "opera_en": { "$value": "#4c9aff", "$type": "color" },
+      "depende_de": { "$value": "#e8a33d", "$type": "color" },
+      "gobierna_a": { "$value": "#ef476f", "$type": "color" },
+      "alimenta_a": { "$value": "#4fce6f", "$type": "color" },
+      "verifica_a": { "$value": "#f4a261", "$type": "color" },
+      "corrige_a": { "$value": "#ff6b6b", "$type": "color" },
+      "activa_a": { "$value": "#06d6a0", "$type": "color" },
+      "parte_de": { "$value": "#9a8cff", "$type": "color" },
+      "wikilink": { "$value": "#2c2d34", "$type": "color" }
+    },
+
     "base": {
       "$description": "Paleta neutra del visor -- panel oscuro de desarrollador (distinto, a proposito, del pergamino/tinta de resumen_universo.html, que es narrativo, no de trabajo).",
       "fondo": { "$value": "#0f1013", "$type": "color" },
@@ -74,7 +87,8 @@
   "$extensions": {
     "engremiat.colisionesConocidas": [
       "color.fuente.n8n (#4fce6f) coincide por accidente con color.equipo.frontera -- disenadas en momentos distintos de la sesion, sin coordinarse. No es la misma idea (una fuente de codigo vs un equipo de Personajes) aunque comparta valor.",
-      "color.fuente.node (#e8a33d) coincide por accidente con color.equipo.guardia, mismo motivo."
+      "color.fuente.node (#e8a33d) coincide por accidente con color.equipo.guardia, mismo motivo.",
+      "color.relacion.opera_en (#4c9aff) NO coincide con color.rol.operador (#2dd4bf) pese a que el rol Operador se calcula justamente como opera_en dominante -- misma idea real, dos paletas sin reconciliar, documentado en vez de fusionado a ciegas."
     ]
   }
 }

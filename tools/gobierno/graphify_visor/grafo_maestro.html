@@ -4,20 +4,21 @@
 <meta charset="UTF-8">
 <title>Engremiat -- grafo maestro real</title>
 <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
 <style>
-  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  html, body { margin: 0; height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
   #layout { display: flex; height: 100vh; }
   #red { flex: 1; }
-  #panel { width: 360px; padding: 18px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  #panel { width: 360px; padding: 18px; background: var(--color-base-panel); overflow-y: auto; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
   h2 { margin: 0 0 4px; font-size: 17px; }
-  .hint { color: #9a9aa2; font-size: 12px; line-height: 1.5; }
-  input[type=text] { width: 100%; background: #0f1013; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
-  .seccion { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; }
-  .seccion h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #9a9aa2; margin: 0 0 8px; }
+  .hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.5; }
+  input[type=text] { width: 100%; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
+  .seccion { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; }
+  .seccion h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 0 0 8px; }
   .fila { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 5px; cursor: pointer; padding: 3px 4px; margin: 0 -4px 3px; border-radius: 4px; }
-  .fila:hover { background: #202126; }
+  .fila:hover { background: var(--color-base-borde-suave); }
   .fila.activa { background: #24262e; }
-  .fila .n { margin-left: auto; color: #6b6c76; font-variant-numeric: tabular-nums; }
+  .fila .n { margin-left: auto; color: var(--color-base-texto-tenue); font-variant-numeric: tabular-nums; }
   .marca { width: 12px; height: 12px; border-radius: 3px; flex: none; }
   .marca.circulo { border-radius: 50%; }
   .marca.triangulo { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
@@ -26,18 +27,18 @@
   .marca.estrella { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
   .fila-rel { display: flex; align-items: center; gap: 8px; font-size: 11.5px; margin-bottom: 5px; }
   .barra-rel { width: 20px; height: 3px; flex: none; border-radius: 2px; }
-  #reset { display: none; font-size: 11px; color: #9a9aa2; text-decoration: underline; cursor: pointer; margin-top: 8px; }
+  #reset { display: none; font-size: 11px; color: var(--color-base-texto-suave); text-decoration: underline; cursor: pointer; margin-top: 8px; }
   label.toggle { display: flex; align-items: center; gap: 7px; font-size: 12px; cursor: pointer; margin-top: 6px; }
-  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
   #ficha h3 { margin: 0 0 6px; font-size: 14px; }
   #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
   .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; margin-right: 4px; margin-bottom: 4px; }
-  .arista { font-size: 11.5px; color: #9a9aa2; padding: 3px 0; border-bottom: 1px solid #202126; }
-  .arista b { color: #e7e7ea; }
+  .arista { font-size: 11.5px; color: var(--color-base-texto-suave); padding: 3px 0; border-bottom: 1px solid var(--color-base-borde-suave); }
+  .arista b { color: var(--color-base-texto); }
   .arista.wiki { color: #5a5b63; }
   #resultados { max-height: 160px; overflow-y: auto; margin-top: 6px; }
   .resultado { font-size: 12px; padding: 4px 6px; cursor: pointer; border-radius: 4px; }
-  .resultado:hover { background: #202126; }
+  .resultado:hover { background: var(--color-base-borde-suave); }
 </style>
 </head>
 <body>
@@ -62,9 +63,9 @@
 
     <div class="seccion">
       <h3>Equipos reales (Personaje)</h3>
-      <div class="fila fila-grupo" data-clave="equipo" data-valor="concilio"><span class="marca circulo" style="background:#7c93e8;"></span>Concilio</div>
-      <div class="fila fila-grupo" data-clave="equipo" data-valor="guardia"><span class="marca circulo" style="background:#e8a33d;"></span>Guardia</div>
-      <div class="fila fila-grupo" data-clave="equipo" data-valor="frontera"><span class="marca circulo" style="background:#4fce6f;"></span>Frontera</div>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="concilio"><span class="marca circulo" style="background:var(--color-equipo-concilio);"></span>Concilio</div>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="guardia"><span class="marca circulo" style="background:var(--color-equipo-guardia);"></span>Guardia</div>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="frontera"><span class="marca circulo" style="background:var(--color-equipo-frontera);"></span>Frontera</div>
       <div id="reset">✕ ver todo el grafo</div>
     </div>
 
@@ -77,31 +78,38 @@
   </div>
 </div>
 <script>
-const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce6f' };
+// lee el color real ya consolidado en tokens.css (§8.47/48) -- nunca un hex propio de este fichero
+function tokenColor(nombre) { return getComputedStyle(document.documentElement).getPropertyValue('--' + nombre).trim(); }
+
+const COLOR_EQUIPO = { concilio: tokenColor('color-equipo-concilio'), guardia: tokenColor('color-equipo-guardia'), frontera: tokenColor('color-equipo-frontera') };
 const CARRIL_X = { concilio: -560, guardia: 0, frontera: 560 };
 
 // tipo -> {color, shape, marca (para la leyenda CSS), etiqueta}
 const TIPO = {
-  personaje:            { color: '#8a8d99', shape: 'dot',          marca: 'circulo',      etiqueta: 'Personaje' },
-  espacio:              { color: '#c76bd6', shape: 'box',          marca: '',             etiqueta: 'Espacio' },
-  recurso:              { color: '#e85c8a', shape: 'diamond',      marca: 'diamante',     etiqueta: 'Recurso' },
-  regla:                { color: '#5c5f6b', shape: 'triangle',     marca: 'triangulo',    etiqueta: 'Regla' },
-  modulo:               { color: '#4ea8de', shape: 'square',       marca: '',             etiqueta: 'Módulo' },
-  oficio:               { color: '#f4a261', shape: 'star',         marca: 'estrella',     etiqueta: 'Oficio' },
-  hilo:                 { color: '#06d6a0', shape: 'ellipse',      marca: 'circulo',      etiqueta: 'Hilo' },
-  arco:                 { color: '#ef476f', shape: 'triangleDown', marca: 'triangulo-inv',etiqueta: 'Arco' },
-  sesion:               { color: '#118ab2', shape: 'database',     marca: '',             etiqueta: 'Sesión' },
-  mapa:                 { color: '#8338ec', shape: 'dot',          marca: 'circulo',      etiqueta: 'Mapa' },
-  estilo:               { color: '#ffbe0b', shape: 'dot',          marca: 'circulo',      etiqueta: 'Estilo' },
-  referencia_sin_ficha: { color: '#4a4b52', shape: 'dot',          marca: 'circulo',      etiqueta: 'Referencia sin ficha' },
-  sin_tipo:             { color: '#2e2f35', shape: 'dot',          marca: 'circulo',      etiqueta: 'Sin tipo' },
+  personaje:            { color: tokenColor('color-tipo-personaje'),            shape: 'dot',          marca: 'circulo',      etiqueta: 'Personaje' },
+  espacio:              { color: tokenColor('color-tipo-espacio'),              shape: 'box',          marca: '',             etiqueta: 'Espacio' },
+  recurso:              { color: tokenColor('color-tipo-recurso'),              shape: 'diamond',      marca: 'diamante',     etiqueta: 'Recurso' },
+  regla:                { color: tokenColor('color-tipo-regla'),                shape: 'triangle',     marca: 'triangulo',    etiqueta: 'Regla' },
+  modulo:               { color: tokenColor('color-tipo-modulo'),               shape: 'square',       marca: '',             etiqueta: 'Módulo' },
+  oficio:               { color: tokenColor('color-tipo-oficio'),               shape: 'star',         marca: 'estrella',     etiqueta: 'Oficio' },
+  hilo:                 { color: tokenColor('color-tipo-hilo'),                 shape: 'ellipse',      marca: 'circulo',      etiqueta: 'Hilo' },
+  arco:                 { color: tokenColor('color-tipo-arco'),                 shape: 'triangleDown', marca: 'triangulo-inv',etiqueta: 'Arco' },
+  sesion:               { color: tokenColor('color-tipo-sesion'),               shape: 'database',     marca: '',             etiqueta: 'Sesión' },
+  mapa:                 { color: tokenColor('color-tipo-mapa'),                 shape: 'dot',          marca: 'circulo',      etiqueta: 'Mapa' },
+  estilo:               { color: tokenColor('color-tipo-estilo'),               shape: 'dot',          marca: 'circulo',      etiqueta: 'Estilo' },
+  referencia_sin_ficha: { color: tokenColor('color-tipo-referencia_sin_ficha'), shape: 'dot',          marca: 'circulo',      etiqueta: 'Referencia sin ficha' },
+  sin_tipo:             { color: tokenColor('color-tipo-sin_tipo'),             shape: 'dot',          marca: 'circulo',      etiqueta: 'Sin tipo' },
 };
 
 const COLOR_REL = {
-  opera_en: '#4c9aff', depende_de: '#e8a33d', gobierna_a: '#ef476f', alimenta_a: '#4fce6f',
-  verifica_a: '#f4a261', corrige_a: '#ff6b6b', activa_a: '#06d6a0', parte_de: '#9a8cff',
+  opera_en: tokenColor('color-relacion-opera_en'), depende_de: tokenColor('color-relacion-depende_de'),
+  gobierna_a: tokenColor('color-relacion-gobierna_a'), alimenta_a: tokenColor('color-relacion-alimenta_a'),
+  verifica_a: tokenColor('color-relacion-verifica_a'), corrige_a: tokenColor('color-relacion-corrige_a'),
+  activa_a: tokenColor('color-relacion-activa_a'), parte_de: tokenColor('color-relacion-parte_de'),
 };
-const COLOR_WIKILINK = '#2c2d34';
+const COLOR_WIKILINK = tokenColor('color-relacion-wikilink');
+const COLOR_FONDO = tokenColor('color-base-fondo');
+const COLOR_TEXTO = tokenColor('color-base-texto');
 
 function colorDe(n) {
   if (n.tipo === 'personaje' && n.equipo) return COLOR_EQUIPO[n.equipo];
@@ -114,7 +122,7 @@ function colorDe(n) {
 function formaConEtiquetaInterior(shape) { return shape === 'box' || shape === 'square'; }
 function colorFuenteDe(n) {
   const def = TIPO[n.tipo] || TIPO.sin_tipo;
-  return formaConEtiquetaInterior(def.shape) ? '#0f1013' : '#e7e7ea';
+  return formaConEtiquetaInterior(def.shape) ? COLOR_FONDO : COLOR_TEXTO;
 }
 
 // tamano real por corroboracion cruzada del censo (centralidad ya calculada en analizar_entidades_reales.mjs) --
@@ -157,7 +165,7 @@ async function cargar() {
     return {
       id: n.id, label: n.nombre,
       title: n.tipo + (n.equipo ? ' · ' + n.equipo : '') + (n.carpeta ? ' · ' + n.carpeta : '') + ' · corroboración ' + centralidadDe(n.id),
-      color: { background: colorDe(n), border: '#0f1013' },
+      color: { background: colorDe(n), border: COLOR_FONDO },
       font: { color: colorFuenteDe(n), size: 11, face: 'system-ui' },
       shape: def.shape,
       size: tamano,
@@ -173,7 +181,7 @@ async function cargar() {
     return {
       id: i, from: a.source, to: a.target, arrows: 'to',
       label: esWiki ? '' : a.relation,
-      font: { color: '#9a9aa2', size: 8, strokeWidth: 0, background: '#0f1013' },
+      font: { color: tokenColor('color-base-texto-suave'), size: 8, strokeWidth: 0, background: COLOR_FONDO },
       color: { color: esWiki ? COLOR_WIKILINK : (COLOR_REL[a.relation] || '#3a3b47') },
       width: esWiki ? 0.6 : 2,
       length: esWiki ? 90 : 170,
@@ -261,7 +269,7 @@ async function cargar() {
       const mostrarEtiqueta = n.id === nodoEnHover || (enGrupo && (grupoActivo || etiquetaPorZoom));
       return {
         id: n.id,
-        color: { background: enGrupo ? colorDe(n) : '#25262b', border: '#0f1013' },
+        color: { background: enGrupo ? colorDe(n) : '#25262b', border: COLOR_FONDO },
         font: { color: mostrarEtiqueta ? colorFuenteDe(n) : 'rgba(0,0,0,0)', size: 11, face: 'system-ui' },
       };
     }));

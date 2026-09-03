@@ -4,34 +4,35 @@
 <meta charset="UTF-8">
 <title>Engremiat -- anatomía real de una entidad</title>
 <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
 <style>
-  html, body { margin: 0; min-height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  html, body { margin: 0; min-height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
   #layout { display: flex; min-height: 100vh; }
-  #panel { width: 320px; flex: none; padding: 18px; background: #17181c; border-right: 1px solid #2c2d33; box-sizing: border-box; }
+  #panel { width: 320px; flex: none; padding: 18px; background: var(--color-base-panel); border-right: 1px solid var(--color-base-borde); box-sizing: border-box; }
   #principal { flex: 1; padding: 20px 28px; box-sizing: border-box; overflow-y: auto; }
   h1 { font-size: 18px; margin: 0 0 4px; }
   h2 { margin: 0; font-size: 16px; }
-  .hint { color: #9a9aa2; font-size: 12px; line-height: 1.55; }
-  input[type=text] { width: 100%; background: #0f1013; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
+  .hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.55; }
+  input[type=text] { width: 100%; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
   #lista { margin-top: 12px; max-height: calc(100vh - 130px); overflow-y: auto; }
   .fila-entidad { padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; display: flex; justify-content: space-between; gap: 6px; }
-  .fila-entidad:hover { background: #202126; }
+  .fila-entidad:hover { background: var(--color-base-borde-suave); }
   .fila-entidad.activa { background: #24263a; color: #a9b8ff; }
-  .fila-entidad .fuentes { color: #6b6c76; font-size: 10.5px; white-space: nowrap; }
-  #vacio { color: #6b6c76; font-size: 13px; margin-top: 60px; text-align: center; }
+  .fila-entidad .fuentes { color: var(--color-base-texto-tenue); font-size: 10.5px; white-space: nowrap; }
+  #vacio { color: var(--color-base-texto-tenue); font-size: 13px; margin-top: 60px; text-align: center; }
   .cuerpo-cabecera { margin-bottom: 18px; }
-  .fuente-card { background: #17181c; border: 1px solid #2c2d33; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
-  .fuente-head { padding: 12px 16px; border-bottom: 1px solid #2c2d33; display: flex; align-items: center; gap: 10px; }
+  .fuente-card { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+  .fuente-head { padding: 12px 16px; border-bottom: 1px solid var(--color-base-borde); display: flex; align-items: center; gap: 10px; }
   .badge-tipo { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
-  .fuente-stats { margin-left: auto; color: #6b6c76; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .fuente-stats { margin-left: auto; color: var(--color-base-texto-tenue); font-size: 11.5px; font-variant-numeric: tabular-nums; }
   .fuente-canvas { height: 420px; }
-  .leyenda-mini { display: flex; gap: 14px; padding: 8px 16px; font-size: 11px; color: #9a9aa2; border-top: 1px solid #202126; }
+  .leyenda-mini { display: flex; gap: 14px; padding: 8px 16px; font-size: 11px; color: var(--color-base-texto-suave); border-top: 1px solid var(--color-base-borde-suave); }
   .leyenda-mini span { display: inline-flex; align-items: center; gap: 5px; }
   .marca { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
   .fila-familia { display: flex; justify-content: space-between; padding: 5px 6px; margin: 0 -6px; border-radius: 5px; cursor: pointer; font-size: 12px; }
-  .fila-familia:hover { background: #202126; }
+  .fila-familia:hover { background: var(--color-base-borde-suave); }
   .fila-familia.activa { background: #24263a; color: #a9b8ff; }
-  .fila-familia .n { color: #6b6c76; font-variant-numeric: tabular-nums; }
+  .fila-familia .n { color: var(--color-base-texto-tenue); font-variant-numeric: tabular-nums; }
   .badge-rol { font-size: 10.5px; padding: 3px 8px; border-radius: 4px; background: #24262e; color: #c7c8d6; border: 1px solid #33343d; }
 </style>
 </head>
@@ -53,8 +54,21 @@
   </div>
 </div>
 <script>
-const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d', sheet: '#e85c8a', sheet_schema: '#f28a9a', baserow_schema: '#c76bd6', relacional: '#9a8cff' };
+// lee el color real ya consolidado en tokens.css (§8.47/48) -- nunca un hex propio de este fichero
+function tokenColor(nombre) { return getComputedStyle(document.documentElement).getPropertyValue('--' + nombre).trim(); }
+// las 15 familias reales de calcularRolReal() ya tienen su propio token color.rol.* (§8.46/47) --
+// solo hace falta convertir "Esquema dependiente" -> "esquema_dependiente" para encontrarlo
+function slugRol(rol) { return rol.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_'); }
+function colorRol(rol) { return tokenColor('color-rol-' + slugRol(rol)) || tokenColor('color-base-texto-suave'); }
+
+const COLOR_FUENTE = {
+  n8n: tokenColor('color-fuente-n8n'), apps_script: tokenColor('color-fuente-apps_script'), node: tokenColor('color-fuente-node'),
+  sheet: tokenColor('color-fuente-sheet'), sheet_schema: tokenColor('color-fuente-sheet_schema'),
+  baserow_schema: tokenColor('color-fuente-baserow_schema'), relacional: tokenColor('color-fuente-relacional'),
+};
 const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node', sheet: 'Sheet', sheet_schema: 'Sheet (esquema)', baserow_schema: 'Baserow (esquema)', relacional: 'Bóveda' };
+const COLOR_FONDO = tokenColor('color-base-fondo');
+const COLOR_TEXTO = tokenColor('color-base-texto');
 
 let datos = null;
 let redesActivas = [];
@@ -80,7 +94,7 @@ function renderFamilias(entradas) {
   entradas.forEach(([, v]) => { new Set(v.fuentes.map(f => f.rol)).forEach(rol => { conteo[rol] = (conteo[rol] || 0) + 1; }); });
   const familias = document.getElementById('familias');
   familias.innerHTML = Object.entries(conteo).sort((a, b) => b[1] - a[1]).map(([rol, n]) =>
-    `<div class="fila-familia" data-rol="${rol}"><span>${rol}</span><span class="n">${n}</span></div>`
+    `<div class="fila-familia" data-rol="${rol}"><span><span class="marca" style="background:${colorRol(rol)}; margin-right:6px;"></span>${rol}</span><span class="n">${n}</span></div>`
   ).join('');
   familias.querySelectorAll('.fila-familia').forEach(el => {
     el.addEventListener('click', () => {
@@ -122,7 +136,7 @@ function mostrarEntidad(slug) {
       <div class="fuente-card">
         <div class="fuente-head">
           <span class="badge-tipo" style="background:${COLOR_FUENTE[f.tipo]}33; color:${COLOR_FUENTE[f.tipo]};">${ETIQUETA_TIPO[f.tipo]}</span>
-          <span class="badge-rol">${f.rol}</span>
+          <span class="badge-rol" style="background:${colorRol(f.rol)}33; color:${colorRol(f.rol)}; border-color:${colorRol(f.rol)}55;">${f.rol}</span>
           <span>${f.etiqueta}</span>
           <span class="fuente-stats">${f.nodos.length} nodos reales · columna de ${f.espina.length} · agencia ${f.agenciaReal}${f.territorioPropio !== undefined ? ' · territorio propio ' + f.territorioPropio + '%' : ''}</span>
         </div>
@@ -222,8 +236,8 @@ function dibujarFuente(f, contenedor) {
       shape: esCabeza ? 'star' : 'dot',
       size: esCabeza ? 20 : (enEspina ? 14 : 8),
       x: p.x, y: p.y, fixed: true, physics: false,
-      color: { background: esCabeza ? '#ffffff' : (enEspina ? colorFuente : '#3a3b42'), border: '#0f1013' },
-      font: { color: '#e7e7ea', size: enEspina ? 12 : 10, face: 'system-ui' },
+      color: { background: esCabeza ? '#ffffff' : (enEspina ? colorFuente : '#3a3b42'), border: COLOR_FONDO },
+      font: { color: COLOR_TEXTO, size: enEspina ? 12 : 10, face: 'system-ui' },
     };
   }));
   const edges = new vis.DataSet(f.aristas.map((a, i) => ({
@@ -231,7 +245,7 @@ function dibujarFuente(f, contenedor) {
     color: { color: a.enEspina ? colorFuente : '#2a2b31' },
     width: a.enEspina ? 2.5 : 0.8,
     label: a.relacion && a.relacion !== 'import' ? a.relacion : '',
-    font: { color: '#6b6c76', size: 8, strokeWidth: 0, background: '#0f1013' },
+    font: { color: tokenColor('color-base-texto-tenue'), size: 8, strokeWidth: 0, background: COLOR_FONDO },
     smooth: { type: 'continuous', roundness: 0.35 },
   })));
   const network = new vis.Network(contenedor, { nodes, edges }, {

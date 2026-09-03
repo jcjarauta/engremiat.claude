@@ -220,7 +220,7 @@
     },
     {
       "fichero": "tools/gobierno/graphify_visor/design-tokens.json",
-      "que_hace": "§8.47: fuente de verdad real del estilo visual de Engremiat, formato DTCG (Design Tokens Community Group, estandar 2026) -- consolida los colores de equipo/tipo/fuente/rol que hoy viven repetidos y ya ligeramente divergentes en grafo_maestro.html/holon.html/anatomia.html (colisiones reales documentadas en $extensions: color.fuente.n8n coincide por accidente con color.equipo.frontera, color.fuente.node con color.equipo.guardia). Roles reales sin miembros hoy (Guardian/Proveedor/Decisor/Actor/Destino) marcados 'reservado' en vez de omitidos, para no inventar el color cuando aparezca el primero. No migra las vistas existentes todavia -- eso es el siguiente paso, pendiente."
+      "que_hace": "§8.47-48: fuente de verdad real del estilo visual de Engremiat, formato DTCG (Design Tokens Community Group, estandar 2026) -- consolida los colores de equipo/tipo/fuente/rol/relacion que hoy viven repetidos en grafo_maestro.html/holon.html/anatomia.html (colisiones reales documentadas en $extensions: color.fuente.n8n con color.equipo.frontera, color.fuente.node con color.equipo.guardia, color.relacion.opera_en con color.rol.operador pese a ser el mismo concepto real -- dos paletas construidas en momentos distintos, nunca reconciliadas). Roles reales sin miembros hoy (Guardian/Proveedor/Decisor/Actor/Destino) marcados 'reservado'. §8.48: las tres vistas ya migradas -- leen tokens.css via <link> y un helper tokenColor() que lee la variable CSS real en vez de un hex propio del fichero. 55 tokens reales."
     },
     {
       "fichero": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",

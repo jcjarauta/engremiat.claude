@@ -741,6 +741,16 @@ Investigado antes de construir (§8.46 cierre): busqué herramientas gráficas r
 
 Desplegado (con un tropiezo real de infraestructura corregido en el camino: montar un fichero que todavía no existe en el host crea un directorio vacío en Docker, no un placeholder -- hubo que parar el contenedor, borrar los 3 directorios fantasma, subir los ficheros reales y arrancar de nuevo) y verificado: `atlas_familias.json`/`design-tokens.json`/`tokens.css` sirven con 200 real desde el VPS.
 
+### 8.48 "Migra las tres vistas a tokens.css"
+
+Cerrado el pendiente explícito de §8.47. Las tres vistas (`grafo_maestro.html`, `holon.html`, `anatomia.html`) ya no hardcodean su propia paleta -- enlazan `tokens.css` y leen cada color real vía un helper `tokenColor(nombre)` (`getComputedStyle(document.documentElement).getPropertyValue('--' + nombre)`), nunca un hex propio del fichero.
+
+**Hueco real encontrado al completar la migración**: `grafo_maestro.html`/`holon.html` usan `COLOR_REL` (los 8 verbos del Holon) para colorear aristas -- ese grupo no existía todavía en `design-tokens.json`. Añadido `color.relacion.*` (los mismos 8 verbos + wikilink) antes de migrar, para no dejar colores sin token. **Tercera colisión real encontrada y documentada**: `color.relacion.opera_en` (#4c9aff) y `color.rol.operador` (#2dd4bf) no coinciden, pese a que el rol Operador se define justo como "opera_en dominante" -- dos paletas construidas en momentos distintos de la sesión (leyenda de arista vs. filtro de familia) para el mismo concepto real, nunca reconciliadas. Documentado en `$extensions`, no fusionado a ciegas.
+
+**De propina, con el mismo token ya disponible**: la insignia de rol y la leyenda de "Familias reales" en `anatomia.html` ahora se colorean con el `color.rol.*` real de cada familia (antes eran neutras) -- primer resultado visual concreto del "Atlas de familias" sin esperar a G6.
+
+Verificado en el navegador: las tres vistas renderizan idénticas a como estaban, sin errores de consola -- el cambio es de dónde sale el color, no de qué color es.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

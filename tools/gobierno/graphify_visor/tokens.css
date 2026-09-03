@@ -40,6 +40,15 @@
   --color-rol-evento: #22d3ee;
   --color-rol-origen: #34d399;
   --color-rol-destino: #14b8a6;
+  --color-relacion-opera_en: #4c9aff;
+  --color-relacion-depende_de: #e8a33d;
+  --color-relacion-gobierna_a: #ef476f;
+  --color-relacion-alimenta_a: #4fce6f;
+  --color-relacion-verifica_a: #f4a261;
+  --color-relacion-corrige_a: #ff6b6b;
+  --color-relacion-activa_a: #06d6a0;
+  --color-relacion-parte_de: #9a8cff;
+  --color-relacion-wikilink: #2c2d34;
   --color-base-fondo: #0f1013;
   --color-base-panel: #17181c;
   --color-base-borde: #2c2d33;
