@@ -181,6 +181,10 @@
     {
       "fichero": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
       "que_hace": "Lee valoracion_vinculoreal.json y escribe de verdad la seccion ## Vinculo real en las fichas reales con evidencia_precisa -- mismo patron de seguridad que aplicar_boceto.mjs (dry-run por defecto, --aplicar para escribir, solo anade al final del fichero, nunca toca contenido existente, idempotente). Filtra dos tipos de ruido encontrados revisando el primer dry-run: nodos recurso:X de grafo_node.json (duplican Sheet/Baserow por otro lado) y coincidencias contra el fichero entero de Apps Script (no son un recordId util). Aplicado en real: 33 fichas de la boveda enriquecidas, verificado que ninguna perdio contenido previo. Segunda pasada: 7 fichas mas enriquecidas (CORE, Repository, Aprovisionamiento, Comunicacion, EstructuraInicial, Gantt, Ejecutar chequeo libreria), con dos correspondencias verificadas a mano para excluir ruido de coincidencia amplia (Repository -> src/Repository.js explicitamente sin ConfigRepository.js, que es una ficha real distinta). Resultado final: de 45 confirmadas, 43 tienen vinculoReal real, 2 se quedan sin el a proposito (Fisica y Verificar contra hechos, ya resueltas de otra forma)."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/resumen_universo.html",
+      "que_hace": "Resumen visual real del universo Engremiat completo -- mapa de una pagina con datos reales de la boveda (110 fichas), el censo (225 candidatas, 0 huecos abiertos) y la infraestructura real (VPS/Tailscale/Sheet/Baserow). Construido como Artifact primero (skill artifact-design, paleta ledger de gremio, tipografia Petrona+Public Sans+JetBrains Mono, ambos temas), luego copiado al repo como plantilla reutilizable para el siguiente ejercicio -- envuelto en documento HTML completo (el fragmento del Artifact confia en un wrapper que aqui no existe). Desplegado en el visor (resumen_universo.html), verificado en el navegador -- encontrado y corregido un bug real de barras de embudo recortadas por el contenedor."
     }
   ]
 }

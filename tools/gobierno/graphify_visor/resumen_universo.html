@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Universo Engremiat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Petrona:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f2ecdf;
+    --surface: #fbf7ee;
+    --surface-2: #ece4d2;
+    --ink: #221d14;
+    --ink-soft: #5a5140;
+    --line: rgba(34, 29, 20, 0.14);
+    --line-strong: rgba(34, 29, 20, 0.28);
+    --accent: #9c6a2e;
+    --accent-soft: rgba(156, 106, 46, 0.14);
+    --real: #2f6f66;
+    --real-soft: rgba(47, 111, 102, 0.14);
+    --narrativo: #7a6f8a;
+    --narrativo-soft: rgba(122, 111, 138, 0.14);
+    --shadow: 0 1px 2px rgba(34,29,20,0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171d;
+      --surface: #1b1f26;
+      --surface-2: #232830;
+      --ink: #e9e3d2;
+      --ink-soft: #a89e88;
+      --line: rgba(233, 227, 210, 0.12);
+      --line-strong: rgba(233, 227, 210, 0.24);
+      --accent: #d19a54;
+      --accent-soft: rgba(209, 154, 84, 0.16);
+      --real: #57b3a7;
+      --real-soft: rgba(87, 179, 167, 0.16);
+      --narrativo: #a79bc2;
+      --narrativo-soft: rgba(167, 155, 194, 0.16);
+      --shadow: 0 1px 2px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171d;
+    --surface: #1b1f26;
+    --surface-2: #232830;
+    --ink: #e9e3d2;
+    --ink-soft: #a89e88;
+    --line: rgba(233, 227, 210, 0.12);
+    --line-strong: rgba(233, 227, 210, 0.24);
+    --accent: #d19a54;
+    --accent-soft: rgba(209, 154, 84, 0.16);
+    --real: #57b3a7;
+    --real-soft: rgba(87, 179, 167, 0.16);
+    --narrativo: #a79bc2;
+    --narrativo-soft: rgba(167, 155, 194, 0.16);
+    --shadow: 0 1px 2px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Public Sans", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.5;
+  }
+  ::selection { background: var(--accent-soft); }
+
+  .page { max-width: 1180px; margin: 0 auto; padding: 56px 32px 80px; }
+
+  h1, h2, h3 { font-family: "Petrona", Georgia, serif; text-wrap: balance; margin: 0; color: var(--ink); }
+  code, .mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Masthead ---------- */
+  .masthead { display: flex; flex-direction: column; gap: 18px; padding-bottom: 40px; border-bottom: 1px solid var(--line-strong); }
+  .kicker { font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+  .masthead h1 { font-size: clamp(38px, 6vw, 58px); font-weight: 700; letter-spacing: -0.01em; }
+  .masthead .thesis { max-width: 62ch; color: var(--ink-soft); font-size: 16.5px; }
+  .masthead .thesis b { color: var(--ink); font-weight: 600; }
+
+  .stat-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+  .stat { background: var(--surface); padding: 16px 18px; }
+  .stat .n { font-family: "JetBrains Mono", monospace; font-weight: 700; font-size: 26px; color: var(--ink); }
+  .stat .l { font-size: 11.5px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ---------- Sections ---------- */
+  .folio { margin-top: 56px; }
+  .folio-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
+  .folio-num { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--accent); border: 1px solid var(--line-strong); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+  .folio-head h2 { font-size: 25px; font-weight: 600; }
+  .folio-sub { color: var(--ink-soft); font-size: 13.5px; margin: -14px 0 22px; max-width: 68ch; }
+
+  .grid { display: grid; gap: 12px; }
+  .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) { .grid.cols-3, .grid.cols-4 { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .card h3 { font-size: 15.5px; font-weight: 600; margin-bottom: 5px; }
+  .card p { margin: 0; color: var(--ink-soft); font-size: 13px; line-height: 1.5; }
+  .card .ref { display: inline-block; margin-top: 9px; font-family: "JetBrains Mono", monospace; font-size: 11px; background: var(--real-soft); color: var(--real); padding: 2px 7px; border-radius: 5px; }
+  .card .ref.aspiracional { background: var(--narrativo-soft); color: var(--narrativo); }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 0.02em; padding: 2px 8px; border-radius: 999px; }
+  .badge.real { background: var(--real-soft); color: var(--real); }
+  .badge.aspiracional { background: var(--narrativo-soft); color: var(--narrativo); }
+  .badge::before { content: "●"; font-size: 8px; }
+
+  /* ---------- Concilio ring ---------- */
+  .concilio-wrap { display: grid; grid-template-columns: 1fr 320px; gap: 32px; align-items: center; }
+  @media (max-width: 900px) { .concilio-wrap { grid-template-columns: 1fr; } }
+  .ring-note { color: var(--ink-soft); font-size: 13.5px; }
+  .ring-note p + p { margin-top: 10px; }
+  .acervo-label { font-size: 10px; font-family: "JetBrains Mono", monospace; text-anchor: middle; fill: var(--ink); }
+  .acervo-label.dim { fill: var(--ink-soft); }
+
+  /* ---------- Módulos ---------- */
+  .mod-row { display: grid; grid-template-columns: 170px 1fr auto; gap: 14px; align-items: center; padding: 11px 14px; border-bottom: 1px solid var(--line); }
+  .mod-row:last-child { border-bottom: none; }
+  .mod-row .name { font-weight: 600; font-size: 13.5px; }
+  .mod-row .desc { color: var(--ink-soft); font-size: 12.5px; }
+  .mod-row .tabs { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--accent); text-align: right; white-space: nowrap; }
+  @media (max-width: 700px) { .mod-row { grid-template-columns: 1fr; gap: 4px; } .mod-row .tabs { text-align: left; } }
+  .mod-list { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 4px 14px; box-shadow: var(--shadow); }
+
+  /* ---------- Person list ---------- */
+  .roster { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 13px 6px 8px; font-size: 12.5px; box-shadow: var(--shadow); }
+  .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--real); flex: none; }
+  .chip .dot.aspiracional { background: var(--narrativo); }
+  .chip b { font-weight: 600; }
+
+  /* ---------- Infra map ---------- */
+  .infra { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 24px; box-shadow: var(--shadow); }
+
+  /* ---------- Relation bars ---------- */
+  .barlist { display: flex; flex-direction: column; gap: 9px; }
+  .barrow { display: grid; grid-template-columns: 130px 1fr 56px; align-items: center; gap: 10px; }
+  .barrow .lbl { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--ink-soft); }
+  .bartrack { height: 9px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+  .barfill { height: 100%; background: var(--accent); border-radius: 5px; }
+  .barrow .val { font-family: "JetBrains Mono", monospace; font-size: 11.5px; text-align: right; color: var(--ink); }
+
+  /* ---------- Closure ---------- */
+  .closure { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 28px 30px; box-shadow: var(--shadow); display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; }
+  @media (max-width: 800px) { .closure { grid-template-columns: 1fr; } }
+  .closure h3 { font-size: 19px; margin-bottom: 8px; }
+  .closure p { color: var(--ink-soft); font-size: 13.5px; margin: 0 0 6px; }
+  .funnel { display: flex; flex-direction: column; gap: 6px; }
+  .funnel-row { display: grid; grid-template-columns: 88px 1fr 34px; gap: 8px; align-items: center; font-size: 11.5px; }
+  .funnel-row .lbl { color: var(--ink-soft); font-family: "JetBrains Mono", monospace; }
+  .funnel-track { height: 16px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
+  .funnel-fill { height: 100%; border-radius: 4px; }
+  .funnel-row .val { font-family: "JetBrains Mono", monospace; text-align: right; }
+
+  footer { margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; color: var(--ink-soft); font-size: 12px; font-family: "JetBrains Mono", monospace; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="masthead">
+    <div class="kicker">Universo Engremiat — mapa real, 2026-09-03</div>
+    <h1>Un gremio que se gobierna a sí mismo,<br>escrito en fichas y verificado en código.</h1>
+    <p class="thesis">110 fichas reales conviven en la bóveda de Obsidian: <b>personajes</b> que son a la vez scripts, <b>espacios</b> que son a la vez servidores, <b>reglas</b> que son a la vez commits. Cada una lleva su <code>vínculo real</code> — la pestaña de Sheet, la tabla de Baserow o el fichero exacto que la hace cierta. El censo que cruzó 225 candidatas contra 10 fuentes reales terminó en cero huecos abiertos.</p>
+    <div class="stat-strip">
+      <div class="stat"><div class="n tabular">110</div><div class="l">fichas reales en la bóveda</div></div>
+      <div class="stat"><div class="n tabular">20</div><div class="l">personajes</div></div>
+      <div class="stat"><div class="n tabular">14</div><div class="l">módulos de negocio</div></div>
+      <div class="stat"><div class="n tabular">10</div><div class="l">espacios</div></div>
+      <div class="stat"><div class="n tabular">225</div><div class="l">candidatas cruzadas en el censo</div></div>
+      <div class="stat"><div class="n tabular">0</div><div class="l">huecos abiertos hoy</div></div>
+    </div>
+  </div>
+
+  <!-- 01 — EL MUNDO: infraestructura -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">01_Mundo</span><h2>La infraestructura real</h2></div>
+    <p class="folio-sub">Tres continentes de datos, nunca duplicados a propósito, y una malla privada que los conecta.</p>
+    <div class="infra">
+      <svg viewBox="0 0 1080 260" width="100%" role="img" aria-label="Mapa de la infraestructura real de Engremiat">
+        <defs>
+          <marker id="arw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--line-strong)"></path>
+          </marker>
+        </defs>
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="var(--ink-soft)">
+          <!-- connective lines -->
+          <line x1="540" y1="130" x2="150" y2="60"  stroke="var(--line-strong)" stroke-width="1.4" marker-end="url(#arw)"></line>
+          <line x1="540" y1="130" x2="150" y2="200" stroke="var(--line-strong)" stroke-width="1.4" marker-end="url(#arw)"></line>
+          <line x1="540" y1="130" x2="930" y2="60"  stroke="var(--line-strong)" stroke-width="1.4" marker-end="url(#arw)"></line>
+          <line x1="540" y1="130" x2="930" y2="200" stroke="var(--line-strong)" stroke-width="1.4" marker-end="url(#arw)"></line>
+          <line x1="150" y1="60" x2="150" y2="200" stroke="var(--line)" stroke-width="1.2"></line>
+        </g>
+        <!-- VPS hub -->
+        <g>
+          <rect x="450" y="95" width="180" height="70" rx="10" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.4"></rect>
+          <text x="540" y="122" text-anchor="middle" font-family="Petrona, serif" font-weight="600" font-size="15" fill="var(--ink)">VPS · Hetzner</text>
+          <text x="540" y="140" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10.5" fill="var(--ink-soft)">100.107.171.88</text>
+          <text x="540" y="154" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" fill="var(--accent)">malla Tailscale — nada a 0.0.0.0</text>
+        </g>
+        <!-- nodes -->
+        <g>
+          <rect x="30" y="25" width="240" height="70" rx="10" fill="var(--surface)" stroke="var(--line-strong)"></rect>
+          <text x="150" y="52" text-anchor="middle" font-family="Petrona, serif" font-weight="600" font-size="14" fill="var(--ink)">Raspberry Pi</text>
+          <text x="150" y="70" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">banco de pruebas de concepto</text>
+          <text x="150" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-soft)">100.125.52.52 · Headscale</text>
+        </g>
+        <g>
+          <rect x="30" y="165" width="240" height="70" rx="10" fill="var(--surface)" stroke="var(--line-strong)"></rect>
+          <text x="150" y="192" text-anchor="middle" font-family="Petrona, serif" font-weight="600" font-size="14" fill="var(--ink)">PC operador</text>
+          <text x="150" y="210" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">Chrome Remote Desktop</text>
+          <text x="150" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-soft)">100.118.79.49</text>
+        </g>
+        <g>
+          <rect x="810" y="25" width="240" height="70" rx="10" fill="var(--surface)" stroke="var(--line-strong)"></rect>
+          <text x="930" y="52" text-anchor="middle" font-family="Petrona, serif" font-weight="600" font-size="14" fill="var(--ink)">El Sheet</text>
+          <text x="930" y="70" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">4 instancias reales distintas</text>
+          <text x="930" y="84" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-soft)">datos operativos de cliente</text>
+        </g>
+        <g>
+          <rect x="810" y="165" width="240" height="70" rx="10" fill="var(--surface)" stroke="var(--line-strong)"></rect>
+          <text x="930" y="192" text-anchor="middle" font-family="Petrona, serif" font-weight="600" font-size="14" fill="var(--ink)">Baserow</text>
+          <text x="930" y="210" text-anchor="middle" font-size="10.5" fill="var(--ink-soft)">núcleo soberano, sin Google</text>
+          <text x="930" y="224" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-soft)">18 tablas reales</text>
+        </g>
+      </svg>
+    </div>
+    <div class="grid cols-2" style="margin-top:14px;">
+      <div class="card">
+        <h3>Los dos continentes de datos <span class="badge real" style="margin-left:6px;">real</span></h3>
+        <p>El Sheet manda sobre lo operativo de clientes en producción; Baserow es el laboratorio del núcleo nuevo. Ninguna fila se duplica "por si acaso" — cada dato se asigna a un dominio antes de construirse.</p>
+      </div>
+      <div class="card">
+        <h3>El Vault <span class="badge real" style="margin-left:6px;">real</span></h3>
+        <p>Esta misma bóveda — 110 fichas, el espejo narrativo de lo anterior. Cada personaje, regla o recurso que sigue abajo vive aquí, con su <code>vínculo real</code> hacia el sistema que describe.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 02 — PERSONAJES -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">02_Personajes</span><h2>El Concilio y sus ocho voces</h2></div>
+    <p class="folio-sub">Ninguna síntesis se aprueba sin al menos dos Acervos proponiendo por separado — "sin ellas, el Concilio no existe".</p>
+    <div class="concilio-wrap">
+      <svg viewBox="0 0 520 460" width="100%" role="img" aria-label="El Concilio y los ocho Acervos en círculo">
+        <circle cx="260" cy="230" r="150" fill="none" stroke="var(--line)" stroke-dasharray="2 6"></circle>
+        <g id="spokes"></g>
+        <circle cx="260" cy="230" r="58" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.6"></circle>
+        <text x="260" y="224" text-anchor="middle" font-family="Petrona, serif" font-weight="700" font-size="18" fill="var(--ink)">Concilio</text>
+        <text x="260" y="242" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="var(--ink-soft)">delibera, sintetiza</text>
+        <script>
+        (function(){
+          var acervos = [
+            {n:'Prompter', r:true}, {n:'Técnico', r:true}, {n:'Lógico', r:false},
+            {n:'Logístico', r:true}, {n:'Narrativo', r:false}, {n:'Filosófico', r:true},
+            {n:'Usuario', r:true}, {n:'Sociocracia', r:false}
+          ];
+          var cx=260, cy=230, R=150;
+          var svgNS = 'http://www.w3.org/2000/svg';
+          var spokes = document.getElementById('spokes');
+          acervos.forEach(function(a, i){
+            var ang = (Math.PI * 2 * i / acervos.length) - Math.PI/2;
+            var x = cx + R*Math.cos(ang), y = cy + R*Math.sin(ang);
+            var line = document.createElementNS(svgNS,'line');
+            line.setAttribute('x1', cx); line.setAttribute('y1', cy);
+            line.setAttribute('x2', x); line.setAttribute('y2', y);
+            line.setAttribute('stroke', 'var(--line-strong)'); line.setAttribute('stroke-width','1.2');
+            spokes.appendChild(line);
+            var g = document.createElementNS(svgNS,'g');
+            var circ = document.createElementNS(svgNS,'circle');
+            circ.setAttribute('cx', x); circ.setAttribute('cy', y); circ.setAttribute('r', 38);
+            circ.setAttribute('fill', a.r ? 'var(--real-soft)' : 'var(--narrativo-soft)');
+            circ.setAttribute('stroke', a.r ? 'var(--real)' : 'var(--narrativo)');
+            circ.setAttribute('stroke-width', '1.4');
+            g.appendChild(circ);
+            var t1 = document.createElementNS(svgNS,'text');
+            t1.setAttribute('x', x); t1.setAttribute('y', y+3);
+            t1.setAttribute('text-anchor','middle');
+            t1.setAttribute('font-family','JetBrains Mono, monospace');
+            t1.setAttribute('font-size','10.5');
+            t1.setAttribute('font-weight','600');
+            t1.setAttribute('fill','var(--ink)');
+            t1.textContent = a.n;
+            g.appendChild(t1);
+            spokes.appendChild(g);
+          });
+        })();
+        </script>
+      </svg>
+      <div class="ring-note">
+        <p><span class="badge real"></span> <b style="color:var(--ink)">5 de 8</b> con evidencia real fuera de la bóveda — código propio (<code>Prompter</code>) o transcripciones reales de deliberación en Telar B2 (<code>Técnico</code>, <code>Logístico</code>, <code>Filosófico</code>).</p>
+        <p><span class="badge aspiracional"></span> <b style="color:var(--ink)">Usuario</b>: el más reciente — su cuerpo real es <code>PlantillaImportacionMasivaService.js</code> + <code>94_ESCENARIOS</code>, operado hoy por DeepSeek para pruebas de concepto en escenarios paralelos.</p>
+        <p><b style="color:var(--ink)">Lógico, Narrativo, Sociocracia</b>: fundamentados en su propia prosa (síntesis reales ya citadas), sin script propio todavía.</p>
+      </div>
+    </div>
+    <div class="roster" style="margin-top:22px;">
+      <div class="chip"><span class="dot"></span><b>Vigilia</b> — cola nocturna de Concilio</div>
+      <div class="chip"><span class="dot"></span><b>Coordinador</b> — reparte y verifica trabajo de workers</div>
+      <div class="chip"><span class="dot"></span><b>Ejecutor</b> — sigue tareas, puerta humana obligatoria</div>
+      <div class="chip"><span class="dot"></span><b>Relevo</b> — vuelve a ejecución si algo caduca</div>
+      <div class="chip"><span class="dot"></span><b>Cronista</b> — documentos y tareas, propone/confirma</div>
+      <div class="chip"><span class="dot"></span><b>Mensajero</b> — cruza fronteras, nunca decide</div>
+      <div class="chip"><span class="dot"></span><b>Pregonero</b> — publica hacia fuera</div>
+      <div class="chip"><span class="dot aspiracional"></span><b>Narrador</b> — por construir</div>
+      <div class="chip"><span class="dot"></span><b>Verificador de Campos</b> — ¿existe el campo de verdad?</div>
+      <div class="chip"><span class="dot"></span><b>Verificador de Capacidades</b> — ¿existe el mecanismo de verdad?</div>
+    </div>
+  </div>
+
+  <!-- 01b — MÓDULOS -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">01_Mundo/Modulos</span><h2>Catorce módulos, cada uno dueño de sus pestañas</h2></div>
+    <p class="folio-sub"><code>CORE</code> más 13 módulos acoplables — cada organización enciende solo lo que necesita.</p>
+    <div class="mod-list">
+      <div class="mod-row"><div class="name">CORE</div><div class="desc">Campaña→Tarea, la base implícita — 23.839 líneas, 55 ficheros</div><div class="tabs tabular">8 pestañas</div></div>
+      <div class="mod-row"><div class="name">Operativa</div><div class="desc">Recursos + Personas + Horario + Competencias en un interruptor</div><div class="tabs tabular">11 pestañas</div></div>
+      <div class="mod-row"><div class="name">Compras</div><div class="desc">Material → Proveedor → Pedido → Recepción</div><div class="tabs tabular">10 pestañas</div></div>
+      <div class="mod-row"><div class="name">Ventas</div><div class="desc">Pedido de cliente, espejo del pedido a proveedor</div><div class="tabs tabular">5 pestañas</div></div>
+      <div class="mod-row"><div class="name">Seguimiento</div><div class="desc">Decisiones, incidencias, documentos, vínculo</div><div class="tabs tabular">4 pestañas</div></div>
+      <div class="mod-row"><div class="name">Económico</div><div class="desc">Coste real, el que convierte esto en un negocio</div><div class="tabs tabular">3 pestañas</div></div>
+      <div class="mod-row"><div class="name">Cliente</div><div class="desc">Aprovisiona Sheet+Script propio por organización</div><div class="tabs tabular">1 pestaña</div></div>
+      <div class="mod-row"><div class="name">Oportunidad</div><div class="desc">CRM sin IA a propósito — encaje determinista</div><div class="tabs tabular">1 pestaña</div></div>
+      <div class="mod-row"><div class="name">Convocatorias</div><div class="desc">Financiación que La Troballa puede solicitar</div><div class="tabs tabular">1 pestaña</div></div>
+      <div class="mod-row"><div class="name">Impacto</div><div class="desc">El "por qué" — impacto social, Balanç Social</div><div class="tabs tabular">1 pestaña</div></div>
+      <div class="mod-row"><div class="name">Ejecución</div><div class="desc">Resultado real de cada tarea ejecutada</div><div class="tabs tabular">1 pestaña</div></div>
+      <div class="mod-row"><div class="name">Escenarios</div><div class="desc">Fricción simulada por IA — universos paralelos de prueba</div><div class="tabs tabular">1 pestaña</div></div>
+    </div>
+  </div>
+
+  <!-- 01c — RECURSOS + REGLAS -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">01_Mundo/Recursos · 03_Reglas</span><h2>Lo que se mide y lo que se obedece</h2></div>
+    <div class="grid cols-2">
+      <div>
+        <h3 style="font-size:14px; margin-bottom:10px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">Recursos</h3>
+        <div class="grid cols-2">
+          <div class="card"><h3>GASTO_API</h3><p>Tope $5/mes verificado antes de cada llamada. Panel Grafana en vivo.</p><span class="ref">Baserow · GASTO_API</span></div>
+          <div class="card"><h3>92_BUS_TRABAJO</h3><p>Bus de eventos real: reparte tareas entre DeepSeek, Claude y sin asignar.</p><span class="ref">Sheet · 92_BUS_TRABAJO</span></div>
+          <div class="card"><h3>DOCUMENTO_ENGREMIAT</h3><p>Catálogo real de 56 filas — 46 documentos + 10 mecanismos.</p><span class="ref">Baserow · 56 filas</span></div>
+          <div class="card"><h3>Zona de aterrizaje STG</h3><p>14 pestañas <code>STG_*</code> — carga masiva con IA + Puerta Humana.</p><span class="ref">Sheet · 14 tablas</span></div>
+        </div>
+      </div>
+      <div>
+        <h3 style="font-size:14px; margin-bottom:10px; color:var(--ink-soft); font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">Reglas</h3>
+        <div class="grid cols-2">
+          <div class="card"><h3>Puerta Humana</h3><p>El sistema se detiene y espera a alguien, sin excepción.</p></div>
+          <div class="card"><h3>El Sheet manda</h3><p>Sobre lo operativo de clientes en producción hoy.</p></div>
+          <div class="card"><h3>Verificar contra hechos</h3><p>Nada se da por bueno solo porque suene coherente.</p></div>
+          <div class="card"><h3>Honestidad del fallo</h3><p>El sistema no se disculpa por sus límites — los documenta.</p></div>
+          <div class="card"><h3>Los dos continentes</h3><p>Sheet y Baserow, nunca duplicados "por si acaso".</p></div>
+          <div class="card"><h3>Física</h3><p>Donde una afirmación deja de ser narrativa y se verifica.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07/08 — RELACIONES + OFICIOS -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">07_Holon · 08_Oficios</span><h2>Vocabulario de relación y los once oficios</h2></div>
+    <div class="grid cols-2">
+      <div class="card" style="padding:22px;">
+        <h3 style="margin-bottom:14px;">Cómo se relacionan, por frecuencia real</h3>
+        <div class="barlist">
+          <div class="barrow"><span class="lbl">calls</span><div class="bartrack"><div class="barfill" style="width:100%; background:var(--accent);"></div></div><span class="val tabular">2994</span></div>
+          <div class="barrow"><span class="lbl">contains</span><div class="bartrack"><div class="barfill" style="width:52%; background:var(--accent);"></div></div><span class="val tabular">1573</span></div>
+          <div class="barrow"><span class="lbl">wikilink</span><div class="bartrack"><div class="barfill" style="width:11%; background:var(--real);"></div></div><span class="val tabular">315</span></div>
+          <div class="barrow"><span class="lbl">n8n</span><div class="bartrack"><div class="barfill" style="width:5%; background:var(--real);"></div></div><span class="val tabular">138</span></div>
+          <div class="barrow"><span class="lbl">indirect_call</span><div class="bartrack"><div class="barfill" style="width:3%; background:var(--accent);"></div></div><span class="val tabular">100</span></div>
+          <div class="barrow"><span class="lbl">en operación</span><div class="bartrack"><div class="barfill" style="width:3%; background:var(--real);"></div></div><span class="val tabular">81</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="roster">
+          <div class="chip"><span class="dot"></span><b>Bus de trabajo</b></div>
+          <div class="chip"><span class="dot"></span><b>Cerrar ciclo</b></div>
+          <div class="chip"><span class="dot"></span><b>Chequear consistencia</b></div>
+          <div class="chip"><span class="dot"></span><b>Chequear librería clientes</b></div>
+          <div class="chip"><span class="dot"></span><b>Ejecutar chequeo librería</b></div>
+          <div class="chip"><span class="dot"></span><b>Actualizar librería cliente</b></div>
+          <div class="chip"><span class="dot"></span><b>Exportador de gasto</b></div>
+          <div class="chip"><span class="dot"></span><b>Extraer decisiones</b></div>
+          <div class="chip"><span class="dot"></span><b>Puente historia leyes</b></div>
+          <div class="chip"><span class="dot"></span><b>Regenerar estático</b></div>
+          <div class="chip"><span class="dot"></span><b>Salud del ecosistema</b></div>
+        </div>
+        <p style="color:var(--ink-soft); font-size:12.5px; margin-top:12px;">Once oficios reales — cada uno un script con <code>vínculo real</code> a su fichero exacto en <code>tools/</code>, no una idea de script.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CIERRE — el censo -->
+  <div class="folio">
+    <div class="folio-head"><span class="folio-num">§8.23–31</span><h2>El censo que cerró el universo</h2></div>
+    <div class="closure">
+      <div>
+        <h3>225 candidatas, cero huecos abiertos</h3>
+        <p>Diez fuentes reales cruzadas — código Apps Script y Node, n8n, Sheet, Baserow, Telar B2 y la propia bóveda — sobre cada nombre que apareció alguna vez en el universo. Cada candidata terminó con una decisión y su razón, nunca una etiqueta sin evidencia.</p>
+        <p>El último hueco genuino, <b style="color:var(--ink)">Acervo Usuario</b>, se cerró el mismo día que este mapa: un mecanismo real de simulación de escenarios, operado ahora por DeepSeek.</p>
+      </div>
+      <div class="funnel">
+        <div class="funnel-row"><span class="lbl">confirmar</span><div class="funnel-track"><div class="funnel-fill tabular" style="width:56%; background:var(--real);"></div></div><span class="val tabular">46</span></div>
+        <div class="funnel-row"><span class="lbl">promover</span><div class="funnel-track"><div class="funnel-fill tabular" style="width:62%; background:var(--accent);"></div></div><span class="val tabular">51</span></div>
+        <div class="funnel-row"><span class="lbl">revisar</span><div class="funnel-track"><div class="funnel-fill tabular" style="width:56%; background:var(--narrativo);"></div></div><span class="val tabular">46</span></div>
+        <div class="funnel-row"><span class="lbl">descartar</span><div class="funnel-track"><div class="funnel-fill tabular" style="width:100%; background:var(--ink-soft); opacity:0.55;"></div></div><span class="val tabular">82</span></div>
+        <p style="font-size:11px; color:var(--ink-soft); margin-top:6px;">→ resuelto con evidencia real o razón documentada: <b style="color:var(--real)">225 / 225</b></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>Universo Engremiat · bóveda real, Obsidian</span>
+    <span>PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.23–31</span>
+  </footer>
+
+</div>
+</body>
+</html>

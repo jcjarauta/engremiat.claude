@@ -29,6 +29,7 @@ services:
       - ./censo_entidades.json:/app/censo_entidades.json:ro
       - ./entidades.html:/app/entidades.html:ro
       - ./indice.html:/app/indice.html:ro
+      - ./resumen_universo.html:/app/resumen_universo.html:ro
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"
