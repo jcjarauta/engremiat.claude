@@ -684,6 +684,17 @@ El operador comparó dos capturas: el layout jerárquico izquierda→derecha de 
 
 **Resultado real**: de 31 a **49 entidades con anatomía real** de las 124 fichas -- verificado en el navegador con Cronista (radial, columna de 14, forma de espina legible), Concilio (respaldo Bóveda, 68 nodos) y Cliente (2 fuentes reales a la vez, Node + Sheet).
 
+### 8.43 "Las tablas son entidades con propiedades que pueden configurar su representación -- toda parte de Engremiat debe poder representarse, en Sheet y en Baserow"
+
+Corrección justa del operador sobre §8.42: una tabla no tiene flujo de ejecución, pero eso no significa que no tenga una forma real que dibujar -- tiene columnas, y tiene relaciones reales con otras tablas. Investigado antes de construir, en los dos sistemas:
+
+- **Sheet**: `tools/gobierno/bocetador/estructura_sheet.json` ya tiene las cabeceras reales de las 70 pestañas. 96 columnas reales terminan en `_ID` -- comprobado contra `ENTIDADES_MVP` (`src/Ids.js`, 47 claves reales, clave→hoja), una columna `CLIENTE_ID` apunta de verdad a `38_CLIENTE` por la misma convención de nombres que ya rige todo el proyecto. No se adivina la relación: se verifica contra el mismo diccionario real que ya gobierna qué pestaña pertenece a qué módulo.
+- **Baserow**: `estructura_baserow.json` (dump real de la API, `/api/database/fields/table/{id}/`) ya devuelve el tipo real de cada campo -- 9 campos reales de tipo `link_row` conectan de verdad 5 de las 18 tablas (`PAQUETE_CLIENTE→ENTIDAD_ORGANIZATIVA`, `PERSONA_COMPETENCIA→PERSONA_ID/COMPETENCIA_ID`...). Baserow ya expone la relación, no hay que inferirla por convención.
+
+**Construidas dos fuentes reales más** en `extraer_anatomia_entidad.mjs`: `fuenteSheetSchema` (cabeza = la pestaña citada con menos aristas de FK entrantes; columna = la cadena real de FK entre pestañas; extremidades = sus columnas reales) y `fuenteBaserowSchema` (mismo criterio, relación real vía `link_row` en vez de inferida). Una tabla sin código propio ya tiene, con esto, exactamente el mismo tipo de retrato que un script o un workflow -- solo que su "recorrido" es su esquema real, no su ejecución.
+
+**Resultado real**: de 49 a **60 entidades con anatomía real** de 91 (excluyendo las 32 fichas-relación de `07_Holon_Relaciones/`, que no son entidades). Los 11 módulos de negocio (Ventas, Compras, Oportunidad, Impacto, Convocatorias, Económico, Seguimiento, Ejecución, CORE) ganan cuerpo real por primera vez -- verificado con Ventas (cadena real de FK `39_PEDIDO_CLIENTE`→`43_CONTRATO_SERVICIO`→`38_CLIENTE`) y `DOCUMENTO_ENGREMIAT` (9 campos reales de Baserow). Quedan 31 sin cubrir, honestamente: 25 son narrativas puras (arcos, sesiones, hilos abiertos, sin ninguna relación real que dibujar) y 6 citan código/infraestructura que Graphify no puede leer todavía (un script más nuevo que `grafo_node.json`, un `.ps1`, configuración de red) -- documentado, no oculto.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

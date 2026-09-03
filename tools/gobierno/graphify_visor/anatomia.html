@@ -34,7 +34,7 @@
 <div id="layout">
   <div id="panel">
     <h1>Anatomía real</h1>
-    <p class="hint">Cabeza = punto de entrada real, en el centro. Cada anillo = un paso real más de distancia. Columna = el camino dirigido más largo desde ahí. Extremidades = todo lo demás, colgando por su ángulo real. Cuatro fuentes reales: n8n, Apps Script, Node, Sheet (91_HISTORIAL/PAQUETE_CLIENTE) y, si no hay código propio, las relaciones reales del Holon en la bóveda. §8.41-42.</p>
+    <p class="hint">Cabeza = punto de entrada real, en el centro. Cada anillo = un paso real más de distancia. Columna = el camino dirigido más largo desde ahí. Extremidades = todo lo demás, colgando por su ángulo real. Una tabla no tiene flujo, pero sí forma: sus columnas/campos reales y sus relaciones reales (Sheet vía columnas <code>*_ID</code>, Baserow vía campos <code>link_row</code>) son su cuerpo. §8.41-43.</p>
     <input type="text" id="buscar" placeholder="Buscar entidad...">
     <div id="lista"></div>
   </div>
@@ -44,8 +44,8 @@
   </div>
 </div>
 <script>
-const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d', sheet: '#e85c8a', relacional: '#9a8cff' };
-const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node', sheet: 'Sheet', relacional: 'Bóveda' };
+const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d', sheet: '#e85c8a', sheet_schema: '#f28a9a', baserow_schema: '#c76bd6', relacional: '#9a8cff' };
+const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node', sheet: 'Sheet', sheet_schema: 'Sheet (esquema)', baserow_schema: 'Baserow (esquema)', relacional: 'Bóveda' };
 
 let datos = null;
 let redesActivas = [];

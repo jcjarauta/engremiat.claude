@@ -17,7 +17,18 @@ const nodeGraph = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_node.json'), 
 const historial = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_historial.json'), 'utf8'));
 const paqueteCliente = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_paquete_cliente.json'), 'utf8'));
 const wikilinks = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_wikilinks.json'), 'utf8'));
+const estructuraSheet = JSON.parse(fs.readFileSync('C:/Users/pc/Desktop/engremiat.claude/tools/gobierno/bocetador/estructura_sheet.json', 'utf8'));
+const estructuraBaserow = JSON.parse(fs.readFileSync('C:/Users/pc/Desktop/engremiat.claude/tools/gobierno/bocetador/estructura_baserow.json', 'utf8'));
 const RELACIONES_HOLON = new Set(['opera_en', 'depende_de', 'gobierna_a', 'alimenta_a', 'verifica_a', 'corrige_a', 'activa_a', 'parte_de']);
+
+// -- ENTIDADES_MVP real (src/Ids.js): clave de entidad -> hoja real. Convierte una columna
+// real "CLIENTE_ID" en una arista real hacia la hoja real 38_CLIENTE -- por convencion de
+// nombres ya usada en todo el proyecto, no adivinada aqui --
+const idsJs = fs.readFileSync('C:/Users/pc/Desktop/engremiat.claude/src/Ids.js', 'utf8');
+const HOJA_POR_CLAVE_ENTIDAD = new Map(
+  [...idsJs.match(/const ENTIDADES_MVP = Object\.freeze\(\{[\s\S]*?\n\}\);/)[0].matchAll(/\n  (\w+): Object\.freeze\(\{\s*hoja:\s*'([^']+)'/g)]
+    .map(m => [m[1], m[2]])
+);
 
 function ficheroDeLineaConcat(lineaConcat) {
   const m = concatMap.mappings.find(m => lineaConcat >= m.concat_content_start_line && lineaConcat <= m.concat_content_end_line);
@@ -47,7 +58,7 @@ ficheros.forEach(f => {
   if (idx < 0) return;
   const zona = texto.slice(idx);
   const nombre = path.basename(f, '.md');
-  const cita = { slug: slugify(nombre), nombre, n8n: [], appsScript: [], node: [], sheet: [] };
+  const cita = { slug: slugify(nombre), nombre, n8n: [], appsScript: [], node: [], sheet: [], sheetTabs: [], baserowTablas: [] };
   zona.split('\n').forEach(linea => {
     if (!linea.trim().startsWith('-')) return;
     let m;
@@ -58,8 +69,12 @@ ficheros.forEach(f => {
     // no cualquier pestaña citada, solo las que de verdad tienen un flujo real que recorrer
     if (/91_HISTORIAL/.test(linea)) cita.sheet.push('historial');
     if (/PAQUETE_CLIENTE/.test(linea)) cita.sheet.push('paquete_cliente');
+    // pestañas de Sheet y tablas de Baserow citadas directamente -- su propio esquema real
+    // (columnas + relaciones *_ID / link_row) es su cuerpo, aunque no tengan un flujo de ejecucion
+    if ((m = linea.match(/Sheet:\s*`(\d\d_[A-Z_]+)`/))) cita.sheetTabs.push(m[1]);
+    if ((m = linea.match(/Baserow:\s*`([A-Z_]+)`/))) cita.baserowTablas.push(m[1]);
   });
-  if (cita.n8n.length || cita.appsScript.length || cita.node.length || cita.sheet.length) citasPorEntidad.push(cita);
+  if (cita.n8n.length || cita.appsScript.length || cita.node.length || cita.sheet.length || cita.sheetTabs.length || cita.baserowTablas.length) citasPorEntidad.push(cita);
 });
 
 // -- espina real: DFS del camino dirigido mas largo desde cada entrada real (sin incoming) --
@@ -210,6 +225,100 @@ function fuenteSheetMecanismo(clave) {
   };
 }
 
+// -- fuente Sheet (esquema real): una tabla no tiene flujo de ejecucion, pero si tiene una
+// forma real -- sus columnas, y sus relaciones reales con otras tablas via columnas *_ID que
+// coinciden con una clave real de ENTIDADES_MVP (src/Ids.js), no adivinadas. Cabeza = la
+// pestaña real citada con menos aristas de FK entrantes reales (la mas "de origen" del grupo).
+function fuenteSheetSchema(nombresTabs) {
+  const tabsPorNombre = new Map(estructuraSheet.tabs.map(t => [t.nombre, t]));
+  const tabsReales = nombresTabs.map(n => tabsPorNombre.get(n)).filter(Boolean);
+  if (!tabsReales.length) return null;
+  const idsTabs = new Set(tabsReales.map(t => t.nombre));
+  const aristasFk = []; // tabla -> tabla real, via *_ID que coincide con una clave real
+  const nodosColumna = [];
+  const aristasColumna = [];
+  tabsReales.forEach(t => {
+    t.cabeceras.forEach(c => {
+      if (c === 'ID') return;
+      const idCol = t.nombre + '::' + c;
+      const esFk = /_ID$/.test(c);
+      let objetivoFk = null;
+      if (esFk) {
+        const clave = c.replace(/_ID$/, '');
+        const hoja = HOJA_POR_CLAVE_ENTIDAD.get(clave);
+        if (hoja && hoja !== t.nombre) objetivoFk = hoja;
+      }
+      if (objetivoFk) {
+        aristasFk.push({ source: t.nombre, target: objetivoFk, columna: c });
+      } else {
+        nodosColumna.push({ id: idCol, nombre: c, tipoReal: 'columna' });
+        aristasColumna.push({ source: t.nombre, target: idCol });
+      }
+    });
+  });
+  // las tablas objetivo de un FK entran como nodos de frontera aunque no esten citadas directamente
+  const tablasFrontera = new Set(aristasFk.map(a => a.target).filter(t => !idsTabs.has(t)));
+  const idsEspina = [...idsTabs, ...tablasFrontera];
+  const { entrada, espina } = calcularEspina(idsEspina, aristasFk);
+  const espinaSet = new Set(espina);
+  return {
+    tipo: 'sheet_schema',
+    etiqueta: 'Sheet — ' + tabsReales.map(t => t.nombre).join(' + '),
+    nodos: [
+      ...idsEspina.map(id => ({ id, nombre: id, tipoReal: idsTabs.has(id) ? 'pestaña' : 'pestaña (referenciada)' })),
+      ...nodosColumna,
+    ],
+    aristas: [
+      ...aristasFk.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target), relacion: a.columna })),
+      ...aristasColumna.map(a => ({ source: a.source, target: a.target, enEspina: false })),
+    ],
+    entrada, espina,
+  };
+}
+
+// -- fuente Baserow (esquema real): igual criterio, pero la relacion real ya viene dada por
+// la API de Baserow (campos tipo link_row), sin necesidad de inferirla por nombre --
+function fuenteBaserowSchema(nombresTablas) {
+  const tablasPorNombre = new Map(estructuraBaserow.tablas.map(t => [t.nombre, t]));
+  const tablasReales = nombresTablas.map(n => tablasPorNombre.get(n)).filter(Boolean);
+  if (!tablasReales.length) return null;
+  const idsTablas = new Set(tablasReales.map(t => t.nombre));
+  const aristasLink = [];
+  const nodosCampo = [];
+  const aristasCampo = [];
+  tablasReales.forEach(t => {
+    t.campos.forEach(c => {
+      if (c.tipo === 'link_row') {
+        // el nombre del campo link_row en Baserow suele ser el nombre real de la tabla objetivo
+        const objetivo = estructuraBaserow.tablas.find(x => x.nombre === c.nombre)?.nombre;
+        if (objetivo && objetivo !== t.nombre) aristasLink.push({ source: t.nombre, target: objetivo, columna: c.nombre });
+        else { nodosCampo.push({ id: t.nombre + '::' + c.nombre, nombre: c.nombre + ' (link)', tipoReal: 'campo' }); aristasCampo.push({ source: t.nombre, target: t.nombre + '::' + c.nombre }); }
+      } else {
+        const idCol = t.nombre + '::' + c.nombre;
+        nodosCampo.push({ id: idCol, nombre: c.nombre, tipoReal: 'campo' });
+        aristasCampo.push({ source: t.nombre, target: idCol });
+      }
+    });
+  });
+  const tablasFrontera = new Set(aristasLink.map(a => a.target).filter(t => !idsTablas.has(t)));
+  const idsEspina = [...idsTablas, ...tablasFrontera];
+  const { entrada, espina } = calcularEspina(idsEspina, aristasLink);
+  const espinaSet = new Set(espina);
+  return {
+    tipo: 'baserow_schema',
+    etiqueta: 'Baserow — ' + tablasReales.map(t => t.nombre).join(' + '),
+    nodos: [
+      ...idsEspina.map(id => ({ id, nombre: id, tipoReal: idsTablas.has(id) ? 'tabla' : 'tabla (referenciada)' })),
+      ...nodosCampo,
+    ],
+    aristas: [
+      ...aristasLink.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target), relacion: 'link_row: ' + a.columna })),
+      ...aristasCampo.map(a => ({ source: a.source, target: a.target, enEspina: false })),
+    ],
+    entrada, espina,
+  };
+}
+
 // -- fuente de respaldo: la propia bóveda -- para entidades sin código/n8n/mecanismo Sheet propio,
 // su cuerpo real es su vecindario en el Holon (§8.33): aristas semanticas dirigidas (opera_en/depende_de/...)
 // como columna, wikilinks reales como extremidades. Mismo dato ya real de grafo_wikilinks.json, sin inventar nada nuevo --
@@ -255,6 +364,8 @@ citasPorEntidad.forEach(c => {
   if (c.appsScript.length) { const f = fuenteAppsScript(c.appsScript); if (f) fuentes.push(f); }
   if (c.node.length) { const f = fuenteNode(c.node); if (f) fuentes.push(f); }
   c.sheet.forEach(clave => { const f = fuenteSheetMecanismo(clave); if (f) fuentes.push(f); });
+  if (c.sheetTabs.length) { const f = fuenteSheetSchema(c.sheetTabs); if (f) fuentes.push(f); }
+  if (c.baserowTablas.length) { const f = fuenteBaserowSchema(c.baserowTablas); if (f) fuentes.push(f); }
   if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes };
 });
 
