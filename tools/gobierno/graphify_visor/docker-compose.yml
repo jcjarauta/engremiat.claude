@@ -25,6 +25,9 @@ services:
       - ./grafo_jerarquia.json:/app/grafo_jerarquia.json:ro
       - ./grafo_paquete_cliente.json:/app/grafo_paquete_cliente.json:ro
       - ./grafo_telar_estados.json:/app/grafo_telar_estados.json:ro
+      - ./grafo_wikilinks.json:/app/grafo_wikilinks.json:ro
+      - ./censo_entidades.json:/app/censo_entidades.json:ro
+      - ./entidades.html:/app/entidades.html:ro
       - ./indice.html:/app/indice.html:ro
     command: npx --yes serve /app -l 9320
     ports:

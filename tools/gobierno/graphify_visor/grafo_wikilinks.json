@@ -1,0 +1,2036 @@
+{
+  "generadoEn": "2026-09-03T05:30:18.945Z",
+  "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
+  "nodos": [
+    {
+      "id": "00_mapa",
+      "nombre": "00_Mapa",
+      "tipo": "mapa",
+      "carpeta": "",
+      "esFicheroReal": true
+    },
+    {
+      "id": "baserow",
+      "nombre": "Baserow",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_sheet",
+      "nombre": "El Sheet",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "n8n",
+      "nombre": "n8n",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "vps_y_tailscale",
+      "nombre": "VPS y Tailscale",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_vault",
+      "nombre": "El Vault",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "la_fragua_protegida",
+      "nombre": "La fragua protegida",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_ciclo_de_vida_remoto",
+      "nombre": "El ciclo de vida remoto",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "headscale",
+      "nombre": "Headscale",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "telar",
+      "nombre": "Telar",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "consola",
+      "nombre": "Consola",
+      "tipo": "espacio",
+      "carpeta": "01_Mundo/Espacios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "carpeta": "01_Mundo/Recursos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "92_bus_trabajo",
+      "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "carpeta": "01_Mundo/Recursos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "repository",
+      "nombre": "Repository",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "integrityservice",
+      "nombre": "IntegrityService",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "formularios",
+      "nombre": "Formularios",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "estructurainicial",
+      "nombre": "EstructuraInicial",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "configrepository",
+      "nombre": "ConfigRepository",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "core",
+      "nombre": "CORE",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/CORE",
+      "esFicheroReal": true
+    },
+    {
+      "id": "ventas",
+      "nombre": "Ventas",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "oportunidad",
+      "nombre": "Oportunidad",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "cliente",
+      "nombre": "Cliente",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "compras",
+      "nombre": "Compras",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "gantt",
+      "nombre": "Gantt",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "impacto",
+      "nombre": "Impacto",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "convocatorias",
+      "nombre": "Convocatorias",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "economico",
+      "nombre": "Economico",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "comunicacion",
+      "nombre": "Comunicacion",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "aprovisionamiento",
+      "nombre": "Aprovisionamiento",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "modulos_acoplables",
+      "nombre": "Modulos acoplables",
+      "tipo": "modulo",
+      "carpeta": "01_Mundo/Modulos/Modulos_acoplables",
+      "esFicheroReal": true
+    },
+    {
+      "id": "concilio",
+      "nombre": "Concilio",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "vigilia",
+      "nombre": "Vigilia",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "coordinador",
+      "nombre": "Coordinador",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "ejecutor",
+      "nombre": "Ejecutor",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "cronista",
+      "nombre": "Cronista",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "pregonero",
+      "nombre": "Pregonero",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "relevo",
+      "nombre": "Relevo",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "narrador",
+      "nombre": "Narrador",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "mensajero",
+      "nombre": "Mensajero",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_tecnico",
+      "nombre": "Acervo Tecnico",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_logico",
+      "nombre": "Acervo Logico",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_logistico",
+      "nombre": "Acervo Logistico",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_narrativo",
+      "nombre": "Acervo Narrativo",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_filosofico",
+      "nombre": "Acervo Filosofico",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_usuario",
+      "nombre": "Acervo Usuario",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_sociocracia",
+      "nombre": "Acervo Sociocracia",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_prompter",
+      "nombre": "Acervo Prompter",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "verificador_de_campos",
+      "nombre": "Verificador de Campos",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Verificadores",
+      "esFicheroReal": true
+    },
+    {
+      "id": "verificador_de_capacidades",
+      "nombre": "Verificador de Capacidades",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Verificadores",
+      "esFicheroReal": true
+    },
+    {
+      "id": "puerta_humana",
+      "nombre": "Puerta Humana",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_sheet_manda",
+      "nombre": "El Sheet manda",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
+      "id": "verificar_contra_hechos",
+      "nombre": "Verificar contra hechos",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
+      "id": "honestidad_del_fallo",
+      "nombre": "Honestidad del fallo",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
+      "id": "los_dos_continentes_de_datos",
+      "nombre": "Los dos continentes de datos",
+      "tipo": "regla",
+      "carpeta": "03_Reglas",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_del_incidente",
+      "nombre": "Arco del incidente",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_de_la_calibracion",
+      "nombre": "Arco de la calibracion",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_del_bug_oculto",
+      "nombre": "Arco del bug oculto",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_del_cierre_del_autociclo",
+      "nombre": "Arco del cierre del autociclo",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_de_la_construccion_del_universo",
+      "nombre": "Arco de la construccion del universo",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "arco_del_nacimiento_del_generador",
+      "nombre": "Arco del nacimiento del generador",
+      "tipo": "arco",
+      "carpeta": "04_Cronologia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "sesion_2026_08_31",
+      "nombre": "Sesion 2026-08-31",
+      "tipo": "sesion",
+      "carpeta": "05_Sesiones",
+      "esFicheroReal": true
+    },
+    {
+      "id": "sesion_2026_09_01",
+      "nombre": "Sesion 2026-09-01",
+      "tipo": "sesion",
+      "carpeta": "05_Sesiones",
+      "esFicheroReal": true
+    },
+    {
+      "id": "quien_dispara_el_primer_lote",
+      "nombre": "Quien dispara el primer lote",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "cerrar_el_circulo_via_incidencias",
+      "nombre": "Cerrar el circulo via incidencias",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "migrar_el_hardcode_de_token_en_n8n",
+      "nombre": "Migrar el hardcode de token en n8n",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "diversificar_el_roster_de_acervos",
+      "nombre": "Diversificar el roster de Acervos",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "unir_historia_y_gobernanza",
+      "nombre": "Unir historia y gobernanza",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "decidir_el_tono_del_universo",
+      "nombre": "Decidir el tono del universo",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "separar_el_holon_en_notas_propias",
+      "nombre": "Separar el Holon en notas propias",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "nombre": "El universo no se ha usado sobre si mismo",
+      "tipo": "hilo",
+      "carpeta": "06_Hilos_Abiertos",
+      "esFicheroReal": true
+    },
+    {
+      "id": "estilo",
+      "nombre": "Estilo",
+      "tipo": "estilo",
+      "carpeta": "",
+      "esFicheroReal": true
+    },
+    {
+      "id": "actualizar_libreria_cliente",
+      "nombre": "Actualizar libreria cliente",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "cerrar_ciclo",
+      "nombre": "Cerrar ciclo",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "chequear_libreria_clientes",
+      "nombre": "Chequear libreria clientes",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "ejecutar_chequeo_libreria",
+      "nombre": "Ejecutar chequeo libreria",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "bus_de_trabajo",
+      "nombre": "Bus de trabajo",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "exportador_de_gasto",
+      "nombre": "Exportador de gasto",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "puente_historia_leyes",
+      "nombre": "Puente historia leyes",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "chequear_consistencia",
+      "nombre": "Chequear consistencia",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "regenerar_estatico",
+      "nombre": "Regenerar estatico",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "extraer_decisiones",
+      "nombre": "Extraer decisiones",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "salud_del_ecosistema",
+      "nombre": "Salud del ecosistema",
+      "tipo": "oficio",
+      "carpeta": "08_Oficios",
+      "esFicheroReal": true
+    },
+    {
+      "id": "00_nucleo",
+      "nombre": "00_Nucleo",
+      "tipo": "sin_tipo",
+      "carpeta": "00_Nucleo",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo",
+      "nombre": "Acervo",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    },
+    {
+      "id": "acervos",
+      "nombre": "Acervos",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    },
+    {
+      "id": "7_acervos_o_mecanismos",
+      "nombre": "7 Acervos-o-mecanismos",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    },
+    {
+      "id": "2_acervos_o_mecanismos",
+      "nombre": "2 Acervos-o-mecanismos",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    },
+    {
+      "id": "vision_mision",
+      "nombre": "Vision Mision",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    },
+    {
+      "id": "fisica",
+      "nombre": "Física",
+      "tipo": "referencia_sin_ficha",
+      "carpeta": null,
+      "esFicheroReal": false
+    }
+  ],
+  "aristas": [
+    {
+      "source": "00_mapa",
+      "target": "telar",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "narrador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "acervo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "estilo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "gasto_api",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "92_bus_trabajo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "headscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "la_fragua_protegida",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "comunicacion",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "ventas",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "oportunidad",
+      "relation": "wikilink"
+    },
+    {
+      "source": "00_mapa",
+      "target": "convocatorias",
+      "relation": "wikilink"
+    },
+    {
+      "source": "baserow",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "baserow",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "baserow",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "baserow",
+      "target": "el_vault",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_sheet",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_sheet",
+      "target": "el_sheet_manda",
+      "relation": "wikilink"
+    },
+    {
+      "source": "n8n",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "n8n",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "n8n",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vps_y_tailscale",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vps_y_tailscale",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vps_y_tailscale",
+      "target": "los_dos_continentes_de_datos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vps_y_tailscale",
+      "target": "la_fragua_protegida",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vps_y_tailscale",
+      "target": "el_ciclo_de_vida_remoto",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_vault",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "la_fragua_protegida",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "la_fragua_protegida",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "la_fragua_protegida",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "la_fragua_protegida",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_ciclo_de_vida_remoto",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "headscale",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "telar",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "telar",
+      "target": "acervos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "telar",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "telar",
+      "target": "narrador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gasto_api",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gasto_api",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gasto_api",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gasto_api",
+      "target": "exportador_de_gasto",
+      "relation": "wikilink"
+    },
+    {
+      "source": "92_bus_trabajo",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "92_bus_trabajo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "repository",
+      "target": "integrityservice",
+      "relation": "wikilink"
+    },
+    {
+      "source": "repository",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "repository",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "integrityservice",
+      "target": "repository",
+      "relation": "wikilink"
+    },
+    {
+      "source": "integrityservice",
+      "target": "verificar_contra_hechos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "integrityservice",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "formularios",
+      "target": "repository",
+      "relation": "wikilink"
+    },
+    {
+      "source": "formularios",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "aprovisionamiento",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "configrepository",
+      "target": "formularios",
+      "relation": "wikilink"
+    },
+    {
+      "source": "configrepository",
+      "target": "integrityservice",
+      "relation": "wikilink"
+    },
+    {
+      "source": "configrepository",
+      "target": "core",
+      "relation": "wikilink"
+    },
+    {
+      "source": "core",
+      "target": "repository",
+      "relation": "wikilink"
+    },
+    {
+      "source": "core",
+      "target": "integrityservice",
+      "relation": "wikilink"
+    },
+    {
+      "source": "core",
+      "target": "formularios",
+      "relation": "wikilink"
+    },
+    {
+      "source": "core",
+      "target": "estructurainicial",
+      "relation": "wikilink"
+    },
+    {
+      "source": "core",
+      "target": "configrepository",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ventas",
+      "target": "economico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ventas",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "oportunidad",
+      "target": "convocatorias",
+      "relation": "wikilink"
+    },
+    {
+      "source": "oportunidad",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cliente",
+      "target": "aprovisionamiento",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cliente",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "compras",
+      "target": "gasto_api",
+      "relation": "wikilink"
+    },
+    {
+      "source": "compras",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gantt",
+      "target": "repository",
+      "relation": "wikilink"
+    },
+    {
+      "source": "gantt",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "impacto",
+      "target": "ventas",
+      "relation": "wikilink"
+    },
+    {
+      "source": "impacto",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "convocatorias",
+      "target": "oportunidad",
+      "relation": "wikilink"
+    },
+    {
+      "source": "convocatorias",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "economico",
+      "target": "ventas",
+      "relation": "wikilink"
+    },
+    {
+      "source": "economico",
+      "target": "gasto_api",
+      "relation": "wikilink"
+    },
+    {
+      "source": "economico",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "comunicacion",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "comunicacion",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "comunicacion",
+      "relation": "wikilink"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "modulos_acoplables",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "ventas",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "oportunidad",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "compras",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "gantt",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "impacto",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "convocatorias",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "economico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "comunicacion",
+      "relation": "wikilink"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "aprovisionamiento",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_tecnico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logistico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_narrativo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_filosofico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_usuario",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_sociocracia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "concilio",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "verificador_de_campos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "verificador_de_capacidades",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "actualizar_libreria_cliente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "coordinador",
+      "target": "cerrar_ciclo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ejecutor",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ejecutor",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ejecutor",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cronista",
+      "target": "arco_del_nacimiento_del_generador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cronista",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cronista",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "pregonero",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "relevo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "relevo",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "relevo",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "relevo",
+      "target": "pregonero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "relevo",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "narrador",
+      "target": "acervo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "narrador",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "narrador",
+      "target": "00_mapa",
+      "relation": "wikilink"
+    },
+    {
+      "source": "narrador",
+      "target": "estilo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "narrador",
+      "target": "acervo_narrativo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "puente_historia_leyes",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "bus_de_trabajo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "chequear_consistencia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "regenerar_estatico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "extraer_decisiones",
+      "relation": "wikilink"
+    },
+    {
+      "source": "mensajero",
+      "target": "salud_del_ecosistema",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_tecnico",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_logico",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_logico",
+      "target": "acervo_narrativo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_logistico",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_narrativo",
+      "target": "acervo_logico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_narrativo",
+      "target": "narrador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_narrativo",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_filosofico",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_filosofico",
+      "target": "00_mapa",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_sociocracia",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_campos",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_campos",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_campos",
+      "target": "verificar_contra_hechos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_capacidades",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_capacidades",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificador_de_capacidades",
+      "target": "verificar_contra_hechos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "arco_del_nacimiento_del_generador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_sheet_manda",
+      "target": "los_dos_continentes_de_datos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_sheet_manda",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_sheet_manda",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificar_contra_hechos",
+      "target": "verificador_de_campos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "verificar_contra_hechos",
+      "target": "verificador_de_capacidades",
+      "relation": "wikilink"
+    },
+    {
+      "source": "honestidad_del_fallo",
+      "target": "el_ciclo_de_vida_remoto",
+      "relation": "wikilink"
+    },
+    {
+      "source": "honestidad_del_fallo",
+      "target": "acervo_sociocracia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "honestidad_del_fallo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "vps_y_tailscale",
+      "relation": "wikilink"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_incidente",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_incidente",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_incidente",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_incidente",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_calibracion",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_calibracion",
+      "target": "verificador_de_capacidades",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_calibracion",
+      "target": "verificador_de_campos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_calibracion",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_bug_oculto",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_bug_oculto",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_bug_oculto",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_cierre_del_autociclo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_cierre_del_autociclo",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_cierre_del_autociclo",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_cierre_del_autociclo",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_construccion_del_universo",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_construccion_del_universo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_de_la_construccion_del_universo",
+      "target": "el_vault",
+      "relation": "wikilink"
+    },
+    {
+      "source": "arco_del_nacimiento_del_generador",
+      "target": "cronista",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_08_31",
+      "target": "arco_del_incidente",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "arco_de_la_calibracion",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "arco_del_bug_oculto",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "arco_del_cierre_del_autociclo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "arco_de_la_construccion_del_universo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "separar_el_holon_en_notas_propias",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "quien_dispara_el_primer_lote",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "cerrar_el_circulo_via_incidencias",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "migrar_el_hardcode_de_token_en_n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "diversificar_el_roster_de_acervos",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "unir_historia_y_gobernanza",
+      "relation": "wikilink"
+    },
+    {
+      "source": "sesion_2026_09_01",
+      "target": "decidir_el_tono_del_universo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "quien_dispara_el_primer_lote",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "quien_dispara_el_primer_lote",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cerrar_el_circulo_via_incidencias",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cerrar_el_circulo_via_incidencias",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cerrar_el_circulo_via_incidencias",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cerrar_el_circulo_via_incidencias",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "migrar_el_hardcode_de_token_en_n8n",
+      "target": "n8n",
+      "relation": "wikilink"
+    },
+    {
+      "source": "migrar_el_hardcode_de_token_en_n8n",
+      "target": "baserow",
+      "relation": "wikilink"
+    },
+    {
+      "source": "diversificar_el_roster_de_acervos",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "diversificar_el_roster_de_acervos",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "unir_historia_y_gobernanza",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "unir_historia_y_gobernanza",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "unir_historia_y_gobernanza",
+      "target": "el_sheet_manda",
+      "relation": "wikilink"
+    },
+    {
+      "source": "decidir_el_tono_del_universo",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "decidir_el_tono_del_universo",
+      "target": "estilo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "decidir_el_tono_del_universo",
+      "target": "telar",
+      "relation": "wikilink"
+    },
+    {
+      "source": "decidir_el_tono_del_universo",
+      "target": "00_mapa",
+      "relation": "wikilink"
+    },
+    {
+      "source": "decidir_el_tono_del_universo",
+      "target": "narrador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "separar_el_holon_en_notas_propias",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "separar_el_holon_en_notas_propias",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "ejecutor",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "relevo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "vigilia",
+      "target": "concilio",
+      "relation": "activa_a"
+    },
+    {
+      "source": "concilio",
+      "target": "7_acervos_o_mecanismos",
+      "relation": "depende_de"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "vigilia",
+      "relation": "alimenta_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "concilio",
+      "relation": "verifica_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "concilio",
+      "relation": "corrige_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "relevo",
+      "relation": "alimenta_a"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "2_acervos_o_mecanismos",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "ejecutor",
+      "target": "el_sheet",
+      "relation": "opera_en"
+    },
+    {
+      "source": "vigilia",
+      "target": "baserow",
+      "relation": "opera_en"
+    },
+    {
+      "source": "baserow",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "n8n",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "el_vault",
+      "target": "baserow",
+      "relation": "depende_de"
+    },
+    {
+      "source": "coordinador",
+      "target": "2_acervos_o_mecanismos",
+      "relation": "parte_de"
+    },
+    {
+      "source": "cronista",
+      "target": "n8n",
+      "relation": "opera_en"
+    },
+    {
+      "source": "coordinador",
+      "target": "gasto_api",
+      "relation": "opera_en"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "gasto_api",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "headscale",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "mensajero",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "estilo",
+      "target": "vision_mision",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estilo",
+      "target": "00_mapa",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estilo",
+      "target": "fisica",
+      "relation": "wikilink"
+    },
+    {
+      "source": "estilo",
+      "target": "narrador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "actualizar_libreria_cliente",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "cerrar_ciclo",
+      "target": "coordinador",
+      "relation": "wikilink"
+    },
+    {
+      "source": "chequear_libreria_clientes",
+      "target": "ejecutar_chequeo_libreria",
+      "relation": "wikilink"
+    },
+    {
+      "source": "chequear_libreria_clientes",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "ejecutar_chequeo_libreria",
+      "target": "chequear_libreria_clientes",
+      "relation": "wikilink"
+    },
+    {
+      "source": "bus_de_trabajo",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "bus_de_trabajo",
+      "target": "92_bus_trabajo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "exportador_de_gasto",
+      "target": "gasto_api",
+      "relation": "wikilink"
+    },
+    {
+      "source": "puente_historia_leyes",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "chequear_consistencia",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "chequear_consistencia",
+      "target": "el_sheet",
+      "relation": "wikilink"
+    },
+    {
+      "source": "regenerar_estatico",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "extraer_decisiones",
+      "target": "mensajero",
+      "relation": "wikilink"
+    },
+    {
+      "source": "extraer_decisiones",
+      "target": "puerta_humana",
+      "relation": "wikilink"
+    },
+    {
+      "source": "salud_del_ecosistema",
+      "target": "honestidad_del_fallo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "salud_del_ecosistema",
+      "target": "mensajero",
+      "relation": "wikilink"
+    }
+  ]
+}

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- censo real de entidades</title>
+<style>
+  html, body { margin: 0; min-height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  body { padding: 24px 28px 60px; box-sizing: border-box; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.hint { color: #9a9aa2; font-size: 12.5px; max-width: 900px; line-height: 1.5; margin: 4px 0; }
+  .resumen { display: flex; gap: 10px; margin: 18px 0; flex-wrap: wrap; }
+  .chip { border-radius: 6px; padding: 10px 14px; font-size: 12.5px; cursor: pointer; border: 1px solid #2c2d33; background: #17181c; user-select: none; }
+  .chip b { display: block; font-size: 19px; }
+  .chip.activo { border-color: #4c6ef5; background: #1c2440; }
+  .chip.confirmar b { color: #2f9e44; } .chip.promover b { color: #4c9aff; }
+  .chip.revisar b { color: #e8a33d; } .chip.descartar b { color: #6b6c76; }
+  .controles { display: flex; gap: 10px; align-items: center; margin: 10px 0 16px; flex-wrap: wrap; }
+  input[type=text] { background: #17181c; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; width: 260px; }
+  select { background: #17181c; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; }
+  .tabla-wrap { overflow-x: auto; width: 100%; box-sizing: border-box; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  #tabla { min-width: 640px; }
+  th { text-align: left; padding: 8px 10px; color: #9a9aa2; font-weight: 600; border-bottom: 1px solid #2c2d33; position: sticky; top: 0; background: #0f1013; cursor: pointer; }
+  td { padding: 7px 10px; border-bottom: 1px solid #1c1d22; vertical-align: top; }
+  tr:hover td { background: #14151a; }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; margin-right: 4px; }
+  .tag.confirmar { background: #2f9e4433; color: #4fce6f; }
+  .tag.promover { background: #4c9aff33; color: #6cb4ff; }
+  .tag.revisar { background: #e8a33d33; color: #f0b959; }
+  .tag.descartar { background: #6b6c7633; color: #9a9aa2; }
+  .fuentes { color: #9a9aa2; }
+  .fuente { display: inline-block; background: #24252b; border-radius: 3px; padding: 1px 6px; margin: 1px 2px 1px 0; font-size: 10.5px; }
+  #detalle { position: fixed; right: 0; top: 0; bottom: 0; width: min(360px, 92vw); background: #17181c; border-left: 1px solid #2c2d33; padding: 20px; box-sizing: border-box; overflow-y: auto; transform: translateX(100%); transition: transform .15s; }
+  #detalle.abierto { transform: translateX(0); }
+  #detalle h3 { margin: 0 0 6px; }
+  #detalle p { font-size: 12.5px; line-height: 1.5; color: #c7c8d6; }
+  #detalle .cerrar { position: absolute; top: 14px; right: 16px; cursor: pointer; color: #9a9aa2; }
+  .seccion-vocab { margin-top: 34px; }
+  .seccion-vocab .tabla-wrap { width: auto; max-width: 520px; }
+</style>
+</head>
+<body>
+<h1>Censo real de entidades del universo Engremiat</h1>
+<p class="hint">Cruce de 9 fuentes reales -- 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la bóveda) más la estructura atómica completa de Sheet (70 pestañas) y Baserow (18 tablas). Ver <code>PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md</code> §8.23. Límite honesto: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID único todavía.</p>
+
+<div class="resumen" id="resumen"></div>
+<div class="controles">
+  <input type="text" id="buscar" placeholder="Buscar por nombre real...">
+  <select id="filtroTipo"><option value="">Cualquier tipo candidato</option></select>
+  <span id="contador" class="hint"></span>
+</div>
+<div class="tabla-wrap">
+<table id="tabla">
+  <thead>
+    <tr>
+      <th data-k="nombre">Nombre</th>
+      <th data-k="decision">Decisión</th>
+      <th data-k="corroboracionCruzada">Corrob.</th>
+      <th data-k="centralidad">Grado</th>
+      <th>Fuentes reales</th>
+    </tr>
+  </thead>
+  <tbody id="filas"></tbody>
+</table>
+</div>
+
+<div class="seccion-vocab">
+  <h2 style="font-size:15px;">Vocabulario de relación real, por frecuencia</h2>
+  <div class="tabla-wrap"><table id="tablaVocab"><thead><tr><th>Tipo</th><th>Total</th><th>Capas</th></tr></thead><tbody></tbody></table></div>
+</div>
+
+<div id="detalle">
+  <span class="cerrar" onclick="cerrarDetalle()">✕</span>
+  <h3 id="dNombre"></h3>
+  <p id="dTipos"></p>
+  <p id="dRazon"></p>
+  <p id="dFuentes"></p>
+</div>
+
+<script>
+let censo = null, filtroDecision = '', orden = { campo: 'corroboracionCruzada', desc: true };
+
+async function cargar() {
+  censo = await (await fetch('censo_entidades.json')).json();
+
+  const resumen = document.getElementById('resumen');
+  const totales = censo.totales;
+  resumen.innerHTML = ['confirmar','promover','revisar','descartar'].map(d =>
+    `<div class="chip ${d}" data-d="${d}" onclick="toggleFiltro('${d}')"><b>${totales[d]}</b>${d}</div>`
+  ).join('');
+
+  const tipos = new Set();
+  censo.entidades.forEach(e => e.tiposCandidato.forEach(t => tipos.add(t)));
+  const sel = document.getElementById('filtroTipo');
+  [...tipos].sort().forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
+
+  const vocabBody = document.querySelector('#tablaVocab tbody');
+  vocabBody.innerHTML = censo.vocabularioRelacion.map(v =>
+    `<tr><td>${v.tipo}</td><td>${v.total}</td><td class="fuentes">${Object.entries(v.porCapa).map(([k,n])=>k+':'+n).join(', ')}</td></tr>`
+  ).join('');
+
+  render();
+}
+
+function toggleFiltro(d) {
+  filtroDecision = filtroDecision === d ? '' : d;
+  document.querySelectorAll('.chip').forEach(c => c.classList.toggle('activo', c.dataset.d === filtroDecision));
+  render();
+}
+
+function render() {
+  const q = document.getElementById('buscar').value.toLowerCase();
+  const tipo = document.getElementById('filtroTipo').value;
+  let filas = censo.entidades.filter(e =>
+    (!filtroDecision || e.decision === filtroDecision) &&
+    (!tipo || e.tiposCandidato.includes(tipo)) &&
+    (!q || e.nombre.toLowerCase().includes(q))
+  );
+  filas.sort((a,b) => {
+    const va = a[orden.campo], vb = b[orden.campo];
+    const cmp = typeof va === 'string' ? va.localeCompare(vb) : va - vb;
+    return orden.desc ? -cmp : cmp;
+  });
+  document.getElementById('contador').textContent = filas.length + ' de ' + censo.entidades.length;
+  document.getElementById('filas').innerHTML = filas.map((e, i) => `
+    <tr onclick="verDetalle(${censo.entidades.indexOf(e)})">
+      <td>${e.nombre}</td>
+      <td><span class="tag ${e.decision}">${e.decision}</span></td>
+      <td>${e.corroboracionCruzada}</td>
+      <td>${e.centralidad}</td>
+      <td class="fuentes">${e.fuentes.map(f => `<span class="fuente">${f}</span>`).join('')}</td>
+    </tr>`).join('');
+}
+
+function verDetalle(idx) {
+  const e = censo.entidades[idx];
+  document.getElementById('dNombre').textContent = e.nombre;
+  document.getElementById('dTipos').innerHTML = '<span class="tag ' + e.decision + '">' + e.decision + '</span> ' + e.tiposCandidato.join(', ') + (e.yaEsFichaVault ? ' -- ya es ficha real en la bóveda' : ' -- sin ficha propia hoy');
+  document.getElementById('dRazon').textContent = e.razon;
+  document.getElementById('dFuentes').innerHTML = '<b>Fuentes reales:</b><br>' + e.fuentes.map(f => `<span class="fuente">${f}</span>`).join(' ');
+  document.getElementById('detalle').classList.add('abierto');
+}
+function cerrarDetalle() { document.getElementById('detalle').classList.remove('abierto'); }
+
+document.getElementById('buscar').addEventListener('input', render);
+document.getElementById('filtroTipo').addEventListener('change', render);
+document.querySelectorAll('#tabla th[data-k]').forEach(th => th.addEventListener('click', () => {
+  const k = th.dataset.k;
+  orden = { campo: k, desc: orden.campo === k ? !orden.desc : true };
+  render();
+}));
+
+cargar();
+</script>
+</body>
+</html>

@@ -1,0 +1,3878 @@
+{
+  "generadoEn": "2026-09-03T05:30:41.377Z",
+  "fuentesReales": [
+    "vault_ficha",
+    "vault_wikilink",
+    "codigo_appsscript",
+    "codigo_node",
+    "n8n",
+    "sheet_estructura",
+    "baserow_estructura",
+    "datos_negocio",
+    "telar"
+  ],
+  "totales": {
+    "candidatos": 222,
+    "confirmar": 18,
+    "promover": 20,
+    "revisar": 65,
+    "descartar": 119
+  },
+  "ciclosReales": [
+    [
+      "00_mapa",
+      "92_bus_trabajo",
+      "acervo_filosofico",
+      "acervo_logico",
+      "acervo_logistico",
+      "acervo_narrativo",
+      "acervo_prompter",
+      "acervo_sociocracia",
+      "acervo_tecnico",
+      "acervo_usuario",
+      "actualizar_libreria_cliente",
+      "aprovisionamiento",
+      "arco_del_nacimiento_del_generador",
+      "baserow",
+      "bus_de_trabajo",
+      "cerrar_ciclo",
+      "chequear_consistencia",
+      "cliente",
+      "compras",
+      "comunicacion",
+      "concilio",
+      "configrepository",
+      "convocatorias",
+      "coordinador",
+      "core",
+      "cronista",
+      "economico",
+      "ejecutor",
+      "el_ciclo_de_vida_remoto",
+      "el_sheet",
+      "el_sheet_manda",
+      "el_vault",
+      "estilo",
+      "estructurainicial",
+      "exportador_de_gasto",
+      "extraer_decisiones",
+      "formularios",
+      "gantt",
+      "gasto_api",
+      "headscale",
+      "honestidad_del_fallo",
+      "impacto",
+      "integrityservice",
+      "la_fragua_protegida",
+      "los_dos_continentes_de_datos",
+      "mensajero",
+      "modulos_acoplables",
+      "n8n",
+      "narrador",
+      "oportunidad",
+      "pregonero",
+      "puente_historia_leyes",
+      "puerta_humana",
+      "regenerar_estatico",
+      "relevo",
+      "repository",
+      "salud_del_ecosistema",
+      "telar",
+      "ventas",
+      "verificador_de_campos",
+      "verificador_de_capacidades",
+      "verificar_contra_hechos",
+      "vigilia",
+      "vps_y_tailscale"
+    ],
+    [
+      "chequear_libreria_clientes",
+      "ejecutar_chequeo_libreria"
+    ],
+    [
+      "dato:appsscript.json",
+      "dato:clientes.json",
+      "dato:libreria.json",
+      "tools/constructor/montar-cliente.mjs",
+      "tools/constructor/montar-cliente.test.mjs"
+    ],
+    [
+      "aprobada_sin_ejecutar",
+      "concilio_convocando",
+      "deliberando",
+      "devuelta",
+      "esperando_relevo",
+      "huella",
+      "orientacion",
+      "puerta_ejecutada",
+      "puerta_en_curso",
+      "puerta_err",
+      "puerta_pendiente",
+      "puerta_warn",
+      "sin_seleccionar",
+      "tejiendo"
+    ]
+  ],
+  "vocabularioRelacion": [
+    {
+      "tipo": "calls",
+      "total": 2994,
+      "porCapa": {
+        "apps_script": 2994
+      }
+    },
+    {
+      "tipo": "contains",
+      "total": 1573,
+      "porCapa": {
+        "apps_script": 1573
+      }
+    },
+    {
+      "tipo": "wikilink",
+      "total": 263,
+      "porCapa": {
+        "wikilinks": 263
+      }
+    },
+    {
+      "tipo": "conexion_n8n",
+      "total": 138,
+      "porCapa": {
+        "n8n": 138
+      }
+    },
+    {
+      "tipo": "indirect_call",
+      "total": 100,
+      "porCapa": {
+        "apps_script": 100
+      }
+    },
+    {
+      "tipo": "toco_en_operacion",
+      "total": 81,
+      "porCapa": {
+        "historial": 81
+      }
+    },
+    {
+      "tipo": "parte_de_jerarquia",
+      "total": 43,
+      "porCapa": {
+        "jerarquia": 43
+      }
+    },
+    {
+      "tipo": "toca_recurso",
+      "total": 39,
+      "porCapa": {
+        "node": 39
+      }
+    },
+    {
+      "tipo": "escribe_debil",
+      "total": 22,
+      "porCapa": {
+        "node": 22
+      }
+    },
+    {
+      "tipo": "transicion_estado",
+      "total": 19,
+      "porCapa": {
+        "telar_estados": 19
+      }
+    },
+    {
+      "tipo": "lee_debil",
+      "total": 14,
+      "porCapa": {
+        "node": 14
+      }
+    },
+    {
+      "tipo": "opera_en",
+      "total": 8,
+      "porCapa": {
+        "wikilinks": 8
+      }
+    },
+    {
+      "tipo": "lee",
+      "total": 8,
+      "porCapa": {
+        "node": 8
+      }
+    },
+    {
+      "tipo": "import",
+      "total": 6,
+      "porCapa": {
+        "node": 6
+      }
+    },
+    {
+      "tipo": "escribe",
+      "total": 4,
+      "porCapa": {
+        "node": 4
+      }
+    },
+    {
+      "tipo": "modulo_activo",
+      "total": 3,
+      "porCapa": {
+        "paquete_cliente": 3
+      }
+    },
+    {
+      "tipo": "depende_de",
+      "total": 2,
+      "porCapa": {
+        "wikilinks": 2
+      }
+    },
+    {
+      "tipo": "alimenta_a",
+      "total": 2,
+      "porCapa": {
+        "wikilinks": 2
+      }
+    },
+    {
+      "tipo": "gobierna_a",
+      "total": 2,
+      "porCapa": {
+        "wikilinks": 2
+      }
+    },
+    {
+      "tipo": "activa_a",
+      "total": 1,
+      "porCapa": {
+        "wikilinks": 1
+      }
+    },
+    {
+      "tipo": "verifica_a",
+      "total": 1,
+      "porCapa": {
+        "wikilinks": 1
+      }
+    },
+    {
+      "tipo": "corrige_a",
+      "total": 1,
+      "porCapa": {
+        "wikilinks": 1
+      }
+    },
+    {
+      "tipo": "parte_de",
+      "total": 1,
+      "porCapa": {
+        "wikilinks": 1
+      }
+    },
+    {
+      "tipo": "cites",
+      "total": 1,
+      "porCapa": {
+        "apps_script": 1
+      }
+    }
+  ],
+  "entidades": [
+    {
+      "nombre": "Cliente",
+      "slug": "cliente",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 7,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "codigo_node",
+        "datos_negocio",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Ejecutor",
+      "slug": "ejecutor",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 6,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "datos_negocio",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 10,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Cronista",
+      "slug": "cronista",
+      "tiposCandidato": [
+        "personaje",
+        "modulo_real"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 6,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "datos_negocio",
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 10,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "TAREA",
+      "slug": "tarea",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 6,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "codigo_node",
+        "datos_negocio",
+        "n8n",
+        "sheet_estructura"
+      ],
+      "centralidad": 5,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "DOCUMENTO",
+      "slug": "documento",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 6,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "codigo_node",
+        "datos_negocio",
+        "n8n",
+        "sheet_estructura"
+      ],
+      "centralidad": 4,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Concilio",
+      "slug": "concilio",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "codigo_node",
+        "n8n",
+        "telar",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 34,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Coordinador",
+      "slug": "coordinador",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 32,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Vigilia",
+      "slug": "vigilia",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 21,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Relevo",
+      "slug": "relevo",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "telar",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 13,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Telar",
+      "slug": "telar",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Oportunidad",
+      "slug": "oportunidad",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Baserow",
+      "slug": "baserow",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_node",
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 19,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "CORE",
+      "slug": "core",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_appsscript",
+        "datos_negocio",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 11,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "GASTO_API",
+      "slug": "gasto_api",
+      "tiposCandidato": [
+        "recurso",
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 10,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "92_BUS_TRABAJO",
+      "slug": "92_bus_trabajo",
+      "tiposCandidato": [
+        "recurso",
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_node",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Impacto",
+      "slug": "impacto",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Bus de trabajo",
+      "slug": "bus_de_trabajo",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_node",
+        "sheet_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Salud del ecosistema",
+      "slug": "salud_del_ecosistema",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_node",
+        "datos_negocio",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "Actualizar libreria cliente",
+      "slug": "actualizar_libreria_cliente",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "38_CLIENTE",
+      "slug": "38_cliente",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 2,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Verificación",
+      "slug": "verificacion",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "datos_negocio",
+        "n8n",
+        "sheet_estructura"
+      ],
+      "centralidad": 1,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Consola",
+      "slug": "consola",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura",
+        "vault_ficha"
+      ],
+      "centralidad": 0,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+    },
+    {
+      "nombre": "06_TAREAS",
+      "slug": "06_tareas",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Puerta Humana",
+      "slug": "puerta_humana",
+      "tiposCandidato": [
+        "regla"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 15,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Prompter",
+      "slug": "acervo_prompter",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 8,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Repository",
+      "slug": "repository",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "13_INCIDENCIAS",
+      "slug": "13_incidencias",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 7,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Ventas",
+      "slug": "ventas",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Aprovisionamiento",
+      "slug": "aprovisionamiento",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Verificador de Capacidades",
+      "slug": "verificador_de_capacidades",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Convocatorias",
+      "slug": "convocatorias",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Economico",
+      "slug": "economico",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Comunicacion",
+      "slug": "comunicacion",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Verificar contra hechos",
+      "slug": "verificar_contra_hechos",
+      "tiposCandidato": [
+        "regla"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "n8n",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "EstructuraInicial",
+      "slug": "estructurainicial",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Compras",
+      "slug": "compras",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Gantt",
+      "slug": "gantt",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Chequear libreria clientes",
+      "slug": "chequear_libreria_clientes",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Chequear consistencia",
+      "slug": "chequear_consistencia",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Extraer decisiones",
+      "slug": "extraer_decisiones",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo",
+      "slug": "acervo",
+      "tiposCandidato": [
+        "referencia_sin_ficha",
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Pregonero",
+      "slug": "pregonero",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Cerrar ciclo",
+      "slug": "cerrar_ciclo",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Ejecutar chequeo libreria",
+      "slug": "ejecutar_chequeo_libreria",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Exportador de gasto",
+      "slug": "exportador_de_gasto",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Puente historia leyes",
+      "slug": "puente_historia_leyes",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Regenerar estatico",
+      "slug": "regenerar_estatico",
+      "tiposCandidato": [
+        "oficio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "18_VINCULO",
+      "slug": "18_vinculo",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 2,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "Acervos",
+      "slug": "acervos",
+      "tiposCandidato": [
+        "referencia_sin_ficha"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "PLANTILLA_MISION",
+      "slug": "plantilla_mision",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "n8n"
+      ],
+      "centralidad": 1,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "46_TAREA_RECURSO_NECESIDAD",
+      "slug": "46_tarea_recurso_necesidad",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "02_PROYECTOS",
+      "slug": "02_proyectos",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "04_PROYECTO_PRODUCTO",
+      "slug": "04_proyecto_producto",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "11_PERSONAS_EQUIPOS",
+      "slug": "11_personas_equipos",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "STG_TAREA_RECURSO",
+      "slug": "stg_tarea_recurso",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "14_DOCUMENTOS",
+      "slug": "14_documentos",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "24_TAREA_RECURSO",
+      "slug": "24_tarea_recurso",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "codigo_node",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "34_PERSONA_COMPETENCIA",
+      "slug": "34_persona_competencia",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "COMPETENCIA",
+      "slug": "competencia",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "PERSONA_COMPETENCIA",
+      "slug": "persona_competencia",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+    },
+    {
+      "nombre": "00_Mapa",
+      "slug": "00_mapa",
+      "tiposCandidato": [
+        "mapa"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 23,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Modulos acoplables",
+      "slug": "modulos_acoplables",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 21,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Mensajero",
+      "slug": "mensajero",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 19,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "VPS y Tailscale",
+      "slug": "vps_y_tailscale",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 16,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "n8n",
+      "slug": "n8n",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 11,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Sesion 2026-09-01",
+      "slug": "sesion_2026_09_01",
+      "tiposCandidato": [
+        "sesion"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 11,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "El Sheet",
+      "slug": "el_sheet",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 10,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Narrador",
+      "slug": "narrador",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 10,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "El universo no se ha usado sobre si mismo",
+      "slug": "el_universo_no_se_ha_usado_sobre_si_mismo",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Estilo",
+      "slug": "estilo",
+      "tiposCandidato": [
+        "estilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "La fragua protegida",
+      "slug": "la_fragua_protegida",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "IntegrityService",
+      "slug": "integrityservice",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Narrativo",
+      "slug": "acervo_narrativo",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Verificador de Campos",
+      "slug": "verificador_de_campos",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Decidir el tono del universo",
+      "slug": "decidir_el_tono_del_universo",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "El Sheet manda",
+      "slug": "el_sheet_manda",
+      "tiposCandidato": [
+        "regla"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Los dos continentes de datos",
+      "slug": "los_dos_continentes_de_datos",
+      "tiposCandidato": [
+        "regla"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco del incidente",
+      "slug": "arco_del_incidente",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco de la calibracion",
+      "slug": "arco_de_la_calibracion",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco del cierre del autociclo",
+      "slug": "arco_del_cierre_del_autociclo",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Cerrar el circulo via incidencias",
+      "slug": "cerrar_el_circulo_via_incidencias",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "El Vault",
+      "slug": "el_vault",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Formularios",
+      "slug": "formularios",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "ConfigRepository",
+      "slug": "configrepository",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Logico",
+      "slug": "acervo_logico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Honestidad del fallo",
+      "slug": "honestidad_del_fallo",
+      "tiposCandidato": [
+        "regla"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco del bug oculto",
+      "slug": "arco_del_bug_oculto",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco de la construccion del universo",
+      "slug": "arco_de_la_construccion_del_universo",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Unir historia y gobernanza",
+      "slug": "unir_historia_y_gobernanza",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "El ciclo de vida remoto",
+      "slug": "el_ciclo_de_vida_remoto",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Headscale",
+      "slug": "headscale",
+      "tiposCandidato": [
+        "espacio"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Filosofico",
+      "slug": "acervo_filosofico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Sociocracia",
+      "slug": "acervo_sociocracia",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Arco del nacimiento del generador",
+      "slug": "arco_del_nacimiento_del_generador",
+      "tiposCandidato": [
+        "arco"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Quien dispara el primer lote",
+      "slug": "quien_dispara_el_primer_lote",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Migrar el hardcode de token en n8n",
+      "slug": "migrar_el_hardcode_de_token_en_n8n",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Diversificar el roster de Acervos",
+      "slug": "diversificar_el_roster_de_acervos",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Separar el Holon en notas propias",
+      "slug": "separar_el_holon_en_notas_propias",
+      "tiposCandidato": [
+        "hilo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "VIGILIA_TAREA",
+      "slug": "vigilia_tarea",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node"
+      ],
+      "centralidad": 3,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "slug": "documento_engremiat",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node"
+      ],
+      "centralidad": 3,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Acervo Tecnico",
+      "slug": "acervo_tecnico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Logistico",
+      "slug": "acervo_logistico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Acervo Usuario",
+      "slug": "acervo_usuario",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "METRICA_FABRICACION",
+      "slug": "metrica_fabricacion",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "TEST-Cliente-2026-08-29",
+      "slug": "test_cliente_2026_08_29",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_node",
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Sesion 2026-08-31",
+      "slug": "sesion_2026_08_31",
+      "tiposCandidato": [
+        "sesion"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Física",
+      "slug": "fisica",
+      "tiposCandidato": [
+        "referencia_sin_ficha"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "PERSONAJE",
+      "slug": "personaje",
+      "tiposCandidato": [
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Proyecto 0 — Catálogo de módulos",
+      "slug": "proyecto_0_catalogo_de_modulos",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "AGORA",
+      "slug": "agora",
+      "tiposCandidato": [
+        "modulo_real",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "EJECUTOR_LOCAL",
+      "slug": "ejecutor_local",
+      "tiposCandidato": [
+        "modulo_real"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Telar Interactivo",
+      "slug": "telar_interactivo",
+      "tiposCandidato": [
+        "workflow_n8n"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_node",
+        "n8n"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "39_PEDIDO_CLIENTE",
+      "slug": "39_pedido_cliente",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "40_PEDIDO_CLIENTE_LINEA",
+      "slug": "40_pedido_cliente_linea",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "42_ENTREGA_LINEA",
+      "slug": "42_entrega_linea",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "43_CONTRATO_SERVICIO",
+      "slug": "43_contrato_servicio",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "45_TAREA_COMPETENCIA",
+      "slug": "45_tarea_competencia",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "01_CAMPANAS",
+      "slug": "01_campanas",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "SOLICITUDES_MONTAJE",
+      "slug": "solicitudes_montaje",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "03_PRODUCTOS",
+      "slug": "03_productos",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "05_PROCESOS",
+      "slug": "05_procesos",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "datos_negocio",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "07_TAREA_RESPONSABLE",
+      "slug": "07_tarea_responsable",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "09_PRODUCTO_MATERIAL",
+      "slug": "09_producto_material",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "10_TAREA_MATERIAL",
+      "slug": "10_tarea_material",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_EQUIPO_MIEMBRO",
+      "slug": "stg_equipo_miembro",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_TAREA_RESPONSABLE",
+      "slug": "stg_tarea_responsable",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "19_MOVIMIENTO_MATERIAL",
+      "slug": "19_movimiento_material",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "20_EJECUCION_TAREA",
+      "slug": "20_ejecucion_tarea",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "21_PROVEEDOR_MATERIAL",
+      "slug": "21_proveedor_material",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "22_EQUIPO_MIEMBRO",
+      "slug": "22_equipo_miembro",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "25_PEDIDO_PROVEEDOR",
+      "slug": "25_pedido_proveedor",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "26_PEDIDO_PROVEEDOR_LINEA",
+      "slug": "26_pedido_proveedor_linea",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "28_RECEPCION_LINEA",
+      "slug": "28_recepcion_linea",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "31_FUENTE_FINANCIACION",
+      "slug": "31_fuente_financiacion",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "33_COMPETENCIA",
+      "slug": "33_competencia",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "35_RECURSO_COMPETENCIA",
+      "slug": "35_recurso_competencia",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "37_ETIQUETA_IMPACTO",
+      "slug": "37_etiqueta_impacto",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "91_HISTORIAL",
+      "slug": "91_historial",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "98_LOG_GOBIERNO",
+      "slug": "98_log_gobierno",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "codigo_node",
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Confección a ganchillo",
+      "slug": "confeccion_a_ganchillo",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 6,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Yurta de 6 metros de diámetro",
+      "slug": "yurta_de_6_metros_de_diametro",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto",
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 5,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Módulo MANTENIMIENTO",
+      "slug": "modulo_mantenimiento",
+      "tiposCandidato": [
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 5,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Cultivo y cuidado",
+      "slug": "cultivo_y_cuidado",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 5,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Gestor de proyectos",
+      "slug": "gestor_de_proyectos",
+      "tiposCandidato": [
+        "entidad_negocio_campana",
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 4,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Investigación y planificación asistida -- pruebas piloto",
+      "slug": "investigacion_y_planificacion_asistida_pruebas_piloto",
+      "tiposCandidato": [
+        "entidad_negocio_campana"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 4,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Construcción de muro de bahareque",
+      "slug": "construccion_de_muro_de_bahareque",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 4,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Piloto Plaza (interno)",
+      "slug": "piloto_plaza_interno",
+      "tiposCandidato": [
+        "cliente_real"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 3,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "2 Acervos-o-mecanismos",
+      "slug": "2_acervos_o_mecanismos",
+      "tiposCandidato": [
+        "referencia_sin_ficha"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "vault_wikilink"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "La Troballa - Taller Ocupacional",
+      "slug": "la_troballa_taller_ocupacional",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "MANTENIMIENTO - Piloto",
+      "slug": "mantenimiento_piloto",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Albahaca en maceta",
+      "slug": "albahaca_en_maceta",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Amigurumi de Stitch a crochet",
+      "slug": "amigurumi_de_stitch_a_crochet",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto",
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Muro de bahareque (barro)",
+      "slug": "muro_de_bahareque_barro",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto",
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Esqueleto exportador Obsidian",
+      "slug": "esqueleto_exportador_obsidian",
+      "tiposCandidato": [
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Maceta de albahaca",
+      "slug": "maceta_de_albahaca",
+      "tiposCandidato": [
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Diseño y primer exportador Markdown",
+      "slug": "diseno_y_primer_exportador_markdown",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 2,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "7 Acervos-o-mecanismos",
+      "slug": "7_acervos_o_mecanismos",
+      "tiposCandidato": [
+        "referencia_sin_ficha"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Vision Mision",
+      "slug": "vision_mision",
+      "tiposCandidato": [
+        "referencia_sin_ficha"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "vault_wikilink"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Combinaciones de módulos (sheets piloto)",
+      "slug": "combinaciones_de_modulos_sheets_piloto",
+      "tiposCandidato": [
+        "entidad_negocio_campana"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Proyecto 0 — Desarrollo interno del sistema",
+      "slug": "proyecto_0_desarrollo_interno_del_sistema",
+      "tiposCandidato": [
+        "entidad_negocio_campana"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Propuestas e iniciativas exploratorias",
+      "slug": "propuestas_e_iniciativas_exploratorias",
+      "tiposCandidato": [
+        "entidad_negocio_campana"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Sheet piloto — CORE",
+      "slug": "sheet_piloto_core",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Empaquetado de producto",
+      "slug": "empaquetado_de_producto",
+      "tiposCandidato": [
+        "entidad_negocio_proyecto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Módulo CORE",
+      "slug": "modulo_core",
+      "tiposCandidato": [
+        "entidad_negocio_producto"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Diseño",
+      "slug": "diseno",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Implementación",
+      "slug": "implementacion",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Desplegado",
+      "slug": "desplegado",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Estructura de celosía",
+      "slug": "estructura_de_celosia",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Techo y anillo central",
+      "slug": "techo_y_anillo_central",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Cubierta textil",
+      "slug": "cubierta_textil",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Plataforma/base",
+      "slug": "plataforma_base",
+      "tiposCandidato": [
+        "entidad_negocio_proceso"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Construir exportador mínimo Documento/Decisión → Markdown",
+      "slug": "construir_exportador_minimo_documento_decision_markdown",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Sembrar en maceta protegida",
+      "slug": "sembrar_en_maceta_protegida",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Riego diario primeras 2 semanas",
+      "slug": "riego_diario_primeras_2_semanas",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Pinzar la yema apical",
+      "slug": "pinzar_la_yema_apical",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Primera cosecha y evaluación",
+      "slug": "primera_cosecha_y_evaluacion",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Preparar materiales",
+      "slug": "preparar_materiales",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Tejer el cuerpo",
+      "slug": "tejer_el_cuerpo",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Tejer los brazos",
+      "slug": "tejer_los_brazos",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Tejer los pies",
+      "slug": "tejer_los_pies",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Montaje de todas las piezas",
+      "slug": "montaje_de_todas_las_piezas",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Seleccionar y extraer la tierra",
+      "slug": "seleccionar_y_extraer_la_tierra",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Levantar el armazón de madera",
+      "slug": "levantar_el_armazon_de_madera",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "Curado y revisión de grietas",
+      "slug": "curado_y_revision_de_grietas",
+      "tiposCandidato": [
+        "entidad_negocio_tarea"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "datos_negocio"
+      ],
+      "centralidad": 1,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "00_Nucleo",
+      "slug": "00_nucleo",
+      "tiposCandidato": [
+        "sin_tipo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "vault_ficha"
+      ],
+      "centralidad": 0,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+    },
+    {
+      "nombre": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "slug": "cronista_segmentar_documento_en_tareas_con_puerta_humana",
+      "tiposCandidato": [
+        "workflow_n8n"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "n8n"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "44_OPORTUNIDAD",
+      "slug": "44_oportunidad",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "41_ENTREGA",
+      "slug": "41_entrega",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "93_MAPEO_IDS_TEMPORALES",
+      "slug": "93_mapeo_ids_temporales",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "08_MATERIALES",
+      "slug": "08_materiales",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_RECURSO",
+      "slug": "stg_recurso",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_PERSONA",
+      "slug": "stg_persona",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_DECISION",
+      "slug": "stg_decision",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_INCIDENCIA",
+      "slug": "stg_incidencia",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_DOCUMENTO",
+      "slug": "stg_documento",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_HORARIO",
+      "slug": "stg_horario",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "12_DECISIONES",
+      "slug": "12_decisiones",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "15_PROVEEDORES",
+      "slug": "15_proveedores",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "16_ASIGNACION",
+      "slug": "16_asignacion",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "17_RELACION",
+      "slug": "17_relacion",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "23_RECURSO",
+      "slug": "23_recurso",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "27_RECEPCION",
+      "slug": "27_recepcion",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "29_HORARIO",
+      "slug": "29_horario",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "30_PRESUPUESTO",
+      "slug": "30_presupuesto",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "32_COSTE",
+      "slug": "32_coste",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "36_CONVOCATORIA",
+      "slug": "36_convocatoria",
+      "tiposCandidato": [
+        "pestana_sheet_negocio"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "90_CONFIGURACION",
+      "slug": "90_configuracion",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_CAMPANA",
+      "slug": "stg_campana",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_PROYECTO",
+      "slug": "stg_proyecto",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_PRODUCTO",
+      "slug": "stg_producto",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_PROCESO",
+      "slug": "stg_proceso",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "STG_TAREA",
+      "slug": "stg_tarea",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "95_DIARIO_NAVEGACION",
+      "slug": "95_diario_navegacion",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "96_PROMPT_EJECUTOR",
+      "slug": "96_prompt_ejecutor",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "97_ESTADO_CONSOLA",
+      "slug": "97_estado_consola",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "99_TRIAGE_LOCAL",
+      "slug": "99_triage_local",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "sheet_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "PAQUETE_CLIENTE",
+      "slug": "paquete_cliente",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "ENTIDAD_ORGANIZATIVA",
+      "slug": "entidad_organizativa",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "UBICACION_GEOGRAFICA",
+      "slug": "ubicacion_geografica",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "NODO_ENGREMIAT",
+      "slug": "nodo_engremiat",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "TELAR_SESION",
+      "slug": "telar_sesion",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    },
+    {
+      "nombre": "TELAR_BIBLIOTECA",
+      "slug": "telar_biblioteca",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 1,
+      "fuentes": [
+        "baserow_estructura"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+    }
+  ]
+}
