@@ -650,6 +650,28 @@ Verificado en el navegador, no solo en el código: zoom directo sobre "Concilio"
 
 **Estructura real de carpetas cruzada contra `MODULO_POR_ENTIDAD_MVP`** (`src/Ids.js`, la fuente de verdad real de qué módulo posee qué pestaña de Sheet): 14 fichas reales en `01_Mundo/Modulos/Modulos_acoplables/` + `CORE/`. Los 11 valores reales de `MODULO_POR_ENTIDAD_MVP` (CLIENTE/COMPRAS/CONVOCATORIAS/ECONOMICO/EJECUCION/ESCENARIOS/IMPACTO/OPERATIVA/OPORTUNIDAD/SEGUIMIENTO/VENTAS) tienen los 11 -- ninguno falta, ninguno sobra respecto al código. **3 fichas reales sin entrada en `MODULO_POR_ENTIDAD_MVP`**: Gantt, Comunicación, Aprovisionamiento -- verificado que no es deriva ni error: las tres ya tienen `vinculoReal` real (`GanttPlanReal.html`, `WebhookTelegramService.js`, `AprovisionamientoService.js`+`SOLICITUDES_MONTAJE`) -- son módulos reales que no poseen ninguna pestaña `ENTIDADES_MVP` propia (vista sobre entidades ajenas, integración externa, o una pestaña de utilidad fuera del MVP), no un módulo inventado. Sin cambios necesarios -- el cruce confirma que la bóveda ya es consistente con Sheets, no al revés.
 
+### 8.41 "Que la representación responda al '¿cómo es?' -- un recorrido de inicio a fin, como el ADN o el cuerpo y sus extremidades"
+
+Propuesta del operador sobre la vista `PAQUETE_CLIENTE` de `sheet-real.html` (3-4 nodos sueltos para Cronista, demasiado simple para representar un personaje entero): quiere que el retrato de una entidad se lea como un cuerpo real -- cabeza, columna, extremidades -- no como un grafo de fuerzas disperso.
+
+**Validado con datos reales antes de construir**: el workflow real de Cronista (`grafo_n8n.json`) ya es, sin tocarlo, un grafo dirigido con forma anatómica genuina -- un punto de entrada real (`Webhook Cronista Segmentar`), un nodo de decisión real (`Ruta por acción`) que se ramifica, 78 nodos reales de 6 tipos (`code`:43 `httpRequest`:24 `if`:6 `switch`:1 `webhook`:2 `scheduleTrigger`:1). El layout de fuerzas de `sheet-real.html` lo aplanaba; un layout jerárquico dirigido no.
+
+**Construido `extraer_anatomia_entidad.mjs`**: lee el `## Vínculo real` de cada ficha real y, según la fuente citada, calcula:
+- **Cabeza** = nodo real sin aristas entrantes dentro del subgrafo (el punto de entrada de verdad, nunca supuesto por nombre).
+- **Columna** = el camino dirigido real más largo desde esa cabeza -- DFS con corte de ciclos (un nodo ya visitado en el camino actual no se vuelve a entrar, así que un ciclo real no cuelga el cálculo).
+- **Extremidades** = todo lo demás que cuelga de la columna.
+
+Tres fuentes reales, mismo algoritmo para las tres:
+- **n8n** (`grafo_n8n.json`) -- el workflow real citado por nombre.
+- **Apps Script** (`tools/graphify/graph.json` + `concat-map.json`) -- pieza que faltaba: el código de Apps Script vive todo concatenado en un solo fichero para el análisis AST, así que no hay forma de saber de qué fichero real venía cada función sin este mapeo línea-a-línea real. Verificado con `AprovisionamientoService.js`: 32 funciones reales, 85 aristas reales.
+- **Node** (`grafo_node.json`) -- columna = cadena real de `import` entre scripts; extremidades = sus `lee`/`escribe`/`toca_recurso` reales.
+
+**Resultado real, honesto**: de 124 fichas, 62 tienen `## Vínculo real`; de esas, **31 entidades reales** resuelven a una anatomía calculable (n8n, Apps Script o Node) -- las que citan solo Sheet/Baserow no tienen columna que calcular (no hay flujo dirigido en una tabla), y no se les inventa una.
+
+**Construida `anatomia.html`** -- décima vista real del visor: buscador de las 31 entidades reales, un panel por cada fuente (varias fuentes = varios miembros del mismo cuerpo, nunca fusionadas en un esqueleto falso), layout jerárquico dirigido izquierda→derecha (`vis-network`, sin librería nueva), cabeza en forma de estrella, columna resaltada por color de fuente, extremidades atenuadas.
+
+**Dos bugs reales encontrados y corregidos verificando en el navegador**: (1) sin física, no hay evento de estabilización que dispare un `fit()` automático -- había que forzarlo a mano; (2) un `fit()` clásico sobre una columna larga (muchos niveles reales) da un zoom ilegible -- en vez de encoger todo el cuerpo, la vista centra en la cabeza a escala legible y se recorre a mano (arrastrando), con un botón "ver el cuerpo entero" para el `fit()` clásico si se quiere. Verificado con Cronista (78 nodos, columna de 14, forma de espina con costillas real) y con el caso grande, Repository (822 nodos reales, sin errores).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

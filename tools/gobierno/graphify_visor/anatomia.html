@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- anatomía real de una entidad</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<style>
+  html, body { margin: 0; min-height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  #layout { display: flex; min-height: 100vh; }
+  #panel { width: 320px; flex: none; padding: 18px; background: #17181c; border-right: 1px solid #2c2d33; box-sizing: border-box; }
+  #principal { flex: 1; padding: 20px 28px; box-sizing: border-box; overflow-y: auto; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h2 { margin: 0; font-size: 16px; }
+  .hint { color: #9a9aa2; font-size: 12px; line-height: 1.55; }
+  input[type=text] { width: 100%; background: #0f1013; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
+  #lista { margin-top: 12px; max-height: calc(100vh - 130px); overflow-y: auto; }
+  .fila-entidad { padding: 7px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px; display: flex; justify-content: space-between; gap: 6px; }
+  .fila-entidad:hover { background: #202126; }
+  .fila-entidad.activa { background: #24263a; color: #a9b8ff; }
+  .fila-entidad .fuentes { color: #6b6c76; font-size: 10.5px; white-space: nowrap; }
+  #vacio { color: #6b6c76; font-size: 13px; margin-top: 60px; text-align: center; }
+  .cuerpo-cabecera { margin-bottom: 18px; }
+  .fuente-card { background: #17181c; border: 1px solid #2c2d33; border-radius: 10px; margin-bottom: 22px; overflow: hidden; }
+  .fuente-head { padding: 12px 16px; border-bottom: 1px solid #2c2d33; display: flex; align-items: center; gap: 10px; }
+  .badge-tipo { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+  .fuente-stats { margin-left: auto; color: #6b6c76; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+  .fuente-canvas { height: 320px; }
+  .leyenda-mini { display: flex; gap: 14px; padding: 8px 16px; font-size: 11px; color: #9a9aa2; border-top: 1px solid #202126; }
+  .leyenda-mini span { display: inline-flex; align-items: center; gap: 5px; }
+  .marca { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="panel">
+    <h1>Anatomía real</h1>
+    <p class="hint">Cabeza = punto de entrada real. Columna = el camino dirigido más largo desde ahí, calculado sobre las aristas reales -- no dibujado a mano. Extremidades = todo lo demás que cuelga. §8.41.</p>
+    <input type="text" id="buscar" placeholder="Buscar entidad...">
+    <div id="lista"></div>
+  </div>
+  <div id="principal">
+    <div id="vacio">Elige una entidad real de la izquierda -- solo aparecen las que tienen anatomía real calculable (n8n, Apps Script o Node).</div>
+    <div id="cuerpo" style="display:none;"></div>
+  </div>
+</div>
+<script>
+const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d' };
+const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node' };
+
+let datos = null;
+let redesActivas = [];
+
+async function cargar() {
+  datos = await (await fetch('anatomia_entidades.json')).json();
+  const entradas = Object.entries(datos.entidades).sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
+  renderLista(entradas);
+  document.getElementById('buscar').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    renderLista(entradas.filter(([, v]) => v.nombre.toLowerCase().includes(q)));
+  });
+}
+
+function renderLista(entradas) {
+  const lista = document.getElementById('lista');
+  lista.innerHTML = entradas.map(([slug, v]) =>
+    `<div class="fila-entidad" data-slug="${slug}"><span>${v.nombre}</span><span class="fuentes">${v.fuentes.map(f => ETIQUETA_TIPO[f.tipo]).join(' · ')}</span></div>`
+  ).join('') || '<div class="hint" style="padding:6px;">Sin coincidencias reales.</div>';
+  lista.querySelectorAll('.fila-entidad').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.fila-entidad').forEach(f => f.classList.remove('activa'));
+      el.classList.add('activa');
+      mostrarEntidad(el.dataset.slug);
+    });
+  });
+}
+
+function mostrarEntidad(slug) {
+  redesActivas.forEach(r => r.destroy());
+  redesActivas = [];
+  const e = datos.entidades[slug];
+  document.getElementById('vacio').style.display = 'none';
+  const cuerpo = document.getElementById('cuerpo');
+  cuerpo.style.display = 'block';
+  cuerpo.innerHTML = `
+    <div class="cuerpo-cabecera">
+      <h2>${e.nombre}</h2>
+      <p class="hint">${e.fuentes.length} fuente${e.fuentes.length > 1 ? 's' : ''} real${e.fuentes.length > 1 ? 'es' : ''} -- cada una su propio miembro del cuerpo, nunca fusionadas en un esqueleto falso.</p>
+    </div>
+    ${e.fuentes.map((f, i) => `
+      <div class="fuente-card">
+        <div class="fuente-head">
+          <span class="badge-tipo" style="background:${COLOR_FUENTE[f.tipo]}33; color:${COLOR_FUENTE[f.tipo]};">${ETIQUETA_TIPO[f.tipo]}</span>
+          <span>${f.etiqueta}</span>
+          <span class="fuente-stats">${f.nodos.length} nodos reales · columna de ${f.espina.length}</span>
+        </div>
+        <div class="fuente-canvas" id="red-${i}"></div>
+        <div class="leyenda-mini">
+          <span><span class="marca" style="background:#fff;"></span>cabeza (entrada real)</span>
+          <span><span class="marca" style="background:${COLOR_FUENTE[f.tipo]};"></span>columna</span>
+          <span><span class="marca" style="background:#4a4b52;"></span>extremidad</span>
+          <span style="margin-left:auto; cursor:pointer; text-decoration:underline;" data-ver-todo="${i}">ver el cuerpo entero</span>
+        </div>
+      </div>
+    `).join('')}
+  `;
+  e.fuentes.forEach((f, i) => dibujarFuente(f, document.getElementById('red-' + i)));
+  cuerpo.querySelectorAll('[data-ver-todo]').forEach(el => {
+    el.addEventListener('click', () => {
+      const red = redesActivas[Number(el.dataset.verTodo)];
+      if (red) red.fit({ animation: { duration: 300 } });
+    });
+  });
+}
+
+function dibujarFuente(f, contenedor) {
+  const colorFuente = COLOR_FUENTE[f.tipo];
+  const espinaSet = new Set(f.espina);
+  const nodes = new vis.DataSet(f.nodos.map(n => {
+    const enEspina = espinaSet.has(n.id);
+    const esCabeza = n.id === f.entrada;
+    return {
+      id: n.id,
+      label: n.nombre.length > 34 ? n.nombre.slice(0, 32) + '…' : n.nombre,
+      title: n.nombre + (n.tipoReal ? ' · ' + n.tipoReal : ''),
+      shape: esCabeza ? 'star' : 'dot',
+      size: esCabeza ? 20 : (enEspina ? 15 : 9),
+      color: { background: esCabeza ? '#ffffff' : (enEspina ? colorFuente : '#3a3b42'), border: '#0f1013' },
+      font: { color: '#e7e7ea', size: enEspina ? 12 : 10, face: 'system-ui' },
+    };
+  }));
+  const edges = new vis.DataSet(f.aristas.map((a, i) => ({
+    id: i, from: a.source, to: a.target, arrows: 'to',
+    color: { color: a.enEspina ? colorFuente : '#2a2b31' },
+    width: a.enEspina ? 2.5 : 0.8,
+    label: a.relacion && a.relacion !== 'import' ? a.relacion : '',
+    font: { color: '#6b6c76', size: 8, strokeWidth: 0, background: '#0f1013' },
+    smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 },
+  })));
+  const network = new vis.Network(contenedor, { nodes, edges }, {
+    layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', levelSeparation: 70, nodeSpacing: 22, blockShifting: true, edgeMinimization: true } },
+    physics: false,
+    interaction: { hover: true, zoomView: true, dragView: true },
+  });
+  // sin fisica no hay evento de estabilizacion que dispare un fit automatico, y una columna larga
+  // (muchos niveles reales) da un scale de fit() ilegible -- en vez de encoger todo el cuerpo para que
+  // quepa, centramos en la cabeza a un zoom legible y se recorre a mano, como pide la propia idea de
+  // "recorrido de inicio a fin"; "ver el cuerpo entero" (botón) hace el fit clásico si se quiere
+  setTimeout(() => {
+    network.setSize('100%', '100%');
+    network.redraw();
+    network.moveTo({ position: network.getPositions([f.entrada])[f.entrada] || { x: 0, y: 0 }, scale: 0.85, animation: false });
+  }, 60);
+  redesActivas.push(network);
+}
+
+cargar();
+</script>
+</body>
+</html>
