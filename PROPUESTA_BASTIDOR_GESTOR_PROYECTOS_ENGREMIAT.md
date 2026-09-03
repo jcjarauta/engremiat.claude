@@ -588,6 +588,16 @@ Regenerado el censo (330 aristas de wikilinks, +14 sobre la pasada anterior) y d
 
 `Física.md` se dejó sin `vinculoReal` en §8.24 porque su único hallazgo (`InstaladorJerarquiaFisica.js`) era ruido por homonimia -- jerarquía física de talleres de un cliente, no el concepto filosófico. Revisado de nuevo: el hallazgo real no era un fichero que "hable de" Física, sino que la propia maquinaria del censo construida esta sesión **es** su encarnación operativa -- `analizar_entidades_reales.mjs` cruza cada afirmación contra 10 fuentes reales antes de darla por buena, exactamente "verificarse contra el código o el Sheet reales, no quedar en narrativa suelta" (la cita ya real de `Estilo.md`). Añadido como `vinculoReal` real -- verificado leyendo el resultado, contenido previo intacto.
 
+### 8.36 "¿Los 3 restantes también deberían tener vinculoReal?" -- 1 sí, 2 correctamente sin uno propio
+
+Tres Reglas se habían quedado sin `## Vínculo real` en pasadas anteriores: El Sheet manda, Verificar contra hechos, Los dos continentes de datos. Revisadas una a una, no asumido que las tres necesitaran lo mismo:
+
+- **Verificar contra hechos** -- su propio cuerpo y `## Relaciones` ya nombran los mecanismos reales exactos (Verificador de Campos, Verificador de Capacidades), y ambos ya tienen su propio `vinculoReal`. Añadir uno aquí sería duplicar, no fundamentar más. Se queda como está.
+- **El Sheet manda** -- ya relacionada con `[[El Sheet]]` y `[[Baserow]]`, ambas con `vinculoReal` propio; es una instancia/consecuencia de "Los dos continentes de datos", no un mecanismo distinto que buscar por separado. Se queda como está.
+- **Los dos continentes de datos** -- sí había un hallazgo real que faltaba: `tools/gobierno/bocetador/encontrar_huecos.mjs` no es un fichero que "hable de" los dos continentes, sino el que los audita por separado de verdad -- `informarSheet()` e `informarBaserow()`, dos funciones distintas sobre las dos estructuras reales, nunca fusionadas en una sola. Añadido como `vinculoReal`, verificado leyendo el resultado, contenido previo intacto.
+
+Censo regenerado (mismos totales reales: 225 candidatas, 46 confirmar / 51 promover / 46 revisar / 82 descartar) -- sin regresión. Actualizado el resumen visual (badge `encontrar_huecos.mjs` en la tarjeta "Los dos continentes"), desplegado en VPS y republicado como Artifact.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
