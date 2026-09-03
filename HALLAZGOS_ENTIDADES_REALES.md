@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T05:30:41.377Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T05:47:34.746Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -193,3 +193,27 @@ No se listan todas por volumen -- ver `censo_entidades.json` completo. Los prime
 | 03_PRODUCTOS | 2 | datos_negocio, sheet_estructura |
 | 05_PROCESOS | 2 | datos_negocio, sheet_estructura |
 | 07_TAREA_RESPONSABLE | 2 | codigo_appsscript, sheet_estructura |
+
+---
+
+## Consolidación real (confirmar + promover + revisar)
+
+Segunda pasada pedida explícitamente sobre las 103 entidades de los tres primeros grupos ("investiga y termina de consolidarlo"). El grupo descartar (119) se deja intacto -- se valora aparte, al final, con el criterio ya dado: si revela un hueco real del grafo global es la primera fuente de posibilidad; si no, queda como histórico.
+
+Dos fuentes reales más que el primer censo no tenía: el catálogo real `MODULO_POR_ENTIDAD_MVP` de `src/Ids.js` (más fuerte que coincidencia de texto -- es el propio código), y las transcripciones reales ya ocurridas en `tools/gobierno/telar/b2/respuestas_originales/`. Más un puñado de correspondencias verificadas a mano leyendo el fichero real, nunca adivinadas.
+
+| acción recomendada | cuántas | qué significa |
+|---|---|---|
+| correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
+| confirmar_ya_solido | 18 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
+| confirmar_codigo_real | 16 | Correspondencia real de código encontrada -- confirmado. |
+| promover_recurso_real | 15 | Pestaña/tabla real bien corroborada -- candidata sólida a ficha de Recurso o a `vinculoReal` en una ficha existente. |
+| revisar_manual_real | 11 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
+| revisar_nombre_narrativo | 10 | Nombre narrativo del universo -- el cruce por texto no alcanza su referente real. No es evidencia de que falte, es un límite del método. Acción: añadir `vinculoReal` explícito. |
+| confirmar_patron_tecnico | 5 | Real en el código, pero NO es un módulo de negocio MVP -- es un patrón técnico interno (Repository, IntegrityService...). Revisar si el `tipo` en la ficha es el correcto. |
+| descartar_termino_generico | 3 | Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover. |
+| confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
+| revisar_inconsistencia_nombres | 2 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
+| confirmar_verificado_a_mano | 1 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
+
+Detalle completo, entidad por entidad, con su razón real: ver `censo_entidades.json` (campos `accionRecomendada` + `accionRazon`) o la vista filtrable en `entidades.html`.

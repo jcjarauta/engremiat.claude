@@ -47,6 +47,7 @@
 <div class="controles">
   <input type="text" id="buscar" placeholder="Buscar por nombre real...">
   <select id="filtroTipo"><option value="">Cualquier tipo candidato</option></select>
+  <select id="filtroAccion"><option value="">Cualquier acción consolidada</option></select>
   <span id="contador" class="hint"></span>
 </div>
 <div class="tabla-wrap">
@@ -55,6 +56,7 @@
     <tr>
       <th data-k="nombre">Nombre</th>
       <th data-k="decision">Decisión</th>
+      <th data-k="accionRecomendada">Acción consolidada</th>
       <th data-k="corroboracionCruzada">Corrob.</th>
       <th data-k="centralidad">Grado</th>
       <th>Fuentes reales</th>
@@ -94,6 +96,11 @@ async function cargar() {
   const sel = document.getElementById('filtroTipo');
   [...tipos].sort().forEach(t => { const o = document.createElement('option'); o.value = t; o.textContent = t; sel.appendChild(o); });
 
+  const acciones = new Set();
+  censo.entidades.forEach(e => { if (e.accionRecomendada) acciones.add(e.accionRecomendada); });
+  const selA = document.getElementById('filtroAccion');
+  [...acciones].sort().forEach(a => { const o = document.createElement('option'); o.value = a; o.textContent = a; selA.appendChild(o); });
+
   const vocabBody = document.querySelector('#tablaVocab tbody');
   vocabBody.innerHTML = censo.vocabularioRelacion.map(v =>
     `<tr><td>${v.tipo}</td><td>${v.total}</td><td class="fuentes">${Object.entries(v.porCapa).map(([k,n])=>k+':'+n).join(', ')}</td></tr>`
@@ -111,9 +118,11 @@ function toggleFiltro(d) {
 function render() {
   const q = document.getElementById('buscar').value.toLowerCase();
   const tipo = document.getElementById('filtroTipo').value;
+  const accion = document.getElementById('filtroAccion').value;
   let filas = censo.entidades.filter(e =>
     (!filtroDecision || e.decision === filtroDecision) &&
     (!tipo || e.tiposCandidato.includes(tipo)) &&
+    (!accion || e.accionRecomendada === accion) &&
     (!q || e.nombre.toLowerCase().includes(q))
   );
   filas.sort((a,b) => {
@@ -126,6 +135,7 @@ function render() {
     <tr onclick="verDetalle(${censo.entidades.indexOf(e)})">
       <td>${e.nombre}</td>
       <td><span class="tag ${e.decision}">${e.decision}</span></td>
+      <td class="fuentes">${e.accionRecomendada || '(sin valorar todavía)'}</td>
       <td>${e.corroboracionCruzada}</td>
       <td>${e.centralidad}</td>
       <td class="fuentes">${e.fuentes.map(f => `<span class="fuente">${f}</span>`).join('')}</td>
@@ -136,7 +146,7 @@ function verDetalle(idx) {
   const e = censo.entidades[idx];
   document.getElementById('dNombre').textContent = e.nombre;
   document.getElementById('dTipos').innerHTML = '<span class="tag ' + e.decision + '">' + e.decision + '</span> ' + e.tiposCandidato.join(', ') + (e.yaEsFichaVault ? ' -- ya es ficha real en la bóveda' : ' -- sin ficha propia hoy');
-  document.getElementById('dRazon').textContent = e.razon;
+  document.getElementById('dRazon').innerHTML = '<b>Censo:</b> ' + e.razon + (e.accionRecomendada ? '<br><br><b>Consolidación → ' + e.accionRecomendada + ':</b> ' + e.accionRazon : '');
   document.getElementById('dFuentes').innerHTML = '<b>Fuentes reales:</b><br>' + e.fuentes.map(f => `<span class="fuente">${f}</span>`).join(' ');
   document.getElementById('detalle').classList.add('abierto');
 }
@@ -144,6 +154,7 @@ function cerrarDetalle() { document.getElementById('detalle').classList.remove('
 
 document.getElementById('buscar').addEventListener('input', render);
 document.getElementById('filtroTipo').addEventListener('change', render);
+document.getElementById('filtroAccion').addEventListener('change', render);
 document.querySelectorAll('#tabla th[data-k]').forEach(th => th.addEventListener('click', () => {
   const k = th.dataset.k;
   orden = { campo: k, desc: orden.campo === k ? !orden.desc : true };

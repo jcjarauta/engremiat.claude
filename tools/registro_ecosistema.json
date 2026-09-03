@@ -169,6 +169,10 @@
     {
       "fichero": "tools/gobierno/graphify_visor/entidades.html",
       "que_hace": "Septima vista real del visor (100.107.171.88:9320/entidades.html): tabla filtrable por decision/tipo/nombre del censo real de entidades, con panel de detalle mostrando la razon real de cada candidata y tabla de vocabulario de relacion. Verificada en el navegador: filtro y clic en fila funcionando con datos reales."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "que_hace": "Segunda pasada sobre el censo real (pedida explicitamente: investiga y termina de consolidarlo, confirmar/promover/revisar; descartar se valora aparte al final). Anade 2 fuentes reales mas: el catalogo real MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano leyendo el fichero real (ej. Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 103 entidades de confirmar+promover+revisar en 11 acciones concretas (confirmar_codigo_real, revisar_nombre_narrativo, promover_recurso_real, descartar_termino_generico...), cada una con su razon real. Escribe accionRecomendada+accionRazon en censo_entidades.json y anade la seccion de consolidacion a HALLAZGOS_ENTIDADES_REALES.md."
     }
   ]
 }

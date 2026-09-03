@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T05:30:41.377Z",
+  "generadoEn": "2026-09-03T05:47:34.746Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -303,7 +303,9 @@
       ],
       "centralidad": 7,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Ejecutor",
@@ -323,7 +325,9 @@
       ],
       "centralidad": 10,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Cronista",
@@ -344,7 +348,9 @@
       ],
       "centralidad": 10,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "TAREA",
@@ -365,7 +371,9 @@
       ],
       "centralidad": 5,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "descartar_termino_generico",
+      "accionRazon": "Palabra genérica que aparece en muchas pestañas/tablas reales sin ser ella misma una entidad -- ya existen las entidades específicas reales (06_TAREAS, 24_TAREA_RECURSO, 14_DOCUMENTOS...). Crear una ficha \"TAREA\" sería redundante, no una entidad nueva. No promover."
     },
     {
       "nombre": "DOCUMENTO",
@@ -386,7 +394,9 @@
       ],
       "centralidad": 4,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 6 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "descartar_termino_generico",
+      "accionRazon": "Palabra genérica que aparece en muchas pestañas/tablas reales sin ser ella misma una entidad -- ya existen las entidades específicas reales (06_TAREAS, 24_TAREA_RECURSO, 14_DOCUMENTOS...). Crear una ficha \"TAREA\" sería redundante, no una entidad nueva. No promover."
     },
     {
       "nombre": "Concilio",
@@ -405,7 +415,9 @@
       ],
       "centralidad": 34,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Coordinador",
@@ -424,7 +436,9 @@
       ],
       "centralidad": 32,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Vigilia",
@@ -443,7 +457,9 @@
       ],
       "centralidad": 21,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Relevo",
@@ -462,7 +478,9 @@
       ],
       "centralidad": 13,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Telar",
@@ -481,7 +499,9 @@
       ],
       "centralidad": 6,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Oportunidad",
@@ -500,7 +520,9 @@
       ],
       "centralidad": 5,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Baserow",
@@ -518,7 +540,9 @@
       ],
       "centralidad": 19,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "CORE",
@@ -536,7 +560,9 @@
       ],
       "centralidad": 11,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "GASTO_API",
@@ -556,7 +582,9 @@
       ],
       "centralidad": 10,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "92_BUS_TRABAJO",
@@ -575,7 +603,9 @@
       ],
       "centralidad": 5,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Impacto",
@@ -593,7 +623,9 @@
       ],
       "centralidad": 3,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Bus de trabajo",
@@ -611,7 +643,9 @@
       ],
       "centralidad": 3,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Salud del ecosistema",
@@ -629,7 +663,9 @@
       ],
       "centralidad": 3,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "Actualizar libreria cliente",
@@ -647,7 +683,9 @@
       ],
       "centralidad": 2,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "38_CLIENTE",
@@ -666,7 +704,9 @@
       ],
       "centralidad": 2,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 4 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "Verificación",
@@ -684,7 +724,9 @@
       ],
       "centralidad": 1,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "descartar_termino_generico",
+      "accionRazon": "Palabra genérica que aparece en muchas pestañas/tablas reales sin ser ella misma una entidad -- ya existen las entidades específicas reales (06_TAREAS, 24_TAREA_RECURSO, 14_DOCUMENTOS...). Crear una ficha \"TAREA\" sería redundante, no una entidad nueva. No promover."
     },
     {
       "nombre": "Consola",
@@ -702,7 +744,9 @@
       ],
       "centralidad": 0,
       "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada."
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
       "nombre": "06_TAREAS",
@@ -720,7 +764,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 4 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 4 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "Puerta Humana",
@@ -737,7 +783,9 @@
       ],
       "centralidad": 15,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Corroborado por al menos una fuente real fuera de la bóveda."
     },
     {
       "nombre": "Acervo Prompter",
@@ -754,7 +802,9 @@
       ],
       "centralidad": 8,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Personaje con script real correspondiente ya encontrado en el código."
     },
     {
       "nombre": "Repository",
@@ -771,7 +821,9 @@
       ],
       "centralidad": 7,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_patron_tecnico",
+      "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
       "nombre": "13_INCIDENCIAS",
@@ -789,7 +841,9 @@
       ],
       "centralidad": 7,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "Ventas",
@@ -806,7 +860,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
     },
     {
       "nombre": "Aprovisionamiento",
@@ -823,7 +879,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_patron_tecnico",
+      "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
       "nombre": "Verificador de Capacidades",
@@ -840,7 +898,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Personaje con script real correspondiente ya encontrado en el código."
     },
     {
       "nombre": "Convocatorias",
@@ -857,7 +917,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
     },
     {
       "nombre": "Economico",
@@ -874,7 +936,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
     },
     {
       "nombre": "Comunicacion",
@@ -891,7 +955,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_patron_tecnico",
+      "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
       "nombre": "Verificar contra hechos",
@@ -908,7 +974,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Corroborado por al menos una fuente real fuera de la bóveda."
     },
     {
       "nombre": "EstructuraInicial",
@@ -925,7 +993,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_patron_tecnico",
+      "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
       "nombre": "Compras",
@@ -942,7 +1012,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Nombre coincide de forma exacta con un módulo real registrado en MODULO_POR_ENTIDAD_MVP (src/Ids.js) -- evidencia más fuerte que coincidencia de texto: es el propio catálogo de código."
     },
     {
       "nombre": "Gantt",
@@ -959,7 +1031,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_patron_tecnico",
+      "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
     },
     {
       "nombre": "Chequear libreria clientes",
@@ -976,7 +1050,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Chequear consistencia",
@@ -993,7 +1069,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Extraer decisiones",
@@ -1010,7 +1088,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Acervo",
@@ -1029,7 +1109,9 @@
       ],
       "centralidad": 3,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "revisar_inconsistencia_nombres",
+      "accionRazon": "No falta una entidad -- falta consistencia: 7 fichas reales \"Acervo X\" existen (Filosófico/Lógico/Narrativo/Sociocracia/Técnico/Logístico/Usuario) pero ningún wikilink usa el nombre exacto de ninguna, solo la forma genérica \"Acervo\"/\"Acervos\". Acción recomendada: revisar esos wikilinks a mano y apuntarlos a la ficha específica real que corresponda, o crear una ficha-paraguas \"Acervo\" si de verdad hace falta un concepto agregador."
     },
     {
       "nombre": "Pregonero",
@@ -1046,7 +1128,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Cerrar ciclo",
@@ -1063,7 +1147,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Ejecutar chequeo libreria",
@@ -1080,7 +1166,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Exportador de gasto",
@@ -1097,7 +1185,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Puente historia leyes",
@@ -1114,7 +1204,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "Regenerar estatico",
@@ -1131,7 +1223,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
     },
     {
       "nombre": "18_VINCULO",
@@ -1149,7 +1243,9 @@
       ],
       "centralidad": 2,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "Acervos",
@@ -1166,7 +1262,9 @@
       ],
       "centralidad": 1,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "revisar_inconsistencia_nombres",
+      "accionRazon": "No falta una entidad -- falta consistencia: 7 fichas reales \"Acervo X\" existen (Filosófico/Lógico/Narrativo/Sociocracia/Técnico/Logístico/Usuario) pero ningún wikilink usa el nombre exacto de ninguna, solo la forma genérica \"Acervo\"/\"Acervos\". Acción recomendada: revisar esos wikilinks a mano y apuntarlos a la ficha específica real que corresponda, o crear una ficha-paraguas \"Acervo\" si de verdad hace falta un concepto agregador."
     },
     {
       "nombre": "PLANTILLA_MISION",
@@ -1184,7 +1282,9 @@
       ],
       "centralidad": 1,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "46_TAREA_RECURSO_NECESIDAD",
@@ -1201,7 +1301,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "02_PROYECTOS",
@@ -1218,7 +1320,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "04_PROYECTO_PRODUCTO",
@@ -1235,7 +1339,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "11_PERSONAS_EQUIPOS",
@@ -1252,7 +1358,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "STG_TAREA_RECURSO",
@@ -1269,7 +1377,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "14_DOCUMENTOS",
@@ -1286,7 +1396,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "24_TAREA_RECURSO",
@@ -1303,7 +1415,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "34_PERSONA_COMPETENCIA",
@@ -1320,7 +1434,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "COMPETENCIA",
@@ -1337,7 +1453,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "PERSONA_COMPETENCIA",
@@ -1354,7 +1472,9 @@
       ],
       "centralidad": 0,
       "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta."
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "promover_recurso_real",
+      "accionRazon": "Pestaña/tabla real, corroborada por 3 fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella)."
     },
     {
       "nombre": "00_Mapa",
@@ -1370,7 +1490,9 @@
       ],
       "centralidad": 23,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Modulos acoplables",
@@ -1386,7 +1508,9 @@
       ],
       "centralidad": 21,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
       "nombre": "Mensajero",
@@ -1402,7 +1526,9 @@
       ],
       "centralidad": 19,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "VPS y Tailscale",
@@ -1418,7 +1544,9 @@
       ],
       "centralidad": 16,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "n8n",
@@ -1434,7 +1562,9 @@
       ],
       "centralidad": 11,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Sesion 2026-09-01",
@@ -1450,7 +1580,9 @@
       ],
       "centralidad": 11,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "El Sheet",
@@ -1466,7 +1598,9 @@
       ],
       "centralidad": 10,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Narrador",
@@ -1482,7 +1616,9 @@
       ],
       "centralidad": 10,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "El universo no se ha usado sobre si mismo",
@@ -1498,7 +1634,9 @@
       ],
       "centralidad": 7,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Estilo",
@@ -1514,7 +1652,9 @@
       ],
       "centralidad": 7,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "La fragua protegida",
@@ -1530,7 +1670,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "IntegrityService",
@@ -1546,7 +1688,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
       "nombre": "Acervo Narrativo",
@@ -1562,7 +1706,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Verificador de Campos",
@@ -1578,7 +1724,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_verificado_a_mano",
+      "accionRazon": "Correspondencia real confirmada leyendo el fichero: tools/verificador_determinista.mjs -- verificado leyendo el fichero real: \"Verificador determinista: comprueba afirmaciones de campo de Baserow contra el esquema real\". Mismo oficio, nombre distinto en boveda vs. codigo."
     },
     {
       "nombre": "Decidir el tono del universo",
@@ -1594,7 +1742,9 @@
       ],
       "centralidad": 6,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "El Sheet manda",
@@ -1610,7 +1760,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Los dos continentes de datos",
@@ -1626,7 +1778,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Arco del incidente",
@@ -1642,7 +1796,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Arco de la calibracion",
@@ -1658,7 +1814,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Arco del cierre del autociclo",
@@ -1674,7 +1832,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Cerrar el circulo via incidencias",
@@ -1690,7 +1850,9 @@
       ],
       "centralidad": 5,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "El Vault",
@@ -1706,7 +1868,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Formularios",
@@ -1722,7 +1886,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
       "nombre": "ConfigRepository",
@@ -1738,7 +1904,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
       "nombre": "Acervo Logico",
@@ -1754,7 +1922,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Honestidad del fallo",
@@ -1770,7 +1940,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Arco del bug oculto",
@@ -1786,7 +1958,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Arco de la construccion del universo",
@@ -1802,7 +1976,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Unir historia y gobernanza",
@@ -1818,7 +1994,9 @@
       ],
       "centralidad": 4,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "El ciclo de vida remoto",
@@ -1834,7 +2012,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Headscale",
@@ -1850,7 +2030,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_nombre_narrativo",
+      "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
       "nombre": "Acervo Filosofico",
@@ -1866,7 +2048,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
     },
     {
       "nombre": "Acervo Sociocracia",
@@ -1882,7 +2066,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Arco del nacimiento del generador",
@@ -1898,7 +2084,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Quien dispara el primer lote",
@@ -1914,7 +2102,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Migrar el hardcode de token en n8n",
@@ -1930,7 +2120,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Diversificar el roster de Acervos",
@@ -1946,7 +2138,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Separar el Holon en notas propias",
@@ -1962,7 +2156,9 @@
       ],
       "centralidad": 3,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "VIGILIA_TAREA",
@@ -2012,7 +2208,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
     },
     {
       "nombre": "Acervo Logistico",
@@ -2028,7 +2226,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
     },
     {
       "nombre": "Acervo Usuario",
@@ -2044,7 +2244,9 @@
       ],
       "centralidad": 2,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "METRICA_FABRICACION",
@@ -2093,7 +2295,9 @@
       ],
       "centralidad": 1,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Física",
@@ -3317,7 +3521,9 @@
       ],
       "centralidad": 0,
       "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano."
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "correcto_narrativo",
+      "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
       "nombre": "Cronista - Segmentar documento en tareas (con puerta humana)",
@@ -3874,5 +4080,27 @@
       "decision": "descartar",
       "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
     }
-  ]
+  ],
+  "consolidacion": {
+    "generadoEn": "2026-09-03T05:47:34.813Z",
+    "fuentesAdicionales": [
+      "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
+      "telar_b2_real (transcripciones reales de deliberación)",
+      "correspondencias verificadas a mano"
+    ],
+    "resumenAccion": {
+      "confirmar_ya_solido": 18,
+      "descartar_termino_generico": 3,
+      "promover_recurso_real": 15,
+      "confirmar_codigo_real": 16,
+      "confirmar_patron_tecnico": 5,
+      "revisar_inconsistencia_nombres": 2,
+      "revisar_manual_real": 11,
+      "correcto_narrativo": 19,
+      "revisar_nombre_narrativo": 10,
+      "confirmar_verificado_a_mano": 1,
+      "confirmar_uso_real_telar": 3
+    },
+    "pendiente": "119 descartadas: se valoran aparte al final -- si el hueco tiene sentido real se retoma como fuente de posibilidad, si no, quedan como histórico (instrucción explícita del operador)."
+  }
 }

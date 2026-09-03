@@ -439,6 +439,18 @@ Las cuatro comparten una sola página (`sheet-real.html`, con pestañas) en vez 
 
 **Límite honesto que se mantiene**: el cruce sigue siendo por coincidencia de nombre/tokens normalizados, no por ID único -- es el barrido más exhaustivo posible con el dato real de hoy (9 fuentes, 222 candidatas, ninguna pestaña ni tabla real dejada fuera), no un censo con precisión perfecta. Cada fila lleva su evidencia para revisión humana antes de escribir ninguna ficha nueva.
 
+**Consolidación real, la misma tarde** ("necesitamos el censo definitivo... investiga y termina de consolidarlo" sobre confirmar/promover/revisar; descartar se valora aparte). `consolidar_censo.mjs` añade 2 fuentes reales más -- el catálogo `MODULO_POR_ENTIDAD_MVP` de `src/Ids.js` (más fuerte que texto: es el propio código) y las transcripciones reales de `tools/gobierno/telar/b2/respuestas_originales/` -- más correspondencias verificadas a mano leyendo el fichero real (p.ej. "Verificador de Campos" de la bóveda es de verdad `tools/verificador_determinista.mjs`, solo con nombre distinto). Clasifica las 103 entidades en 11 acciones concretas, cada una con su razón real:
+
+- **18 confirmar_ya_solido + 16 confirmar_codigo_real + 5 confirmar_patron_tecnico + 3 confirmar_uso_real_telar + 1 confirmar_verificado_a_mano = 43 confirmadas** -- de las cuales 5 (Repository, Aprovisionamiento, Comunicacion, EstructuraInicial, Gantt) son código real pero NO módulos de negocio MVP registrados -- señal real de que su `tipo: modulo` en la bóveda puede estar mal clasificado (son patrones técnicos, no módulos activables).
+- **19 correcto_narrativo** -- hilos/arcos/sesiones/mapa: baja corroboración es lo esperado, sin acción.
+- **10 revisar_nombre_narrativo** -- Espacios/Reglas reales con nombre narrativo ("El Sheet", "La fragua protegida", "Headscale") que el cruce por texto no puede alcanzar -- no es un hueco, es un límite del método. Acción concreta: añadir `vinculoReal` explícito a cada una.
+- **15 promover_recurso_real** -- pestañas/tablas reales bien corroboradas (38_CLIENTE, 13_INCIDENCIAS, 18_VINCULO, PLANTILLA_MISION, COMPETENCIA...), candidatas sólidas a ficha de Recurso.
+- **3 descartar_termino_generico** -- TAREA/DOCUMENTO/Verificación: palabras genéricas, no entidades -- ya existen las específicas reales.
+- **2 revisar_inconsistencia_nombres** -- "Acervo"/"Acervos": no falta una entidad, faltan wikilinks apuntando al nombre exacto de las 7 fichas reales ya existentes.
+- **11 revisar_manual_real** -- sin patrón automático aplicable, necesita ojo humano real (incluye 4 de los 7 Acervos sin script propio ni transcripción B2 -- Narrativo, Sociocracia, Usuario, Lógico -- posible hueco genuino de activación).
+
+Verificado y desplegado: `entidades.html` ahora filtra también por acción consolidada, y el panel de detalle muestra las dos capas de razón (censo + consolidación) una debajo de otra.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
