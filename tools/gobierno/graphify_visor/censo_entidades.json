@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:26:52.639Z",
+  "generadoEn": "2026-09-03T09:31:00.211Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -13,8 +13,8 @@
   ],
   "totales": {
     "candidatos": 224,
-    "confirmar": 21,
-    "promover": 20,
+    "confirmar": 22,
+    "promover": 19,
     "revisar": 69,
     "descartar": 114
   },
@@ -22,6 +22,7 @@
     [
       "00_mapa",
       "92_bus_trabajo",
+      "acervo",
       "acervo_filosofico",
       "acervo_logico",
       "acervo_logistico",
@@ -135,9 +136,9 @@
     },
     {
       "tipo": "wikilink",
-      "total": 278,
+      "total": 289,
       "porCapa": {
-        "wikilinks": 278
+        "wikilinks": 289
       }
     },
     {
@@ -418,7 +419,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 40,
+      "centralidad": 41,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -502,7 +503,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 6,
+      "centralidad": 7,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -565,6 +566,28 @@
         "vault_wikilink"
       ],
       "centralidad": 19,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
+      "nombre": "Acervo",
+      "slug": "acervo",
+      "tiposCandidato": [
+        "personaje",
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 14,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -868,7 +891,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 9,
+      "centralidad": 10,
       "decision": "revisar",
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_codigo_real",
@@ -1235,27 +1258,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_codigo_real",
       "accionRazon": "Oficio con script real correspondiente -- huella estrecha (no aparece en Sheet/Baserow/n8n) es normal para un script interno pequeño, no indica problema."
-    },
-    {
-      "nombre": "Acervo",
-      "slug": "acervo",
-      "tiposCandidato": [
-        "referencia_sin_ficha",
-        "recurso_codigo",
-        "tabla_baserow"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "baserow_estructura",
-        "codigo_node",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
-      "decision": "promover",
-      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
-      "accionRecomendada": "revisar_inconsistencia_nombres",
-      "accionRazon": "No falta una entidad -- falta consistencia: 7 fichas reales \"Acervo X\" existen (Filosófico/Lógico/Narrativo/Sociocracia/Técnico/Logístico/Usuario) pero ningún wikilink usa el nombre exacto de ninguna, solo la forma genérica \"Acervo\"/\"Acervos\". Acción recomendada: revisar esos wikilinks a mano y apuntarlos a la ficha específica real que corresponda, o crear una ficha-paraguas \"Acervo\" si de verdad hace falta un concepto agregador."
     },
     {
       "nombre": "Pregonero",
@@ -1767,6 +1769,24 @@
       "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
+      "nombre": "Acervo Narrativo",
+      "slug": "acervo_narrativo",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 8,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
+    },
+    {
       "nombre": "Estilo",
       "slug": "estilo",
       "tiposCandidato": [
@@ -1783,24 +1803,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "correcto_narrativo",
       "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
-    },
-    {
-      "nombre": "Acervo Narrativo",
-      "slug": "acervo_narrativo",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 7,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Verificador de Campos",
@@ -1875,6 +1877,24 @@
       "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
+      "nombre": "Acervo Logico",
+      "slug": "acervo_logico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 6,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
+    },
+    {
       "nombre": "Decidir el tono del universo",
       "slug": "decidir_el_tono_del_universo",
       "tiposCandidato": [
@@ -1893,8 +1913,26 @@
       "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
     },
     {
-      "nombre": "Acervo Logico",
-      "slug": "acervo_logico",
+      "nombre": "Acervo Filosofico",
+      "slug": "acervo_filosofico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
+    },
+    {
+      "nombre": "Acervo Sociocracia",
+      "slug": "acervo_sociocracia",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2073,8 +2111,8 @@
       "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
-      "nombre": "Acervo Filosofico",
-      "slug": "acervo_filosofico",
+      "nombre": "Acervo Tecnico",
+      "slug": "acervo_tecnico",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2091,8 +2129,26 @@
       "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
     },
     {
-      "nombre": "Acervo Sociocracia",
-      "slug": "acervo_sociocracia",
+      "nombre": "Acervo Logistico",
+      "slug": "acervo_logistico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
+    },
+    {
+      "nombre": "Acervo Usuario",
+      "slug": "acervo_usuario",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2215,60 +2271,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "revisar_nombre_narrativo",
       "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
-    },
-    {
-      "nombre": "Acervo Tecnico",
-      "slug": "acervo_tecnico",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_uso_real_telar",
-      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
-    },
-    {
-      "nombre": "Acervo Logistico",
-      "slug": "acervo_logistico",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_uso_real_telar",
-      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
-    },
-    {
-      "nombre": "Acervo Usuario",
-      "slug": "acervo_usuario",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "Arco del nacimiento del generador",
@@ -4376,21 +4378,21 @@
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T09:26:52.708Z",
+    "generadoEn": "2026-09-03T09:31:00.285Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
       "correspondencias verificadas a mano"
     ],
     "resumenAccion": {
-      "confirmar_ya_solido": 21,
+      "confirmar_ya_solido": 22,
       "descartar_termino_generico": 3,
       "promover_recurso_real": 15,
       "confirmar_codigo_real": 18,
       "confirmar_patron_tecnico": 5,
       "confirmar_verificado_a_mano": 2,
-      "revisar_inconsistencia_nombres": 2,
       "revisar_manual_real": 12,
+      "revisar_inconsistencia_nombres": 1,
       "correcto_narrativo": 19,
       "revisar_nombre_narrativo": 10,
       "confirmar_uso_real_telar": 3,

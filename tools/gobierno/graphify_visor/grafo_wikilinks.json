@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:26:51.423Z",
+  "generadoEn": "2026-09-03T09:30:58.978Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -374,6 +374,13 @@
       "esFicheroReal": true
     },
     {
+      "id": "acervo",
+      "nombre": "Acervo",
+      "tipo": "personaje",
+      "carpeta": "02_Personajes/Acervos",
+      "esFicheroReal": true
+    },
+    {
       "id": "verificador_de_campos",
       "nombre": "Verificador de Campos",
       "tipo": "personaje",
@@ -633,13 +640,6 @@
       "esFicheroReal": true
     },
     {
-      "id": "acervo",
-      "nombre": "Acervo",
-      "tipo": "referencia_sin_ficha",
-      "carpeta": null,
-      "esFicheroReal": false
-    },
-    {
       "id": "acervos",
       "nombre": "Acervos",
       "tipo": "referencia_sin_ficha",
@@ -862,7 +862,7 @@
     },
     {
       "source": "telar",
-      "target": "acervos",
+      "target": "acervo",
       "relation": "wikilink"
     },
     {
@@ -1528,6 +1528,61 @@
     {
       "source": "acervo_prompter",
       "target": "vigilia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "telar",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_tecnico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_logico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_logistico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_narrativo",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_filosofico",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_usuario",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_sociocracia",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervo_prompter",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo",
+      "target": "acervos",
       "relation": "wikilink"
     },
     {

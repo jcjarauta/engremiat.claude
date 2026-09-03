@@ -1,19 +1,19 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:26:52.639Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:31:00.211Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
 ## Resumen: 224 entidades candidatas reales
 
-- **21 confirmar** -- ficha real ya existente, bien corroborada.
-- **20 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
+- **22 confirmar** -- ficha real ya existente, bien corroborada.
+- **19 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
 - **69 revisar** -- ficha real ya existente pero apenas corroborada fuera de la boveda.
 - **114 descartar** -- evidencia real insuficiente hoy.
 
 ## Ciclos reales encontrados: 4
 
-- **malla de 69 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter <-> acervo_sociocracia ... (+61 mas)
+- **malla de 70 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter ... (+62 mas)
 - chequear_libreria_clientes <-> ejecutar_chequeo_libreria
 - dato:appsscript.json <-> dato:clientes.json <-> dato:libreria.json <-> tools/constructor/montar-cliente.mjs <-> tools/constructor/montar-cliente.test.mjs
 - aprobada_sin_ejecutar <-> concilio_convocando <-> deliberando <-> devuelta <-> esperando_relevo <-> huella <-> orientacion <-> puerta_ejecutada <-> puerta_en_curso <-> puerta_err <-> puerta_pendiente <-> puerta_warn <-> sin_seleccionar <-> tejiendo
@@ -26,7 +26,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 |---|---|---|
 | calls | 2994 | apps_script:2994 |
 | contains | 1573 | apps_script:1573 |
-| wikilink | 278 | wikilinks:278 |
+| wikilink | 289 | wikilinks:289 |
 | conexion_n8n | 138 | n8n:138 |
 | indirect_call | 100 | apps_script:100 |
 | toco_en_operacion | 81 | historial:81 |
@@ -59,7 +59,6 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Verificación | 4 | baserow_estructura, datos_negocio, n8n, sheet_estructura | entidad_negocio_proceso |
 | 06_TAREAS | 4 | baserow_estructura, codigo_node, datos_negocio, sheet_estructura | pestana_sheet_negocio |
 | 13_INCIDENCIAS | 3 | codigo_node, datos_negocio, sheet_estructura | recurso_codigo, pestana_sheet_negocio |
-| Acervo | 3 | baserow_estructura, codigo_node, vault_wikilink | referencia_sin_ficha, recurso_codigo, tabla_baserow |
 | 18_VINCULO | 3 | codigo_node, datos_negocio, sheet_estructura | recurso_codigo, pestana_sheet_negocio |
 | Acervos | 3 | baserow_estructura, codigo_node, vault_wikilink | referencia_sin_ficha |
 | PLANTILLA_MISION | 3 | baserow_estructura, codigo_node, n8n | recurso_codigo, tabla_baserow |
@@ -112,14 +111,16 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | n8n | espacio | 2 | vault_ficha, vault_wikilink |
 | Sesion 2026-09-01 | sesion | 2 | vault_ficha, vault_wikilink |
 | Narrador | personaje | 2 | vault_ficha, vault_wikilink |
-| Estilo | estilo | 2 | vault_ficha, vault_wikilink |
 | Acervo Narrativo | personaje | 2 | vault_ficha, vault_wikilink |
+| Estilo | estilo | 2 | vault_ficha, vault_wikilink |
 | Verificador de Campos | personaje | 2 | vault_ficha, vault_wikilink |
 | El universo no se ha usado sobre si mismo | hilo | 2 | vault_ficha, vault_wikilink |
 | La fragua protegida | espacio | 2 | vault_ficha, vault_wikilink |
 | IntegrityService | modulo | 2 | vault_ficha, vault_wikilink |
-| Decidir el tono del universo | hilo | 2 | vault_ficha, vault_wikilink |
 | Acervo Logico | personaje | 2 | vault_ficha, vault_wikilink |
+| Decidir el tono del universo | hilo | 2 | vault_ficha, vault_wikilink |
+| Acervo Filosofico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Sociocracia | personaje | 2 | vault_ficha, vault_wikilink |
 | El Sheet manda | regla | 2 | vault_ficha, vault_wikilink |
 | Los dos continentes de datos | regla | 2 | vault_ficha, vault_wikilink |
 | Arco del incidente | arco | 2 | vault_ficha, vault_wikilink |
@@ -129,17 +130,15 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | El Vault | espacio | 2 | vault_ficha, vault_wikilink |
 | Formularios | modulo | 2 | vault_ficha, vault_wikilink |
 | ConfigRepository | modulo | 2 | vault_ficha, vault_wikilink |
-| Acervo Filosofico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Sociocracia | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Tecnico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Logistico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Usuario | personaje | 2 | vault_ficha, vault_wikilink |
 | Honestidad del fallo | regla | 2 | vault_ficha, vault_wikilink |
 | Arco del bug oculto | arco | 2 | vault_ficha, vault_wikilink |
 | Arco de la construccion del universo | arco | 2 | vault_ficha, vault_wikilink |
 | Unir historia y gobernanza | hilo | 2 | vault_ficha, vault_wikilink |
 | El ciclo de vida remoto | espacio | 2 | vault_ficha, vault_wikilink |
 | Headscale | espacio | 2 | vault_ficha, vault_wikilink |
-| Acervo Tecnico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Logistico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Usuario | personaje | 2 | vault_ficha, vault_wikilink |
 | Arco del nacimiento del generador | arco | 2 | vault_ficha, vault_wikilink |
 | Quien dispara el primer lote | hilo | 2 | vault_ficha, vault_wikilink |
 | Migrar el hardcode de token en n8n | hilo | 2 | vault_ficha, vault_wikilink |
@@ -163,6 +162,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Oportunidad | modulo | 5 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_ficha, vault_wikilink |
 | Ejecucion | modulo | 5 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
 | Baserow | espacio | 4 | codigo_node, n8n, vault_ficha, vault_wikilink |
+| Acervo | personaje, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
 | GASTO_API | recurso, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
 | CORE | modulo | 4 | codigo_appsscript, datos_negocio, vault_ficha, vault_wikilink |
 | 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 4 | codigo_node, sheet_estructura, vault_ficha, vault_wikilink |
@@ -235,7 +235,7 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 |---|---|---|
 | historico_pestana_sin_huella | 53 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
 | historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
-| confirmar_ya_solido | 21 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
+| confirmar_ya_solido | 22 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
 | confirmar_codigo_real | 18 | Correspondencia real de código encontrada -- confirmado. |
 | promover_recurso_real | 15 | Pestaña/tabla real bien corroborada -- candidata sólida a ficha de Recurso o a `vinculoReal` en una ficha existente. |
@@ -248,8 +248,8 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 | confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
 | hueco_real_ya_resuelto | 3 | Hueco real encontrado y ya resuelto en esta misma sesión: se enriqueció con `## Vínculo real` una ficha existente (Vigilia/Coordinador/Ejecutor), sin crear una ficha redundante. |
 | confirmar_verificado_a_mano | 2 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
-| revisar_inconsistencia_nombres | 2 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
 | historico_detalle_implementacion | 2 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
+| revisar_inconsistencia_nombres | 1 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
 | historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
 | historico_instancia_ya_catalogada | 1 | Investigado a mano: no era una entidad nueva -- ya es una fila catalogada dentro de un Recurso real (p.ej. DOCUMENTO_ENGREMIAT). Histórico, correctamente no promovido. |
 

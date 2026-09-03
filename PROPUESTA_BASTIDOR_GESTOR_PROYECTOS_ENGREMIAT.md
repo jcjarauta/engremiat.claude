@@ -517,6 +517,16 @@ Los 10 -- Espacios/Reglas con nombre narrativo ("El Sheet", "n8n", "Headscale"..
 
 Censo regenerado y desplegado. De los diez, 7 recibieron vinculoReal real y preciso, 3 se quedan correctamente sin él por estar ya fundamentados. Ninguno resultó ser un hueco -- el límite era del método de cruce por texto, no del dato real, exactamente como se anticipó al clasificarlos.
 
+### 8.28 "Valora los revisar_inconsistencia_nombres y historico_detalle_implementacion" -- el primero no era inconsistencia, era un índice que faltaba
+
+**Investigado a fondo, no aplicada la solución ya propuesta sin más**: la valoración de §8.23 decía "faltan wikilinks apuntando al nombre exacto" para `[[Acervo]]`/`[[Acervos]]` -- leyendo los dos usos reales (`Narrador.md`: "un [[Acervo]] todavía por construir"; `Telar.md`: "los [[Acervos]]") resultó que **ninguno de los dos estaba mal apuntado**: ambos se refieren de verdad a la categoría/grupo entero, no a un Acervo concreto -- "un Acervo" (singular indefinido, un tipo) y "los Acervos" (plural, el grupo de los ocho) son usos correctos, no errores. Lo que faltaba de verdad era la ficha-índice, exactamente el mismo patrón real que ya existe para los módulos (`Modulos acoplables.md`).
+
+**Construida `Acervo.md`** en `02_Personajes/Acervos/`, índice real de las 8 fichas reales (7 que deliberan dentro de Concilio + Acervo Prompter, que trabaja antes) -- mismo patrón, mismo criterio de "nunca inventar sin dato real". Ajustado el wikilink de `Telar.md` a `[[Acervo|Acervos]]` (alias, conserva el texto plural, apunta al fichero singular real); el de `Narrador.md` ya resolvía solo al crear la ficha. Verificado: "Acervo" pasó de candidata suelta (corroboración 3) a ficha real confirmada (corroboración 4).
+
+**`historico_detalle_implementacion` (2)**: los nombres literales de los dos workflows n8n reales -- ya cubiertos por el `vinculoReal` de `Cronista.md`, `n8n.md` y `Telar.md` (añadidos en pasadas anteriores). Verificado, sin acción adicional -- correctamente histórico, no un hueco.
+
+Censo regenerado (224 candidatas, 22 confirmar) y desplegado.
+
 ## 9. Pendiente
 
 ## 9. Pendiente
