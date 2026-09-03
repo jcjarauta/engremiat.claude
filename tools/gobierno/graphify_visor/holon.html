@@ -63,6 +63,13 @@ function colorDe(n) {
   return n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo];
 }
 
+// vis-network pinta la etiqueta DENTRO del nodo solo en box (espacio, fondo claro) --
+// en dot/diamond/triangle la dibuja fuera, sobre el canvas casi negro: ahi hace falta texto claro
+// o es invisible (mismo bug real encontrado y corregido en grafo_maestro.html, §8.39)
+function colorFuenteDe(n) {
+  return n.tipo === 'espacio' ? '#0f1013' : '#e7e7ea';
+}
+
 async function cargar() {
   const datos = await (await fetch('grafo_holon.json')).json();
 
@@ -84,7 +91,7 @@ async function cargar() {
       id: n.id, label: n.nombre,
       title: n.tipo + (n.equipo ? ' · ' + n.equipo : ''),
       color: { background: colorDe(n), border: '#0f1013' },
-      font: { color: '#0f1013', size: 12, face: 'system-ui' },
+      font: { color: colorFuenteDe(n), size: 12, face: 'system-ui' },
       shape: FORMA_TIPO[n.tipo] || 'dot',
       size: n.tipo === 'espacio' ? 20 : 16,
       x: enCarril ? xInicial : undefined,
@@ -160,7 +167,7 @@ async function cargar() {
     nodes.update(datos.nodos.map(n => ({
       id: n.id,
       color: { background: vecinos.has(n.id) ? colorDe(n) : '#2a2b31', border: '#0f1013' },
-      font: { color: vecinos.has(n.id) ? '#0f1013' : '#5a5b63', size: 12, face: 'system-ui' },
+      font: { color: vecinos.has(n.id) ? colorFuenteDe(n) : '#5a5b63', size: 12, face: 'system-ui' },
     })));
     edges.update(datos.aristas.map((a, i) => ({
       id: i,
@@ -172,7 +179,7 @@ async function cargar() {
   }
 
   function verTodos() {
-    nodes.update(datos.nodos.map(n => ({ id: n.id, color: { background: colorDe(n), border: '#0f1013' }, font: { color: '#0f1013', size: 12, face: 'system-ui' } })));
+    nodes.update(datos.nodos.map(n => ({ id: n.id, color: { background: colorDe(n), border: '#0f1013' }, font: { color: colorFuenteDe(n), size: 12, face: 'system-ui' } })));
     edges.update(datos.aristas.map((a, i) => ({ id: i, color: { color: '#3a3b47' }, font: { color: '#9a9aa2', size: 9, strokeWidth: 0, background: '#0f1013' } })));
     document.getElementById('reset-equipo').style.display = 'none';
     document.querySelectorAll('.fila-equipo').forEach(f => f.classList.remove('activa'));
