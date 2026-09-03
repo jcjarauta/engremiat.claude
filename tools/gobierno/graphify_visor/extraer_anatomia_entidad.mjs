@@ -14,6 +14,10 @@ const n8n = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_n8n.json'), 'utf8')
 const graphAS = JSON.parse(fs.readFileSync('C:/Users/pc/Desktop/engremiat.claude/tools/graphify/graph.json', 'utf8'));
 const concatMap = JSON.parse(fs.readFileSync('C:/Users/pc/Desktop/engremiat.claude/tools/graphify/concat-map.json', 'utf8'));
 const nodeGraph = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_node.json'), 'utf8'));
+const historial = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_historial.json'), 'utf8'));
+const paqueteCliente = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_paquete_cliente.json'), 'utf8'));
+const wikilinks = JSON.parse(fs.readFileSync(path.join(DIR, 'grafo_wikilinks.json'), 'utf8'));
+const RELACIONES_HOLON = new Set(['opera_en', 'depende_de', 'gobierna_a', 'alimenta_a', 'verifica_a', 'corrige_a', 'activa_a', 'parte_de']);
 
 function ficheroDeLineaConcat(lineaConcat) {
   const m = concatMap.mappings.find(m => lineaConcat >= m.concat_content_start_line && lineaConcat <= m.concat_content_end_line);
@@ -43,15 +47,19 @@ ficheros.forEach(f => {
   if (idx < 0) return;
   const zona = texto.slice(idx);
   const nombre = path.basename(f, '.md');
-  const cita = { slug: slugify(nombre), nombre, n8n: [], appsScript: [], node: [] };
+  const cita = { slug: slugify(nombre), nombre, n8n: [], appsScript: [], node: [], sheet: [] };
   zona.split('\n').forEach(linea => {
     if (!linea.trim().startsWith('-')) return;
     let m;
     if ((m = linea.match(/n8n:\s*`([^`]+)`/))) cita.n8n.push(m[1]);
     if ((m = linea.match(/repo:\s*`src\/([^`]+\.(js|html))`/))) cita.appsScript.push(m[1]);
     if ((m = linea.match(/repo:\s*`tools\/([^`]+\.(mjs|js))`/))) cita.node.push('tools/' + m[1]);
+    // mecanismos reales de Sheet/Baserow que ya tienen su propio grafo dirigido en sheet-real.html --
+    // no cualquier pestaña citada, solo las que de verdad tienen un flujo real que recorrer
+    if (/91_HISTORIAL/.test(linea)) cita.sheet.push('historial');
+    if (/PAQUETE_CLIENTE/.test(linea)) cita.sheet.push('paquete_cliente');
   });
-  if (cita.n8n.length || cita.appsScript.length || cita.node.length) citasPorEntidad.push(cita);
+  if (cita.n8n.length || cita.appsScript.length || cita.node.length || cita.sheet.length) citasPorEntidad.push(cita);
 });
 
 // -- espina real: DFS del camino dirigido mas largo desde cada entrada real (sin incoming) --
@@ -181,13 +189,80 @@ function fuenteNode(ficherosTools) {
   };
 }
 
+// -- fuente Sheet/Baserow: mecanismos reales que YA tienen grafo dirigido propio en sheet-real.html
+// (91_HISTORIAL por correlationId, PAQUETE_CLIENTE) -- no se inventa un flujo para una tabla suelta --
+const MECANISMOS_SHEET = {
+  historial: { grafo: historial, etiqueta: '91_HISTORIAL — por correlationId' },
+  paquete_cliente: { grafo: paqueteCliente, etiqueta: 'PAQUETE_CLIENTE — módulos activos por cliente' },
+};
+function fuenteSheetMecanismo(clave) {
+  const m = MECANISMOS_SHEET[clave];
+  if (!m) return null;
+  const ids = m.grafo.nodos.map(n => n.id);
+  const { entrada, espina } = calcularEspina(ids, m.grafo.aristas);
+  const espinaSet = new Set(espina);
+  return {
+    tipo: 'sheet',
+    etiqueta: m.etiqueta,
+    nodos: m.grafo.nodos.map(n => ({ id: n.id, nombre: n.nombre, tipoReal: n.tipo })),
+    aristas: m.grafo.aristas.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target) })),
+    entrada, espina,
+  };
+}
+
+// -- fuente de respaldo: la propia bóveda -- para entidades sin código/n8n/mecanismo Sheet propio,
+// su cuerpo real es su vecindario en el Holon (§8.33): aristas semanticas dirigidas (opera_en/depende_de/...)
+// como columna, wikilinks reales como extremidades. Mismo dato ya real de grafo_wikilinks.json, sin inventar nada nuevo --
+function fuenteRelacional(slug) {
+  if (!wikilinks.nodos.some(n => n.id === slug)) return null;
+  const holonAristas = wikilinks.aristas.filter(a => RELACIONES_HOLON.has(a.relation));
+  const idsSet = new Set();
+  idsSet.add(slug);
+  let cambio = true;
+  while (cambio) {
+    cambio = false;
+    holonAristas.forEach(a => {
+      if (idsSet.has(a.source) && !idsSet.has(a.target)) { idsSet.add(a.target); cambio = true; }
+      if (idsSet.has(a.target) && !idsSet.has(a.source)) { idsSet.add(a.source); cambio = true; }
+    });
+  }
+  if (idsSet.size < 2) return null; // sin ninguna relación real del Holon, no hay cuerpo que dibujar
+  const ids = [...idsSet];
+  const internas = holonAristas.filter(a => idsSet.has(a.source) && idsSet.has(a.target));
+  const { entrada, espina } = calcularEspina(ids, internas);
+  const espinaSet = new Set(espina);
+  const wikilinkFrontera = wikilinks.aristas.filter(a => a.relation === 'wikilink' && (idsSet.has(a.source) || idsSet.has(a.target)));
+  const idANombre = new Map(wikilinks.nodos.map(n => [n.id, n.nombre]));
+  const nodosWiki = new Set();
+  wikilinkFrontera.forEach(a => { nodosWiki.add(a.source); nodosWiki.add(a.target); });
+  const idsFinal = new Set([...ids, ...nodosWiki]);
+  return {
+    tipo: 'relacional',
+    etiqueta: 'Bóveda — relaciones reales del Holon',
+    nodos: [...idsFinal].map(id => ({ id, nombre: idANombre.get(id) || id, tipoReal: (wikilinks.nodos.find(n => n.id === id) || {}).tipo || 'referencia' })),
+    aristas: [
+      ...internas.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target), relacion: a.relation })),
+      ...wikilinkFrontera.map(a => ({ source: a.source, target: a.target, enEspina: false, relacion: 'wikilink' })),
+    ],
+    entrada, espina,
+  };
+}
+
 const entidades = {};
 citasPorEntidad.forEach(c => {
   const fuentes = [];
   c.n8n.forEach(wf => { const f = fuenteN8n(wf); if (f) fuentes.push(f); });
   if (c.appsScript.length) { const f = fuenteAppsScript(c.appsScript); if (f) fuentes.push(f); }
   if (c.node.length) { const f = fuenteNode(c.node); if (f) fuentes.push(f); }
+  c.sheet.forEach(clave => { const f = fuenteSheetMecanismo(clave); if (f) fuentes.push(f); });
   if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes };
+});
+
+// -- respaldo relacional: cualquier ficha real de la bóveda que todavía no tenga cuerpo propio --
+wikilinks.nodos.forEach(n => {
+  if (entidades[n.id]) return; // ya tiene un cuerpo mas fuerte (codigo/n8n/mecanismo Sheet), no se duplica
+  const f = fuenteRelacional(n.id);
+  if (f) entidades[n.id] = { nombre: n.nombre, fuentes: [f] };
 });
 
 const out = { generadoEn: new Date().toISOString(), totalEntidadesConAnatomia: Object.keys(entidades).length, entidades };

@@ -24,7 +24,7 @@
   .fuente-head { padding: 12px 16px; border-bottom: 1px solid #2c2d33; display: flex; align-items: center; gap: 10px; }
   .badge-tipo { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
   .fuente-stats { margin-left: auto; color: #6b6c76; font-size: 11.5px; font-variant-numeric: tabular-nums; }
-  .fuente-canvas { height: 320px; }
+  .fuente-canvas { height: 420px; }
   .leyenda-mini { display: flex; gap: 14px; padding: 8px 16px; font-size: 11px; color: #9a9aa2; border-top: 1px solid #202126; }
   .leyenda-mini span { display: inline-flex; align-items: center; gap: 5px; }
   .marca { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
@@ -34,7 +34,7 @@
 <div id="layout">
   <div id="panel">
     <h1>Anatomía real</h1>
-    <p class="hint">Cabeza = punto de entrada real. Columna = el camino dirigido más largo desde ahí, calculado sobre las aristas reales -- no dibujado a mano. Extremidades = todo lo demás que cuelga. §8.41.</p>
+    <p class="hint">Cabeza = punto de entrada real, en el centro. Cada anillo = un paso real más de distancia. Columna = el camino dirigido más largo desde ahí. Extremidades = todo lo demás, colgando por su ángulo real. Cuatro fuentes reales: n8n, Apps Script, Node, Sheet (91_HISTORIAL/PAQUETE_CLIENTE) y, si no hay código propio, las relaciones reales del Holon en la bóveda. §8.41-42.</p>
     <input type="text" id="buscar" placeholder="Buscar entidad...">
     <div id="lista"></div>
   </div>
@@ -44,8 +44,8 @@
   </div>
 </div>
 <script>
-const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d' };
-const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node' };
+const COLOR_FUENTE = { n8n: '#4fce6f', apps_script: '#4c9aff', node: '#e8a33d', sheet: '#e85c8a', relacional: '#9a8cff' };
+const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node', sheet: 'Sheet', relacional: 'Bóveda' };
 
 let datos = null;
 let redesActivas = [];
@@ -112,18 +112,83 @@ function mostrarEntidad(slug) {
   });
 }
 
+// layout radial real: BFS desde la cabeza da el anillo (profundidad) de cada nodo;
+// el angulo de cada nodo reparte el arco de su padre en proporcion al numero real de
+// hojas de cada rama, para que una extremidad con mucho detrás ocupe más arco que una suelta
+const RADIO_ANILLO = 78;
+function calcularPosicionesRadiales(nodos, aristas, cabeza) {
+  const vecinos = new Map();
+  nodos.forEach(n => vecinos.set(n.id, new Set()));
+  aristas.forEach(a => { if (vecinos.has(a.source) && vecinos.has(a.target)) { vecinos.get(a.source).add(a.target); vecinos.get(a.target).add(a.source); } });
+
+  const profundidad = new Map([[cabeza, 0]]);
+  const padre = new Map();
+  const hijos = new Map(nodos.map(n => [n.id, []]));
+  const cola = [cabeza];
+  while (cola.length) {
+    const actual = cola.shift();
+    for (const vecino of vecinos.get(actual) || []) {
+      if (profundidad.has(vecino)) continue;
+      profundidad.set(vecino, profundidad.get(actual) + 1);
+      padre.set(vecino, actual);
+      hijos.get(actual).push(vecino);
+      cola.push(vecino);
+    }
+  }
+
+  function contarHojas(id) {
+    const h = hijos.get(id) || [];
+    if (!h.length) return 1;
+    return h.reduce((suma, hijo) => suma + contarHojas(hijo), 0);
+  }
+  const angulo = new Map();
+  function asignar(id, ini, fin) {
+    angulo.set(id, (ini + fin) / 2);
+    const h = hijos.get(id) || [];
+    if (!h.length) return;
+    const totalHojas = contarHojas(id);
+    let cursor = ini;
+    h.forEach(hijo => {
+      const ancho = (fin - ini) * (contarHojas(hijo) / totalHojas);
+      asignar(hijo, cursor, cursor + ancho);
+      cursor += ancho;
+    });
+  }
+  asignar(cabeza, 0, 2 * Math.PI);
+
+  const huerfanos = nodos.filter(n => !profundidad.has(n.id));
+  const radioHuerfanos = (Math.max(0, ...profundidad.values()) + 1) * RADIO_ANILLO;
+
+  const pos = {};
+  nodos.forEach(n => {
+    if (profundidad.has(n.id)) {
+      const r = profundidad.get(n.id) * RADIO_ANILLO;
+      const a = angulo.get(n.id);
+      pos[n.id] = { x: r * Math.cos(a), y: r * Math.sin(a), profundidad: profundidad.get(n.id) };
+    }
+  });
+  huerfanos.forEach((n, i) => {
+    const a = (i / Math.max(1, huerfanos.length)) * 2 * Math.PI;
+    pos[n.id] = { x: radioHuerfanos * Math.cos(a), y: radioHuerfanos * Math.sin(a), profundidad: null };
+  });
+  return pos;
+}
+
 function dibujarFuente(f, contenedor) {
   const colorFuente = COLOR_FUENTE[f.tipo];
   const espinaSet = new Set(f.espina);
+  const posiciones = calcularPosicionesRadiales(f.nodos, f.aristas, f.entrada);
   const nodes = new vis.DataSet(f.nodos.map(n => {
     const enEspina = espinaSet.has(n.id);
     const esCabeza = n.id === f.entrada;
+    const p = posiciones[n.id] || { x: 0, y: 0 };
     return {
       id: n.id,
-      label: n.nombre.length > 34 ? n.nombre.slice(0, 32) + '…' : n.nombre,
+      label: n.nombre.length > 30 ? n.nombre.slice(0, 28) + '…' : n.nombre,
       title: n.nombre + (n.tipoReal ? ' · ' + n.tipoReal : ''),
       shape: esCabeza ? 'star' : 'dot',
-      size: esCabeza ? 20 : (enEspina ? 15 : 9),
+      size: esCabeza ? 20 : (enEspina ? 14 : 8),
+      x: p.x, y: p.y, fixed: true, physics: false,
       color: { background: esCabeza ? '#ffffff' : (enEspina ? colorFuente : '#3a3b42'), border: '#0f1013' },
       font: { color: '#e7e7ea', size: enEspina ? 12 : 10, face: 'system-ui' },
     };
@@ -134,21 +199,19 @@ function dibujarFuente(f, contenedor) {
     width: a.enEspina ? 2.5 : 0.8,
     label: a.relacion && a.relacion !== 'import' ? a.relacion : '',
     font: { color: '#6b6c76', size: 8, strokeWidth: 0, background: '#0f1013' },
-    smooth: { type: 'cubicBezier', forceDirection: 'horizontal', roundness: 0.5 },
+    smooth: { type: 'continuous', roundness: 0.35 },
   })));
   const network = new vis.Network(contenedor, { nodes, edges }, {
-    layout: { hierarchical: { direction: 'LR', sortMethod: 'directed', levelSeparation: 70, nodeSpacing: 22, blockShifting: true, edgeMinimization: true } },
     physics: false,
     interaction: { hover: true, zoomView: true, dragView: true },
   });
-  // sin fisica no hay evento de estabilizacion que dispare un fit automatico, y una columna larga
-  // (muchos niveles reales) da un scale de fit() ilegible -- en vez de encoger todo el cuerpo para que
-  // quepa, centramos en la cabeza a un zoom legible y se recorre a mano, como pide la propia idea de
-  // "recorrido de inicio a fin"; "ver el cuerpo entero" (botón) hace el fit clásico si se quiere
+  // posiciones ya fijas (radiales, calculadas a mano) -- sin fisica no hay evento de
+  // estabilizacion que dispare un encuadre automatico, así que se centra en la cabeza
+  // a un zoom legible; "ver el cuerpo entero" hace el fit() clasico si se quiere ver todo el anillo
   setTimeout(() => {
     network.setSize('100%', '100%');
     network.redraw();
-    network.moveTo({ position: network.getPositions([f.entrada])[f.entrada] || { x: 0, y: 0 }, scale: 0.85, animation: false });
+    network.moveTo({ position: { x: 0, y: 0 }, scale: 0.8, animation: false });
   }, 60);
   redesActivas.push(network);
 }

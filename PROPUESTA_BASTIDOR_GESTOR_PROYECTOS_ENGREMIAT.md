@@ -672,6 +672,18 @@ Tres fuentes reales, mismo algoritmo para las tres:
 
 **Dos bugs reales encontrados y corregidos verificando en el navegador**: (1) sin física, no hay evento de estabilización que dispare un `fit()` automático -- había que forzarlo a mano; (2) un `fit()` clásico sobre una columna larga (muchos niveles reales) da un zoom ilegible -- en vez de encoger todo el cuerpo, la vista centra en la cabeza a escala legible y se recorre a mano (arrastrando), con un botón "ver el cuerpo entero" para el `fit()` clásico si se quiere. Verificado con Cronista (78 nodos, columna de 14, forma de espina con costillas real) y con el caso grande, Repository (822 nodos reales, sin errores).
 
+### 8.42 "Prefiero el concepto radial, y necesitamos también las entidades que surgen de Sheet y Baserow"
+
+El operador comparó dos capturas: el layout jerárquico izquierda→derecha de `anatomia.html` (§8.41, resultado plano, poco legible) contra el layout radial de `sheet-real.html` (91_HISTORIAL, un hub central con satélites reales alrededor) -- prefiere el segundo como concepto. Pidió además cubrir las entidades que salen de Sheet/Baserow, no solo n8n/Apps Script/Node.
+
+**Layout radial real, calculado a mano** (`vis-network` no trae uno nativo): BFS desde la cabeza da el anillo de cada nodo (cada paso real de distancia, un anillo más), y el ángulo de cada rama se reparte en proporción al número real de hojas de su subárbol -- una extremidad con mucho detrás ocupa más arco que una suelta, sin inventar pesos. Reemplaza el `layout.hierarchical` anterior, mismo dato (`espina`/`extremidades`) por debajo, solo cambia la geometría.
+
+**Dos fuentes reales más, sin inventar ningún flujo nuevo**:
+- **Sheet** -- los mecanismos que ya tienen su propio grafo dirigido real en `sheet-real.html`: `91_HISTORIAL` (por `correlationId`) y `PAQUETE_CLIENTE` (módulos activos por cliente), resueltos cuando una ficha los cita por nombre exacto en su `## Vínculo real` -- no cualquier pestaña suelta, solo las que de verdad tienen un flujo real que recorrer. `Zona de aterrizaje STG` y `Cliente` ganan así una segunda fuente real cada una.
+- **Bóveda** (respaldo) -- para cualquier ficha real sin código/n8n/mecanismo Sheet propio, su cuerpo es su propio vecindario en el Holon (`grafo_wikilinks.json`, §8.33): las aristas semánticas dirigidas (`opera_en`/`depende_de`/...) como columna, los wikilinks reales como extremidades -- mismo dato ya calculado, sin construir nada nuevo. Cierra 18 entidades más (Concilio, los 8 Acervos, Coordinador, Ejecutor, Relevo, Mensajero, El Sheet, VPS y Tailscale, El Vault, Headscale, GASTO_API, DOCUMENTO_ENGREMIAT) que antes se quedaban sin cuerpo por no citar código directamente.
+
+**Resultado real**: de 31 a **49 entidades con anatomía real** de las 124 fichas -- verificado en el navegador con Cronista (radial, columna de 14, forma de espina legible), Concilio (respaldo Bóveda, 68 nodos) y Cliente (2 fuentes reales a la vez, Node + Sheet).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
