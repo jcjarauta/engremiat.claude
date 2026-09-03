@@ -57,7 +57,6 @@ const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce
 const COLOR_TIPO = { espacio: '#c76bd6', recurso: '#e85c8a', regla: '#5c5f6b', personaje: '#8a8d99' };
 const FORMA_TIPO = { espacio: 'box', recurso: 'diamond', regla: 'triangle', personaje: 'dot' };
 const CARRIL_X = { concilio: -420, guardia: 0, frontera: 420 };
-const ETIQUETA_ZONA = { concilio: 'CONCILIO', guardia: 'GUARDIA', frontera: 'FRONTERA' };
 
 function colorDe(n) {
   return n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo];
@@ -119,21 +118,6 @@ async function cargar() {
   });
   window.addEventListener('resize', () => network.fit({ animation: false }));
   window.debugRed = { network, nodes, edges, datos };
-
-  // fondo de carril + etiqueta por equipo, en coordenadas del propio grafo --
-  // se mantiene alineado con los nodos aunque el usuario haga pan/zoom
-  network.on('afterDrawing', (ctx) => {
-    ctx.save();
-    Object.entries(CARRIL_X).forEach(([equipo, x]) => {
-      ctx.fillStyle = COLOR_EQUIPO[equipo] + '14';
-      ctx.fillRect(x - 150, -700, 300, 1000);
-      ctx.fillStyle = COLOR_EQUIPO[equipo] + '99';
-      ctx.font = '700 22px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(ETIQUETA_ZONA[equipo], x, -650);
-    });
-    ctx.restore();
-  });
 
   const nombreDe = id => (datos.nodos.find(x => x.id === id) || {}).nombre || id;
 

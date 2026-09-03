@@ -638,6 +638,18 @@ El usuario compartió una captura real del `grafo_maestro.html` recién construi
 
 Verificado en el navegador, no solo en el código: zoom directo sobre "Concilio" y "Acervo Tecnico" -- ambos legibles, tamaño de Concilio mayor, zona "GUARDIA" bien rotulada; vista general de nuevo limpia tras "ver todo el grafo". Desplegado.
 
+### 8.40 "Elimina las barras de segmentación, compara con el grafo Obsidian, analiza la estructura de carpetas contra Sheets"
+
+**Barras eliminadas** de `grafo_maestro.html` y `holon.html` -- el fondo de carril + etiqueta CONCILIO/GUARDIA/FRONTERA pintado en `afterDrawing` quitado en ambos (`ETIQUETA_ZONA` y su bloque de dibujo). Se conserva el carril invisible (la `x` fija por equipo) porque sigue agrupando visualmente sin ensuciar -- solo se quitó el rectángulo de color y el rótulo.
+
+**Comparación real con el Graph View de Obsidian**, a partir de `.obsidian/graph.json` (config real, no inventada) y las capturas que compartió el operador -- sin API, la comparación es de configuración + inspección visual, honesto sobre el límite:
+- `hideUnresolved: true` en Obsidian -- oculta wikilinks a notas que no existen. Nuestro `grafo_maestro.html` los muestra a propósito como `referencia_sin_ficha` (2 nodos) -- diferencia real y deliberada, no un fallo: Obsidian esconde el hueco, nosotros lo señalamos.
+- `showAttachments: true` -- Obsidian puede mostrar adjuntos como nodo. Encontrado 1 real en toda la bóveda: `Arquitectura_Nucleo.canvas`. Nuestro grafo solo recorre `.md`, así que ese nodo (si algo lo enlaza) aparecería en Obsidian y no en el nuestro -- diferencia real, de una sola pieza, no sistémica.
+- `showTags: false` -- coincide con nuestro parser, que tampoco convierte `tags:` en nodos.
+- El resto (colorGroups por `tipo:`, `showOrphans: false`) es exactamente el mismo criterio que ya aplicamos: agrupar por el campo `tipo` real del frontmatter.
+
+**Estructura real de carpetas cruzada contra `MODULO_POR_ENTIDAD_MVP`** (`src/Ids.js`, la fuente de verdad real de qué módulo posee qué pestaña de Sheet): 14 fichas reales en `01_Mundo/Modulos/Modulos_acoplables/` + `CORE/`. Los 11 valores reales de `MODULO_POR_ENTIDAD_MVP` (CLIENTE/COMPRAS/CONVOCATORIAS/ECONOMICO/EJECUCION/ESCENARIOS/IMPACTO/OPERATIVA/OPORTUNIDAD/SEGUIMIENTO/VENTAS) tienen los 11 -- ninguno falta, ninguno sobra respecto al código. **3 fichas reales sin entrada en `MODULO_POR_ENTIDAD_MVP`**: Gantt, Comunicación, Aprovisionamiento -- verificado que no es deriva ni error: las tres ya tienen `vinculoReal` real (`GanttPlanReal.html`, `WebhookTelegramService.js`, `AprovisionamientoService.js`+`SOLICITUDES_MONTAJE`) -- son módulos reales que no poseen ninguna pestaña `ENTIDADES_MVP` propia (vista sobre entidades ajenas, integración externa, o una pestaña de utilidad fuera del MVP), no un módulo inventado. Sin cambios necesarios -- el cruce confirma que la bóveda ya es consistente con Sheets, no al revés.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

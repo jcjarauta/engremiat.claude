@@ -79,7 +79,6 @@
 <script>
 const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce6f' };
 const CARRIL_X = { concilio: -560, guardia: 0, frontera: 560 };
-const ETIQUETA_ZONA = { concilio: 'CONCILIO', guardia: 'GUARDIA', frontera: 'FRONTERA' };
 
 // tipo -> {color, shape, marca (para la leyenda CSS), etiqueta}
 const TIPO = {
@@ -202,19 +201,6 @@ async function cargar() {
     refrescarNodos();
   });
   window.addEventListener('resize', () => network.fit({ animation: false }));
-
-  network.on('afterDrawing', (ctx) => {
-    ctx.save();
-    Object.entries(CARRIL_X).forEach(([equipo, x]) => {
-      ctx.fillStyle = COLOR_EQUIPO[equipo] + '10';
-      ctx.fillRect(x - 190, -900, 380, 1600);
-      ctx.fillStyle = COLOR_EQUIPO[equipo] + '90';
-      ctx.font = '700 22px system-ui, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(ETIQUETA_ZONA[equipo], x, -840);
-    });
-    ctx.restore();
-  });
 
   // -- leyenda de tipos, con conteo real --
   const porTipo = {};
