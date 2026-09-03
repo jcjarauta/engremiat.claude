@@ -486,6 +486,21 @@ Añadidas también dos fuentes reales más que el barrido no cubría: **`src/`**
 
 Verificado leyendo el resultado: censo regenerado (224 candidatas, 21 confirmar) y desplegado en el visor.
 
+### 8.26 "Valora los 12 revisar_manual_real" -- investigado uno a uno, 3 con vinculoReal real, el resto correctamente sin acción o con un hueco genuino identificado
+
+Sin patrón automático aplicable por diseño (por eso cayeron en revisión manual) -- investigado leyendo cada ficha real, uno a uno:
+
+- **AGORA** -- ya resuelta en §8.23-24, correctamente nascente, sin acción nueva.
+- **Modulos acoplables** -- es el índice real de la categoría, no una entidad con vinculoReal propio. Correcto tal cual.
+- **Pregonero** -- su propia ficha ya lo dice: "ninguna pieza construida". Aspiracional honesto, sin acción.
+- **Narrador** -- `estado: por_construir` explícito en el frontmatter. Aspiracional honesto, sin acción.
+- **Mensajero** -- ya muy bien documentado: cita tres mecanismos reales concretos en su propia prosa (webhooks WoL `despertar-pc-webhook`/`apagar-pi-webhook`, el bot de Telegram, el puente Historia↔Leyes) y ya enlaza a fichas que sí tienen vinculoReal (`Puente historia leyes`, `Bus de trabajo`) -- es un rol con varias encarnaciones, no una pieza única. No necesita vinculoReal propio.
+- **Acervo Narrativo, Acervo Logico, Acervo Sociocracia** -- las tres citan actividad real concreta en su propia prosa (síntesis reales que analizaron la historia de Engremiat; un hallazgo real de fallo -- un umbral de votos inventado -- ya vinculado desde `Honestidad del fallo.md`). Buscado el fichero exacto de esas síntesis sin encontrarlo con certeza (candidatos reales revisados: `diario-navegacion/*/informe.md`, que mencionan PEND1/OBS1 pero no nombran estos Acervos por nombre) -- suficientemente fundamentadas por su propia prosa, no se fuerza un vinculoReal sin esa certeza.
+- **Acervo Usuario** -- el único de los siete Acervos sin ninguna actividad real citada, ni en código, ni en Telar B2, ni en prosa propia. El hueco genuino real que queda de los siete.
+- **IntegrityService, Formularios, ConfigRepository** -- los tres SÍ tenían evidencia real precisa sin usar: `src/IntegrityService.js` (90 reglas `FUNC-*` reales), `src/FormularioMotorUI.js` + `FormularioValidacionService.js` + `FormularioEsquemas.js` + `FormularioGenerico.html` (~25 formularios reales), `src/ConfigRepository.js`. Añadido `## Vínculo real` a las tres, verificado leyendo el resultado.
+
+Censo regenerado y desplegado. De los doce, 3 recibieron vinculoReal real, 2 revelaron su propio hueco explícito (Pregonero/Narrador, ya honestos por diseño), 1 es un hueco genuino real que queda abierto (Acervo Usuario), y el resto está correctamente resuelto sin acción -- ni todo necesitaba vinculoReal, ni todo era un hueco.
+
 ## 9. Pendiente
 
 ## 9. Pendiente
