@@ -225,6 +225,10 @@
     {
       "fichero": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
       "que_hace": "§8.47: lee design-tokens.json y escribe tokens.css (variables CSS reales) -- equivalente funcional a Style Dictionary, sin dependencia npm, mismo criterio de todo tools/ (solo Node built-in, nada que instalar). Recorre el JSON DTCG y convierte cada token con $value en --categoria-subcategoria-nombre. Real: 46 tokens exportados."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "que_hace": "§8.49: revision completa de TODOS los ciclos reales consolidados en el proyecto -- 9 mecanismos encontrados, de naturaleza distinta, nunca forzados a un solo esquema: jerarquia (Campana->Proyecto->Producto->Proceso->Tarea, via ENTIDADES_MVP de src/Ids.js, orden real por numero de hoja), ciclo_vida (Mision real 14 estados B0-validado desde grafo_telar_estados.json; ejecucion real del workflow de Cronista desde la espina ya calculada en anatomia_entidades.json), plantilla (el ciclo de trabajo del Telar -- Urdimbre/Trama/Hilo conductor/Parte de Vigilia-Relevo, citado literalmente de Telar.md, domain-agnostic -- la Mision lo instancia via instanciaDe), operativo (ciclo_autonomo.mjs, CICLO_AUDITORIA_ENGREMIAT.md de 4 fases, METRICA_FABRICACION del Coordinador, el propio censo dato-real->hueco-real->ficha-real), fisico (El ciclo de vida remoto, IDs reales despertar-pc/apagar-pi). Deja fuera a proposito los bucles estructurales de teoria de grafos ya encontrados en el censo (§8.23) -- esos no son procesos temporales, son dependencias circulares de codigo. Salida: ciclos_reales.json, servido en 100.107.171.88:9320/ciclos_reales.json."
     }
   ]
 }

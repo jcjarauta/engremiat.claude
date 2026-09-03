@@ -751,6 +751,21 @@ Cerrado el pendiente explícito de §8.47. Las tres vistas (`grafo_maestro.html`
 
 Verificado en el navegador: las tres vistas renderizan idénticas a como estaban, sin errores de consola -- el cambio es de dónde sale el color, no de qué color es.
 
+### 8.49 "Haz una revisión completa e investiga sobre TODOS los ciclos que hemos consolidado"
+
+Investigado con grep sistemático sobre toda la bóveda y todo el repo (`ciclo`/`ciclo real`/`ciclos reales`), no desde memoria. Resultado: **9 mecanismos de ciclo reales**, no los 4 propuestos en la vuelta anterior -- y de naturaleza genuinamente distinta entre sí, lo que confirma que forzarlos a un único esquema (como hacía el boceto de GPT con Campaña→Misión→Tarea) habría sido deshonesto.
+
+**Construido `mapear_ciclos_reales.mjs`** con un componente `Cycle` real por cada uno, tagueado por `naturaleza`:
+- **jerarquia** (1) -- Campaña→Proyecto→Producto→Proceso→Tarea, con `parentCycle` real derivado del propio número de hoja de `ENTIDADES_MVP` (`src/Ids.js`) -- mismo criterio de orden ya usado en `extraer_anatomia_entidad.mjs` para las FK.
+- **ciclo_vida** (2) -- la Misión real (14 estados, B0-validado, `grafo_telar_estados.json`) y la ejecución real del workflow de Cronista (su columna ya calculada en `anatomia_entidades.json`, reusada sin recalcular nada).
+- **plantilla** (1) -- el ciclo de trabajo del Telar (Urdimbre→Trama→Hilo conductor→Parte de Vigilia/Relevo), citado literalmente de `Telar.md`, marcado `domain-agnostic` en su propia ficha. La Misión lo instancia de verdad (`instanciaDe: plantilla_telar`).
+- **operativo** (4) -- `ciclo_autonomo.mjs` (dispara→espera→comprueba→reintenta→cierra, de su propio comentario de cabecera), `CICLO_AUDITORIA_ENGREMIAT.md` (4 fases reales + Triage), `METRICA_FABRICACION` del Coordinador (agregado real de `99_TRIAGE_LOCAL`), y el propio censo de esta sesión ("dato real → hueco real → ficha real", ya nombrado así en este mismo documento).
+- **fisico** (1) -- El ciclo de vida remoto, con los mismos IDs reales que ya usa `Mensajero.md`.
+
+**Dejados fuera a propósito**: los 4 "ciclos reales" ya encontrados en §8.23 vía Tarjan/DFS (la malla del Holon, dos scripts que se referencian, ficheros de datos compartidos) -- son bucles estructurales de dependencia en el código, no procesos que se repiten en el tiempo. Meterlos en `Cycle` habría inventado una recurrencia temporal inexistente. Se quedan donde ya viven, en el censo.
+
+Desplegado y verificado: `ciclos_reales.json` sirve 9 ciclos reales desde el VPS.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

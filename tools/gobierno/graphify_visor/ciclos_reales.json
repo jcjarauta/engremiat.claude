@@ -1,0 +1,424 @@
+{
+ "generadoEn": "2026-09-03T16:46:16.028Z",
+ "totalCiclos": 9,
+ "ciclos": [
+  {
+   "id": "jerarquia_negocio",
+   "nombre": "Campaña → Proyecto → Producto → Proceso → Tarea",
+   "naturaleza": "jerarquia",
+   "fuente": "src/Ids.js (ENTIDADES_MVP) -- orden real por numero de hoja: 01,02,04,03,05,06",
+   "fases": [
+    {
+     "id": "campana",
+     "nombre": "CAMPANA",
+     "hoja": "01_CAMPANAS",
+     "parentCycle": null
+    },
+    {
+     "id": "proyecto",
+     "nombre": "PROYECTO",
+     "hoja": "02_PROYECTOS",
+     "parentCycle": "campana"
+    },
+    {
+     "id": "proyecto_producto",
+     "nombre": "PROYECTO_PRODUCTO",
+     "hoja": "04_PROYECTO_PRODUCTO",
+     "parentCycle": "proyecto"
+    },
+    {
+     "id": "producto",
+     "nombre": "PRODUCTO",
+     "hoja": "03_PRODUCTOS",
+     "parentCycle": "proyecto_producto"
+    },
+    {
+     "id": "proceso",
+     "nombre": "PROCESO",
+     "hoja": "05_PROCESOS",
+     "parentCycle": "producto"
+    },
+    {
+     "id": "tarea",
+     "nombre": "TAREA",
+     "hoja": "06_TAREAS",
+     "parentCycle": "proceso"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_vida_mision",
+   "nombre": "Ciclo de vida de una Misión",
+   "naturaleza": "ciclo_vida",
+   "fuente": "grafo_telar_estados.json, validado en B0",
+   "instanciaDe": "plantilla_telar",
+   "fases": [
+    {
+     "id": "sin_seleccionar",
+     "nombre": "sin_seleccionar",
+     "esMVP": true
+    },
+    {
+     "id": "orientacion",
+     "nombre": "orientacion",
+     "esMVP": false
+    },
+    {
+     "id": "concilio_convocando",
+     "nombre": "concilio_convocando",
+     "esMVP": false
+    },
+    {
+     "id": "deliberando",
+     "nombre": "deliberando",
+     "esMVP": true
+    },
+    {
+     "id": "tejiendo",
+     "nombre": "tejiendo",
+     "esMVP": true
+    },
+    {
+     "id": "esperando_relevo",
+     "nombre": "esperando_relevo",
+     "esMVP": true
+    },
+    {
+     "id": "devuelta",
+     "nombre": "devuelta",
+     "esMVP": false
+    },
+    {
+     "id": "aprobada_sin_ejecutar",
+     "nombre": "aprobada_sin_ejecutar",
+     "esMVP": false
+    },
+    {
+     "id": "puerta_pendiente",
+     "nombre": "puerta_pendiente",
+     "esMVP": false
+    },
+    {
+     "id": "puerta_en_curso",
+     "nombre": "puerta_en_curso",
+     "esMVP": false
+    },
+    {
+     "id": "puerta_ejecutada",
+     "nombre": "puerta_ejecutada",
+     "esMVP": false
+    },
+    {
+     "id": "puerta_warn",
+     "nombre": "puerta_warn",
+     "esMVP": false
+    },
+    {
+     "id": "puerta_err",
+     "nombre": "puerta_err",
+     "esMVP": false
+    },
+    {
+     "id": "huella",
+     "nombre": "huella",
+     "esMVP": true
+    }
+   ],
+   "transiciones": [
+    {
+     "source": "sin_seleccionar",
+     "target": "orientacion"
+    },
+    {
+     "source": "orientacion",
+     "target": "concilio_convocando"
+    },
+    {
+     "source": "concilio_convocando",
+     "target": "deliberando"
+    },
+    {
+     "source": "deliberando",
+     "target": "tejiendo"
+    },
+    {
+     "source": "tejiendo",
+     "target": "esperando_relevo"
+    },
+    {
+     "source": "esperando_relevo",
+     "target": "devuelta"
+    },
+    {
+     "source": "esperando_relevo",
+     "target": "aprobada_sin_ejecutar"
+    },
+    {
+     "source": "esperando_relevo",
+     "target": "huella"
+    },
+    {
+     "source": "devuelta",
+     "target": "tejiendo"
+    },
+    {
+     "source": "aprobada_sin_ejecutar",
+     "target": "puerta_pendiente"
+    },
+    {
+     "source": "aprobada_sin_ejecutar",
+     "target": "huella"
+    },
+    {
+     "source": "puerta_pendiente",
+     "target": "puerta_en_curso"
+    },
+    {
+     "source": "puerta_en_curso",
+     "target": "puerta_ejecutada"
+    },
+    {
+     "source": "puerta_en_curso",
+     "target": "puerta_warn"
+    },
+    {
+     "source": "puerta_en_curso",
+     "target": "puerta_err"
+    },
+    {
+     "source": "puerta_ejecutada",
+     "target": "huella"
+    },
+    {
+     "source": "puerta_warn",
+     "target": "huella"
+    },
+    {
+     "source": "puerta_err",
+     "target": "puerta_pendiente"
+    },
+    {
+     "source": "huella",
+     "target": "sin_seleccionar"
+    }
+   ],
+   "notas": {
+    "esperando_relevo_a_huella": "Camino directo para 'cerrar_como_aprendizaje' -- una Mision de arquetipo Investigacion o Diagnostico puede cerrar bien sin pasar nunca por la Puerta Humana.",
+    "aprobada_sin_ejecutar_a_huella": "Camino directo cuando la decision no requiere ninguna accion externa real (ej. una Decision que solo fija un criterio, sin ejecucion).",
+    "puerta_err_a_puerta_pendiente": "Ante ERR el flujo se detiene y vuelve a pedir Sugerir -> Inspeccionar -> Aprobar -- nunca reintenta Ejecutar directamente sobre el mismo estado fallido."
+   }
+  },
+  {
+   "id": "ciclo_vida_workflow_cronista",
+   "nombre": "Ejecución real del workflow de Cronista",
+   "naturaleza": "ciclo_vida",
+   "fuente": "anatomia_entidades.json -- columna real (espina) de la fuente n8n",
+   "fases": [
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Webhook Cronista Segmentar",
+     "nombre": "Webhook Cronista Segmentar"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+     "nombre": "Ruta por accion"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (gratis)",
+     "nombre": "Fijar modo (gratis)"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de segmentacion",
+     "nombre": "Preparar prompt de segmentacion"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Cronista: segmentar via LiteLLM",
+     "nombre": "Cronista: segmentar via LiteLLM"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas propuestas",
+     "nombre": "Extraer tareas propuestas"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Modo premium?",
+     "nombre": "¿Modo premium?"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek",
+     "nombre": "Preparar verificacion DeepSeek"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (tareas)",
+     "nombre": "Comprobar presupuesto DeepSeek (tareas)"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (tareas)",
+     "nombre": "¿Presupuesto disponible? (tareas)"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar y corregir",
+     "nombre": "DeepSeek: verificar y corregir"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
+     "nombre": "Calcular coste DeepSeek (tareas)"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
+     "nombre": "Registrar gasto DeepSeek (tareas)"
+    },
+    {
+     "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas",
+     "nombre": "Extraer tareas verificadas"
+    }
+   ]
+  },
+  {
+   "id": "plantilla_telar",
+   "nombre": "Ciclo de trabajo del Telar",
+   "naturaleza": "plantilla",
+   "fuente": "Telar.md -- \"Cuatro ciclos reales, validados dos veces, domain-agnostic\"",
+   "fases": [
+    {
+     "id": "urdimbre",
+     "nombre": "Urdimbre"
+    },
+    {
+     "id": "trama",
+     "nombre": "Trama"
+    },
+    {
+     "id": "hilo_conductor",
+     "nombre": "Hilo conductor"
+    },
+    {
+     "id": "parte_de_vigilia_relevo",
+     "nombre": "Parte de Vigilia/Relevo"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_autonomo",
+   "nombre": "Ciclo autónomo de Vigilia",
+   "naturaleza": "operativo",
+   "fuente": "tools/ciclo_autonomo.mjs (comentario real de cabecera)",
+   "fases": [
+    {
+     "id": "disparar",
+     "nombre": "Disparar webhook de Vigilia"
+    },
+    {
+     "id": "esperar",
+     "nombre": "Esperar"
+    },
+    {
+     "id": "comprobar",
+     "nombre": "Comprobar antigüedad real del lock en Baserow"
+    },
+    {
+     "id": "limpiar",
+     "nombre": "Limpiar solo los locks realmente estancados"
+    },
+    {
+     "id": "reintentar",
+     "nombre": "Reintentar hasta procesado o límite de tiempo"
+    },
+    {
+     "id": "cerrar",
+     "nombre": "Exportar resultados y llamar al Coordinador"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_auditoria",
+   "nombre": "Ciclo de auditoría Engremiat",
+   "naturaleza": "operativo",
+   "fuente": "CICLO_AUDITORIA_ENGREMIAT.md",
+   "fases": [
+    {
+     "id": "codigo",
+     "nombre": "Fase 1 -- Código"
+    },
+    {
+     "id": "integracion",
+     "nombre": "Fase 2 -- Integración entre módulos"
+    },
+    {
+     "id": "comportamiento",
+     "nombre": "Fase 3 -- Comportamiento con datos simulados"
+    },
+    {
+     "id": "diseno",
+     "nombre": "Fase 4 -- Diseño"
+    },
+    {
+     "id": "triage",
+     "nombre": "Triage común (después de las 4 fases)"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_fabricacion",
+   "nombre": "Métrica de fabricación del Coordinador",
+   "naturaleza": "operativo",
+   "fuente": "Coordinador.md -- Baserow: METRICA_FABRICACION, agregado real de 99_TRIAGE_LOCAL",
+   "fases": [
+    {
+     "id": "total_respuestas",
+     "nombre": "TOTAL_RESPUESTAS"
+    },
+    {
+     "id": "corregidas_con_exito",
+     "nombre": "CORREGIDAS_CON_EXITO"
+    },
+    {
+     "id": "correccion_fallida_a_relevo",
+     "nombre": "CORRECCION_FALLIDA_A_RELEVO"
+    },
+    {
+     "id": "tasa_fabricacion",
+     "nombre": "TASA_FABRICACION"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_censo",
+   "nombre": "El propio censo del universo",
+   "naturaleza": "operativo",
+   "fuente": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md -- \"el ciclo que motivó todo el ejercicio\"",
+   "fases": [
+    {
+     "id": "dato_real",
+     "nombre": "Dato real"
+    },
+    {
+     "id": "hueco_real",
+     "nombre": "Hueco real"
+    },
+    {
+     "id": "ficha_real",
+     "nombre": "Ficha real"
+    }
+   ]
+  },
+  {
+   "id": "ciclo_vida_remoto",
+   "nombre": "El ciclo de vida remoto",
+   "naturaleza": "fisico",
+   "fuente": "El ciclo de vida remoto.md -- mismos IDs reales que usa Mensajero.md",
+   "fases": [
+    {
+     "id": "despertar",
+     "nombre": "despertar-pc-webhook"
+    },
+    {
+     "id": "operar",
+     "nombre": "Operar"
+    },
+    {
+     "id": "apagar",
+     "nombre": "apagar-pi-webhook"
+    }
+   ]
+  }
+ ]
+}
