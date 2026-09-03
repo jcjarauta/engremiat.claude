@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:38:53.205Z",
+  "generadoEn": "2026-09-03T09:42:09.999Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -15,9 +15,9 @@
   "totales": {
     "candidatos": 225,
     "confirmar": 46,
-    "promover": 49,
+    "promover": 51,
     "revisar": 46,
-    "descartar": 84
+    "descartar": 82
   },
   "ciclosReales": [
     [
@@ -2698,6 +2698,25 @@
       "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia, ya está representada."
     },
     {
+      "nombre": "SOLICITUDES_MONTAJE",
+      "slug": "solicitudes_montaje",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_appsscript",
+        "sheet_estructura",
+        "vault_mencion"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia, ya está representada."
+    },
+    {
       "nombre": "03_PRODUCTOS",
       "slug": "03_productos",
       "tiposCandidato": [
@@ -3040,6 +3059,25 @@
       "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia, ya está representada."
     },
     {
+      "nombre": "91_HISTORIAL",
+      "slug": "91_historial",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "baserow_estructura",
+        "sheet_estructura",
+        "vault_mencion"
+      ],
+      "centralidad": 0,
+      "decision": "promover",
+      "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia, ya está representada."
+    },
+    {
       "nombre": "98_LOG_GOBIERNO",
       "slug": "98_log_gobierno",
       "tiposCandidato": [
@@ -3294,22 +3332,22 @@
       "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
-      "nombre": "SOLICITUDES_MONTAJE",
-      "slug": "solicitudes_montaje",
+      "nombre": "93_MAPEO_IDS_TEMPORALES",
+      "slug": "93_mapeo_ids_temporales",
       "tiposCandidato": [
         "pestana_sheet_utilidad"
       ],
       "yaEsFichaVault": false,
       "corroboracionCruzada": 2,
       "fuentes": [
-        "codigo_appsscript",
-        "sheet_estructura"
+        "sheet_estructura",
+        "vault_mencion"
       ],
       "centralidad": 0,
       "decision": "descartar",
       "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "historico_pestana_sin_huella",
-      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
       "nombre": "08_MATERIALES",
@@ -3618,22 +3656,22 @@
       "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
-      "nombre": "91_HISTORIAL",
-      "slug": "91_historial",
+      "nombre": "90_CONFIGURACION",
+      "slug": "90_configuracion",
       "tiposCandidato": [
         "pestana_sheet_utilidad"
       ],
       "yaEsFichaVault": false,
       "corroboracionCruzada": 2,
       "fuentes": [
-        "baserow_estructura",
-        "sheet_estructura"
+        "sheet_estructura",
+        "vault_mencion"
       ],
       "centralidad": 0,
       "decision": "descartar",
       "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "ya_cubierto_grafo_propio",
-      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
       "nombre": "STG_CAMPANA",
@@ -3818,6 +3856,24 @@
     {
       "nombre": "UBICACION_GEOGRAFICA",
       "slug": "ubicacion_geografica",
+      "tiposCandidato": [
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "baserow_estructura",
+        "vault_mencion"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
+    },
+    {
+      "nombre": "NODO_ENGREMIAT",
+      "slug": "nodo_engremiat",
       "tiposCandidato": [
         "tabla_baserow"
       ],
@@ -4502,40 +4558,6 @@
       "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
-      "nombre": "93_MAPEO_IDS_TEMPORALES",
-      "slug": "93_mapeo_ids_temporales",
-      "tiposCandidato": [
-        "pestana_sheet_utilidad"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "sheet_estructura"
-      ],
-      "centralidad": 0,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "historico_pestana_sin_huella",
-      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
-    },
-    {
-      "nombre": "90_CONFIGURACION",
-      "slug": "90_configuracion",
-      "tiposCandidato": [
-        "pestana_sheet_utilidad"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "sheet_estructura"
-      ],
-      "centralidad": 0,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "historico_pestana_sin_huella",
-      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
-    },
-    {
       "nombre": "99_TRIAGE_LOCAL",
       "slug": "99_triage_local",
       "tiposCandidato": [
@@ -4551,27 +4573,10 @@
       "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
       "accionRecomendada": "historico_pestana_sin_huella",
       "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
-    },
-    {
-      "nombre": "NODO_ENGREMIAT",
-      "slug": "nodo_engremiat",
-      "tiposCandidato": [
-        "tabla_baserow"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "baserow_estructura"
-      ],
-      "centralidad": 0,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "historico_tabla_sin_huella",
-      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T09:38:53.279Z",
+    "generadoEn": "2026-09-03T09:42:10.063Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
@@ -4580,7 +4585,7 @@
     "resumenAccion": {
       "confirmar_ya_solido": 46,
       "descartar_termino_generico": 3,
-      "ya_mencionado_en_boveda": 74,
+      "ya_mencionado_en_boveda": 79,
       "revisar_inconsistencia_nombres": 1,
       "revisar_manual_real": 14,
       "correcto_narrativo": 19,
@@ -4592,10 +4597,9 @@
       "historico_instancia_negocio": 43,
       "historico_instancia_ya_catalogada": 1,
       "historico_detalle_implementacion": 1,
-      "historico_pestana_sin_huella": 4,
-      "ya_cubierto_grafo_propio": 2,
+      "ya_cubierto_grafo_propio": 1,
       "historico_dato_operativo": 1,
-      "historico_tabla_sin_huella": 1
+      "historico_pestana_sin_huella": 1
     }
   }
 }

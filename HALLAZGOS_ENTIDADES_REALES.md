@@ -1,15 +1,15 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:38:53.205Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:42:09.999Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
 ## Resumen: 225 entidades candidatas reales
 
 - **46 confirmar** -- ficha real ya existente, bien corroborada.
-- **49 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
+- **51 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
 - **46 revisar** -- ficha real ya existente pero apenas corroborada fuera de la boveda.
-- **84 descartar** -- evidencia real insuficiente hoy.
+- **82 descartar** -- evidencia real insuficiente hoy.
 
 ## Ciclos reales encontrados: 4
 
@@ -83,6 +83,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | 43_CONTRATO_SERVICIO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 45_TAREA_COMPETENCIA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 01_CAMPANAS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| SOLICITUDES_MONTAJE | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
 | 03_PRODUCTOS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 05_PROCESOS | 3 | datos_negocio, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 07_TAREA_RESPONSABLE | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
@@ -101,6 +102,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | 33_COMPETENCIA | 3 | baserow_estructura, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 35_RECURSO_COMPETENCIA | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
 | 37_ETIQUETA_IMPACTO | 3 | codigo_appsscript, sheet_estructura, vault_mencion | pestana_sheet_negocio |
+| 91_HISTORIAL | 3 | baserow_estructura, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
 | 98_LOG_GOBIERNO | 3 | codigo_node, sheet_estructura, vault_mencion | pestana_sheet_utilidad |
 
 ## Fichas reales a REVISAR (existen, pero con poca corroboracion cruzada)
@@ -205,7 +207,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Exportador de gasto | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | Regenerar estatico | oficio | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 
-## Descartadas hoy (84), por si conviene revisar el criterio
+## Descartadas hoy (82), por si conviene revisar el criterio
 
 No se listan todas por volumen -- ver `censo_entidades.json` completo. Los primeros 20 candidatos descartados con mayor corroboracion (los mas cerca del umbral):
 
@@ -222,7 +224,7 @@ No se listan todas por volumen -- ver `censo_entidades.json` completo. Los prime
 | Cronista - Segmentar documento en tareas (con puerta humana) | 2 | n8n, vault_mencion |
 | 44_OPORTUNIDAD | 2 | sheet_estructura, vault_mencion |
 | 41_ENTREGA | 2 | sheet_estructura, vault_mencion |
-| SOLICITUDES_MONTAJE | 2 | codigo_appsscript, sheet_estructura |
+| 93_MAPEO_IDS_TEMPORALES | 2 | sheet_estructura, vault_mencion |
 | 08_MATERIALES | 2 | sheet_estructura, vault_mencion |
 | STG_RECURSO | 2 | sheet_estructura, vault_mencion |
 | STG_PERSONA | 2 | sheet_estructura, vault_mencion |
@@ -264,23 +266,22 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 
 | acción recomendada | cuántas | qué significa |
 |---|---|---|
-| ya_mencionado_en_boveda | 74 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
+| ya_mencionado_en_boveda | 79 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
 | confirmar_ya_solido | 46 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
 | revisar_manual_real | 14 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
 | confirmar_codigo_real | 9 | Correspondencia real de código encontrada -- confirmado. |
-| historico_pestana_sin_huella | 4 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
 | descartar_termino_generico | 3 | Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover. |
 | confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
-| ya_cubierto_grafo_propio | 2 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
 | revisar_inconsistencia_nombres | 1 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
 | confirmar_verificado_a_mano | 1 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
 | confirmar_patron_tecnico | 1 | Real en el código, pero NO es un módulo de negocio MVP -- es un patrón técnico interno (Repository, IntegrityService...). Revisar si el `tipo` en la ficha es el correcto. |
 | revisar_nombre_narrativo | 1 | Nombre narrativo del universo -- el cruce por texto no alcanza su referente real. No es evidencia de que falte, es un límite del método. Acción: añadir `vinculoReal` explícito. |
 | historico_instancia_ya_catalogada | 1 | Investigado a mano: no era una entidad nueva -- ya es una fila catalogada dentro de un Recurso real (p.ej. DOCUMENTO_ENGREMIAT). Histórico, correctamente no promovido. |
 | historico_detalle_implementacion | 1 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
+| ya_cubierto_grafo_propio | 1 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
 | historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
-| historico_tabla_sin_huella | 1 | Tabla real de Baserow sin huella real todavía. Histórico, misma nota que PERSONAJE en §8.20. |
+| historico_pestana_sin_huella | 1 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
 
 Detalle completo, entidad por entidad, con su razón real: ver `censo_entidades.json` (campos `accionRecomendada` + `accionRazon`) o la vista filtrable en `entidades.html`.

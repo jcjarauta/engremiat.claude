@@ -541,6 +541,18 @@ Censo regenerado (224 candidatas, 22 confirmar) y desplegado.
 
 **Resultado real, verificado con el censo corregido**: de 53, quedan honestamente **5 sin cubrir** -- `SOLICITUDES_MONTAJE` (real, con código propio real ya encontrado: `src/SolicitudMontaje.html` + `src/AprobarSolicitudMontaje.html`, sin dueño real obvio todavía), `93_MAPEO_IDS_TEMPORALES`, `90_CONFIGURACION`, `99_TRIAGE_LOCAL` y `NODO_ENGREMIAT` (Baserow) -- pendientes reales para una próxima pasada, no inventados hoy.
 
+### 8.30 "Valora los 5 genuinamente sin cubrir" -- 4 con dueño real encontrado, 1 confirmado como el hueco de verdad real que queda
+
+Investigado uno a uno, con grep real sobre `src/` y los documentos de jornada:
+
+- **`SOLICITUDES_MONTAJE`** -- confirmado: "aprobar una fila" (la propia prosa de `Aprovisionamiento.md`) es literalmente aprobar una fila de esta pestaña real (`MODULOS`/`ESTADO`/`APROBADO_POR`/`FECHA_APROBACION`). `AprovisionamientoService.js` la toca de verdad, junto a `src/SolicitudMontaje.html` y `src/AprobarSolicitudMontaje.html` -- las tres añadidas al `vinculoReal` de `Aprovisionamiento.md`.
+- **`93_MAPEO_IDS_TEMPORALES`** -- tocada de verdad por `src/ImportacionMasiva.js` y `src/EstructuraInicialDatos.js`: conecta el ID temporal de cada fila `STG_*` con su ID real ya instalado (`CORRELATION_ID`, mismo mecanismo de auditoría que `91_HISTORIAL`) -- añadida a `Zona de aterrizaje STG.md`, su dueño real.
+- **`90_CONFIGURACION`** -- el named range real detrás de `obtenerCatalogo()`, tocado por **38 ficheros reales de `src/`** (el más ampliamente usado de todo el Sheet) -- añadida al `vinculoReal` de `ConfigRepository.md`.
+- **`NODO_ENGREMIAT`** (Baserow, tabla 289) -- confirmado en `PENDIENTES_JORNADA_2026-08-30-31.md`: "creada y sembrada con los 4 nodos reales (Raspberry Pi, PC operador, worker local, chat operador)" el 31 de agosto -- añadida al `vinculoReal` de `VPS y Tailscale.md`.
+- **`99_TRIAGE_LOCAL`** -- investigado a fondo (`grep` sobre todo el repo real), sin ningún resultado en código -- el único hueco genuino real que queda de todo este ejercicio, de 220+ candidatas reales examinadas.
+
+Censo regenerado y desplegado: de 53 pestañas que empezaron como "histórico, sin huella", **queda exactamente 1 genuinamente sin cubrir**.
+
 ## 9. Pendiente
 
 ## 9. Pendiente
