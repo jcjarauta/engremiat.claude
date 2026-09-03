@@ -727,6 +727,20 @@ Construida la propuesta de §8.45 (rol real): `calcularRolReal()` en `extraer_an
 
 Con esto, la ficha de personaje completa (§8.45+8.46) responde: **quién soy** (agencia + territorio propio), **de qué familia soy** (rol real), **con quién hablo** (extremidades) -- las tres, sacadas del mismo dato real, sin redactar nada a mano.
 
+### 8.47 "Empezamos por el puente de datos + los design tokens, será una herramienta fundamental para el Bastidor"
+
+Investigado antes de construir (§8.46 cierre): busqué herramientas gráficas reales que pudieran consumir el dato de anatomía sin reinventar nada -- AntV G6 (JSON-nativo, layouts de clúster, `treeToGraphData`) para dibujar familias/miembros; Design Tokens en formato DTCG (estándar W3C 2026) + Style Dictionary para consolidar el estilo; Rive señalado para más adelante, cuando exista el panel del juego (Data Binding real, ya usado en producción por Duolingo para fichas de personaje). El operador pidió empezar por las dos piezas de datos, no por el dibujo todavía.
+
+**Construido `exportar_atlas_familias.mjs`**: convierte `anatomia_entidades.json` (grafo en bruto, pensado para calcular) en `atlas_familias.json` (datos aplanados, pensados para dibujar) -- cruza censo (corroboración/centralidad), wikilinks (tipo real) y Holon (equipo real). Una entidad puede aparecer en varias familias si de verdad juega varios roles reales -- nunca forzada a una sola. Real: **11 familias, 70 apariciones de entidad de 61 entidades reales**.
+
+**Construido `design-tokens.json`**: fuente de verdad real del estilo, formato DTCG. Consolida los colores de equipo/tipo/fuente/rol que hoy viven repetidos y ya ligeramente divergentes entre `grafo_maestro.html`/`holon.html`/`anatomia.html` -- **encontradas y documentadas dos colisiones reales de color por accidente** (`fuente.n8n` = `equipo.frontera`, `fuente.node` = `equipo.guardia`), nunca corregidas antes porque cada vista se diseñó por separado sin mirar las otras. Los roles reales sin ningún miembro hoy (Guardián/Proveedor/Decisor/Actor/Destino) quedan marcados `reservado` en vez de omitidos -- el color ya existe para cuando aparezca la primera entidad real, no se improvisa entonces.
+
+**Construido `generar_tokens_css.mjs`**: equivalente funcional a Style Dictionary sin dependencia npm -- mismo criterio de todo `tools/` (solo Node built-in). Lee el JSON DTCG y escribe `tokens.css` con las variables reales. 46 tokens exportados, verificado.
+
+**Pendiente honesto, explícito**: las tres vistas existentes (`grafo_maestro.html`/`holon.html`/`anatomia.html`) todavía no leen `tokens.css` -- siguen con sus paletas hardcodeadas propias. Migrarlas es el siguiente paso natural, no hecho todavía a propósito (el operador pidió el puente primero).
+
+Desplegado (con un tropiezo real de infraestructura corregido en el camino: montar un fichero que todavía no existe en el host crea un directorio vacío en Docker, no un placeholder -- hubo que parar el contenedor, borrar los 3 directorios fantasma, subir los ficheros reales y arrancar de nuevo) y verificado: `atlas_familias.json`/`design-tokens.json`/`tokens.css` sirven con 200 real desde el VPS.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

@@ -1,0 +1,50 @@
+/* Generado real desde design-tokens.json por generar_tokens_css.mjs -- no editar a mano, */
+/* editar el JSON y volver a correr este script. §8.47. */
+:root {
+  --color-equipo-concilio: #7c93e8;
+  --color-equipo-guardia: #e8a33d;
+  --color-equipo-frontera: #4fce6f;
+  --color-tipo-personaje: #8a8d99;
+  --color-tipo-espacio: #c76bd6;
+  --color-tipo-recurso: #e85c8a;
+  --color-tipo-regla: #5c5f6b;
+  --color-tipo-modulo: #4ea8de;
+  --color-tipo-oficio: #f4a261;
+  --color-tipo-hilo: #06d6a0;
+  --color-tipo-arco: #ef476f;
+  --color-tipo-sesion: #118ab2;
+  --color-tipo-mapa: #8338ec;
+  --color-tipo-estilo: #ffbe0b;
+  --color-tipo-referencia_sin_ficha: #4a4b52;
+  --color-tipo-sin_tipo: #2e2f35;
+  --color-fuente-n8n: #4fce6f;
+  --color-fuente-apps_script: #4c9aff;
+  --color-fuente-node: #e8a33d;
+  --color-fuente-sheet: #e85c8a;
+  --color-fuente-sheet_schema: #f28a9a;
+  --color-fuente-baserow_schema: #c76bd6;
+  --color-fuente-relacional: #9a8cff;
+  --color-rol-operador: #2dd4bf;
+  --color-rol-guardian: #ef4444;
+  --color-rol-proveedor: #f59e0b;
+  --color-rol-orquestador: #818cf8;
+  --color-rol-dependiente: #38bdf8;
+  --color-rol-ejecutor: #60a5fa;
+  --color-rol-compositor: #a78bfa;
+  --color-rol-utilidad: #84cc16;
+  --color-rol-esquema_dependiente: #fb7185;
+  --color-rol-disparador: #fb923c;
+  --color-rol-decisor: #facc15;
+  --color-rol-pasivo: #6b7280;
+  --color-rol-actor: #71717a;
+  --color-rol-evento: #22d3ee;
+  --color-rol-origen: #34d399;
+  --color-rol-destino: #14b8a6;
+  --color-base-fondo: #0f1013;
+  --color-base-panel: #17181c;
+  --color-base-borde: #2c2d33;
+  --color-base-borde-suave: #202126;
+  --color-base-texto: #e7e7ea;
+  --color-base-texto-suave: #9a9aa2;
+  --color-base-texto-tenue: #6b6c76;
+}

@@ -213,6 +213,18 @@
     {
       "fichero": "tools/gobierno/graphify_visor/anatomia.html",
       "que_hace": "Decima vista real del visor (100.107.171.88:9320/anatomia.html), §8.41-44: buscador de las 61 entidades con anatomia real, un panel por cada fuente real (n8n/Apps Script/Node/Sheet/Sheet esquema/Baserow esquema/Boveda) con layout radial real calculado a mano (BFS desde la cabeza da el anillo, angulo repartido por numero real de hojas de cada rama) -- cabeza en forma de estrella en el centro, columna resaltada, extremidades atenuadas alrededor. Verificado con Cronista (n8n, 78 nodos), Ventas (Sheet esquema, cadena real de FK 39->43->38_CLIENTE) y DOCUMENTO_ENGREMIAT (Baserow esquema, 9 campos reales)."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "que_hace": "§8.47: puente de datos real -- convierte anatomia_entidades.json (grafo en bruto, pensado para calcular) en atlas_familias.json (datos ya aplanados por familia real, pensados para dibujar). Cruza anatomia_entidades.json + censo_entidades.json (corroboracionCruzada/centralidad) + grafo_wikilinks.json (tipo real) + grafo_holon.json (equipo real). Una entidad puede aparecer en varias familias si de verdad juega varios roles reales (ej. Cliente es Compositor en Node y Esquema dependiente en Sheet/Baserow) -- nunca forzada a una sola. Real: 11 familias, 70 apariciones de entidad de 61 entidades reales."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/design-tokens.json",
+      "que_hace": "§8.47: fuente de verdad real del estilo visual de Engremiat, formato DTCG (Design Tokens Community Group, estandar 2026) -- consolida los colores de equipo/tipo/fuente/rol que hoy viven repetidos y ya ligeramente divergentes en grafo_maestro.html/holon.html/anatomia.html (colisiones reales documentadas en $extensions: color.fuente.n8n coincide por accidente con color.equipo.frontera, color.fuente.node con color.equipo.guardia). Roles reales sin miembros hoy (Guardian/Proveedor/Decisor/Actor/Destino) marcados 'reservado' en vez de omitidos, para no inventar el color cuando aparezca el primero. No migra las vistas existentes todavia -- eso es el siguiente paso, pendiente."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
+      "que_hace": "§8.47: lee design-tokens.json y escribe tokens.css (variables CSS reales) -- equivalente funcional a Style Dictionary, sin dependencia npm, mismo criterio de todo tools/ (solo Node built-in, nada que instalar). Recorre el JSON DTCG y convierte cada token con $value en --categoria-subcategoria-nombre. Real: 46 tokens exportados."
     }
   ]
 }

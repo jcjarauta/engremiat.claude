@@ -1,0 +1,1055 @@
+{
+ "generadoEn": "2026-09-03T15:58:43.780Z",
+ "totalFamilias": 11,
+ "totalApariciones": 70,
+ "familias": [
+  {
+   "rol": "Esquema dependiente",
+   "slug": "esquema_dependiente",
+   "miembros": [
+    {
+     "nombre": "CORE",
+     "slug": "core",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 27,
+     "territorioPropio": null,
+     "tamanoCuerpo": 171,
+     "corroboracionCruzada": 4,
+     "centralidad": 11
+    },
+    {
+     "nombre": "Cliente",
+     "slug": "cliente",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema",
+      "baserow_schema"
+     ],
+     "agenciaReal": 23,
+     "territorioPropio": null,
+     "tamanoCuerpo": 24,
+     "corroboracionCruzada": 8,
+     "centralidad": 8
+    },
+    {
+     "nombre": "Seguimiento",
+     "slug": "seguimiento",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 22,
+     "territorioPropio": null,
+     "tamanoCuerpo": 81,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Convocatorias",
+     "slug": "convocatorias",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 18,
+     "territorioPropio": null,
+     "tamanoCuerpo": 19,
+     "corroboracionCruzada": 4,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Oportunidad",
+     "slug": "oportunidad",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 16,
+     "territorioPropio": null,
+     "tamanoCuerpo": 17,
+     "corroboracionCruzada": 6,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Economico",
+     "slug": "economico",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 16,
+     "territorioPropio": null,
+     "tamanoCuerpo": 44,
+     "corroboracionCruzada": 4,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Operativa",
+     "slug": "operativa",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 14,
+     "territorioPropio": null,
+     "tamanoCuerpo": 152,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "92_BUS_TRABAJO",
+     "slug": "92_bus_trabajo",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 13,
+     "territorioPropio": null,
+     "tamanoCuerpo": 14,
+     "corroboracionCruzada": 5,
+     "centralidad": 7
+    },
+    {
+     "nombre": "Ejecucion",
+     "slug": "ejecucion",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 13,
+     "territorioPropio": null,
+     "tamanoCuerpo": 14,
+     "corroboracionCruzada": 6,
+     "centralidad": 2
+    },
+    {
+     "nombre": "Vigilia",
+     "slug": "vigilia",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "baserow_schema"
+     ],
+     "agenciaReal": 13,
+     "territorioPropio": null,
+     "tamanoCuerpo": 14,
+     "corroboracionCruzada": 6,
+     "centralidad": 21
+    },
+    {
+     "nombre": "Bus de trabajo",
+     "slug": "bus_de_trabajo",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 13,
+     "territorioPropio": null,
+     "tamanoCuerpo": 14,
+     "corroboracionCruzada": 5,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Compras",
+     "slug": "compras",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 12,
+     "territorioPropio": null,
+     "tamanoCuerpo": 133,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Ventas",
+     "slug": "ventas",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 11,
+     "territorioPropio": null,
+     "tamanoCuerpo": 61,
+     "corroboracionCruzada": 4,
+     "centralidad": 6
+    },
+    {
+     "nombre": "ConfigRepository",
+     "slug": "configrepository",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 10,
+     "territorioPropio": null,
+     "tamanoCuerpo": 11,
+     "corroboracionCruzada": 3,
+     "centralidad": 4
+    },
+    {
+     "nombre": "Impacto",
+     "slug": "impacto",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 10,
+     "territorioPropio": null,
+     "tamanoCuerpo": 11,
+     "corroboracionCruzada": 5,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Coordinador",
+     "slug": "coordinador",
+     "tipo": "personaje",
+     "equipo": "guardia",
+     "fuentes": [
+      "sheet_schema",
+      "baserow_schema"
+     ],
+     "agenciaReal": 10,
+     "territorioPropio": null,
+     "tamanoCuerpo": 11,
+     "corroboracionCruzada": 6,
+     "centralidad": 36
+    },
+    {
+     "nombre": "GASTO_API",
+     "slug": "gasto_api",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "baserow_schema"
+     ],
+     "agenciaReal": 9,
+     "territorioPropio": null,
+     "tamanoCuerpo": 10,
+     "corroboracionCruzada": 5,
+     "centralidad": 11
+    },
+    {
+     "nombre": "DOCUMENTO_ENGREMIAT",
+     "slug": "documento_engremiat",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "baserow_schema"
+     ],
+     "agenciaReal": 8,
+     "territorioPropio": null,
+     "tamanoCuerpo": 9,
+     "corroboracionCruzada": 5,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Telar",
+     "slug": "telar",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "baserow_schema"
+     ],
+     "agenciaReal": 7,
+     "territorioPropio": null,
+     "tamanoCuerpo": 22,
+     "corroboracionCruzada": 5,
+     "centralidad": 16
+    },
+    {
+     "nombre": "VPS y Tailscale",
+     "slug": "vps_y_tailscale",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "baserow_schema"
+     ],
+     "agenciaReal": 5,
+     "territorioPropio": null,
+     "tamanoCuerpo": 6,
+     "corroboracionCruzada": 3,
+     "centralidad": 16
+    },
+    {
+     "nombre": "Zona de aterrizaje STG",
+     "slug": "zona_de_aterrizaje_stg",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 5,
+     "territorioPropio": null,
+     "tamanoCuerpo": 6,
+     "corroboracionCruzada": 3,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Honestidad del fallo",
+     "slug": "honestidad_del_fallo",
+     "tipo": "regla",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": null,
+     "tamanoCuerpo": 5,
+     "corroboracionCruzada": 3,
+     "centralidad": 4
+    },
+    {
+     "nombre": "Consola",
+     "slug": "consola",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 5,
+     "centralidad": 0
+    },
+    {
+     "nombre": "Ejecutor",
+     "slug": "ejecutor",
+     "tipo": "personaje",
+     "equipo": "guardia",
+     "fuentes": [
+      "sheet_schema"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 17,
+     "corroboracionCruzada": 7,
+     "centralidad": 11
+    }
+   ]
+  },
+  {
+   "rol": "Utilidad",
+   "slug": "utilidad",
+   "miembros": [
+    {
+     "nombre": "Física",
+     "slug": "fisica",
+     "tipo": "regla",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 12,
+     "territorioPropio": null,
+     "tamanoCuerpo": 13,
+     "corroboracionCruzada": 4,
+     "centralidad": 4
+    },
+    {
+     "nombre": "92_BUS_TRABAJO",
+     "slug": "92_bus_trabajo",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 5,
+     "centralidad": 7
+    },
+    {
+     "nombre": "Acervo Prompter",
+     "slug": "acervo_prompter",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 4,
+     "centralidad": 11
+    },
+    {
+     "nombre": "Los dos continentes de datos",
+     "slug": "los_dos_continentes_de_datos",
+     "tipo": "regla",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 3,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Bus de trabajo",
+     "slug": "bus_de_trabajo",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 5,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Puente historia leyes",
+     "slug": "puente_historia_leyes",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 3,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Baserow",
+     "slug": "baserow",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 2,
+     "corroboracionCruzada": 5,
+     "centralidad": 20
+    },
+    {
+     "nombre": "Verificador de Capacidades",
+     "slug": "verificador_de_capacidades",
+     "tipo": "personaje",
+     "equipo": "guardia",
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 2,
+     "corroboracionCruzada": 4,
+     "centralidad": 8
+    },
+    {
+     "nombre": "Exportador de gasto",
+     "slug": "exportador_de_gasto",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 2,
+     "corroboracionCruzada": 4,
+     "centralidad": 2
+    },
+    {
+     "nombre": "Chequear consistencia",
+     "slug": "chequear_consistencia",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 2,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Extraer decisiones",
+     "slug": "extraer_decisiones",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 2,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    }
+   ]
+  },
+  {
+   "rol": "Ejecutor",
+   "slug": "ejecutor",
+   "miembros": [
+    {
+     "nombre": "Comunicacion",
+     "slug": "comunicacion",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 8,
+     "territorioPropio": null,
+     "tamanoCuerpo": 22,
+     "corroboracionCruzada": 4,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Acervo Usuario",
+     "slug": "acervo_usuario",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 5,
+     "territorioPropio": null,
+     "tamanoCuerpo": 27,
+     "corroboracionCruzada": 3,
+     "centralidad": 7
+    },
+    {
+     "nombre": "Zona de aterrizaje STG",
+     "slug": "zona_de_aterrizaje_stg",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": null,
+     "tamanoCuerpo": 47,
+     "corroboracionCruzada": 3,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Formularios",
+     "slug": "formularios",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": null,
+     "tamanoCuerpo": 349,
+     "corroboracionCruzada": 3,
+     "centralidad": 4
+    },
+    {
+     "nombre": "Repository",
+     "slug": "repository",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 822,
+     "corroboracionCruzada": 4,
+     "centralidad": 7
+    },
+    {
+     "nombre": "EstructuraInicial",
+     "slug": "estructurainicial",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": null,
+     "tamanoCuerpo": 21,
+     "corroboracionCruzada": 4,
+     "centralidad": 4
+    },
+    {
+     "nombre": "IntegrityService",
+     "slug": "integrityservice",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 110,
+     "corroboracionCruzada": 3,
+     "centralidad": 6
+    },
+    {
+     "nombre": "Aprovisionamiento",
+     "slug": "aprovisionamiento",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 51,
+     "corroboracionCruzada": 4,
+     "centralidad": 6
+    },
+    {
+     "nombre": "Operativa",
+     "slug": "operativa",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 47,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    }
+   ]
+  },
+  {
+   "rol": "Operador",
+   "slug": "operador",
+   "miembros": [
+    {
+     "nombre": "Mensajero",
+     "slug": "mensajero",
+     "tipo": "personaje",
+     "equipo": "frontera",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 10,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 19
+    },
+    {
+     "nombre": "Relevo",
+     "slug": "relevo",
+     "tipo": "personaje",
+     "equipo": "guardia",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 6,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 6,
+     "centralidad": 14
+    },
+    {
+     "nombre": "Acervo Narrativo",
+     "slug": "acervo_narrativo",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 9
+    },
+    {
+     "nombre": "Acervo Logico",
+     "slug": "acervo_logico",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 3,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 7
+    },
+    {
+     "nombre": "Acervo Filosofico",
+     "slug": "acervo_filosofico",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 3,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 6
+    },
+    {
+     "nombre": "Headscale",
+     "slug": "headscale",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Acervo Tecnico",
+     "slug": "acervo_tecnico",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Acervo Logistico",
+     "slug": "acervo_logistico",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 5
+    },
+    {
+     "nombre": "Acervo Sociocracia",
+     "slug": "acervo_sociocracia",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 6
+    }
+   ]
+  },
+  {
+   "rol": "Pasivo",
+   "slug": "pasivo",
+   "miembros": [
+    {
+     "nombre": "El Sheet",
+     "slug": "el_sheet",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 100,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 11
+    },
+    {
+     "nombre": "ConfigRepository",
+     "slug": "configrepository",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "apps_script"
+     ],
+     "agenciaReal": 0,
+     "territorioPropio": null,
+     "tamanoCuerpo": 33,
+     "corroboracionCruzada": 3,
+     "centralidad": 4
+    },
+    {
+     "nombre": "Verificador de Campos",
+     "slug": "verificador_de_campos",
+     "tipo": "personaje",
+     "equipo": "guardia",
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 0,
+     "territorioPropio": null,
+     "tamanoCuerpo": 1,
+     "corroboracionCruzada": 3,
+     "centralidad": 8
+    },
+    {
+     "nombre": "Cerrar ciclo",
+     "slug": "cerrar_ciclo",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 0,
+     "territorioPropio": null,
+     "tamanoCuerpo": 1,
+     "corroboracionCruzada": 4,
+     "centralidad": 2
+    },
+    {
+     "nombre": "Regenerar estatico",
+     "slug": "regenerar_estatico",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 0,
+     "territorioPropio": null,
+     "tamanoCuerpo": 1,
+     "corroboracionCruzada": 4,
+     "centralidad": 2
+    },
+    {
+     "nombre": "Salud del ecosistema",
+     "slug": "salud_del_ecosistema",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 0,
+     "territorioPropio": null,
+     "tamanoCuerpo": 1,
+     "corroboracionCruzada": 5,
+     "centralidad": 3
+    }
+   ]
+  },
+  {
+   "rol": "Disparador",
+   "slug": "disparador",
+   "miembros": [
+    {
+     "nombre": "n8n",
+     "slug": "n8n",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "n8n"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 78,
+     "corroboracionCruzada": 2,
+     "centralidad": 11
+    },
+    {
+     "nombre": "Telar",
+     "slug": "telar",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "n8n"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 59,
+     "corroboracionCruzada": 5,
+     "centralidad": 16
+    },
+    {
+     "nombre": "Cronista",
+     "slug": "cronista",
+     "tipo": "personaje",
+     "equipo": "frontera",
+     "fuentes": [
+      "n8n"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 78,
+     "corroboracionCruzada": 7,
+     "centralidad": 10
+    },
+    {
+     "nombre": "Puerta Humana",
+     "slug": "puerta_humana",
+     "tipo": "regla",
+     "equipo": null,
+     "fuentes": [
+      "n8n"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 78,
+     "corroboracionCruzada": 4,
+     "centralidad": 17
+    }
+   ]
+  },
+  {
+   "rol": "Compositor",
+   "slug": "compositor",
+   "miembros": [
+    {
+     "nombre": "Actualizar libreria cliente",
+     "slug": "actualizar_libreria_cliente",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": null,
+     "tamanoCuerpo": 9,
+     "corroboracionCruzada": 5,
+     "centralidad": 2
+    },
+    {
+     "nombre": "Chequear libreria clientes",
+     "slug": "chequear_libreria_clientes",
+     "tipo": "oficio",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 4,
+     "territorioPropio": null,
+     "tamanoCuerpo": 9,
+     "corroboracionCruzada": 4,
+     "centralidad": 3
+    },
+    {
+     "nombre": "Cliente",
+     "slug": "cliente",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "node"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 16,
+     "corroboracionCruzada": 8,
+     "centralidad": 8
+    }
+   ]
+  },
+  {
+   "rol": "Evento",
+   "slug": "evento",
+   "miembros": [
+    {
+     "nombre": "Zona de aterrizaje STG",
+     "slug": "zona_de_aterrizaje_stg",
+     "tipo": "recurso",
+     "equipo": null,
+     "fuentes": [
+      "sheet"
+     ],
+     "agenciaReal": 1,
+     "territorioPropio": null,
+     "tamanoCuerpo": 104,
+     "corroboracionCruzada": 3,
+     "centralidad": 3
+    }
+   ]
+  },
+  {
+   "rol": "Origen",
+   "slug": "origen",
+   "miembros": [
+    {
+     "nombre": "Cliente",
+     "slug": "cliente",
+     "tipo": "modulo",
+     "equipo": null,
+     "fuentes": [
+      "sheet"
+     ],
+     "agenciaReal": 3,
+     "territorioPropio": null,
+     "tamanoCuerpo": 4,
+     "corroboracionCruzada": 8,
+     "centralidad": 8
+    }
+   ]
+  },
+  {
+   "rol": "Dependiente",
+   "slug": "dependiente",
+   "miembros": [
+    {
+     "nombre": "El Vault",
+     "slug": "el_vault",
+     "tipo": "espacio",
+     "equipo": null,
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 2,
+     "territorioPropio": 50,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 3,
+     "centralidad": 4
+    }
+   ]
+  },
+  {
+   "rol": "Orquestador",
+   "slug": "orquestador",
+   "miembros": [
+    {
+     "nombre": "Concilio",
+     "slug": "concilio",
+     "tipo": "personaje",
+     "equipo": "concilio",
+     "fuentes": [
+      "relacional"
+     ],
+     "agenciaReal": 19,
+     "territorioPropio": 0,
+     "tamanoCuerpo": 68,
+     "corroboracionCruzada": 6,
+     "centralidad": 42
+    }
+   ]
+  }
+ ]
+}

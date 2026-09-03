@@ -35,6 +35,9 @@ services:
       - ./grafo_maestro.html:/app/grafo_maestro.html:ro
       - ./anatomia.html:/app/anatomia.html:ro
       - ./anatomia_entidades.json:/app/anatomia_entidades.json:ro
+      - ./atlas_familias.json:/app/atlas_familias.json:ro
+      - ./design-tokens.json:/app/design-tokens.json:ro
+      - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"

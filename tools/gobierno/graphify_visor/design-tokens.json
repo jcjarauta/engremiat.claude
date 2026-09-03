@@ -1,0 +1,80 @@
+{
+  "$description": "Fuente de verdad real del estilo visual de Engremiat (§8.47) -- formato DTCG (Design Tokens Community Group, estandarizado 2026). Consolida colores que hoy viven repetidos y ya ligeramente divergentes en grafo_maestro.html/holon.html/anatomia.html (ver nota de colisiones abajo). generar_tokens_css.mjs los convierte a tokens.css (variables CSS reales) para las vistas web; el mismo JSON es lo que leeria Rive u otra herramienta el dia que exista el panel del juego.",
+
+  "color": {
+    "$description": "Colores reales agrupados por el eje que los origina -- equipo (Holon, §8.33), tipo (censo/frontmatter), fuente (anatomia, §8.41), rol (familia real por comportamiento, §8.46).",
+
+    "equipo": {
+      "$description": "Los 3 equipos reales, componentes conexas del propio grafo del Holon -- nunca propuestos a priori.",
+      "concilio": { "$value": "#7c93e8", "$type": "color" },
+      "guardia": { "$value": "#e8a33d", "$type": "color" },
+      "frontera": { "$value": "#4fce6f", "$type": "color" }
+    },
+
+    "tipo": {
+      "$description": "Los 13 tipos reales de entidad encontrados en la boveda (grafo_maestro.html, §8.38).",
+      "personaje": { "$value": "#8a8d99", "$type": "color" },
+      "espacio": { "$value": "#c76bd6", "$type": "color" },
+      "recurso": { "$value": "#e85c8a", "$type": "color" },
+      "regla": { "$value": "#5c5f6b", "$type": "color" },
+      "modulo": { "$value": "#4ea8de", "$type": "color" },
+      "oficio": { "$value": "#f4a261", "$type": "color" },
+      "hilo": { "$value": "#06d6a0", "$type": "color" },
+      "arco": { "$value": "#ef476f", "$type": "color" },
+      "sesion": { "$value": "#118ab2", "$type": "color" },
+      "mapa": { "$value": "#8338ec", "$type": "color" },
+      "estilo": { "$value": "#ffbe0b", "$type": "color" },
+      "referencia_sin_ficha": { "$value": "#4a4b52", "$type": "color" },
+      "sin_tipo": { "$value": "#2e2f35", "$type": "color" }
+    },
+
+    "fuente": {
+      "$description": "Las 7 fuentes reales de anatomia (§8.41-43) -- de donde sale el cuerpo de una entidad.",
+      "n8n": { "$value": "#4fce6f", "$type": "color" },
+      "apps_script": { "$value": "#4c9aff", "$type": "color" },
+      "node": { "$value": "#e8a33d", "$type": "color" },
+      "sheet": { "$value": "#e85c8a", "$type": "color" },
+      "sheet_schema": { "$value": "#f28a9a", "$type": "color" },
+      "baserow_schema": { "$value": "#c76bd6", "$type": "color" },
+      "relacional": { "$value": "#9a8cff", "$type": "color" }
+    },
+
+    "rol": {
+      "$description": "Las familias reales por comportamiento (§8.46) -- verbo dominante de la propia agencia, no folder ni equipo. Los marcados 'reservado' existen en el vocabulario de calcularRolReal() pero hoy 0 entidades reales caen ahi -- el color ya esta definido para cuando aparezca la primera, no inventado entonces.",
+      "operador": { "$value": "#2dd4bf", "$type": "color" },
+      "guardian": { "$value": "#ef4444", "$type": "color", "$extensions": { "engremiat.estado": "reservado, 0 miembros reales hoy" } },
+      "proveedor": { "$value": "#f59e0b", "$type": "color", "$extensions": { "engremiat.estado": "reservado, 0 miembros reales hoy" } },
+      "orquestador": { "$value": "#818cf8", "$type": "color" },
+      "dependiente": { "$value": "#38bdf8", "$type": "color" },
+      "ejecutor": { "$value": "#60a5fa", "$type": "color" },
+      "compositor": { "$value": "#a78bfa", "$type": "color" },
+      "utilidad": { "$value": "#84cc16", "$type": "color" },
+      "esquema_dependiente": { "$value": "#fb7185", "$type": "color" },
+      "disparador": { "$value": "#fb923c", "$type": "color" },
+      "decisor": { "$value": "#facc15", "$type": "color", "$extensions": { "engremiat.estado": "reservado, 0 miembros reales hoy" } },
+      "pasivo": { "$value": "#6b7280", "$type": "color" },
+      "actor": { "$value": "#71717a", "$type": "color", "$extensions": { "engremiat.estado": "reservado (respaldo generico), 0 miembros reales hoy" } },
+      "evento": { "$value": "#22d3ee", "$type": "color" },
+      "origen": { "$value": "#34d399", "$type": "color" },
+      "destino": { "$value": "#14b8a6", "$type": "color", "$extensions": { "engremiat.estado": "reservado, 0 miembros reales hoy" } }
+    },
+
+    "base": {
+      "$description": "Paleta neutra del visor -- panel oscuro de desarrollador (distinto, a proposito, del pergamino/tinta de resumen_universo.html, que es narrativo, no de trabajo).",
+      "fondo": { "$value": "#0f1013", "$type": "color" },
+      "panel": { "$value": "#17181c", "$type": "color" },
+      "borde": { "$value": "#2c2d33", "$type": "color" },
+      "borde-suave": { "$value": "#202126", "$type": "color" },
+      "texto": { "$value": "#e7e7ea", "$type": "color" },
+      "texto-suave": { "$value": "#9a9aa2", "$type": "color" },
+      "texto-tenue": { "$value": "#6b6c76", "$type": "color" }
+    }
+  },
+
+  "$extensions": {
+    "engremiat.colisionesConocidas": [
+      "color.fuente.n8n (#4fce6f) coincide por accidente con color.equipo.frontera -- disenadas en momentos distintos de la sesion, sin coordinarse. No es la misma idea (una fuente de codigo vs un equipo de Personajes) aunque comparta valor.",
+      "color.fuente.node (#e8a33d) coincide por accidente con color.equipo.guardia, mismo motivo."
+    ]
+  }
+}
