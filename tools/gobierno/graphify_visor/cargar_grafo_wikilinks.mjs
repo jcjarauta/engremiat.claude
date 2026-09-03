@@ -107,15 +107,28 @@ function main() {
     if (fm.tipo === 'relacion') {
       const origen = (fm.origen || '').replace(/^\[\[|\]\]$/g, '');
       const tipoRelacion = fm.tipo_relacion || 'relacionado_con';
-      let destino = nombreFichero;
-      if (origen) destino = destino.replace(new RegExp('^' + origen.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*'), '');
-      if (tipoRelacion) destino = destino.replace(new RegExp('^' + tipoRelacion.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*'), '');
-      destino = destino.trim();
-      if (!origen || !destino) continue;
-      const idOrigen = slug(origen), idDestino = slug(destino);
+      if (!origen) continue;
+
+      // Bug real encontrado: cuando una relacion tiene varios destinos
+      // (p.ej. "Concilio depende_de 7 Acervos-o-mecanismos.md"), el nombre
+      // del fichero solo trae un resumen ("7 Acervos-o-mecanismos"), no los
+      // 7 destinos reales -- que SI estan, como wikilinks reales, en el
+      // encabezado del cuerpo ("# [[Concilio]] depende_de [[Acervo
+      // Tecnico]], [[Acervo Logico]], ..."). Se leen de ahi: el primer
+      // wikilink del cuerpo es el origen (ya lo tenemos por frontmatter,
+      // solo se usa para saltarlo), el resto son los destinos reales, uno
+      // por arista.
+      const wikilinksCuerpo = [...cuerpo.matchAll(/\[\[([^\]|#]+)(?:\|[^\]]+)?(?:#[^\]]+)?\]\]/g)].map(m => m[1].trim());
+      const idOrigen = slug(origen);
+      const destinosReales = wikilinksCuerpo.filter(w => slug(w) !== idOrigen);
+
+      if (!destinosReales.length) continue; // ficha de relacion sin wikilinks reales en el cuerpo -- no hay arista que sacar
       if (!nodosPorId.has(idOrigen)) nodosPorId.set(idOrigen, { id: idOrigen, nombre: origen, tipo: 'referencia_sin_ficha', carpeta: null, esFicheroReal: false });
-      if (!nodosPorId.has(idDestino)) nodosPorId.set(idDestino, { id: idDestino, nombre: destino, tipo: 'referencia_sin_ficha', carpeta: null, esFicheroReal: false });
-      aristas.push({ source: idOrigen, target: idDestino, relation: tipoRelacion });
+      for (const destino of new Set(destinosReales)) {
+        const idDestino = slug(destino);
+        if (!nodosPorId.has(idDestino)) nodosPorId.set(idDestino, { id: idDestino, nombre: destino, tipo: 'referencia_sin_ficha', carpeta: null, esFicheroReal: false });
+        aristas.push({ source: idOrigen, target: idDestino, relation: tipoRelacion });
+      }
       continue;
     }
 

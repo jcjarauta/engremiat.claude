@@ -1,15 +1,15 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T05:47:34.746Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T05:55:04.842Z cruzando 9 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas) y Baserow (18 tablas). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
-## Resumen: 222 entidades candidatas reales
+## Resumen: 220 entidades candidatas reales
 
 - **18 confirmar** -- ficha real ya existente, bien corroborada.
 - **20 promover** -- sin ficha propia hoy, corroborada por >=3 fuentes reales independientes.
 - **65 revisar** -- ficha real ya existente pero apenas corroborada fuera de la boveda.
-- **119 descartar** -- evidencia real insuficiente hoy.
+- **117 descartar** -- evidencia real insuficiente hoy.
 
 ## Ciclos reales encontrados: 4
 
@@ -35,18 +35,18 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | escribe_debil | 22 | node:22 |
 | transicion_estado | 19 | telar_estados:19 |
 | lee_debil | 14 | node:14 |
+| depende_de | 8 | wikilinks:8 |
 | opera_en | 8 | wikilinks:8 |
 | lee | 8 | node:8 |
 | import | 6 | node:6 |
 | escribe | 4 | node:4 |
+| gobierna_a | 3 | wikilinks:3 |
 | modulo_activo | 3 | paquete_cliente:3 |
-| depende_de | 2 | wikilinks:2 |
 | alimenta_a | 2 | wikilinks:2 |
-| gobierna_a | 2 | wikilinks:2 |
+| parte_de | 2 | wikilinks:2 |
 | activa_a | 1 | wikilinks:1 |
 | verifica_a | 1 | wikilinks:1 |
 | corrige_a | 1 | wikilinks:1 |
-| parte_de | 1 | wikilinks:1 |
 | cites | 1 | apps_script:1 |
 
 ## Candidatas a PROMOVER (sin ficha propia, corroboradas por >=3 fuentes reales)
@@ -81,9 +81,9 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Puerta Humana | regla | 3 | n8n, vault_ficha, vault_wikilink |
 | Acervo Prompter | personaje | 3 | codigo_node, vault_ficha, vault_wikilink |
 | Repository | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
+| Verificador de Capacidades | personaje | 3 | codigo_node, vault_ficha, vault_wikilink |
 | Ventas | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
 | Aprovisionamiento | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
-| Verificador de Capacidades | personaje | 3 | codigo_node, vault_ficha, vault_wikilink |
 | Convocatorias | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
 | Economico | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
 | Comunicacion | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
@@ -108,13 +108,14 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Sesion 2026-09-01 | sesion | 2 | vault_ficha, vault_wikilink |
 | El Sheet | espacio | 2 | vault_ficha, vault_wikilink |
 | Narrador | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Narrativo | personaje | 2 | vault_ficha, vault_wikilink |
+| Verificador de Campos | personaje | 2 | vault_ficha, vault_wikilink |
 | El universo no se ha usado sobre si mismo | hilo | 2 | vault_ficha, vault_wikilink |
 | Estilo | estilo | 2 | vault_ficha, vault_wikilink |
 | La fragua protegida | espacio | 2 | vault_ficha, vault_wikilink |
 | IntegrityService | modulo | 2 | vault_ficha, vault_wikilink |
-| Acervo Narrativo | personaje | 2 | vault_ficha, vault_wikilink |
-| Verificador de Campos | personaje | 2 | vault_ficha, vault_wikilink |
 | Decidir el tono del universo | hilo | 2 | vault_ficha, vault_wikilink |
+| Acervo Logico | personaje | 2 | vault_ficha, vault_wikilink |
 | El Sheet manda | regla | 2 | vault_ficha, vault_wikilink |
 | Los dos continentes de datos | regla | 2 | vault_ficha, vault_wikilink |
 | Arco del incidente | arco | 2 | vault_ficha, vault_wikilink |
@@ -124,23 +125,22 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | El Vault | espacio | 2 | vault_ficha, vault_wikilink |
 | Formularios | modulo | 2 | vault_ficha, vault_wikilink |
 | ConfigRepository | modulo | 2 | vault_ficha, vault_wikilink |
-| Acervo Logico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Filosofico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Sociocracia | personaje | 2 | vault_ficha, vault_wikilink |
 | Honestidad del fallo | regla | 2 | vault_ficha, vault_wikilink |
 | Arco del bug oculto | arco | 2 | vault_ficha, vault_wikilink |
 | Arco de la construccion del universo | arco | 2 | vault_ficha, vault_wikilink |
 | Unir historia y gobernanza | hilo | 2 | vault_ficha, vault_wikilink |
 | El ciclo de vida remoto | espacio | 2 | vault_ficha, vault_wikilink |
 | Headscale | espacio | 2 | vault_ficha, vault_wikilink |
-| Acervo Filosofico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Sociocracia | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Tecnico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Logistico | personaje | 2 | vault_ficha, vault_wikilink |
+| Acervo Usuario | personaje | 2 | vault_ficha, vault_wikilink |
 | Arco del nacimiento del generador | arco | 2 | vault_ficha, vault_wikilink |
 | Quien dispara el primer lote | hilo | 2 | vault_ficha, vault_wikilink |
 | Migrar el hardcode de token en n8n | hilo | 2 | vault_ficha, vault_wikilink |
 | Diversificar el roster de Acervos | hilo | 2 | vault_ficha, vault_wikilink |
 | Separar el Holon en notas propias | hilo | 2 | vault_ficha, vault_wikilink |
-| Acervo Tecnico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Logistico | personaje | 2 | vault_ficha, vault_wikilink |
-| Acervo Usuario | personaje | 2 | vault_ficha, vault_wikilink |
 | Sesion 2026-08-31 | sesion | 2 | vault_ficha, vault_wikilink |
 | 00_Nucleo | sin_tipo | 1 | vault_ficha |
 
@@ -167,7 +167,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Actualizar libreria cliente | oficio | 4 | codigo_appsscript, codigo_node, vault_ficha, vault_wikilink |
 | Consola | espacio | 4 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha |
 
-## Descartadas hoy (119), por si conviene revisar el criterio
+## Descartadas hoy (117), por si conviene revisar el criterio
 
 No se listan todas por volumen -- ver `censo_entidades.json` completo. Los primeros 20 candidatos descartados con mayor corroboracion (los mas cerca del umbral):
 
@@ -196,24 +196,54 @@ No se listan todas por volumen -- ver `censo_entidades.json` completo. Los prime
 
 ---
 
-## Consolidación real (confirmar + promover + revisar)
+## Consolidación real (confirmar + promover + revisar + descartar)
 
-Segunda pasada pedida explícitamente sobre las 103 entidades de los tres primeros grupos ("investiga y termina de consolidarlo"). El grupo descartar (119) se deja intacto -- se valora aparte, al final, con el criterio ya dado: si revela un hueco real del grafo global es la primera fuente de posibilidad; si no, queda como histórico.
+Segunda pasada pedida explícitamente sobre las 103 entidades de los tres primeros grupos ("investiga y termina de consolidarlo"), más una investigación real del grupo descartar con el criterio explícito dado: "si encontramos huecos en el grafo global será nuestra primera fuente de posibilidad, si al final no tiene sentido, lo dejamos como histórico".
 
 Dos fuentes reales más que el primer censo no tenía: el catálogo real `MODULO_POR_ENTIDAD_MVP` de `src/Ids.js` (más fuerte que coincidencia de texto -- es el propio código), y las transcripciones reales ya ocurridas en `tools/gobierno/telar/b2/respuestas_originales/`. Más un puñado de correspondencias verificadas a mano leyendo el fichero real, nunca adivinadas.
 
+### Bug real encontrado y corregido investigando
+
+`cargar_grafo_wikilinks.mjs` derivaba el destino de una relación desde el NOMBRE DEL FICHERO, no desde el cuerpo real -- para relaciones con varios destinos (p.ej. `Concilio depende_de 7 Acervos-o-mecanismos.md`) esto producía una entidad falsa ("7 Acervos-o-mecanismos") en vez de las 7 aristas reales hacia los 7 Acervos reales que sí están, como wikilinks, en el cuerpo del fichero. Corregido: ahora lee los wikilinks reales del cuerpo. Efecto real: 222→220 candidatas, 2 entidades fantasma menos, 8 aristas reales más.
+
+### Los 5 huecos reales concretos encontrados en el grupo descartar (investigado a mano, no por regla)
+
+- **VIGILIA_TAREA, DOCUMENTO_ENGREMIAT, METRICA_FABRICACION** -- 3 tablas reales de Baserow tocadas de verdad por scripts reales (`ciclo_autonomo.mjs`, `prompter_lote_autociclo.mjs`, `sembrar_mecanismos.mjs`, `coordinador.mjs`...), que se quedaron por debajo del umbral de "promover" (3 fuentes) solo por no aparecer también en Sheet/n8n/bóveda -- no por falta de evidencia real. Verificado leyendo `grafo_node.json`.
+- **AGORA, EJECUTOR_LOCAL** -- módulos reales y ACTIVOS para el cliente real Piloto Plaza (ver `grafo_paquete_cliente.json`), sin ninguna ficha propia en la bóveda -- a diferencia de CRONISTA, que sí tiene su Personaje. Hueco real de gobernanza: están corriendo de verdad pero sin ficha que los gobierne.
+
+### 2 candidatas reales a ficha nueva (referenciadas de verdad, sin ficha)
+
+- **"Vision Mision"** -- citado en `Estilo.md` como documento real externo (`VISION_MISION.md`, asesoría estratégica, 2026-08-17), nunca integrado en la bóveda.
+- **"Física"** -- citado en `Estilo.md` como principio fundacional real, a la altura de las Reglas ("el mismo principio que ya rige la Física y las Leyes de este universo"), sin ficha propia. Aviso: su fuente "codigo_appsscript" es ruido -- coincide por texto con funciones de jerarquía FÍSICA de materiales, sentido totalmente distinto.
+
+### 5 que YA tienen grafo real propio -- el censo no las veía por cómo se construyó, no por un hueco real
+
+`91_HISTORIAL`, `01_CAMPANAS`, `03_PRODUCTOS`, `05_PROCESOS`, `PAQUETE_CLIENTE` -- los 4 grafos reales de negocio construidos en §8.22 no incluyen el nombre de la propia pestaña/tabla como nodo (solo sus instancias), así que el censo por nombre no podía verlos. Corrección honesta, no un hallazgo nuevo.
+
+### El resto del grupo descartar (~108 entidades): histórico, tal como se pidió
+
+Clasificado por patrón real, no dejado sin mirar: instancias específicas de negocio (una tarea/proceso/proyecto concreto -- correctamente fuera de la capa de gobernanza), pestañas/tablas reales con huella hoy insuficiente, y detalles de implementación ya cubiertos por su Personaje/Espacio real (p.ej. el nombre literal de un workflow n8n). Ver `censo_entidades.json` para el detalle entidad por entidad.
+
 | acción recomendada | cuántas | qué significa |
 |---|---|---|
+| historico_pestana_sin_huella | 53 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
+| historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
 | confirmar_ya_solido | 18 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | confirmar_codigo_real | 16 | Correspondencia real de código encontrada -- confirmado. |
 | promover_recurso_real | 15 | Pestaña/tabla real bien corroborada -- candidata sólida a ficha de Recurso o a `vinculoReal` en una ficha existente. |
 | revisar_manual_real | 11 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
 | revisar_nombre_narrativo | 10 | Nombre narrativo del universo -- el cruce por texto no alcanza su referente real. No es evidencia de que falte, es un límite del método. Acción: añadir `vinculoReal` explícito. |
+| historico_tabla_sin_huella | 6 | Tabla real de Baserow sin huella real todavía. Histórico, misma nota que PERSONAJE en §8.20. |
 | confirmar_patron_tecnico | 5 | Real en el código, pero NO es un módulo de negocio MVP -- es un patrón técnico interno (Repository, IntegrityService...). Revisar si el `tipo` en la ficha es el correcto. |
+| promover_hueco_real_encontrado | 5 | Hueco real concreto encontrado investigando el grupo descartar -- evidencia real de código o uso, por debajo del umbral solo por estrechez de fuentes. |
+| ya_cubierto_grafo_propio | 5 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
 | descartar_termino_generico | 3 | Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover. |
 | confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
 | revisar_inconsistencia_nombres | 2 | No falta una entidad -- falta consistencia de nombres entre wikilinks y fichas reales ya existentes. |
+| revisar_candidata_nueva_ficha | 2 | Referenciado de verdad en una ficha real, sin ficha propia -- candidata legítima a nueva ficha. |
+| historico_detalle_implementacion | 2 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
 | confirmar_verificado_a_mano | 1 | Correspondencia confirmada leyendo el fichero real a mano (nombre distinto en bóveda vs. código). |
+| historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
 
 Detalle completo, entidad por entidad, con su razón real: ver `censo_entidades.json` (campos `accionRecomendada` + `accionRazon`) o la vista filtrable en `entidades.html`.

@@ -451,6 +451,15 @@ Las cuatro comparten una sola página (`sheet-real.html`, con pestañas) en vez 
 
 Verificado y desplegado: `entidades.html` ahora filtra también por acción consolidada, y el panel de detalle muestra las dos capas de razón (censo + consolidación) una debajo de otra.
 
+**El grupo descartar, investigado tal como se pidió** ("si encontramos huecos en el grafo global será nuestra primera fuente de posibilidad, si al final no tiene sentido, lo dejamos como histórico"). Investigando a mano (no solo con reglas) apareció un bug real: `cargar_grafo_wikilinks.mjs` derivaba el destino de una relación con varios destinos desde el NOMBRE DEL FICHERO en vez del cuerpo real -- "Concilio depende_de 7 Acervos-o-mecanismos.md" producía una entidad falsa "7 Acervos-o-mecanismos" en vez de las 7 aristas reales a los 7 Acervos reales que sí están en el cuerpo. Corregido (222→220 candidatas, 8 aristas reales más).
+
+Sobre las 117 descartadas restantes:
+
+- **5 huecos reales concretos** -- VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION (3 tablas Baserow tocadas de verdad por scripts reales, verificado en `grafo_node.json`, solo bajo el umbral por estrechez de fuentes) y AGORA/EJECUTOR_LOCAL (módulos reales y ACTIVOS para el cliente real Piloto Plaza, sin ninguna ficha propia -- a diferencia de CRONISTA). Primera fuente de posibilidad real, tal como se anticipó.
+- **2 candidatas reales a ficha nueva** -- "Vision Mision" (documento real externo citado en Estilo.md, nunca integrado) y "Física" (principio fundacional real citado junto a las Leyes, sin ficha -- con el aviso honesto de que su "evidencia" de código es ruido por homonimia).
+- **5 que ya tienen grafo real propio** (91_HISTORIAL, 01_CAMPANAS, 03_PRODUCTOS, 05_PROCESOS, PAQUETE_CLIENTE) -- el censo no las veía por cómo se construyó, no es un hueco real: corrección honesta, no hallazgo.
+- **~105 restantes, histórico tal como se pidió** -- clasificadas por patrón real (instancia de negocio específica, pestaña/tabla con huella hoy insuficiente, detalle de implementación ya cubierto), no dejadas sin mirar.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

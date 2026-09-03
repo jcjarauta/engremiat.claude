@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T05:30:18.945Z",
+  "generadoEn": "2026-09-03T05:54:55.742Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -593,20 +593,6 @@
     {
       "id": "acervos",
       "nombre": "Acervos",
-      "tipo": "referencia_sin_ficha",
-      "carpeta": null,
-      "esFicheroReal": false
-    },
-    {
-      "id": "7_acervos_o_mecanismos",
-      "nombre": "7 Acervos-o-mecanismos",
-      "tipo": "referencia_sin_ficha",
-      "carpeta": null,
-      "esFicheroReal": false
-    },
-    {
-      "id": "2_acervos_o_mecanismos",
-      "nombre": "2 Acervos-o-mecanismos",
       "tipo": "referencia_sin_ficha",
       "carpeta": null,
       "esFicheroReal": false
@@ -1849,7 +1835,37 @@
     },
     {
       "source": "concilio",
-      "target": "7_acervos_o_mecanismos",
+      "target": "acervo_tecnico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logistico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_narrativo",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_filosofico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_usuario",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_sociocracia",
       "relation": "depende_de"
     },
     {
@@ -1874,7 +1890,12 @@
     },
     {
       "source": "puerta_humana",
-      "target": "2_acervos_o_mecanismos",
+      "target": "coordinador",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "ejecutor",
       "relation": "gobierna_a"
     },
     {
@@ -1904,7 +1925,12 @@
     },
     {
       "source": "coordinador",
-      "target": "2_acervos_o_mecanismos",
+      "target": "verificador_de_campos",
+      "relation": "parte_de"
+    },
+    {
+      "source": "coordinador",
+      "target": "verificador_de_capacidades",
       "relation": "parte_de"
     },
     {

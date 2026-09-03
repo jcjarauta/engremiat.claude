@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T05:47:34.746Z",
+  "generadoEn": "2026-09-03T05:55:04.842Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -12,11 +12,11 @@
     "telar"
   ],
   "totales": {
-    "candidatos": 222,
+    "candidatos": 220,
     "confirmar": 18,
     "promover": 20,
     "revisar": 65,
-    "descartar": 119
+    "descartar": 117
   },
   "ciclosReales": [
     [
@@ -192,6 +192,13 @@
       }
     },
     {
+      "tipo": "depende_de",
+      "total": 8,
+      "porCapa": {
+        "wikilinks": 8
+      }
+    },
+    {
       "tipo": "opera_en",
       "total": 8,
       "porCapa": {
@@ -220,17 +227,17 @@
       }
     },
     {
+      "tipo": "gobierna_a",
+      "total": 3,
+      "porCapa": {
+        "wikilinks": 3
+      }
+    },
+    {
       "tipo": "modulo_activo",
       "total": 3,
       "porCapa": {
         "paquete_cliente": 3
-      }
-    },
-    {
-      "tipo": "depende_de",
-      "total": 2,
-      "porCapa": {
-        "wikilinks": 2
       }
     },
     {
@@ -241,7 +248,7 @@
       }
     },
     {
-      "tipo": "gobierna_a",
+      "tipo": "parte_de",
       "total": 2,
       "porCapa": {
         "wikilinks": 2
@@ -263,13 +270,6 @@
     },
     {
       "tipo": "corrige_a",
-      "total": 1,
-      "porCapa": {
-        "wikilinks": 1
-      }
-    },
-    {
-      "tipo": "parte_de",
       "total": 1,
       "porCapa": {
         "wikilinks": 1
@@ -323,7 +323,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 10,
+      "centralidad": 11,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -413,7 +413,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 34,
+      "centralidad": 40,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -434,7 +434,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 32,
+      "centralidad": 34,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -781,7 +781,7 @@
         "vault_ficha",
         "vault_wikilink"
       ],
-      "centralidad": 15,
+      "centralidad": 16,
       "decision": "revisar",
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_codigo_real",
@@ -824,6 +824,25 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_patron_tecnico",
       "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
+    },
+    {
+      "nombre": "Verificador de Capacidades",
+      "slug": "verificador_de_capacidades",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 3,
+      "fuentes": [
+        "codigo_node",
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_codigo_real",
+      "accionRazon": "Personaje con script real correspondiente ya encontrado en el código."
     },
     {
       "nombre": "13_INCIDENCIAS",
@@ -882,25 +901,6 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "confirmar_patron_tecnico",
       "accionRazon": "Nombre real en el código (Apps Script o Node) pero NO está en el catálogo MODULO_POR_ENTIDAD_MVP -- probablemente un patrón técnico/servicio interno (Repository, IntegrityService...), no un módulo de negocio MVP. Revisar si el `tipo: modulo` en la ficha de la bóveda es el correcto, o si debería reclasificarse."
-    },
-    {
-      "nombre": "Verificador de Capacidades",
-      "slug": "verificador_de_capacidades",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 3,
-      "fuentes": [
-        "codigo_node",
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 6,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_codigo_real",
-      "accionRazon": "Personaje con script real correspondiente ya encontrado en el código."
     },
     {
       "nombre": "Convocatorias",
@@ -1621,6 +1621,42 @@
       "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
+      "nombre": "Acervo Narrativo",
+      "slug": "acervo_narrativo",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
+    },
+    {
+      "nombre": "Verificador de Campos",
+      "slug": "verificador_de_campos",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 7,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_verificado_a_mano",
+      "accionRazon": "Correspondencia real confirmada leyendo el fichero: tools/verificador_determinista.mjs -- verificado leyendo el fichero real: \"Verificador determinista: comprueba afirmaciones de campo de Baserow contra el esquema real\". Mismo oficio, nombre distinto en boveda vs. codigo."
+    },
+    {
       "nombre": "El universo no se ha usado sobre si mismo",
       "slug": "el_universo_no_se_ha_usado_sobre_si_mismo",
       "tiposCandidato": [
@@ -1693,42 +1729,6 @@
       "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
-      "nombre": "Acervo Narrativo",
-      "slug": "acervo_narrativo",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 6,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
-    },
-    {
-      "nombre": "Verificador de Campos",
-      "slug": "verificador_de_campos",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 6,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_verificado_a_mano",
-      "accionRazon": "Correspondencia real confirmada leyendo el fichero: tools/verificador_determinista.mjs -- verificado leyendo el fichero real: \"Verificador determinista: comprueba afirmaciones de campo de Baserow contra el esquema real\". Mismo oficio, nombre distinto en boveda vs. codigo."
-    },
-    {
       "nombre": "Decidir el tono del universo",
       "slug": "decidir_el_tono_del_universo",
       "tiposCandidato": [
@@ -1745,6 +1745,24 @@
       "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
       "accionRecomendada": "correcto_narrativo",
       "accionRazon": "Contenido narrativo/bitácora por diseño (hilo/arco/sesión/mapa/estilo) -- baja corroboración fuera de la bóveda es lo esperado, no un hueco. Sin acción."
+    },
+    {
+      "nombre": "Acervo Logico",
+      "slug": "acervo_logico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 5,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "revisar_manual_real",
+      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
     },
     {
       "nombre": "El Sheet manda",
@@ -1909,8 +1927,26 @@
       "accionRazon": "Ficha real de tipo módulo sin correspondencia en MODULO_POR_ENTIDAD_MVP ni en el código escaneado -- puede ser un módulo planeado pero no implementado todavía. Revisar a mano si sigue vigente."
     },
     {
-      "nombre": "Acervo Logico",
-      "slug": "acervo_logico",
+      "nombre": "Acervo Filosofico",
+      "slug": "acervo_filosofico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 4,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
+    },
+    {
+      "nombre": "Acervo Sociocracia",
+      "slug": "acervo_sociocracia",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2035,8 +2071,8 @@
       "accionRazon": "Nombre narrativo del universo (p.ej. \"El Sheet\", \"La fragua protegida\") -- el cruce por texto no puede alcanzar su referente real (el Sheet real, el VPS real, la ley real ya citada en fixtures). No es evidencia de que falte: es un límite del método. Acción recomendada: añadir `vinculoReal` explícito a la ficha para que el próximo censo lo confirme con evidencia, no con nombre."
     },
     {
-      "nombre": "Acervo Filosofico",
-      "slug": "acervo_filosofico",
+      "nombre": "Acervo Tecnico",
+      "slug": "acervo_tecnico",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2053,8 +2089,26 @@
       "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
     },
     {
-      "nombre": "Acervo Sociocracia",
-      "slug": "acervo_sociocracia",
+      "nombre": "Acervo Logistico",
+      "slug": "acervo_logistico",
+      "tiposCandidato": [
+        "personaje"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "vault_ficha",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "revisar",
+      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
+      "accionRecomendada": "confirmar_uso_real_telar",
+      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
+    },
+    {
+      "nombre": "Acervo Usuario",
+      "slug": "acervo_usuario",
       "tiposCandidato": [
         "personaje"
       ],
@@ -2175,7 +2229,9 @@
       ],
       "centralidad": 3,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "promover_hueco_real_encontrado",
+      "accionRazon": "Tabla real de Baserow tocada de verdad por 3 scripts reales (tools/ciclo_autonomo.mjs, tools/prompter_lote_autociclo.mjs, tools/sembrar_mecanismos.mjs) -- se quedó bajo el umbral de \"promover\" (3) solo por no aparecer también en Sheet/n8n/bóveda, no porque falte evidencia real. Candidata real a ficha de Recurso."
     },
     {
       "nombre": "DOCUMENTO_ENGREMIAT",
@@ -2192,61 +2248,9 @@
       ],
       "centralidad": 3,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
-    },
-    {
-      "nombre": "Acervo Tecnico",
-      "slug": "acervo_tecnico",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 2,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_uso_real_telar",
-      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
-    },
-    {
-      "nombre": "Acervo Logistico",
-      "slug": "acervo_logistico",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 2,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "confirmar_uso_real_telar",
-      "accionRazon": "Sin script propio, pero con transcripciones reales de deliberación ya ocurridas en tools/gobierno/telar/b2/respuestas_originales/ -- Personaje activo de verdad en Telar, no solo declarado."
-    },
-    {
-      "nombre": "Acervo Usuario",
-      "slug": "acervo_usuario",
-      "tiposCandidato": [
-        "personaje"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 2,
-      "fuentes": [
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 2,
-      "decision": "revisar",
-      "razon": "ficha real ya existente pero apenas corroborada fuera de la boveda -- posible hueco real de integracion (nombre distinto en otra fuente, o de verdad aislada) que hay que revisar a mano.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Personaje real en la bóveda sin script propio ni transcripción real de Telar B2 encontrada -- candidato genuino a revisar si sigue activo o quedó solo declarado."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "promover_hueco_real_encontrado",
+      "accionRazon": "Tabla real de Baserow tocada de verdad por 3 scripts reales (tools/prompter_lote_autociclo.mjs, tools/prompter_lote_bovedas.mjs, tools/sembrar_mecanismos.mjs). Mismo caso que VIGILIA_TAREA: hueco real por debajo del umbral, no ausencia de evidencia."
     },
     {
       "nombre": "METRICA_FABRICACION",
@@ -2263,7 +2267,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "promover_hueco_real_encontrado",
+      "accionRazon": "Tabla real de Baserow tocada de verdad por 2 scripts reales (tools/coordinador.mjs, tools/prompter_lote_autociclo.mjs). Mismo caso: hueco real por debajo del umbral."
     },
     {
       "nombre": "TEST-Cliente-2026-08-29",
@@ -2279,7 +2285,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Sesion 2026-08-31",
@@ -2313,7 +2321,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "revisar_candidata_nueva_ficha",
+      "accionRazon": "Citado en Estilo.md como principio fundacional real (\"es el mismo principio que ya rige la Física y las Leyes de este universo\"), a la altura de las Reglas -- sin ficha propia. Aviso honesto: su fuente \"codigo_appsscript\" es RUIDO -- coincide por texto con funciones sobre jerarquía FÍSICA de materiales (ej. `continuarJerarquiaFisicaLaTroballa`), un sentido de la palabra totalmente distinto, no evidencia real de integración."
     },
     {
       "nombre": "PERSONAJE",
@@ -2330,7 +2340,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (2 fuente(s): baserow_estructura, codigo_node) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     },
     {
       "nombre": "Proyecto 0 — Catálogo de módulos",
@@ -2346,7 +2358,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "AGORA",
@@ -2363,7 +2377,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "promover_hueco_real_encontrado",
+      "accionRazon": "Módulo real y ACTIVO para un cliente real (Piloto Plaza, ver grafo_paquete_cliente.json) y tabla real de Baserow -- pero sin ninguna ficha propia en la bóveda. A diferencia de CRONISTA/EJECUTOR_LOCAL (que sí tienen Personaje), AGORA no tiene gobernanza narrativa todavía pese a estar corriendo de verdad. Hueco real concreto."
     },
     {
       "nombre": "EJECUTOR_LOCAL",
@@ -2379,7 +2395,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "promover_hueco_real_encontrado",
+      "accionRazon": "Módulo real y ACTIVO para un cliente real (Piloto Plaza) -- prototipo ya probado con éxito (ver memoria de sesión \"Ejecutor Local (prototipo)\"), pero sin ficha propia en la bóveda. Mismo hueco que AGORA."
     },
     {
       "nombre": "Telar Interactivo",
@@ -2395,7 +2413,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_detalle_implementacion",
+      "accionRazon": "Nombre literal de un workflow n8n concreto, no un concepto nuevo -- ya cubierto por la ficha de su Personaje/Espacio real (Telar, Cronista). No necesita ficha propia."
     },
     {
       "nombre": "39_PEDIDO_CLIENTE",
@@ -2411,7 +2431,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "40_PEDIDO_CLIENTE_LINEA",
@@ -2427,7 +2449,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "42_ENTREGA_LINEA",
@@ -2443,7 +2467,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "43_CONTRATO_SERVICIO",
@@ -2459,7 +2485,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "45_TAREA_COMPETENCIA",
@@ -2475,7 +2503,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "01_CAMPANAS",
@@ -2491,7 +2521,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_cubierto_grafo_propio",
+      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
     },
     {
       "nombre": "SOLICITUDES_MONTAJE",
@@ -2507,7 +2539,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "03_PRODUCTOS",
@@ -2523,7 +2557,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_cubierto_grafo_propio",
+      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
     },
     {
       "nombre": "05_PROCESOS",
@@ -2539,7 +2575,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_cubierto_grafo_propio",
+      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
     },
     {
       "nombre": "07_TAREA_RESPONSABLE",
@@ -2555,7 +2593,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "09_PRODUCTO_MATERIAL",
@@ -2571,7 +2611,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "10_TAREA_MATERIAL",
@@ -2587,7 +2629,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_EQUIPO_MIEMBRO",
@@ -2603,7 +2647,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_TAREA_RESPONSABLE",
@@ -2619,7 +2665,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "19_MOVIMIENTO_MATERIAL",
@@ -2635,7 +2683,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "20_EJECUCION_TAREA",
@@ -2651,7 +2701,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "21_PROVEEDOR_MATERIAL",
@@ -2667,7 +2719,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "22_EQUIPO_MIEMBRO",
@@ -2683,7 +2737,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "25_PEDIDO_PROVEEDOR",
@@ -2699,7 +2755,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "26_PEDIDO_PROVEEDOR_LINEA",
@@ -2715,7 +2773,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "28_RECEPCION_LINEA",
@@ -2731,7 +2791,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "31_FUENTE_FINANCIACION",
@@ -2747,7 +2809,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "33_COMPETENCIA",
@@ -2763,7 +2827,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): baserow_estructura, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "35_RECURSO_COMPETENCIA",
@@ -2779,7 +2845,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "37_ETIQUETA_IMPACTO",
@@ -2795,7 +2863,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_appsscript, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "91_HISTORIAL",
@@ -2811,7 +2881,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_cubierto_grafo_propio",
+      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
     },
     {
       "nombre": "98_LOG_GOBIERNO",
@@ -2827,7 +2899,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (2 fuente(s): codigo_node, sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "Confección a ganchillo",
@@ -2842,7 +2916,9 @@
       ],
       "centralidad": 6,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Yurta de 6 metros de diámetro",
@@ -2858,7 +2934,9 @@
       ],
       "centralidad": 5,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Módulo MANTENIMIENTO",
@@ -2873,7 +2951,9 @@
       ],
       "centralidad": 5,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Cultivo y cuidado",
@@ -2888,7 +2968,9 @@
       ],
       "centralidad": 5,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Gestor de proyectos",
@@ -2904,7 +2986,9 @@
       ],
       "centralidad": 4,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Investigación y planificación asistida -- pruebas piloto",
@@ -2919,7 +3003,9 @@
       ],
       "centralidad": 4,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Construcción de muro de bahareque",
@@ -2934,7 +3020,9 @@
       ],
       "centralidad": 4,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Piloto Plaza (interno)",
@@ -2949,22 +3037,9 @@
       ],
       "centralidad": 3,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
-    },
-    {
-      "nombre": "2 Acervos-o-mecanismos",
-      "slug": "2_acervos_o_mecanismos",
-      "tiposCandidato": [
-        "referencia_sin_ficha"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "vault_wikilink"
-      ],
-      "centralidad": 2,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_dato_operativo",
+      "accionRazon": "Cliente real (dato de negocio), no una entidad del universo de gobernanza -- misma distinción ya establecida en recurso.schema.json (clase operativo_gobierno vs. fisico_negocio). Sin acción."
     },
     {
       "nombre": "La Troballa - Taller Ocupacional",
@@ -2979,7 +3054,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "MANTENIMIENTO - Piloto",
@@ -2994,7 +3071,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Albahaca en maceta",
@@ -3009,7 +3088,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Amigurumi de Stitch a crochet",
@@ -3025,7 +3106,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Muro de bahareque (barro)",
@@ -3041,7 +3124,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Esqueleto exportador Obsidian",
@@ -3056,7 +3141,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Maceta de albahaca",
@@ -3071,7 +3158,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Diseño y primer exportador Markdown",
@@ -3086,22 +3175,9 @@
       ],
       "centralidad": 2,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
-    },
-    {
-      "nombre": "7 Acervos-o-mecanismos",
-      "slug": "7_acervos_o_mecanismos",
-      "tiposCandidato": [
-        "referencia_sin_ficha"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "vault_wikilink"
-      ],
-      "centralidad": 1,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Vision Mision",
@@ -3116,7 +3192,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "revisar_candidata_nueva_ficha",
+      "accionRazon": "Referenciado como documento real externo (\"[[Vision Mision|VISION_MISION.md]]\", asesoría estratégica, 2026-08-17) en Estilo.md -- existe de verdad, pero no como ficha/fichero dentro de la bóveda todavía. Candidata a integrarse (traer el documento real a la bóveda o dejar una ficha-puente que apunte a él)."
     },
     {
       "nombre": "Combinaciones de módulos (sheets piloto)",
@@ -3131,7 +3209,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Proyecto 0 — Desarrollo interno del sistema",
@@ -3146,7 +3226,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Propuestas e iniciativas exploratorias",
@@ -3161,7 +3243,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Sheet piloto — CORE",
@@ -3176,7 +3260,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Empaquetado de producto",
@@ -3191,7 +3277,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Módulo CORE",
@@ -3206,7 +3294,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Diseño",
@@ -3221,7 +3311,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Implementación",
@@ -3236,7 +3328,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Desplegado",
@@ -3251,7 +3345,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Estructura de celosía",
@@ -3266,7 +3362,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Techo y anillo central",
@@ -3281,7 +3379,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Cubierta textil",
@@ -3296,7 +3396,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Plataforma/base",
@@ -3311,7 +3413,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Construir exportador mínimo Documento/Decisión → Markdown",
@@ -3326,7 +3430,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Sembrar en maceta protegida",
@@ -3341,7 +3447,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Riego diario primeras 2 semanas",
@@ -3356,7 +3464,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Pinzar la yema apical",
@@ -3371,7 +3481,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Primera cosecha y evaluación",
@@ -3386,7 +3498,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Preparar materiales",
@@ -3401,7 +3515,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Tejer el cuerpo",
@@ -3416,7 +3532,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Tejer los brazos",
@@ -3431,7 +3549,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Tejer los pies",
@@ -3446,7 +3566,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Montaje de todas las piezas",
@@ -3461,7 +3583,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Seleccionar y extraer la tierra",
@@ -3476,7 +3600,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Levantar el armazón de madera",
@@ -3491,7 +3617,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "Curado y revisión de grietas",
@@ -3506,7 +3634,9 @@
       ],
       "centralidad": 1,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_instancia_negocio",
+      "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
     },
     {
       "nombre": "00_Nucleo",
@@ -3538,7 +3668,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_detalle_implementacion",
+      "accionRazon": "Nombre literal de un workflow n8n concreto, no un concepto nuevo -- ya cubierto por la ficha de su Personaje/Espacio real (Telar, Cronista). No necesita ficha propia."
     },
     {
       "nombre": "44_OPORTUNIDAD",
@@ -3553,7 +3685,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "41_ENTREGA",
@@ -3568,7 +3702,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "93_MAPEO_IDS_TEMPORALES",
@@ -3583,7 +3719,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "08_MATERIALES",
@@ -3598,7 +3736,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_RECURSO",
@@ -3613,7 +3753,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_PERSONA",
@@ -3628,7 +3770,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_DECISION",
@@ -3643,7 +3787,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_INCIDENCIA",
@@ -3658,7 +3804,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_DOCUMENTO",
@@ -3673,7 +3821,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_HORARIO",
@@ -3688,7 +3838,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "12_DECISIONES",
@@ -3703,7 +3855,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "15_PROVEEDORES",
@@ -3718,7 +3872,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "16_ASIGNACION",
@@ -3733,7 +3889,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "17_RELACION",
@@ -3748,7 +3906,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "23_RECURSO",
@@ -3763,7 +3923,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "27_RECEPCION",
@@ -3778,7 +3940,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "29_HORARIO",
@@ -3793,7 +3957,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "30_PRESUPUESTO",
@@ -3808,7 +3974,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "32_COSTE",
@@ -3823,7 +3991,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "36_CONVOCATORIA",
@@ -3838,7 +4008,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "90_CONFIGURACION",
@@ -3853,7 +4025,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_CAMPANA",
@@ -3868,7 +4042,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_PROYECTO",
@@ -3883,7 +4059,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_PRODUCTO",
@@ -3898,7 +4076,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_PROCESO",
@@ -3913,7 +4093,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "STG_TAREA",
@@ -3928,7 +4110,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "95_DIARIO_NAVEGACION",
@@ -3943,7 +4127,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "96_PROMPT_EJECUTOR",
@@ -3958,7 +4144,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "97_ESTADO_CONSOLA",
@@ -3973,7 +4161,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "99_TRIAGE_LOCAL",
@@ -3988,7 +4178,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_pestana_sin_huella",
+      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     },
     {
       "nombre": "PAQUETE_CLIENTE",
@@ -4003,7 +4195,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_cubierto_grafo_propio",
+      "accionRazon": "Ya tiene un grafo real propio construido hoy (91_HISTORIAL / jerarquía Campaña→Tarea / PAQUETE_CLIENTE, ver sheet-real.html) -- el censo no lo detecta porque esos grafos no incluyen el nombre de la propia pestaña/tabla como nodo, solo sus instancias. No es un hueco: es un límite de cómo se construyó el censo, no del sistema real."
     },
     {
       "nombre": "ENTIDAD_ORGANIZATIVA",
@@ -4018,7 +4212,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     },
     {
       "nombre": "UBICACION_GEOGRAFICA",
@@ -4033,7 +4229,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     },
     {
       "nombre": "NODO_ENGREMIAT",
@@ -4048,7 +4246,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     },
     {
       "nombre": "TELAR_SESION",
@@ -4063,7 +4263,9 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     },
     {
       "nombre": "TELAR_BIBLIOTECA",
@@ -4078,11 +4280,13 @@
       ],
       "centralidad": 0,
       "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo."
+      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "historico_tabla_sin_huella",
+      "accionRazon": "Tabla real de Baserow (1 fuente(s): baserow_estructura) sin huella real todavía fuera de su propia definición -- misma nota que PERSONAJE en §8.20: se deja como histórico hasta que tenga uso real, no se fuerza una equivalencia."
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T05:47:34.813Z",
+    "generadoEn": "2026-09-03T05:57:27.570Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
@@ -4099,8 +4303,15 @@
       "correcto_narrativo": 19,
       "revisar_nombre_narrativo": 10,
       "confirmar_verificado_a_mano": 1,
-      "confirmar_uso_real_telar": 3
-    },
-    "pendiente": "119 descartadas: se valoran aparte al final -- si el hueco tiene sentido real se retoma como fuente de posibilidad, si no, quedan como histórico (instrucción explícita del operador)."
+      "confirmar_uso_real_telar": 3,
+      "promover_hueco_real_encontrado": 5,
+      "historico_instancia_negocio": 43,
+      "revisar_candidata_nueva_ficha": 2,
+      "historico_tabla_sin_huella": 6,
+      "historico_detalle_implementacion": 2,
+      "historico_pestana_sin_huella": 53,
+      "ya_cubierto_grafo_propio": 5,
+      "historico_dato_operativo": 1
+    }
   }
 }
