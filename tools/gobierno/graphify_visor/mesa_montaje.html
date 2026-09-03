@@ -35,6 +35,18 @@
   #cajaConexion { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 18px; width: 320px; }
   .conexion-real { font-size: 11.5px; padding: 3px 0; border-bottom: 1px solid var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
   .conexion-real b { color: var(--color-base-texto); }
+  #fichaPieza { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 10px; font-size: 12px; margin-bottom: 4px; }
+  #fichaPieza h4 { margin: 0 0 4px; font-size: 13px; }
+  .badge-estado { display: inline-block; padding: 2px 7px; border-radius: 4px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
+  .badge-estado.en_reposo { background: #2c2d3355; color: var(--color-base-texto-suave); }
+  .badge-estado.bloqueada { background: #e85c8a33; color: #e85c8a; }
+  .badge-estado.activa { background: #ffffff33; color: #fff; }
+  .badge-estado.terminada { background: #6b6c7633; color: var(--color-base-texto-tenue); }
+  .btn-evento { width: 100%; margin-top: 6px; text-align: left; font-size: 11.5px; }
+  .evento-log { font-size: 11px; padding: 4px 0; border-bottom: 1px solid var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .evento-log b { color: var(--color-base-texto); }
+  .evento-log .ts { color: var(--color-base-texto-tenue); font-size: 9.5px; }
+  #registroEventos { max-height: 160px; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -69,6 +81,11 @@
   </div>
 
   <div id="panelDerecho">
+    <h3>Pieza seleccionada</h3>
+    <div id="fichaPieza"><p class="hint">Clic en una pieza de la mesa para ver su estado real y sus eventos disponibles.</p></div>
+    <h3>Registro de eventos</h3>
+    <p class="hint">Nada se mueve porque sí -- cada cambio de estado sale de un evento real, disparado a mano, y queda aquí anotado.</p>
+    <div id="registroEventos"><p class="hint">Ningún evento todavía.</p></div>
     <h3>Montajes guardados (este navegador)</h3>
     <div id="montajesGuardados"></div>
     <h3>Esta máquina</h3>
@@ -97,10 +114,19 @@ const TIPOS_RELACION_REAL = [
 const COLOR_RELACION = {};
 TIPOS_RELACION_REAL.forEach(t => { COLOR_RELACION[t.id] = tokenColor('color-relacion-' + t.id); });
 
+// -- Fase 3 (§8.51): cada pieza tiene un estado real, y solo cambia por un evento real --
+// en_reposo -> bloqueada si algo real la gobierna (gobierna_a entrante) y quien gobierna
+// todavia no esta activa; activa -> terminada solo por evento explicito. Nunca por fisica,
+// nunca por tiempo, nunca porque si -- "el movimiento explica un cambio ya validado".
+const COLOR_BORDE_ESTADO = { en_reposo: null, bloqueada: '#e85c8a', activa: '#ffffff', terminada: '#5a5b63' };
+const ANCHO_BORDE_ESTADO = { en_reposo: 1, bloqueada: 2.5, activa: 3, terminada: 1 };
+
 let atlas = null;
 let todosLosMiembros = []; // aplanado, deduplicado por slug, con su familia principal (primera)
 let nodes, edges, network;
 let pendienteOrigen = null;
+let piezaSeleccionada = null;
+let registroEventos = [];
 const LLAVE_LOCALSTORAGE = 'engremiat_mesa_montaje_v1';
 
 async function cargar() {
@@ -134,6 +160,7 @@ async function cargar() {
   network.on('click', (params) => {
     if (!params.nodes.length) { pendienteOrigen = null; return; }
     const id = params.nodes[0];
+    seleccionarPieza(id);
     if (!pendienteOrigen) { pendienteOrigen = id; return; }
     if (pendienteOrigen === id) { pendienteOrigen = null; return; }
     abrirSelectorConexion(pendienteOrigen, id);
@@ -181,8 +208,40 @@ function colocarPieza(slug) {
     shape: 'dot', size: 16 + Math.min(14, Math.sqrt(m.agenciaReal || 1) * 2),
     color: { background: colorRol(familiaPrincipal), border: tokenColor('color-base-fondo') },
     font: { color: tokenColor('color-base-texto'), size: 12, face: 'system-ui' },
+    estado: 'en_reposo', agenciaReal: m.agenciaReal || 0, rolPrincipal: familiaPrincipal,
   });
+  aplicarEstiloEstado(slug);
   actualizarResumen();
+}
+
+// -- quien gobierna de verdad a esta pieza (gobierna_a entrante ya dibujada en la mesa) --
+function gobernadoresDe(slug) {
+  return edges.get().filter(a => a.to === slug && a.label === 'gobierna_a').map(a => a.from);
+}
+function gobernadosPor(slug) {
+  return edges.get().filter(a => a.from === slug && a.label === 'gobierna_a').map(a => a.to);
+}
+
+// recalcula el estado real de una pieza a partir de sus vinculos reales -- nunca a mano libre.
+// bloqueada solo si alguien la gobierna de verdad Y ese gobernador todavia no esta activo.
+function recalcularBloqueo(slug) {
+  const n = nodes.get(slug);
+  if (!n || n.estado === 'activa' || n.estado === 'terminada') return; // un evento ya validado no se deshace solo
+  const gob = gobernadoresDe(slug);
+  const bloqueadaAhora = gob.some(g => (nodes.get(g) || {}).estado !== 'activa');
+  const nuevoEstado = gob.length && bloqueadaAhora ? 'bloqueada' : 'en_reposo';
+  if (nuevoEstado !== n.estado) { nodes.update({ id: slug, estado: nuevoEstado }); aplicarEstiloEstado(slug); }
+}
+
+function aplicarEstiloEstado(slug) {
+  const n = nodes.get(slug);
+  if (!n) return;
+  const borde = COLOR_BORDE_ESTADO[n.estado];
+  nodes.update({
+    id: slug,
+    color: { background: n.estado === 'terminada' ? (colorRol(n.rolPrincipal) + '77') : colorRol(n.rolPrincipal), border: borde || tokenColor('color-base-fondo') },
+    borderWidth: ANCHO_BORDE_ESTADO[n.estado] || 1,
+  });
 }
 
 function abrirSelectorConexion(origen, destino) {
@@ -205,7 +264,78 @@ function crearConexion(origen, destino, tipo) {
     color: { color: COLOR_RELACION[tipo] || '#3a3b47' },
     font: { color: tokenColor('color-base-texto-suave'), size: 9, strokeWidth: 0, background: tokenColor('color-base-fondo') },
   });
+  if (tipo === 'gobierna_a') recalcularBloqueo(destino); // un gate real recien dibujado puede bloquear a quien gobierna
   actualizarResumen();
+  if (piezaSeleccionada) renderFichaPieza(piezaSeleccionada);
+}
+
+// -- seleccion + ficha real de la pieza --
+function seleccionarPieza(slug) {
+  piezaSeleccionada = slug;
+  renderFichaPieza(slug);
+}
+
+function eventosDisponibles(slug) {
+  const n = nodes.get(slug);
+  if (!n) return [];
+  const eventos = [];
+  if (n.estado === 'en_reposo' && n.agenciaReal > 0) eventos.push({ id: 'activar', nombre: 'Activar', desc: 'Esta pieza tiene agencia real (' + n.agenciaReal + ') -- puede pasar a activa.' });
+  if (n.estado === 'en_reposo' && !(n.agenciaReal > 0)) eventos.push({ id: 'disparo_externo', nombre: 'Registrar que algo externo la activó', desc: 'Sin agencia real propia (Pasivo) -- solo se activa si algo real la dispara, nunca sola.' });
+  if (n.estado === 'activa') {
+    const gobernados = gobernadosPor(slug);
+    if (gobernados.length) eventos.push({ id: 'aprobar', nombre: 'Aprobar -- desbloquear lo que gobierna', desc: 'Desbloquea de verdad ' + gobernados.map(g => (nodes.get(g) || {}).label).join(', ') + '.' });
+    eventos.push({ id: 'completar', nombre: 'Completar', desc: 'Pasa a terminada -- ya no puede volver a activarse sola.' });
+  }
+  return eventos;
+}
+
+function renderFichaPieza(slug) {
+  const n = nodes.get(slug);
+  const cont = document.getElementById('fichaPieza');
+  if (!n) { cont.innerHTML = '<p class="hint">Clic en una pieza de la mesa para ver su estado real y sus eventos disponibles.</p>'; return; }
+  const gob = gobernadoresDe(slug);
+  const eventos = eventosDisponibles(slug);
+  cont.innerHTML = `
+    <h4>${n.label}</h4>
+    <p><span class="badge-estado ${n.estado}">${n.estado.replace('_', ' ')}</span></p>
+    <p class="hint">Rol real: <b style="color:${colorRol(n.rolPrincipal)};">${n.rolPrincipal}</b> · agencia real ${n.agenciaReal}</p>
+    ${gob.length ? `<p class="hint">Gobernada por: ${gob.map(g => (nodes.get(g) || {}).label).join(', ')}</p>` : ''}
+    ${eventos.map(ev => `<button class="btn-evento" data-evento="${ev.id}" title="${ev.desc}">▸ ${ev.nombre}</button>`).join('') || '<p class="hint">Sin eventos reales disponibles en este estado.</p>'}
+  `;
+  cont.querySelectorAll('[data-evento]').forEach(btn => {
+    btn.addEventListener('click', () => dispararEvento(slug, btn.dataset.evento));
+  });
+}
+
+// -- el unico sitio real donde una pieza cambia de estado -- siempre por un evento explicito,
+// siempre anotado. Nunca se llama desde fisica, animacion o temporizador. --
+function dispararEvento(slug, eventoId) {
+  const n = nodes.get(slug);
+  if (!n) return;
+  const estadoAnterior = n.estado;
+  let estadoNuevo = estadoAnterior;
+  if (eventoId === 'activar' || eventoId === 'disparo_externo') estadoNuevo = 'activa';
+  else if (eventoId === 'completar') estadoNuevo = 'terminada';
+  else if (eventoId === 'aprobar') estadoNuevo = estadoAnterior; // no cambia su propio estado, cambia el de a quien gobierna
+
+  if (estadoNuevo !== estadoAnterior) { nodes.update({ id: slug, estado: estadoNuevo }); aplicarEstiloEstado(slug); }
+
+  registrarEvento({ pieza: n.label, slug, evento: eventoId, estadoAnterior, estadoNuevo });
+
+  if (eventoId === 'aprobar') gobernadosPor(slug).forEach(g => recalcularBloqueo(g));
+  renderFichaPieza(slug);
+  actualizarResumen();
+}
+
+function registrarEvento(ev) {
+  registroEventos.push({ ts: new Date().toISOString(), ...ev });
+  renderRegistroEventos();
+}
+function renderRegistroEventos() {
+  const cont = document.getElementById('registroEventos');
+  cont.innerHTML = registroEventos.slice().reverse().map(e =>
+    `<div class="evento-log"><span class="ts">${e.ts.slice(11, 19)}</span> -- <b>${e.pieza}</b>: ${e.estadoAnterior} → ${e.estadoNuevo} <span class="hint">(${e.evento})</span></div>`
+  ).join('') || '<p class="hint">Ningún evento todavía.</p>';
 }
 
 function actualizarResumen() {
@@ -219,14 +349,20 @@ function actualizarResumen() {
   ).join('') || '<p class="hint">Clic en dos piezas de la mesa (una y luego otra) para conectarlas.</p>';
 }
 
-function vaciarMesa() { nodes.clear(); edges.clear(); actualizarResumen(); }
+function vaciarMesa() {
+  nodes.clear(); edges.clear();
+  registroEventos = []; piezaSeleccionada = null;
+  renderRegistroEventos(); renderFichaPieza(null);
+  actualizarResumen();
+}
 
 function montajeActual() {
   return {
     nombre: document.getElementById('nombreMontaje').value.trim() || 'Sin nombre',
     generadoEn: new Date().toISOString(),
-    piezas: nodes.get().map(n => ({ slug: n.id, nombre: n.label })),
+    piezas: nodes.get().map(n => ({ slug: n.id, nombre: n.label, estado: n.estado, agenciaReal: n.agenciaReal, rolPrincipal: n.rolPrincipal })),
     conexiones: edges.get().map(a => ({ origen: a.from, tipo: a.label, destino: a.to })),
+    eventos: registroEventos,
   };
 }
 
@@ -265,6 +401,15 @@ function aplicarMontaje(m) {
   document.getElementById('nombreMontaje').value = m.nombre || '';
   (m.piezas || []).forEach(p => colocarPieza(p.slug));
   (m.conexiones || []).forEach(c => crearConexion(c.origen, c.tipo ? c.tipo : c.relacion, c.destino));
+  // restaura el estado real guardado -- no se recalcula desde cero, es historia ya validada
+  (m.piezas || []).forEach(p => {
+    if (p.estado && p.estado !== 'en_reposo' && nodes.get(p.slug)) {
+      nodes.update({ id: p.slug, estado: p.estado });
+      aplicarEstiloEstado(p.slug);
+    }
+  });
+  registroEventos = (m.eventos || []).slice();
+  renderRegistroEventos();
   actualizarResumen();
 }
 

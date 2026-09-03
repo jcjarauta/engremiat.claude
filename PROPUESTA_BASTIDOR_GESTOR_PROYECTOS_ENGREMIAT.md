@@ -780,6 +780,18 @@ Construida la primera pieza real del plan del Bastidor en lenguaje llano (Fase 2
 
 **Verificado de extremo a extremo**: 2 piezas reales colocadas (`92_BUS_TRABAJO`, `Coordinador`), 1 conexión real creada (`opera_en`), montaje guardado con nombre y listado correctamente. La verificación con el driver de automatización tuvo su propio desajuste de escala en las coordenadas de clic (no del código real) -- resuelto disparando eventos sintéticos en las coordenadas reales del canvas, vía la propia API de `vis-network`.
 
+### 8.51 "Seguimos con la Fase 3"
+
+Añadido el motor de estados sobre la misma mesa de montaje (§8.50), no una vista nueva -- cada pieza colocada gana un estado real: `en_reposo` / `bloqueada` / `activa` / `terminada`. Regla de oro aplicada tal como se investigó en los informes de arquitectura (§8.47): **nada se mueve porque sí, solo por un evento real, disparado a mano y anotado**.
+
+**Mecánica real, no inventada**:
+- `bloqueada` se calcula de verdad a partir de las aristas `gobierna_a` entrantes ya dibujadas en la mesa -- si algo real la gobierna y ese gobernador todavía no está `activa`, está bloqueada. No hay estado bloqueado sin una conexión real que lo justifique.
+- El evento **Activar** solo está disponible si la pieza tiene agencia real (`agenciaReal > 0`, el mismo dato ya calculado en §8.45).
+- El evento **Aprobar** solo aparece en una pieza `activa` con `gobierna_a` saliente real, y desbloquea de verdad a quien gobierna -- ni antes, ni a otra pieza.
+- Cada evento queda en un registro visible, con hora exacta, pieza, y de qué estado a qué estado -- la memoria mínima que pedían los informes, aunque todavía viva solo en esta sesión de navegador (la Fase 4, memoria compartida de verdad, es el siguiente paso natural, no este).
+
+**Verificado de extremo a extremo con una relación real ya conocida**, no un ejemplo de juguete: `Puerta Humana gobierna_a Coordinador` (la misma relación del Holon, §8.33). Coordinador arranca `bloqueada` en cuanto se dibuja la conexión. Activar Puerta Humana (agencia real 1) no desbloquea nada por sí solo -- hace falta el evento explícito **Aprobar**, y solo entonces Coordinador pasa a `en_reposo`. Registro de eventos con 2 entradas reales, timestamps correctos, verificado en el navegador.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
