@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:46:51.452Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:54:53.594Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -13,7 +13,7 @@ Generado el 2026-09-03T09:46:51.452Z cruzando 10 fuentes reales: 8 grafos (Apps 
 
 ## Ciclos reales encontrados: 4
 
-- **malla de 70 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter ... (+62 mas)
+- **malla de 71 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter ... (+63 mas)
 - chequear_libreria_clientes <-> ejecutar_chequeo_libreria
 - dato:appsscript.json <-> dato:clientes.json <-> dato:libreria.json <-> tools/constructor/montar-cliente.mjs <-> tools/constructor/montar-cliente.test.mjs
 - aprobada_sin_ejecutar <-> concilio_convocando <-> deliberando <-> devuelta <-> esperando_relevo <-> huella <-> orientacion <-> puerta_ejecutada <-> puerta_en_curso <-> puerta_err <-> puerta_pendiente <-> puerta_warn <-> sin_seleccionar <-> tejiendo
@@ -26,7 +26,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 |---|---|---|
 | calls | 2994 | apps_script:2994 |
 | contains | 1573 | apps_script:1573 |
-| wikilink | 290 | wikilinks:290 |
+| wikilink | 291 | wikilinks:291 |
 | conexion_n8n | 138 | n8n:138 |
 | indirect_call | 100 | apps_script:100 |
 | toco_en_operacion | 81 | historial:81 |
@@ -125,6 +125,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Acervo Logico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Decidir el tono del universo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Filosofico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Usuario | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Sociocracia | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | El Sheet manda | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Los dos continentes de datos | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
@@ -137,7 +138,6 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | ConfigRepository | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Tecnico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Logistico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Acervo Usuario | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Honestidad del fallo | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Arco del bug oculto | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Arco de la construccion del universo | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
@@ -150,8 +150,8 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Migrar el hardcode de token en n8n | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Diversificar el roster de Acervos | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Separar el Holon en notas propias | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| AGORA | recurso, modulo_real, tabla_baserow | 3 | baserow_estructura, datos_negocio, vault_ficha |
 | Zona de aterrizaje STG | recurso | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| AGORA | recurso, modulo_real, tabla_baserow | 3 | baserow_estructura, datos_negocio, vault_ficha |
 | Sesion 2026-08-31 | sesion | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | n8n | espacio | 2 | vault_ficha, vault_wikilink |
 | 00_Nucleo | sin_tipo | 2 | vault_ficha, vault_mencion |

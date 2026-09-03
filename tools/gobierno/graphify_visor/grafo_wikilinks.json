@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:44:38.123Z",
+  "generadoEn": "2026-09-03T09:54:52.144Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -1525,6 +1525,11 @@
     {
       "source": "acervo_usuario",
       "target": "concilio",
+      "relation": "wikilink"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "zona_de_aterrizaje_stg",
       "relation": "wikilink"
     },
     {

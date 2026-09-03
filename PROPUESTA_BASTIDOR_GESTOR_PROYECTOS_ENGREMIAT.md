@@ -557,6 +557,14 @@ Censo regenerado y desplegado: de 53 pestañas que empezaron como "histórico, s
 
 **Cierre real**: de 220+ candidatas examinadas en todo el ejercicio de §8.23 a §8.30, **cero quedan hoy como huecos sin resolver o sin razón documentada**.
 
+### 8.31 "Acervo Usuario, lo creamos ya -- gestionado por DeepSeek para pruebas de concepto en universos paralelos"
+
+El único hueco genuino que quedaba de toda la campaña (§8.26), cerrado con un cuerpo real encontrado investigando, no inventado: `src/PlantillaImportacionMasivaService.js` (Fase N9, modificado el mismo 1 de septiembre) ya construye en código la voz exacta de este Acervo -- deja que un cliente real, sin tocar el Sheet a mano, le pida a una IA externa que le rellene su plantilla y suba los CSV a `STG_*` (§8.29). Dentro de esa misma pieza vive `94_ESCENARIOS`: un escenario real con `GUION`/`EJE_COMPETENCIA`/`EJE_RECURSO`/`EJE_AUSENCIA` que deja la fricción del mundo real a propósito (encajes imperfectos, huecos de horario, incidencias sin cerrar) en vez de datos ideales -- exactamente la perspectiva de "quien usa esto sin saber nada de por dentro", hecha mecanismo.
+
+Sobre eso, decisión real del operador incorporada en la ficha: DeepSeek opera temporalmente este Acervo para poblar y recorrer distintos `94_ESCENARIOS` ("universos paralelos" del mismo Sheet) como pruebas de concepto, antes de que ningún dato de un escenario toque las tablas reales de producción.
+
+Escrito por adición pura sobre la ficha real ya existente (la única frase original se conserva intacta como primer párrafo) -- verificado leyendo el resultado. Censo regenerado y desplegado: **cero huecos abiertos en todo el universo Engremiat**, de más de 220 candidatas reales examinadas.
+
 ## 9. Pendiente
 
 ## 9. Pendiente
