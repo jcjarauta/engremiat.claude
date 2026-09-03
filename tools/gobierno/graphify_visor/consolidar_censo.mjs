@@ -143,6 +143,9 @@ function decidirAccionPromover(e) {
     }
     return { accion: 'promover_recurso_real', razon: 'Pestaña/tabla real, corroborada por ' + e.corroboracionCruzada + ' fuentes independientes -- candidata sólida a ficha de Recurso (o, como mínimo, a que una ficha ya existente declare `vinculoReal` hacia ella).' };
   }
+  if (e.fuentes.includes('vault_mencion')) {
+    return { accion: 'ya_mencionado_en_boveda', razon: 'Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia.' };
+  }
   return { accion: 'revisar_manual_real', razon: 'Corroborada por múltiples fuentes reales pero sin patrón claro aplicable -- revisar a mano antes de decidir.' };
 }
 

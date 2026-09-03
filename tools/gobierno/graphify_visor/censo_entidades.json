@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:44:39.550Z",
+  "generadoEn": "2026-09-03T09:46:51.452Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -2561,8 +2561,8 @@
       "centralidad": 1,
       "decision": "promover",
       "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Corroborada por múltiples fuentes reales pero sin patrón claro aplicable -- revisar a mano antes de decidir."
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
       "nombre": "Telar Interactivo",
@@ -2580,8 +2580,8 @@
       "centralidad": 0,
       "decision": "promover",
       "razon": "sin ficha propia hoy, pero corroborada por 3 fuentes reales independientes -- candidata fuerte a nueva ficha de Espacio/Recurso/Personaje/Modulo/Herramienta.",
-      "accionRecomendada": "revisar_manual_real",
-      "accionRazon": "Corroborada por múltiples fuentes reales pero sin patrón claro aplicable -- revisar a mano antes de decidir."
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
       "nombre": "39_PEDIDO_CLIENTE",
@@ -4577,7 +4577,7 @@
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T09:44:39.623Z",
+    "generadoEn": "2026-09-03T09:46:51.516Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
@@ -4586,9 +4586,9 @@
     "resumenAccion": {
       "confirmar_ya_solido": 46,
       "descartar_termino_generico": 3,
-      "ya_mencionado_en_boveda": 80,
+      "ya_mencionado_en_boveda": 82,
       "revisar_inconsistencia_nombres": 1,
-      "revisar_manual_real": 14,
+      "revisar_manual_real": 12,
       "correcto_narrativo": 19,
       "confirmar_codigo_real": 9,
       "confirmar_verificado_a_mano": 1,

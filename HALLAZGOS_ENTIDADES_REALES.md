@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:44:39.550Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:46:51.452Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -266,11 +266,11 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 
 | acción recomendada | cuántas | qué significa |
 |---|---|---|
-| ya_mencionado_en_boveda | 80 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
+| ya_mencionado_en_boveda | 82 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
 | confirmar_ya_solido | 46 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
-| revisar_manual_real | 14 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
+| revisar_manual_real | 12 | Sin patrón claro aplicable -- necesita revisión humana real antes de decidir. |
 | confirmar_codigo_real | 9 | Correspondencia real de código encontrada -- confirmado. |
 | descartar_termino_generico | 3 | Palabra genérica (TAREA, DOCUMENTO...) que aparece en muchas tablas sin ser ella misma una entidad -- ya existen las entidades específicas reales. No promover. |
 | confirmar_uso_real_telar | 3 | Sin script propio, pero con deliberación real ya ocurrida en Telar B2 -- personaje activo de verdad. |
