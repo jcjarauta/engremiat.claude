@@ -211,7 +211,7 @@ function fuenteNode(ficherosTools) {
       ...[...nodosRecurso].map(id => ({ id, nombre: id.replace(/^recurso:/, ''), tipoReal: 'recurso' })),
     ],
     aristas: [
-      ...importsInternos.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target) })),
+      ...importsInternos.map(a => ({ source: a.source, target: a.target, enEspina: espinaSet.has(a.source) && espinaSet.has(a.target), relacion: 'import' })),
       ...otras.map(a => ({ source: a.source, target: a.target, enEspina: false, relacion: a.relation })),
     ],
     entrada, espina,
@@ -379,6 +379,56 @@ function conAgenciaReal(fuente) {
   return fuente;
 }
 
+// -- rol real (§8.46): no solo si actua, sino COMO actua -- el verbo real dominante de sus
+// propias aristas salientes, traducido a un pequeno vocabulario de roles universales que se
+// puede comparar ENTRE fuentes distintas (un opera_en del Holon y un import de Node no son la
+// misma palabra, pero ocupan el mismo lugar real: algo que actua sobre otra cosa concreta).
+// Nunca inventado por entidad -- mismo criterio para las siete fuentes.
+const ROL_POR_VERBO = {
+  opera_en: 'Operador', gobierna_a: 'Guardián', verifica_a: 'Guardián', corrige_a: 'Guardián',
+  alimenta_a: 'Proveedor', activa_a: 'Activador', parte_de: 'Miembro',
+  llama: 'Ejecutor', import: 'Compositor',
+  lee: 'Utilidad', escribe: 'Utilidad', lee_debil: 'Utilidad', escribe_debil: 'Utilidad', toca_recurso: 'Utilidad',
+  depende_fk: 'Esquema dependiente', depende_link: 'Esquema dependiente',
+};
+// n8n y los mecanismos Sheet (91_HISTORIAL/PAQUETE_CLIENTE) no llevan un verbo real por arista --
+// su rol real sale del tipo real de su propia cabeza, ya guardado en fuente.nodos[].tipoReal
+const ROL_POR_TIPO_CABEZA = {
+  webhook: 'Disparador', scheduleTrigger: 'Disparador',
+  switch: 'Decisor', if: 'Decisor',
+  operacion: 'Evento', cliente: 'Origen', modulo: 'Destino',
+};
+function calcularRolReal(fuente) {
+  // el wikilink es tejido narrativo, no una accion funcional -- no compite por "verbo dominante"
+  // del rol, aunque si cuenta para agenciaReal (que mide "actua", no "que tipo de accion")
+  let salientes = fuente.aristas.filter(a => a.source === fuente.entrada);
+  if (fuente.tipo === 'relacional') salientes = salientes.filter(a => a.relacion !== 'wikilink');
+  if (!salientes.length) return { rol: 'Pasivo', verboDominante: null, conteoVerbo: 0 };
+
+  if (fuente.tipo === 'n8n' || fuente.tipo === 'sheet') {
+    const cabeza = fuente.nodos.find(n => n.id === fuente.entrada);
+    const tipoCabeza = cabeza ? cabeza.tipoReal : null;
+    return { rol: ROL_POR_TIPO_CABEZA[tipoCabeza] || 'Ejecutor', verboDominante: tipoCabeza, conteoVerbo: salientes.length };
+  }
+
+  const verbo = fuente.tipo === 'apps_script' ? () => 'llama'
+    : fuente.tipo === 'sheet_schema' ? () => 'depende_fk'
+    : fuente.tipo === 'baserow_schema' ? () => 'depende_link'
+    : (a) => a.relacion; // relacional (Holon) y node ya llevan su verbo real por arista
+
+  const conteo = {};
+  salientes.forEach(a => { const v = verbo(a); conteo[v] = (conteo[v] || 0) + 1; });
+  const [verboDominante, conteoVerbo] = Object.entries(conteo).sort((a, b) => b[1] - a[1])[0];
+  const rol = verboDominante === 'depende_de'
+    ? (conteoVerbo >= 3 ? 'Orquestador' : 'Dependiente')
+    : (ROL_POR_VERBO[verboDominante] || 'Actor');
+  return { rol, verboDominante, conteoVerbo };
+}
+function conRolReal(fuente) {
+  Object.assign(fuente, calcularRolReal(fuente));
+  return fuente;
+}
+
 const entidades = {};
 citasPorEntidad.forEach(c => {
   const fuentes = [];
@@ -388,14 +438,14 @@ citasPorEntidad.forEach(c => {
   c.sheet.forEach(clave => { const f = fuenteSheetMecanismo(clave); if (f) fuentes.push(f); });
   if (c.sheetTabs.length) { const f = fuenteSheetSchema(c.sheetTabs); if (f) fuentes.push(f); }
   if (c.baserowTablas.length) { const f = fuenteBaserowSchema(c.baserowTablas); if (f) fuentes.push(f); }
-  if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes: fuentes.map(conAgenciaReal) };
+  if (fuentes.length) entidades[c.slug] = { nombre: c.nombre, fuentes: fuentes.map(f => conRolReal(conAgenciaReal(f))) };
 });
 
 // -- respaldo relacional: cualquier ficha real de la bóveda que todavía no tenga cuerpo propio --
 wikilinks.nodos.forEach(n => {
   if (entidades[n.id]) return; // ya tiene un cuerpo mas fuerte (codigo/n8n/mecanismo Sheet), no se duplica
   const f = fuenteRelacional(n.id);
-  if (f) entidades[n.id] = { nombre: n.nombre, fuentes: [conAgenciaReal(f)] };
+  if (f) entidades[n.id] = { nombre: n.nombre, fuentes: [conRolReal(conAgenciaReal(f))] };
 });
 
 // -- territorio propio (§8.45): de la columna real de cada entidad relacional, que fraccion de

@@ -1,5 +1,5 @@
 {
- "generadoEn": "2026-09-03T15:23:56.476Z",
+ "generadoEn": "2026-09-03T15:42:03.754Z",
  "totalEntidadesConAnatomia": 61,
  "entidades": {
   "baserow": {
@@ -32,7 +32,10 @@
      "espina": [
       "tools/gobierno/bocetador/cargar_estructura_baserow.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Utilidad",
+     "verboDominante": "escribe_debil",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -843,7 +846,10 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Disparador",
+     "verboDominante": "webhook",
+     "conteoVerbo": 1
     },
     {
      "tipo": "n8n",
@@ -1476,7 +1482,10 @@
       "Telar Interactivo::Guardar opciones en sesion",
       "Telar Interactivo::Enviar opciones a Telegram"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Disparador",
+     "verboDominante": "scheduleTrigger",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -1549,7 +1558,10 @@
      "espina": [
       "NODO_ENGREMIAT"
      ],
-     "agenciaReal": 5
+     "agenciaReal": 5,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 5
     }
    ]
   },
@@ -2187,7 +2199,10 @@
       "Telar Interactivo::Guardar opciones en sesion",
       "Telar Interactivo::Enviar opciones a Telegram"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Disparador",
+     "verboDominante": "scheduleTrigger",
+     "conteoVerbo": 1
     },
     {
      "tipo": "baserow_schema",
@@ -2405,7 +2420,10 @@
      "espina": [
       "TELAR_SESION"
      ],
-     "agenciaReal": 7
+     "agenciaReal": 7,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 7
     }
    ]
   },
@@ -2448,7 +2466,10 @@
      "espina": [
       "97_ESTADO_CONSOLA"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -2561,7 +2582,10 @@
      "espina": [
       "GASTO_API"
      ],
-     "agenciaReal": 9
+     "agenciaReal": 9,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 9
     }
    ]
   },
@@ -2606,7 +2630,10 @@
      "espina": [
       "tools/gobierno/bus_trabajo.mjs"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 2
     },
     {
      "tipo": "sheet_schema",
@@ -2756,7 +2783,10 @@
       "92_BUS_TRABAJO",
       "13_INCIDENCIAS"
      ],
-     "agenciaReal": 13
+     "agenciaReal": 13,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 13
     }
    ]
   },
@@ -2859,7 +2889,10 @@
      "espina": [
       "DOCUMENTO_ENGREMIAT"
      ],
-     "agenciaReal": 8
+     "agenciaReal": 8,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 8
     }
    ]
   },
@@ -3530,7 +3563,10 @@
       "engremiat_repo_live_concat_ejecutarimportacionmasiva",
       "engremiat_repo_live_concat_leerfilaspendientesimportacion"
      ],
-     "agenciaReal": 4
+     "agenciaReal": 4,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 4
     },
     {
      "tipo": "sheet",
@@ -4469,7 +4505,10 @@
       "op:82d26483-93a5-42c8-80e8-28357bbee920",
       "ent:CAMPANA:CAM-0001"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Evento",
+     "verboDominante": "operacion",
+     "conteoVerbo": 1
     },
     {
      "tipo": "sheet_schema",
@@ -4537,7 +4576,10 @@
      "espina": [
       "93_MAPEO_IDS_TEMPORALES"
      ],
-     "agenciaReal": 5
+     "agenciaReal": 5,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 5
     }
    ]
   },
@@ -19669,7 +19711,10 @@
       "engremiat_repo_live_concat_leerfilasentidadcomoobjetos",
       "engremiat_repo_live_concat_obtenerhojaentidad"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -21362,7 +21407,10 @@
       "engremiat_repo_live_concat_detectarduplicidadesrelacionmaterial",
       "engremiat_repo_live_concat_detectarproblemasfuncionales_agregar"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -25939,7 +25987,10 @@
       "engremiat_repo_live_concat_construirsubmenuinstaladorescatalogo",
       "engremiat_repo_live_concat_moduloinstalado"
      ],
-     "agenciaReal": 4
+     "agenciaReal": 4,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 4
     }
    ]
   },
@@ -26200,7 +26251,10 @@
       "engremiat_repo_live_concat_sembrarcatalogoinicial",
       "engremiat_repo_live_concat_categoriainstalable"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -26548,7 +26602,10 @@
      "espina": [
       "engremiat_repo_live_concat_obtenercatalogo"
      ],
-     "agenciaReal": 0
+     "agenciaReal": 0,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0
     },
     {
      "tipo": "sheet_schema",
@@ -26666,7 +26723,10 @@
      "espina": [
       "90_CONFIGURACION"
      ],
-     "agenciaReal": 10
+     "agenciaReal": 10,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 10
     }
    ]
   },
@@ -28396,7 +28456,10 @@
       "02_PROYECTOS",
       "01_CAMPANAS"
      ],
-     "agenciaReal": 27
+     "agenciaReal": 27,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 27
     }
    ]
   },
@@ -29041,7 +29104,10 @@
       "39_PEDIDO_CLIENTE",
       "38_CLIENTE"
      ],
-     "agenciaReal": 11
+     "agenciaReal": 11,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 11
     }
    ]
   },
@@ -29226,7 +29292,10 @@
       "44_OPORTUNIDAD",
       "38_CLIENTE"
      ],
-     "agenciaReal": 16
+     "agenciaReal": 16,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 16
     }
    ]
   },
@@ -29322,22 +29391,26 @@
       {
        "source": "tools/constructor/montar-cliente.mjs",
        "target": "tools/packager/generate-shell-wrappers.mjs",
-       "enEspina": true
+       "enEspina": true,
+       "relacion": "import"
       },
       {
        "source": "tools/constructor/montar-cliente.test.mjs",
        "target": "tools/constructor/montar-cliente.mjs",
-       "enEspina": true
+       "enEspina": true,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/build-packages.mjs",
-       "enEspina": false
+       "enEspina": false,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/generate-shell-wrappers.mjs",
-       "enEspina": false
+       "enEspina": false,
+       "relacion": "import"
       },
       {
        "source": "tools/constructor/montar-cliente.mjs",
@@ -29400,7 +29473,10 @@
       "tools/constructor/montar-cliente.mjs",
       "tools/packager/generate-shell-wrappers.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Compositor",
+     "verboDominante": "import",
+     "conteoVerbo": 1
     },
     {
      "tipo": "sheet",
@@ -29449,7 +29525,10 @@
       "cliente:PAQ-0001",
       "modulo:CRONISTA"
      ],
-     "agenciaReal": 3
+     "agenciaReal": 3,
+     "rol": "Origen",
+     "verboDominante": "cliente",
+     "conteoVerbo": 3
     },
     {
      "tipo": "sheet_schema",
@@ -29697,7 +29776,10 @@
      "espina": [
       "38_CLIENTE"
      ],
-     "agenciaReal": 23
+     "agenciaReal": 23,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 23
     },
     {
      "tipo": "baserow_schema",
@@ -29857,7 +29939,10 @@
       "PAQUETE_CLIENTE",
       "ENTIDAD_ORGANIZATIVA"
      ],
-     "agenciaReal": 14
+     "agenciaReal": 14,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 14
     }
    ]
   },
@@ -31238,7 +31323,10 @@
       "25_PEDIDO_PROVEEDOR",
       "15_PROVEEDORES"
      ],
-     "agenciaReal": 12
+     "agenciaReal": 12,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 12
     }
    ]
   },
@@ -31361,7 +31449,10 @@
      "espina": [
       "37_ETIQUETA_IMPACTO"
      ],
-     "agenciaReal": 10
+     "agenciaReal": 10,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 10
     }
    ]
   },
@@ -31564,7 +31655,10 @@
      "espina": [
       "36_CONVOCATORIA"
      ],
-     "agenciaReal": 18
+     "agenciaReal": 18,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 18
     }
    ]
   },
@@ -32009,7 +32103,10 @@
       "31_FUENTE_FINANCIACION",
       "36_CONVOCATORIA"
      ],
-     "agenciaReal": 16
+     "agenciaReal": 16,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 16
     }
    ]
   },
@@ -32299,7 +32396,10 @@
       "engremiat_repo_live_concat_procesarnotificacionoperador",
       "engremiat_repo_live_concat_resolverdestinatarionotificacion"
      ],
-     "agenciaReal": 8
+     "agenciaReal": 8,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 8
     }
    ]
   },
@@ -33001,7 +33101,10 @@
       "engremiat_repo_live_concat_subircontenidoscript",
       "engremiat_repo_live_concat_obtenerversionlibreriamasreciente"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -33792,7 +33895,10 @@
       "engremiat_repo_live_concat_ejecutarimportacionasignaciones",
       "engremiat_repo_live_concat_ejecutarimportacionseguimiento_validarobligatorios"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 1
     },
     {
      "tipo": "sheet_schema",
@@ -35332,7 +35438,10 @@
       "07_TAREA_RESPONSABLE",
       "06_TAREAS"
      ],
-     "agenciaReal": 14
+     "agenciaReal": 14,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 14
     }
    ]
   },
@@ -36153,7 +36262,10 @@
       "12_DECISIONES",
       "02_PROYECTOS"
      ],
-     "agenciaReal": 22
+     "agenciaReal": 22,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 22
     }
    ]
   },
@@ -36308,7 +36420,10 @@
       "20_EJECUCION_TAREA",
       "06_TAREAS"
      ],
-     "agenciaReal": 13
+     "agenciaReal": 13,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 13
     }
    ]
   },
@@ -36461,7 +36576,10 @@
      "espina": [
       "VIGILIA_TAREA"
      ],
-     "agenciaReal": 13
+     "agenciaReal": 13,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 13
     }
    ]
   },
@@ -36544,7 +36662,10 @@
      "espina": [
       "99_TRIAGE_LOCAL"
      ],
-     "agenciaReal": 6
+     "agenciaReal": 6,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 6
     },
     {
      "tipo": "baserow_schema",
@@ -36662,7 +36783,10 @@
      "espina": [
       "METRICA_FABRICACION"
      ],
-     "agenciaReal": 10
+     "agenciaReal": 10,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_link",
+     "conteoVerbo": 10
     }
    ]
   },
@@ -36840,7 +36964,10 @@
      "espina": [
       "96_PROMPT_EJECUTOR"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -37651,7 +37778,10 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Disparador",
+     "verboDominante": "webhook",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -38078,7 +38208,10 @@
       "engremiat_repo_live_concat_construirinstruccionesescenario_cuantos",
       "engremiat_repo_live_concat_construirinstruccionesescenario_intensidad"
      ],
-     "agenciaReal": 5
+     "agenciaReal": 5,
+     "rol": "Ejecutor",
+     "verboDominante": "llama",
+     "conteoVerbo": 5
     }
    ]
   },
@@ -38123,7 +38256,10 @@
      "espina": [
       "tools/acervo_prompter.mjs"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -38145,7 +38281,10 @@
      "espina": [
       "tools/verificador_determinista.mjs"
      ],
-     "agenciaReal": 0
+     "agenciaReal": 0,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0
     }
    ]
   },
@@ -38179,7 +38318,10 @@
      "espina": [
       "tools/verificador_capacidades.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -38990,7 +39132,10 @@
       "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
       "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Disparador",
+     "verboDominante": "webhook",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -39053,7 +39198,10 @@
      "espina": [
       "98_LOG_GOBIERNO"
      ],
-     "agenciaReal": 4
+     "agenciaReal": 4,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 4
     }
    ]
   },
@@ -39098,7 +39246,10 @@
      "espina": [
       "tools/gobierno/bocetador/encontrar_huecos.mjs"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -39253,7 +39404,10 @@
      "espina": [
       "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs"
      ],
-     "agenciaReal": 12
+     "agenciaReal": 12,
+     "rol": "Utilidad",
+     "verboDominante": "escribe_debil",
+     "conteoVerbo": 10
     }
    ]
   },
@@ -39314,12 +39468,14 @@
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/build-packages.mjs",
-       "enEspina": true
+       "enEspina": true,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/generate-shell-wrappers.mjs",
-       "enEspina": false
+       "enEspina": false,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
@@ -39363,7 +39519,10 @@
       "tools/gobierno/actualizar_libreria_cliente.mjs",
       "tools/packager/build-packages.mjs"
      ],
-     "agenciaReal": 4
+     "agenciaReal": 4,
+     "rol": "Compositor",
+     "verboDominante": "import",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -39385,7 +39544,10 @@
      "espina": [
       "tools/gobierno/cerrar_ciclo.mjs"
      ],
-     "agenciaReal": 0
+     "agenciaReal": 0,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0
     }
    ]
   },
@@ -39446,12 +39608,14 @@
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/build-packages.mjs",
-       "enEspina": true
+       "enEspina": true,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
        "target": "tools/packager/generate-shell-wrappers.mjs",
-       "enEspina": false
+       "enEspina": false,
+       "relacion": "import"
       },
       {
        "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
@@ -39495,7 +39659,10 @@
       "tools/gobierno/actualizar_libreria_cliente.mjs",
       "tools/packager/build-packages.mjs"
      ],
-     "agenciaReal": 4
+     "agenciaReal": 4,
+     "rol": "Compositor",
+     "verboDominante": "import",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -39540,7 +39707,10 @@
      "espina": [
       "tools/gobierno/bus_trabajo.mjs"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 2
     },
     {
      "tipo": "sheet_schema",
@@ -39690,7 +39860,10 @@
       "92_BUS_TRABAJO",
       "13_INCIDENCIAS"
      ],
-     "agenciaReal": 13
+     "agenciaReal": 13,
+     "rol": "Esquema dependiente",
+     "verboDominante": "depende_fk",
+     "conteoVerbo": 13
     }
    ]
   },
@@ -39724,7 +39897,10 @@
      "espina": [
       "tools/gobierno/exportador_prometheus_gasto.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -39769,7 +39945,10 @@
      "espina": [
       "tools/gobierno/puente_historia_leyes.mjs"
      ],
-     "agenciaReal": 2
+     "agenciaReal": 2,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 2
     }
    ]
   },
@@ -39803,7 +39982,10 @@
      "espina": [
       "tools/consola/chequear_consistencia.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -39825,7 +40007,10 @@
      "espina": [
       "tools/consola/regenerar_estatico.mjs"
      ],
-     "agenciaReal": 0
+     "agenciaReal": 0,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0
     }
    ]
   },
@@ -39859,7 +40044,10 @@
      "espina": [
       "tools/consola/extraer_decisiones.mjs"
      ],
-     "agenciaReal": 1
+     "agenciaReal": 1,
+     "rol": "Utilidad",
+     "verboDominante": "toca_recurso",
+     "conteoVerbo": 1
     }
    ]
   },
@@ -39881,7 +40069,10 @@
      "espina": [
       "tools/salud_ecosistema.mjs"
      ],
-     "agenciaReal": 0
+     "agenciaReal": 0,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0
     }
    ]
   },
@@ -41632,6 +41823,9 @@
       "el_sheet"
      ],
      "agenciaReal": 2,
+     "rol": "Pasivo",
+     "verboDominante": null,
+     "conteoVerbo": 0,
      "territorioPropio": 100
     }
    ]
@@ -43385,6 +43579,9 @@
       "vps_y_tailscale"
      ],
      "agenciaReal": 2,
+     "rol": "Dependiente",
+     "verboDominante": "depende_de",
+     "conteoVerbo": 1,
      "territorioPropio": 50
     }
    ]
@@ -45137,6 +45334,9 @@
       "vps_y_tailscale"
      ],
      "agenciaReal": 2,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -46890,6 +47090,9 @@
       "telar"
      ],
      "agenciaReal": 19,
+     "rol": "Orquestador",
+     "verboDominante": "depende_de",
+     "conteoVerbo": 7,
      "territorioPropio": 0
     }
    ]
@@ -48642,6 +48845,9 @@
       "92_bus_trabajo"
      ],
      "agenciaReal": 6,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -50394,6 +50600,9 @@
       "92_bus_trabajo"
      ],
      "agenciaReal": 10,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -52146,6 +52355,9 @@
       "telar"
      ],
      "agenciaReal": 2,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -53898,6 +54110,9 @@
       "telar"
      ],
      "agenciaReal": 3,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -55650,6 +55865,9 @@
       "telar"
      ],
      "agenciaReal": 2,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -57402,6 +57620,9 @@
       "telar"
      ],
      "agenciaReal": 4,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -59154,6 +59375,9 @@
       "telar"
      ],
      "agenciaReal": 3,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]
@@ -60906,6 +61130,9 @@
       "telar"
      ],
      "agenciaReal": 2,
+     "rol": "Operador",
+     "verboDominante": "opera_en",
+     "conteoVerbo": 1,
      "territorioPropio": 0
     }
    ]

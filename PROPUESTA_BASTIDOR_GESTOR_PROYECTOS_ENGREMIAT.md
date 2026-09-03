@@ -715,6 +715,18 @@ Propuesta como asesor técnico y de teoría de grafos, a partir de la captura de
 
 Desplegado y verificado en el navegador.
 
+### 8.46 "¿Qué nos diferencia entre nodos y qué nos parece? El perfil del personaje, su familia"
+
+Construida la propuesta de §8.45 (rol real): `calcularRolReal()` en `extraer_anatomia_entidad.mjs` toma el verbo real dominante de las aristas que salen de la propia cabeza y lo traduce a un vocabulario pequeño de roles universales, comparable entre las siete fuentes -- `Operador` (opera_en), `Guardián` (gobierna_a/verifica_a/corrige_a), `Proveedor` (alimenta_a), `Orquestador`/`Dependiente` (depende_de, según el número), `Ejecutor` (llama, Apps Script), `Compositor` (import, Node), `Utilidad` (lee/escribe/toca_recurso sin import), `Esquema dependiente` (FK/link_row), `Disparador`/`Decisor` (n8n, por tipo real del nodo de entrada), `Pasivo` (sin ninguna arista funcional real).
+
+**Bug real encontrado y corregido durante la construcción**: el `wikilink` (mención narrativa) competía con los verbos Holon reales por ser "dominante" -- y a veces ganaba, aunque no sea una acción funcional. Corregido excluyendo `wikilink` del cálculo de rol (sigue contando para `agenciaReal`, que mide "actúa", no "qué tipo de acción").
+
+**Resultado real, verificado**: los 8 Acervos, Headscale, Relevo y Mensajero comparten la misma familia real (`Operador`, 9 miembros) pese a estar en tres equipos distintos (Concilio/Guardia/Frontera) -- el parecido es de comportamiento, no de vecindario, exactamente la pregunta planteada. `Concilio` sale solo en `Orquestador` (depende de 7 cosas reales). `El Sheet` cae en `Pasivo` -- cero aristas Holon salientes propias, solo se le menciona. 26 entidades (los módulos de negocio y tablas) caen en `Esquema dependiente`.
+
+**Construido en `anatomia.html`**: panel "Familias reales" en el lateral, con el conteo real de cada rol, clicable para filtrar la lista de entidades -- y el rol visible como insignia en cada ficha de fuente. Verificado: filtrar por "Operador" muestra los 8 Acervos + Headscale/Relevo/Mensajero; la ficha de Acervo Técnico muestra la insignia "Operador" junto a "BÓVEDA".
+
+Con esto, la ficha de personaje completa (§8.45+8.46) responde: **quién soy** (agencia + territorio propio), **de qué familia soy** (rol real), **con quién hablo** (extremidades) -- las tres, sacadas del mismo dato real, sin redactar nada a mano.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

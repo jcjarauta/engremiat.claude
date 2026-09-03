@@ -28,6 +28,11 @@
   .leyenda-mini { display: flex; gap: 14px; padding: 8px 16px; font-size: 11px; color: #9a9aa2; border-top: 1px solid #202126; }
   .leyenda-mini span { display: inline-flex; align-items: center; gap: 5px; }
   .marca { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .fila-familia { display: flex; justify-content: space-between; padding: 5px 6px; margin: 0 -6px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+  .fila-familia:hover { background: #202126; }
+  .fila-familia.activa { background: #24263a; color: #a9b8ff; }
+  .fila-familia .n { color: #6b6c76; font-variant-numeric: tabular-nums; }
+  .badge-rol { font-size: 10.5px; padding: 3px 8px; border-radius: 4px; background: #24262e; color: #c7c8d6; border: 1px solid #33343d; }
 </style>
 </head>
 <body>
@@ -36,6 +41,10 @@
     <h1>Anatomía real</h1>
     <p class="hint">Cabeza = la propia entidad, siempre -- nunca la mejor entrada global de un grafo compartido (bug real corregido en §8.45: Concilio y Acervo Técnico ya no comparten cuerpo idéntico). Columna = el camino real más largo desde ahí. <b>Agencia real</b> = cuántas aristas reales salen de su propia cabeza -- 0 significa que solo la alcanzan, no actúa. <b>Territorio propio</b> = qué % de su columna no aparece en la de ningún otro personaje del mismo componente -- cuánto de su cuerpo es identidad exclusiva, no sustrato compartido. §8.41-45.</p>
     <input type="text" id="buscar" placeholder="Buscar entidad...">
+    <div class="seccion" style="border-top:1px solid #2c2d33; margin-top:12px; padding-top:10px;">
+      <h3 style="font-size:12px; text-transform:uppercase; letter-spacing:0.04em; color:#9a9aa2; margin:0 0 8px;">Familias reales -- clic para filtrar</h3>
+      <div id="familias"></div>
+    </div>
     <div id="lista"></div>
   </div>
   <div id="principal">
@@ -49,14 +58,37 @@ const ETIQUETA_TIPO = { n8n: 'n8n', apps_script: 'Apps Script', node: 'Node', sh
 
 let datos = null;
 let redesActivas = [];
+let familiaActiva = null;
 
 async function cargar() {
   datos = await (await fetch('anatomia_entidades.json')).json();
   const entradas = Object.entries(datos.entidades).sort((a, b) => a[1].nombre.localeCompare(b[1].nombre));
+  renderFamilias(entradas);
   renderLista(entradas);
-  document.getElementById('buscar').addEventListener('input', (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    renderLista(entradas.filter(([, v]) => v.nombre.toLowerCase().includes(q)));
+  document.getElementById('buscar').addEventListener('input', () => aplicarFiltros(entradas));
+}
+
+function aplicarFiltros(entradas) {
+  const q = document.getElementById('buscar').value.trim().toLowerCase();
+  let filtradas = entradas.filter(([, v]) => v.nombre.toLowerCase().includes(q));
+  if (familiaActiva) filtradas = filtradas.filter(([, v]) => v.fuentes.some(f => f.rol === familiaActiva));
+  renderLista(filtradas);
+}
+
+function renderFamilias(entradas) {
+  const conteo = {};
+  entradas.forEach(([, v]) => { new Set(v.fuentes.map(f => f.rol)).forEach(rol => { conteo[rol] = (conteo[rol] || 0) + 1; }); });
+  const familias = document.getElementById('familias');
+  familias.innerHTML = Object.entries(conteo).sort((a, b) => b[1] - a[1]).map(([rol, n]) =>
+    `<div class="fila-familia" data-rol="${rol}"><span>${rol}</span><span class="n">${n}</span></div>`
+  ).join('');
+  familias.querySelectorAll('.fila-familia').forEach(el => {
+    el.addEventListener('click', () => {
+      const rol = el.dataset.rol;
+      familiaActiva = familiaActiva === rol ? null : rol;
+      familias.querySelectorAll('.fila-familia').forEach(f => f.classList.toggle('activa', f.dataset.rol === familiaActiva));
+      aplicarFiltros(entradas);
+    });
   });
 }
 
@@ -90,6 +122,7 @@ function mostrarEntidad(slug) {
       <div class="fuente-card">
         <div class="fuente-head">
           <span class="badge-tipo" style="background:${COLOR_FUENTE[f.tipo]}33; color:${COLOR_FUENTE[f.tipo]};">${ETIQUETA_TIPO[f.tipo]}</span>
+          <span class="badge-rol">${f.rol}</span>
           <span>${f.etiqueta}</span>
           <span class="fuente-stats">${f.nodos.length} nodos reales · columna de ${f.espina.length} · agencia ${f.agenciaReal}${f.territorioPropio !== undefined ? ' · territorio propio ' + f.territorioPropio + '%' : ''}</span>
         </div>
