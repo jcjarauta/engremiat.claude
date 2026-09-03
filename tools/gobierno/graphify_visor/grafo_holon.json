@@ -1,0 +1,398 @@
+{
+  "generadoEn": "2026-09-03T10:28:38.879Z",
+  "nodos": [
+    {
+      "id": "baserow",
+      "nombre": "Baserow",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_sheet",
+      "nombre": "El Sheet",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "n8n",
+      "nombre": "n8n",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "vps_y_tailscale",
+      "nombre": "VPS y Tailscale",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "el_vault",
+      "nombre": "El Vault",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "headscale",
+      "nombre": "Headscale",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "telar",
+      "nombre": "Telar",
+      "tipo": "espacio",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "92_bus_trabajo",
+      "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "zona_de_aterrizaje_stg",
+      "nombre": "Zona de aterrizaje STG",
+      "tipo": "recurso",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "concilio",
+      "nombre": "Concilio",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "vigilia",
+      "nombre": "Vigilia",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "coordinador",
+      "nombre": "Coordinador",
+      "tipo": "personaje",
+      "equipo": "guardia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "ejecutor",
+      "nombre": "Ejecutor",
+      "tipo": "personaje",
+      "equipo": "guardia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "cronista",
+      "nombre": "Cronista",
+      "tipo": "personaje",
+      "equipo": "frontera",
+      "esFicheroReal": true
+    },
+    {
+      "id": "relevo",
+      "nombre": "Relevo",
+      "tipo": "personaje",
+      "equipo": "guardia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "mensajero",
+      "nombre": "Mensajero",
+      "tipo": "personaje",
+      "equipo": "frontera",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_tecnico",
+      "nombre": "Acervo Tecnico",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_logico",
+      "nombre": "Acervo Logico",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_logistico",
+      "nombre": "Acervo Logistico",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_narrativo",
+      "nombre": "Acervo Narrativo",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_filosofico",
+      "nombre": "Acervo Filosofico",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_usuario",
+      "nombre": "Acervo Usuario",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_sociocracia",
+      "nombre": "Acervo Sociocracia",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "acervo_prompter",
+      "nombre": "Acervo Prompter",
+      "tipo": "personaje",
+      "equipo": "concilio",
+      "esFicheroReal": true
+    },
+    {
+      "id": "verificador_de_campos",
+      "nombre": "Verificador de Campos",
+      "tipo": "personaje",
+      "equipo": "guardia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "verificador_de_capacidades",
+      "nombre": "Verificador de Capacidades",
+      "tipo": "personaje",
+      "equipo": "guardia",
+      "esFicheroReal": true
+    },
+    {
+      "id": "puerta_humana",
+      "nombre": "Puerta Humana",
+      "tipo": "regla",
+      "equipo": null,
+      "esFicheroReal": true
+    }
+  ],
+  "aristas": [
+    {
+      "source": "vigilia",
+      "target": "concilio",
+      "relation": "activa_a"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_tecnico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_logistico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_narrativo",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_filosofico",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_usuario",
+      "relation": "depende_de"
+    },
+    {
+      "source": "concilio",
+      "target": "acervo_sociocracia",
+      "relation": "depende_de"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "vigilia",
+      "relation": "alimenta_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "concilio",
+      "relation": "verifica_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "concilio",
+      "relation": "corrige_a"
+    },
+    {
+      "source": "coordinador",
+      "target": "relevo",
+      "relation": "alimenta_a"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "coordinador",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "ejecutor",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "ejecutor",
+      "target": "el_sheet",
+      "relation": "opera_en"
+    },
+    {
+      "source": "vigilia",
+      "target": "baserow",
+      "relation": "opera_en"
+    },
+    {
+      "source": "baserow",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "n8n",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "el_vault",
+      "target": "baserow",
+      "relation": "depende_de"
+    },
+    {
+      "source": "coordinador",
+      "target": "verificador_de_campos",
+      "relation": "parte_de"
+    },
+    {
+      "source": "coordinador",
+      "target": "verificador_de_capacidades",
+      "relation": "parte_de"
+    },
+    {
+      "source": "cronista",
+      "target": "n8n",
+      "relation": "opera_en"
+    },
+    {
+      "source": "coordinador",
+      "target": "gasto_api",
+      "relation": "opera_en"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "gasto_api",
+      "relation": "gobierna_a"
+    },
+    {
+      "source": "headscale",
+      "target": "vps_y_tailscale",
+      "relation": "opera_en"
+    },
+    {
+      "source": "mensajero",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "concilio",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_tecnico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_logico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_logistico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_narrativo",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_filosofico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_sociocracia",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "coordinador",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "relevo",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "verificador_de_campos",
+      "target": "baserow",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "zona_de_aterrizaje_stg",
+      "relation": "opera_en"
+    }
+  ]
+}

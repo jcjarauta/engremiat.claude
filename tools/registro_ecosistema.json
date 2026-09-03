@@ -185,6 +185,22 @@
     {
       "fichero": "tools/gobierno/graphify_visor/resumen_universo.html",
       "que_hace": "Resumen visual real del universo Engremiat completo -- mapa de una pagina con datos reales de la boveda (110 fichas), el censo (225 candidatas, 0 huecos abiertos) y la infraestructura real (VPS/Tailscale/Sheet/Baserow). Construido como Artifact primero (skill artifact-design, paleta ledger de gremio, tipografia Petrona+Public Sans+JetBrains Mono, ambos temas), luego copiado al repo como plantilla reutilizable para el siguiente ejercicio -- envuelto en documento HTML completo (el fragmento del Artifact confia en un wrapper que aqui no existe). Desplegado en el visor (resumen_universo.html), verificado en el navegador -- encontrado y corregido un bug real de barras de embudo recortadas por el contenedor."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/anadir_equipo_personajes.mjs",
+      "que_hace": "Anade el campo real equipo (§8.33 -- personaje.schema.json) al frontmatter de los 20 Personajes reales, agrupados por la topologia ya existente en 07_Holon_Relaciones (opera_en/parte_de/alimenta_a/verifica_a), no inventada. Idempotente, solo toca la linea de frontmatter. Aplicado en real: 20/20 escritas."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
+      "que_hace": "Crea las 13 aristas reales opera_en que faltaban -- de 19 Personajes, solo 5 respondian ya Donde. Cada una fundamentada en algo ya escrito en otra ficha real (Telar.md, Coordinador.md, vinculoReal de Verificador de Campos y Acervo Usuario), nunca inventada. Aplicado en real: 13/13 creadas."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+      "que_hace": "Extrae el grafo real del Holon (quien hace que con quien, donde) desde grafo_wikilinks.json -- separa las aristas de relacion real (opera_en/depende_de/gobierna_a/activa_a/verifica_a/corrige_a/alimenta_a/parte_de) de los wikilinks narrativos sueltos, y anade el campo real equipo de cada Personaje. Real: 28 nodos, 39 aristas."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/holon.html",
+      "que_hace": "Octava vista real del visor (100.107.171.88:9320/holon.html): el grafo completo de quien hace que con quien, donde -- Personajes coloreados por equipo real, clic en cualquier nodo muestra sus relaciones reales completas. Verificado en el navegador: Coordinador muestra sus 7 aristas reales de golpe."
     }
   ]
 }

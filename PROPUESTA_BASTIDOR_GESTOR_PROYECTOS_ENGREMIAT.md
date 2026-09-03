@@ -565,7 +565,19 @@ Sobre eso, decisión real del operador incorporada en la ficha: DeepSeek opera t
 
 Escrito por adición pura sobre la ficha real ya existente (la única frase original se conserva intacta como primer párrafo) -- verificado leyendo el resultado. Censo regenerado y desplegado: **cero huecos abiertos en todo el universo Engremiat**, de más de 220 candidatas reales examinadas.
 
-## 9. Pendiente
+### 8.33 "Quién hace qué con quién, dónde, para qué" -- el campo real `equipo`, 13 aristas `opera_en` que faltaban, y el grafo del Holon
+
+Propuesta del operador, actuando como asesor técnico: ahora que el universo está depurado y clasificado por lo que hace, formalizar cómo se relacionan -- quién hace qué con quién, dónde, para qué -- agrupando Personajes en equipos reales y completando el grafo relacional. Investigado antes de construir: **el 80% ya existía sin que se hubiera formalizado** -- 26 aristas reales (`opera_en`/`depende_de`/`gobierna_a`/`activa_a`/`verifica_a`/`corrige_a`/`alimenta_a`/`parte_de`) ya vivían dispersas en `07_Holon_Relaciones/`.
+
+**Hallazgo honesto antes de tocar el schema**: `personaje.schema.json` ya tenía un campo `familia`, basado en `PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md` §6 -- pero ese documento renombra "Acervo" a "Vocal" y propone "Guardián de Recursos"/"Guardián de Cumplimiento" como personajes nuevos. **Nunca se implementó así**: la bóveda real sigue llamándose "Acervo X", y no existen Guardianes como personajes propios. `familia` se deja tal cual, sin reconciliar hoy, con el aviso escrito en el propio schema -- `equipo` es un campo nuevo y distinto: agrupa por colaboración real ya existente en el grafo, no por tipo de rol.
+
+**Construido**:
+- **Campo `equipo`** en `personaje.schema.json` -- enum `[concilio, guardia, frontera]`, los 3 grupos reales encontrados como componentes conexas del propio grafo (no inventados): Concilio = Concilio + 8 Acervos + Vigilia (deliberación); Guardia = Ejecutor/Coordinador/Relevo/2 Verificadores, gobernados por Puerta Humana (ejecución con gate humano); Frontera = Mensajero/Cronista/Pregonero/Narrador (comunicación externa).
+- **`equipo:` añadido al frontmatter de los 20 Personajes reales** -- por adición pura, verificado dry-run antes de aplicar, 20/20 escritas sin tocar el resto del contenido.
+- **13 aristas reales `opera_en` que faltaban** -- de 19 Personajes (sin contar Concilio), solo 5 respondían ya "¿Dónde?". Cerradas las que tienen evidencia real ya escrita en otra ficha (nunca inventada): Concilio + 8 Acervos → Telar (ya lo decía `Telar.md`), Coordinador + Relevo → 92_BUS_TRABAJO (ya lo decía `Coordinador.md`), Verificador de Campos → Baserow (ya lo decía su `vinculoReal`), Acervo Usuario → Zona de aterrizaje STG (ya lo decía su propia ficha). Pregonero, Narrador y Verificador de Capacidades se quedan sin una a propósito -- no hay todavía un espacio real al que apunten, y no se fuerza.
+- **`grafo_holon.json` + `holon.html`** -- octava vista real del visor: el grafo completo de "quién hace qué con quién, dónde" (28 nodos, 39 aristas reales), Personajes coloreados por `equipo`, clic en cualquier nodo muestra sus relaciones reales completas (verificado: Coordinador muestra sus 7 aristas reales de golpe).
+
+Regenerado el censo (330 aristas de wikilinks, +14 sobre la pasada anterior) y desplegado.
 
 ## 9. Pendiente
 

@@ -19,7 +19,12 @@
     "familia": {
       "type": "string",
       "enum": ["vocal_de_contenido", "guardian", "gobierno_protocolo", "oficio", "acompanante"],
-      "description": "Pregunta Quien -- las 5 familias reales de PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §6. Ninguna figura personalizada crea una familia nueva; el mecanismo para ampliar exige consentimiento sociocratico (§7 de ese documento)."
+      "description": "Pregunta Quien -- las 5 familias reales de PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §6. Ninguna figura personalizada crea una familia nueva; el mecanismo para ampliar exige consentimiento sociocratico (§7 de ese documento). Aviso honesto (§8.33): ese documento renombra a 'Vocal X'/'Guardian de Recursos'/'Guardian de Cumplimiento' -- la boveda real nunca adopto esos nombres (sigue siendo 'Acervo X', y no existen Guardianes como personajes propios todavia). Campo mantenido tal cual, sin reconciliar hoy -- distinto de 'equipo'."
+    },
+    "equipo": {
+      "type": "string",
+      "enum": ["concilio", "guardia", "frontera"],
+      "description": "Pregunta Quien, con quien -- NO es lo mismo que 'familia' (que clasifica el tipo de rol): agrupa por colaboracion real ya existente en el grafo de 07_Holon_Relaciones (aristas opera_en/parte_de/alimenta_a/verifica_a), encontrada el 2026-09-03 (§8.33), no propuesta de antemano. concilio = Concilio + los 8 Acervos + Vigilia (deliberacion). guardia = Ejecutor/Coordinador/Relevo/los 2 Verificadores, gobernados por Puerta Humana (ejecucion con gate humano). frontera = Mensajero/Cronista/Pregonero/Narrador (comunicacion externa). Ninguna figura personalizada crea un equipo nuevo sin el mismo consentimiento sociocratico que ya rige 'familia'."
     },
     "rol": { "type": "string", "description": "Pregunta Que -- espejo de ROL (11_PERSONAS_EQUIPOS)." },
     "capacidadSemanalDias": { "type": ["number", "null"], "description": "Pregunta Cuanto -- espejo de CAPACIDAD_SEMANAL_DIAS (Sheet). null si no aplica (ej. un Acervo de IA)." },

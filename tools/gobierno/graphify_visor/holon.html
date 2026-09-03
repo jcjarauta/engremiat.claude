@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- el grafo real del Holon</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 340px; padding: 18px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 17px; }
+  .hint { color: #9a9aa2; font-size: 12px; line-height: 1.5; }
+  .leyenda { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; }
+  .leyenda h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #9a9aa2; margin: 0 0 8px; }
+  .fila-leyenda { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 6px; }
+  .marca { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .marca.circulo { border-radius: 50%; }
+  .marca.diamante { transform: rotate(45deg); }
+  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; }
+  #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; margin-right: 4px; margin-bottom: 4px; }
+  .arista { font-size: 11.5px; color: #9a9aa2; padding: 3px 0; border-bottom: 1px solid #202126; }
+  .arista b { color: #e7e7ea; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <h2>El Holon real</h2>
+    <p class="hint">Quién hace qué con quién, dónde -- las 39 aristas reales de <code>07_Holon_Relaciones/</code> (§8.33). Personajes coloreados por <code>equipo</code> real (frontmatter): agrupación por colaboración ya existente en el grafo, no propuesta de antemano.</p>
+    <div class="leyenda">
+      <h3>Equipos reales (Personaje)</h3>
+      <div class="fila-leyenda"><span class="marca circulo" style="background:#7c93e8;"></span>Concilio -- deliberación (Concilio + 8 Acervos + Vigilia)</div>
+      <div class="fila-leyenda"><span class="marca circulo" style="background:#e8a33d;"></span>Guardia -- ejecución con Puerta Humana</div>
+      <div class="fila-leyenda"><span class="marca circulo" style="background:#4fce6f;"></span>Frontera -- comunicación externa</div>
+      <h3 style="margin-top:14px;">Otros tipos reales</h3>
+      <div class="fila-leyenda"><span class="marca" style="background:#c76bd6;"></span>Espacio</div>
+      <div class="fila-leyenda"><span class="marca diamante" style="background:#e85c8a;"></span>Recurso</div>
+      <div class="fila-leyenda"><span class="marca" style="background:#5c5f6b; border-radius:50% 0;"></span>Regla</div>
+      <h3 style="margin-top:14px;">Tipos de relación real</h3>
+      <div class="fila-leyenda">opera_en (21) · depende_de (8) · gobierna_a (3)</div>
+      <div class="fila-leyenda">alimenta_a / parte_de (2) · activa_a / verifica_a / corrige_a (1)</div>
+    </div>
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver sus relaciones reales.</p></div>
+  </div>
+</div>
+<script>
+const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce6f' };
+const COLOR_TIPO = { espacio: '#c76bd6', recurso: '#e85c8a', regla: '#5c5f6b', personaje: '#8a8d99' };
+const FORMA_TIPO = { espacio: 'box', recurso: 'diamond', regla: 'triangle', personaje: 'dot' };
+
+async function cargar() {
+  const datos = await (await fetch('grafo_holon.json')).json();
+
+  const nodes = new vis.DataSet(datos.nodos.map(n => ({
+    id: n.id, label: n.nombre,
+    title: n.tipo + (n.equipo ? ' · ' + n.equipo : ''),
+    color: { background: n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo], border: '#0f1013' },
+    font: { color: '#0f1013', size: 12, face: 'system-ui' },
+    shape: FORMA_TIPO[n.tipo] || 'dot',
+    size: n.tipo === 'espacio' ? 20 : 16,
+  })));
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({
+    id: i, from: a.source, to: a.target, arrows: 'to',
+    label: a.relation, font: { color: '#9a9aa2', size: 9, strokeWidth: 0, background: '#0f1013' },
+    color: { color: '#3a3b47' }, length: a.relation === 'opera_en' ? 160 : 110,
+  })));
+
+  const network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, avoidOverlap: 0.6 } },
+    interaction: { hover: true },
+  });
+
+  network.on('click', (params) => {
+    if (!params.nodes.length) return;
+    const n = datos.nodos.find(x => x.id === params.nodes[0]);
+    if (!n) return;
+    const salientes = datos.aristas.filter(a => a.source === n.id);
+    const entrantes = datos.aristas.filter(a => a.target === n.id);
+    const nombreDe = id => (datos.nodos.find(x => x.id === id) || {}).nombre || id;
+    let html = `<h3>${n.nombre}</h3>`;
+    html += `<p><span class="tag" style="background:${(n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo])}33;color:${n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo]}">${n.tipo}</span>` + (n.equipo ? `<span class="tag" style="background:${COLOR_EQUIPO[n.equipo]}33;color:${COLOR_EQUIPO[n.equipo]}">${n.equipo}</span>` : '') + `</p>`;
+    if (salientes.length) { html += '<p style="margin-top:10px;"><b>Hace:</b></p>'; salientes.forEach(a => html += `<div class="arista"><b>${a.relation}</b> → ${nombreDe(a.target)}</div>`); }
+    if (entrantes.length) { html += '<p style="margin-top:10px;"><b>Recibe:</b></p>'; entrantes.forEach(a => html += `<div class="arista">${nombreDe(a.source)} <b>${a.relation}</b> →</div>`); }
+    document.getElementById('ficha').innerHTML = html;
+  });
+}
+
+cargar();
+</script>
+</body>
+</html>

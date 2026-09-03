@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T10:12:20.278Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T10:28:16.984Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -33,10 +33,10 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | parte_de_jerarquia | 43 | jerarquia:43 |
 | toca_recurso | 39 | node:39 |
 | escribe_debil | 22 | node:22 |
+| opera_en | 21 | wikilinks:21 |
 | transicion_estado | 19 | telar_estados:19 |
 | lee_debil | 14 | node:14 |
 | depende_de | 8 | wikilinks:8 |
-| opera_en | 8 | wikilinks:8 |
 | lee | 8 | node:8 |
 | import | 6 | node:6 |
 | escribe | 4 | node:4 |
@@ -116,15 +116,17 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | El Sheet | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Narrador | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Narrativo | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Estilo | estilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Verificador de Campos | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Estilo | estilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Logico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Usuario | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | La fragua protegida | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | IntegrityService | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Acervo Logico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Decidir el tono del universo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Filosofico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Acervo Usuario | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Acervo Sociocracia | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Decidir el tono del universo | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Tecnico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Acervo Logistico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | El Sheet manda | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Los dos continentes de datos | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Arco del incidente | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
@@ -134,21 +136,19 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | El Vault | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Formularios | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | ConfigRepository | modulo | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Acervo Tecnico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Acervo Logistico | personaje | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Honestidad del fallo | regla | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Arco del bug oculto | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Arco de la construccion del universo | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Unir historia y gobernanza | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | El ciclo de vida remoto | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Headscale | espacio | 3 | vault_ficha, vault_mencion, vault_wikilink |
+| Zona de aterrizaje STG | recurso | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Gantt | modulo | 3 | codigo_appsscript, vault_ficha, vault_wikilink |
 | Arco del nacimiento del generador | arco | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Quien dispara el primer lote | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Migrar el hardcode de token en n8n | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Diversificar el roster de Acervos | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | Separar el Holon en notas propias | hilo | 3 | vault_ficha, vault_mencion, vault_wikilink |
-| Zona de aterrizaje STG | recurso | 3 | vault_ficha, vault_mencion, vault_wikilink |
 | AGORA | recurso, modulo_real, tabla_baserow | 3 | baserow_estructura, datos_negocio, vault_ficha |
 | n8n | espacio | 2 | vault_ficha, vault_wikilink |
 | Sesion 2026-09-01 | sesion | 2 | vault_ficha, vault_wikilink |
@@ -170,9 +170,9 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Oportunidad | modulo | 6 | baserow_estructura, codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Ejecucion | modulo | 6 | codigo_appsscript, codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Baserow | espacio | 5 | codigo_node, n8n, vault_ficha, vault_mencion, vault_wikilink |
+| Telar | espacio | 5 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_wikilink |
 | Acervo | personaje, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | GASTO_API | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
-| Telar | espacio | 5 | baserow_estructura, codigo_node, n8n, vault_ficha, vault_wikilink |
 | 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Impacto | modulo | 5 | codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Escenarios | modulo | 5 | baserow_estructura, codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |

@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:54:52.144Z",
+  "generadoEn": "2026-09-03T10:28:15.477Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -2145,6 +2145,71 @@
     {
       "source": "mensajero",
       "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "concilio",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_tecnico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_logico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_logistico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_narrativo",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_filosofico",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_sociocracia",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_prompter",
+      "target": "telar",
+      "relation": "opera_en"
+    },
+    {
+      "source": "coordinador",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "relevo",
+      "target": "92_bus_trabajo",
+      "relation": "opera_en"
+    },
+    {
+      "source": "verificador_de_campos",
+      "target": "baserow",
+      "relation": "opera_en"
+    },
+    {
+      "source": "acervo_usuario",
+      "target": "zona_de_aterrizaje_stg",
       "relation": "opera_en"
     },
     {
