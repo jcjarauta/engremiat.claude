@@ -766,6 +766,20 @@ Investigado con grep sistemático sobre toda la bóveda y todo el repo (`ciclo`/
 
 Desplegado y verificado: `ciclos_reales.json` sirve 9 ciclos reales desde el VPS.
 
+### 8.50 "Empezamos por la Fase 2 (la mesa de montaje)"
+
+Construida la primera pieza real del plan del Bastidor en lenguaje llano (Fase 2 de 5): `mesa_montaje.html` -- undécima vista del visor.
+
+**Investigado antes de construir**: ya existía un precedente real (`tools/gobierno/bocetador/app`, React+tldraw), pero es un lienzo libre sin conexiones tipadas ni guardado real -- su propio pendiente ya decía "guardar/cargar bocetos" y "ligar visualmente las flechas a las cajas" sin resolver. Se construyó una pieza nueva, coherente con el resto del visor (vanilla JS, sin framework nuevo, servida igual que las otras diez vistas) en vez de extender un prototipo que no encajaba con lo que pide la Fase 2.
+
+**Qué hace, en real**: paleta con las 91 entidades reales agrupadas por familia real (`atlas_familias.json`); clic para colocarlas en la mesa; clic en dos piezas para conectarlas -- solo con los 8 tipos de relación reales del Holon, nunca una flecha inventada. Un "montaje" (piezas + conexiones + nombre) es una máquina/universo real, guardable en `localStorage` (honestamente marcado como "solo este navegador") y exportable/importable como JSON de verdad.
+
+**Dos bugs reales encontrados y corregidos verificando en el navegador, no adivinando**:
+1. El modal de conexión vivía anidado dentro del contenedor que se le pasa a `vis-network` -- la librería limpia el contenido de su propio contenedor al construirse, así que el modal desaparecía antes de que el script llegara a rellenarlo. Corregido: modal hermano, no hijo, posicionado con CSS `absolute`.
+2. El contenedor de la mesa crecía sin límite (25000px de alto) -- el clásico fallo de flexbox de un hijo `flex:1` sin `min-height:0` dentro de un padre en columna.
+
+**Verificado de extremo a extremo**: 2 piezas reales colocadas (`92_BUS_TRABAJO`, `Coordinador`), 1 conexión real creada (`opera_en`), montaje guardado con nombre y listado correctamente. La verificación con el driver de automatización tuvo su propio desajuste de escala en las coordenadas de clic (no del código real) -- resuelto disparando eventos sintéticos en las coordenadas reales del canvas, vía la propia API de `vis-network`.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

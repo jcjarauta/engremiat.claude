@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- mesa de montaje</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
+  #layout { display: flex; height: 100vh; }
+  #paleta { width: 300px; flex: none; padding: 16px; background: var(--color-base-panel); border-right: 1px solid var(--color-base-borde); box-sizing: border-box; overflow-y: auto; display: flex; flex-direction: column; }
+  #centro { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; }
+  #mesa { flex: 1; min-height: 0; }
+  #barra { padding: 10px 16px; background: var(--color-base-panel); border-bottom: 1px solid var(--color-base-borde); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #panelDerecho { width: 300px; flex: none; padding: 16px; background: var(--color-base-panel); border-left: 1px solid var(--color-base-borde); box-sizing: border-box; overflow-y: auto; }
+  h1 { font-size: 16px; margin: 0 0 4px; }
+  h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 14px 0 8px; }
+  .hint { color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }
+  input[type=text] { width: 100%; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; }
+  button { background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 12px; font-size: 12.5px; cursor: pointer; }
+  button:hover { background: var(--color-base-borde); }
+  button.primario { background: #2f4d8f; border-color: #3f5fa0; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .pieza { padding: 6px 8px; border-radius: 6px; cursor: grab; font-size: 12px; display: flex; justify-content: space-between; gap: 6px; margin-bottom: 2px; }
+  .pieza:hover { background: var(--color-base-borde-suave); }
+  .pieza .fam { color: var(--color-base-texto-tenue); font-size: 10px; white-space: nowrap; }
+  .familia-grupo { margin-bottom: 10px; }
+  .familia-titulo { font-size: 11px; color: var(--color-base-texto-suave); padding: 3px 4px; display: flex; justify-content: space-between; }
+  .tipo-rel { padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-bottom: 3px; border: 1px solid var(--color-base-borde); }
+  .tipo-rel:hover { background: var(--color-base-borde-suave); }
+  #montajesGuardados .fila { display: flex; justify-content: space-between; align-items: center; padding: 5px 6px; border-radius: 5px; font-size: 12px; }
+  #montajesGuardados .fila:hover { background: var(--color-base-borde-suave); }
+  #capaConexion { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; }
+  #capaConexion.activa { display: flex; }
+  #cajaConexion { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 18px; width: 320px; }
+  .conexion-real { font-size: 11.5px; padding: 3px 0; border-bottom: 1px solid var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .conexion-real b { color: var(--color-base-texto); }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="paleta">
+    <h1>Mesa de montaje</h1>
+    <p class="hint">Coge piezas reales del almacén (las 91 entidades reales, agrupadas por familia real) y suéltalas en la mesa. Conéctalas solo con los 8 tipos de relación reales del Holon -- nunca una flecha inventada.</p>
+    <input type="text" id="buscarPieza" placeholder="Buscar pieza real...">
+    <h3>Piezas por familia real</h3>
+    <div id="listaPiezas"></div>
+  </div>
+
+  <div id="centro">
+    <div id="barra">
+      <input type="text" id="nombreMontaje" placeholder="Nombre de este universo/máquina..." style="max-width:260px;">
+      <button class="primario" id="btnGuardar">Guardar montaje</button>
+      <button id="btnExportar">Exportar JSON</button>
+      <button id="btnImportar">Importar JSON</button>
+      <input type="file" id="inputImportar" accept="application/json" style="display:none;">
+      <button id="btnLimpiar">Vaciar mesa</button>
+      <span class="hint" id="estadoMesa" style="margin-left:auto;"></span>
+    </div>
+    <div id="mesa"></div>
+    <div id="capaConexion">
+      <div id="cajaConexion">
+        <h3 style="margin-top:0;">¿Qué relación real conecta estas dos piezas?</h3>
+        <p class="hint" id="parConexion"></p>
+        <div id="tiposRelacion"></div>
+        <button id="btnCancelarConexion" style="margin-top:10px; width:100%;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="panelDerecho">
+    <h3>Montajes guardados (este navegador)</h3>
+    <div id="montajesGuardados"></div>
+    <h3>Esta máquina</h3>
+    <div id="resumenMesa" class="hint"></div>
+    <h3>Vínculos reales en la mesa</h3>
+    <div id="listaConexiones"></div>
+  </div>
+</div>
+<script>
+// lee el color real ya consolidado en tokens.css (§8.47/48) -- nunca un hex propio de este fichero
+function tokenColor(nombre) { return getComputedStyle(document.documentElement).getPropertyValue('--' + nombre).trim(); }
+function slugRol(rol) { return rol.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '_'); }
+function colorRol(rol) { return tokenColor('color-rol-' + slugRol(rol)) || tokenColor('color-base-texto-suave'); }
+
+// los 8 tipos de relacion reales del Holon (§8.33) -- las unicas flechas que se pueden dibujar aqui
+const TIPOS_RELACION_REAL = [
+  { id: 'opera_en', nombre: 'opera_en', desc: 'A actúa dentro del espacio/recurso B' },
+  { id: 'depende_de', nombre: 'depende_de', desc: 'A no funciona sin B' },
+  { id: 'gobierna_a', nombre: 'gobierna_a', desc: 'A impone una regla/gate sobre B' },
+  { id: 'alimenta_a', nombre: 'alimenta_a', desc: 'A provee un insumo real a B' },
+  { id: 'verifica_a', nombre: 'verifica_a', desc: 'A comprueba lo que hace B' },
+  { id: 'corrige_a', nombre: 'corrige_a', desc: 'A corrige lo que falla en B' },
+  { id: 'activa_a', nombre: 'activa_a', desc: 'A dispara a B' },
+  { id: 'parte_de', nombre: 'parte_de', desc: 'A es un componente real de B' },
+];
+const COLOR_RELACION = {};
+TIPOS_RELACION_REAL.forEach(t => { COLOR_RELACION[t.id] = tokenColor('color-relacion-' + t.id); });
+
+let atlas = null;
+let todosLosMiembros = []; // aplanado, deduplicado por slug, con su familia principal (primera)
+let nodes, edges, network;
+let pendienteOrigen = null;
+const LLAVE_LOCALSTORAGE = 'engremiat_mesa_montaje_v1';
+
+async function cargar() {
+  atlas = await (await fetch('atlas_familias.json')).json();
+  const porSlug = new Map();
+  atlas.familias.forEach(f => {
+    f.miembros.forEach(m => {
+      if (!porSlug.has(m.slug)) porSlug.set(m.slug, { ...m, familias: [f.rol] });
+      else porSlug.get(m.slug).familias.push(f.rol);
+    });
+  });
+  todosLosMiembros = [...porSlug.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+  renderPaleta(todosLosMiembros);
+  document.getElementById('buscarPieza').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    renderPaleta(todosLosMiembros.filter(m => m.nombre.toLowerCase().includes(q)));
+  });
+
+  nodes = new vis.DataSet([]);
+  edges = new vis.DataSet([]);
+  network = new vis.Network(document.getElementById('mesa'), { nodes, edges }, {
+    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -60, springLength: 90 }, stabilization: false },
+    interaction: { hover: true, multiselect: false },
+  });
+  // el canvas nace con tamano 0 si el layout flex aun no ha resuelto cuando vis-network se
+  // construye -- mismo bug de fondo visto en las demas vistas del visor (§8.39/§8.41)
+  requestAnimationFrame(() => { network.setSize('100%', '100%'); network.redraw(); });
+  window.addEventListener('resize', () => network.setSize('100%', '100%'));
+
+  network.on('click', (params) => {
+    if (!params.nodes.length) { pendienteOrigen = null; return; }
+    const id = params.nodes[0];
+    if (!pendienteOrigen) { pendienteOrigen = id; return; }
+    if (pendienteOrigen === id) { pendienteOrigen = null; return; }
+    abrirSelectorConexion(pendienteOrigen, id);
+    pendienteOrigen = null;
+  });
+
+  document.getElementById('tiposRelacion').innerHTML = TIPOS_RELACION_REAL.map(t =>
+    `<div class="tipo-rel" data-tipo="${t.id}"><b>${t.nombre}</b> -- ${t.desc}</div>`
+  ).join('');
+
+  document.getElementById('btnCancelarConexion').addEventListener('click', cerrarSelectorConexion);
+  document.getElementById('btnGuardar').addEventListener('click', guardarMontaje);
+  document.getElementById('btnExportar').addEventListener('click', exportarJSON);
+  document.getElementById('btnImportar').addEventListener('click', () => document.getElementById('inputImportar').click());
+  document.getElementById('inputImportar').addEventListener('change', importarJSON);
+  document.getElementById('btnLimpiar').addEventListener('click', () => { if (confirm('¿Vaciar la mesa? Se pierde lo no guardado.')) vaciarMesa(); });
+
+  renderMontajesGuardados();
+  actualizarResumen();
+}
+
+function renderPaleta(miembros) {
+  const porFamilia = {};
+  miembros.forEach(m => { const f = m.familias[0]; (porFamilia[f] = porFamilia[f] || []).push(m); });
+  const lista = document.getElementById('listaPiezas');
+  lista.innerHTML = Object.entries(porFamilia).sort((a, b) => b[1].length - a[1].length).map(([familia, ms]) => `
+    <div class="familia-grupo">
+      <div class="familia-titulo"><span style="color:${colorRol(familia)};">● ${familia}</span><span>${ms.length}</span></div>
+      ${ms.map(m => `<div class="pieza" data-slug="${m.slug}" draggable="true"><span>${m.nombre}</span><span class="fam">${m.tipo || ''}</span></div>`).join('')}
+    </div>
+  `).join('');
+  lista.querySelectorAll('.pieza').forEach(el => {
+    el.addEventListener('click', () => colocarPieza(el.dataset.slug));
+  });
+}
+
+function colocarPieza(slug) {
+  if (nodes.get(slug)) { network.focus(slug, { scale: 1.2, animation: true }); return; }
+  const m = todosLosMiembros.find(x => x.slug === slug);
+  if (!m) return;
+  const familiaPrincipal = m.familias[0];
+  nodes.add({
+    id: slug, label: m.nombre,
+    title: (m.tipo || '') + ' · ' + m.familias.join(', '),
+    shape: 'dot', size: 16 + Math.min(14, Math.sqrt(m.agenciaReal || 1) * 2),
+    color: { background: colorRol(familiaPrincipal), border: tokenColor('color-base-fondo') },
+    font: { color: tokenColor('color-base-texto'), size: 12, face: 'system-ui' },
+  });
+  actualizarResumen();
+}
+
+function abrirSelectorConexion(origen, destino) {
+  const nOrigen = nodes.get(origen), nDestino = nodes.get(destino);
+  document.getElementById('parConexion').textContent = `${nOrigen.label} → ${nDestino.label}`;
+  document.getElementById('capaConexion').classList.add('activa');
+  document.getElementById('capaConexion').dataset.origen = origen;
+  document.getElementById('capaConexion').dataset.destino = destino;
+  document.querySelectorAll('.tipo-rel').forEach(el => {
+    el.onclick = () => { crearConexion(origen, destino, el.dataset.tipo); cerrarSelectorConexion(); };
+  });
+}
+function cerrarSelectorConexion() { document.getElementById('capaConexion').classList.remove('activa'); }
+
+function crearConexion(origen, destino, tipo) {
+  const id = origen + '__' + tipo + '__' + destino;
+  if (edges.get(id)) return; // ya existe esta relacion real exacta, no se duplica
+  edges.add({
+    id, from: origen, to: destino, arrows: 'to', label: tipo,
+    color: { color: COLOR_RELACION[tipo] || '#3a3b47' },
+    font: { color: tokenColor('color-base-texto-suave'), size: 9, strokeWidth: 0, background: tokenColor('color-base-fondo') },
+  });
+  actualizarResumen();
+}
+
+function actualizarResumen() {
+  const n = nodes.length, e = edges.length;
+  document.getElementById('estadoMesa').textContent = `${n} piezas · ${e} vínculos reales`;
+  document.getElementById('resumenMesa').innerHTML = n
+    ? `${n} pieza${n === 1 ? '' : 's'} reales colocadas, ${e} vínculo${e === 1 ? '' : 's'} entre ellas.`
+    : 'La mesa está vacía -- clic en una pieza del almacén para colocarla.';
+  document.getElementById('listaConexiones').innerHTML = edges.get().map(a =>
+    `<div class="conexion-real">${nodes.get(a.from).label} <b>${a.label}</b> → ${nodes.get(a.to).label}</div>`
+  ).join('') || '<p class="hint">Clic en dos piezas de la mesa (una y luego otra) para conectarlas.</p>';
+}
+
+function vaciarMesa() { nodes.clear(); edges.clear(); actualizarResumen(); }
+
+function montajeActual() {
+  return {
+    nombre: document.getElementById('nombreMontaje').value.trim() || 'Sin nombre',
+    generadoEn: new Date().toISOString(),
+    piezas: nodes.get().map(n => ({ slug: n.id, nombre: n.label })),
+    conexiones: edges.get().map(a => ({ origen: a.from, tipo: a.label, destino: a.to })),
+  };
+}
+
+function leerMontajesGuardados() {
+  try { return JSON.parse(localStorage.getItem(LLAVE_LOCALSTORAGE) || '[]'); } catch { return []; }
+}
+function guardarMontaje() {
+  if (!nodes.length) { alert('La mesa está vacía -- coloca alguna pieza real primero.'); return; }
+  const montaje = montajeActual();
+  const guardados = leerMontajesGuardados().filter(m => m.nombre !== montaje.nombre);
+  guardados.push(montaje);
+  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(guardados));
+  renderMontajesGuardados();
+}
+function renderMontajesGuardados() {
+  const guardados = leerMontajesGuardados();
+  const cont = document.getElementById('montajesGuardados');
+  cont.innerHTML = guardados.length ? guardados.map(m =>
+    `<div class="fila"><span data-cargar="${m.nombre}" style="cursor:pointer;">${m.nombre} <span class="hint">(${m.piezas.length}p/${m.conexiones.length}v)</span></span><span data-borrar="${m.nombre}" style="cursor:pointer; color:#e85c8a;">✕</span></div>`
+  ).join('') : '<p class="hint">Ninguno todavía -- solo en este navegador (localStorage), no compartido. Usa "Exportar JSON" para guardarlo de verdad fuera del navegador.</p>';
+  cont.querySelectorAll('[data-cargar]').forEach(el => el.addEventListener('click', () => cargarMontaje(el.dataset.cargar)));
+  cont.querySelectorAll('[data-borrar]').forEach(el => el.addEventListener('click', (ev) => { ev.stopPropagation(); borrarMontaje(el.dataset.borrar); }));
+}
+function cargarMontaje(nombre) {
+  const m = leerMontajesGuardados().find(x => x.nombre === nombre);
+  if (!m) return;
+  aplicarMontaje(m);
+}
+function borrarMontaje(nombre) {
+  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(leerMontajesGuardados().filter(x => x.nombre !== nombre)));
+  renderMontajesGuardados();
+}
+
+function aplicarMontaje(m) {
+  vaciarMesa();
+  document.getElementById('nombreMontaje').value = m.nombre || '';
+  (m.piezas || []).forEach(p => colocarPieza(p.slug));
+  (m.conexiones || []).forEach(c => crearConexion(c.origen, c.tipo ? c.tipo : c.relacion, c.destino));
+  actualizarResumen();
+}
+
+function exportarJSON() {
+  const montaje = montajeActual();
+  const blob = new Blob([JSON.stringify(montaje, null, 1)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = (montaje.nombre || 'montaje').replace(/\s+/g, '_') + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importarJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => { try { aplicarMontaje(JSON.parse(reader.result)); } catch { alert('JSON no válido.'); } };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+cargar();
+</script>
+</body>
+</html>
