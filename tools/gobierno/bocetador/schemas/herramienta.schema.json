@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/herramienta.schema.json",
+  "title": "Herramienta",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.14 -- Oficio-mecanismo, distinto de Personaje-Oficio (Ejecutor/Coordinador tienen voz narrativa, esto es codigo). Espejo real de 08_Oficios/*.md del vault (11 fichas) y del script real correspondiente en tools/gobierno/*.mjs, registrado tambien en tools/registro_ecosistema.json. vinculoReal usa sistema='repo', no 'Sheet' -- es codigo versionado, no una fila.",
+  "type": "object",
+  "required": ["id", "nombre", "estado"],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true },
+    "id": { "type": "string", "minLength": 1 },
+    "nombre": { "type": "string", "minLength": 1, "description": "Pregunta Que." },
+    "resumen": { "type": "string", "description": "Pregunta Que, ampliada -- espejo del cuerpo real de la ficha .md." },
+    "queHace": { "type": "string", "description": "Pregunta Como -- espejo del campo real 'que_hace' de tools/registro_ecosistema.json." },
+    "dispara": {
+      "type": "string",
+      "enum": ["manual", "cron_local", "trigger_remoto", "webhook", "bus_de_trabajo"],
+      "description": "Pregunta Cuando -- como se activa en real, no una lista inventada: manual (el operador lo ejecuta), cron_local (Windows Task Scheduler, ya usado por chequear_libreria_clientes), trigger_remoto (RemoteTrigger, ya usado por el Ejecutor), webhook (WebhookTelegramService), bus_de_trabajo (92_BUS_TRABAJO, ya usado por bus_trabajo.mjs)."
+    },
+    "estado": { "type": "string", "description": "Pregunta Cuando." },
+    "vinculoReal": {
+      "type": "array",
+      "description": "Pregunta Donde -- sistema='repo' (script real) y/o 'vault' (ficha real), nunca 'Sheet' -- una Herramienta no es una fila.",
+      "items": {
+        "type": "object",
+        "required": ["sistema", "recordId"],
+        "additionalProperties": false,
+        "properties": {
+          "sistema": { "type": "string", "minLength": 1 },
+          "recordId": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

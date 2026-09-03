@@ -6,5 +6,6 @@
   "variabilidad": "modular",
   "proposito": "Espacio de trabajo especifico de un modulo con dominio propio (ver PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §5) -- no todo universo lo recibe, solo el que activa el modulo correspondiente.",
   "moduloRequerido": "modulo_ejemplo_a_confirmar",
-  "gobernadoPor": ["ley_modularidad_subordinada"]
+  "gobernadoPor": [],
+  "estado": "sin_definir"
 }

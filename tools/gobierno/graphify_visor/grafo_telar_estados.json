@@ -1,0 +1,172 @@
+{
+  "generadoEn": "2026-09-03T05:07:37.319Z",
+  "nodos": [
+    {
+      "id": "sin_seleccionar",
+      "tipo": "estado",
+      "nombre": "sin_seleccionar",
+      "esMVP": true
+    },
+    {
+      "id": "orientacion",
+      "tipo": "estado",
+      "nombre": "orientacion",
+      "esMVP": false
+    },
+    {
+      "id": "concilio_convocando",
+      "tipo": "estado",
+      "nombre": "concilio_convocando",
+      "esMVP": false
+    },
+    {
+      "id": "deliberando",
+      "tipo": "estado",
+      "nombre": "deliberando",
+      "esMVP": true
+    },
+    {
+      "id": "tejiendo",
+      "tipo": "estado",
+      "nombre": "tejiendo",
+      "esMVP": true
+    },
+    {
+      "id": "esperando_relevo",
+      "tipo": "estado",
+      "nombre": "esperando_relevo",
+      "esMVP": true
+    },
+    {
+      "id": "devuelta",
+      "tipo": "estado",
+      "nombre": "devuelta",
+      "esMVP": false
+    },
+    {
+      "id": "aprobada_sin_ejecutar",
+      "tipo": "estado",
+      "nombre": "aprobada_sin_ejecutar",
+      "esMVP": false
+    },
+    {
+      "id": "puerta_pendiente",
+      "tipo": "estado",
+      "nombre": "puerta_pendiente",
+      "esMVP": false
+    },
+    {
+      "id": "puerta_en_curso",
+      "tipo": "estado",
+      "nombre": "puerta_en_curso",
+      "esMVP": false
+    },
+    {
+      "id": "puerta_ejecutada",
+      "tipo": "estado",
+      "nombre": "puerta_ejecutada",
+      "esMVP": false
+    },
+    {
+      "id": "puerta_warn",
+      "tipo": "estado",
+      "nombre": "puerta_warn",
+      "esMVP": false
+    },
+    {
+      "id": "puerta_err",
+      "tipo": "estado",
+      "nombre": "puerta_err",
+      "esMVP": false
+    },
+    {
+      "id": "huella",
+      "tipo": "estado",
+      "nombre": "huella",
+      "esMVP": true
+    }
+  ],
+  "aristas": [
+    {
+      "source": "sin_seleccionar",
+      "target": "orientacion"
+    },
+    {
+      "source": "orientacion",
+      "target": "concilio_convocando"
+    },
+    {
+      "source": "concilio_convocando",
+      "target": "deliberando"
+    },
+    {
+      "source": "deliberando",
+      "target": "tejiendo"
+    },
+    {
+      "source": "tejiendo",
+      "target": "esperando_relevo"
+    },
+    {
+      "source": "esperando_relevo",
+      "target": "devuelta"
+    },
+    {
+      "source": "esperando_relevo",
+      "target": "aprobada_sin_ejecutar"
+    },
+    {
+      "source": "esperando_relevo",
+      "target": "huella"
+    },
+    {
+      "source": "devuelta",
+      "target": "tejiendo"
+    },
+    {
+      "source": "aprobada_sin_ejecutar",
+      "target": "puerta_pendiente"
+    },
+    {
+      "source": "aprobada_sin_ejecutar",
+      "target": "huella"
+    },
+    {
+      "source": "puerta_pendiente",
+      "target": "puerta_en_curso"
+    },
+    {
+      "source": "puerta_en_curso",
+      "target": "puerta_ejecutada"
+    },
+    {
+      "source": "puerta_en_curso",
+      "target": "puerta_warn"
+    },
+    {
+      "source": "puerta_en_curso",
+      "target": "puerta_err"
+    },
+    {
+      "source": "puerta_ejecutada",
+      "target": "huella"
+    },
+    {
+      "source": "puerta_warn",
+      "target": "huella"
+    },
+    {
+      "source": "puerta_err",
+      "target": "puerta_pendiente"
+    },
+    {
+      "source": "huella",
+      "target": "sin_seleccionar"
+    }
+  ],
+  "notas": {
+    "esperando_relevo_a_huella": "Camino directo para 'cerrar_como_aprendizaje' -- una Mision de arquetipo Investigacion o Diagnostico puede cerrar bien sin pasar nunca por la Puerta Humana.",
+    "aprobada_sin_ejecutar_a_huella": "Camino directo cuando la decision no requiere ninguna accion externa real (ej. una Decision que solo fija un criterio, sin ejecucion).",
+    "puerta_err_a_puerta_pendiente": "Ante ERR el flujo se detiene y vuelve a pedir Sugerir -> Inspeccionar -> Aprobar -- nunca reintenta Ejecutar directamente sobre el mismo estado fallido."
+  }
+}

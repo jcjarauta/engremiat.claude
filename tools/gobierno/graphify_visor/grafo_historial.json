@@ -1,0 +1,990 @@
+{
+  "generadoEn": "2026-09-03T05:06:58.613Z",
+  "nodos": [
+    {
+      "id": "op:82d26483-93a5-42c8-80e8-28357bbee920",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "7/08/2026 6:22:00",
+      "n": 1
+    },
+    {
+      "id": "ent:CAMPANA:CAM-0001",
+      "tipo": "entidad",
+      "nombre": "CAM-0001",
+      "entidad": "CAMPANA"
+    },
+    {
+      "id": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "7/08/2026 10:52:06",
+      "n": 13
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0001",
+      "tipo": "entidad",
+      "nombre": "PRO-0001",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0002",
+      "tipo": "entidad",
+      "nombre": "PRO-0002",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0003",
+      "tipo": "entidad",
+      "nombre": "PRO-0003",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0001",
+      "tipo": "entidad",
+      "nombre": "PRD-0001",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0001",
+      "tipo": "entidad",
+      "nombre": "PPR-0001",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0002",
+      "tipo": "entidad",
+      "nombre": "PRD-0002",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0002",
+      "tipo": "entidad",
+      "nombre": "PPR-0002",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0003",
+      "tipo": "entidad",
+      "nombre": "PRD-0003",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0003",
+      "tipo": "entidad",
+      "nombre": "PPR-0003",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PROCESO:PCS-0001",
+      "tipo": "entidad",
+      "nombre": "PCS-0001",
+      "entidad": "PROCESO"
+    },
+    {
+      "id": "ent:PROCESO:PCS-0002",
+      "tipo": "entidad",
+      "nombre": "PCS-0002",
+      "entidad": "PROCESO"
+    },
+    {
+      "id": "ent:PROCESO:PCS-0003",
+      "tipo": "entidad",
+      "nombre": "PCS-0003",
+      "entidad": "PROCESO"
+    },
+    {
+      "id": "ent:PROCESO:PCS-0004",
+      "tipo": "entidad",
+      "nombre": "PCS-0004",
+      "entidad": "PROCESO"
+    },
+    {
+      "id": "op:c6d8021b-1e89-4b7e-9774-378c2c71a04b",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "7/08/2026 15:20:10",
+      "n": 1
+    },
+    {
+      "id": "ent:CLIENTE:CLI-0001",
+      "tipo": "entidad",
+      "nombre": "CLI-0001",
+      "entidad": "CLIENTE"
+    },
+    {
+      "id": "op:e5c1a5cf-4cf1-4b9f-b8d4-a323cdfa6e4e",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 6:56:58",
+      "n": 1
+    },
+    {
+      "id": "ent:CAMPANA:CAM-0002",
+      "tipo": "entidad",
+      "nombre": "CAM-0002",
+      "entidad": "CAMPANA"
+    },
+    {
+      "id": "op:dc622993-3259-47a0-88b7-f7aa156c3be8",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 6:57:36",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0004",
+      "tipo": "entidad",
+      "nombre": "PRO-0004",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:67a4d6f7-84ea-40b0-b8f1-31d42750746e",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:12:57",
+      "n": 1
+    },
+    {
+      "id": "op:2ae5e8f3-337a-42b5-ae72-b234e17cd660",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:13:07",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0010",
+      "tipo": "entidad",
+      "nombre": "PRO-0010",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:947c9793-86f6-4485-998d-198ffd5471a6",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:13:26",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0013",
+      "tipo": "entidad",
+      "nombre": "PRO-0013",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:ba918dba-ad3b-470c-b340-f2d9da413b4f",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:28:52",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0005",
+      "tipo": "entidad",
+      "nombre": "PRO-0005",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:d8d6200e-5b50-414d-b38c-703a519636a6",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:29:06",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0006",
+      "tipo": "entidad",
+      "nombre": "PRO-0006",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:b528532b-f563-4216-a729-b39c126c5631",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:29:19",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0007",
+      "tipo": "entidad",
+      "nombre": "PRO-0007",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:941f3d27-c46b-4d5e-8de1-3c3714b3dea9",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:29:34",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0008",
+      "tipo": "entidad",
+      "nombre": "PRO-0008",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:c5bc7f38-f162-4400-8ea7-e47be8757f77",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:29:52",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0009",
+      "tipo": "entidad",
+      "nombre": "PRO-0009",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:9dfb92a4-8de3-4647-8a9f-0301d29b3bd0",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:30:11",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0011",
+      "tipo": "entidad",
+      "nombre": "PRO-0011",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:7de882b0-a551-475b-82b9-d5f3a504f104",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:30:22",
+      "n": 1
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0012",
+      "tipo": "entidad",
+      "nombre": "PRO-0012",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "op:9afb69de-7b3f-452b-bf50-8ef6e87277b8",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 7:54:43",
+      "n": 1
+    },
+    {
+      "id": "op:505d2eaf-91a3-4952-a1cd-fa4442e32d32",
+      "tipo": "operacion",
+      "nombre": "EDICION_DIRECTA_DETECTADA",
+      "ts": "8/08/2026 8:08:34",
+      "n": 1
+    },
+    {
+      "id": "op:77f61a30-53e4-4836-8e73-0bd51b81d73f",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "19/08/2026 5:58:28",
+      "n": 1
+    },
+    {
+      "id": "ent:CLIENTE:CLI-0002",
+      "tipo": "entidad",
+      "nombre": "CLI-0002",
+      "entidad": "CLIENTE"
+    },
+    {
+      "id": "op:f392b253-1aff-453a-9887-38a65e72fc2e",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 6:00:39",
+      "n": 1
+    },
+    {
+      "id": "op:9414d981-09cc-460f-ba70-9e461f1947b3",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 6:34:11",
+      "n": 1
+    },
+    {
+      "id": "op:1cd934a6-acbe-4e88-8e8b-072608d15ec9",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "19/08/2026 6:41:44",
+      "n": 1
+    },
+    {
+      "id": "ent:PERSONA_EQUIPO:PER-0001",
+      "tipo": "entidad",
+      "nombre": "PER-0001",
+      "entidad": "PERSONA_EQUIPO"
+    },
+    {
+      "id": "op:9574866f-2e41-49d8-ad2f-00e40e11f6a6",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 7:07:30",
+      "n": 1
+    },
+    {
+      "id": "op:95848ee3-19a2-45ff-a58f-cf76e7c8e06a",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 7:15:16",
+      "n": 1
+    },
+    {
+      "id": "op:e7178b52-8cee-46b3-9c2e-72169d48ef60",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 9:50:00",
+      "n": 1
+    },
+    {
+      "id": "op:7b499039-9ab7-46f6-a01e-9ec623d08df2",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 10:04:23",
+      "n": 1
+    },
+    {
+      "id": "op:2dc7b6ed-b031-4545-b5e1-793b986d4cb4",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 10:25:15",
+      "n": 1
+    },
+    {
+      "id": "op:d51a577e-84e5-433a-92af-f7bd5a44ff99",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 10:52:29",
+      "n": 1
+    },
+    {
+      "id": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "19/08/2026 16:50:36",
+      "n": 32
+    },
+    {
+      "id": "ent:CAMPANA:CAM-0003",
+      "tipo": "entidad",
+      "nombre": "CAM-0003",
+      "entidad": "CAMPANA"
+    },
+    {
+      "id": "ent:PROYECTO:PRO-0014",
+      "tipo": "entidad",
+      "nombre": "PRO-0014",
+      "entidad": "PROYECTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0004",
+      "tipo": "entidad",
+      "nombre": "PRD-0004",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0004",
+      "tipo": "entidad",
+      "nombre": "PPR-0004",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0005",
+      "tipo": "entidad",
+      "nombre": "PRD-0005",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0005",
+      "tipo": "entidad",
+      "nombre": "PPR-0005",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0006",
+      "tipo": "entidad",
+      "nombre": "PRD-0006",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0006",
+      "tipo": "entidad",
+      "nombre": "PPR-0006",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0007",
+      "tipo": "entidad",
+      "nombre": "PRD-0007",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0007",
+      "tipo": "entidad",
+      "nombre": "PPR-0007",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0008",
+      "tipo": "entidad",
+      "nombre": "PRD-0008",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0008",
+      "tipo": "entidad",
+      "nombre": "PPR-0008",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0009",
+      "tipo": "entidad",
+      "nombre": "PRD-0009",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0009",
+      "tipo": "entidad",
+      "nombre": "PPR-0009",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0010",
+      "tipo": "entidad",
+      "nombre": "PRD-0010",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0010",
+      "tipo": "entidad",
+      "nombre": "PPR-0010",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0011",
+      "tipo": "entidad",
+      "nombre": "PRD-0011",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0011",
+      "tipo": "entidad",
+      "nombre": "PPR-0011",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0012",
+      "tipo": "entidad",
+      "nombre": "PRD-0012",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0012",
+      "tipo": "entidad",
+      "nombre": "PPR-0012",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0013",
+      "tipo": "entidad",
+      "nombre": "PRD-0013",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0013",
+      "tipo": "entidad",
+      "nombre": "PPR-0013",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0014",
+      "tipo": "entidad",
+      "nombre": "PRD-0014",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0014",
+      "tipo": "entidad",
+      "nombre": "PPR-0014",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0015",
+      "tipo": "entidad",
+      "nombre": "PRD-0015",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0015",
+      "tipo": "entidad",
+      "nombre": "PPR-0015",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0016",
+      "tipo": "entidad",
+      "nombre": "PRD-0016",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0016",
+      "tipo": "entidad",
+      "nombre": "PPR-0016",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0017",
+      "tipo": "entidad",
+      "nombre": "PRD-0017",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0017",
+      "tipo": "entidad",
+      "nombre": "PPR-0017",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "ent:PRODUCTO:PRD-0018",
+      "tipo": "entidad",
+      "nombre": "PRD-0018",
+      "entidad": "PRODUCTO"
+    },
+    {
+      "id": "ent:PROYECTO_PRODUCTO:PPR-0018",
+      "tipo": "entidad",
+      "nombre": "PPR-0018",
+      "entidad": "PROYECTO_PRODUCTO"
+    },
+    {
+      "id": "op:b33d6868-3b8f-409c-9027-a68b12f1ef07",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "19/08/2026 18:27:06",
+      "n": 1
+    },
+    {
+      "id": "op:7a0dba30-6304-4fe3-99a9-2a83d9e973a6",
+      "tipo": "operacion",
+      "nombre": "EXPORTAR_INFORME",
+      "ts": "19/08/2026 19:32:35",
+      "n": 1
+    },
+    {
+      "id": "ent:INFORME:INFORME_PROYECTO",
+      "tipo": "entidad",
+      "nombre": "INFORME_PROYECTO",
+      "entidad": "INFORME"
+    },
+    {
+      "id": "op:fefb544e-18fb-4626-b8af-c37c73fa964d",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "20/08/2026 5:08:25",
+      "n": 1
+    },
+    {
+      "id": "ent:INCIDENCIA:INC-0001",
+      "tipo": "entidad",
+      "nombre": "INC-0001",
+      "entidad": "INCIDENCIA"
+    },
+    {
+      "id": "op:24285b13-83f9-4c0c-baa6-d22ff7bf965a",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "20/08/2026 5:08:32",
+      "n": 3
+    },
+    {
+      "id": "ent:PROCESO:PCS-0005",
+      "tipo": "entidad",
+      "nombre": "PCS-0005",
+      "entidad": "PROCESO"
+    },
+    {
+      "id": "ent:TAREA:TAR-0001",
+      "tipo": "entidad",
+      "nombre": "TAR-0001",
+      "entidad": "TAREA"
+    },
+    {
+      "id": "ent:VINCULO:VIN-0001",
+      "tipo": "entidad",
+      "nombre": "VIN-0001",
+      "entidad": "VINCULO"
+    },
+    {
+      "id": "op:08130803-b541-4560-a414-ddbffc623b46",
+      "tipo": "operacion",
+      "nombre": "ACTUALIZAR",
+      "ts": "20/08/2026 5:27:05",
+      "n": 1
+    },
+    {
+      "id": "ent:INCIDENCIA:INC-0003",
+      "tipo": "entidad",
+      "nombre": "INC-0003",
+      "entidad": "INCIDENCIA"
+    },
+    {
+      "id": "op:beb83133-07b9-44f9-83df-a3475dc06d22",
+      "tipo": "operacion",
+      "nombre": "CREAR",
+      "ts": "20/08/2026 5:27:13",
+      "n": 2
+    },
+    {
+      "id": "ent:TAREA:TAR-0002",
+      "tipo": "entidad",
+      "nombre": "TAR-0002",
+      "entidad": "TAREA"
+    },
+    {
+      "id": "ent:VINCULO:VIN-0002",
+      "tipo": "entidad",
+      "nombre": "VIN-0002",
+      "entidad": "VINCULO"
+    },
+    {
+      "id": "op:7e1c915c-0df5-4944-af58-ebf73eb6753a",
+      "tipo": "operacion",
+      "nombre": "EXPORTAR_ARBOL_CAMPANA",
+      "ts": "29/08/2026 21:21:56",
+      "n": 1
+    },
+    {
+      "id": "ent:INFORME:CAMPANA_Gestor_de_proyectos",
+      "tipo": "entidad",
+      "nombre": "CAMPANA_Gestor_de_proyectos",
+      "entidad": "INFORME"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "op:82d26483-93a5-42c8-80e8-28357bbee920",
+      "target": "ent:CAMPANA:CAM-0001"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO:PRO-0001"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO:PRO-0002"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO:PRO-0003"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PRODUCTO:PRD-0001"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0001"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PRODUCTO:PRD-0002"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0002"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PRODUCTO:PRD-0003"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0003"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROCESO:PCS-0001"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROCESO:PCS-0002"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROCESO:PCS-0003"
+    },
+    {
+      "source": "op:c5b311c4-5518-425a-8ae2-7a837dfa5d61",
+      "target": "ent:PROCESO:PCS-0004"
+    },
+    {
+      "source": "op:c6d8021b-1e89-4b7e-9774-378c2c71a04b",
+      "target": "ent:CLIENTE:CLI-0001"
+    },
+    {
+      "source": "op:e5c1a5cf-4cf1-4b9f-b8d4-a323cdfa6e4e",
+      "target": "ent:CAMPANA:CAM-0002"
+    },
+    {
+      "source": "op:dc622993-3259-47a0-88b7-f7aa156c3be8",
+      "target": "ent:PROYECTO:PRO-0004"
+    },
+    {
+      "source": "op:67a4d6f7-84ea-40b0-b8f1-31d42750746e",
+      "target": "ent:PROYECTO:PRO-0004"
+    },
+    {
+      "source": "op:2ae5e8f3-337a-42b5-ae72-b234e17cd660",
+      "target": "ent:PROYECTO:PRO-0010"
+    },
+    {
+      "source": "op:947c9793-86f6-4485-998d-198ffd5471a6",
+      "target": "ent:PROYECTO:PRO-0013"
+    },
+    {
+      "source": "op:ba918dba-ad3b-470c-b340-f2d9da413b4f",
+      "target": "ent:PROYECTO:PRO-0005"
+    },
+    {
+      "source": "op:d8d6200e-5b50-414d-b38c-703a519636a6",
+      "target": "ent:PROYECTO:PRO-0006"
+    },
+    {
+      "source": "op:b528532b-f563-4216-a729-b39c126c5631",
+      "target": "ent:PROYECTO:PRO-0007"
+    },
+    {
+      "source": "op:941f3d27-c46b-4d5e-8de1-3c3714b3dea9",
+      "target": "ent:PROYECTO:PRO-0008"
+    },
+    {
+      "source": "op:c5bc7f38-f162-4400-8ea7-e47be8757f77",
+      "target": "ent:PROYECTO:PRO-0009"
+    },
+    {
+      "source": "op:9dfb92a4-8de3-4647-8a9f-0301d29b3bd0",
+      "target": "ent:PROYECTO:PRO-0011"
+    },
+    {
+      "source": "op:7de882b0-a551-475b-82b9-d5f3a504f104",
+      "target": "ent:PROYECTO:PRO-0012"
+    },
+    {
+      "source": "op:9afb69de-7b3f-452b-bf50-8ef6e87277b8",
+      "target": "ent:PROYECTO:PRO-0004"
+    },
+    {
+      "source": "op:505d2eaf-91a3-4952-a1cd-fa4442e32d32",
+      "target": "ent:PROYECTO:PRO-0004"
+    },
+    {
+      "source": "op:77f61a30-53e4-4836-8e73-0bd51b81d73f",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:f392b253-1aff-453a-9887-38a65e72fc2e",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:9414d981-09cc-460f-ba70-9e461f1947b3",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:1cd934a6-acbe-4e88-8e8b-072608d15ec9",
+      "target": "ent:PERSONA_EQUIPO:PER-0001"
+    },
+    {
+      "source": "op:9574866f-2e41-49d8-ad2f-00e40e11f6a6",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:95848ee3-19a2-45ff-a58f-cf76e7c8e06a",
+      "target": "ent:PERSONA_EQUIPO:PER-0001"
+    },
+    {
+      "source": "op:e7178b52-8cee-46b3-9c2e-72169d48ef60",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:7b499039-9ab7-46f6-a01e-9ec623d08df2",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:2dc7b6ed-b031-4545-b5e1-793b986d4cb4",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:d51a577e-84e5-433a-92af-f7bd5a44ff99",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:CAMPANA:CAM-0003"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO:PRO-0014"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0004"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0004"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0005"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0005"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0006"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0006"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0007"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0007"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0008"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0008"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0009"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0009"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0010"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0010"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0011"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0011"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0012"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0012"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0013"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0013"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0014"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0014"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0015"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0015"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0016"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0016"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0017"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0017"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PRODUCTO:PRD-0018"
+    },
+    {
+      "source": "op:d891e713-320b-4a27-aa9c-af875cf89d67",
+      "target": "ent:PROYECTO_PRODUCTO:PPR-0018"
+    },
+    {
+      "source": "op:b33d6868-3b8f-409c-9027-a68b12f1ef07",
+      "target": "ent:CLIENTE:CLI-0002"
+    },
+    {
+      "source": "op:7a0dba30-6304-4fe3-99a9-2a83d9e973a6",
+      "target": "ent:INFORME:INFORME_PROYECTO"
+    },
+    {
+      "source": "op:fefb544e-18fb-4626-b8af-c37c73fa964d",
+      "target": "ent:INCIDENCIA:INC-0001"
+    },
+    {
+      "source": "op:24285b13-83f9-4c0c-baa6-d22ff7bf965a",
+      "target": "ent:PROCESO:PCS-0005"
+    },
+    {
+      "source": "op:24285b13-83f9-4c0c-baa6-d22ff7bf965a",
+      "target": "ent:TAREA:TAR-0001"
+    },
+    {
+      "source": "op:24285b13-83f9-4c0c-baa6-d22ff7bf965a",
+      "target": "ent:VINCULO:VIN-0001"
+    },
+    {
+      "source": "op:08130803-b541-4560-a414-ddbffc623b46",
+      "target": "ent:INCIDENCIA:INC-0003"
+    },
+    {
+      "source": "op:beb83133-07b9-44f9-83df-a3475dc06d22",
+      "target": "ent:TAREA:TAR-0002"
+    },
+    {
+      "source": "op:beb83133-07b9-44f9-83df-a3475dc06d22",
+      "target": "ent:VINCULO:VIN-0002"
+    },
+    {
+      "source": "op:7e1c915c-0df5-4944-af58-ebf73eb6753a",
+      "target": "ent:INFORME:CAMPANA_Gestor_de_proyectos"
+    }
+  ]
+}

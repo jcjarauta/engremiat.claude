@@ -1,0 +1,419 @@
+{
+  "generadoEn": "2026-09-03T05:06:58.616Z",
+  "nodos": [
+    {
+      "id": "CAM:CAM-0001",
+      "tipo": "campana",
+      "nombre": "Gestor de proyectos"
+    },
+    {
+      "id": "CAM:CAM-0002",
+      "tipo": "campana",
+      "nombre": "Combinaciones de módulos (sheets piloto)"
+    },
+    {
+      "id": "CAM:CAM-0003",
+      "tipo": "campana",
+      "nombre": "Proyecto 0 — Desarrollo interno del sistema"
+    },
+    {
+      "id": "CAM:CAM-0004",
+      "tipo": "campana",
+      "nombre": "Propuestas e iniciativas exploratorias"
+    },
+    {
+      "id": "CAM:CAM-0005",
+      "tipo": "campana",
+      "nombre": "Investigación y planificación asistida -- pruebas piloto"
+    },
+    {
+      "id": "PRO:PRO-0001",
+      "tipo": "proyecto",
+      "nombre": "La Troballa - Taller Ocupacional"
+    },
+    {
+      "id": "PRO:PRO-0002",
+      "tipo": "proyecto",
+      "nombre": "Gestor de Proyectos"
+    },
+    {
+      "id": "PRO:PRO-0003",
+      "tipo": "proyecto",
+      "nombre": "MANTENIMIENTO - Piloto"
+    },
+    {
+      "id": "PRO:PRO-0004",
+      "tipo": "proyecto",
+      "nombre": "Sheet piloto — CORE"
+    },
+    {
+      "id": "PRO:PRO-0014",
+      "tipo": "proyecto",
+      "nombre": "Proyecto 0 — Catálogo de módulos"
+    },
+    {
+      "id": "PRO:PRO-0020",
+      "tipo": "proyecto",
+      "nombre": "TEST-Cliente-2026-08-29"
+    },
+    {
+      "id": "PRO:PRO-0022",
+      "tipo": "proyecto",
+      "nombre": "Empaquetado de producto"
+    },
+    {
+      "id": "PRO:PRO-0023",
+      "tipo": "proyecto",
+      "nombre": "Albahaca en maceta"
+    },
+    {
+      "id": "PRO:PRO-0024",
+      "tipo": "proyecto",
+      "nombre": "Yurta de 6 metros de diámetro"
+    },
+    {
+      "id": "PRO:PRO-0025",
+      "tipo": "proyecto",
+      "nombre": "Amigurumi de Stitch a crochet"
+    },
+    {
+      "id": "PRO:PRO-0026",
+      "tipo": "proyecto",
+      "nombre": "Muro de bahareque (barro)"
+    },
+    {
+      "id": "PRD:PRD-0001",
+      "tipo": "producto",
+      "nombre": "Módulo CORE"
+    },
+    {
+      "id": "PRD:PRD-0003",
+      "tipo": "producto",
+      "nombre": "Módulo MANTENIMIENTO"
+    },
+    {
+      "id": "PRD:PRD-0019",
+      "tipo": "producto",
+      "nombre": "Esqueleto exportador Obsidian"
+    },
+    {
+      "id": "PRD:PRD-0020",
+      "tipo": "producto",
+      "nombre": "Maceta de albahaca"
+    },
+    {
+      "id": "PRD:PRD-0021",
+      "tipo": "producto",
+      "nombre": "Yurta de 6 metros de diámetro"
+    },
+    {
+      "id": "PRD:PRD-0022",
+      "tipo": "producto",
+      "nombre": "Amigurumi de Stitch a crochet"
+    },
+    {
+      "id": "PRD:PRD-0023",
+      "tipo": "producto",
+      "nombre": "Muro de bahareque (barro)"
+    },
+    {
+      "id": "PCS:PCS-0001",
+      "tipo": "proceso",
+      "nombre": "Diseño"
+    },
+    {
+      "id": "PCS:PCS-0002",
+      "tipo": "proceso",
+      "nombre": "Implementación"
+    },
+    {
+      "id": "PCS:PCS-0003",
+      "tipo": "proceso",
+      "nombre": "Verificación"
+    },
+    {
+      "id": "PCS:PCS-0004",
+      "tipo": "proceso",
+      "nombre": "Desplegado"
+    },
+    {
+      "id": "PCS:PCS-0006",
+      "tipo": "proceso",
+      "nombre": "Diseño y primer exportador Markdown"
+    },
+    {
+      "id": "PCS:PCS-0007",
+      "tipo": "proceso",
+      "nombre": "Cultivo y cuidado"
+    },
+    {
+      "id": "PCS:PCS-0008",
+      "tipo": "proceso",
+      "nombre": "Estructura de celosía"
+    },
+    {
+      "id": "PCS:PCS-0009",
+      "tipo": "proceso",
+      "nombre": "Techo y anillo central"
+    },
+    {
+      "id": "PCS:PCS-0010",
+      "tipo": "proceso",
+      "nombre": "Cubierta textil"
+    },
+    {
+      "id": "PCS:PCS-0011",
+      "tipo": "proceso",
+      "nombre": "Plataforma/base"
+    },
+    {
+      "id": "PCS:PCS-0012",
+      "tipo": "proceso",
+      "nombre": "Confección a ganchillo"
+    },
+    {
+      "id": "PCS:PCS-0013",
+      "tipo": "proceso",
+      "nombre": "Construcción de muro de bahareque"
+    },
+    {
+      "id": "TAR:TAR-0003",
+      "tipo": "tarea",
+      "nombre": "Construir exportador mínimo Documento/Decisión → Markdown"
+    },
+    {
+      "id": "TAR:TAR-0004",
+      "tipo": "tarea",
+      "nombre": "Sembrar en maceta protegida"
+    },
+    {
+      "id": "TAR:TAR-0005",
+      "tipo": "tarea",
+      "nombre": "Riego diario primeras 2 semanas"
+    },
+    {
+      "id": "TAR:TAR-0006",
+      "tipo": "tarea",
+      "nombre": "Pinzar la yema apical"
+    },
+    {
+      "id": "TAR:TAR-0007",
+      "tipo": "tarea",
+      "nombre": "Primera cosecha y evaluación"
+    },
+    {
+      "id": "TAR:TAR-0008",
+      "tipo": "tarea",
+      "nombre": "Preparar materiales"
+    },
+    {
+      "id": "TAR:TAR-0009",
+      "tipo": "tarea",
+      "nombre": "Tejer el cuerpo"
+    },
+    {
+      "id": "TAR:TAR-0010",
+      "tipo": "tarea",
+      "nombre": "Tejer los brazos"
+    },
+    {
+      "id": "TAR:TAR-0011",
+      "tipo": "tarea",
+      "nombre": "Tejer los pies"
+    },
+    {
+      "id": "TAR:TAR-0016",
+      "tipo": "tarea",
+      "nombre": "Montaje de todas las piezas"
+    },
+    {
+      "id": "TAR:TAR-0018",
+      "tipo": "tarea",
+      "nombre": "Seleccionar y extraer la tierra"
+    },
+    {
+      "id": "TAR:TAR-0019",
+      "tipo": "tarea",
+      "nombre": "Levantar el armazón de madera"
+    },
+    {
+      "id": "TAR:TAR-0023",
+      "tipo": "tarea",
+      "nombre": "Curado y revisión de grietas"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "CAM:CAM-0001",
+      "target": "PRO:PRO-0001"
+    },
+    {
+      "source": "CAM:CAM-0001",
+      "target": "PRO:PRO-0002"
+    },
+    {
+      "source": "CAM:CAM-0001",
+      "target": "PRO:PRO-0003"
+    },
+    {
+      "source": "CAM:CAM-0002",
+      "target": "PRO:PRO-0004"
+    },
+    {
+      "source": "CAM:CAM-0003",
+      "target": "PRO:PRO-0014"
+    },
+    {
+      "source": "CAM:CAM-0001",
+      "target": "PRO:PRO-0020"
+    },
+    {
+      "source": "CAM:CAM-0004",
+      "target": "PRO:PRO-0022"
+    },
+    {
+      "source": "CAM:CAM-0005",
+      "target": "PRO:PRO-0023"
+    },
+    {
+      "source": "CAM:CAM-0005",
+      "target": "PRO:PRO-0024"
+    },
+    {
+      "source": "CAM:CAM-0005",
+      "target": "PRO:PRO-0025"
+    },
+    {
+      "source": "CAM:CAM-0005",
+      "target": "PRO:PRO-0026"
+    },
+    {
+      "source": "PRO:PRO-0001",
+      "target": "PRD:PRD-0001"
+    },
+    {
+      "source": "PRO:PRO-0003",
+      "target": "PRD:PRD-0003"
+    },
+    {
+      "source": "PRO:PRO-0020",
+      "target": "PRD:PRD-0019"
+    },
+    {
+      "source": "PRO:PRO-0023",
+      "target": "PRD:PRD-0020"
+    },
+    {
+      "source": "PRO:PRO-0024",
+      "target": "PRD:PRD-0021"
+    },
+    {
+      "source": "PRO:PRO-0025",
+      "target": "PRD:PRD-0022"
+    },
+    {
+      "source": "PRO:PRO-0026",
+      "target": "PRD:PRD-0023"
+    },
+    {
+      "source": "PRD:PRD-0003",
+      "target": "PCS:PCS-0001"
+    },
+    {
+      "source": "PRD:PRD-0003",
+      "target": "PCS:PCS-0002"
+    },
+    {
+      "source": "PRD:PRD-0003",
+      "target": "PCS:PCS-0003"
+    },
+    {
+      "source": "PRD:PRD-0003",
+      "target": "PCS:PCS-0004"
+    },
+    {
+      "source": "PRD:PRD-0019",
+      "target": "PCS:PCS-0006"
+    },
+    {
+      "source": "PRD:PRD-0020",
+      "target": "PCS:PCS-0007"
+    },
+    {
+      "source": "PRD:PRD-0021",
+      "target": "PCS:PCS-0008"
+    },
+    {
+      "source": "PRD:PRD-0021",
+      "target": "PCS:PCS-0009"
+    },
+    {
+      "source": "PRD:PRD-0021",
+      "target": "PCS:PCS-0010"
+    },
+    {
+      "source": "PRD:PRD-0021",
+      "target": "PCS:PCS-0011"
+    },
+    {
+      "source": "PRD:PRD-0022",
+      "target": "PCS:PCS-0012"
+    },
+    {
+      "source": "PRD:PRD-0023",
+      "target": "PCS:PCS-0013"
+    },
+    {
+      "source": "PCS:PCS-0006",
+      "target": "TAR:TAR-0003"
+    },
+    {
+      "source": "PCS:PCS-0007",
+      "target": "TAR:TAR-0004"
+    },
+    {
+      "source": "PCS:PCS-0007",
+      "target": "TAR:TAR-0005"
+    },
+    {
+      "source": "PCS:PCS-0007",
+      "target": "TAR:TAR-0006"
+    },
+    {
+      "source": "PCS:PCS-0007",
+      "target": "TAR:TAR-0007"
+    },
+    {
+      "source": "PCS:PCS-0012",
+      "target": "TAR:TAR-0008"
+    },
+    {
+      "source": "PCS:PCS-0012",
+      "target": "TAR:TAR-0009"
+    },
+    {
+      "source": "PCS:PCS-0012",
+      "target": "TAR:TAR-0010"
+    },
+    {
+      "source": "PCS:PCS-0012",
+      "target": "TAR:TAR-0011"
+    },
+    {
+      "source": "PCS:PCS-0012",
+      "target": "TAR:TAR-0016"
+    },
+    {
+      "source": "PCS:PCS-0013",
+      "target": "TAR:TAR-0018"
+    },
+    {
+      "source": "PCS:PCS-0013",
+      "target": "TAR:TAR-0019"
+    },
+    {
+      "source": "PCS:PCS-0013",
+      "target": "TAR:TAR-0023"
+    }
+  ]
+}

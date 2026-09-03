@@ -1,0 +1,254 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+.bocetador-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: system-ui, sans-serif;
+}
+
+.bocetador-canvas {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.bocetador-panel {
+  width: 380px;
+  flex-shrink: 0;
+  background: #17181c;
+  color: #e7e7ea;
+  padding: 16px;
+  overflow-y: auto;
+  border-left: 1px solid #2c2d33;
+  box-sizing: border-box;
+}
+
+.bocetador-panel h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.hint {
+  color: #9a9aa2;
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.botones-globales {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.botones-globales button,
+.panel-form button,
+.resultado button {
+  background: #4c6ef5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.botones-globales button:hover,
+.panel-form button:hover,
+.resultado button:hover {
+  background: #3b5bdb;
+}
+
+.botones-globales button.destacado {
+  background: #2f9e44;
+}
+
+.botones-globales button.destacado:hover {
+  background: #2b8a3e;
+}
+
+.paleta {
+  margin-top: 14px;
+  border-top: 1px solid #2c2d33;
+  padding-top: 14px;
+}
+
+.paleta h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+
+.paleta-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.paleta-boton {
+  border: none;
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #14151a;
+  font-weight: 600;
+}
+
+.paleta-blue { background: #6f9ceb; }
+.paleta-green { background: #6fcf97; }
+.paleta-yellow { background: #e0d15c; }
+.paleta-red { background: #e88787; }
+.paleta-orange { background: #eba86f; }
+.paleta-grey { background: #b7b8bf; }
+
+.leyenda {
+  margin-top: 10px;
+}
+
+.leyenda summary {
+  cursor: pointer;
+  font-size: 12px;
+  color: #9a9aa2;
+}
+
+.leyenda-item {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #2c2d33;
+  font-size: 12px;
+}
+
+.leyenda-item p {
+  margin: 3px 0;
+  color: #c7c8d6;
+  line-height: 1.4;
+}
+
+.leyenda-noes {
+  color: #9a9aa2 !important;
+  font-style: italic;
+}
+
+.pregunta-inline {
+  color: #7c8cf0;
+  font-size: 11px;
+}
+
+.leyenda-color-blue { color: #6f9ceb; }
+.leyenda-color-green { color: #6fcf97; }
+.leyenda-color-yellow { color: #e0d15c; }
+.leyenda-color-red { color: #e88787; }
+.leyenda-color-orange { color: #eba86f; }
+.leyenda-color-grey { color: #b7b8bf; }
+
+.familia-relacion {
+  margin-top: 10px;
+}
+
+.familia-etiqueta {
+  display: block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #8f90a0;
+  margin-bottom: 4px;
+}
+
+.paleta-boton.paleta-relacion {
+  background: #2a2b33;
+  color: #c7c8d6;
+  border: 1px solid #3a3b47;
+  font-weight: 500;
+}
+
+.paleta-boton.paleta-relacion.armado {
+  background: #4c6ef5;
+  color: white;
+  border-color: #4c6ef5;
+}
+
+.paleta-limpiar {
+  background: none;
+  border: none;
+  color: #6f9ceb;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+}
+
+.seleccion {
+  margin-top: 14px;
+  border-top: 1px solid #2c2d33;
+  padding-top: 14px;
+}
+
+.pregunta-etiqueta {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #7c8cf0;
+  font-weight: 700;
+  margin: 12px 0 4px;
+}
+
+.pregunta-etiqueta:first-of-type {
+  margin-top: 4px;
+}
+
+.panel-form h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.panel-form label {
+  display: block;
+  font-size: 12px;
+  color: #b4b4bc;
+  margin-bottom: 10px;
+}
+
+.panel-form input,
+.panel-form select,
+.panel-form textarea {
+  width: 100%;
+  margin-top: 4px;
+  background: #24252b;
+  color: #e7e7ea;
+  border: 1px solid #3a3b42;
+  border-radius: 4px;
+  padding: 6px 8px;
+  font-size: 13px;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.resultado {
+  margin-top: 16px;
+  border-top: 1px solid #2c2d33;
+  padding-top: 14px;
+}
+
+.resultado textarea {
+  width: 100%;
+  background: #0f1013;
+  color: #b7f5c4;
+  border: 1px solid #2c2d33;
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+.resultado .error {
+  color: #ff8787;
+  font-size: 12px;
+  margin: 2px 0;
+}

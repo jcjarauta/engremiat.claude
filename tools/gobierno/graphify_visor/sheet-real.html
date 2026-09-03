@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- grafos reales del Sheet y Baserow</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 360px; padding: 16px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .hint { color: #9a9aa2; font-size: 12.5px; line-height: 1.4; }
+  select, button { width: 100%; background: #24252b; color: #e7e7ea; border: 1px solid #3a3b42; border-radius: 4px; padding: 8px; margin-top: 8px; font-size: 13px; cursor: pointer; }
+  .tabs { display: flex; gap: 4px; margin-top: 10px; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 45%; background: #24252b; border: 1px solid #3a3b42; border-radius: 4px; padding: 8px 4px; text-align: center; font-size: 11.5px; cursor: pointer; }
+  .tab.activo { background: #4c6ef5; border-color: #4c6ef5; }
+  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; }
+  #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <h2>Grafos reales -- Sheet y Baserow</h2>
+    <p class="hint" id="descripcion">Cuatro vistas reales, ninguna inventada. Ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.22.</p>
+    <div class="tabs">
+      <div class="tab activo" data-v="historial">91_HISTORIAL<br>por correlationId</div>
+      <div class="tab" data-v="jerarquia">Campaña→Tarea<br>jerarquía real</div>
+      <div class="tab" data-v="paquete_cliente">PAQUETE_CLIENTE<br>módulos activos</div>
+      <div class="tab" data-v="telar_estados">Telar<br>ciclo de vida</div>
+    </div>
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
+  </div>
+</div>
+<script>
+const VISTAS = {
+  historial: { archivo: 'grafo_historial.json', desc: 'Cada operación real (por CORRELATION_ID) conectada a las entidades reales que tocó de golpe -- la auditoría real del sistema, no reconstruida. 35 operaciones, 69 entidades reales.', colorTipo: t => t === 'operacion' ? '#e8955c' : '#4c9aff', forma: n => n.tipo === 'operacion' ? 'diamond' : 'dot' },
+  jerarquia: { archivo: 'grafo_jerarquia.json', desc: 'Campaña→Proyecto→Producto→Proceso→Tarea real, vía las claves reales del Sheet. Incluye proyectos reales como la Yurta, el Amigurumi y el Muro de bahareque.', colorTipo: t => ({campana:'#e85c8a', proyecto:'#4c9aff', producto:'#2f9e44', proceso:'#9c6ade', tarea:'#e8a33d'}[t] || '#5c5f6b'), forma: () => 'dot' },
+  paquete_cliente: { archivo: 'grafo_paquete_cliente.json', desc: 'Qué módulos reales tiene activos cada cliente real (Baserow, PAQUETE_CLIENTE). Hoy solo 1 cliente real (Piloto Plaza) -- crecerá con cada alta real.', colorTipo: t => t === 'cliente' ? '#e85c8a' : '#2f9e44', forma: n => n.tipo === 'cliente' ? 'diamond' : 'dot' },
+  telar_estados: { archivo: 'grafo_telar_estados.json', desc: 'El ciclo de vida real de una Misión de Telar (estados.json, ya validado en B0) -- 14 estados, grafo de proceso, no de entidades. Los 5 en azul son los del MVP visual.', colorTipo: (t, n) => n && n.esMVP ? '#4c9aff' : '#5c5f6b', forma: () => 'box' },
+};
+
+let network = null;
+let datosActuales = null;
+
+async function cargar(vista) {
+  const cfg = VISTAS[vista];
+  const datos = await (await fetch(cfg.archivo)).json();
+  datosActuales = { datos, cfg };
+  document.getElementById('descripcion').textContent = cfg.desc;
+
+  const nodes = new vis.DataSet(datos.nodos.map(n => ({
+    id: n.id, label: n.nombre, title: n.entidad || n.tipo,
+    color: { background: cfg.colorTipo(n.tipo, n), border: '#0f1013' },
+    font: { color: '#e7e7ea', size: 11 },
+    shape: cfg.forma(n), size: n.tipo === 'operacion' || n.tipo === 'campana' || n.tipo === 'cliente' ? 16 : 11,
+  })));
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({ id: i, from: a.source, to: a.target, arrows: 'to', color: { color: '#3a3b47' } })));
+
+  if (network) network.setData({ nodes, edges });
+  else {
+    network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+      physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -70, springLength: 100 } },
+      interaction: { hover: true },
+    });
+    network.on('click', (params) => {
+      if (!params.nodes.length || !datosActuales) return;
+      const n = datosActuales.datos.nodos.find(n => n.id === params.nodes[0]);
+      if (!n) return;
+      let extra = '';
+      if (n.tipo === 'operacion') extra = `<p>Timestamp: ${n.ts}</p><p>${n.n} entidad(es) tocada(s) en esta operación real.</p>`;
+      if (n.tipo === 'entidad') extra = `<p>Tipo real: ${n.entidad}</p>`;
+      document.getElementById('ficha').innerHTML = `<h3>${n.nombre}</h3><p><span class="tag" style="background:${datosActuales.cfg.colorTipo(n.tipo, n)}33;color:${datosActuales.cfg.colorTipo(n.tipo, n)}">${n.tipo}</span></p>${extra}`;
+    });
+  }
+}
+
+document.querySelectorAll('.tab').forEach((tab) => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('activo'));
+    tab.classList.add('activo');
+    cargar(tab.dataset.v);
+  });
+});
+
+cargar('historial');
+</script>
+</body>
+</html>

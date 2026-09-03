@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/modulo.schema.json",
+  "title": "Modulo",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.14 -- Modulo no tiene pestana propia en el Sheet (no es una fila, es una etiqueta de codigo). Espejo real de dos fuentes: MODULO_POR_ENTIDAD_MVP en src/Ids.js (codigo real, 11 modulos nombrados + CORE implicito para toda entidad sin entrada) y 01_Mundo/Modulos/*.md del vault (17 fichas). vinculoReal usa sistema='codigo' en vez de 'Sheet' -- honesto sobre que la fuente de verdad aqui es el propio codigo del Apps Script, no una fila.",
+  "type": "object",
+  "required": ["id", "nombre", "estado"],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true },
+    "id": { "type": "string", "minLength": 1 },
+    "nombre": {
+      "type": "string",
+      "enum": ["CORE", "COMPRAS", "ECONOMICO", "CONVOCATORIAS", "IMPACTO", "CLIENTE", "VENTAS", "OPORTUNIDAD", "ESCENARIOS", "OPERATIVA", "SEGUIMIENTO", "EJECUCION"],
+      "description": "Pregunta Que -- los 12 modulos reales de MODULO_POR_ENTIDAD_MVP (src/Ids.js), CORE es el valor implicito para toda entidad sin entrada explicita. No se anade un modulo aqui sin verlo primero en el codigo real."
+    },
+    "resumen": { "type": "string", "description": "Pregunta Que, ampliada -- espejo del cuerpo real de la ficha .md en 01_Mundo/Modulos/." },
+    "entidadesQueActiva": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Pregunta Con que -- claves reales de ENTIDADES_MVP que este modulo etiqueta (ej. COMPRAS activa MATERIAL, PROVEEDOR...). Referencia, nunca copia del objeto completo."
+    },
+    "estado": { "type": "string", "description": "Pregunta Cuando." },
+    "vinculoReal": {
+      "type": "array",
+      "description": "Pregunta Donde -- mismo patron que el resto, pero sistema='codigo' aqui, no 'Sheet'.",
+      "items": {
+        "type": "object",
+        "required": ["sistema", "recordId"],
+        "additionalProperties": false,
+        "properties": {
+          "sistema": { "type": "string", "minLength": 1 },
+          "recordId": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

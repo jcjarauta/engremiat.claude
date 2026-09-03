@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- grafo real de tools/ (capa Node)</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 340px; padding: 16px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .hint { color: #9a9aa2; font-size: 12.5px; line-height: 1.4; }
+  .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+  .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
+  #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; margin: 2px 4px 2px 0; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <h2>Capa Node (tools/)</h2>
+    <p class="hint">Segunda vista real de Engremiat -- complementa a Graphify (Apps Script) con los 44 scripts reales de Node, generado por mapear_grafo_node.mjs (solo lectura). Ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.17-18.</p>
+    <div class="leyenda-item"><span class="punto" style="background:#4c9aff"></span>Script -- toca Sheet</div>
+    <div class="leyenda-item"><span class="punto" style="background:#2f9e44"></span>Script -- toca Baserow</div>
+    <div class="leyenda-item"><span class="punto" style="background:#9c6ade"></span>Script -- toca la bóveda (vault)</div>
+    <div class="leyenda-item"><span class="punto" style="background:#e8a33d"></span>Script -- toca el VPS</div>
+    <div class="leyenda-item"><span class="punto" style="background:#5c5f6b"></span>Script -- ningún toque externo</div>
+    <div class="leyenda-item"><span class="punto" style="background:#f2c744;border-radius:3px"></span>Fichero de datos real (.json)</div>
+    <div class="leyenda-item"><span class="punto" style="background:#e85c8a"></span>Recurso real compartido (pestaña Sheet / tabla Baserow)</div>
+    <p class="hint">Los colores de script no son excluyentes -- se muestra el primero real detectado. Cuatro tipos reales de arista: <strong>import</strong> (gris, código), <strong style="color:#5cc4e8">escribe</strong>/<strong style="color:#e8955c">lee</strong> (fichero de datos) y <strong style="color:#e85c8a">toca_recurso</strong> (mismo Sheet/Baserow real) -- las tres últimas se añadieron al encontrar que la mayoría de scripts se hablan por dato compartido, no por import.</p>
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
+  </div>
+</div>
+<script>
+fetch('grafo_node.json').then(r => r.json()).then(datos => {
+  const colorDe = n => n.tipo === 'dato' ? '#f2c744' : n.tipo === 'recurso_real' ? '#e85c8a' : n.tocaSheet ? '#4c9aff' : n.tocaBaserow ? '#2f9e44' : n.tocaVault ? '#9c6ade' : n.tocaVps ? '#e8a33d' : '#5c5f6b';
+  const colorArista = { import: '#3a3b47', escribe: '#5cc4e8', lee: '#e8955c', toca_recurso: '#e85c8a', escribe_debil: '#5cc4e888', lee_debil: '#e8955c88' };
+  const nodes = new vis.DataSet(datos.nodos.map(n => ({
+    id: n.id, label: n.nombre, title: n.id,
+    color: { background: colorDe(n), border: '#0f1013' },
+    font: { color: '#e7e7ea', size: 12 },
+    shape: n.tipo === 'dato' ? 'square' : n.tipo === 'recurso_real' ? 'diamond' : 'dot',
+    size: n.tipo === 'script' ? 14 : 11,
+  })));
+  const edges = new vis.DataSet(datos.aristas.map(a => ({ from: a.source, to: a.target, arrows: 'to', color: { color: colorArista[a.relation] || '#3a3b47' }, dashes: a.relation !== 'import' })));
+  const network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -80, springLength: 120 } },
+    interaction: { hover: true },
+  });
+  network.on('click', (params) => {
+    if (!params.nodes.length) return;
+    const n = datos.nodos.find(n => n.id === params.nodes[0]);
+    if (!n) return;
+    if (n.tipo === 'recurso_real') {
+      const tocan = datos.aristas.filter(a => a.target === n.id && a.relation === 'toca_recurso').map(a => a.source);
+      document.getElementById('ficha').innerHTML =
+        '<h3>' + n.nombre + '</h3>' +
+        '<p><span class="tag" style="background:#e85c8a33;color:#e85c8a">Recurso real compartido</span></p>' +
+        '<p>Tocado por: ' + (tocan.join(', ') || '(no detectado)') + '</p>';
+      return;
+    }
+    if (n.tipo === 'dato') {
+      const escritoPor = datos.aristas.filter(a => a.target === n.id && a.relation === 'escribe').map(a => a.source);
+      const leidoPor = datos.aristas.filter(a => a.source === n.id && a.relation === 'lee').map(a => a.target);
+      document.getElementById('ficha').innerHTML =
+        '<h3>' + n.nombre + '</h3>' +
+        '<p><span class="tag" style="background:#f2c74433;color:#f2c744">Fichero de datos real</span></p>' +
+        '<p>Escrito por: ' + (escritoPor.join(', ') || '(no detectado)') + '</p>' +
+        '<p>Leído por: ' + (leidoPor.join(', ') || '(no detectado)') + '</p>';
+      return;
+    }
+    const tags = [];
+    if (n.tocaSheet) tags.push('<span class="tag" style="background:#4c9aff33;color:#4c9aff">Sheet</span>');
+    if (n.tocaBaserow) tags.push('<span class="tag" style="background:#2f9e4433;color:#2f9e44">Baserow</span>');
+    if (n.tocaVault) tags.push('<span class="tag" style="background:#9c6ade33;color:#9c6ade">Vault</span>');
+    if (n.tocaVps) tags.push('<span class="tag" style="background:#e8a33d33;color:#e8a33d">VPS</span>');
+    document.getElementById('ficha').innerHTML =
+      '<h3>' + n.id + '</h3>' +
+      '<p>' + tags.join(' ') + '</p>' +
+      '<p>' + (n.queHace || '(sin que_hace registrado en registro_ecosistema.json)') + '</p>';
+  });
+});
+</script>
+</body>
+</html>

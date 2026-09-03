@@ -1,0 +1,31 @@
+# Visor real del grafo de codigo (Graphify, 1585 nodos/4665 relaciones
+# reales, ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.16).
+# graph.html es estatico y autocontenido (carga vis-network desde unpkg.com,
+# unica dependencia externa) -- ningun backend, ninguna credencial, solo
+# lectura. Mismo criterio de minimo privilegio que el resto del VPS: atado
+# solo a Tailscale, nunca 0.0.0.0. Nace localmente por un choque real de
+# puerto 3000 con el Open WebUI ya desplegado en Docker local -- se saca
+# del portatil/Docker local para que no dependa de que esa maquina este
+# encendida.
+
+services:
+  graphify-visor:
+    image: node:22-alpine
+    container_name: engremiat-graphify-visor
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./index.html:/app/index.html:ro
+      - ./nodejs.html:/app/nodejs.html:ro
+      - ./grafo_node.json:/app/grafo_node.json:ro
+      - ./n8n.html:/app/n8n.html:ro
+      - ./grafo_n8n.json:/app/grafo_n8n.json:ro
+      - ./sheet-real.html:/app/sheet-real.html:ro
+      - ./grafo_historial.json:/app/grafo_historial.json:ro
+      - ./grafo_jerarquia.json:/app/grafo_jerarquia.json:ro
+      - ./grafo_paquete_cliente.json:/app/grafo_paquete_cliente.json:ro
+      - ./grafo_telar_estados.json:/app/grafo_telar_estados.json:ro
+      - ./indice.html:/app/indice.html:ro
+    command: npx --yes serve /app -l 9320
+    ports:
+      - "100.107.171.88:9320:9320"

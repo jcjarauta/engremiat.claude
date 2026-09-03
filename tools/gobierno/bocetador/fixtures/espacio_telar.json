@@ -6,5 +6,7 @@
   "variabilidad": "capacidad_de_nucleo",
   "proposito": "Deliberar, componer decisiones, preparar Compromisos, dejar la Huella.",
   "moduloRequerido": null,
-  "gobernadoPor": ["ley_proponer_no_es_decidir", "ley_incertidumbre_explicita", "ley_ninguna_ia_simula_consentimiento"]
+  "gobernadoPor": ["puerta_humana", "honestidad_del_fallo"],
+  "estado": "activo",
+  "vinculoReal": [{ "sistema": "repo", "recordId": "tools/gobierno/telar/" }]
 }

@@ -1,0 +1,39 @@
+{
+  "generadoEn": "2026-09-03T05:07:17.094Z",
+  "nodos": [
+    {
+      "id": "cliente:PAQ-0001",
+      "tipo": "cliente",
+      "nombre": "Piloto Plaza (interno)"
+    },
+    {
+      "id": "modulo:CRONISTA",
+      "tipo": "modulo",
+      "nombre": "CRONISTA"
+    },
+    {
+      "id": "modulo:AGORA",
+      "tipo": "modulo",
+      "nombre": "AGORA"
+    },
+    {
+      "id": "modulo:EJECUTOR_LOCAL",
+      "tipo": "modulo",
+      "nombre": "EJECUTOR_LOCAL"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "cliente:PAQ-0001",
+      "target": "modulo:CRONISTA"
+    },
+    {
+      "source": "cliente:PAQ-0001",
+      "target": "modulo:AGORA"
+    },
+    {
+      "source": "cliente:PAQ-0001",
+      "target": "modulo:EJECUTOR_LOCAL"
+    }
+  ]
+}

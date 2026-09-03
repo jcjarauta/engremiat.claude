@@ -41,10 +41,18 @@ function main() {
   }
   const validarEspacio = ajv.getSchema('https://engremiat.local/telar/espacio.schema.json');
   const validarRelacion = ajv.getSchema('https://engremiat.local/telar/relacion.schema.json');
+  const validarPersonaje = ajv.getSchema('https://engremiat.local/telar/personaje.schema.json');
+  const validarRecurso = ajv.getSchema('https://engremiat.local/telar/recurso.schema.json');
+  const validarModulo = ajv.getSchema('https://engremiat.local/telar/modulo.schema.json');
+  const validarHerramienta = ajv.getSchema('https://engremiat.local/telar/herramienta.schema.json');
 
   const ficheros = readdirSync(DIR_FIXTURES);
   const ficherosEspacio = ficheros.filter((f) => f.startsWith('espacio_'));
   const ficherosRelacion = ficheros.filter((f) => f.startsWith('relacion_'));
+  const ficherosPersonaje = ficheros.filter((f) => f.startsWith('personaje_'));
+  const ficherosRecurso = ficheros.filter((f) => f.startsWith('recurso_'));
+  const ficherosModulo = ficheros.filter((f) => f.startsWith('modulo_'));
+  const ficherosHerramienta = ficheros.filter((f) => f.startsWith('herramienta_'));
   const ficherosRotos = ficheros.filter((f) => f.startsWith('roto_'));
 
   let fallos = 0;
@@ -83,6 +91,54 @@ function main() {
     }
   }
 
+  console.log('\n-- Personajes --');
+  for (const fichero of ficherosPersonaje) {
+    const fixture = leerJson(join(DIR_FIXTURES, fichero));
+    if (validarPersonaje(fixture)) {
+      console.log(`OK   ${fichero}  (${fixture.nombre}, tipo=${fixture.tipo}, familia=${fixture.familia})`);
+    } else {
+      fallos++;
+      console.log(`FAIL ${fichero}`);
+      for (const e of validarPersonaje.errors) console.log('       - ' + e.instancePath + ' ' + e.message);
+    }
+  }
+
+  console.log('\n-- Recursos --');
+  for (const fichero of ficherosRecurso) {
+    const fixture = leerJson(join(DIR_FIXTURES, fichero));
+    if (validarRecurso(fixture)) {
+      console.log(`OK   ${fichero}  (${fixture.nombre}, clase=${fixture.clase})`);
+    } else {
+      fallos++;
+      console.log(`FAIL ${fichero}`);
+      for (const e of validarRecurso.errors) console.log('       - ' + e.instancePath + ' ' + e.message);
+    }
+  }
+
+  console.log('\n-- Módulos --');
+  for (const fichero of ficherosModulo) {
+    const fixture = leerJson(join(DIR_FIXTURES, fichero));
+    if (validarModulo(fixture)) {
+      console.log(`OK   ${fichero}  (${fixture.nombre})`);
+    } else {
+      fallos++;
+      console.log(`FAIL ${fichero}`);
+      for (const e of validarModulo.errors) console.log('       - ' + e.instancePath + ' ' + e.message);
+    }
+  }
+
+  console.log('\n-- Herramientas --');
+  for (const fichero of ficherosHerramienta) {
+    const fixture = leerJson(join(DIR_FIXTURES, fichero));
+    if (validarHerramienta(fixture)) {
+      console.log(`OK   ${fichero}  (${fixture.nombre}, dispara=${fixture.dispara})`);
+    } else {
+      fallos++;
+      console.log(`FAIL ${fichero}`);
+      for (const e of validarHerramienta.errors) console.log('       - ' + e.instancePath + ' ' + e.message);
+    }
+  }
+
   console.log('\n-- Fixture roto a proposito (debe ser RECHAZADO) --');
   for (const fichero of ficherosRotos) {
     const fixture = leerJson(join(DIR_FIXTURES, fichero));
@@ -97,7 +153,7 @@ function main() {
   }
 
   console.log('\n=== Resultado ===');
-  console.log(`${ficherosEspacio.length} Espacio(s), ${ficherosRelacion.length} Relacion(es), ${ficherosRotos.length} fixture(s) roto(s) a proposito.`);
+  console.log(`${ficherosEspacio.length} Espacio(s), ${ficherosRelacion.length} Relacion(es), ${ficherosPersonaje.length} Personaje(s), ${ficherosRecurso.length} Recurso(s), ${ficherosModulo.length} Modulo(s), ${ficherosHerramienta.length} Herramienta(s), ${ficherosRotos.length} fixture(s) roto(s) a proposito.`);
   if (fallos === 0) {
     console.log('GATE: APROBADO -- contrato revisado, fixtures reproducibles, cero llamadas a API, cero escrituras.');
     process.exitCode = 0;

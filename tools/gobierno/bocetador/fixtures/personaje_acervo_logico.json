@@ -1,0 +1,14 @@
+{
+  "_fixture": true,
+  "id": "acervo_logico",
+  "nombre": "Acervo Lógico",
+  "resumen": "Exige cadena de causa-efecto, sin saltarse pasos. En Concilio es quien pregunta \"¿y eso por qué se sigue de lo anterior?\" cuando una síntesis quiere atajar.",
+  "tipo": "ai",
+  "familia": "vocal_de_contenido",
+  "rol": "Vocal Lógico",
+  "capacidadSemanalDias": null,
+  "disponibilidad": "siempre_deliberacion",
+  "coordinadorId": null,
+  "estado": "activo",
+  "vinculoReal": [{ "sistema": "vault", "recordId": "02_Personajes/Acervos/Acervo Logico.md" }]
+}

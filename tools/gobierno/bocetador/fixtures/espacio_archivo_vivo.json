@@ -6,5 +6,6 @@
   "variabilidad": "capacidad_de_nucleo",
   "proposito": "Consultar evidencia, decisiones, versiones, Huellas y memoria.",
   "moduloRequerido": null,
-  "gobernadoPor": ["ley_memoria_revisable_nunca_borrada"]
+  "gobernadoPor": [],
+  "estado": "activo"
 }

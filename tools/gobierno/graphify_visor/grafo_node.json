@@ -1,0 +1,1193 @@
+{
+  "generadoEn": "2026-09-03T04:50:34.036Z",
+  "nodos": [
+    {
+      "id": "tools/acervo_prompter.mjs",
+      "nombre": "acervo_prompter.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/ciclo_autonomo.mjs",
+      "nombre": "ciclo_autonomo.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/consola/chequear_consistencia.mjs",
+      "nombre": "chequear_consistencia.mjs",
+      "carpeta": "tools/consola",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Consola (GRUPOS) vs 13_INCIDENCIAS"
+    },
+    {
+      "id": "tools/consola/extraer_decisiones.mjs",
+      "nombre": "extraer_decisiones.mjs",
+      "carpeta": "tools/consola",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet"
+    },
+    {
+      "id": "tools/consola/regenerar_estatico.mjs",
+      "nombre": "regenerar_estatico.mjs",
+      "carpeta": "tools/consola",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Reconstruye el HTML estatico de la Consola preservando estado publicado"
+    },
+    {
+      "id": "tools/constructor/montar-cliente.mjs",
+      "nombre": "montar-cliente.mjs",
+      "carpeta": "tools/constructor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/constructor/montar-cliente.test.mjs",
+      "nombre": "montar-cliente.test.mjs",
+      "carpeta": "tools/constructor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/coordinador.mjs",
+      "nombre": "coordinador.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/actualizar_libreria_cliente.mjs",
+      "nombre": "actualizar_libreria_cliente.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Regenera el Codigo.js (envoltorios) de un cliente con fuente VIVA de la libreria (nunca git local, tras encontrar divergencia real). Modo diagnostico por defecto, --aplicar hace el push real. Encontro y resolvio INC-0061 en su primer uso real."
+    },
+    {
+      "id": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
+      "nombre": "cargar_desde_vault.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Solo lectura -- recorre la boveda real de Obsidian (01_Mundo/Espacios,Recursos,Modulos + 02_Personajes + 08_Oficios + 03_Reglas + 07_Holon_Relaciones) y genera el paquete real que el Bocetador carga con 'Cargar Universo real': 63 nodos + 18 relaciones reales, nunca inventados. Hallazgo real: el vocabulario de tipo_relacion ya en uso en 07_Holon_Relaciones/ (activa_a, alimenta_a, corrige_a, depende_de, gobierna_a, opera_en, parte_de, verifica_a) era mas rico que el que tenia relacion.schema.json (solo 3 aristas del canvas) -- corregido, union de las dos fuentes reales."
+    },
+    {
+      "id": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
+      "nombre": "cargar_estructura_baserow.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": "Solo lectura -- equivalente real a cargar_estructura_sheet.mjs para Baserow. Corrige un error propio: se penso que listar tablas exigia sesion de usuario, pero /api/database/tables/all-tables/ (ya en uso en puente_historia_leyes.mjs) funciona con el mismo token de base de datos. 18 tablas reales encontradas -- hallazgo real: PERSONAJE (283) y PLANTILLA_MISION (284) ya existen en Baserow y no se habian cruzado con personaje.schema.json."
+    },
+    {
+      "id": "tools/gobierno/bocetador/cargar_estructura_sheet.mjs",
+      "nombre": "cargar_estructura_sheet.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Solo lectura, sin credenciales en el navegador -- lee las 70 pestanas reales del Sheet y su fila de cabeceras (nunca filas de datos) en un solo batchGet. Verificado: 46 pestanas de negocio, 24 de utilidad."
+    },
+    {
+      "id": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "nombre": "encontrar_huecos.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Cruza estructura_sheet.json contra los vinculoReal ya declarados en los fixtures del Bocetador -- informe real de que pestanas de negocio no tienen todavia espejo (2/46 hoy, 44/46 huecos reales). No escribe nada, mismo espiritu que chequear_consistencia.mjs."
+    },
+    {
+      "id": "tools/gobierno/bocetador/validar_bocetador.mjs",
+      "nombre": "validar_bocetador.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/bus_trabajo.mjs",
+      "nombre": "bus_trabajo.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Bus de eventos vía Sheet (pestaña 92_BUS_TRABAJO): reclamar/en_progreso/cerrar/verificar por worker, con proteccion contra doble reclamacion y panel de coste/tiempo agregado por worker. Formaliza el patron probado a mano en el lote 1 (2026-08-25)."
+    },
+    {
+      "id": "tools/gobierno/cerrar_ciclo.mjs",
+      "nombre": "cerrar_ciclo.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear"
+    },
+    {
+      "id": "tools/gobierno/chequear_libreria_clientes.mjs",
+      "nombre": "chequear_libreria_clientes.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "appsscript.json real de cada cliente vs version real publicada de LIBRERIA_ID_ (nunca el dato LIBRERIA_VERSION del Sheet como fuente de verdad)"
+    },
+    {
+      "id": "tools/gobierno/exportador_prometheus_gasto.mjs",
+      "nombre": "exportador_prometheus_gasto.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": "Lee GASTO_API real (Baserow, tabla 285) y lo expone como metricas Prometheus (/metrics) para el panel Grafana de tools/gobierno/monitorizacion/. Desplegado y verificado en el VPS con datos reales (2026-09-01)."
+    },
+    {
+      "id": "tools/gobierno/generar_dialogos.mjs",
+      "nombre": "generar_dialogos.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Lee las fichas reales de 02_Personajes/ del vault y genera personajes.json -- un solo motor de comportamiento de personajes para el juego 2D y, mas adelante, el bot de Telegram (mismas entidades, piel distinta). Probado en real: 19 personajes extraidos correctamente."
+    },
+    {
+      "id": "tools/gobierno/generar_variantes_juego.mjs",
+      "nombre": "generar_variantes_juego.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+      "nombre": "mapear_grafo_n8n.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Tercera vista real -- solo lectura de los 2 workflows n8n ya exportados por tools/n8n-workflows/exportar.mjs (ninguna llamada nueva a la API de n8n). 137 nodos reales, 138 conexiones reales. Evaluado como asesor tecnico antes de construir: aporta valor real porque es la unica capa que muestra automatizacion real con Puerta Humana propia (Cronista), invisible en Graphify y en la capa Node. Servido en http://100.107.171.88:9320/n8n.html."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "nombre": "mapear_grafo_node.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": true,
+      "tocaVault": true,
+      "tocaVps": true,
+      "queHace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los 44 scripts reales de Node en tools/. Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS por patron de texto, y relaciones reales por fichero de datos (escribe/lee -- corregido 2026-09-03 tras encontrar que la mayoria de scripts se hablan por .json, no por import; 16 aristas y 28 ficheros de datos reales detectados). Servido en http://100.107.171.88:9320/nodejs.html."
+    },
+    {
+      "id": "tools/gobierno/puente_historia_leyes.mjs",
+      "nombre": "puente_historia_leyes.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": "El primer Mensajero real -- lee una TAREA de Baserow (tabla 278, nucleo soberano) y escribe solo una referencia (nunca el dato completo) como fila nueva en 18_VINCULO del lado Sheets, con rastro en 92_BUS_TRABAJO. Dry-run por defecto, --aplicar escribe de verdad. Probado en real contra TAR-0008 (dry-run, sin escritura)."
+    },
+    {
+      "id": "tools/gobierno/sincronizar_boveda.mjs",
+      "nombre": "sincronizar_boveda.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/spike_concilio_coop/prueba_cliente.mjs",
+      "nombre": "prueba_cliente.mjs",
+      "carpeta": "tools/gobierno/spike_concilio_coop",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/spike_concilio_coop/prueba_cliente2.mjs",
+      "nombre": "prueba_cliente2.mjs",
+      "carpeta": "tools/gobierno/spike_concilio_coop",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/spike_concilio_coop/servidor.mjs",
+      "nombre": "servidor.mjs",
+      "carpeta": "tools/gobierno/spike_concilio_coop",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/telar/b1/servidor_b1.mjs",
+      "nombre": "servidor_b1.mjs",
+      "carpeta": "tools/gobierno/telar/b1",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/telar/b2/deliberar_b2.mjs",
+      "nombre": "deliberar_b2.mjs",
+      "carpeta": "tools/gobierno/telar/b2",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/telar/b3/prueba_b3.mjs",
+      "nombre": "prueba_b3.mjs",
+      "carpeta": "tools/gobierno/telar/b3",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/telar/b3/servidor_b3.mjs",
+      "nombre": "servidor_b3.mjs",
+      "carpeta": "tools/gobierno/telar/b3",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/telar/validar_b0.mjs",
+      "nombre": "validar_b0.mjs",
+      "carpeta": "tools/gobierno/telar",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/graphify/graphify-context.mjs",
+      "nombre": "graphify-context.mjs",
+      "carpeta": "tools/graphify",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/n8n-workflows/exportar.mjs",
+      "nombre": "exportar.mjs",
+      "carpeta": "tools/n8n-workflows",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/build-packages.mjs",
+      "nombre": "build-packages.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/build-packages.test.mjs",
+      "nombre": "build-packages.test.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/generate-package-map-embebido.mjs",
+      "nombre": "generate-package-map-embebido.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/generate-shell-wrappers.mjs",
+      "nombre": "generate-shell-wrappers.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/generate-shell-wrappers.test.mjs",
+      "nombre": "generate-shell-wrappers.test.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/packager/generate-test-registry.mjs",
+      "nombre": "generate-test-registry.mjs",
+      "carpeta": "tools/packager",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/prompter_lote_autociclo.mjs",
+      "nombre": "prompter_lote_autociclo.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/prompter_lote_bovedas.mjs",
+      "nombre": "prompter_lote_bovedas.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/salud_ecosistema.mjs",
+      "nombre": "salud_ecosistema.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Chequeo agregado de los 3 puntos automatizables de este registro"
+    },
+    {
+      "id": "tools/sembrar_mecanismos.mjs",
+      "nombre": "sembrar_mecanismos.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/verificador_capacidades.mjs",
+      "nombre": "verificador_capacidades.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/verificador_determinista.mjs",
+      "nombre": "verificador_determinista.mjs",
+      "carpeta": "tools",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "dato:_informe.json",
+      "nombre": "_informe.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:clientes.json",
+      "nombre": "clientes.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:libreria.json",
+      "nombre": "libreria.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:appsscript.json",
+      "nombre": "appsscript.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:_resumen.json",
+      "nombre": "_resumen.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:.clasprc.json",
+      "nombre": ".clasprc.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:universo_real.json",
+      "nombre": "universo_real.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:estructura_baserow.json",
+      "nombre": "estructura_baserow.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:estructura_sheet.json",
+      "nombre": "estructura_sheet.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_n8n.json",
+      "nombre": "grafo_n8n.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:cronista-segmentar-generador.json",
+      "nombre": "cronista-segmentar-generador.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:telar-interactivo.json",
+      "nombre": "telar-interactivo.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_node.json",
+      "nombre": "grafo_node.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:registro_ecosistema.json",
+      "nombre": "registro_ecosistema.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:01_x.json",
+      "nombre": "01_x.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:.ultima_sincronizacion_boveda.json",
+      "nombre": ".ultima_sincronizacion_boveda.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:01_sin_seleccionar.json",
+      "nombre": "01_sin_seleccionar.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:informe_ultima_ejecucion.json",
+      "nombre": "informe_ultima_ejecucion.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:03_tejiendo.json",
+      "nombre": "03_tejiendo.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:auditoria.json",
+      "nombre": "auditoria.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:estados.json",
+      "nombre": "estados.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:02_deliberando.json",
+      "nombre": "02_deliberando.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:04_esperando_relevo.json",
+      "nombre": "04_esperando_relevo.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:05_huella.json",
+      "nombre": "05_huella.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:aux_evento_decision_aprobar.json",
+      "nombre": "aux_evento_decision_aprobar.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:aux_huella_evento.json",
+      "nombre": "aux_huella_evento.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:graph.json",
+      "nombre": "graph.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:concat-map.json",
+      "nombre": "concat-map.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:package-map.json",
+      "nombre": "package-map.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:manifest.json",
+      "nombre": "manifest.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:validation-report.json",
+      "nombre": "validation-report.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "recurso:13_INCIDENCIAS",
+      "nombre": "13_INCIDENCIAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:ACERVO",
+      "nombre": "ACERVO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:TAREA",
+      "nombre": "TAREA",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:VIGILIA_TAREA",
+      "nombre": "VIGILIA_TAREA",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:GASTO_API",
+      "nombre": "GASTO_API",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:METRICA_FABRICACION",
+      "nombre": "METRICA_FABRICACION",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:38_CLIENTE",
+      "nombre": "38_CLIENTE",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:PERSONAJE",
+      "nombre": "PERSONAJE",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:PLANTILLA_MISION",
+      "nombre": "PLANTILLA_MISION",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:18_VINCULO",
+      "nombre": "18_VINCULO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:DOCUMENTO",
+      "nombre": "DOCUMENTO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:DOCUMENTO_ENGREMIAT",
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "tipo": "recurso_real"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "tools/acervo_prompter.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/acervo_prompter.mjs",
+      "target": "recurso:ACERVO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/ciclo_autonomo.mjs",
+      "target": "dato:_informe.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/ciclo_autonomo.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/ciclo_autonomo.mjs",
+      "target": "recurso:VIGILIA_TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/consola/chequear_consistencia.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/consola/extraer_decisiones.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/constructor/montar-cliente.mjs",
+      "target": "tools/packager/generate-shell-wrappers.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/constructor/montar-cliente.mjs",
+      "target": "dato:clientes.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/constructor/montar-cliente.mjs",
+      "target": "dato:libreria.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/constructor/montar-cliente.mjs",
+      "target": "dato:appsscript.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/constructor/montar-cliente.test.mjs",
+      "target": "tools/constructor/montar-cliente.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "dato:appsscript.json",
+      "target": "tools/constructor/montar-cliente.test.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:clientes.json",
+      "target": "tools/constructor/montar-cliente.test.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:libreria.json",
+      "target": "tools/constructor/montar-cliente.test.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/coordinador.mjs",
+      "target": "dato:_resumen.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/coordinador.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/coordinador.mjs",
+      "target": "recurso:METRICA_FABRICACION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
+      "target": "tools/packager/build-packages.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
+      "target": "tools/packager/generate-shell-wrappers.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
+      "target": "dato:.clasprc.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/actualizar_libreria_cliente.mjs",
+      "target": "recurso:38_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
+      "target": "dato:universo_real.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
+      "target": "dato:estructura_baserow.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/bocetador/cargar_estructura_sheet.mjs",
+      "target": "dato:estructura_sheet.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:universo_real.json",
+      "target": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:estructura_sheet.json",
+      "target": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:estructura_baserow.json",
+      "target": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "target": "recurso:PERSONAJE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+      "target": "recurso:PLANTILLA_MISION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/bus_trabajo.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/bus_trabajo.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:.clasprc.json",
+      "target": "tools/gobierno/chequear_libreria_clientes.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "tools/gobierno/chequear_libreria_clientes.mjs",
+      "target": "recurso:38_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/exportador_prometheus_gasto.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/generar_variantes_juego.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+      "target": "dato:grafo_n8n.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+      "target": "dato:cronista-segmentar-generador.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+      "target": "dato:telar-interactivo.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:registro_ecosistema.json",
+      "target": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:estructura_sheet.json",
+      "target": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:estructura_baserow.json",
+      "target": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "target": "dato:grafo_node.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "target": "dato:01_x.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/puente_historia_leyes.mjs",
+      "target": "recurso:18_VINCULO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/puente_historia_leyes.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/sincronizar_boveda.mjs",
+      "target": "dato:.ultima_sincronizacion_boveda.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/sincronizar_boveda.mjs",
+      "target": "recurso:18_VINCULO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/sincronizar_boveda.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/spike_concilio_coop/servidor.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/telar/b2/deliberar_b2.mjs",
+      "target": "dato:informe_ultima_ejecucion.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/telar/b2/deliberar_b2.mjs",
+      "target": "dato:01_sin_seleccionar.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/telar/b2/deliberar_b2.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/telar/b3/servidor_b3.mjs",
+      "target": "dato:03_tejiendo.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/telar/b3/servidor_b3.mjs",
+      "target": "dato:auditoria.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:estados.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:01_sin_seleccionar.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:02_deliberando.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:03_tejiendo.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:04_esperando_relevo.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:05_huella.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:aux_evento_decision_aprobar.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:aux_huella_evento.json",
+      "target": "tools/gobierno/telar/validar_b0.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:graph.json",
+      "target": "tools/graphify/graphify-context.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:concat-map.json",
+      "target": "tools/graphify/graphify-context.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "tools/n8n-workflows/exportar.mjs",
+      "target": "dato:cronista-segmentar-generador.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/n8n-workflows/exportar.mjs",
+      "target": "dato:telar-interactivo.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/packager/build-packages.mjs",
+      "target": "dato:manifest.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/packager/build-packages.mjs",
+      "target": "dato:validation-report.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/packager/build-packages.mjs",
+      "target": "dato:package-map.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:manifest.json",
+      "target": "tools/packager/build-packages.test.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/packager/build-packages.test.mjs",
+      "target": "dato:package-map.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/packager/generate-package-map-embebido.mjs",
+      "target": "dato:package-map.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/packager/generate-shell-wrappers.test.mjs",
+      "target": "tools/packager/build-packages.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/packager/generate-test-registry.mjs",
+      "target": "tools/packager/generate-shell-wrappers.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:ACERVO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:VIGILIA_TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_autociclo.mjs",
+      "target": "recurso:METRICA_FABRICACION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_bovedas.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_bovedas.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_bovedas.mjs",
+      "target": "recurso:ACERVO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/prompter_lote_bovedas.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:registro_ecosistema.json",
+      "target": "tools/salud_ecosistema.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/sembrar_mecanismos.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/sembrar_mecanismos.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/sembrar_mecanismos.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/sembrar_mecanismos.mjs",
+      "target": "recurso:VIGILIA_TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/sembrar_mecanismos.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/verificador_capacidades.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "_fixture": true,
+  "id": "coordinador",
+  "nombre": "Coordinador",
+  "resumen": "Reparte trabajo -- no verifica el suyo propio si el riesgo es significativo.",
+  "tipo": "human",
+  "familia": "oficio",
+  "rol": "Coordinador",
+  "capacidadSemanalDias": 5,
+  "disponibilidad": "horario_operador",
+  "coordinadorId": null,
+  "estado": "activo",
+  "vinculoReal": [
+    { "sistema": "vault", "recordId": "02_Personajes/Coordinador.md" },
+    { "sistema": "Sheet", "recordId": "11_PERSONAS_EQUIPOS" }
+  ]
+}

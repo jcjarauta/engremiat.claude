@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://engremiat.local/telar/personaje.schema.json",
+  "title": "Personaje",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.12/§8.20 -- espejo real de dos fuentes maduras: 02_Personajes/*.md del vault (title/tipo/estado, 19 fichas reales) y 11_PERSONAS_EQUIPOS del Sheet real (ID/TIPO/NOMBRE/ROL/CAPACIDAD_SEMANAL_DIAS/DISPONIBILIDAD/ESTADO/EMAIL/TELEFONO/COORDINADOR_ID). Extiende participante.schema.json de Telar (actorId/participantType/roleId) sin repetirlo -- 'tipo' aqui juega el papel de participantType. Hay una TERCERA fuente real, PERSONAJE en Baserow (tabla 283) -- pero verificada con datos reales (3 filas, 2 casi vacias, 1 real: 'Soy Juan Carlos, soy autista y quiero construir Engremiat'), es demasiado incipiente para tratarla como espejo maduro igual que las otras dos -- parece mas cercana a un mecanismo narrativo/AGORA (RASGO, QUIERE_O_NECESITA, PROCESO_ID) que al roster de Vocales/Guardianes/Oficios. Anotada como candidata real, no fusionada sin mas evidencia. Campos organizados por las 8 preguntas reales de 00_Mapa.md.",
+  "type": "object",
+  "required": ["id", "nombre", "tipo", "familia", "estado"],
+  "additionalProperties": false,
+  "properties": {
+    "_fixture": { "type": "boolean", "const": true },
+    "id": { "type": "string", "minLength": 1 },
+    "nombre": { "type": "string", "minLength": 1, "description": "Pregunta Que -- espejo de NOMBRE (Sheet) y title (vault)." },
+    "resumen": { "type": "string", "description": "Pregunta Que, ampliada -- espejo del cuerpo real de la ficha .md." },
+    "tipo": {
+      "type": "string",
+      "enum": ["human", "ai", "system"],
+      "description": "Pregunta Quien -- mismo campo que participantType de participante.schema.json (Telar), nunca dos vocabularios distintos para lo mismo."
+    },
+    "familia": {
+      "type": "string",
+      "enum": ["vocal_de_contenido", "guardian", "gobierno_protocolo", "oficio", "acompanante"],
+      "description": "Pregunta Quien -- las 5 familias reales de PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §6. Ninguna figura personalizada crea una familia nueva; el mecanismo para ampliar exige consentimiento sociocratico (§7 de ese documento)."
+    },
+    "rol": { "type": "string", "description": "Pregunta Que -- espejo de ROL (11_PERSONAS_EQUIPOS)." },
+    "capacidadSemanalDias": { "type": ["number", "null"], "description": "Pregunta Cuanto -- espejo de CAPACIDAD_SEMANAL_DIAS (Sheet). null si no aplica (ej. un Acervo de IA)." },
+    "disponibilidad": { "type": "string", "description": "Pregunta Cuando -- espejo de DISPONIBILIDAD (Sheet)." },
+    "coordinadorId": { "type": ["string", "null"], "description": "Pregunta Quien -- espejo de COORDINADOR_ID (Sheet), a quien reporta." },
+    "estado": { "type": "string", "description": "Pregunta Cuando -- espejo directo de ESTADO real (Sheet y vault)." },
+    "vinculoReal": {
+      "type": "array",
+      "description": "Pregunta Donde -- mismo shape que vinculoReal de espacio.schema.json y origenes de mision.schema.json, un solo patron en todo Engremiat.",
+      "items": {
+        "type": "object",
+        "required": ["sistema", "recordId"],
+        "additionalProperties": false,
+        "properties": {
+          "sistema": { "type": "string", "minLength": 1 },
+          "recordId": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

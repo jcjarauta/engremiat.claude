@@ -1,0 +1,12 @@
+{
+  "_fixture": true,
+  "id": "gasto_api",
+  "nombre": "GASTO_API",
+  "resumen": "Registro real de coste por llamada a proveedores de IA (DeepSeek, Claude...) -- ya el hub de coste compartido entre Telar, spike_concilio_coop y el panel de Grafana.",
+  "clase": "operativo_gobierno",
+  "vinculoReal": [{ "sistema": "Baserow", "recordId": "tabla 285" }],
+  "costeAdquisicion": null,
+  "costePeriodico": null,
+  "responsableId": null,
+  "estado": "activo"
+}

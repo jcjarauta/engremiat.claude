@@ -1,0 +1,9 @@
+{
+  "_fixture": true,
+  "id": "modulo_core",
+  "nombre": "CORE",
+  "resumen": "Valor implicito para toda entidad sin entrada explicita en MODULO_POR_ENTIDAD_MVP -- nunca se etiqueta a mano, se deriva.",
+  "entidadesQueActiva": ["CAMPANA", "PROYECTO", "PRODUCTO", "PROCESO", "TAREA"],
+  "estado": "activo",
+  "vinculoReal": [{ "sistema": "codigo", "recordId": "src/Ids.js#MODULO_POR_HOJA_MVP" }]
+}

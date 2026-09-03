@@ -1,0 +1,736 @@
+{
+  "generadoEn": "2026-09-03T04:43:39.474Z",
+  "baseUrl": "http://100.107.171.88",
+  "tablas": [
+    {
+      "id": 275,
+      "nombre": "AGORA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "USUARIO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "DESCRIPCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "SALDO_USUARIO",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 276,
+      "nombre": "DOCUMENTO",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ENTIDAD_TIPO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ENTIDAD_ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO_DOCUMENTO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TITULO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "DESCRIPCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "URL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_DOCUMENTO",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 277,
+      "nombre": "PAQUETE_CLIENTE",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CLIENTE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_EJECUTOR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_CRONISTA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_PREGONERO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_OPORTUNIDAD",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_AGORA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "AGORA_MOTOR_SALDO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_EJECUTOR_LOCAL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_OBSIDIAN",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODULO_BOT_TELEGRAM",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_ALTA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "OBSERVACIONES",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ENTIDAD_ORGANIZATIVA",
+          "tipo": "link_row"
+        }
+      ]
+    },
+    {
+      "id": 278,
+      "nombre": "TAREA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "PROCESO_ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "DESCRIPCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ORDEN_SECUENCIA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TAREA_PREDECESORA_ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "DURACION_PREVISTA_DIAS",
+          "tipo": "text"
+        },
+        {
+          "nombre": "DURACION_REAL_DIAS",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_INICIO_PLAN",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_FIN_PLAN",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_INICIO_REAL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_FIN_REAL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "PORCENTAJE_AVANCE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MOTIVO_BLOQUEO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MOTIVO_POSPOSICION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MOTIVO_CANCELACION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_CREACION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CREADO_POR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_MODIFICACION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "MODIFICADO_POR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ACTIVO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "OBSERVACIONES",
+          "tipo": "text"
+        },
+        {
+          "nombre": "OBJETIVO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "RESULTADO_ESPERADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CRITERIOS_ACEPTACION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "VERSION",
+          "tipo": "number"
+        }
+      ]
+    },
+    {
+      "id": 279,
+      "nombre": "ENTIDAD_ORGANIZATIVA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO_NIVEL",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "PADRE_ID",
+          "tipo": "link_row"
+        },
+        {
+          "nombre": "PAQUETE_CLIENTE_ID",
+          "tipo": "link_row"
+        },
+        {
+          "nombre": "CIF_O_IDENTIFICADOR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CONTACTO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_ALTA",
+          "tipo": "date"
+        },
+        {
+          "nombre": "OBSERVACIONES",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "PERSONA_COMPETENCIA",
+          "tipo": "link_row"
+        }
+      ]
+    },
+    {
+      "id": 280,
+      "nombre": "UBICACION_GEOGRAFICA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO_NIVEL",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "PADRE_ID",
+          "tipo": "link_row"
+        }
+      ]
+    },
+    {
+      "id": 281,
+      "nombre": "COMPETENCIA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CODIGO_ESCO",
+          "tipo": "url"
+        },
+        {
+          "nombre": "PADRE_ID",
+          "tipo": "link_row"
+        },
+        {
+          "nombre": "PERSONA_COMPETENCIA",
+          "tipo": "link_row"
+        }
+      ]
+    },
+    {
+      "id": 282,
+      "nombre": "PERSONA_COMPETENCIA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "ETIQUETA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "PERSONA_ID",
+          "tipo": "link_row"
+        },
+        {
+          "nombre": "COMPETENCIA_ID",
+          "tipo": "link_row"
+        },
+        {
+          "nombre": "NIVEL",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 283,
+      "nombre": "PERSONAJE",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "RASGO",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "QUIERE_O_NECESITA",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "PROCESO_ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CREADO_POR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_CREACION",
+          "tipo": "date"
+        }
+      ]
+    },
+    {
+      "id": 284,
+      "nombre": "PLANTILLA_MISION",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESCENARIO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ORDEN",
+          "tipo": "number"
+        },
+        {
+          "nombre": "DESCRIPCION",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "TIPO_CAPTURA",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "VERSION",
+          "tipo": "number"
+        }
+      ]
+    },
+    {
+      "id": 285,
+      "nombre": "GASTO_API",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "SERVICIO",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "MODELO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TOKENS_ENTRADA",
+          "tipo": "number"
+        },
+        {
+          "nombre": "TOKENS_SALIDA",
+          "tipo": "number"
+        },
+        {
+          "nombre": "COSTE_ESTIMADO_USD",
+          "tipo": "number"
+        },
+        {
+          "nombre": "ACCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CONTEXTO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA",
+          "tipo": "date"
+        }
+      ]
+    },
+    {
+      "id": 286,
+      "nombre": "ACERVO",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "TITULO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CATEGORIA",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "CONTENIDO",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "FUENTE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA",
+          "tipo": "date"
+        }
+      ]
+    },
+    {
+      "id": 287,
+      "nombre": "VIGILIA_TAREA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ORDEN",
+          "tipo": "number"
+        },
+        {
+          "nombre": "TEMA",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "single_select"
+        },
+        {
+          "nombre": "RESULTADO",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "FECHA_PROCESADO",
+          "tipo": "date"
+        },
+        {
+          "nombre": "PERSONAS_JSON",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "ACCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "RAMA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "RAMA_ELEGIDA",
+          "tipo": "boolean"
+        },
+        {
+          "nombre": "TABLA_RELEVANTE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "VERIFICACION_DETERMINISTA",
+          "tipo": "long_text"
+        },
+        {
+          "nombre": "PROCESANDO_DESDE",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 289,
+      "nombre": "NODO_ENGREMIAT",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "NODO_PADRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA_ALTA",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 290,
+      "nombre": "TELAR_SESION",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CAPITULO_ACTUAL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "HISTORIAL",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CHAT_ID",
+          "tipo": "text"
+        },
+        {
+          "nombre": "OPCION_A",
+          "tipo": "text"
+        },
+        {
+          "nombre": "OPCION_B",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 292,
+      "nombre": "TELAR_BIBLIOTECA",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "TITULO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TEMA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "PRESENTACION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "REGISTRO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 1038,
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "RUTA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "PROYECTO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "ESTADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "SUPERADO_POR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TEMA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "HUECO_DETECTADO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TIPO",
+          "tipo": "text"
+        }
+      ]
+    },
+    {
+      "id": 1039,
+      "nombre": "METRICA_FABRICACION",
+      "databaseId": 76,
+      "campos": [
+        {
+          "nombre": "NOMBRE",
+          "tipo": "text"
+        },
+        {
+          "nombre": "FECHA",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TOTAL_RESPUESTAS",
+          "tipo": "text"
+        },
+        {
+          "nombre": "LIMPIAS_SIN_CORRECCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CORREGIDAS_CON_EXITO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "CORRECCION_FALLIDA_A_RELEVO",
+          "tipo": "text"
+        },
+        {
+          "nombre": "REVISAR_SIN_INTENTO_CORRECCION",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TOTAL_CAMPOS_FABRICADOS",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TOTAL_CAPACIDADES_SIN_CONFIRMAR",
+          "tipo": "text"
+        },
+        {
+          "nombre": "TASA_FABRICACION",
+          "tipo": "text"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "_fixture": true,
+  "id": "modulo_compras",
+  "nombre": "COMPRAS",
+  "resumen": "Activa el circuito real de materiales y proveedores.",
+  "entidadesQueActiva": ["MATERIAL", "PRODUCTO_MATERIAL", "TAREA_MATERIAL", "PROVEEDOR", "MOVIMIENTO_MATERIAL", "PROVEEDOR_MATERIAL", "PEDIDO_PROVEEDOR", "PEDIDO_PROVEEDOR_LINEA", "RECEPCION", "RECEPCION_LINEA"],
+  "estado": "activo",
+  "vinculoReal": [{ "sistema": "codigo", "recordId": "src/Ids.js#MODULO_POR_ENTIDAD_MVP" }]
+}

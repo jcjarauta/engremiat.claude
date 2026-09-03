@@ -15,9 +15,11 @@
       "type": "string",
       "enum": [
         "gobierna", "gobierna_permisos", "aloja", "opera_dentro_de",
-        "entrada_de_necesidades", "deja_huella", "documenta", "acompana"
+        "entrada_de_necesidades", "deja_huella", "documenta", "acompana",
+        "activa_a", "alimenta_a", "corrige_a", "depende_de", "gobierna_a",
+        "opera_en", "parte_de", "verifica_a"
       ],
-      "description": "Vocabulario cerrado, tomado de las aristas reales ya presentes en Arquitectura_Nucleo.canvas -- ampliar esta lista exige revisar el canvas real primero, nunca inventar un tipo nuevo sobre la marcha."
+      "description": "Vocabulario cerrado. Union real de dos fuentes: las 8 aristas de Arquitectura_Nucleo.canvas (gobierna...acompana) mas las 8 ya en uso en 07_Holon_Relaciones/ del vault (activa_a...verifica_a, descubiertas en real 2026-09-02 via cargar_desde_vault.mjs -- mas ricas que las del canvas, no al reves). Ampliar esta lista exige encontrar el uso real primero, nunca inventar un tipo nuevo sobre la marcha."
     },
     "nota": { "type": "string", "description": "Matiz libre opcional -- nunca sustituye a 'tipo', solo lo aclara." }
   }

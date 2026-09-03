@@ -1,0 +1,13 @@
+{
+  "_fixture": true,
+  "id": "bus_de_trabajo",
+  "nombre": "Bus de trabajo",
+  "resumen": "Bus de eventos vía Sheet (92_BUS_TRABAJO): reclamar/en_progreso/cerrar/verificar por worker, con protección contra doble reclamación.",
+  "queHace": "Formaliza el patrón probado a mano en el lote 1 (2026-08-25).",
+  "dispara": "bus_de_trabajo",
+  "estado": "activo",
+  "vinculoReal": [
+    { "sistema": "repo", "recordId": "tools/gobierno/bus_trabajo.mjs" },
+    { "sistema": "vault", "recordId": "08_Oficios/Bus de trabajo.md" }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "_fixture": true,
+  "id": "cerrar_ciclo",
+  "nombre": "Cerrar ciclo",
+  "resumen": "Escribe filas de cierre de ciclo (triaje/auditoría) en una pestaña del Sheet vía API directa, sin herramientas MCP.",
+  "queHace": "Reemplaza el trabajo manual de crear pestaña + escribir + formatear.",
+  "dispara": "manual",
+  "estado": "activo",
+  "vinculoReal": [
+    { "sistema": "repo", "recordId": "tools/gobierno/cerrar_ciclo.mjs" },
+    { "sistema": "vault", "recordId": "08_Oficios/Cerrar ciclo.md" }
+  ]
+}

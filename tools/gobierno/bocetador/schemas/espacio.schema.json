@@ -2,33 +2,51 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://engremiat.local/telar/espacio.schema.json",
   "title": "Espacio",
-  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.2 -- un Espacio del Nucleo Engremiat, nucleo o especifico de un modulo (ver Arquitectura_Nucleo.canvas y PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §5 y §8). No es una figura decorativa: cada Espacio real tiene un proposito unico y pertenece a una capa de variabilidad concreta.",
+  "description": "PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.2/§8.11 -- un Espacio del Nucleo Engremiat, nucleo o especifico de un modulo (ver Arquitectura_Nucleo.canvas y PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §5 y §8). No es una figura decorativa: cada Espacio real tiene un proposito unico y pertenece a una capa de variabilidad concreta. Campos organizados por las 8 preguntas reales ya consolidadas en 00_Mapa.md del vault (Que/Quien/Donde/Con que/Cuando/Como/Cuanto/Por que) -- espejo real del front-matter de 01_Mundo/Espacios/*.md, no un formulario inventado aparte.",
   "type": "object",
-  "required": ["id", "nombre", "capa", "variabilidad", "proposito"],
+  "required": ["id", "nombre", "capa", "variabilidad", "proposito", "estado"],
   "additionalProperties": false,
   "properties": {
     "_fixture": { "type": "boolean", "const": true, "description": "Presente y true SOLO en fixtures de prueba -- ausente en cualquier Espacio real." },
     "id": { "type": "string", "minLength": 1 },
-    "nombre": { "type": "string", "minLength": 1 },
+    "nombre": { "type": "string", "minLength": 1, "description": "Pregunta Que." },
+    "proposito": { "type": "string", "minLength": 1, "description": "Pregunta Por que -- para que sirve este Espacio, no que es." },
+    "resumen": { "type": "string", "description": "Pregunta Que, ampliada -- espejo del cuerpo real de la ficha .md (parrafo antes de '## Relaciones'), no un duplicado forzado de proposito." },
     "capa": {
       "type": "string",
       "enum": ["nucleo", "especifico"],
-      "description": "nucleo = todo universo lo recibe al crearse; especifico = solo aparece si el modulo correspondiente esta activo."
+      "description": "Pregunta Como -- nucleo = todo universo lo recibe al crearse; especifico = solo aparece si el modulo correspondiente esta activo."
     },
     "variabilidad": {
       "type": "string",
       "enum": ["invariante", "capacidad_de_nucleo", "configurable", "modular", "experimental"],
-      "description": "PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §8 -- los 5 estados de variabilidad, aplicados aqui a un Espacio en concreto."
+      "description": "Pregunta Como, PROPUESTA_NOMENCLATURA_UNIVERSO_ENGREMIAT.md §8 -- los 5 estados de variabilidad, aplicados aqui a un Espacio en concreto."
     },
-    "proposito": { "type": "string", "minLength": 1 },
     "moduloRequerido": {
       "type": ["string", "null"],
-      "description": "Solo para capa=especifico -- que modulo activo lo habilita. null si capa=nucleo."
+      "description": "Pregunta Con que -- solo para capa=especifico, que modulo activo lo habilita. null si capa=nucleo."
     },
     "gobernadoPor": {
       "type": "array",
       "items": { "type": "string" },
-      "description": "IDs de las leyes de la Constitucion que rigen este Espacio -- referencia, nunca copia del texto de la ley."
+      "description": "Pregunta Quien -- IDs de las leyes de la Constitucion que rigen este Espacio, referencia, nunca copia del texto de la ley."
+    },
+    "estado": {
+      "type": "string",
+      "description": "Pregunta Cuando -- espejo directo del campo 'estado' real del front-matter de la ficha .md (valores reales vistos: 'activo', 'sin_definir'; no es un enum cerrado porque el vault tampoco lo tiene cerrado hoy)."
+    },
+    "vinculoReal": {
+      "type": "array",
+      "description": "Pregunta Donde -- a que sistema real corresponde este Espacio, si corresponde a alguno (Baserow/Sheet/VPS...). Mismo shape que 'origenes' de mision.schema.json, a proposito -- un solo patron de vinculo real en todo Engremiat, no dos.",
+      "items": {
+        "type": "object",
+        "required": ["sistema", "recordId"],
+        "additionalProperties": false,
+        "properties": {
+          "sistema": { "type": "string", "minLength": 1, "description": "Ej: 'Sheet', 'Baserow', 'VPS'." },
+          "recordId": { "type": "string", "minLength": 1, "description": "Ej: nombre de pestana, tabla, o servicio real." }
+        }
+      }
     }
   }
 }

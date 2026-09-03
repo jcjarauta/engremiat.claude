@@ -1,0 +1,1425 @@
+{
+  "generadoEn": "2026-09-03T03:55:46.719Z",
+  "sheetId": "142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ",
+  "tabs": [
+    {
+      "nombre": "44_OPORTUNIDAD",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CLIENTE_ID",
+        "ORIGEN",
+        "ORIGEN_PLATAFORMA",
+        "ORIGEN_URL",
+        "AMBITO",
+        "DESCRIPCION_PROYECTO_ORIGEN",
+        "IMPORTE_OBJETIVO_CAMPANA",
+        "TIPO_OPORTUNIDAD",
+        "PUNTUACION_ENCAJE",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES"
+      ]
+    },
+    {
+      "nombre": "39_PEDIDO_CLIENTE",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CLIENTE_ID",
+        "PROYECTO_ID",
+        "CANAL",
+        "FECHA_PEDIDO",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "40_PEDIDO_CLIENTE_LINEA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PEDIDO_CLIENTE_ID",
+        "PRODUCTO_ID",
+        "CANTIDAD",
+        "PRECIO_UNITARIO",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "41_ENTREGA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PEDIDO_CLIENTE_ID",
+        "FECHA_ENTREGA",
+        "RESPONSABLE_ID",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "42_ENTREGA_LINEA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTREGA_ID",
+        "PRODUCTO_ID",
+        "CANTIDAD_ENTREGADA",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "43_CONTRATO_SERVICIO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CLIENTE_ID",
+        "PROYECTO_ID",
+        "MODULOS_CONTRATADOS",
+        "PERIODICIDAD",
+        "IMPORTE_PERIODICO",
+        "MODALIDAD_PAGO",
+        "FECHA_INICIO",
+        "FECHA_RENOVACION",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "38_CLIENTE",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CODIGO",
+        "NOMBRE",
+        "TIPO_CLIENTE",
+        "NIF_CIF",
+        "PERSONA_CONTACTO",
+        "EMAIL",
+        "TELEFONO",
+        "DIRECCION",
+        "RESPONSABLE_CUENTA_ID",
+        "ESTADO",
+        "SHEET_URL",
+        "SCRIPT_ID",
+        "MODULOS_CONTRATADOS",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "LIBRERIA_VERSION",
+        "TELEGRAM_CHAT_ID",
+        "CONFIG_BOT",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "45_TAREA_COMPETENCIA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "COMPETENCIA_ID",
+        "NIVEL_MINIMO",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ORIGEN_CREACION",
+        "ACTIVO",
+        "OBSERVACIONES"
+      ]
+    },
+    {
+      "nombre": "46_TAREA_RECURSO_NECESIDAD",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "CLASE_RECURSO_REQUERIDA",
+        "CATEGORIA_RECURSO_REQUERIDA",
+        "CANTIDAD_MINIMA",
+        "CAPACIDAD_MINIMA",
+        "CAPACIDAD_UNIDAD",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ORIGEN_CREACION",
+        "ACTIVO",
+        "OBSERVACIONES"
+      ]
+    },
+    {
+      "nombre": "93_MAPEO_IDS_TEMPORALES",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "HOJA_ORIGEN",
+        "ID_REAL",
+        "CORRELATION_ID",
+        "FECHA_IMPORTACION"
+      ]
+    },
+    {
+      "nombre": "01_CAMPANAS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "NOMBRE",
+        "DESCRIPCION",
+        "RESPONSABLE_ID",
+        "FECHA_INICIO_INICIAL",
+        "FECHA_FIN_INICIAL",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "ESTADO",
+        "PORCENTAJE_AVANCE",
+        "MOTIVO_REPLANIFICACION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "NIVEL_DATO",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "02_PROYECTOS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CAMPANA_ID",
+        "NOMBRE",
+        "DESCRIPCION",
+        "TIPO_PROYECTO",
+        "PRIORIDAD",
+        "RESPONSABLE_ID",
+        "FECHA_INICIO_INICIAL",
+        "FECHA_FIN_INICIAL",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "ESTADO",
+        "PORCENTAJE_AVANCE",
+        "MOTIVO_REPLANIFICACION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "CRITERIOS_ACEPTACION",
+        "DEFINITION_OF_DONE",
+        "VALIDADOR_ID",
+        "CLIENTE_ID"
+      ]
+    },
+    {
+      "nombre": "SOLICITUDES_MONTAJE",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "NOMBRE",
+        "MODULOS",
+        "ESTADO",
+        "ID_REAL",
+        "URL",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_APROBACION",
+        "APROBADO_POR",
+        "ERROR"
+      ]
+    },
+    {
+      "nombre": "03_PRODUCTOS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CODIGO",
+        "NOMBRE",
+        "DESCRIPCION",
+        "VERSION",
+        "ORIGEN",
+        "UNIDAD",
+        "CANTIDAD_PREVISTA",
+        "CANTIDAD_PRODUCIDA",
+        "FECHA_REQUERIDA",
+        "PRIORIDAD",
+        "RESPONSABLE_ID",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "CRITERIOS_ACEPTACION",
+        "DEFINITION_OF_DONE",
+        "VALIDADOR_ID",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "04_PROYECTO_PRODUCTO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PROYECTO_ID",
+        "PRODUCTO_ID",
+        "CANTIDAD_ASIGNADA",
+        "PRIORIDAD",
+        "FECHA_REQUERIDA",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "MODO_USO",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "05_PROCESOS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PRODUCTO_ID",
+        "NOMBRE",
+        "DESCRIPCION",
+        "ORDEN_SECUENCIA",
+        "PROCESO_PREDECESOR_ID",
+        "DURACION_PREVISTA_DIAS",
+        "DURACION_REAL_DIAS",
+        "RESPONSABLE_ID",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "ESTADO",
+        "PORCENTAJE_AVANCE",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "CRITERIOS_ACEPTACION",
+        "DEFINITION_OF_DONE",
+        "VALIDADOR_ID",
+        "PROYECTO_PRODUCTO_ID",
+        "MODO_USO"
+      ]
+    },
+    {
+      "nombre": "06_TAREAS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PROCESO_ID",
+        "NOMBRE",
+        "DESCRIPCION",
+        "ORDEN_SECUENCIA",
+        "TAREA_PREDECESORA_ID",
+        "DURACION_PREVISTA_DIAS",
+        "DURACION_REAL_DIAS",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "ESTADO",
+        "PORCENTAJE_AVANCE",
+        "MOTIVO_BLOQUEO",
+        "MOTIVO_POSPOSICION",
+        "MOTIVO_CANCELACION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "CRITERIOS_ACEPTACION",
+        "DEFINITION_OF_DONE",
+        "VALIDADOR_ID"
+      ]
+    },
+    {
+      "nombre": "07_TAREA_RESPONSABLE",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "PERSONA_EQUIPO_ID",
+        "ROL_ASIGNADO",
+        "FECHA_INICIO_ASIGNACION",
+        "FECHA_FIN_ASIGNACION",
+        "PORCENTAJE_DEDICACION",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "08_MATERIALES",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CODIGO",
+        "NOMBRE",
+        "CATEGORIA",
+        "UNIDAD",
+        "STOCK_ACTUAL",
+        "STOCK_MINIMO",
+        "CANTIDAD_RESERVADA",
+        "PROVEEDOR",
+        "PLAZO_REPOSICION_DIAS",
+        "UBICACION",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "PROVEEDOR_ID",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "09_PRODUCTO_MATERIAL",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PRODUCTO_ID",
+        "MATERIAL_ID",
+        "CANTIDAD_PREVISTA",
+        "UNIDAD",
+        "CANTIDAD_RESERVADA",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "10_TAREA_MATERIAL",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "MATERIAL_ID",
+        "CANTIDAD_PREVISTA",
+        "CANTIDAD_CONSUMIDA",
+        "CANTIDAD_DESPERDICIADA",
+        "UNIDAD",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "MOTIVO_DESVIACION",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "11_PERSONAS_EQUIPOS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TIPO",
+        "NOMBRE",
+        "ROL",
+        "CAPACIDAD_SEMANAL_DIAS",
+        "DISPONIBILIDAD",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "EMAIL",
+        "TELEFONO",
+        "COORDINADOR_ID",
+        "ORIGEN_CREACION",
+        "TELEGRAM_CHAT_ID",
+        "NIVEL_PERMISO_BOT"
+      ]
+    },
+    {
+      "nombre": "STG_RECURSO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "UBICACION_TEMPORAL",
+        "CODIGO",
+        "NOMBRE",
+        "CLASE_RECURSO",
+        "CATEGORIA_RECURSO",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_PERSONA",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "COORDINADOR_TEMPORAL",
+        "TIPO",
+        "NOMBRE",
+        "ROL",
+        "CAPACIDAD_SEMANAL_DIAS",
+        "DISPONIBILIDAD",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_EQUIPO_MIEMBRO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "EQUIPO_TEMPORAL",
+        "MIEMBRO_TEMPORAL",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_TAREA_RESPONSABLE",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "TAREA_TEMPORAL",
+        "PERSONA_TEMPORAL",
+        "ROL_ASIGNADO",
+        "PORCENTAJE_DEDICACION",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_TAREA_RECURSO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "TAREA_TEMPORAL",
+        "RECURSO_TEMPORAL",
+        "TIPO_USO",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_DECISION",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "PROYECTO_TEMPORAL",
+        "TITULO",
+        "CONTEXTO",
+        "TIPO",
+        "RESPONSABLE_TEMPORAL",
+        "FECHA_LIMITE",
+        "ESTADO",
+        "RESOLUCION",
+        "FECHA_RESOLUCION",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_INCIDENCIA",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "NIVEL_INCIDENCIA",
+        "CAMPANA_TEMPORAL",
+        "PROYECTO_TEMPORAL",
+        "PRODUCTO_TEMPORAL",
+        "PROCESO_TEMPORAL",
+        "TAREA_TEMPORAL",
+        "TITULO",
+        "DESCRIPCION",
+        "TIPO",
+        "PRIORIDAD",
+        "RESPONSABLE_TEMPORAL",
+        "FECHA_DETECCION",
+        "FECHA_LIMITE",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_DOCUMENTO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "ENTIDAD_TIPO",
+        "CAMPANA_TEMPORAL",
+        "PROYECTO_TEMPORAL",
+        "PRODUCTO_TEMPORAL",
+        "PROCESO_TEMPORAL",
+        "TAREA_TEMPORAL",
+        "TIPO_DOCUMENTO",
+        "TITULO",
+        "DESCRIPCION",
+        "VERSION",
+        "URL",
+        "ESTADO",
+        "FECHA_DOCUMENTO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_HORARIO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "ENTIDAD_TIPO",
+        "PERSONA_TEMPORAL",
+        "RECURSO_TEMPORAL",
+        "DIA_SEMANA",
+        "HORA_INICIO",
+        "HORA_FIN",
+        "FECHA_INICIO_VIGENCIA",
+        "FECHA_FIN_VIGENCIA",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "12_DECISIONES",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PROYECTO_ID",
+        "TITULO",
+        "CONTEXTO",
+        "TIPO",
+        "RESPONSABLE_ID",
+        "FECHA_LIMITE",
+        "ESTADO",
+        "IMPACTO",
+        "RESOLUCION",
+        "FECHA_RESOLUCION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "OBJETIVO",
+        "RESULTADO_ESPERADO",
+        "CRITERIOS_ACEPTACION",
+        "DEFINITION_OF_DONE",
+        "VALIDADOR_ID",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "13_INCIDENCIAS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "NIVEL_INCIDENCIA",
+        "CAMPANA_ID",
+        "PROYECTO_ID",
+        "PRODUCTO_ID",
+        "PROCESO_ID",
+        "TAREA_ID",
+        "JIRA_KEY",
+        "JIRA_URL",
+        "TITULO",
+        "DESCRIPCION",
+        "TIPO",
+        "PRIORIDAD",
+        "RESPONSABLE_ID",
+        "FECHA_DETECCION",
+        "FECHA_LIMITE",
+        "ESTADO",
+        "IMPACTO",
+        "ACCION_CORRECTORA",
+        "FECHA_RESOLUCION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "CLIENTE_ID",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "14_DOCUMENTOS",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "TIPO_DOCUMENTO",
+        "TITULO",
+        "DESCRIPCION",
+        "VERSION",
+        "URL",
+        "ESTADO",
+        "FECHA_DOCUMENTO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "15_PROVEEDORES",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CODIGO",
+        "NOMBRE",
+        "NIF_CIF",
+        "PERSONA_CONTACTO",
+        "EMAIL",
+        "TELEFONO",
+        "DIRECCION",
+        "PLAZO_ENTREGA_DIAS",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "16_ASIGNACION",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "PERSONA_EQUIPO_ID",
+        "ROL_ASIGNADO",
+        "FECHA_INICIO_ASIGNACION",
+        "FECHA_FIN_ASIGNACION",
+        "PORCENTAJE_DEDICACION",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "17_RELACION",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ORIGEN_ID",
+        "ENTIDAD_DESTINO_ID",
+        "TIPO_RELACION",
+        "DESFASE_DIAS",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "18_VINCULO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_ORIGEN_TIPO",
+        "ENTIDAD_ORIGEN_ID",
+        "ENTIDAD_DESTINO_TIPO",
+        "ENTIDAD_DESTINO_ID",
+        "TIPO_VINCULO",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "19_MOVIMIENTO_MATERIAL",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "MATERIAL_ID",
+        "TAREA_ID",
+        "TIPO_MOVIMIENTO",
+        "CANTIDAD",
+        "UNIDAD",
+        "FECHA_MOVIMIENTO",
+        "RESPONSABLE_ID",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "20_EJECUCION_TAREA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "RESPONSABLE_ID",
+        "FECHA_INICIO",
+        "FECHA_FIN",
+        "DURACION_REAL_DIAS",
+        "ESTADO",
+        "RESULTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES"
+      ]
+    },
+    {
+      "nombre": "21_PROVEEDOR_MATERIAL",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PROVEEDOR_ID",
+        "MATERIAL_ID",
+        "PRECIO_UNITARIO",
+        "PLAZO_ENTREGA_DIAS",
+        "ES_PREFERENTE",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "22_EQUIPO_MIEMBRO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "EQUIPO_ID",
+        "MIEMBRO_ID",
+        "ROL_EN_EQUIPO",
+        "FECHA_ALTA",
+        "FECHA_BAJA",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "23_RECURSO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "CODIGO",
+        "NOMBRE",
+        "DESCRIPCION",
+        "CLASE_RECURSO",
+        "CATEGORIA_RECURSO",
+        "UBICACION_ID",
+        "RESPONSABLE_ID",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "MODO_COSTE",
+        "COSTE_ADQUISICION",
+        "VIDA_UTIL_ANOS",
+        "COSTE_PERIODICO",
+        "PERIODICIDAD_COSTE",
+        "ORIGEN_CREACION",
+        "CAPACIDAD",
+        "CAPACIDAD_UNIDAD"
+      ]
+    },
+    {
+      "nombre": "24_TAREA_RECURSO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "TAREA_ID",
+        "RECURSO_ID",
+        "TIPO_USO",
+        "FECHA_INICIO",
+        "FECHA_FIN",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "25_PEDIDO_PROVEEDOR",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PROVEEDOR_ID",
+        "FECHA_PEDIDO",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "26_PEDIDO_PROVEEDOR_LINEA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PEDIDO_PROVEEDOR_ID",
+        "MATERIAL_ID",
+        "CANTIDAD_PEDIDA",
+        "PRECIO_UNITARIO",
+        "UNIDAD",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "27_RECEPCION",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PEDIDO_PROVEEDOR_ID",
+        "FECHA_RECEPCION",
+        "RESPONSABLE_ID",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "28_RECEPCION_LINEA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "RECEPCION_ID",
+        "MATERIAL_ID",
+        "CANTIDAD_RECIBIDA",
+        "UNIDAD",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "29_HORARIO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "DIA_SEMANA",
+        "HORA_INICIO",
+        "HORA_FIN",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "FECHA_INICIO_VIGENCIA",
+        "FECHA_FIN_VIGENCIA",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "30_PRESUPUESTO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "CATEGORIA",
+        "IMPORTE_PREVISTO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "31_FUENTE_FINANCIACION",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "NOMBRE",
+        "TIPO",
+        "IMPORTE",
+        "ESTADO",
+        "FECHA_SOLICITUD",
+        "FECHA_RESOLUCION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "CONVOCATORIA_ID",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "32_COSTE",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "CONCEPTO",
+        "IMPORTE",
+        "FECHA",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "CATEGORIA",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "33_COMPETENCIA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "NOMBRE",
+        "DESCRIPCION",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "34_PERSONA_COMPETENCIA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "PERSONA_EQUIPO_ID",
+        "COMPETENCIA_ID",
+        "NIVEL",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "35_RECURSO_COMPETENCIA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "RECURSO_ID",
+        "COMPETENCIA_ID",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "36_CONVOCATORIA",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "NOMBRE",
+        "ENTIDAD_CONVOCANTE",
+        "TIPO",
+        "IMPORTE_DISPONIBLE",
+        "IMPORTE_MINIMO_SOLICITUD",
+        "IMPORTE_MAXIMO_SOLICITUD",
+        "TIPO_PROYECTO_ELEGIBLE",
+        "FECHA_LIMITE",
+        "REQUISITOS",
+        "URL_BASES",
+        "ESTADO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES",
+        "ORIGEN_CREACION"
+      ]
+    },
+    {
+      "nombre": "37_ETIQUETA_IMPACTO",
+      "tipo": "negocio",
+      "cabeceras": [
+        "ID",
+        "ENTIDAD_TIPO",
+        "ENTIDAD_ID",
+        "CATEGORIA_IMPACTO",
+        "DESCRIPCION",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR",
+        "ACTIVO",
+        "OBSERVACIONES"
+      ]
+    },
+    {
+      "nombre": "90_CONFIGURACION",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID",
+        "CATEGORIA",
+        "CLAVE",
+        "VALOR",
+        "ORDEN",
+        "DESCRIPCION",
+        "ACTIVO",
+        "FECHA_CREACION",
+        "CREADO_POR",
+        "FECHA_MODIFICACION",
+        "MODIFICADO_POR"
+      ]
+    },
+    {
+      "nombre": "91_HISTORIAL",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_HISTORIAL",
+        "TIMESTAMP",
+        "CORRELATION_ID",
+        "USUARIO",
+        "ACCION",
+        "ENTIDAD",
+        "REGISTRO_ID",
+        "ORIGEN",
+        "ANTES_JSON",
+        "DESPUES_JSON",
+        "RESULTADO",
+        "CODIGO",
+        "ERROR",
+        "ES_PRUEBA",
+        "PRUEBA_ID"
+      ]
+    },
+    {
+      "nombre": "STG_CAMPANA",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "NOMBRE",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_PROYECTO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "CAMPANA_TEMPORAL",
+        "NOMBRE",
+        "TIPO_PROYECTO",
+        "PRIORIDAD",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_PRODUCTO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "PROYECTO_TEMPORAL",
+        "CODIGO",
+        "NOMBRE",
+        "ORIGEN",
+        "UNIDAD",
+        "CANTIDAD_PREVISTA",
+        "PRIORIDAD",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL",
+        "PROYECTO_PRODUCTO_ID_REAL"
+      ]
+    },
+    {
+      "nombre": "STG_PROCESO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "PRODUCTO_TEMPORAL",
+        "NOMBRE",
+        "DURACION_PREVISTA_DIAS",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL",
+        "RESPONSABLE_ID",
+        "FASE_PRODUCCION",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "DURACION_REAL_DIAS"
+      ]
+    },
+    {
+      "nombre": "STG_TAREA",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TEMPORAL",
+        "PROCESO_TEMPORAL",
+        "NOMBRE",
+        "DURACION_PREVISTA_DIAS",
+        "ESTADO",
+        "ESTADO_IMPORTACION",
+        "ID_REAL",
+        "FECHA_INICIO_PLAN",
+        "FECHA_FIN_PLAN",
+        "FECHA_INICIO_REAL",
+        "FECHA_FIN_REAL",
+        "DURACION_REAL_DIAS"
+      ]
+    },
+    {
+      "nombre": "95_DIARIO_NAVEGACION",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "FECHA",
+        "TIPO",
+        "ASUNTO",
+        "RESUMEN",
+        "EXITOS",
+        "FRICCION_ERRORES",
+        "SIGUIENTE_PASO",
+        "TOKENS_ENTRADA",
+        "TOKENS_SALIDA",
+        "TOKENS_CACHE_ESCRITURA",
+        "TOKENS_CACHE_LECTURA",
+        "TURNOS",
+        "CREADO_POR"
+      ]
+    },
+    {
+      "nombre": "96_PROMPT_EJECUTOR",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "CAMPO",
+        "VALOR"
+      ]
+    },
+    {
+      "nombre": "97_ESTADO_CONSOLA",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID",
+        "ACTUALIZADO_POR",
+        "FECHA_ACTUALIZACION"
+      ]
+    },
+    {
+      "nombre": "98_LOG_GOBIERNO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "TIMESTAMP",
+        "MECANISMO",
+        "RESULTADO",
+        "DETALLE"
+      ]
+    },
+    {
+      "nombre": "99_TRIAGE_LOCAL",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID",
+        "TIPO",
+        "TITULO",
+        "RESULTADO",
+        "RIESGO",
+        "VERIFICADO_POR_CLAUDE",
+        "FECHA"
+      ]
+    },
+    {
+      "nombre": "92_BUS_TRABAJO",
+      "tipo": "utilidad",
+      "cabeceras": [
+        "ID_TAREA",
+        "INCIDENCIA_ID",
+        "WORKER_ASIGNADO",
+        "FICHEROS",
+        "ESTADO",
+        "RECLAMADO_POR",
+        "FECHA_RECLAMACION",
+        "RAMA_GIT",
+        "COMMIT",
+        "DURACION_SEGUNDOS",
+        "VERIFICADO_POR",
+        "FECHA_VERIFICACION",
+        "RESULTADO"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "_fixture": true,
+  "id": "recurso_fisico_ejemplo",
+  "nombre": "Ejemplo ilustrativo -- 23_RECURSO real está vacío hoy",
+  "resumen": "23_RECURSO (Sheet real) tiene cabeceras pero cero filas de datos reales todavía -- verificado 2026-09-02. Este fixture es deliberadamente ilustrativo, no copia ningún recurso físico real porque ninguno existe aún.",
+  "clase": "fisico_negocio",
+  "vinculoReal": [{ "sistema": "Sheet", "recordId": "23_RECURSO (vacío)" }],
+  "costeAdquisicion": 0,
+  "costePeriodico": 0,
+  "responsableId": null,
+  "estado": "sin_definir"
+}

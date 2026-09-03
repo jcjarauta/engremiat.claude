@@ -1,0 +1,1520 @@
+{
+  "generadoEn": "2026-09-03T04:31:59.612Z",
+  "workflows": 2,
+  "nodos": [
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Webhook Cronista Segmentar",
+      "nombre": "Webhook Cronista Segmentar",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "webhook"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "nombre": "Ruta por accion",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "switch"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (gratis)",
+      "nombre": "Fijar modo (gratis)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (premium)",
+      "nombre": "Fijar modo (premium)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de segmentacion",
+      "nombre": "Preparar prompt de segmentacion",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Cronista: segmentar via LiteLLM",
+      "nombre": "Cronista: segmentar via LiteLLM",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas propuestas",
+      "nombre": "Extraer tareas propuestas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Modo premium?",
+      "nombre": "¿Modo premium?",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek",
+      "nombre": "Preparar verificacion DeepSeek",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar y corregir",
+      "nombre": "DeepSeek: verificar y corregir",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas",
+      "nombre": "Extraer tareas verificadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir tareas confirmadas",
+      "nombre": "Expandir tareas confirmadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila TAREA en Baserow",
+      "nombre": "Crear fila TAREA en Baserow",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de tareas creadas",
+      "nombre": "Resumen de tareas creadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Respuesta gratis (final)",
+      "nombre": "Respuesta gratis (final)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de plantillas",
+      "nombre": "Preparar prompt de plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador de plantillas",
+      "nombre": "Local: borrador de plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer plantillas borrador",
+      "nombre": "Extraer plantillas borrador",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek (plantillas)",
+      "nombre": "Preparar verificacion DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar plantillas",
+      "nombre": "DeepSeek: verificar plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer plantillas verificadas",
+      "nombre": "Extraer plantillas verificadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir plantillas confirmadas",
+      "nombre": "Expandir plantillas confirmadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila PLANTILLA_MISION",
+      "nombre": "Crear fila PLANTILLA_MISION",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de plantillas creadas",
+      "nombre": "Resumen de plantillas creadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Promocionar version",
+      "nombre": "Promocionar version",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (tareas)",
+      "nombre": "Comprobar presupuesto DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (tareas)",
+      "nombre": "¿Presupuesto disponible? (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
+      "nombre": "Calcular coste DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Presupuesto agotado (tareas)",
+      "nombre": "Presupuesto agotado (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (plantillas)",
+      "nombre": "Comprobar presupuesto DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (plantillas)",
+      "nombre": "¿Presupuesto disponible? (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (plantillas)",
+      "nombre": "Calcular coste DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Presupuesto agotado (plantillas)",
+      "nombre": "Presupuesto agotado (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
+      "nombre": "Registrar gasto DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (plantillas)",
+      "nombre": "Registrar gasto DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar personas de Concilio",
+      "nombre": "Fijar personas de Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Concilio: persona propone (local)",
+      "nombre": "Concilio: persona propone (local)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer propuesta de persona",
+      "nombre": "Extraer propuesta de persona",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Agregar propuestas de Concilio",
+      "nombre": "Agregar propuestas de Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Concilio",
+      "nombre": "Comprobar presupuesto Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Concilio)",
+      "nombre": "¿Presupuesto disponible? (Concilio)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar sintesis Concilio",
+      "nombre": "Preparar sintesis Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: sintetizar Concilio",
+      "nombre": "DeepSeek: sintetizar Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Concilio",
+      "nombre": "Calcular coste Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Concilio",
+      "nombre": "Registrar gasto Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer sintesis final",
+      "nombre": "Extraer sintesis final",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Concilio sin presupuesto",
+      "nombre": "Concilio sin presupuesto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Vigilia: cada 15 minutos",
+      "nombre": "Vigilia: cada 15 minutos",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "scheduleTrigger"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar siguiente Vigilia pendiente",
+      "nombre": "Buscar siguiente Vigilia pendiente",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Hay Vigilia pendiente?",
+      "nombre": "¿Hay Vigilia pendiente?",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar capitulo anterior",
+      "nombre": "Buscar capitulo anterior",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir tema con contexto",
+      "nombre": "Construir tema con contexto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Llamar a Concilio (interno)",
+      "nombre": "Llamar a Concilio (interno)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Guardar resultado en Vigilia",
+      "nombre": "Guardar resultado en Vigilia",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador Canvas+DAFO",
+      "nombre": "Local: borrador Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer borrador Canvas+DAFO",
+      "nombre": "Extraer borrador Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion Canvas+DAFO",
+      "nombre": "Preparar verificacion Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Canvas+DAFO",
+      "nombre": "Comprobar presupuesto Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Canvas)",
+      "nombre": "¿Presupuesto disponible? (Canvas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar Canvas+DAFO",
+      "nombre": "DeepSeek: verificar Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Canvas+DAFO",
+      "nombre": "Calcular coste Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Canvas+DAFO",
+      "nombre": "Registrar gasto Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer Canvas+DAFO final",
+      "nombre": "Extraer Canvas+DAFO final",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir HTML del Canvas+DAFO",
+      "nombre": "Construir HTML del Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Exportar PDF Canvas+DAFO",
+      "nombre": "Exportar PDF Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Confirmar export Canvas+DAFO",
+      "nombre": "Confirmar export Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Sin presupuesto (Canvas)",
+      "nombre": "Sin presupuesto (Canvas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen final de Vigilia",
+      "nombre": "Resumen final de Vigilia",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de gasto de hoy",
+      "nombre": "Resumen de gasto de hoy",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir correo de resumen",
+      "nombre": "Construir correo de resumen",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::TEMP kick vision global",
+      "nombre": "TEMP kick vision global",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "webhook"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar tareas de la rama",
+      "nombre": "Buscar tareas de la rama",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Separar tareas en items",
+      "nombre": "Separar tareas en items",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "splitOut"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Revisar con GPT",
+      "nombre": "Revisar con GPT",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer veredicto",
+      "nombre": "Extraer veredicto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto revision",
+      "nombre": "Registrar gasto revision",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Verificar contra esquema real",
+      "nombre": "Verificar contra esquema real",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Cronista - Segmentar documento en tareas (con puerta humana)::Bloquear elemento pendiente (lock)",
+      "nombre": "Bloquear elemento pendiente (lock)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Sondeo Telar",
+      "nombre": "Sondeo Telar",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "scheduleTrigger"
+    },
+    {
+      "id": "Telar Interactivo::Obtener actualizaciones",
+      "nombre": "Obtener actualizaciones",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Normalizar Update",
+      "nombre": "Normalizar Update",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Buscar sesion actual",
+      "nombre": "Buscar sesion actual",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enrutar por estado",
+      "nombre": "Enrutar por estado",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Rama de accion",
+      "nombre": "Rama de accion",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "switch"
+    },
+    {
+      "id": "Telar Interactivo::Construir prompt opciones",
+      "nombre": "Construir prompt opciones",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::DeepSeek: generar opciones",
+      "nombre": "DeepSeek: generar opciones",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Extraer opciones",
+      "nombre": "Extraer opciones",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Guardar opciones en sesion",
+      "nombre": "Guardar opciones en sesion",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar opciones a Telegram",
+      "nombre": "Enviar opciones a Telegram",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preparar desarrollo capitulo",
+      "nombre": "Preparar desarrollo capitulo",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Comprobar presupuesto Telar",
+      "nombre": "Comprobar presupuesto Telar",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::¿Presupuesto disponible? (Telar)",
+      "nombre": "¿Presupuesto disponible? (Telar)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Telar Interactivo::Sin presupuesto (Telar)",
+      "nombre": "Sin presupuesto (Telar)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::DeepSeek: desarrollar capitulo",
+      "nombre": "DeepSeek: desarrollar capitulo",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Calcular coste Telar",
+      "nombre": "Calcular coste Telar",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Registrar gasto Telar",
+      "nombre": "Registrar gasto Telar",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Extraer capitulo final",
+      "nombre": "Extraer capitulo final",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Actualizar sesion (nuevo capitulo)",
+      "nombre": "Actualizar sesion (nuevo capitulo)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar capitulo al usuario",
+      "nombre": "Enviar capitulo al usuario",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::¿Es el ultimo capitulo?",
+      "nombre": "¿Es el ultimo capitulo?",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Telar Interactivo::Enviar cierre historia",
+      "nombre": "Enviar cierre historia",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Marcar sesion terminada",
+      "nombre": "Marcar sesion terminada",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Buscar sesion (estado)",
+      "nombre": "Buscar sesion (estado)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar estado",
+      "nombre": "Enviar estado",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Mostrar escribiendo (opciones)",
+      "nombre": "Mostrar escribiendo (opciones)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Mostrar escribiendo (capitulo)",
+      "nombre": "Mostrar escribiendo (capitulo)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Recuperar sesion tras envio",
+      "nombre": "Recuperar sesion tras envio",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Registrar gasto opciones",
+      "nombre": "Registrar gasto opciones",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preguntar punto de vista",
+      "nombre": "Preguntar punto de vista",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Fijar estado esperando_pv",
+      "nombre": "Fijar estado esperando_pv",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Guardar PV, preguntar necesidad",
+      "nombre": "Guardar PV, preguntar necesidad",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Fijar HISTORIAL con PV",
+      "nombre": "Fijar HISTORIAL con PV",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preguntar necesidad",
+      "nombre": "Preguntar necesidad",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Guardar necesidad, preguntar conflicto",
+      "nombre": "Guardar necesidad, preguntar conflicto",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Fijar HISTORIAL con necesidad",
+      "nombre": "Fijar HISTORIAL con necesidad",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preguntar conflicto",
+      "nombre": "Preguntar conflicto",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preparar construccion Urdimbre",
+      "nombre": "Preparar construccion Urdimbre",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Comprobar presupuesto Urdimbre",
+      "nombre": "Comprobar presupuesto Urdimbre",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::¿Presupuesto Urdimbre?",
+      "nombre": "¿Presupuesto Urdimbre?",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "if"
+    },
+    {
+      "id": "Telar Interactivo::DeepSeek: construir Urdimbre",
+      "nombre": "DeepSeek: construir Urdimbre",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Sin presupuesto (Urdimbre)",
+      "nombre": "Sin presupuesto (Urdimbre)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Registrar gasto Urdimbre",
+      "nombre": "Registrar gasto Urdimbre",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Guardar Urdimbre y mostrar boceto",
+      "nombre": "Guardar Urdimbre y mostrar boceto",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar boceto",
+      "nombre": "Enviar boceto",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Mostrar escribiendo (urdimbre)",
+      "nombre": "Mostrar escribiendo (urdimbre)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Preguntar retomar o nueva",
+      "nombre": "Preguntar retomar o nueva",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Reenviar pregunta pendiente",
+      "nombre": "Reenviar pregunta pendiente",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Enviar pregunta pendiente",
+      "nombre": "Enviar pregunta pendiente",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Archivar historia pausada",
+      "nombre": "Archivar historia pausada",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Reiniciar y saludar",
+      "nombre": "Reiniciar y saludar",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar menu (nueva historia)",
+      "nombre": "Enviar menu (nueva historia)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Enviar saludo",
+      "nombre": "Enviar saludo",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Confirmar y empezar Trama",
+      "nombre": "Confirmar y empezar Trama",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Preguntar ajuste",
+      "nombre": "Preguntar ajuste",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Fijar estado esperando_ajuste",
+      "nombre": "Fijar estado esperando_ajuste",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    },
+    {
+      "id": "Telar Interactivo::Reconstruir Urdimbre con ajuste",
+      "nombre": "Reconstruir Urdimbre con ajuste",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "code"
+    },
+    {
+      "id": "Telar Interactivo::Bloquear sesion (procesando capitulo)",
+      "nombre": "Bloquear sesion (procesando capitulo)",
+      "workflow": "Telar Interactivo",
+      "tipoNodo": "httpRequest"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Webhook Cronista Segmentar",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (gratis)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (premium)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir tareas confirmadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir plantillas confirmadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Promocionar version",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar personas de Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Ruta por accion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar tareas de la rama",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (gratis)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de segmentacion",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar modo (premium)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de segmentacion",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de segmentacion",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Cronista: segmentar via LiteLLM",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Cronista: segmentar via LiteLLM",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas propuestas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas propuestas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Modo premium?",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Modo premium?",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Modo premium?",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Respuesta gratis (final)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar y corregir",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir tareas confirmadas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila TAREA en Baserow",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila TAREA en Baserow",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de tareas creadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar prompt de plantillas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador de plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador de plantillas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer plantillas borrador",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer plantillas borrador",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion DeepSeek (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar plantillas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Expandir plantillas confirmadas",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila PLANTILLA_MISION",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Crear fila PLANTILLA_MISION",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de plantillas creadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (tareas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (tareas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar y corregir",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (tareas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Presupuesto agotado (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer tareas verificadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto DeepSeek (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar plantillas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Presupuesto agotado (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer plantillas verificadas",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (tareas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (tareas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste DeepSeek (plantillas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto DeepSeek (plantillas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Fijar personas de Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Concilio: persona propone (local)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Concilio: persona propone (local)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer propuesta de persona",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer propuesta de persona",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Agregar propuestas de Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Agregar propuestas de Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Concilio)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Concilio)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar sintesis Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Concilio)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Concilio sin presupuesto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar sintesis Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: sintetizar Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: sintetizar Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Concilio",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Concilio",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer sintesis final",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Vigilia: cada 15 minutos",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar siguiente Vigilia pendiente",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar siguiente Vigilia pendiente",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Bloquear elemento pendiente (lock)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Hay Vigilia pendiente?",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar capitulo anterior",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Hay Vigilia pendiente?",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen final de Vigilia",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar capitulo anterior",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir tema con contexto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir tema con contexto",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Llamar a Concilio (interno)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Llamar a Concilio (interno)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Verificar contra esquema real",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Guardar resultado en Vigilia",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar siguiente Vigilia pendiente",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Local: borrador Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer borrador Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer borrador Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Preparar verificacion Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Comprobar presupuesto Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Canvas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Canvas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Presupuesto disponible? (Canvas)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Sin presupuesto (Canvas)",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::DeepSeek: verificar Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Calcular coste Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer Canvas+DAFO final",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer Canvas+DAFO final",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir HTML del Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir HTML del Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Exportar PDF Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Exportar PDF Canvas+DAFO",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Confirmar export Canvas+DAFO",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen final de Vigilia",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de gasto de hoy",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Resumen de gasto de hoy",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Construir correo de resumen",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::TEMP kick vision global",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar siguiente Vigilia pendiente",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Buscar tareas de la rama",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Separar tareas en items",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Separar tareas en items",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Revisar con GPT",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Revisar con GPT",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer veredicto",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Extraer veredicto",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Registrar gasto revision",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Verificar contra esquema real",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::Guardar resultado en Vigilia",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Cronista - Segmentar documento en tareas (con puerta humana)::Bloquear elemento pendiente (lock)",
+      "target": "Cronista - Segmentar documento en tareas (con puerta humana)::¿Hay Vigilia pendiente?",
+      "workflow": "Cronista - Segmentar documento en tareas (con puerta humana)"
+    },
+    {
+      "source": "Telar Interactivo::Sondeo Telar",
+      "target": "Telar Interactivo::Obtener actualizaciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Obtener actualizaciones",
+      "target": "Telar Interactivo::Normalizar Update",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Normalizar Update",
+      "target": "Telar Interactivo::Buscar sesion actual",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Buscar sesion actual",
+      "target": "Telar Interactivo::Enrutar por estado",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Enrutar por estado",
+      "target": "Telar Interactivo::Rama de accion",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Enviar saludo",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Guardar PV, preguntar necesidad",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Guardar necesidad, preguntar conflicto",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Preparar construccion Urdimbre",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Confirmar y empezar Trama",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Preguntar ajuste",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Reconstruir Urdimbre con ajuste",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Preparar desarrollo capitulo",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Buscar sesion (estado)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Preguntar retomar o nueva",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Reenviar pregunta pendiente",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Rama de accion",
+      "target": "Telar Interactivo::Archivar historia pausada",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Construir prompt opciones",
+      "target": "Telar Interactivo::Mostrar escribiendo (opciones)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Extraer opciones",
+      "target": "Telar Interactivo::Registrar gasto opciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Guardar opciones en sesion",
+      "target": "Telar Interactivo::Enviar opciones a Telegram",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Preparar desarrollo capitulo",
+      "target": "Telar Interactivo::Bloquear sesion (procesando capitulo)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Comprobar presupuesto Telar",
+      "target": "Telar Interactivo::¿Presupuesto disponible? (Telar)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Presupuesto disponible? (Telar)",
+      "target": "Telar Interactivo::DeepSeek: desarrollar capitulo",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Presupuesto disponible? (Telar)",
+      "target": "Telar Interactivo::Sin presupuesto (Telar)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::DeepSeek: desarrollar capitulo",
+      "target": "Telar Interactivo::Calcular coste Telar",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Calcular coste Telar",
+      "target": "Telar Interactivo::Registrar gasto Telar",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Registrar gasto Telar",
+      "target": "Telar Interactivo::Extraer capitulo final",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Extraer capitulo final",
+      "target": "Telar Interactivo::Actualizar sesion (nuevo capitulo)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Actualizar sesion (nuevo capitulo)",
+      "target": "Telar Interactivo::Enviar capitulo al usuario",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Enviar capitulo al usuario",
+      "target": "Telar Interactivo::Recuperar sesion tras envio",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Es el ultimo capitulo?",
+      "target": "Telar Interactivo::Enviar cierre historia",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Es el ultimo capitulo?",
+      "target": "Telar Interactivo::Construir prompt opciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Enviar cierre historia",
+      "target": "Telar Interactivo::Marcar sesion terminada",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Buscar sesion (estado)",
+      "target": "Telar Interactivo::Enviar estado",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Mostrar escribiendo (opciones)",
+      "target": "Telar Interactivo::DeepSeek: generar opciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Mostrar escribiendo (capitulo)",
+      "target": "Telar Interactivo::Comprobar presupuesto Telar",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Recuperar sesion tras envio",
+      "target": "Telar Interactivo::¿Es el ultimo capitulo?",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::DeepSeek: generar opciones",
+      "target": "Telar Interactivo::Extraer opciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Registrar gasto opciones",
+      "target": "Telar Interactivo::Guardar opciones en sesion",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Preguntar punto de vista",
+      "target": "Telar Interactivo::Fijar estado esperando_pv",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Guardar PV, preguntar necesidad",
+      "target": "Telar Interactivo::Fijar HISTORIAL con PV",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Fijar HISTORIAL con PV",
+      "target": "Telar Interactivo::Preguntar necesidad",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Guardar necesidad, preguntar conflicto",
+      "target": "Telar Interactivo::Fijar HISTORIAL con necesidad",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Fijar HISTORIAL con necesidad",
+      "target": "Telar Interactivo::Preguntar conflicto",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Preparar construccion Urdimbre",
+      "target": "Telar Interactivo::Mostrar escribiendo (urdimbre)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Comprobar presupuesto Urdimbre",
+      "target": "Telar Interactivo::¿Presupuesto Urdimbre?",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Presupuesto Urdimbre?",
+      "target": "Telar Interactivo::DeepSeek: construir Urdimbre",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::¿Presupuesto Urdimbre?",
+      "target": "Telar Interactivo::Sin presupuesto (Urdimbre)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::DeepSeek: construir Urdimbre",
+      "target": "Telar Interactivo::Registrar gasto Urdimbre",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Registrar gasto Urdimbre",
+      "target": "Telar Interactivo::Guardar Urdimbre y mostrar boceto",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Guardar Urdimbre y mostrar boceto",
+      "target": "Telar Interactivo::Enviar boceto",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Mostrar escribiendo (urdimbre)",
+      "target": "Telar Interactivo::Comprobar presupuesto Urdimbre",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Reenviar pregunta pendiente",
+      "target": "Telar Interactivo::Enviar pregunta pendiente",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Archivar historia pausada",
+      "target": "Telar Interactivo::Reiniciar y saludar",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Reiniciar y saludar",
+      "target": "Telar Interactivo::Enviar menu (nueva historia)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Enviar saludo",
+      "target": "Telar Interactivo::Preguntar punto de vista",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Confirmar y empezar Trama",
+      "target": "Telar Interactivo::Construir prompt opciones",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Preguntar ajuste",
+      "target": "Telar Interactivo::Fijar estado esperando_ajuste",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Reconstruir Urdimbre con ajuste",
+      "target": "Telar Interactivo::Mostrar escribiendo (urdimbre)",
+      "workflow": "Telar Interactivo"
+    },
+    {
+      "source": "Telar Interactivo::Bloquear sesion (procesando capitulo)",
+      "target": "Telar Interactivo::Mostrar escribiendo (capitulo)",
+      "workflow": "Telar Interactivo"
+    }
+  ]
+}

@@ -1,0 +1,922 @@
+{
+  "generadoEn": "2026-09-02T18:42:12.500Z",
+  "espacios": [
+    {
+      "id": "baserow",
+      "nombre": "Baserow",
+      "tipo": "espacio",
+      "estado": "sin_definir",
+      "resumen": "",
+      "relacionesDeclaradas": [
+        "Vigilia",
+        "Coordinador",
+        "VPS y Tailscale",
+        "El Vault"
+      ]
+    },
+    {
+      "id": "el_sheet",
+      "nombre": "El Sheet",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "\"El Sheet\" no es un lugar único — es un nombre que cuatro sitios reales distintos comparten, verificado en vivo:",
+      "relacionesDeclaradas": [
+        "Ejecutor",
+        "El Sheet manda"
+      ]
+    },
+    {
+      "id": "n8n",
+      "nombre": "n8n",
+      "tipo": "espacio",
+      "estado": "sin_definir",
+      "resumen": "",
+      "relacionesDeclaradas": [
+        "Cronista",
+        "Vigilia",
+        "VPS y Tailscale"
+      ]
+    },
+    {
+      "id": "vps_y_tailscale",
+      "nombre": "VPS y Tailscale",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "El giro del 31 de agosto: hasta esa noche, la Raspberry Pi era \"lo real\" y todo lo demás era prueba. Esa noche el promotor invirtió la jerarquía — a partir de ahora se trabaja sobre el VPS (Hetzner CX23, Helsinki, ~7,25€/mes), que pasa a registrar los datos reales y hacer los backups. La Pi pasa a ser el banco de pruebas de concepto: donde se valida que algo funciona antes de dárselo a un cliente,",
+      "relacionesDeclaradas": [
+        "Baserow",
+        "n8n",
+        "Los dos continentes de datos",
+        "La fragua protegida",
+        "El ciclo de vida remoto"
+      ]
+    },
+    {
+      "id": "el_vault",
+      "nombre": "El Vault",
+      "tipo": "espacio",
+      "estado": "sin_definir",
+      "resumen": "",
+      "relacionesDeclaradas": [
+        "Baserow"
+      ]
+    },
+    {
+      "id": "la_fragua_protegida",
+      "nombre": "La fragua protegida",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "Un n8n que ningún cliente verá nunca: `engremiat-generador-n8n`, instancia aislada en `127.0.0.1:5680`, sin acceso ni siquiera desde la LAN de casa. Ahí vive la lógica protegida del operador — Cronista, Taller, Concilio. Nunca se distribuye a un cliente.",
+      "relacionesDeclaradas": [
+        "VPS y Tailscale",
+        "n8n",
+        "Concilio"
+      ]
+    },
+    {
+      "id": "el_ciclo_de_vida_remoto",
+      "nombre": "El ciclo de vida remoto",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "La física mundana de mantener un Raspberry Pi vivo en casa — cables, corriente, y un fin de semana de depuración real, cerrado de punta a punta la noche del 31 de agosto.",
+      "relacionesDeclaradas": [
+        "VPS y Tailscale"
+      ]
+    },
+    {
+      "id": "headscale",
+      "nombre": "Headscale",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "Servidor de coordinación Tailscale propio, autoalojado en el VPS — soberanía real, no solo red: quién entra en la malla lo decide Engremiat, no un servicio en la nube ajeno. Etapa 1 (levantado, usuario `engremiat` creado) y Etapa 2 (un nodo de prueba real se unió solo con una clave de pre-autenticación, verificado online, luego limpiado) verificadas el 2026-09-01. Ningún nodo real (VPS/Pi/PC) migr",
+      "relacionesDeclaradas": [
+        "VPS y Tailscale"
+      ]
+    },
+    {
+      "id": "telar",
+      "nombre": "Telar",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "No es un personaje — es el taller donde varios oficios y personajes trabajan juntos. Cuatro ciclos reales (Urdimbre → Trama → Hilo conductor → Parte de Vigilia/Relevo), validados dos veces, domain-agnostic: sirve igual para tejer un cuento, diseñar un producto o convocar una cooperativa. Dentro de este espacio operan Concilio, los Acervos y Vigilia — el mismo mecanismo que ya construye proyectos d",
+      "relacionesDeclaradas": [
+        "Concilio",
+        "Vigilia",
+        "Narrador"
+      ]
+    }
+  ],
+  "recursos": [
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "estado": "activo",
+      "resumen": "El primer punto real donde Historia, Leyes y Física se tocan sin metáfora: es el \"recurso\" que el propio operador identificó como el concepto más maduro para lo que este universo llamaba \"energía\" — tabla real de Baserow (285), tope de $5/mes verificado antes de cada llamada, y ahora también un panel Grafana vivo (`tools/gobierno/monitorizacion/`) que lee estos mismos datos en tiempo real.",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Puerta Humana",
+        "VPS y Tailscale",
+        "Exportador de gasto"
+      ]
+    },
+    {
+      "id": "92_bus_trabajo",
+      "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "estado": "activo",
+      "resumen": "El bus de eventos real de gobierno de Engremiat, en la instancia de Gestor de Proyectos — no una idea, una pestaña real con tareas reales repartidas entre DeepSeek, Claude y \"(sin asignar)\", verificado en vivo (10 tareas + 6 chequeos automáticos el 1 de septiembre). Origen real de la colisión del 92: ocupaba el mismo número que `92_ESCENARIOS` en el master, resuelto reubicando ESCENARIO a la hoja ",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Mensajero"
+      ]
+    }
+  ],
+  "modulos": [
+    {
+      "id": "repository",
+      "nombre": "Repository",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "El corazón real de CORE — 65 funciones reales, insertar/actualizar transaccional, enganchado directamente al Historial. La pieza más grande y más antigua del código real, sobre la que se apoya casi todo lo demás — por eso \"sin refactor de Repository.js\" es una regla explícita que se repite en cada fase del roadmap.",
+      "relacionesDeclaradas": [
+        "IntegrityService",
+        "El Sheet",
+        "CORE"
+      ]
+    },
+    {
+      "id": "integrityservice",
+      "nombre": "IntegrityService",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "**90 reglas reales `FUNC-*`** verificadas por grep directo sobre el código — no las 62 que el acta de julio dejó fijadas y nunca se volvió a reconciliar con el mismo rigor. El hallazgo central de la física de este universo: una ley documentada que se quedó congelada mientras el código seguía creciendo.",
+      "relacionesDeclaradas": [
+        "Repository",
+        "Verificar contra hechos",
+        "CORE"
+      ]
+    },
+    {
+      "id": "formularios",
+      "nombre": "Formularios",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Separado en tres capas reales (`FormularioMotorUI`, `FormularioValidacionService`, `FormularioEsquemas`) tras encontrar que un solo archivo mezclaba UI, dominio y configuración — extracción mecánica por posición de bytes, no manual, verificada carácter a carácter contra el original. La cara visible de CORE: cada uno de los ~25 formularios reales del sistema pasa por aquí.",
+      "relacionesDeclaradas": [
+        "Repository",
+        "CORE"
+      ]
+    },
+    {
+      "id": "estructurainicial",
+      "nombre": "EstructuraInicial",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Instala las 37+ hojas reales de un cliente nuevo, siembra el catálogo real (326 filas, transcripción literal, no inventada) y asegura los named ranges que los formularios necesitan para funcionar — sin esto, un cliente nuevo tiene menú pero ninguna hoja de datos, el bug real que encontró el primer cliente Nivel 1.",
+      "relacionesDeclaradas": [
+        "Cliente",
+        "Aprovisionamiento",
+        "CORE"
+      ]
+    },
+    {
+      "id": "configrepository",
+      "nombre": "ConfigRepository",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "La física fundamental de los catálogos: dos caminos reales que no se pueden confundir — `obtenerCatalogo()` (named range, lo que de verdad usan los formularios) y `listarOpcionesActivas()` (columna `CATEGORIA`, cuando hace falta clave interna). Un catálogo nuevo necesita las dos cosas o el formulario queda vacío en silencio — el mismo riesgo que ya rompió Documento una vez.",
+      "relacionesDeclaradas": [
+        "Formularios",
+        "IntegrityService",
+        "CORE"
+      ]
+    },
+    {
+      "id": "core",
+      "nombre": "CORE",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "El distrito real más grande de la ciudad de código: 23.839 líneas reales en 55 archivos, más que los otros 10 módulos de negocio juntos. Base implícita de cualquier cliente — toda entidad sin módulo asignado en `MODULO_POR_ENTIDAD_MVP` es CORE por definición, no por lista explícita. Nunca se toca sin gate humano — \"sin refactor de Repository.js\" es la regla que más se repite en todo el roadmap.",
+      "relacionesDeclaradas": [
+        "Repository",
+        "IntegrityService",
+        "Formularios",
+        "EstructuraInicial",
+        "ConfigRepository"
+      ]
+    },
+    {
+      "id": "ventas",
+      "nombre": "Ventas",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (2 archivos, 222 líneas) — Fase 2 del Gestor de Proyectos como negocio. Pedido de cliente como espejo exacto de Pedido a proveedor; Contrato de servicio con pago que no siempre es dinero (Monetario/Intercambio/Mixto/Cesión social). Primera vez que el sistema calcula margen real (ingreso − coste) por producto/proyecto/cliente.",
+      "relacionesDeclaradas": [
+        "Economico",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "oportunidad",
+      "nombre": "Oportunidad",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (2 archivos, 197 líneas) — Fase 4, CRM sin IA a propósito. La puntuación de encaje v1 es una sola regla determinista de catálogo (coincidencia de ámbito contra sectores objetivo), mismo patrón sin IA que ya usan las Convocatorias — coherente con la ley de no delegar a un modelo lo que un filtro simple ya resuelve.",
+      "relacionesDeclaradas": [
+        "Convocatorias",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "cliente",
+      "nombre": "Cliente",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (3 archivos, 464 líneas) — la base que hace posible que cada organización real tenga su propio Sheet independiente, aprovisionado automáticamente. Sin este módulo, Gestor de Proyectos seguiría siendo un producto de un solo cliente.",
+      "relacionesDeclaradas": [
+        "Aprovisionamiento",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "compras",
+      "nombre": "Compras",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (5 archivos, 632 líneas) — el ciclo físico completo: MATERIAL, PROVEEDOR, PEDIDO_PROVEEDOR, RECEPCION. El primer módulo real que dio nombre a la ley de \"el dinero es sensor\" — cada compra fuera del ecosistema es una señal, no solo una transacción.",
+      "relacionesDeclaradas": [
+        "GASTO_API",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "gantt",
+      "nombre": "Gantt",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (2 archivos, 1.445 líneas) — plan vs. real, cuellos de botella reales visibles. El módulo con más líneas por archivo de todo el negocio (fuera de CORE) — la complejidad real de comparar lo planeado contra lo que de verdad pasó.",
+      "relacionesDeclaradas": [
+        "Repository",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "impacto",
+      "nombre": "Impacto",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (2 archivos, 219 líneas) — `ETIQUETA_IMPACTO`, el \"por qué\" de la jerarquía de las 8 preguntas: impacto social/ecológico, pensado para el Balanç Social. El módulo más pequeño en líneas, pero el que responde la pregunta más importante.",
+      "relacionesDeclaradas": [
+        "Ventas",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "convocatorias",
+      "nombre": "Convocatorias",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (1 archivo, 139 líneas) — financiación que La Troballa puede solicitar, distinto de `Oportunidad` (que mira entidades financiadas externamente que podrían ser clientes). Mismo patrón de encaje determinista sin IA (filtro tipo+importe).",
+      "relacionesDeclaradas": [
+        "Oportunidad",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "economico",
+      "nombre": "Economico",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (1 archivo, 396 líneas) — `COSTE`, la pieza que hace posible el cálculo de margen real en `Ventas`. Un solo archivo, pero es el que convierte todo lo demás en un negocio de verdad, no solo en gestión de tareas.",
+      "relacionesDeclaradas": [
+        "Ventas",
+        "GASTO_API",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "comunicacion",
+      "nombre": "Comunicacion",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (1 archivo, 141 líneas) — `WebhookTelegramService.js`, el bot operativo. Permiso separado del rol organizativo (Administrador/Colaborador/Consulta), porque un \"Voluntariado\" puede ser quien administra el bot en una organización pequeña. Construido, pendiente de verificación contra un bot real.",
+      "relacionesDeclaradas": [
+        "Cliente",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "aprovisionamiento",
+      "nombre": "Aprovisionamiento",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real (2 archivos, 1.234 líneas) — Fase 3, activada y probada de extremo a extremo. Aprobar una fila crea el Sheet+Script del cliente nuevo, sube su código generado, e instala su estructura de hojas, todo en una sola ejecución, sin pasos manuales. Reservado al Sheet maestro a propósito: dar esa capacidad a un cliente externo sería más alcance del debido.",
+      "relacionesDeclaradas": [
+        "Cliente",
+        "Comunicacion",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "modulos_acoplables",
+      "nombre": "Modulos acoplables",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "El barrio de los diez módulos de negocio reales — cada uno entre 1 y 5 archivos, menos de 1.500 líneas. \"Cada organización enciende solo lo que necesita\" (`package-map.json`, `moduloInstalado_`): modularidad técnica que ya es, sin haberlo llamado así, modularidad de quién participa en qué.",
+      "relacionesDeclaradas": [
+        "Ventas",
+        "Oportunidad",
+        "Cliente",
+        "Compras",
+        "Gantt",
+        "Impacto",
+        "Convocatorias",
+        "Economico",
+        "Comunicacion",
+        "Aprovisionamiento"
+      ]
+    }
+  ],
+  "personajes": [
+    {
+      "id": "concilio",
+      "nombre": "Concilio",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "El multiciclo que reúne a los ocho Acervos, cada uno con un carácter distinto, para deliberar internamente (rondas acotadas + síntesis final) antes de que una idea llegue a Cronista. Funciona igual para un cuento, un proyecto de software o una cooperativa — el mismo mecanismo, sin cambiar de forma según el dominio.",
+      "relacionesDeclaradas": [
+        "Acervo Tecnico",
+        "Acervo Logico",
+        "Acervo Logistico",
+        "Acervo Narrativo",
+        "Acervo Filosofico",
+        "Acervo Usuario",
+        "Acervo Sociocracia",
+        "Acervo Prompter",
+        "Coordinador",
+        "Vigilia"
+      ]
+    },
+    {
+      "id": "vigilia",
+      "nombre": "Vigilia",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "La cola nocturna de Concilio — encadenada sin esperar entre elementos: en cuanto termina un ciclo, empieza el siguiente de inmediato. Cierra con un correo de resumen (coste, tiempo, resultado de cada elemento). Construida y probada en dos jornadas reales (11 y 9 elementos procesados de punta a punta).",
+      "relacionesDeclaradas": [
+        "Concilio",
+        "Coordinador",
+        "Acervo Prompter",
+        "n8n",
+        "Baserow"
+      ]
+    },
+    {
+      "id": "coordinador",
+      "nombre": "Coordinador",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Reparte trabajo real entre workers y verifica lo que vuelve antes de darlo por bueno — nunca se fía de una respuesta solo porque suene coherente. Se apoya en Verificador de Campos (¿los campos citados existen de verdad en el esquema real?) y Verificador de Capacidades (¿el mecanismo citado por su nombre existe de verdad en el catálogo real?) antes de dejar pasar cualquier afirmación.",
+      "relacionesDeclaradas": [
+        "Verificador de Campos",
+        "Verificador de Capacidades",
+        "Vigilia",
+        "Relevo",
+        "Baserow",
+        "Actualizar libreria cliente",
+        "Cerrar ciclo"
+      ]
+    },
+    {
+      "id": "ejecutor",
+      "nombre": "Ejecutor",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Da seguimiento a las tareas y mantiene el sistema — con confirmación humana obligatoria antes de escribir nada real, sin excepción. Prototipo construido y probado: arregló un workflow real de verdad, no un ejercicio simulado. Existe también en versión Ejecutor Local, contra el worker local en vez de la API.",
+      "relacionesDeclaradas": [
+        "El Sheet",
+        "Relevo",
+        "Puerta Humana"
+      ]
+    },
+    {
+      "id": "cronista",
+      "nombre": "Cronista",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Convierte ideas y documentos en tareas y documentación real, por dos vías construidas: segmentación de documentos largos, y generación de informes e imágenes. Su propio workflow de nacimiento tiene un arco real en la cronología del universo (ver Arco del nacimiento del generador) — el modelo local alucinó el nombre de un fichero al generar una tarea, confundiéndolo con una tabla más abajo en el mi",
+      "relacionesDeclaradas": [
+        "n8n",
+        "Vigilia"
+      ]
+    },
+    {
+      "id": "pregonero",
+      "nombre": "Pregonero",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Publica el resultado terminado hacia fuera — redes, PDF. En su versión ampliada produciría vídeo interactivo (H5P), imagen y narración sintetizada (Piper) — solo diseñada todavía, ninguna pieza construida. El último paso de la Rueda del Gremio antes de que algo salga a la Plaza o la Feria.",
+      "relacionesDeclaradas": [
+        "Relevo"
+      ]
+    },
+    {
+      "id": "relevo",
+      "nombre": "Relevo",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "El tejido terminado se revisa antes de publicarse — el promotor y Claude confirman juntos y deciden si se continúa la misma historia o se inicia una nueva. Es el cuarto ciclo del Telar (Parte de Vigilia/Relevo), y también el nombre que se usa para cualquier informe de cierre de sesión que un humano tiene que leer antes de que el trabajo se dé por bueno.",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Ejecutor",
+        "Cronista",
+        "Pregonero",
+        "Puerta Humana"
+      ]
+    },
+    {
+      "id": "narrador",
+      "nombre": "Narrador",
+      "tipo": "personaje",
+      "estado": "por_construir",
+      "resumen": "Un Acervo todavía sin construir. A diferencia de los Acervos ya reales (Filosófico, Lógico, Logístico, Narrativo, Prompter), este no delibera dentro del Concilio — su función es contar. Es la figura que acompaña al usuario en su propia aventura por el sistema: quien narra la historia de Engremiat mientras se recorre, no solo quien la archiva después.",
+      "relacionesDeclaradas": [
+        "Concilio",
+        "Acervo Narrativo"
+      ]
+    },
+    {
+      "id": "mensajero",
+      "nombre": "Mensajero",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Se comunica con el mundo exterior a un continente, o al mundo exterior de Engremiat entero, por caminos seguros — nunca decide, nunca delibera, solo lleva un mensaje concreto de un sitio a otro. A diferencia de Coordinador (que reparte y verifica trabajo interno entre workers), el Mensajero cruza fronteras: entre Baserow y Sheets, entre la malla privada y un móvil, entre Engremiat y un cliente rea",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Concilio",
+        "Puerta Humana",
+        "Puente historia leyes",
+        "Bus de trabajo",
+        "Chequear consistencia",
+        "Regenerar estatico",
+        "Extraer decisiones",
+        "Salud del ecosistema"
+      ]
+    },
+    {
+      "id": "acervo_tecnico",
+      "nombre": "Acervo Tecnico",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "En el Concilio, su única pregunta es: ¿esto es implementable, mantenible, con coste real de construir? El voto que evita que una idea bonita choque contra la realidad del código.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_logico",
+      "nombre": "Acervo Logico",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Exige cadena de causa-efecto, sin saltarse pasos. En Concilio es quien pregunta \"¿y eso por qué se sigue de lo anterior?\" cuando una síntesis quiere atajar. Coautor, junto a Acervo Narrativo, de las síntesis reales que analizaron la historia propia de este universo.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_logistico",
+      "nombre": "Acervo Logistico",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Piensa en flujo real de trabajo: quién, cuándo, con qué recursos. En Concilio es la voz que convierte una buena idea en algo que de verdad se puede ejecutar en el tiempo y con las manos disponibles, no solo en el papel.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_narrativo",
+      "nombre": "Acervo Narrativo",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Vela por la coherencia de la historia, el tono, la continuidad. Junto a Acervo Logico, coautor real de las síntesis que primero analizaron la propia historia de Engremiat — el Acervo que más cerca trabaja del Narrador todavía por construir.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_filosofico",
+      "nombre": "Acervo Filosofico",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Pregunta por qué y a quién sirve algo — soberanía, dignidad, \"Nothing About Us Without Us\". La voz que en Concilio devuelve cualquier propuesta a la Misión (ver 00_Mapa) antes de dejarla avanzar: procomún, no contabilidad de deudas.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_usuario",
+      "nombre": "Acervo Usuario",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Habla desde la perspectiva de quien usa esto sin saber nada de por dentro — el único Acervo que en Concilio no defiende ningún mecanismo, defiende a quien va a tocar el resultado sin haber leído ni una línea de este universo.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_sociocracia",
+      "nombre": "Acervo Sociocracia",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Defiende la legitimidad del propio proceso de decisión: consentimiento, no mayoría — \"nadie tiene objeción razonada\", no un umbral de votos.",
+      "relacionesDeclaradas": [
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo_prompter",
+      "nombre": "Acervo Prompter",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "No delibera dentro de Concilio como los otros siete — trabaja antes que ellos. Convierte una necesidad vaga o una incidencia real en una única pregunta de investigación bien estructurada para Vigilia, aplicando meta-prompting: da la estructura del razonamiento que hace falta, no el contenido de la respuesta. No responde la pregunta — la formula, para que Concilio la responda después.",
+      "relacionesDeclaradas": [
+        "Vigilia",
+        "Concilio"
+      ]
+    },
+    {
+      "id": "verificador_de_campos",
+      "nombre": "Verificador de Campos",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Verificador determinista, no probabilístico — código real (`verificarCampos`), no una opinión de otra IA. Comprueba que cualquier campo citado en una respuesta existe de verdad en el esquema de la tabla relevante de Baserow. Nació para atajar un problema real de raíz: forzar la verificación sobre todos los documentos hacía que se marcaran como fabricados identificadores del lado del Sheet que el v",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Baserow",
+        "Verificar contra hechos"
+      ]
+    },
+    {
+      "id": "verificador_de_capacidades",
+      "nombre": "Verificador de Capacidades",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "Comprueba afirmaciones que citan explícitamente un mecanismo por su nombre real — \"el Verificador determinista de campos\", \"mecanismo 2\" — contra el catálogo real de mecanismos existentes. Ni da la afirmación por buena ni la descarta de entrada: la extrae siempre y la comprueba, la misma disciplina de honestidad del fallo que rige el resto del universo.",
+      "relacionesDeclaradas": [
+        "Coordinador",
+        "Baserow",
+        "Verificar contra hechos"
+      ]
+    }
+  ],
+  "oficios": [
+    {
+      "id": "actualizar_libreria_cliente",
+      "nombre": "Actualizar libreria cliente",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Oficio, no personaje: regenera el `Codigo.js` (envoltorios) de un cliente con la fuente **viva** de la librería, nunca desde git local, tras encontrar una divergencia real. Modo diagnóstico por defecto; `--aplicar` hace el push real. Encontró y resolvió `INC-0061` en su primer uso real — un oficio que ya demostró su valor, no una idea sin probar.",
+      "relacionesDeclaradas": [
+        "Coordinador"
+      ]
+    },
+    {
+      "id": "cerrar_ciclo",
+      "nombre": "Cerrar ciclo",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Escribe filas reales de cierre de ciclo (triaje/auditoría) en una pestaña del Sheet vía API directa, sin herramientas MCP — reemplaza un trabajo manual que tomaba 89,8 segundos por 2,5 segundos medidos. Cualquier ciclo futuro solo cambia el JSON de datos, no el oficio.",
+      "relacionesDeclaradas": [
+        "Coordinador"
+      ]
+    },
+    {
+      "id": "chequear_libreria_clientes",
+      "nombre": "Chequear libreria clientes",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Compara el `appsscript.json` real de cada cliente contra la versión real publicada de la librería — nunca contra el dato `LIBRERIA_VERSION` del Sheet, que puede mentir. Se ejerce diariamente a las 8:00 vía Windows Task Scheduler (ver `Ejecutar chequeo libreria`), registrando cada ejecución en `92_BUS_TRABAJO`.",
+      "relacionesDeclaradas": [
+        "Ejecutar chequeo libreria",
+        "Mensajero"
+      ]
+    },
+    {
+      "id": "ejecutar_chequeo_libreria",
+      "nombre": "Ejecutar chequeo libreria",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "El oficio más humilde y más honesto de todos: un script de PowerShell (`git pull` + disparar `Chequear libreria clientes`) que solo corre si la máquina del operador está encendida a esa hora — sin reintento automático si se salta un día. Ninguna pretensión de fiabilidad que no tenga.",
+      "relacionesDeclaradas": [
+        "Chequear libreria clientes"
+      ]
+    },
+    {
+      "id": "bus_de_trabajo",
+      "nombre": "Bus de trabajo",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "El oficio que mantiene el espacio de Mensajero — reclamar/en_progreso/cerrar/verificar por worker, vía Sheet, con protección contra doble reclamación y panel de coste/tiempo agregado. Formaliza el patrón probado a mano en el primer lote real (2026-08-25) — un oficio nacido de observar cómo se trabajaba ya, no de un diseño de escritorio.",
+      "relacionesDeclaradas": [
+        "92_BUS_TRABAJO",
+        "Mensajero"
+      ]
+    },
+    {
+      "id": "exportador_de_gasto",
+      "nombre": "Exportador de gasto",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Lee GASTO_API real en vivo y lo expone como métricas Prometheus para el panel de Grafana. Desplegado y verificado en el VPS el 2026-09-01: $0,18 de gasto real acumulado, 55 llamadas en 24h, visible en un panel vivo. El oficio que convierte un libro de gasto en algo que se puede vigilar de un vistazo.",
+      "relacionesDeclaradas": [
+        "GASTO_API"
+      ]
+    },
+    {
+      "id": "puente_historia_leyes",
+      "nombre": "Puente historia leyes",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "El oficio que ejerce Mensajero entre los dos continentes de datos: lee una `TAREA` real de Baserow y escribe solo una referencia (nunca el dato completo) en `18_VINCULO` del lado Sheets. Dry-run por defecto, verificado en real contra `TAR-0008` sin escribir nada — la disciplina de Puerta Humana aplicada al propio cruce de fronteras.",
+      "relacionesDeclaradas": [
+        "Mensajero"
+      ]
+    },
+    {
+      "id": "chequear_consistencia",
+      "nombre": "Chequear consistencia",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Compara la Consola (sus `GRUPOS`) contra `13_INCIDENCIAS` real — el ritual versionado manual que sustituyó a la sincronización en vivo Consola↔Sheet, descartada por frágil. Uno de los tres precedentes reales que inspiraron el diseño de Mensajero: un camino concreto, disparado a mano, que compara sin fusionar.",
+      "relacionesDeclaradas": [
+        "Mensajero",
+        "El Sheet"
+      ]
+    },
+    {
+      "id": "regenerar_estatico",
+      "nombre": "Regenerar estatico",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Reconstruye el HTML estático de la Consola preservando el estado ya publicado — nunca resetea a un valor por defecto. Regla real de este oficio, no accidental: cualquier script que regenere algo estático debe leer primero el estado actual, o destruye trabajo real de un operador sin darse cuenta.",
+      "relacionesDeclaradas": [
+        "Mensajero"
+      ]
+    },
+    {
+      "id": "extraer_decisiones",
+      "nombre": "Extraer decisiones",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "Solo lectura, a propósito: identifica qué decisiones tomadas en la Consola siguen pendientes de trasladar al Sheet real. No escribe nada — es un oficio de vigilancia, no de acción, coherente con no automatizar el cruce de fronteras sin que un humano lo confirme antes.",
+      "relacionesDeclaradas": [
+        "Mensajero",
+        "Puerta Humana"
+      ]
+    },
+    {
+      "id": "salud_del_ecosistema",
+      "nombre": "Salud del ecosistema",
+      "tipo": "oficio",
+      "estado": "activo",
+      "resumen": "El oficio que vigila a los demás oficios: chequeo agregado de los puntos automatizables del propio `registro_ecosistema.json`. Nació de encontrar 4 desincronizaciones reales el mismo día (Consola↔Sheet, rama vs. main, prompt desactualizado, trigger desactivado sin avisar) — desde entonces, \"acordarse\" se sustituyó por \"comprobar siempre\". Ningún elemento nuevo del ecosistema se vigila si no nace r",
+      "relacionesDeclaradas": [
+        "Honestidad del fallo",
+        "Mensajero"
+      ]
+    }
+  ],
+  "reglas": [
+    {
+      "id": "puerta_humana",
+      "nombre": "Puerta Humana",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "Principio no negociable: ninguna IA escribe datos reales sin que una persona lo revise antes. Aplica a todo lo demás en este universo.",
+      "relacionesDeclaradas": [
+        "Relevo",
+        "Coordinador",
+        "Ejecutor"
+      ]
+    },
+    {
+      "id": "el_sheet_manda",
+      "nombre": "El Sheet manda",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "No existe una única base de datos para todo Engremiat, y no es el objetivo — es una decisión escrita, no un descuido (ver Los dos continentes de datos). El Sheet manda sobre lo operativo de los clientes existentes; Baserow es el laboratorio del núcleo soberano nuevo. Ningún dato se duplica \"por si acaso\" en los dos sitios — cualquier dato nuevo se asigna a un dominio antes de construir nada, según",
+      "relacionesDeclaradas": [
+        "El Sheet",
+        "Baserow"
+      ]
+    },
+    {
+      "id": "verificar_contra_hechos",
+      "nombre": "Verificar contra hechos",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "Ninguna afirmación se da por buena porque suene coherente. Verificador de Campos comprueba, de forma determinista y contra el esquema real de Baserow, que cualquier campo citado existe de verdad. Verificador de Capacidades hace lo mismo con cualquier mecanismo citado por su nombre real, contra el catálogo real de mecanismos. Verificación adversarial e independiente de quien generó la respuesta — n",
+      "relacionesDeclaradas": [
+        "Verificador de Campos",
+        "Verificador de Capacidades"
+      ]
+    },
+    {
+      "id": "honestidad_del_fallo",
+      "nombre": "Honestidad del fallo",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "El sistema no se disculpa por sus límites — los documenta. Ejemplo real: el backup automático VPS→Pi espera hasta 5 minutos a que la Pi responda; si no aparece, cancela el trabajo y lo deja escrito en el log, nunca falla en silencio (ver El ciclo de vida remoto). Mismo espíritu que `98_LOG_GOBIERNO`, que registra sus propios `drift_detectado` reales en vez de ocultarlos.",
+      "relacionesDeclaradas": [
+        "Coordinador"
+      ]
+    },
+    {
+      "id": "los_dos_continentes_de_datos",
+      "nombre": "Los dos continentes de datos",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "No existe una única base de datos para todo Engremiat, y no es el objetivo — es una decisión escrita, no un descuido.",
+      "relacionesDeclaradas": [
+        "VPS y Tailscale",
+        "Baserow",
+        "El Sheet"
+      ]
+    }
+  ],
+  "relaciones": [
+    {
+      "id": "vigilia_activa_a_concilio",
+      "origenId": "vigilia",
+      "origenNombre": "Vigilia",
+      "destinoId": "concilio",
+      "destinoNombre": "Concilio",
+      "tipo": "activa_a",
+      "estado": "activo"
+    },
+    {
+      "id": "concilio_depende_de_7_acervos_o_mecanismos",
+      "origenId": "concilio",
+      "origenNombre": "Concilio",
+      "destinoId": "7_acervos_o_mecanismos",
+      "destinoNombre": "7 Acervos-o-mecanismos",
+      "tipo": "depende_de",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_prompter_alimenta_a_vigilia",
+      "origenId": "acervo_prompter",
+      "origenNombre": "Acervo Prompter",
+      "destinoId": "vigilia",
+      "destinoNombre": "Vigilia",
+      "tipo": "alimenta_a",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_verifica_a_concilio",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "concilio",
+      "destinoNombre": "Concilio",
+      "tipo": "verifica_a",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_corrige_a_concilio",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "concilio",
+      "destinoNombre": "Concilio",
+      "tipo": "corrige_a",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_alimenta_a_relevo",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "relevo",
+      "destinoNombre": "Relevo",
+      "tipo": "alimenta_a",
+      "estado": "activo"
+    },
+    {
+      "id": "puerta_humana_gobierna_a_2_acervos_o_mecanismos",
+      "origenId": "puerta_humana",
+      "origenNombre": "Puerta Humana",
+      "destinoId": "2_acervos_o_mecanismos",
+      "destinoNombre": "2 Acervos-o-mecanismos",
+      "tipo": "gobierna_a",
+      "estado": "activo"
+    },
+    {
+      "id": "ejecutor_opera_en_el_sheet",
+      "origenId": "ejecutor",
+      "origenNombre": "Ejecutor",
+      "destinoId": "el_sheet",
+      "destinoNombre": "El Sheet",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "vigilia_opera_en_baserow",
+      "origenId": "vigilia",
+      "origenNombre": "Vigilia",
+      "destinoId": "baserow",
+      "destinoNombre": "Baserow",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "baserow_opera_en_vps_y_tailscale",
+      "origenId": "baserow",
+      "origenNombre": "Baserow",
+      "destinoId": "vps_y_tailscale",
+      "destinoNombre": "VPS y Tailscale",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "n8n_opera_en_vps_y_tailscale",
+      "origenId": "n8n",
+      "origenNombre": "n8n",
+      "destinoId": "vps_y_tailscale",
+      "destinoNombre": "VPS y Tailscale",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "el_vault_depende_de_baserow",
+      "origenId": "el_vault",
+      "origenNombre": "El Vault",
+      "destinoId": "baserow",
+      "destinoNombre": "Baserow",
+      "tipo": "depende_de",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_parte_de_2_acervos_o_mecanismos",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "2_acervos_o_mecanismos",
+      "destinoNombre": "2 Acervos-o-mecanismos",
+      "tipo": "parte_de",
+      "estado": "activo"
+    },
+    {
+      "id": "cronista_opera_en_n8n",
+      "origenId": "cronista",
+      "origenNombre": "Cronista",
+      "destinoId": "n8n",
+      "destinoNombre": "n8n",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_opera_en_gasto_api",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "gasto_api",
+      "destinoNombre": "GASTO_API",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "puerta_humana_gobierna_a_gasto_api",
+      "origenId": "puerta_humana",
+      "origenNombre": "Puerta Humana",
+      "destinoId": "gasto_api",
+      "destinoNombre": "GASTO_API",
+      "tipo": "gobierna_a",
+      "estado": "activo"
+    },
+    {
+      "id": "headscale_opera_en_vps_y_tailscale",
+      "origenId": "headscale",
+      "origenNombre": "Headscale",
+      "destinoId": "vps_y_tailscale",
+      "destinoNombre": "VPS y Tailscale",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "mensajero_opera_en_92_bus_trabajo",
+      "origenId": "mensajero",
+      "origenNombre": "Mensajero",
+      "destinoId": "92_bus_trabajo",
+      "destinoNombre": "92_BUS_TRABAJO",
+      "tipo": "opera_en",
+      "estado": "activo"
+    }
+  ],
+  "tiposRelacionReales": [
+    "activa_a",
+    "alimenta_a",
+    "corrige_a",
+    "depende_de",
+    "gobierna_a",
+    "opera_en",
+    "parte_de",
+    "verifica_a"
+  ]
+}
