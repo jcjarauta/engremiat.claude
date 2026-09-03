@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T04:50:34.036Z",
+  "generadoEn": "2026-09-03T14:35:51.242Z",
   "nodos": [
     {
       "id": "tools/acervo_prompter.mjs",
@@ -99,6 +99,17 @@
       "tocaVault": false,
       "tocaVps": false,
       "queHace": "Regenera el Codigo.js (envoltorios) de un cliente con fuente VIVA de la libreria (nunca git local, tras encontrar divergencia real). Modo diagnostico por defecto, --aplicar hace el push real. Encontro y resolvio INC-0061 en su primer uso real."
+    },
+    {
+      "id": "tools/gobierno/bocetador/aplicar_boceto.mjs",
+      "nombre": "aplicar_boceto.mjs",
+      "carpeta": "tools/gobierno/bocetador",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "El mecanismo de sincronizacion real (§8.13/§8.21): lee un boceto.json exportado del Bocetador y escribe fichas reales en la boveda -- Sheet/Baserow quedan siempre en informe, nunca una llamada real, con o sin --aplicar. Encontrado y corregido antes de escribir nada real: la primera version sobrescribia por completo fichas existentes con contenido real -- violaba 'memoria revisable, nunca borrada'. Corregido: nunca sobrescribe, solo crea fichas nuevas. Probado en real: creo 01_Mundo/Espacios/Consola.md (hueco real), dejo Telar.md intacto."
     },
     {
       "id": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
@@ -222,6 +233,127 @@
       "queHace": ""
     },
     {
+      "id": "tools/gobierno/graphify_visor/anadir_equipo_personajes.mjs",
+      "nombre": "anadir_equipo_personajes.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Anade el campo real equipo (§8.33 -- personaje.schema.json) al frontmatter de los 20 Personajes reales, agrupados por la topologia ya existente en 07_Holon_Relaciones (opera_en/parte_de/alimenta_a/verifica_a), no inventada. Idempotente, solo toca la linea de frontmatter. Aplicado en real: 20/20 escritas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
+      "nombre": "anadir_vinculoreal.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Lee valoracion_vinculoreal.json y escribe de verdad la seccion ## Vinculo real en las fichas reales con evidencia_precisa -- mismo patron de seguridad que aplicar_boceto.mjs (dry-run por defecto, --aplicar para escribir, solo anade al final del fichero, nunca toca contenido existente, idempotente). Filtra dos tipos de ruido encontrados revisando el primer dry-run: nodos recurso:X de grafo_node.json (duplican Sheet/Baserow por otro lado) y coincidencias contra el fichero entero de Apps Script (no son un recordId util). Aplicado en real: 33 fichas de la boveda enriquecidas, verificado que ninguna perdio contenido previo. Segunda pasada: 7 fichas mas enriquecidas (CORE, Repository, Aprovisionamiento, Comunicacion, EstructuraInicial, Gantt, Ejecutar chequeo libreria), con dos correspondencias verificadas a mano para excluir ruido de coincidencia amplia (Repository -> src/Repository.js explicitamente sin ConfigRepository.js, que es una ficha real distinta). Resultado final: de 45 confirmadas, 43 tienen vinculoReal real, 2 se quedan sin el a proposito (Fisica y Verificar contra hechos, ya resueltas de otra forma)."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "nombre": "analizar_entidades_reales.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "El censo real de entidades: cruza los 8 grafos reales (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks) mas TODAS las 70 pestanas del Sheet y las 18 tablas de Baserow (no solo las que ya tenian grafo). Calcula corroboracion cruzada, centralidad, ciclos reales (Tarjan) y vocabulario de relacion unificado por cada una de 222 entidades candidatas reales, con decision (confirmar/promover/revisar/descartar) y su razon al lado. Salidas: censo_entidades.json + HALLAZGOS_ENTIDADES_REALES.md. Limite honesto documentado: cruce por nombre/tokens normalizados, no por ID unico."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "nombre": "cargar_grafos_sheet.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+      "nombre": "cargar_grafo_holon.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Extrae el grafo real del Holon (quien hace que con quien, donde) desde grafo_wikilinks.json -- separa las aristas de relacion real (opera_en/depende_de/gobierna_a/activa_a/verifica_a/corrige_a/alimenta_a/parte_de) de los wikilinks narrativos sueltos, y anade el campo real equipo de cada Personaje. Real: 28 nodos, 39 aristas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/cargar_grafo_paquete_cliente.mjs",
+      "nombre": "cargar_grafo_paquete_cliente.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/cargar_grafo_telar_estados.mjs",
+      "nombre": "cargar_grafo_telar_estados.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/cargar_grafo_wikilinks.mjs",
+      "nombre": "cargar_grafo_wikilinks.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "El octavo grafo real (ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md parrafo 8.23): recorre las 9 carpetas completas de la boveda (sin excluir narrativa esta vez) y extrae TODOS los [[wikilinks]] reales del cuerpo entero de cada ficha. Corregido tras encontrar el bug construyendo: las fichas de 07_Holon_Relaciones (tipo: relacion) no se cuentan como entidad -- se convierten en una arista directa origen->destino con su tipo_relacion real. Real: 83 fichas-entidad, 6 nombres referenciados sin ficha propia, 281 aristas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "nombre": "consolidar_censo.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "Segunda pasada sobre el censo real (confirmar/promover/revisar/descartar). Anade 2 fuentes reales mas: el catalogo MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano (Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 220 entidades del censo en 19 acciones concretas con su razon real. Sobre el grupo descartar (investigado a mano, no solo con reglas): encontro y corrigio un bug real en cargar_grafo_wikilinks.mjs (relaciones con varios destinos perdian los destinos reales por derivarlos del nombre del fichero en vez del cuerpo), y encontro 5 huecos reales concretos (VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION tocadas por codigo real, AGORA/EJECUTOR_LOCAL modulos activos sin ficha), 2 candidatas reales a ficha nueva (Vision Mision, Fisica) y 5 pestanas/tablas que ya tenian grafo propio y el censo no las veia. El resto queda historico, tal como se pidio explicitamente. Investigando a fondo los 5 huecos reales (no solo con reglas): 3 resultaron ya narrados por fichas reales existentes (Vigilia.md/Coordinador.md/Ejecutor.md), resuelto anadiendo una seccion ## Vinculo real a cada una sin tocar el resto; 2 (DOCUMENTO_ENGREMIAT, AGORA) y 1 candidata mas (Fisica) eran huecos genuinos, resueltos creando su ficha real en 01_Mundo/Recursos/ y 03_Reglas/. Vision Mision investigada resulto ser una fila ya catalogada dentro de DOCUMENTO_ENGREMIAT, no una entidad nueva."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
+      "nombre": "crear_relaciones_opera_en.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Crea las 13 aristas reales opera_en que faltaban -- de 19 Personajes, solo 5 respondian ya Donde. Cada una fundamentada en algo ya escrito en otra ficha real (Telar.md, Coordinador.md, vinculoReal de Verificador de Campos y Acervo Usuario), nunca inventada. Aplicado en real: 13/13 creadas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "nombre": "extraer_anatomia_entidad.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "§8.41-43: calcula la anatomia real de cada entidad -- cabeza (punto de entrada real, sin aristas entrantes), columna (el camino dirigido real mas largo desde ahi, DFS con corte de ciclos) y extremidades (el resto), sobre siete fuentes reales: grafo_n8n.json (workflows), graph.json+concat-map.json de tools/graphify/ (Apps Script), grafo_node.json (Node, espina = cadena real de import), grafo_historial.json/grafo_paquete_cliente.json (mecanismos con flujo propio: 91_HISTORIAL, PAQUETE_CLIENTE), esquema real de Sheet (estructura_sheet.json del bocetador -- columnas reales como extremidades, columnas *_ID que coinciden con una clave real de ENTIDADES_MVP de src/Ids.js como aristas de FK reales hacia otra pestaña), esquema real de Baserow (estructura_baserow.json -- campos reales como extremidades, campos tipo link_row de la propia API de Baserow como aristas reales), y grafo_wikilinks.json como ultimo respaldo (relaciones reales del Holon). Una tabla no tiene flujo de ejecucion, pero si una forma real -- sus columnas y sus relaciones reales, nunca inventadas. Lee el vinculoReal real de cada ficha para saber que fuente resolver. Salida: anatomia_entidades.json, 60 entidades reales con anatomia calculable de 91 (excluyendo las 32 fichas-relacion de 07_Holon)."
+    },
+    {
       "id": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
       "nombre": "mapear_grafo_n8n.mjs",
       "carpeta": "tools/gobierno/graphify_visor",
@@ -241,7 +373,18 @@
       "tocaBaserow": true,
       "tocaVault": true,
       "tocaVps": true,
-      "queHace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los 44 scripts reales de Node en tools/. Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS por patron de texto, y relaciones reales por fichero de datos (escribe/lee -- corregido 2026-09-03 tras encontrar que la mayoria de scripts se hablan por .json, no por import; 16 aristas y 28 ficheros de datos reales detectados). Servido en http://100.107.171.88:9320/nodejs.html."
+      "queHace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los 44 scripts reales de Node en tools/. Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS, relaciones por fichero de datos (escribe/lee, incluido un paso de respaldo a nivel de fichero completo) y relaciones por recurso real compartido (misma pestana Sheet o tabla Baserow) -- corregido dos veces en real (2026-09-03) tras ver el grafo demasiado desligado: de 6 a 93 aristas reales. Servido en http://100.107.171.88:9320/nodejs.html."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "nombre": "valorar_vinculoreal_confirmadas.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": true,
+      "tocaVps": false,
+      "queHace": "Valora cada entidad CONFIRMADA del censo real (§8.23): ya_tiene la seccion ## Vinculo real en su ficha, evidencia_precisa (script/tabla/workflow/modulo real concreto reutilizable) o evidencia_difusa (solo un fichero entero de Apps Script, no un recordId util). Anade dos fuentes que el barrido de la consolidacion no cubria del todo: el grafo completo de Apps Script y las transcripciones reales de Telar B2. Escribe valoracion_vinculoreal.json. Segunda pasada tras la propuesta real del operador (perspectiva del Sheet maestro): anade el mapeo real hoja->modulo computado desde ENTIDADES_MVP+MODULO_POR_ENTIDAD_MVP de src/Ids.js (revela que CORE es dueno real de 8 pestanas, invisible a la coincidencia de texto porque \"CORE\" no es substring de ninguna pestana -- es una relacion de propiedad, no textual), mas dos corpus nuevos: src/ (161 ficheros reales de Apps Script, mas granulares que el unico concat.js de Graphify) y los .ps1 del ecosistema. Encontrada la misma trampa de homonimia que en §8.23 (Fisica <-> InstaladorJerarquiaFisica.js, jerarquia espacial de un cliente, no el concepto filosofico) -- excluida explicitamente."
     },
     {
       "id": "tools/gobierno/puente_historia_leyes.mjs",
@@ -553,8 +696,68 @@
       "tipo": "dato"
     },
     {
+      "id": "dato:valoracion_vinculoreal.json",
+      "nombre": "valoracion_vinculoreal.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:censo_entidades.json",
+      "nombre": "censo_entidades.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_wikilinks.json",
+      "nombre": "grafo_wikilinks.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_node.json",
+      "nombre": "grafo_node.json",
+      "tipo": "dato"
+    },
+    {
       "id": "dato:grafo_n8n.json",
       "nombre": "grafo_n8n.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_historial.json",
+      "nombre": "grafo_historial.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_jerarquia.json",
+      "nombre": "grafo_jerarquia.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_paquete_cliente.json",
+      "nombre": "grafo_paquete_cliente.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_telar_estados.json",
+      "nombre": "grafo_telar_estados.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:datos_sheet_real.json",
+      "nombre": "datos_sheet_real.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_holon.json",
+      "nombre": "grafo_holon.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:estados.json",
+      "nombre": "estados.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:anatomia_entidades.json",
+      "nombre": "anatomia_entidades.json",
       "tipo": "dato"
     },
     {
@@ -565,11 +768,6 @@
     {
       "id": "dato:telar-interactivo.json",
       "nombre": "telar-interactivo.json",
-      "tipo": "dato"
-    },
-    {
-      "id": "dato:grafo_node.json",
-      "nombre": "grafo_node.json",
       "tipo": "dato"
     },
     {
@@ -605,11 +803,6 @@
     {
       "id": "dato:auditoria.json",
       "nombre": "auditoria.json",
-      "tipo": "dato"
-    },
-    {
-      "id": "dato:estados.json",
-      "nombre": "estados.json",
       "tipo": "dato"
     },
     {
@@ -708,8 +901,48 @@
       "tipo": "recurso_real"
     },
     {
-      "id": "recurso:18_VINCULO",
-      "nombre": "18_VINCULO",
+      "id": "recurso:39_PEDIDO_CLIENTE",
+      "nombre": "39_PEDIDO_CLIENTE",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:PAQUETE_CLIENTE",
+      "nombre": "PAQUETE_CLIENTE",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:01_CAMPANAS",
+      "nombre": "01_CAMPANAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:06_TAREAS",
+      "nombre": "06_TAREAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:03_PRODUCTOS",
+      "nombre": "03_PRODUCTOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:05_PROCESOS",
+      "nombre": "05_PROCESOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:14_DOCUMENTOS",
+      "nombre": "14_DOCUMENTOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:24_TAREA_RECURSO",
+      "nombre": "24_TAREA_RECURSO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:AGORA",
+      "nombre": "AGORA",
       "tipo": "recurso_real"
     },
     {
@@ -720,6 +953,11 @@
     {
       "id": "recurso:DOCUMENTO_ENGREMIAT",
       "nombre": "DOCUMENTO_ENGREMIAT",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:18_VINCULO",
+      "nombre": "18_VINCULO",
       "tipo": "recurso_real"
     }
   ],
@@ -905,6 +1143,271 @@
       "relation": "toca_recurso"
     },
     {
+      "source": "dato:valoracion_vinculoreal.json",
+      "target": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:censo_entidades.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_wikilinks.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_node.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_n8n.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_historial.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_jerarquia.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_paquete_cliente.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:grafo_telar_estados.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:estructura_sheet.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "dato:estructura_baserow.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "recurso:39_PEDIDO_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+      "target": "recurso:PAQUETE_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:datos_sheet_real.json",
+      "target": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "target": "dato:grafo_historial.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "target": "dato:grafo_jerarquia.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "target": "recurso:01_CAMPANAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "target": "recurso:06_TAREAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafos_sheet.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:grafo_wikilinks.json",
+      "target": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+      "target": "dato:grafo_holon.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_paquete_cliente.mjs",
+      "target": "dato:grafo_paquete_cliente.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_paquete_cliente.mjs",
+      "target": "recurso:PAQUETE_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:estados.json",
+      "target": "tools/gobierno/graphify_visor/cargar_grafo_telar_estados.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_telar_estados.mjs",
+      "target": "dato:grafo_telar_estados.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_wikilinks.mjs",
+      "target": "dato:grafo_wikilinks.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:grafo_node.json",
+      "target": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "dato:censo_entidades.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:01_CAMPANAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:03_PRODUCTOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:05_PROCESOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:06_TAREAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:14_DOCUMENTOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:24_TAREA_RECURSO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:AGORA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:PAQUETE_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:PERSONAJE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:VIGILIA_TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+      "target": "recurso:METRICA_FABRICACION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:grafo_n8n.json",
+      "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_node.json",
+      "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_historial.json",
+      "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_paquete_cliente.json",
+      "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_wikilinks.json",
+      "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "target": "dato:anatomia_entidades.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "target": "recurso:38_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "target": "recurso:PAQUETE_CLIENTE",
+      "relation": "toca_recurso"
+    },
+    {
       "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
       "target": "dato:grafo_n8n.json",
       "relation": "escribe_debil"
@@ -943,6 +1446,51 @@
       "source": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
       "target": "dato:01_x.json",
       "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:censo_entidades.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_node.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_n8n.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_telar_estados.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:estructura_sheet.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:estructura_baserow.json",
+      "target": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "target": "dato:valoracion_vinculoreal.json",
+      "relation": "escribe"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "target": "recurso:ACERVO",
+      "relation": "toca_recurso"
     },
     {
       "source": "tools/gobierno/puente_historia_leyes.mjs",

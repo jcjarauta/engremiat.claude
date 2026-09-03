@@ -695,6 +695,12 @@ Corrección justa del operador sobre §8.42: una tabla no tiene flujo de ejecuci
 
 **Resultado real**: de 49 a **60 entidades con anatomía real** de 91 (excluyendo las 32 fichas-relación de `07_Holon_Relaciones/`, que no son entidades). Los 11 módulos de negocio (Ventas, Compras, Oportunidad, Impacto, Convocatorias, Económico, Seguimiento, Ejecución, CORE) ganan cuerpo real por primera vez -- verificado con Ventas (cadena real de FK `39_PEDIDO_CLIENTE`→`43_CONTRATO_SERVICIO`→`38_CLIENTE`) y `DOCUMENTO_ENGREMIAT` (9 campos reales de Baserow). Quedan 31 sin cubrir, honestamente: 25 son narrativas puras (arcos, sesiones, hilos abiertos, sin ninguna relación real que dibujar) y 6 citan código/infraestructura que Graphify no puede leer todavía (un script más nuevo que `grafo_node.json`, un `.ps1`, configuración de red) -- documentado, no oculto.
 
+### 8.44 "¿Merece la pena regenerar grafo_node.json para cerrar Física?"
+
+Sí -- confirmado antes de hacerlo: `mapear_grafo_node.mjs` recorre todo `tools/` de verdad (incluido `tools/gobierno/graphify_visor/`), no un subconjunto fijo -- el `grafo_node.json` de antes estaba simplemente desactualizado, generado antes de construir el censo/Holon/anatomía de esta sesión. Solo lectura, sin riesgo. Regenerado: de 89 a **59 scripts + 41 ficheros de datos + 21 recursos compartidos = 121 nodos reales, 155 aristas**.
+
+`Física` gana su fuente Node real (`analizar_entidades_reales.mjs`, 13 nodos -- los `.json` reales que lee/escribe: `censo_entidades.json`, `grafo_wikilinks.json`, `PAQUETE_CLIENTE`...). De 60 a **61 entidades con anatomía real de 91**. Ningún otro hueco se cerró con este regenerado -- los 30 restantes siguen siendo el límite honesto ya documentado en §8.42 (narrativas puras o código/infraestructura que Graphify no lee).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

@@ -1,6 +1,6 @@
 {
- "generadoEn": "2026-09-03T14:31:12.456Z",
- "totalEntidadesConAnatomia": 60,
+ "generadoEn": "2026-09-03T14:36:05.595Z",
+ "totalEntidadesConAnatomia": 61,
  "entidades": {
   "baserow": {
    "nombre": "Baserow",
@@ -39049,6 +39049,160 @@
      "entrada": "tools/gobierno/bocetador/encontrar_huecos.mjs",
      "espina": [
       "tools/gobierno/bocetador/encontrar_huecos.mjs"
+     ]
+    }
+   ]
+  },
+  "fisica": {
+   "nombre": "Física",
+   "fuentes": [
+    {
+     "tipo": "node",
+     "etiqueta": "Node — tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+     "nodos": [
+      {
+       "id": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "nombre": "analizar_entidades_reales.mjs",
+       "tipoReal": "script"
+      },
+      {
+       "id": "dato:censo_entidades.json",
+       "nombre": "dato:censo_entidades.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_wikilinks.json",
+       "nombre": "dato:grafo_wikilinks.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_node.json",
+       "nombre": "dato:grafo_node.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_n8n.json",
+       "nombre": "dato:grafo_n8n.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_historial.json",
+       "nombre": "dato:grafo_historial.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_jerarquia.json",
+       "nombre": "dato:grafo_jerarquia.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_paquete_cliente.json",
+       "nombre": "dato:grafo_paquete_cliente.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:grafo_telar_estados.json",
+       "nombre": "dato:grafo_telar_estados.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:estructura_sheet.json",
+       "nombre": "dato:estructura_sheet.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "dato:estructura_baserow.json",
+       "nombre": "dato:estructura_baserow.json",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "recurso:39_PEDIDO_CLIENTE",
+       "nombre": "39_PEDIDO_CLIENTE",
+       "tipoReal": "recurso"
+      },
+      {
+       "id": "recurso:PAQUETE_CLIENTE",
+       "nombre": "PAQUETE_CLIENTE",
+       "tipoReal": "recurso"
+      }
+     ],
+     "aristas": [
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:censo_entidades.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_wikilinks.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_node.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_n8n.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_historial.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_jerarquia.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_paquete_cliente.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:grafo_telar_estados.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:estructura_sheet.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "dato:estructura_baserow.json",
+       "enEspina": false,
+       "relacion": "escribe_debil"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "recurso:39_PEDIDO_CLIENTE",
+       "enEspina": false,
+       "relacion": "toca_recurso"
+      },
+      {
+       "source": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+       "target": "recurso:PAQUETE_CLIENTE",
+       "enEspina": false,
+       "relacion": "toca_recurso"
+      }
+     ],
+     "entrada": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+     "espina": [
+      "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs"
      ]
     }
    ]
