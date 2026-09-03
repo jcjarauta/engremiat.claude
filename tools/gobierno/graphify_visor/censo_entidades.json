@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T09:42:09.999Z",
+  "generadoEn": "2026-09-03T09:44:39.550Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -3818,6 +3818,24 @@
       "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
     },
     {
+      "nombre": "99_TRIAGE_LOCAL",
+      "slug": "99_triage_local",
+      "tiposCandidato": [
+        "pestana_sheet_utilidad"
+      ],
+      "yaEsFichaVault": false,
+      "corroboracionCruzada": 2,
+      "fuentes": [
+        "sheet_estructura",
+        "vault_mencion"
+      ],
+      "centralidad": 0,
+      "decision": "descartar",
+      "razon": "evidencia real insuficiente hoy (2 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
+      "accionRecomendada": "ya_mencionado_en_boveda",
+      "accionRazon": "Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29). No hace falta ficha propia."
+    },
+    {
       "nombre": "PAQUETE_CLIENTE",
       "slug": "paquete_cliente",
       "tiposCandidato": [
@@ -4556,27 +4574,10 @@
       "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
       "accionRecomendada": "historico_instancia_negocio",
       "accionRazon": "Instancia real y específica (una tarea/proceso/proyecto/producto/campaña concreta), no un tipo de entidad -- correctamente fuera del alcance de la capa de gobernanza (Espacio/Personaje/Recurso describe el sistema, no cada dato operativo). Sin acción."
-    },
-    {
-      "nombre": "99_TRIAGE_LOCAL",
-      "slug": "99_triage_local",
-      "tiposCandidato": [
-        "pestana_sheet_utilidad"
-      ],
-      "yaEsFichaVault": false,
-      "corroboracionCruzada": 1,
-      "fuentes": [
-        "sheet_estructura"
-      ],
-      "centralidad": 0,
-      "decision": "descartar",
-      "razon": "evidencia real insuficiente hoy (1 fuente(s)) -- no se promueve sin mas dato, se deja fuera sin borrar el candidato del censo.",
-      "accionRecomendada": "historico_pestana_sin_huella",
-      "accionRazon": "Pestaña real del Sheet (1 fuente(s): sheet_estructura) con huella hoy insuficiente fuera del propio Sheet -- no amerita ficha nueva todavía. Revisar de nuevo si gana uso real (código, Baserow, bóveda)."
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T09:42:10.063Z",
+    "generadoEn": "2026-09-03T09:44:39.623Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
@@ -4585,7 +4586,7 @@
     "resumenAccion": {
       "confirmar_ya_solido": 46,
       "descartar_termino_generico": 3,
-      "ya_mencionado_en_boveda": 79,
+      "ya_mencionado_en_boveda": 80,
       "revisar_inconsistencia_nombres": 1,
       "revisar_manual_real": 14,
       "correcto_narrativo": 19,
@@ -4598,8 +4599,7 @@
       "historico_instancia_ya_catalogada": 1,
       "historico_detalle_implementacion": 1,
       "ya_cubierto_grafo_propio": 1,
-      "historico_dato_operativo": 1,
-      "historico_pestana_sin_huella": 1
+      "historico_dato_operativo": 1
     }
   }
 }

@@ -553,6 +553,10 @@ Investigado uno a uno, con grep real sobre `src/` y los documentos de jornada:
 
 Censo regenerado y desplegado: de 53 pestañas que empezaron como "histórico, sin huella", **queda exactamente 1 genuinamente sin cubrir**.
 
+**Corrección inmediata del operador sobre esa última pestaña**: "99_TRIAGE_LOCAL, ¿esto no sería Coordinador?" -- revisado a fondo antes de responder. `PROMPT_EJECUTOR.md` tiene una "REGLA DE TRIAGE" pero es sobre el protocolo de Ejecutor, no sobre esta tabla específica. Los campos reales de `99_TRIAGE_LOCAL` (`TIPO`/`TITULO`/`RESULTADO`/`RIESGO`/`VERIFICADO_POR_CLAUDE`) son línea por línea la propia prosa ya escrita de `Coordinador.md` ("verifica lo que vuelve antes de darlo por bueno") -- el registro fila-a-fila del que `METRICA_FABRICACION` (ya en su vinculoReal) es el agregado. Añadida, con el aviso honesto de que es una atribución razonada por encaje de rol, no un script real encontrado que la toque -- distinto nivel de evidencia que las otras 4, dicho así en la propia ficha.
+
+**Cierre real**: de 220+ candidatas examinadas en todo el ejercicio de §8.23 a §8.30, **cero quedan hoy como huecos sin resolver o sin razón documentada**.
+
 ## 9. Pendiente
 
 ## 9. Pendiente

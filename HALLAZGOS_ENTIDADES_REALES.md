@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T09:42:09.999Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T09:44:39.550Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -266,7 +266,7 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 
 | acción recomendada | cuántas | qué significa |
 |---|---|---|
-| ya_mencionado_en_boveda | 79 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
+| ya_mencionado_en_boveda | 80 | Ya aparece mencionada de verdad dentro de una ficha real de la bóveda (fuente `vault_mencion`, §8.29) -- normalmente como `vinculoReal` de su módulo dueño real. No hace falta ficha propia. |
 | confirmar_ya_solido | 46 | Ya bien corroborado (≥4 fuentes) en el primer censo -- sin cambios, candidato a enriquecer con `vinculoReal`. |
 | historico_instancia_negocio | 43 | Instancia real específica de negocio (una tarea/proceso/proyecto concreto) -- fuera del alcance de la capa de gobernanza. Histórico. |
 | correcto_narrativo | 19 | Contenido narrativo/bitácora por diseño -- baja corroboración es lo esperado, no un hueco. |
@@ -282,6 +282,5 @@ Clasificado por patrón real, no dejado sin mirar: instancias específicas de ne
 | historico_detalle_implementacion | 1 | Detalle de implementación (nombre literal de un workflow) ya cubierto por su Personaje/Espacio real. Histórico. |
 | ya_cubierto_grafo_propio | 1 | Ya tiene un grafo real propio (91_HISTORIAL / jerarquía / PAQUETE_CLIENTE) -- el censo no lo veía por cómo se construyó, no es un hueco real. |
 | historico_dato_operativo | 1 | Dato operativo real (un cliente) -- no una entidad del universo de gobernanza. Histórico. |
-| historico_pestana_sin_huella | 1 | Pestaña real del Sheet con huella hoy insuficiente fuera de sí misma. Histórico, revisar si gana uso real. |
 
 Detalle completo, entidad por entidad, con su razón real: ver `censo_entidades.json` (campos `accionRecomendada` + `accionRazon`) o la vista filtrable en `entidades.html`.
