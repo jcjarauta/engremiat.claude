@@ -32,6 +32,7 @@ services:
       - ./resumen_universo.html:/app/resumen_universo.html:ro
       - ./holon.html:/app/holon.html:ro
       - ./grafo_holon.json:/app/grafo_holon.json:ro
+      - ./grafo_maestro.html:/app/grafo_maestro.html:ro
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"

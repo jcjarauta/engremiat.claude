@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Engremiat -- grafo maestro real</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 360px; padding: 18px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 17px; }
+  .hint { color: #9a9aa2; font-size: 12px; line-height: 1.5; }
+  input[type=text] { width: 100%; background: #0f1013; border: 1px solid #2c2d33; color: #e7e7ea; border-radius: 6px; padding: 8px 10px; font-size: 13px; box-sizing: border-box; margin-top: 10px; }
+  .seccion { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; }
+  .seccion h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #9a9aa2; margin: 0 0 8px; }
+  .fila { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 5px; cursor: pointer; padding: 3px 4px; margin: 0 -4px 3px; border-radius: 4px; }
+  .fila:hover { background: #202126; }
+  .fila.activa { background: #24262e; }
+  .fila .n { margin-left: auto; color: #6b6c76; font-variant-numeric: tabular-nums; }
+  .marca { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .marca.circulo { border-radius: 50%; }
+  .marca.triangulo { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); }
+  .marca.triangulo-inv { clip-path: polygon(0% 0%, 100% 0%, 50% 100%); }
+  .marca.diamante { transform: rotate(45deg); }
+  .marca.estrella { clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%); }
+  .fila-rel { display: flex; align-items: center; gap: 8px; font-size: 11.5px; margin-bottom: 5px; }
+  .barra-rel { width: 20px; height: 3px; flex: none; border-radius: 2px; }
+  #reset { display: none; font-size: 11px; color: #9a9aa2; text-decoration: underline; cursor: pointer; margin-top: 8px; }
+  label.toggle { display: flex; align-items: center; gap: 7px; font-size: 12px; cursor: pointer; margin-top: 6px; }
+  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; }
+  #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; margin-right: 4px; margin-bottom: 4px; }
+  .arista { font-size: 11.5px; color: #9a9aa2; padding: 3px 0; border-bottom: 1px solid #202126; }
+  .arista b { color: #e7e7ea; }
+  .arista.wiki { color: #5a5b63; }
+  #resultados { max-height: 160px; overflow-y: auto; margin-top: 6px; }
+  .resultado { font-size: 12px; padding: 4px 6px; cursor: pointer; border-radius: 4px; }
+  .resultado:hover { background: #202126; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <h2>Grafo maestro real</h2>
+    <p class="hint">Las 94 fichas de entidad reales de la bóveda -- <b>ninguna filtrada</b>, a diferencia del Holon (que solo muestra las que tienen relación semántica). 331 aristas reales: 291 <code>wikilink</code> narrativos + 40 relaciones funcionales del Holon. Personajes en su carril por <code>equipo</code> real; el resto libre.</p>
+    <input type="text" id="buscar" placeholder="Buscar una ficha real...">
+    <div id="resultados"></div>
+
+    <div class="seccion">
+      <label class="toggle"><input type="checkbox" id="chkWikilinks" checked> Mostrar wikilinks narrativos (291)</label>
+      <label class="toggle"><input type="checkbox" id="chkHolon" checked> Mostrar relaciones del Holon (40)</label>
+    </div>
+
+    <div class="seccion">
+      <h3>Tipos reales -- clic para aislar</h3>
+      <div id="leyendaTipos"></div>
+    </div>
+
+    <div class="seccion">
+      <h3>Equipos reales (Personaje)</h3>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="concilio"><span class="marca circulo" style="background:#7c93e8;"></span>Concilio</div>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="guardia"><span class="marca circulo" style="background:#e8a33d;"></span>Guardia</div>
+      <div class="fila fila-grupo" data-clave="equipo" data-valor="frontera"><span class="marca circulo" style="background:#4fce6f;"></span>Frontera</div>
+      <div id="reset">✕ ver todo el grafo</div>
+    </div>
+
+    <div class="seccion">
+      <h3>Vocabulario de relación</h3>
+      <div id="leyendaRel"></div>
+    </div>
+
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver sus relaciones reales.</p></div>
+  </div>
+</div>
+<script>
+const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce6f' };
+const CARRIL_X = { concilio: -560, guardia: 0, frontera: 560 };
+const ETIQUETA_ZONA = { concilio: 'CONCILIO', guardia: 'GUARDIA', frontera: 'FRONTERA' };
+
+// tipo -> {color, shape, marca (para la leyenda CSS), etiqueta}
+const TIPO = {
+  personaje:            { color: '#8a8d99', shape: 'dot',          marca: 'circulo',      etiqueta: 'Personaje' },
+  espacio:              { color: '#c76bd6', shape: 'box',          marca: '',             etiqueta: 'Espacio' },
+  recurso:              { color: '#e85c8a', shape: 'diamond',      marca: 'diamante',     etiqueta: 'Recurso' },
+  regla:                { color: '#5c5f6b', shape: 'triangle',     marca: 'triangulo',    etiqueta: 'Regla' },
+  modulo:               { color: '#4ea8de', shape: 'square',       marca: '',             etiqueta: 'Módulo' },
+  oficio:               { color: '#f4a261', shape: 'star',         marca: 'estrella',     etiqueta: 'Oficio' },
+  hilo:                 { color: '#06d6a0', shape: 'ellipse',      marca: 'circulo',      etiqueta: 'Hilo' },
+  arco:                 { color: '#ef476f', shape: 'triangleDown', marca: 'triangulo-inv',etiqueta: 'Arco' },
+  sesion:               { color: '#118ab2', shape: 'database',     marca: '',             etiqueta: 'Sesión' },
+  mapa:                 { color: '#8338ec', shape: 'dot',          marca: 'circulo',      etiqueta: 'Mapa' },
+  estilo:               { color: '#ffbe0b', shape: 'dot',          marca: 'circulo',      etiqueta: 'Estilo' },
+  referencia_sin_ficha: { color: '#4a4b52', shape: 'dot',          marca: 'circulo',      etiqueta: 'Referencia sin ficha' },
+  sin_tipo:             { color: '#2e2f35', shape: 'dot',          marca: 'circulo',      etiqueta: 'Sin tipo' },
+};
+
+const COLOR_REL = {
+  opera_en: '#4c9aff', depende_de: '#e8a33d', gobierna_a: '#ef476f', alimenta_a: '#4fce6f',
+  verifica_a: '#f4a261', corrige_a: '#ff6b6b', activa_a: '#06d6a0', parte_de: '#9a8cff',
+};
+const COLOR_WIKILINK = '#2c2d34';
+
+function colorDe(n) {
+  if (n.tipo === 'personaje' && n.equipo) return COLOR_EQUIPO[n.equipo];
+  return (TIPO[n.tipo] || TIPO.sin_tipo).color;
+}
+
+async function cargar() {
+  const [wl, holon] = await Promise.all([
+    fetch('grafo_wikilinks.json').then(r => r.json()),
+    fetch('grafo_holon.json').then(r => r.json()),
+  ]);
+  const equipoPorId = {};
+  holon.nodos.forEach(n => { if (n.equipo) equipoPorId[n.id] = n.equipo; });
+
+  const datosNodos = wl.nodos.map(n => ({ ...n, equipo: equipoPorId[n.id] || null }));
+  const datosAristas = wl.aristas;
+
+  const contadorEquipo = {};
+  const nodes = new vis.DataSet(datosNodos.map(n => {
+    const enCarril = n.tipo === 'personaje' && n.equipo;
+    const def = TIPO[n.tipo] || TIPO.sin_tipo;
+    let xInicial, yInicial;
+    if (enCarril) {
+      const idx = contadorEquipo[n.equipo] || 0;
+      contadorEquipo[n.equipo] = idx + 1;
+      const col = idx % 2 === 0 ? -1 : 1;
+      const fila = Math.floor(idx / 2);
+      xInicial = CARRIL_X[n.equipo] + col * 60;
+      yInicial = fila * 95 - 160;
+    }
+    return {
+      id: n.id, label: n.nombre,
+      title: n.tipo + (n.equipo ? ' · ' + n.equipo : '') + (n.carpeta ? ' · ' + n.carpeta : ''),
+      color: { background: colorDe(n), border: '#0f1013' },
+      font: { color: '#0f1013', size: 11, face: 'system-ui' },
+      shape: def.shape,
+      size: n.tipo === 'espacio' || n.tipo === 'modulo' ? 18 : 13,
+      x: enCarril ? xInicial : undefined,
+      y: enCarril ? yInicial : undefined,
+      fixed: enCarril ? { x: true, y: false } : false,
+      equipo: n.equipo, tipo: n.tipo,
+    };
+  }));
+
+  const edges = new vis.DataSet(datosAristas.map((a, i) => {
+    const esWiki = a.relation === 'wikilink';
+    return {
+      id: i, from: a.source, to: a.target, arrows: 'to',
+      label: esWiki ? '' : a.relation,
+      font: { color: '#9a9aa2', size: 8, strokeWidth: 0, background: '#0f1013' },
+      color: { color: esWiki ? COLOR_WIKILINK : (COLOR_REL[a.relation] || '#3a3b47') },
+      width: esWiki ? 0.6 : 2,
+      length: esWiki ? 90 : 170,
+      relation: a.relation,
+    };
+  }));
+
+  const network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -140, springLength: 110, springConstant: 0.05, avoidOverlap: 0.7 },
+      stabilization: { iterations: 500 },
+      minVelocity: 0.75,
+    },
+    interaction: { hover: true },
+  });
+
+  network.once('stabilizationIterationsDone', () => {
+    // el canvas nace con tamaño 0 si el layout flex aun no ha resuelto cuando vis-network
+    // se construye -- forzar setSize+redraw antes de fit evita que se quede con zoom fijo (ya visto en holon.html)
+    network.setSize('100%', '100%');
+    network.redraw();
+    network.fit({ animation: false });
+  });
+  window.addEventListener('resize', () => network.fit({ animation: false }));
+
+  network.on('afterDrawing', (ctx) => {
+    ctx.save();
+    Object.entries(CARRIL_X).forEach(([equipo, x]) => {
+      ctx.fillStyle = COLOR_EQUIPO[equipo] + '10';
+      ctx.fillRect(x - 190, -900, 380, 1600);
+      ctx.fillStyle = COLOR_EQUIPO[equipo] + '90';
+      ctx.font = '700 22px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(ETIQUETA_ZONA[equipo], x, -840);
+    });
+    ctx.restore();
+  });
+
+  // -- leyenda de tipos, con conteo real --
+  const porTipo = {};
+  datosNodos.forEach(n => { porTipo[n.tipo] = (porTipo[n.tipo] || 0) + 1; });
+  document.getElementById('leyendaTipos').innerHTML = Object.entries(TIPO)
+    .filter(([t]) => porTipo[t])
+    .map(([t, def]) => `<div class="fila fila-grupo" data-clave="tipo" data-valor="${t}"><span class="marca ${def.marca}" style="background:${def.color};"></span>${def.etiqueta}<span class="n">${porTipo[t]}</span></div>`)
+    .join('');
+
+  // -- leyenda de relaciones --
+  const porRel = {};
+  datosAristas.forEach(a => { porRel[a.relation] = (porRel[a.relation] || 0) + 1; });
+  document.getElementById('leyendaRel').innerHTML =
+    `<div class="fila-rel"><span class="barra-rel" style="background:${COLOR_WIKILINK};"></span>wikilink<span class="n" style="margin-left:auto;">${porRel.wikilink || 0}</span></div>` +
+    Object.entries(COLOR_REL).filter(([r]) => porRel[r]).map(([r, c]) =>
+      `<div class="fila-rel"><span class="barra-rel" style="background:${c};"></span>${r}<span class="n" style="margin-left:auto;">${porRel[r]}</span></div>`
+    ).join('');
+
+  const nombreDe = id => (datosNodos.find(x => x.id === id) || {}).nombre || id;
+
+  function mostrarFicha(n) {
+    const salientes = datosAristas.filter(a => a.source === n.id);
+    const entrantes = datosAristas.filter(a => a.target === n.id);
+    let html = `<h3>${n.nombre}</h3>`;
+    html += `<p><span class="tag" style="background:${colorDe(n)}33;color:${colorDe(n)}">${n.tipo}</span>` + (n.equipo ? `<span class="tag" style="background:${COLOR_EQUIPO[n.equipo]}33;color:${COLOR_EQUIPO[n.equipo]}">${n.equipo}</span>` : '') + `</p>`;
+    const fmt = a => `<div class="arista ${a.relation === 'wikilink' ? 'wiki' : ''}">${a.relation === 'wikilink' ? 'wikilink' : `<b>${a.relation}</b>`}</div>`;
+    if (salientes.length) { html += '<p style="margin-top:10px;"><b>Hace / enlaza a:</b></p>'; salientes.forEach(a => html += `<div class="arista ${a.relation === 'wikilink' ? 'wiki' : ''}">${a.relation === 'wikilink' ? '→' : `<b>${a.relation}</b> →`} ${nombreDe(a.target)}</div>`); }
+    if (entrantes.length) { html += '<p style="margin-top:10px;"><b>Recibe / referenciado por:</b></p>'; entrantes.forEach(a => html += `<div class="arista ${a.relation === 'wikilink' ? 'wiki' : ''}">${nombreDe(a.source)} ${a.relation === 'wikilink' ? '→' : `<b>${a.relation}</b> →`}</div>`); }
+    document.getElementById('ficha').innerHTML = html;
+  }
+
+  network.on('click', (params) => {
+    if (!params.nodes.length) return;
+    const n = datosNodos.find(x => x.id === params.nodes[0]);
+    if (n) mostrarFicha(n);
+  });
+
+  // -- aislar por equipo o por tipo: miembros + vecinos directos a color pleno, resto atenuado --
+  function aislarGrupo(clave, valor) {
+    const miembros = new Set(datosNodos.filter(n => n[clave] === valor).map(n => n.id));
+    const vecinos = new Set(miembros);
+    const aristasVivas = new Set();
+    datosAristas.forEach((a, i) => {
+      if (miembros.has(a.source) || miembros.has(a.target)) {
+        vecinos.add(a.source); vecinos.add(a.target);
+        aristasVivas.add(i);
+      }
+    });
+    nodes.update(datosNodos.map(n => ({
+      id: n.id,
+      color: { background: vecinos.has(n.id) ? colorDe(n) : '#25262b', border: '#0f1013' },
+      font: { color: vecinos.has(n.id) ? '#0f1013' : '#4a4b52', size: 11, face: 'system-ui' },
+    })));
+    edges.update(datosAristas.map((a, i) => ({
+      id: i,
+      color: { color: aristasVivas.has(i) ? (a.relation === 'wikilink' ? '#5a5b63' : (COLOR_REL[a.relation] || '#3a3b47')) : '#1c1d21' },
+    })));
+    document.getElementById('reset').style.display = 'block';
+    document.querySelectorAll('.fila-grupo').forEach(f => f.classList.toggle('activa', f.dataset.clave === clave && f.dataset.valor === valor));
+  }
+
+  function verTodo() {
+    nodes.update(datosNodos.map(n => ({ id: n.id, color: { background: colorDe(n), border: '#0f1013' }, font: { color: '#0f1013', size: 11, face: 'system-ui' } })));
+    aplicarTogglesAristas();
+    document.getElementById('reset').style.display = 'none';
+    document.querySelectorAll('.fila-grupo').forEach(f => f.classList.remove('activa'));
+    document.getElementById('resultados').innerHTML = '';
+  }
+
+  document.querySelectorAll('.fila-grupo').forEach(fila => {
+    fila.addEventListener('click', () => {
+      if (fila.classList.contains('activa')) { verTodo(); return; }
+      aislarGrupo(fila.dataset.clave, fila.dataset.valor);
+    });
+  });
+  document.getElementById('reset').addEventListener('click', verTodo);
+
+  // -- mostrar/ocultar por capa de relación --
+  function aplicarTogglesAristas() {
+    const verWiki = document.getElementById('chkWikilinks').checked;
+    const verHolon = document.getElementById('chkHolon').checked;
+    edges.update(datosAristas.map((a, i) => {
+      const esWiki = a.relation === 'wikilink';
+      return { id: i, hidden: esWiki ? !verWiki : !verHolon };
+    }));
+  }
+  document.getElementById('chkWikilinks').addEventListener('change', aplicarTogglesAristas);
+  document.getElementById('chkHolon').addEventListener('change', aplicarTogglesAristas);
+
+  // -- buscador real por nombre --
+  document.getElementById('buscar').addEventListener('input', (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    const resultados = document.getElementById('resultados');
+    if (!q) { resultados.innerHTML = ''; return; }
+    const coincidencias = datosNodos.filter(n => n.nombre.toLowerCase().includes(q)).slice(0, 12);
+    resultados.innerHTML = coincidencias.map(n => `<div class="resultado" data-id="${n.id}">${n.nombre} <span class="hint">· ${n.tipo}</span></div>`).join('') || '<div class="hint" style="padding:4px 6px;">Sin coincidencias reales.</div>';
+    resultados.querySelectorAll('.resultado').forEach(el => {
+      el.addEventListener('click', () => {
+        const n = datosNodos.find(x => x.id === el.dataset.id);
+        network.selectNodes([n.id]);
+        network.focus(n.id, { scale: 1.1, animation: { duration: 400 } });
+        mostrarFicha(n);
+      });
+    });
+  });
+
+  window.debugMaestro = { network, nodes, edges, datosNodos, datosAristas };
+}
+
+cargar();
+</script>
+</body>
+</html>

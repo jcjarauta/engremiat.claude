@@ -200,7 +200,11 @@
     },
     {
       "fichero": "tools/gobierno/graphify_visor/holon.html",
-      "que_hace": "Octava vista real del visor (100.107.171.88:9320/holon.html): el grafo completo de quien hace que con quien, donde -- Personajes coloreados por equipo real, clic en cualquier nodo muestra sus relaciones reales completas. Verificado en el navegador: Coordinador muestra sus 7 aristas reales de golpe."
+      "que_hace": "Octava vista real del visor (100.107.171.88:9320/holon.html): el grafo completo de quien hace que con quien, donde -- Personajes coloreados por equipo real, clic en cualquier nodo muestra sus relaciones reales completas. Verificado en el navegador: Coordinador muestra sus 7 aristas reales de golpe. Reformulado en 3 carriles por equipo (§8.37): aislar-al-clic, fondo de zona por equipo, bug real de zoom-fit corregido."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/grafo_maestro.html",
+      "que_hace": "Novena vista real del visor (100.107.171.88:9320/grafo_maestro.html), §8.38: las 94 fichas de entidad reales de la boveda sin filtrar (a diferencia del Holon, que solo muestra las que tienen relacion semantica) -- 331 aristas reales, 291 wikilink narrativos + 40 del Holon en capas separadas y ocultables. 13 tipos reales coloreados/con forma propia, Personajes en su carril por equipo, buscador real por nombre, aislar por tipo o equipo al clic. Verificado en el navegador."
     }
   ]
 }

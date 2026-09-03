@@ -610,6 +610,20 @@ Censo regenerado (mismos totales reales: 225 candidatas, 46 confirmar / 51 promo
 
 Desplegado en VPS (`holon.html`), sin cambios en `grafo_holon.json` (mismos 29 nodos / 40 aristas reales -- reformulación de layout, no de datos).
 
+### 8.38 "Antes de comparar con Obsidian: una vista gráfica limpia y al detalle de todas las entidades y sus relaciones"
+
+`holon.html` solo muestra 29 de las 94 fichas de entidad reales -- filtra a las que tienen al menos una relación semántica del Holon, dejando fuera todo lo conectado solo por wikilink narrativo. Investigado antes de construir: el dato completo ya existía -- `grafo_wikilinks.json` ya tiene las 94 fichas de entidad reales (excluidas a propósito las 33 fichas-relación de `07_Holon_Relaciones/` y el README, que son registros de relación, no entidades) con **331 aristas reales**: 291 `wikilink` + los 40 tipos semánticos del Holon. Solo faltaba una vista que lo mostrara entero y limpio.
+
+**Construido `grafo_maestro.html`** -- novena vista real del visor:
+- Las 94 fichas, sin filtrar. 13 tipos reales encontrados en la bóveda (`modulo`21 `personaje`20 `oficio`11 `espacio`10 `hilo`8 `regla`6 `arco`6 `recurso`5 `sesion`2 `mapa`1 `estilo`1, más 2 `referencia_sin_ficha` y 1 `sin_tipo` -- huecos honestos: wikilinks a nombres sin ficha real todavía), cada uno con su propio color y forma.
+- **Dos capas de arista, ocultables por separado**: wikilink (fina, gris, sin etiqueta) vs Holon (gruesa, coloreada por tipo de relación, con etiqueta) -- con las 291 wikilink ocultas de un clic, el grafo se reduce a las 40 relaciones funcionales puras, verificado en el navegador.
+- Los 20 Personajes en sus 3 carriles por `equipo` real (misma técnica de §8.37), el resto libre.
+- Buscador real por nombre (foco + panel de detalle) y aislar-al-clic por tipo o por equipo -- reutiliza el patrón ya validado en `holon.html`, generalizado a cualquier agrupación.
+
+**Bug real encontrado y corregido durante el despliegue, no en el código sino en la infraestructura**: `docker-compose.yml` monta cada fichero del visor uno a uno como volumen de solo lectura -- `grafo_maestro.html` daba 404 pese a existir en el host porque nunca se añadió su línea de montaje. Corregido añadiendo el mount y recreando el contenedor (`docker compose up -d --force-recreate`); copia local de `docker-compose.yml` sincronizada de vuelta desde el VPS para no divergir.
+
+Desplegado y verificado en el navegador: 94 nodos reales, alternar wikilinks/Holon, aislar por tipo (`Oficio`) y por equipo, buscador probado con "Coordinador" -- foco correcto y panel de detalle con sus relaciones reales distinguiendo wikilink de Holon.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
