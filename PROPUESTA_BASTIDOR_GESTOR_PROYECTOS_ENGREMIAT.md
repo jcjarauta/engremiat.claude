@@ -462,6 +462,14 @@ Sobre las 117 descartadas restantes:
 
 **Seis escrituras reales en la bóveda, verificadas leyendo antes de tocar cada fichero** -- 3 fichas nuevas (`03_Reglas/Física.md`, `01_Mundo/Recursos/DOCUMENTO_ENGREMIAT.md`, `01_Mundo/Recursos/AGORA.md`) y 3 fichas existentes enriquecidas por adición pura, sin tocar su contenido real previo (`Vigilia.md`, `Coordinador.md`, `Ejecutor.md`, cada una con una nueva sección `## Vínculo real`). Es la primera vez en esta serie de ejercicios que el censo real produce escritura real en la bóveda, no solo informe -- exactamente el ciclo que motivó todo el ejercicio: dato real → hueco real → ficha real.
 
+### 8.24 "Valora las 43 confirmadas, cuáles necesitan vinculoReal añadido" -- valorado y aplicado, 33 fichas reales enriquecidas
+
+**Construidos dos scripts nuevos**: `valorar_vinculoreal_confirmadas.mjs` re-cruza cada una de las (ahora 45, tras §8.23) entidades confirmadas contra todas las fuentes reales -- incluyendo dos que el barrido anterior no cubría del todo (grafo de Apps Script completo, transcripciones reales de Telar B2) -- y decide, por cada una: **ya_tiene** (la sección `## Vínculo real` ya existe), **evidencia_precisa** (hay un script, tabla, workflow o módulo real concreto que se puede citar sin inventar nada) o **evidencia_difusa** (solo coincide con un fichero entero de 12000+ funciones o no hay nada reutilizable -- no se fuerza un vinculoReal con eso). `anadir_vinculoreal.mjs` lee esa valoración y escribe la sección real -- mismo patrón de seguridad que `aplicar_boceto.mjs`: dry-run por defecto, dos filtros de limpieza añadidos tras revisar el primer dry-run a mano (un nodo `recurso:X` de `grafo_node.json` no es un fichero de repo, es el mismo dato que ya aparece como Sheet/Baserow por otro lado -- se descarta para no escribir "repo: GASTO_API"; y las coincidencias contra el fichero entero de Apps Script se usan solo para decidir, nunca para escribir, porque un fichero de 12000 líneas no es un recordId útil).
+
+**Resultado real, aplicado con `--aplicar` tras el dry-run limpio**: de 45 confirmadas, **3 ya tenían** la sección (Vigilia/Coordinador/Ejecutor, de §8.23), **33 la tienen ahora** (recién escritas, verificadas leyendo el resultado -- ninguna perdió una sola línea de su contenido real previo), y **9 se quedan sin vinculoReal a propósito** (CORE, Repository, Aprovisionamiento, Comunicación, EstructuraInicial, Gantt, Ejecutar chequeo librería, Verificar contra hechos, y Física -- esta última ya resuelta de otra forma en §8.23, sus tres citas reales viven en su propia prosa, no necesita la misma plantilla) -- honesto: no hay dato real lo bastante preciso todavía, mejor dejarlas sin vinculoReal que inventar uno.
+
+## 9. Pendiente
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

@@ -173,6 +173,14 @@
     {
       "fichero": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
       "que_hace": "Segunda pasada sobre el censo real (confirmar/promover/revisar/descartar). Anade 2 fuentes reales mas: el catalogo MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano (Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 220 entidades del censo en 19 acciones concretas con su razon real. Sobre el grupo descartar (investigado a mano, no solo con reglas): encontro y corrigio un bug real en cargar_grafo_wikilinks.mjs (relaciones con varios destinos perdian los destinos reales por derivarlos del nombre del fichero en vez del cuerpo), y encontro 5 huecos reales concretos (VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION tocadas por codigo real, AGORA/EJECUTOR_LOCAL modulos activos sin ficha), 2 candidatas reales a ficha nueva (Vision Mision, Fisica) y 5 pestanas/tablas que ya tenian grafo propio y el censo no las veia. El resto queda historico, tal como se pidio explicitamente. Investigando a fondo los 5 huecos reales (no solo con reglas): 3 resultaron ya narrados por fichas reales existentes (Vigilia.md/Coordinador.md/Ejecutor.md), resuelto anadiendo una seccion ## Vinculo real a cada una sin tocar el resto; 2 (DOCUMENTO_ENGREMIAT, AGORA) y 1 candidata mas (Fisica) eran huecos genuinos, resueltos creando su ficha real en 01_Mundo/Recursos/ y 03_Reglas/. Vision Mision investigada resulto ser una fila ya catalogada dentro de DOCUMENTO_ENGREMIAT, no una entidad nueva."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+      "que_hace": "Valora cada entidad CONFIRMADA del censo real (§8.23): ya_tiene la seccion ## Vinculo real en su ficha, evidencia_precisa (script/tabla/workflow/modulo real concreto reutilizable) o evidencia_difusa (solo un fichero entero de Apps Script, no un recordId util). Anade dos fuentes que el barrido de la consolidacion no cubria del todo: el grafo completo de Apps Script y las transcripciones reales de Telar B2. Escribe valoracion_vinculoreal.json."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
+      "que_hace": "Lee valoracion_vinculoreal.json y escribe de verdad la seccion ## Vinculo real en las fichas reales con evidencia_precisa -- mismo patron de seguridad que aplicar_boceto.mjs (dry-run por defecto, --aplicar para escribir, solo anade al final del fichero, nunca toca contenido existente, idempotente). Filtra dos tipos de ruido encontrados revisando el primer dry-run: nodos recurso:X de grafo_node.json (duplican Sheet/Baserow por otro lado) y coincidencias contra el fichero entero de Apps Script (no son un recordId util). Aplicado en real: 33 fichas de la boveda enriquecidas, verificado que ninguna perdio contenido previo."
     }
   ]
 }
