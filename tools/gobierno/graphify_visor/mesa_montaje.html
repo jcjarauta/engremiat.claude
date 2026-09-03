@@ -86,7 +86,8 @@
     <h3>Registro de eventos</h3>
     <p class="hint">Nada se mueve porque sí -- cada cambio de estado sale de un evento real, disparado a mano, y queda aquí anotado.</p>
     <div id="registroEventos"><p class="hint">Ningún evento todavía.</p></div>
-    <h3>Montajes guardados (este navegador)</h3>
+    <h3>Montajes guardados</h3>
+    <p class="hint" id="estadoMemoria">Comprobando memoria compartida...</p>
     <div id="montajesGuardados"></div>
     <h3>Esta máquina</h3>
     <div id="resumenMesa" class="hint"></div>
@@ -128,6 +129,23 @@ let pendienteOrigen = null;
 let piezaSeleccionada = null;
 let registroEventos = [];
 const LLAVE_LOCALSTORAGE = 'engremiat_mesa_montaje_v1';
+
+// -- Fase 4 (§8.52): memoria compartida real, mas alla de este navegador --
+// servidor propio (servidor_memoria.mjs), fichero JSON real en el VPS, sin credenciales.
+// localStorage nunca desaparece: es el respaldo real si el servidor no responde.
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+let memoriaConectada = false;
+
+async function comprobarMemoria() {
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/memoria', { signal: AbortSignal.timeout(2500) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    memoriaConectada = true;
+  } catch { memoriaConectada = false; }
+  document.getElementById('estadoMemoria').textContent = memoriaConectada
+    ? 'Memoria compartida conectada -- visible desde cualquier navegador.'
+    : 'Sin conexión con la memoria compartida -- guardando solo en este navegador.';
+}
 
 async function cargar() {
   atlas = await (await fetch('atlas_familias.json')).json();
@@ -178,7 +196,8 @@ async function cargar() {
   document.getElementById('inputImportar').addEventListener('change', importarJSON);
   document.getElementById('btnLimpiar').addEventListener('click', () => { if (confirm('¿Vaciar la mesa? Se pierde lo no guardado.')) vaciarMesa(); });
 
-  renderMontajesGuardados();
+  await comprobarMemoria();
+  await renderMontajesGuardados();
   actualizarResumen();
 }
 
@@ -328,8 +347,16 @@ function dispararEvento(slug, eventoId) {
 }
 
 function registrarEvento(ev) {
-  registroEventos.push({ ts: new Date().toISOString(), ...ev });
+  const eventoReal = { ts: new Date().toISOString(), ...ev };
+  registroEventos.push(eventoReal);
   renderRegistroEventos();
+  // se envia a la memoria compartida sin bloquear la interfaz -- si falla, el evento
+  // ya quedo anotado localmente (montajeActual().eventos) y se guarda con el montaje
+  if (memoriaConectada) {
+    fetch(URL_MEMORIA + '/api/eventos', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(eventoReal),
+    }).catch(() => { memoriaConectada = false; });
+  }
 }
 function renderRegistroEventos() {
   const cont = document.getElementById('registroEventos');
@@ -366,34 +393,59 @@ function montajeActual() {
   };
 }
 
-function leerMontajesGuardados() {
+function leerMontajesGuardadosLocal() {
   try { return JSON.parse(localStorage.getItem(LLAVE_LOCALSTORAGE) || '[]'); } catch { return []; }
 }
-function guardarMontaje() {
+// la memoria compartida es la fuente real si esta conectada -- localStorage es el
+// respaldo, nunca al reves, para que "guardar" de verdad signifique "mas alla de este navegador"
+async function leerMontajesGuardados() {
+  if (memoriaConectada) {
+    try {
+      const r = await fetch(URL_MEMORIA + '/api/memoria', { signal: AbortSignal.timeout(2500) });
+      if (!r.ok) throw new Error('respuesta no ok');
+      const m = await r.json();
+      return m.montajes || [];
+    } catch { memoriaConectada = false; }
+  }
+  return leerMontajesGuardadosLocal();
+}
+async function guardarMontaje() {
   if (!nodes.length) { alert('La mesa está vacía -- coloca alguna pieza real primero.'); return; }
   const montaje = montajeActual();
-  const guardados = leerMontajesGuardados().filter(m => m.nombre !== montaje.nombre);
-  guardados.push(montaje);
-  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(guardados));
-  renderMontajesGuardados();
+  const guardadosLocal = leerMontajesGuardadosLocal().filter(m => m.nombre !== montaje.nombre);
+  guardadosLocal.push(montaje);
+  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(guardadosLocal));
+  if (memoriaConectada) {
+    try {
+      await fetch(URL_MEMORIA + '/api/montajes', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(montaje),
+      });
+    } catch { memoriaConectada = false; }
+  }
+  await renderMontajesGuardados();
 }
-function renderMontajesGuardados() {
-  const guardados = leerMontajesGuardados();
+async function renderMontajesGuardados() {
+  const guardados = await leerMontajesGuardados();
   const cont = document.getElementById('montajesGuardados');
   cont.innerHTML = guardados.length ? guardados.map(m =>
     `<div class="fila"><span data-cargar="${m.nombre}" style="cursor:pointer;">${m.nombre} <span class="hint">(${m.piezas.length}p/${m.conexiones.length}v)</span></span><span data-borrar="${m.nombre}" style="cursor:pointer; color:#e85c8a;">✕</span></div>`
-  ).join('') : '<p class="hint">Ninguno todavía -- solo en este navegador (localStorage), no compartido. Usa "Exportar JSON" para guardarlo de verdad fuera del navegador.</p>';
+  ).join('') : (memoriaConectada
+    ? '<p class="hint">Ninguno todavía -- se guardará en la memoria compartida, visible desde cualquier navegador.</p>'
+    : '<p class="hint">Ninguno todavía -- solo en este navegador (localStorage), no compartido. Usa "Exportar JSON" para guardarlo de verdad fuera del navegador.</p>');
   cont.querySelectorAll('[data-cargar]').forEach(el => el.addEventListener('click', () => cargarMontaje(el.dataset.cargar)));
   cont.querySelectorAll('[data-borrar]').forEach(el => el.addEventListener('click', (ev) => { ev.stopPropagation(); borrarMontaje(el.dataset.borrar); }));
 }
-function cargarMontaje(nombre) {
-  const m = leerMontajesGuardados().find(x => x.nombre === nombre);
+async function cargarMontaje(nombre) {
+  const m = (await leerMontajesGuardados()).find(x => x.nombre === nombre);
   if (!m) return;
   aplicarMontaje(m);
 }
-function borrarMontaje(nombre) {
-  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(leerMontajesGuardados().filter(x => x.nombre !== nombre)));
-  renderMontajesGuardados();
+async function borrarMontaje(nombre) {
+  localStorage.setItem(LLAVE_LOCALSTORAGE, JSON.stringify(leerMontajesGuardadosLocal().filter(x => x.nombre !== nombre)));
+  if (memoriaConectada) {
+    try { await fetch(URL_MEMORIA + '/api/montajes/' + encodeURIComponent(nombre), { method: 'DELETE' }); } catch { memoriaConectada = false; }
+  }
+  await renderMontajesGuardados();
 }
 
 function aplicarMontaje(m) {

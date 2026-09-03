@@ -1,238 +1,242 @@
 {
-  "_comentario": "Registro central de elementos del ecosistema Engremiat sujetos a chequeo de salud (ver SALUD_ECOSISTEMA.md). Todo elemento nuevo (prompt operativo, trigger programado, script de sincronizacion) se anade aqui en el MISMO commit que lo crea -- no en uno posterior. salud_ecosistema.mjs lee este fichero, no tiene nombres a fuego.",
-  "prompts_operativos": [
-    {
-      "fichero": "PROMPT_EJECUTOR.md",
-      "agente": "Ejecutor Engremiat",
-      "cabecera_revision_regex": "Última revisión humana/Claude de este fichero: (\\d{4}-\\d{2}-\\d{2})",
-      "umbral_dias_aviso": 7
-    }
-  ],
-  "triggers_programados": [
-    {
-      "id": "trig_01PcwtGdVbbWVHU5zbrJrh4U",
-      "nombre": "Engremiat: revisar 96_PROMPT_EJECUTOR",
-      "agente": "Ejecutor Engremiat",
-      "persistent_session_id": "session_01AYjZjU3NUiKQBToRo5ieuU",
-      "nota": "Comprobacion de enabled/last_fired_at es manual, solo con RemoteTrigger (ver SALUD_ECOSISTEMA.md punto 4) -- este registro solo documenta que existe y a que agente pertenece."
-    },
-    {
-      "id": "windows-task-scheduler:Engremiat - Chequeo libreria clientes",
-      "nombre": "Engremiat - Chequeo libreria clientes",
-      "mecanismo": "Windows Task Scheduler (maquina local del operador), no RemoteTrigger",
-      "cadencia": "Diaria, 08:00",
-      "que_hace": "tools/gobierno/ejecutar_chequeo_libreria.ps1 -- git pull + node tools/gobierno/chequear_libreria_clientes.mjs. Registra cada ejecucion en 92_BUS_TRABAJO.",
-      "nota": "Corre solo si la maquina esta encendida a esa hora -- sin reintento automatico si se salta un dia. Verificado en vivo el 2026-08-25 (LastTaskResult=0)."
-    }
-  ],
-  "scripts_sincronizacion": [
-    {
-      "fichero": "tools/consola/chequear_consistencia.mjs",
-      "que_compara": "Consola (GRUPOS) vs 13_INCIDENCIAS"
-    },
-    {
-      "fichero": "tools/consola/regenerar_estatico.mjs",
-      "que_hace": "Reconstruye el HTML estatico de la Consola preservando estado publicado"
-    },
-    {
-      "fichero": "tools/consola/extraer_decisiones.mjs",
-      "que_hace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet"
-    },
-    {
-      "fichero": "tools/salud_ecosistema.mjs",
-      "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro"
-    },
-    {
-      "fichero": "tools/gobierno/chequear_libreria_clientes.mjs",
-      "que_compara": "appsscript.json real de cada cliente vs version real publicada de LIBRERIA_ID_ (nunca el dato LIBRERIA_VERSION del Sheet como fuente de verdad)"
-    },
-    {
-      "fichero": "tools/gobierno/cerrar_ciclo.mjs",
-      "que_hace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear"
-    },
-    {
-      "fichero": "tools/gobierno/bus_trabajo.mjs",
-      "que_hace": "Bus de eventos vía Sheet (pestaña 92_BUS_TRABAJO): reclamar/en_progreso/cerrar/verificar por worker, con proteccion contra doble reclamacion y panel de coste/tiempo agregado por worker. Formaliza el patron probado a mano en el lote 1 (2026-08-25)."
-    },
-    {
-      "fichero": "tools/gobierno/actualizar_libreria_cliente.mjs",
-      "que_hace": "Regenera el Codigo.js (envoltorios) de un cliente con fuente VIVA de la libreria (nunca git local, tras encontrar divergencia real). Modo diagnostico por defecto, --aplicar hace el push real. Encontro y resolvio INC-0061 en su primer uso real."
-    },
-    {
-      "fichero": "tools/gobierno/exportador_prometheus_gasto.mjs",
-      "que_hace": "Lee GASTO_API real (Baserow, tabla 285) y lo expone como metricas Prometheus (/metrics) para el panel Grafana de tools/gobierno/monitorizacion/. Desplegado y verificado en el VPS con datos reales (2026-09-01)."
-    },
-    {
-      "fichero": "tools/gobierno/headscale/",
-      "que_hace": "Servidor de coordinacion Tailscale propio, autoalojado (headscale/headscale:0.23.0). Etapa 1 (aditiva) desplegada y verificada en el VPS: contenedor sano, usuario 'engremiat' creado. Ningun nodo real (VPS/Pi/PC) migrado todavia -- migrar es Etapa 2, pendiente de autorizacion explicita aparte por el riesgo de cortar conectividad viva."
-    },
-    {
-      "fichero": "tools/gobierno/puente_historia_leyes.mjs",
-      "que_hace": "El primer Mensajero real -- lee una TAREA de Baserow (tabla 278, nucleo soberano) y escribe solo una referencia (nunca el dato completo) como fila nueva en 18_VINCULO del lado Sheets, con rastro en 92_BUS_TRABAJO. Dry-run por defecto, --aplicar escribe de verdad. Probado en real contra TAR-0008 (dry-run, sin escritura)."
-    },
-    {
-      "fichero": "tools/gobierno/generar_dialogos.mjs",
-      "que_hace": "Lee las fichas reales de 02_Personajes/ del vault y genera personajes.json -- un solo motor de comportamiento de personajes para el juego 2D y, mas adelante, el bot de Telegram (mismas entidades, piel distinta). Probado en real: 19 personajes extraidos correctamente."
-    },
-    {
-      "fichero": "tools/gobierno/spike_concilio_coop/",
-      "que_hace": "Spike real desplegado en el VPS (http://100.107.171.88:2568, solo Tailscale, WebSocket puro -- Colyseus tenia bugs reales encadenados en npm el 2026-09-01, aparcado). v3: lobby real de seleccion de personaje -- el operador elige cual de los 7 Acervos deliberantes de Concilio encarna (hasta 2 a la vez), Acervo Prompter excluido del roster (su propia ficha dice que no delibera, trabaja antes); los Acervos que nadie elige los lleva DeepSeek con la misma voz del vault. Cierre de ciclo real: boton 'Cerrar ciclo' escribe una fila en 92_BUS_TRABAJO (mismo esquema de columnas que bus_trabajo.mjs, credenciales Sheets propias en el VPS), verificado en real (SPK-1788282767175). Coste por deliberacion registrado en GASTO_API."
-    },
-    {
-      "fichero": "tools/gobierno/telar/",
-      "que_hace": "Fase B0 de Telar (ver PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md) -- contratos JSON Schema reales (Mision, Participante, Contribucion/Hilo, Evento, Huella) + 6 fixtures deterministas (5 del ciclo + 1 alterna para Encargo). Sin API, sin conexion a sistemas reales. Verificado en real con ajv (validar_b0.mjs): 5/5 fixtures validos, grafo de transiciones consistente, fixture roto rechazado con errores concretos."
-    },
-    {
-      "fichero": "tools/gobierno/telar/b1/",
-      "que_hace": "Fase B1 de Telar -- vertical slice jugable estatica (DOM puro, sin Phaser) sobre los fixtures de B0: Reencuentro, Encargo (con gate de preparacion real), Concilio (orbita SVG), Tejido (incorporar hilos, ver ERR y Pendiente de comprobar), Relevo (3 capas separadas), Puerta Humana (5 pasos: Sugerir/Inspeccionar/Autorizar/Ejecutar/Verificar) y Huella. Servidor estatico propio (servidor_b1.mjs, puerto 4310). Verificado en real con clics reales en el navegador, ciclo completo sin errores de consola: se encontraron y corrigieron 2 bugs reales (layout de la orbita con 2 nodos, y un id de boton duplicado que dejaba el paso 'Autorizar' de la Puerta Humana sin funcionar)."
-    },
-    {
-      "fichero": "tools/gobierno/telar/b2/",
-      "que_hace": "Fase B2 de Telar -- deliberacion real en solo lectura: mismo roster de Acervos que spike_concilio_coop, ahora forzados al contrato estructurado de contribucion.schema.json (JSON mode real de DeepSeek + validacion ajv + 1 reintento con el error como feedback). Ninguna escritura en 92_BUS_TRABAJO (Sheets); SI registra coste real en GASTO_API (mismo criterio que el resto del proyecto). Verificado en real dos veces (2 y 3 Acervos): la primera ejecucion encontro un fallo real de calibracion (maxLength de 'propuestas' demasiado estricto para el estilo real de Acervo Logistico, causando ERR autentico tras 2 reintentos) -- corregido en contribucion.schema.json (200->500 caracteres) y re-verificado: 5/5 contratos validos, 9 filas reales en GASTO_API, coste total ~$0.0086 en las dos ejecuciones."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/",
-      "que_hace": "Visor real del grafo de codigo de Graphify (graph.html, vis-network, autocontenido) desplegado en el VPS -- http://100.107.171.88:9320/, atado solo a Tailscale. 1587 nodos, 4668 aristas, 81 comunidades reales, ya con panel de comunidades activables (segmentacion en mini-grafos, sin necesitar script nuevo). Nacio de un choque real de puerto 3000 con open-webui local -- sacado del portatil, mismo criterio que Portainer/Headplane/Grafana."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
-      "que_hace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los scripts reales de Node en tools/ (recorre todo el arbol, incluye tools/gobierno/graphify_visor/). Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS, relaciones por fichero de datos (escribe/lee, incluido un paso de respaldo a nivel de fichero completo) y relaciones por recurso real compartido (misma pestana Sheet o tabla Baserow). Regenerado el 2026-09-03 (§8.44) para incorporar las herramientas construidas esta sesion (censo, Holon, anatomia) -- de 89 a 59 scripts + 41 datos + 21 recursos = 121 nodos reales, 155 aristas; cerro el hueco real de Fisica en anatomia.html. Servido en http://100.107.171.88:9320/nodejs.html."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
-      "que_hace": "Tercera vista real -- solo lectura de los 2 workflows n8n ya exportados por tools/n8n-workflows/exportar.mjs (ninguna llamada nueva a la API de n8n). 137 nodos reales, 138 conexiones reales. Evaluado como asesor tecnico antes de construir: aporta valor real porque es la unica capa que muestra automatizacion real con Puerta Humana propia (Cronista), invisible en Graphify y en la capa Node. Servido en http://100.107.171.88:9320/n8n.html."
-    },
-    {
-      "fichero": "tools/gobierno/portainer/",
-      "que_hace": "Etapa C0 de PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md -- Portainer CE desplegado y verificado en el VPS (https://100.107.171.88:9443, HTTP 200 real), atado solo a Tailscale. Agente para la Pi preparado (docker-compose.pi.yml) pero NO desplegado todavia -- la Pi estaba apagada/inalcanzable en el momento del despliegue (apagado manual deliberado, ver INFRAESTRUCTURA.md). Falta que el operador fije la contraseña de admin inicial en la UI (accion de credencial, no realizada por Claude a proposito) y conectar el agente cuando la Pi este encendida."
-    },
-    {
-      "fichero": "tools/gobierno/headscale/headplane-config.yaml",
-      "que_hace": "Headplane (UI real de Headscale) desplegado y verificado en el VPS (http://100.107.171.88:3002/admin), mismo compose que headscale. Encontrado y corregido en real: Headplane exige Headscale >=0.27.0, la Etapa 1 desplegada corria 0.23.0 -- se subio a 0.29.3 (release estable mas reciente), migracion de esquema automatica confirmada en logs, 'Connected to Headscale 0.29.3' verificado. api_key real generada via 'headscale apikeys create', nunca commiteada en git (placeholder __PENDIENTE_GENERAR_EN_VPS__ en el fichero versionado)."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/",
-      "que_hace": "Bocetador (PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8) -- herramienta interna de diseno (tldraw + contrato JSON), no de produccion. espacio.schema.json/relacion.schema.json + fixtures verificados con validar_bocetador.mjs. Prototipo visual real en tools/gobierno/bocetador/app/ (Vite+React+tldraw 5.4.0, config 'bocetador' en G:/Mi unidad/DEVS/.claude/launch.json), probado en real sin errores de consola. Corre solo local (npm run dev), sin licencia de tldraw (solo exigida en produccion)."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/schemas/personaje.schema.json",
-      "que_hace": "Espejo real de 02_Personajes/*.md (vault) y 11_PERSONAS_EQUIPOS (Sheet real, cabeceras leidas 2026-09-02) -- extiende participante.schema.json de Telar. 2 fixtures reales verificados con validar_bocetador.mjs."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/schemas/recurso.schema.json",
-      "que_hace": "Espejo real de 01_Mundo/Recursos/ (vault) y 23_RECURSO/08_MATERIALES (Sheet) -- distingue clase operativo_gobierno vs fisico_negocio, nunca fuerza equivalencia falsa. Hallazgo real: 23_RECURSO tiene cabeceras pero 0 filas de datos hoy."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/schemas/modulo.schema.json",
-      "que_hace": "Espejo real de MODULO_POR_ENTIDAD_MVP (codigo real, src/Ids.js -- enum cerrado a los 12 modulos reales) y 01_Mundo/Modulos/*.md. vinculoReal usa sistema='codigo', no 'Sheet' -- Modulo no tiene pestana propia."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/schemas/herramienta.schema.json",
-      "que_hace": "Espejo real de 08_Oficios/*.md y el script correspondiente en tools/gobierno/*.mjs. vinculoReal usa sistema='repo'."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/sheet-real.html",
-      "que_hace": "Cuarta y quinta y sexta vista real (con pestanas): 91_HISTORIAL por CORRELATION_ID (35 operaciones/69 entidades reales), jerarquia real Campana->Tarea (48 nodos, incluye la Yurta/Amigurumi/Muro de bahareque reales), PAQUETE_CLIENTE->modulos activos (Baserow, 1 cliente real), y el ciclo de vida real de Telar (estados.json, 14 estados). indice.html real enlaza las 6 vistas del sitio. http://100.107.171.88:9320/indice.html."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/aplicar_boceto.mjs",
-      "que_hace": "El mecanismo de sincronizacion real (§8.13/§8.21): lee un boceto.json exportado del Bocetador y escribe fichas reales en la boveda -- Sheet/Baserow quedan siempre en informe, nunca una llamada real, con o sin --aplicar. Encontrado y corregido antes de escribir nada real: la primera version sobrescribia por completo fichas existentes con contenido real -- violaba 'memoria revisable, nunca borrada'. Corregido: nunca sobrescribe, solo crea fichas nuevas. Probado en real: creo 01_Mundo/Espacios/Consola.md (hueco real), dejo Telar.md intacto."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
-      "que_hace": "Solo lectura -- equivalente real a cargar_estructura_sheet.mjs para Baserow. Corrige un error propio: se penso que listar tablas exigia sesion de usuario, pero /api/database/tables/all-tables/ (ya en uso en puente_historia_leyes.mjs) funciona con el mismo token de base de datos. 18 tablas reales encontradas -- hallazgo real: PERSONAJE (283) y PLANTILLA_MISION (284) ya existen en Baserow y no se habian cruzado con personaje.schema.json."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/cargar_estructura_sheet.mjs",
-      "que_hace": "Solo lectura, sin credenciales en el navegador -- lee las 70 pestanas reales del Sheet y su fila de cabeceras (nunca filas de datos) en un solo batchGet. Verificado: 46 pestanas de negocio, 24 de utilidad."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/encontrar_huecos.mjs",
-      "que_hace": "Cruza estructura_sheet.json contra los vinculoReal ya declarados en los fixtures del Bocetador -- informe real de que pestanas de negocio no tienen todavia espejo (2/46 hoy, 44/46 huecos reales). No escribe nada, mismo espiritu que chequear_consistencia.mjs."
-    },
-    {
-      "fichero": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
-      "que_hace": "Solo lectura -- recorre la boveda real de Obsidian (01_Mundo/Espacios,Recursos,Modulos + 02_Personajes + 08_Oficios + 03_Reglas + 07_Holon_Relaciones) y genera el paquete real que el Bocetador carga con 'Cargar Universo real': 63 nodos + 18 relaciones reales, nunca inventados. Hallazgo real: el vocabulario de tipo_relacion ya en uso en 07_Holon_Relaciones/ (activa_a, alimenta_a, corrige_a, depende_de, gobierna_a, opera_en, parte_de, verifica_a) era mas rico que el que tenia relacion.schema.json (solo 3 aristas del canvas) -- corregido, union de las dos fuentes reales."
-    },
-    {
-      "fichero": "tools/gobierno/telar/b3/",
-      "que_hace": "Fase B3 de Telar -- registro controlado y Puerta Humana real: servidor con estado de Mision versionado (missionVersion), idempotencia real por clientEventId, concurrencia optimista real, y una Puerta Humana que separa decision_aprobar/ejecucion_autorizar/ejecucion_iniciar/ejecucion_verificar y escribe+relee de verdad un destino de prueba aislado (b3/destino_prueba/, nunca el docker-compose.yml real del VPS). Verificado en real con prueba_b3.mjs (15/15 comprobaciones, servidor real corriendo en :4320): se encontraron y corrigieron 2 bugs reales -- un desfase de version en la autorizacion (versionInspeccionada no contaba el propio incremento del evento que la creaba, por lo que la ejecucion real nunca podia coincidir aunque nada hubiera cambiado) y una precondicion que impedia re-autorizar tras una autorizacion caducada, contradiciendo la regla ya escrita en el paper ('vuelve a ejecucion_autorizar')."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/cargar_grafo_wikilinks.mjs",
-      "que_hace": "El octavo grafo real (ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md parrafo 8.23): recorre las 9 carpetas completas de la boveda (sin excluir narrativa esta vez) y extrae TODOS los [[wikilinks]] reales del cuerpo entero de cada ficha. Corregido tras encontrar el bug construyendo: las fichas de 07_Holon_Relaciones (tipo: relacion) no se cuentan como entidad -- se convierten en una arista directa origen->destino con su tipo_relacion real. Real: 83 fichas-entidad, 6 nombres referenciados sin ficha propia, 281 aristas."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
-      "que_hace": "El censo real de entidades: cruza los 8 grafos reales (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks) mas TODAS las 70 pestanas del Sheet y las 18 tablas de Baserow (no solo las que ya tenian grafo). Calcula corroboracion cruzada, centralidad, ciclos reales (Tarjan) y vocabulario de relacion unificado por cada una de 222 entidades candidatas reales, con decision (confirmar/promover/revisar/descartar) y su razon al lado. Salidas: censo_entidades.json + HALLAZGOS_ENTIDADES_REALES.md. Limite honesto documentado: cruce por nombre/tokens normalizados, no por ID unico."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/entidades.html",
-      "que_hace": "Septima vista real del visor (100.107.171.88:9320/entidades.html): tabla filtrable por decision/tipo/nombre del censo real de entidades, con panel de detalle mostrando la razon real de cada candidata y tabla de vocabulario de relacion. Verificada en el navegador: filtro y clic en fila funcionando con datos reales."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
-      "que_hace": "Segunda pasada sobre el censo real (confirmar/promover/revisar/descartar). Anade 2 fuentes reales mas: el catalogo MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano (Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 220 entidades del censo en 19 acciones concretas con su razon real. Sobre el grupo descartar (investigado a mano, no solo con reglas): encontro y corrigio un bug real en cargar_grafo_wikilinks.mjs (relaciones con varios destinos perdian los destinos reales por derivarlos del nombre del fichero en vez del cuerpo), y encontro 5 huecos reales concretos (VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION tocadas por codigo real, AGORA/EJECUTOR_LOCAL modulos activos sin ficha), 2 candidatas reales a ficha nueva (Vision Mision, Fisica) y 5 pestanas/tablas que ya tenian grafo propio y el censo no las veia. El resto queda historico, tal como se pidio explicitamente. Investigando a fondo los 5 huecos reales (no solo con reglas): 3 resultaron ya narrados por fichas reales existentes (Vigilia.md/Coordinador.md/Ejecutor.md), resuelto anadiendo una seccion ## Vinculo real a cada una sin tocar el resto; 2 (DOCUMENTO_ENGREMIAT, AGORA) y 1 candidata mas (Fisica) eran huecos genuinos, resueltos creando su ficha real en 01_Mundo/Recursos/ y 03_Reglas/. Vision Mision investigada resulto ser una fila ya catalogada dentro de DOCUMENTO_ENGREMIAT, no una entidad nueva."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
-      "que_hace": "Valora cada entidad CONFIRMADA del censo real (§8.23): ya_tiene la seccion ## Vinculo real en su ficha, evidencia_precisa (script/tabla/workflow/modulo real concreto reutilizable) o evidencia_difusa (solo un fichero entero de Apps Script, no un recordId util). Anade dos fuentes que el barrido de la consolidacion no cubria del todo: el grafo completo de Apps Script y las transcripciones reales de Telar B2. Escribe valoracion_vinculoreal.json. Segunda pasada tras la propuesta real del operador (perspectiva del Sheet maestro): anade el mapeo real hoja->modulo computado desde ENTIDADES_MVP+MODULO_POR_ENTIDAD_MVP de src/Ids.js (revela que CORE es dueno real de 8 pestanas, invisible a la coincidencia de texto porque \"CORE\" no es substring de ninguna pestana -- es una relacion de propiedad, no textual), mas dos corpus nuevos: src/ (161 ficheros reales de Apps Script, mas granulares que el unico concat.js de Graphify) y los .ps1 del ecosistema. Encontrada la misma trampa de homonimia que en §8.23 (Fisica <-> InstaladorJerarquiaFisica.js, jerarquia espacial de un cliente, no el concepto filosofico) -- excluida explicitamente."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
-      "que_hace": "Lee valoracion_vinculoreal.json y escribe de verdad la seccion ## Vinculo real en las fichas reales con evidencia_precisa -- mismo patron de seguridad que aplicar_boceto.mjs (dry-run por defecto, --aplicar para escribir, solo anade al final del fichero, nunca toca contenido existente, idempotente). Filtra dos tipos de ruido encontrados revisando el primer dry-run: nodos recurso:X de grafo_node.json (duplican Sheet/Baserow por otro lado) y coincidencias contra el fichero entero de Apps Script (no son un recordId util). Aplicado en real: 33 fichas de la boveda enriquecidas, verificado que ninguna perdio contenido previo. Segunda pasada: 7 fichas mas enriquecidas (CORE, Repository, Aprovisionamiento, Comunicacion, EstructuraInicial, Gantt, Ejecutar chequeo libreria), con dos correspondencias verificadas a mano para excluir ruido de coincidencia amplia (Repository -> src/Repository.js explicitamente sin ConfigRepository.js, que es una ficha real distinta). Resultado final: de 45 confirmadas, 43 tienen vinculoReal real, 2 se quedan sin el a proposito (Fisica y Verificar contra hechos, ya resueltas de otra forma)."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/resumen_universo.html",
-      "que_hace": "Resumen visual real del universo Engremiat completo -- mapa de una pagina con datos reales de la boveda (110 fichas), el censo (225 candidatas, 0 huecos abiertos) y la infraestructura real (VPS/Tailscale/Sheet/Baserow). Construido como Artifact primero (skill artifact-design, paleta ledger de gremio, tipografia Petrona+Public Sans+JetBrains Mono, ambos temas), luego copiado al repo como plantilla reutilizable para el siguiente ejercicio -- envuelto en documento HTML completo (el fragmento del Artifact confia en un wrapper que aqui no existe). Desplegado en el visor (resumen_universo.html), verificado en el navegador -- encontrado y corregido un bug real de barras de embudo recortadas por el contenedor."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/anadir_equipo_personajes.mjs",
-      "que_hace": "Anade el campo real equipo (§8.33 -- personaje.schema.json) al frontmatter de los 20 Personajes reales, agrupados por la topologia ya existente en 07_Holon_Relaciones (opera_en/parte_de/alimenta_a/verifica_a), no inventada. Idempotente, solo toca la linea de frontmatter. Aplicado en real: 20/20 escritas."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
-      "que_hace": "Crea las 13 aristas reales opera_en que faltaban -- de 19 Personajes, solo 5 respondian ya Donde. Cada una fundamentada en algo ya escrito en otra ficha real (Telar.md, Coordinador.md, vinculoReal de Verificador de Campos y Acervo Usuario), nunca inventada. Aplicado en real: 13/13 creadas."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
-      "que_hace": "Extrae el grafo real del Holon (quien hace que con quien, donde) desde grafo_wikilinks.json -- separa las aristas de relacion real (opera_en/depende_de/gobierna_a/activa_a/verifica_a/corrige_a/alimenta_a/parte_de) de los wikilinks narrativos sueltos, y anade el campo real equipo de cada Personaje. Real: 28 nodos, 39 aristas."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/holon.html",
-      "que_hace": "Octava vista real del visor (100.107.171.88:9320/holon.html): el grafo completo de quien hace que con quien, donde -- Personajes coloreados por equipo real, clic en cualquier nodo muestra sus relaciones reales completas. Verificado en el navegador: Coordinador muestra sus 7 aristas reales de golpe. Reformulado en 3 carriles por equipo (§8.37): aislar-al-clic, fondo de zona por equipo, bug real de zoom-fit corregido."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/grafo_maestro.html",
-      "que_hace": "Novena vista real del visor (100.107.171.88:9320/grafo_maestro.html), §8.38-40: las 94 fichas de entidad reales de la boveda sin filtrar (a diferencia del Holon, que solo muestra las que tienen relacion semantica) -- 331 aristas reales, 291 wikilink narrativos + 40 del Holon en capas separadas y ocultables (wikilinks apagados por defecto). 13 tipos reales coloreados/con forma propia, Personajes en su carril por equipo, buscador real por nombre, aislar por tipo o equipo al clic. §8.39: bug real de color de etiqueta corregido, tamano de nodo por centralidad real del censo, etiquetas dependientes del zoom. §8.40: barras de segmentacion por equipo eliminadas (ensuciaban el grafo). Verificado en el navegador."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
-      "que_hace": "§8.41-46: calcula la anatomia real de cada entidad -- cabeza (punto de entrada real, sin aristas entrantes), columna (el camino dirigido real mas largo desde ahi, DFS con corte de ciclos) y extremidades (el resto), sobre siete fuentes reales: grafo_n8n.json (workflows), graph.json+concat-map.json de tools/graphify/ (Apps Script), grafo_node.json (Node, espina = cadena real de import), grafo_historial.json/grafo_paquete_cliente.json (mecanismos con flujo propio: 91_HISTORIAL, PAQUETE_CLIENTE), esquema real de Sheet (estructura_sheet.json del bocetador -- columnas reales como extremidades, columnas *_ID que coinciden con una clave real de ENTIDADES_MVP de src/Ids.js como aristas de FK reales hacia otra pestaña), esquema real de Baserow (estructura_baserow.json -- campos reales como extremidades, campos tipo link_row de la propia API de Baserow como aristas reales), y grafo_wikilinks.json como ultimo respaldo (relaciones reales del Holon). Una tabla no tiene flujo de ejecucion, pero si una forma real -- sus columnas y sus relaciones reales, nunca inventadas. Lee el vinculoReal real de cada ficha para saber que fuente resolver. Salida: anatomia_entidades.json, 61 entidades reales con anatomia calculable de 91 (excluyendo las 32 fichas-relacion de 07_Holon). §8.45: bug real corregido -- la fuente relacional/Holon elegia la mejor entrada GLOBAL del componente compartido, asi que Concilio/los 8 Acervos/El Sheet/El Vault/Headscale/Mensajero devolvian el mismo cuerpo, cabeza y columna letra por letra. Corregido forzando la raiz en la propia entidad (`raizForzada` en calcularEspina). Anade dos metricas reales nuevas por fuente: agenciaReal (aristas reales salientes desde la propia cabeza) y territorioPropio (solo en 'relacional': % de la columna que no aparece en la columna de ningun otro personaje del mismo componente -- cuanto de su cuerpo es identidad exclusiva vs sustrato compartido). §8.46: anade rolReal -- el verbo real dominante de las aristas salientes de la propia cabeza, traducido a un vocabulario pequeno de roles universales (Operador/Guardian/Proveedor/Orquestador/Dependiente/Ejecutor/Compositor/Utilidad/Esquema dependiente/Disparador/Decisor/Pasivo) comparable ENTRE fuentes distintas. El wikilink se excluye del calculo del rol (es tejido narrativo, no accion funcional) aunque si cuenta para agenciaReal. Hallazgo real: los 8 Acervos + Headscale + Relevo + Mensajero comparten la misma familia real (Operador) pese a estar en 3 equipos distintos -- el parecido es de comportamiento, no de vecindario."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/anatomia.html",
-      "que_hace": "Decima vista real del visor (100.107.171.88:9320/anatomia.html), §8.41-44: buscador de las 61 entidades con anatomia real, un panel por cada fuente real (n8n/Apps Script/Node/Sheet/Sheet esquema/Baserow esquema/Boveda) con layout radial real calculado a mano (BFS desde la cabeza da el anillo, angulo repartido por numero real de hojas de cada rama) -- cabeza en forma de estrella en el centro, columna resaltada, extremidades atenuadas alrededor. Verificado con Cronista (n8n, 78 nodos), Ventas (Sheet esquema, cadena real de FK 39->43->38_CLIENTE) y DOCUMENTO_ENGREMIAT (Baserow esquema, 9 campos reales)."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
-      "que_hace": "§8.47: puente de datos real -- convierte anatomia_entidades.json (grafo en bruto, pensado para calcular) en atlas_familias.json (datos ya aplanados por familia real, pensados para dibujar). Cruza anatomia_entidades.json + censo_entidades.json (corroboracionCruzada/centralidad) + grafo_wikilinks.json (tipo real) + grafo_holon.json (equipo real). Una entidad puede aparecer en varias familias si de verdad juega varios roles reales (ej. Cliente es Compositor en Node y Esquema dependiente en Sheet/Baserow) -- nunca forzada a una sola. Real: 11 familias, 70 apariciones de entidad de 61 entidades reales."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/design-tokens.json",
-      "que_hace": "§8.47-48: fuente de verdad real del estilo visual de Engremiat, formato DTCG (Design Tokens Community Group, estandar 2026) -- consolida los colores de equipo/tipo/fuente/rol/relacion que hoy viven repetidos en grafo_maestro.html/holon.html/anatomia.html (colisiones reales documentadas en $extensions: color.fuente.n8n con color.equipo.frontera, color.fuente.node con color.equipo.guardia, color.relacion.opera_en con color.rol.operador pese a ser el mismo concepto real -- dos paletas construidas en momentos distintos, nunca reconciliadas). Roles reales sin miembros hoy (Guardian/Proveedor/Decisor/Actor/Destino) marcados 'reservado'. §8.48: las tres vistas ya migradas -- leen tokens.css via <link> y un helper tokenColor() que lee la variable CSS real en vez de un hex propio del fichero. 55 tokens reales."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
-      "que_hace": "§8.47: lee design-tokens.json y escribe tokens.css (variables CSS reales) -- equivalente funcional a Style Dictionary, sin dependencia npm, mismo criterio de todo tools/ (solo Node built-in, nada que instalar). Recorre el JSON DTCG y convierte cada token con $value en --categoria-subcategoria-nombre. Real: 46 tokens exportados."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
-      "que_hace": "§8.49: revision completa de TODOS los ciclos reales consolidados en el proyecto -- 9 mecanismos encontrados, de naturaleza distinta, nunca forzados a un solo esquema: jerarquia (Campana->Proyecto->Producto->Proceso->Tarea, via ENTIDADES_MVP de src/Ids.js, orden real por numero de hoja), ciclo_vida (Mision real 14 estados B0-validado desde grafo_telar_estados.json; ejecucion real del workflow de Cronista desde la espina ya calculada en anatomia_entidades.json), plantilla (el ciclo de trabajo del Telar -- Urdimbre/Trama/Hilo conductor/Parte de Vigilia-Relevo, citado literalmente de Telar.md, domain-agnostic -- la Mision lo instancia via instanciaDe), operativo (ciclo_autonomo.mjs, CICLO_AUDITORIA_ENGREMIAT.md de 4 fases, METRICA_FABRICACION del Coordinador, el propio censo dato-real->hueco-real->ficha-real), fisico (El ciclo de vida remoto, IDs reales despertar-pc/apagar-pi). Deja fuera a proposito los bucles estructurales de teoria de grafos ya encontrados en el censo (§8.23) -- esos no son procesos temporales, son dependencias circulares de codigo. Salida: ciclos_reales.json, servido en 100.107.171.88:9320/ciclos_reales.json."
-    },
-    {
-      "fichero": "tools/gobierno/graphify_visor/mesa_montaje.html",
-      "que_hace": "§8.50-51: Fase 2 del plan del Bastidor (la mesa de montaje) -- undecima vista real del visor (100.107.171.88:9320/mesa_montaje.html). Palette real con las 91 entidades reales agrupadas por familia real (atlas_familias.json), clic para colocar en la mesa, clic en dos piezas para conectarlas -- solo con los 8 tipos de relacion reales del Holon (opera_en/depende_de/gobierna_a/alimenta_a/verifica_a/corrige_a/activa_a/parte_de), nunca una flecha inventada. Un 'montaje' (piezas + conexiones + nombre) es una maquina/universo real, guardable en localStorage (solo este navegador, honestamente marcado como tal) y exportable/importable como JSON de verdad. Dos bugs reales corregidos en vivo: (1) el modal de conexion vivia anidado dentro del contenedor que vis-network limpia al construirse; movido a hermano con overlay CSS. (2) el contenedor de la mesa crecia sin limite (25000px) por flexbox sin min-height:0. §8.51 (Fase 3): cada pieza tiene un estado real (en_reposo/bloqueada/activa/terminada) que solo cambia por un evento explicito, disparado a mano y registrado con timestamp -- nunca por fisica, animacion o temporizador. bloqueada se calcula de verdad a partir de aristas gobierna_a entrantes reales ya dibujadas en la mesa: si algo real la gobierna y ese gobernador aun no esta activo, esta bloqueada. El evento 'aprobar' (disponible solo en piezas activas con gobierna_a saliente real) desbloquea de verdad lo que gobierna. Verificado de extremo a extremo con Puerta Humana gobierna_a Coordinador (la relacion real ya conocida desde el Holon, §8.33): Coordinador arranca bloqueada, se desbloquea solo cuando Puerta Humana se activa (agenciaReal=1) y aprueba explicitamente -- registro de eventos con 2 entradas reales, timestamps correctos."
-    }
-  ]
+ "_comentario": "Registro central de elementos del ecosistema Engremiat sujetos a chequeo de salud (ver SALUD_ECOSISTEMA.md). Todo elemento nuevo (prompt operativo, trigger programado, script de sincronizacion) se anade aqui en el MISMO commit que lo crea -- no en uno posterior. salud_ecosistema.mjs lee este fichero, no tiene nombres a fuego.",
+ "prompts_operativos": [
+  {
+   "fichero": "PROMPT_EJECUTOR.md",
+   "agente": "Ejecutor Engremiat",
+   "cabecera_revision_regex": "Última revisión humana/Claude de este fichero: (\\d{4}-\\d{2}-\\d{2})",
+   "umbral_dias_aviso": 7
+  }
+ ],
+ "triggers_programados": [
+  {
+   "id": "trig_01PcwtGdVbbWVHU5zbrJrh4U",
+   "nombre": "Engremiat: revisar 96_PROMPT_EJECUTOR",
+   "agente": "Ejecutor Engremiat",
+   "persistent_session_id": "session_01AYjZjU3NUiKQBToRo5ieuU",
+   "nota": "Comprobacion de enabled/last_fired_at es manual, solo con RemoteTrigger (ver SALUD_ECOSISTEMA.md punto 4) -- este registro solo documenta que existe y a que agente pertenece."
+  },
+  {
+   "id": "windows-task-scheduler:Engremiat - Chequeo libreria clientes",
+   "nombre": "Engremiat - Chequeo libreria clientes",
+   "mecanismo": "Windows Task Scheduler (maquina local del operador), no RemoteTrigger",
+   "cadencia": "Diaria, 08:00",
+   "que_hace": "tools/gobierno/ejecutar_chequeo_libreria.ps1 -- git pull + node tools/gobierno/chequear_libreria_clientes.mjs. Registra cada ejecucion en 92_BUS_TRABAJO.",
+   "nota": "Corre solo si la maquina esta encendida a esa hora -- sin reintento automatico si se salta un dia. Verificado en vivo el 2026-08-25 (LastTaskResult=0)."
+  }
+ ],
+ "scripts_sincronizacion": [
+  {
+   "fichero": "tools/consola/chequear_consistencia.mjs",
+   "que_compara": "Consola (GRUPOS) vs 13_INCIDENCIAS"
+  },
+  {
+   "fichero": "tools/consola/regenerar_estatico.mjs",
+   "que_hace": "Reconstruye el HTML estatico de la Consola preservando estado publicado"
+  },
+  {
+   "fichero": "tools/consola/extraer_decisiones.mjs",
+   "que_hace": "Solo lectura -- decisiones de la Consola pendientes de trasladar al Sheet"
+  },
+  {
+   "fichero": "tools/salud_ecosistema.mjs",
+   "que_hace": "Chequeo agregado de los 3 puntos automatizables de este registro"
+  },
+  {
+   "fichero": "tools/gobierno/chequear_libreria_clientes.mjs",
+   "que_compara": "appsscript.json real de cada cliente vs version real publicada de LIBRERIA_ID_ (nunca el dato LIBRERIA_VERSION del Sheet como fuente de verdad)"
+  },
+  {
+   "fichero": "tools/gobierno/cerrar_ciclo.mjs",
+   "que_hace": "Escribe filas de cierre de ciclo (triaje/auditoria) en una pestana del Sheet via API directa, sin herramientas MCP -- reemplaza el trabajo manual de crear pestana + escribir + formatear"
+  },
+  {
+   "fichero": "tools/gobierno/bus_trabajo.mjs",
+   "que_hace": "Bus de eventos vía Sheet (pestaña 92_BUS_TRABAJO): reclamar/en_progreso/cerrar/verificar por worker, con proteccion contra doble reclamacion y panel de coste/tiempo agregado por worker. Formaliza el patron probado a mano en el lote 1 (2026-08-25)."
+  },
+  {
+   "fichero": "tools/gobierno/actualizar_libreria_cliente.mjs",
+   "que_hace": "Regenera el Codigo.js (envoltorios) de un cliente con fuente VIVA de la libreria (nunca git local, tras encontrar divergencia real). Modo diagnostico por defecto, --aplicar hace el push real. Encontro y resolvio INC-0061 en su primer uso real."
+  },
+  {
+   "fichero": "tools/gobierno/exportador_prometheus_gasto.mjs",
+   "que_hace": "Lee GASTO_API real (Baserow, tabla 285) y lo expone como metricas Prometheus (/metrics) para el panel Grafana de tools/gobierno/monitorizacion/. Desplegado y verificado en el VPS con datos reales (2026-09-01)."
+  },
+  {
+   "fichero": "tools/gobierno/headscale/",
+   "que_hace": "Servidor de coordinacion Tailscale propio, autoalojado (headscale/headscale:0.23.0). Etapa 1 (aditiva) desplegada y verificada en el VPS: contenedor sano, usuario 'engremiat' creado. Ningun nodo real (VPS/Pi/PC) migrado todavia -- migrar es Etapa 2, pendiente de autorizacion explicita aparte por el riesgo de cortar conectividad viva."
+  },
+  {
+   "fichero": "tools/gobierno/puente_historia_leyes.mjs",
+   "que_hace": "El primer Mensajero real -- lee una TAREA de Baserow (tabla 278, nucleo soberano) y escribe solo una referencia (nunca el dato completo) como fila nueva en 18_VINCULO del lado Sheets, con rastro en 92_BUS_TRABAJO. Dry-run por defecto, --aplicar escribe de verdad. Probado en real contra TAR-0008 (dry-run, sin escritura)."
+  },
+  {
+   "fichero": "tools/gobierno/generar_dialogos.mjs",
+   "que_hace": "Lee las fichas reales de 02_Personajes/ del vault y genera personajes.json -- un solo motor de comportamiento de personajes para el juego 2D y, mas adelante, el bot de Telegram (mismas entidades, piel distinta). Probado en real: 19 personajes extraidos correctamente."
+  },
+  {
+   "fichero": "tools/gobierno/spike_concilio_coop/",
+   "que_hace": "Spike real desplegado en el VPS (http://100.107.171.88:2568, solo Tailscale, WebSocket puro -- Colyseus tenia bugs reales encadenados en npm el 2026-09-01, aparcado). v3: lobby real de seleccion de personaje -- el operador elige cual de los 7 Acervos deliberantes de Concilio encarna (hasta 2 a la vez), Acervo Prompter excluido del roster (su propia ficha dice que no delibera, trabaja antes); los Acervos que nadie elige los lleva DeepSeek con la misma voz del vault. Cierre de ciclo real: boton 'Cerrar ciclo' escribe una fila en 92_BUS_TRABAJO (mismo esquema de columnas que bus_trabajo.mjs, credenciales Sheets propias en el VPS), verificado en real (SPK-1788282767175). Coste por deliberacion registrado en GASTO_API."
+  },
+  {
+   "fichero": "tools/gobierno/telar/",
+   "que_hace": "Fase B0 de Telar (ver PROPUESTA_TELAR_INTERFAZ_OPERATIVA.md) -- contratos JSON Schema reales (Mision, Participante, Contribucion/Hilo, Evento, Huella) + 6 fixtures deterministas (5 del ciclo + 1 alterna para Encargo). Sin API, sin conexion a sistemas reales. Verificado en real con ajv (validar_b0.mjs): 5/5 fixtures validos, grafo de transiciones consistente, fixture roto rechazado con errores concretos."
+  },
+  {
+   "fichero": "tools/gobierno/telar/b1/",
+   "que_hace": "Fase B1 de Telar -- vertical slice jugable estatica (DOM puro, sin Phaser) sobre los fixtures de B0: Reencuentro, Encargo (con gate de preparacion real), Concilio (orbita SVG), Tejido (incorporar hilos, ver ERR y Pendiente de comprobar), Relevo (3 capas separadas), Puerta Humana (5 pasos: Sugerir/Inspeccionar/Autorizar/Ejecutar/Verificar) y Huella. Servidor estatico propio (servidor_b1.mjs, puerto 4310). Verificado en real con clics reales en el navegador, ciclo completo sin errores de consola: se encontraron y corrigieron 2 bugs reales (layout de la orbita con 2 nodos, y un id de boton duplicado que dejaba el paso 'Autorizar' de la Puerta Humana sin funcionar)."
+  },
+  {
+   "fichero": "tools/gobierno/telar/b2/",
+   "que_hace": "Fase B2 de Telar -- deliberacion real en solo lectura: mismo roster de Acervos que spike_concilio_coop, ahora forzados al contrato estructurado de contribucion.schema.json (JSON mode real de DeepSeek + validacion ajv + 1 reintento con el error como feedback). Ninguna escritura en 92_BUS_TRABAJO (Sheets); SI registra coste real en GASTO_API (mismo criterio que el resto del proyecto). Verificado en real dos veces (2 y 3 Acervos): la primera ejecucion encontro un fallo real de calibracion (maxLength de 'propuestas' demasiado estricto para el estilo real de Acervo Logistico, causando ERR autentico tras 2 reintentos) -- corregido en contribucion.schema.json (200->500 caracteres) y re-verificado: 5/5 contratos validos, 9 filas reales en GASTO_API, coste total ~$0.0086 en las dos ejecuciones."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/",
+   "que_hace": "Visor real del grafo de codigo de Graphify (graph.html, vis-network, autocontenido) desplegado en el VPS -- http://100.107.171.88:9320/, atado solo a Tailscale. 1587 nodos, 4668 aristas, 81 comunidades reales, ya con panel de comunidades activables (segmentacion en mini-grafos, sin necesitar script nuevo). Nacio de un choque real de puerto 3000 con open-webui local -- sacado del portatil, mismo criterio que Portainer/Headplane/Grafana."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+   "que_hace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los scripts reales de Node en tools/ (recorre todo el arbol, incluye tools/gobierno/graphify_visor/). Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS, relaciones por fichero de datos (escribe/lee, incluido un paso de respaldo a nivel de fichero completo) y relaciones por recurso real compartido (misma pestana Sheet o tabla Baserow). Regenerado el 2026-09-03 (§8.44) para incorporar las herramientas construidas esta sesion (censo, Holon, anatomia) -- de 89 a 59 scripts + 41 datos + 21 recursos = 121 nodos reales, 155 aristas; cerro el hueco real de Fisica en anatomia.html. Servido en http://100.107.171.88:9320/nodejs.html."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+   "que_hace": "Tercera vista real -- solo lectura de los 2 workflows n8n ya exportados por tools/n8n-workflows/exportar.mjs (ninguna llamada nueva a la API de n8n). 137 nodos reales, 138 conexiones reales. Evaluado como asesor tecnico antes de construir: aporta valor real porque es la unica capa que muestra automatizacion real con Puerta Humana propia (Cronista), invisible en Graphify y en la capa Node. Servido en http://100.107.171.88:9320/n8n.html."
+  },
+  {
+   "fichero": "tools/gobierno/portainer/",
+   "que_hace": "Etapa C0 de PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md -- Portainer CE desplegado y verificado en el VPS (https://100.107.171.88:9443, HTTP 200 real), atado solo a Tailscale. Agente para la Pi preparado (docker-compose.pi.yml) pero NO desplegado todavia -- la Pi estaba apagada/inalcanzable en el momento del despliegue (apagado manual deliberado, ver INFRAESTRUCTURA.md). Falta que el operador fije la contraseña de admin inicial en la UI (accion de credencial, no realizada por Claude a proposito) y conectar el agente cuando la Pi este encendida."
+  },
+  {
+   "fichero": "tools/gobierno/headscale/headplane-config.yaml",
+   "que_hace": "Headplane (UI real de Headscale) desplegado y verificado en el VPS (http://100.107.171.88:3002/admin), mismo compose que headscale. Encontrado y corregido en real: Headplane exige Headscale >=0.27.0, la Etapa 1 desplegada corria 0.23.0 -- se subio a 0.29.3 (release estable mas reciente), migracion de esquema automatica confirmada en logs, 'Connected to Headscale 0.29.3' verificado. api_key real generada via 'headscale apikeys create', nunca commiteada en git (placeholder __PENDIENTE_GENERAR_EN_VPS__ en el fichero versionado)."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/",
+   "que_hace": "Bocetador (PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8) -- herramienta interna de diseno (tldraw + contrato JSON), no de produccion. espacio.schema.json/relacion.schema.json + fixtures verificados con validar_bocetador.mjs. Prototipo visual real en tools/gobierno/bocetador/app/ (Vite+React+tldraw 5.4.0, config 'bocetador' en G:/Mi unidad/DEVS/.claude/launch.json), probado en real sin errores de consola. Corre solo local (npm run dev), sin licencia de tldraw (solo exigida en produccion)."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/schemas/personaje.schema.json",
+   "que_hace": "Espejo real de 02_Personajes/*.md (vault) y 11_PERSONAS_EQUIPOS (Sheet real, cabeceras leidas 2026-09-02) -- extiende participante.schema.json de Telar. 2 fixtures reales verificados con validar_bocetador.mjs."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/schemas/recurso.schema.json",
+   "que_hace": "Espejo real de 01_Mundo/Recursos/ (vault) y 23_RECURSO/08_MATERIALES (Sheet) -- distingue clase operativo_gobierno vs fisico_negocio, nunca fuerza equivalencia falsa. Hallazgo real: 23_RECURSO tiene cabeceras pero 0 filas de datos hoy."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/schemas/modulo.schema.json",
+   "que_hace": "Espejo real de MODULO_POR_ENTIDAD_MVP (codigo real, src/Ids.js -- enum cerrado a los 12 modulos reales) y 01_Mundo/Modulos/*.md. vinculoReal usa sistema='codigo', no 'Sheet' -- Modulo no tiene pestana propia."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/schemas/herramienta.schema.json",
+   "que_hace": "Espejo real de 08_Oficios/*.md y el script correspondiente en tools/gobierno/*.mjs. vinculoReal usa sistema='repo'."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/sheet-real.html",
+   "que_hace": "Cuarta y quinta y sexta vista real (con pestanas): 91_HISTORIAL por CORRELATION_ID (35 operaciones/69 entidades reales), jerarquia real Campana->Tarea (48 nodos, incluye la Yurta/Amigurumi/Muro de bahareque reales), PAQUETE_CLIENTE->modulos activos (Baserow, 1 cliente real), y el ciclo de vida real de Telar (estados.json, 14 estados). indice.html real enlaza las 6 vistas del sitio. http://100.107.171.88:9320/indice.html."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/aplicar_boceto.mjs",
+   "que_hace": "El mecanismo de sincronizacion real (§8.13/§8.21): lee un boceto.json exportado del Bocetador y escribe fichas reales en la boveda -- Sheet/Baserow quedan siempre en informe, nunca una llamada real, con o sin --aplicar. Encontrado y corregido antes de escribir nada real: la primera version sobrescribia por completo fichas existentes con contenido real -- violaba 'memoria revisable, nunca borrada'. Corregido: nunca sobrescribe, solo crea fichas nuevas. Probado en real: creo 01_Mundo/Espacios/Consola.md (hueco real), dejo Telar.md intacto."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
+   "que_hace": "Solo lectura -- equivalente real a cargar_estructura_sheet.mjs para Baserow. Corrige un error propio: se penso que listar tablas exigia sesion de usuario, pero /api/database/tables/all-tables/ (ya en uso en puente_historia_leyes.mjs) funciona con el mismo token de base de datos. 18 tablas reales encontradas -- hallazgo real: PERSONAJE (283) y PLANTILLA_MISION (284) ya existen en Baserow y no se habian cruzado con personaje.schema.json."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/cargar_estructura_sheet.mjs",
+   "que_hace": "Solo lectura, sin credenciales en el navegador -- lee las 70 pestanas reales del Sheet y su fila de cabeceras (nunca filas de datos) en un solo batchGet. Verificado: 46 pestanas de negocio, 24 de utilidad."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/encontrar_huecos.mjs",
+   "que_hace": "Cruza estructura_sheet.json contra los vinculoReal ya declarados en los fixtures del Bocetador -- informe real de que pestanas de negocio no tienen todavia espejo (2/46 hoy, 44/46 huecos reales). No escribe nada, mismo espiritu que chequear_consistencia.mjs."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
+   "que_hace": "Solo lectura -- recorre la boveda real de Obsidian (01_Mundo/Espacios,Recursos,Modulos + 02_Personajes + 08_Oficios + 03_Reglas + 07_Holon_Relaciones) y genera el paquete real que el Bocetador carga con 'Cargar Universo real': 63 nodos + 18 relaciones reales, nunca inventados. Hallazgo real: el vocabulario de tipo_relacion ya en uso en 07_Holon_Relaciones/ (activa_a, alimenta_a, corrige_a, depende_de, gobierna_a, opera_en, parte_de, verifica_a) era mas rico que el que tenia relacion.schema.json (solo 3 aristas del canvas) -- corregido, union de las dos fuentes reales."
+  },
+  {
+   "fichero": "tools/gobierno/telar/b3/",
+   "que_hace": "Fase B3 de Telar -- registro controlado y Puerta Humana real: servidor con estado de Mision versionado (missionVersion), idempotencia real por clientEventId, concurrencia optimista real, y una Puerta Humana que separa decision_aprobar/ejecucion_autorizar/ejecucion_iniciar/ejecucion_verificar y escribe+relee de verdad un destino de prueba aislado (b3/destino_prueba/, nunca el docker-compose.yml real del VPS). Verificado en real con prueba_b3.mjs (15/15 comprobaciones, servidor real corriendo en :4320): se encontraron y corrigieron 2 bugs reales -- un desfase de version en la autorizacion (versionInspeccionada no contaba el propio incremento del evento que la creaba, por lo que la ejecucion real nunca podia coincidir aunque nada hubiera cambiado) y una precondicion que impedia re-autorizar tras una autorizacion caducada, contradiciendo la regla ya escrita en el paper ('vuelve a ejecucion_autorizar')."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/cargar_grafo_wikilinks.mjs",
+   "que_hace": "El octavo grafo real (ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md parrafo 8.23): recorre las 9 carpetas completas de la boveda (sin excluir narrativa esta vez) y extrae TODOS los [[wikilinks]] reales del cuerpo entero de cada ficha. Corregido tras encontrar el bug construyendo: las fichas de 07_Holon_Relaciones (tipo: relacion) no se cuentan como entidad -- se convierten en una arista directa origen->destino con su tipo_relacion real. Real: 83 fichas-entidad, 6 nombres referenciados sin ficha propia, 281 aristas."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/analizar_entidades_reales.mjs",
+   "que_hace": "El censo real de entidades: cruza los 8 grafos reales (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks) mas TODAS las 70 pestanas del Sheet y las 18 tablas de Baserow (no solo las que ya tenian grafo). Calcula corroboracion cruzada, centralidad, ciclos reales (Tarjan) y vocabulario de relacion unificado por cada una de 222 entidades candidatas reales, con decision (confirmar/promover/revisar/descartar) y su razon al lado. Salidas: censo_entidades.json + HALLAZGOS_ENTIDADES_REALES.md. Limite honesto documentado: cruce por nombre/tokens normalizados, no por ID unico."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/entidades.html",
+   "que_hace": "Septima vista real del visor (100.107.171.88:9320/entidades.html): tabla filtrable por decision/tipo/nombre del censo real de entidades, con panel de detalle mostrando la razon real de cada candidata y tabla de vocabulario de relacion. Verificada en el navegador: filtro y clic en fila funcionando con datos reales."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/consolidar_censo.mjs",
+   "que_hace": "Segunda pasada sobre el censo real (confirmar/promover/revisar/descartar). Anade 2 fuentes reales mas: el catalogo MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano (Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 220 entidades del censo en 19 acciones concretas con su razon real. Sobre el grupo descartar (investigado a mano, no solo con reglas): encontro y corrigio un bug real en cargar_grafo_wikilinks.mjs (relaciones con varios destinos perdian los destinos reales por derivarlos del nombre del fichero en vez del cuerpo), y encontro 5 huecos reales concretos (VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION tocadas por codigo real, AGORA/EJECUTOR_LOCAL modulos activos sin ficha), 2 candidatas reales a ficha nueva (Vision Mision, Fisica) y 5 pestanas/tablas que ya tenian grafo propio y el censo no las veia. El resto queda historico, tal como se pidio explicitamente. Investigando a fondo los 5 huecos reales (no solo con reglas): 3 resultaron ya narrados por fichas reales existentes (Vigilia.md/Coordinador.md/Ejecutor.md), resuelto anadiendo una seccion ## Vinculo real a cada una sin tocar el resto; 2 (DOCUMENTO_ENGREMIAT, AGORA) y 1 candidata mas (Fisica) eran huecos genuinos, resueltos creando su ficha real en 01_Mundo/Recursos/ y 03_Reglas/. Vision Mision investigada resulto ser una fila ya catalogada dentro de DOCUMENTO_ENGREMIAT, no una entidad nueva."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
+   "que_hace": "Valora cada entidad CONFIRMADA del censo real (§8.23): ya_tiene la seccion ## Vinculo real en su ficha, evidencia_precisa (script/tabla/workflow/modulo real concreto reutilizable) o evidencia_difusa (solo un fichero entero de Apps Script, no un recordId util). Anade dos fuentes que el barrido de la consolidacion no cubria del todo: el grafo completo de Apps Script y las transcripciones reales de Telar B2. Escribe valoracion_vinculoreal.json. Segunda pasada tras la propuesta real del operador (perspectiva del Sheet maestro): anade el mapeo real hoja->modulo computado desde ENTIDADES_MVP+MODULO_POR_ENTIDAD_MVP de src/Ids.js (revela que CORE es dueno real de 8 pestanas, invisible a la coincidencia de texto porque \"CORE\" no es substring de ninguna pestana -- es una relacion de propiedad, no textual), mas dos corpus nuevos: src/ (161 ficheros reales de Apps Script, mas granulares que el unico concat.js de Graphify) y los .ps1 del ecosistema. Encontrada la misma trampa de homonimia que en §8.23 (Fisica <-> InstaladorJerarquiaFisica.js, jerarquia espacial de un cliente, no el concepto filosofico) -- excluida explicitamente."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/anadir_vinculoreal.mjs",
+   "que_hace": "Lee valoracion_vinculoreal.json y escribe de verdad la seccion ## Vinculo real en las fichas reales con evidencia_precisa -- mismo patron de seguridad que aplicar_boceto.mjs (dry-run por defecto, --aplicar para escribir, solo anade al final del fichero, nunca toca contenido existente, idempotente). Filtra dos tipos de ruido encontrados revisando el primer dry-run: nodos recurso:X de grafo_node.json (duplican Sheet/Baserow por otro lado) y coincidencias contra el fichero entero de Apps Script (no son un recordId util). Aplicado en real: 33 fichas de la boveda enriquecidas, verificado que ninguna perdio contenido previo. Segunda pasada: 7 fichas mas enriquecidas (CORE, Repository, Aprovisionamiento, Comunicacion, EstructuraInicial, Gantt, Ejecutar chequeo libreria), con dos correspondencias verificadas a mano para excluir ruido de coincidencia amplia (Repository -> src/Repository.js explicitamente sin ConfigRepository.js, que es una ficha real distinta). Resultado final: de 45 confirmadas, 43 tienen vinculoReal real, 2 se quedan sin el a proposito (Fisica y Verificar contra hechos, ya resueltas de otra forma)."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/resumen_universo.html",
+   "que_hace": "Resumen visual real del universo Engremiat completo -- mapa de una pagina con datos reales de la boveda (110 fichas), el censo (225 candidatas, 0 huecos abiertos) y la infraestructura real (VPS/Tailscale/Sheet/Baserow). Construido como Artifact primero (skill artifact-design, paleta ledger de gremio, tipografia Petrona+Public Sans+JetBrains Mono, ambos temas), luego copiado al repo como plantilla reutilizable para el siguiente ejercicio -- envuelto en documento HTML completo (el fragmento del Artifact confia en un wrapper que aqui no existe). Desplegado en el visor (resumen_universo.html), verificado en el navegador -- encontrado y corregido un bug real de barras de embudo recortadas por el contenedor."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/anadir_equipo_personajes.mjs",
+   "que_hace": "Anade el campo real equipo (§8.33 -- personaje.schema.json) al frontmatter de los 20 Personajes reales, agrupados por la topologia ya existente en 07_Holon_Relaciones (opera_en/parte_de/alimenta_a/verifica_a), no inventada. Idempotente, solo toca la linea de frontmatter. Aplicado en real: 20/20 escritas."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
+   "que_hace": "Crea las 13 aristas reales opera_en que faltaban -- de 19 Personajes, solo 5 respondian ya Donde. Cada una fundamentada en algo ya escrito en otra ficha real (Telar.md, Coordinador.md, vinculoReal de Verificador de Campos y Acervo Usuario), nunca inventada. Aplicado en real: 13/13 creadas."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+   "que_hace": "Extrae el grafo real del Holon (quien hace que con quien, donde) desde grafo_wikilinks.json -- separa las aristas de relacion real (opera_en/depende_de/gobierna_a/activa_a/verifica_a/corrige_a/alimenta_a/parte_de) de los wikilinks narrativos sueltos, y anade el campo real equipo de cada Personaje. Real: 28 nodos, 39 aristas."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/holon.html",
+   "que_hace": "Octava vista real del visor (100.107.171.88:9320/holon.html): el grafo completo de quien hace que con quien, donde -- Personajes coloreados por equipo real, clic en cualquier nodo muestra sus relaciones reales completas. Verificado en el navegador: Coordinador muestra sus 7 aristas reales de golpe. Reformulado en 3 carriles por equipo (§8.37): aislar-al-clic, fondo de zona por equipo, bug real de zoom-fit corregido."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/grafo_maestro.html",
+   "que_hace": "Novena vista real del visor (100.107.171.88:9320/grafo_maestro.html), §8.38-40: las 94 fichas de entidad reales de la boveda sin filtrar (a diferencia del Holon, que solo muestra las que tienen relacion semantica) -- 331 aristas reales, 291 wikilink narrativos + 40 del Holon en capas separadas y ocultables (wikilinks apagados por defecto). 13 tipos reales coloreados/con forma propia, Personajes en su carril por equipo, buscador real por nombre, aislar por tipo o equipo al clic. §8.39: bug real de color de etiqueta corregido, tamano de nodo por centralidad real del censo, etiquetas dependientes del zoom. §8.40: barras de segmentacion por equipo eliminadas (ensuciaban el grafo). Verificado en el navegador."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+   "que_hace": "§8.41-46: calcula la anatomia real de cada entidad -- cabeza (punto de entrada real, sin aristas entrantes), columna (el camino dirigido real mas largo desde ahi, DFS con corte de ciclos) y extremidades (el resto), sobre siete fuentes reales: grafo_n8n.json (workflows), graph.json+concat-map.json de tools/graphify/ (Apps Script), grafo_node.json (Node, espina = cadena real de import), grafo_historial.json/grafo_paquete_cliente.json (mecanismos con flujo propio: 91_HISTORIAL, PAQUETE_CLIENTE), esquema real de Sheet (estructura_sheet.json del bocetador -- columnas reales como extremidades, columnas *_ID que coinciden con una clave real de ENTIDADES_MVP de src/Ids.js como aristas de FK reales hacia otra pestaña), esquema real de Baserow (estructura_baserow.json -- campos reales como extremidades, campos tipo link_row de la propia API de Baserow como aristas reales), y grafo_wikilinks.json como ultimo respaldo (relaciones reales del Holon). Una tabla no tiene flujo de ejecucion, pero si una forma real -- sus columnas y sus relaciones reales, nunca inventadas. Lee el vinculoReal real de cada ficha para saber que fuente resolver. Salida: anatomia_entidades.json, 61 entidades reales con anatomia calculable de 91 (excluyendo las 32 fichas-relacion de 07_Holon). §8.45: bug real corregido -- la fuente relacional/Holon elegia la mejor entrada GLOBAL del componente compartido, asi que Concilio/los 8 Acervos/El Sheet/El Vault/Headscale/Mensajero devolvian el mismo cuerpo, cabeza y columna letra por letra. Corregido forzando la raiz en la propia entidad (`raizForzada` en calcularEspina). Anade dos metricas reales nuevas por fuente: agenciaReal (aristas reales salientes desde la propia cabeza) y territorioPropio (solo en 'relacional': % de la columna que no aparece en la columna de ningun otro personaje del mismo componente -- cuanto de su cuerpo es identidad exclusiva vs sustrato compartido). §8.46: anade rolReal -- el verbo real dominante de las aristas salientes de la propia cabeza, traducido a un vocabulario pequeno de roles universales (Operador/Guardian/Proveedor/Orquestador/Dependiente/Ejecutor/Compositor/Utilidad/Esquema dependiente/Disparador/Decisor/Pasivo) comparable ENTRE fuentes distintas. El wikilink se excluye del calculo del rol (es tejido narrativo, no accion funcional) aunque si cuenta para agenciaReal. Hallazgo real: los 8 Acervos + Headscale + Relevo + Mensajero comparten la misma familia real (Operador) pese a estar en 3 equipos distintos -- el parecido es de comportamiento, no de vecindario."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/anatomia.html",
+   "que_hace": "Decima vista real del visor (100.107.171.88:9320/anatomia.html), §8.41-44: buscador de las 61 entidades con anatomia real, un panel por cada fuente real (n8n/Apps Script/Node/Sheet/Sheet esquema/Baserow esquema/Boveda) con layout radial real calculado a mano (BFS desde la cabeza da el anillo, angulo repartido por numero real de hojas de cada rama) -- cabeza en forma de estrella en el centro, columna resaltada, extremidades atenuadas alrededor. Verificado con Cronista (n8n, 78 nodos), Ventas (Sheet esquema, cadena real de FK 39->43->38_CLIENTE) y DOCUMENTO_ENGREMIAT (Baserow esquema, 9 campos reales)."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+   "que_hace": "§8.47: puente de datos real -- convierte anatomia_entidades.json (grafo en bruto, pensado para calcular) en atlas_familias.json (datos ya aplanados por familia real, pensados para dibujar). Cruza anatomia_entidades.json + censo_entidades.json (corroboracionCruzada/centralidad) + grafo_wikilinks.json (tipo real) + grafo_holon.json (equipo real). Una entidad puede aparecer en varias familias si de verdad juega varios roles reales (ej. Cliente es Compositor en Node y Esquema dependiente en Sheet/Baserow) -- nunca forzada a una sola. Real: 11 familias, 70 apariciones de entidad de 61 entidades reales."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/design-tokens.json",
+   "que_hace": "§8.47-48: fuente de verdad real del estilo visual de Engremiat, formato DTCG (Design Tokens Community Group, estandar 2026) -- consolida los colores de equipo/tipo/fuente/rol/relacion que hoy viven repetidos en grafo_maestro.html/holon.html/anatomia.html (colisiones reales documentadas en $extensions: color.fuente.n8n con color.equipo.frontera, color.fuente.node con color.equipo.guardia, color.relacion.opera_en con color.rol.operador pese a ser el mismo concepto real -- dos paletas construidas en momentos distintos, nunca reconciliadas). Roles reales sin miembros hoy (Guardian/Proveedor/Decisor/Actor/Destino) marcados 'reservado'. §8.48: las tres vistas ya migradas -- leen tokens.css via <link> y un helper tokenColor() que lee la variable CSS real en vez de un hex propio del fichero. 55 tokens reales."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
+   "que_hace": "§8.47: lee design-tokens.json y escribe tokens.css (variables CSS reales) -- equivalente funcional a Style Dictionary, sin dependencia npm, mismo criterio de todo tools/ (solo Node built-in, nada que instalar). Recorre el JSON DTCG y convierte cada token con $value en --categoria-subcategoria-nombre. Real: 46 tokens exportados."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+   "que_hace": "§8.49: revision completa de TODOS los ciclos reales consolidados en el proyecto -- 9 mecanismos encontrados, de naturaleza distinta, nunca forzados a un solo esquema: jerarquia (Campana->Proyecto->Producto->Proceso->Tarea, via ENTIDADES_MVP de src/Ids.js, orden real por numero de hoja), ciclo_vida (Mision real 14 estados B0-validado desde grafo_telar_estados.json; ejecucion real del workflow de Cronista desde la espina ya calculada en anatomia_entidades.json), plantilla (el ciclo de trabajo del Telar -- Urdimbre/Trama/Hilo conductor/Parte de Vigilia-Relevo, citado literalmente de Telar.md, domain-agnostic -- la Mision lo instancia via instanciaDe), operativo (ciclo_autonomo.mjs, CICLO_AUDITORIA_ENGREMIAT.md de 4 fases, METRICA_FABRICACION del Coordinador, el propio censo dato-real->hueco-real->ficha-real), fisico (El ciclo de vida remoto, IDs reales despertar-pc/apagar-pi). Deja fuera a proposito los bucles estructurales de teoria de grafos ya encontrados en el censo (§8.23) -- esos no son procesos temporales, son dependencias circulares de codigo. Salida: ciclos_reales.json, servido en 100.107.171.88:9320/ciclos_reales.json."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/mesa_montaje.html",
+   "que_hace": "§8.50-51: Fase 2 del plan del Bastidor (la mesa de montaje) -- undecima vista real del visor (100.107.171.88:9320/mesa_montaje.html). Palette real con las 91 entidades reales agrupadas por familia real (atlas_familias.json), clic para colocar en la mesa, clic en dos piezas para conectarlas -- solo con los 8 tipos de relacion reales del Holon (opera_en/depende_de/gobierna_a/alimenta_a/verifica_a/corrige_a/activa_a/parte_de), nunca una flecha inventada. Un 'montaje' (piezas + conexiones + nombre) es una maquina/universo real, guardable en localStorage (solo este navegador, honestamente marcado como tal) y exportable/importable como JSON de verdad. Dos bugs reales corregidos en vivo: (1) el modal de conexion vivia anidado dentro del contenedor que vis-network limpia al construirse; movido a hermano con overlay CSS. (2) el contenedor de la mesa crecia sin limite (25000px) por flexbox sin min-height:0. §8.51 (Fase 3): cada pieza tiene un estado real (en_reposo/bloqueada/activa/terminada) que solo cambia por un evento explicito, disparado a mano y registrado con timestamp -- nunca por fisica, animacion o temporizador. bloqueada se calcula de verdad a partir de aristas gobierna_a entrantes reales ya dibujadas en la mesa: si algo real la gobierna y ese gobernador aun no esta activo, esta bloqueada. El evento 'aprobar' (disponible solo en piezas activas con gobierna_a saliente real) desbloquea de verdad lo que gobierna. Verificado de extremo a extremo con Puerta Humana gobierna_a Coordinador (la relacion real ya conocida desde el Holon, §8.33): Coordinador arranca bloqueada, se desbloquea solo cuando Puerta Humana se activa (agenciaReal=1) y aprueba explicitamente -- registro de eventos con 2 entradas reales, timestamps correctos."
+  },
+  {
+   "fichero": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+   "que_hace": "§8.52: Fase 4 del plan del Bastidor (la memoria compartida real) -- primer y unico servicio de ESCRITURA de todo el visor (las once vistas anteriores son solo lectura via npx serve). Antes, el registro de eventos y los montajes guardados de mesa_montaje.html vivian solo en localStorage -- memoria de un navegador, invisible para cualquier otra maquina. Servidor HTTP Node propio (sin framework, sin credenciales externas), 3 rutas reales: GET /api/memoria (todo), POST /api/eventos (anota uno, timestamp real puesto por el servidor no por el cliente), POST/DELETE /api/montajes (guarda/borra por nombre). Persiste en un fichero JSON real en disco (./datos_memoria, fuera del sync de codigo, montado rw) -- deliberadamente NO Baserow todavia, mismo criterio de \"no infraestructura prematura\" ya validado investigando los informes de arquitectura (§8.47). Precedente real reutilizado: tools/gobierno/spike_concilio_coop/servidor.mjs (ya corria un servidor Node propio en el VPS). mesa_montaje.html actualizado: localStorage pasa a ser el respaldo real (nunca desaparece, sigue funcionando sin conexion) y la memoria compartida (100.107.171.88:9330) pasa a ser la fuente cuando esta conectada -- estado mostrado honestamente en pantalla (\"conectada\" / \"sin conexion, guardando solo en este navegador\"), nunca fingido. Desplegado como segundo servicio en el mismo docker-compose.yml del visor. Verificado real: servidor responde en :9330 (curl real via SSH y navegacion directa del navegador), CORS + cabecera Access-Control-Allow-Private-Network anadida (Chrome trata el rango CGNAT de Tailscale como red privada a efectos de Private Network Access). El fetch cross-origen especifico desde la pestana de automatizacion de pruebas no se pudo completar (ERR_BLOCKED_BY_CLIENT, sin traza de red -- limitacion del entorno de pruebas en sandbox, no del codigo real: la navegacion directa al mismo puerto SI devuelve datos reales); pendiente de que el operador confirme el estado \"conectada\" en su propio navegador real."
+  }
+ ]
 }

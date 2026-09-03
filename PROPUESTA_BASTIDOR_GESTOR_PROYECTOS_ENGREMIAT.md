@@ -792,6 +792,18 @@ Añadido el motor de estados sobre la misma mesa de montaje (§8.50), no una vis
 
 **Verificado de extremo a extremo con una relación real ya conocida**, no un ejemplo de juguete: `Puerta Humana gobierna_a Coordinador` (la misma relación del Holon, §8.33). Coordinador arranca `bloqueada` en cuanto se dibuja la conexión. Activar Puerta Humana (agencia real 1) no desbloquea nada por sí solo -- hace falta el evento explícito **Aprobar**, y solo entonces Coordinador pasa a `en_reposo`. Registro de eventos con 2 entradas reales, timestamps correctos, verificado en el navegador.
 
+### 8.52 "Sigue Fase 4"
+
+Fase 4 del plan del Bastidor (la memoria compartida real, "más allá de este navegador"). Antes de escribir código nuevo, investigado qué infraestructura real ya existía para reutilizar en vez de inventar: `tools/gobierno/spike_concilio_coop/servidor.mjs`, ya corriendo en el VPS (contenedor `engremiat-spike-concilio`), confirmó el patrón correcto -- un servidor Node propio, pequeño, con credenciales (cuando las hay) solo del lado servidor, nunca en el navegador. Ese servidor es de un dominio distinto (deliberación del Concilio con DeepSeek), así que no se extendió -- se construyó uno nuevo y mínimo siguiendo el mismo patrón real, no una pieza SaaS.
+
+**Qué se construyó**: `servidor_memoria.mjs`, primer y único servicio de ESCRITURA de todo el visor (las once vistas anteriores son solo lectura vía `npx serve`). Sin credenciales externas -- persiste en un fichero JSON real en disco (`./datos_memoria`, montado `rw`, fuera del sync de código versionado). Deliberadamente NO Baserow todavía: mismo criterio de "no infraestructura prematura" ya validado al leer los dos informes de arquitectura (§8.47) -- migrar a Baserow es el paso natural si el fichero se queda corto, no antes. Tres rutas reales: `GET /api/memoria`, `POST /api/eventos` (timestamp puesto por el servidor, no por el cliente -- ningún navegador puede mentir sobre cuándo pasó algo), `POST`/`DELETE /api/montajes`.
+
+**`mesa_montaje.html` actualizado**, no reescrito: `localStorage` pasa a ser el respaldo real (nunca desaparece, la mesa sigue funcionando sin conexión) y la memoria compartida (`100.107.171.88:9330`) pasa a ser la fuente cuando está conectada. El estado de conexión se muestra honestamente en pantalla -- "memoria compartida conectada" o "sin conexión, guardando solo en este navegador" -- nunca fingido como conectado si no lo está.
+
+**Desplegado**: segundo servicio en el mismo `docker-compose.yml` del visor, mismo criterio de mínimo privilegio (atado solo a Tailscale, `100.107.171.88:9330`).
+
+**Verificado, con un límite honesto**: el servidor responde con datos reales por dos vías independientes -- `curl` real por SSH contra el propio VPS, y navegación directa del navegador a `http://100.107.171.88:9330/api/memoria`. Se añadió la cabecera `Access-Control-Allow-Private-Network` (Chrome trata el rango CGNAT de Tailscale, `100.64.0.0/10`, como red privada a efectos de Private Network Access). Lo que **no** se pudo verificar dentro de esta sesión: el `fetch` cross-origen específico desde la pestaña de automatización de pruebas (herramienta de navegador en sandbox) falla con `ERR_BLOCKED_BY_CLIENT` y sin ninguna traza de red registrada -- un límite del entorno de pruebas automatizado, no del código real (la navegación directa al mismo puerto, desde la misma pestaña, sí funciona). El respaldo local se verificó de extremo a extremo (montaje guardado y listado correctamente con la memoria compartida desconectada). Pendiente: que el operador confirme en su propio navegador real que el mensaje pasa a "conectada".
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

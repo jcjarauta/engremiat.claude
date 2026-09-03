@@ -43,3 +43,23 @@ services:
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"
+
+  # Fase 4 del Bastidor -- memoria compartida real de la mesa de montaje
+  # (§8.52). Unico servicio de este visor con ESCRITURA -- las diez vistas
+  # anteriores son solo lectura via npx serve. Sin credenciales externas:
+  # persiste en un fichero JSON real en ./datos_memoria (montado rw, fuera
+  # del sync de codigo). Precedente real: tools/gobierno/spike_concilio_coop.
+  memoria-montaje:
+    image: node:22-alpine
+    container_name: engremiat-memoria-montaje
+    restart: unless-stopped
+    working_dir: /app
+    environment:
+      - PUERTO=9330
+      - DATOS_DIR=/app/datos
+    volumes:
+      - ./servidor_memoria.mjs:/app/servidor_memoria.mjs:ro
+      - ./datos_memoria:/app/datos
+    command: node /app/servidor_memoria.mjs
+    ports:
+      - "100.107.171.88:9330:9330"
