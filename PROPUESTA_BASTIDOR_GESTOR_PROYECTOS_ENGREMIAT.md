@@ -624,6 +624,20 @@ Desplegado en VPS (`holon.html`), sin cambios en `grafo_holon.json` (mismos 29 n
 
 Desplegado y verificado en el navegador: 94 nodos reales, alternar wikilinks/Holon, aislar por tipo (`Oficio`) y por equipo, buscador probado con "Coordinador" -- foco correcto y panel de detalle con sus relaciones reales distinguiendo wikilink de Holon.
 
+### 8.39 "Analiza el grafo maestro y haz una propuesta generosa para mejorar su representación"
+
+El usuario compartió una captura real del `grafo_maestro.html` recién construido: se veía disperso, sin nombres legibles fuera de los cuadrados de Espacio/Módulo. Investigado en vivo, no solo por la captura -- inspeccioné el DOM real del grafo en el navegador (`window.debugMaestro`), no adiviné la causa.
+
+**Bug real encontrado**: `font.color: '#0f1013'` (casi negro) aplicado a los 13 tipos por igual. Funciona en `box`/`square` (Espacio/Módulo) porque vis-network pinta la etiqueta *dentro* de esa forma, sobre su fondo claro. Pero en las otras 11 formas (`dot`/`diamond`/`triangle`/`star`/`ellipse`/`triangleDown`/`database` -- Personaje, Recurso, Regla, Oficio, Hilo, Arco, Sesión, Mapa, Estilo y los huecos honestos) vis-network dibuja la etiqueta *fuera* del nodo, sobre el canvas casi negro -- texto invisible. Confirmado leyendo el nodo `coordinador` directamente del DataSet: mismo `font.color` que `baserow`, pero una es legible y la otra no. El mismo bug llevaba desde `holon.html` (§8.37), enmascarado ahí porque solo tiene 29 nodos y la verificación se centró en la interacción, no en la legibilidad estática.
+
+**Propuesta aplicada, las 4 partes**:
+1. **Color de fuente por forma** -- claro (`#e7e7ea`) en todo lo que no sea `box`/`square`, oscuro solo donde el texto cae dentro de una forma clara. `formaConEtiquetaInterior()` decide cuál toca.
+2. **Wikilinks apagados por defecto** -- arranca mostrando solo las 40 relaciones del Holon; el usuario activa las 291 narrativas si las quiere. Menos "hairball" de Módulos sueltos en la primera vista.
+3. **Tamaño de nodo por corroboración real** -- ya no es fijo por tipo, usa `centralidad` del censo (`censo_entidades.json`, cruzado por `slug`) con grado real del propio grafo como respaldo para lo que el censo no cubre. Concilio, el más corroborado, ahora se ve visiblemente más grande que una referencia suelta.
+4. **Etiquetas dependientes del zoom** -- alejado, solo los nombres más corroborados se leen de golpe; acercarse revela más, sin necesidad de aislar nada. Aislar un grupo o pasar el ratón por encima de un nodo fuerza su etiqueta visible sin esperar al umbral.
+
+Verificado en el navegador, no solo en el código: zoom directo sobre "Concilio" y "Acervo Tecnico" -- ambos legibles, tamaño de Concilio mayor, zona "GUARDIA" bien rotulada; vista general de nuevo limpia tras "ver todo el grafo". Desplegado.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

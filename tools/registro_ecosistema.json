@@ -204,7 +204,7 @@
     },
     {
       "fichero": "tools/gobierno/graphify_visor/grafo_maestro.html",
-      "que_hace": "Novena vista real del visor (100.107.171.88:9320/grafo_maestro.html), §8.38: las 94 fichas de entidad reales de la boveda sin filtrar (a diferencia del Holon, que solo muestra las que tienen relacion semantica) -- 331 aristas reales, 291 wikilink narrativos + 40 del Holon en capas separadas y ocultables. 13 tipos reales coloreados/con forma propia, Personajes en su carril por equipo, buscador real por nombre, aislar por tipo o equipo al clic. Verificado en el navegador."
+      "que_hace": "Novena vista real del visor (100.107.171.88:9320/grafo_maestro.html), §8.38-39: las 94 fichas de entidad reales de la boveda sin filtrar (a diferencia del Holon, que solo muestra las que tienen relacion semantica) -- 331 aristas reales, 291 wikilink narrativos + 40 del Holon en capas separadas y ocultables (wikilinks apagados por defecto). 13 tipos reales coloreados/con forma propia, Personajes en su carril por equipo, buscador real por nombre, aislar por tipo o equipo al clic. §8.39: bug real de color de etiqueta corregido (texto casi negro invisible sobre fondo casi negro en 11 de 13 formas), tamano de nodo por centralidad real del censo, etiquetas dependientes del zoom, revelado al hover. Verificado en el navegador."
     }
   ]
 }
