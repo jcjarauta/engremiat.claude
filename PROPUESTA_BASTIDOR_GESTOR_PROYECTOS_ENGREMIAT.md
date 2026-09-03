@@ -579,6 +579,11 @@ Propuesta del operador, actuando como asesor técnico: ahora que el universo est
 
 Regenerado el censo (330 aristas de wikilinks, +14 sobre la pasada anterior) y desplegado.
 
+### 8.34 "Valora los pendientes: Pregonero, Narrador y Verificador de Capacidades" -- 1 con evidencia real que se había pasado, 2 confirmados honestamente sin nada
+
+- **Verificador de Capacidades → DOCUMENTO_ENGREMIAT** -- estaba ahí, en su propio código: `tools/verificador_capacidades.mjs` consulta en vivo la tabla Baserow **1038** filtrada por `TIPO=mecanismo_real` -- el mismo ID real que `DOCUMENTO_ENGREMIAT.md` ya documenta (56 filas: 46 documentos + 10 mecanismos). Creada la arista real, regenerado el grafo (29 nodos, 40 aristas).
+- **Pregonero, Narrador** -- releídas sus fichas reales antes de concluir: "ninguna pieza construida" y `estado: por_construir`, ambas explícitas. Confirmado, no hay espacio real al que apunten todavía -- correctamente sin arista, no un olvido.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

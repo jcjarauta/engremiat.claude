@@ -1,6 +1,6 @@
 # Censo real de entidades del universo Engremiat
 
-Generado el 2026-09-03T10:28:16.984Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
+Generado el 2026-09-03T10:34:13.868Z cruzando 10 fuentes reales: 8 grafos (Apps Script, Node, n8n, 91_HISTORIAL, jerarquia Sheet, PAQUETE_CLIENTE, Telar, wikilinks de la boveda) mas la estructura atomica completa de Sheet (70 pestanas), Baserow (18 tablas), y mencion textual literal en cualquier ficha real de la boveda (no solo wikilinks -- anadida en §8.29 tras encontrar que un "## Vinculo real" en texto plano no contaba como corroboracion). Ver `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §8.23.
 
 **Limite honesto**: el cruce de identidad es por coincidencia de nombre/tokens normalizados, no por ID unico todavia -- primer barrido exhaustivo real, no un censo perfecto. Cada fila lleva su evidencia al lado para que se pueda revisar a mano.
 
@@ -13,7 +13,7 @@ Generado el 2026-09-03T10:28:16.984Z cruzando 10 fuentes reales: 8 grafos (Apps 
 
 ## Ciclos reales encontrados: 4
 
-- **malla de 71 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter ... (+63 mas)
+- **malla de 72 nodos** (no es un bucle simple, es una red de referencias mutuas -- ver `censo_entidades.json` para la lista completa): 00_mapa <-> 92_bus_trabajo <-> acervo <-> acervo_filosofico <-> acervo_logico <-> acervo_logistico <-> acervo_narrativo <-> acervo_prompter ... (+64 mas)
 - chequear_libreria_clientes <-> ejecutar_chequeo_libreria
 - dato:appsscript.json <-> dato:clientes.json <-> dato:libreria.json <-> tools/constructor/montar-cliente.mjs <-> tools/constructor/montar-cliente.test.mjs
 - aprobada_sin_ejecutar <-> concilio_convocando <-> deliberando <-> devuelta <-> esperando_relevo <-> huella <-> orientacion <-> puerta_ejecutada <-> puerta_en_curso <-> puerta_err <-> puerta_pendiente <-> puerta_warn <-> sin_seleccionar <-> tejiendo
@@ -32,8 +32,8 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | toco_en_operacion | 81 | historial:81 |
 | parte_de_jerarquia | 43 | jerarquia:43 |
 | toca_recurso | 39 | node:39 |
+| opera_en | 22 | wikilinks:22 |
 | escribe_debil | 22 | node:22 |
-| opera_en | 21 | wikilinks:21 |
 | transicion_estado | 19 | telar_estados:19 |
 | lee_debil | 14 | node:14 |
 | depende_de | 8 | wikilinks:8 |
@@ -174,6 +174,7 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Acervo | personaje, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | GASTO_API | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | 92_BUS_TRABAJO | recurso, pestana_sheet_utilidad | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
+| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 5 | baserow_estructura, codigo_node, vault_ficha, vault_mencion, vault_wikilink |
 | Impacto | modulo | 5 | codigo_appsscript, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
 | Escenarios | modulo | 5 | baserow_estructura, codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Bus de trabajo | oficio | 5 | codigo_node, sheet_estructura, vault_ficha, vault_mencion, vault_wikilink |
@@ -183,8 +184,8 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Puerta Humana | regla | 4 | n8n, vault_ficha, vault_mencion, vault_wikilink |
 | CORE | modulo | 4 | codigo_appsscript, datos_negocio, vault_ficha, vault_wikilink |
 | Acervo Prompter | personaje | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
-| Repository | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Verificador de Capacidades | personaje | 4 | codigo_node, vault_ficha, vault_mencion, vault_wikilink |
+| Repository | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Ventas | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Aprovisionamiento | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Convocatorias | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
@@ -193,7 +194,6 @@ Nota honesta sobre el primer ciclo (la malla grande): no es un bucle de dependen
 | Verificar contra hechos | regla | 4 | n8n, vault_ficha, vault_mencion, vault_wikilink |
 | EstructuraInicial | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Física | regla | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
-| DOCUMENTO_ENGREMIAT | recurso, recurso_codigo, tabla_baserow | 4 | baserow_estructura, codigo_node, vault_ficha, vault_wikilink |
 | Compras | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Operativa | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |
 | Seguimiento | modulo | 4 | codigo_appsscript, vault_ficha, vault_mencion, vault_wikilink |

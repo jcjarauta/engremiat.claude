@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T10:28:15.477Z",
+  "generadoEn": "2026-09-03T10:34:12.350Z",
   "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat",
   "nodos": [
     {
@@ -2210,6 +2210,11 @@
     {
       "source": "acervo_usuario",
       "target": "zona_de_aterrizaje_stg",
+      "relation": "opera_en"
+    },
+    {
+      "source": "verificador_de_capacidades",
+      "target": "documento_engremiat",
       "relation": "opera_en"
     },
     {

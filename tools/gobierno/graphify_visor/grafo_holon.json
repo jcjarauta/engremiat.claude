@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T10:28:38.879Z",
+  "generadoEn": "2026-09-03T10:34:14.233Z",
   "nodos": [
     {
       "id": "baserow",
@@ -60,6 +60,13 @@
     {
       "id": "92_bus_trabajo",
       "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "equipo": null,
+      "esFicheroReal": true
+    },
+    {
+      "id": "documento_engremiat",
+      "nombre": "DOCUMENTO_ENGREMIAT",
       "tipo": "recurso",
       "equipo": null,
       "esFicheroReal": true
@@ -392,6 +399,11 @@
     {
       "source": "acervo_usuario",
       "target": "zona_de_aterrizaje_stg",
+      "relation": "opera_en"
+    },
+    {
+      "source": "verificador_de_capacidades",
+      "target": "documento_engremiat",
       "relation": "opera_en"
     }
   ]

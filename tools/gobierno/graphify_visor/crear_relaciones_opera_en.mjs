@@ -33,6 +33,7 @@ const RELACIONES = [
   { origen: 'Relevo', destino: '92_BUS_TRABAJO', porque: 'Coordinador alimenta_a Relevo (relación real ya existente) sobre el mismo bus de eventos real.' },
   { origen: 'Verificador de Campos', destino: 'Baserow', porque: 'tools/verificador_determinista.mjs (su vinculoReal) "comprueba afirmaciones de campo de Baserow contra el esquema real".' },
   { origen: 'Acervo Usuario', destino: 'Zona de aterrizaje STG', porque: 'Su propio vinculoReal (src/PlantillaImportacionMasivaService.js) ya conecta este Acervo con la zona de aterrizaje STG y el mecanismo de escenarios.' },
+  { origen: 'Verificador de Capacidades', destino: 'DOCUMENTO_ENGREMIAT', porque: 'tools/verificador_capacidades.mjs lo dice en su propio codigo: cargarCatalogoReal() consulta la tabla Baserow 1038 filtrada por TIPO=mecanismo_real -- la misma tabla real que DOCUMENTO_ENGREMIAT.md ya documenta (56 filas: 46 documentos + 10 mecanismos reales). Encontrado investigando el ultimo pendiente (§8.34), no adivinado.' },
 ];
 
 function slugArchivo(nombre) {

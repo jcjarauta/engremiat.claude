@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T10:28:16.984Z",
+  "generadoEn": "2026-09-03T10:34:13.868Z",
   "fuentesReales": [
     "vault_ficha",
     "vault_wikilink",
@@ -48,6 +48,7 @@
       "coordinador",
       "core",
       "cronista",
+      "documento_engremiat",
       "economico",
       "ejecucion",
       "ejecutor",
@@ -179,17 +180,17 @@
       }
     },
     {
+      "tipo": "opera_en",
+      "total": 22,
+      "porCapa": {
+        "wikilinks": 22
+      }
+    },
+    {
       "tipo": "escribe_debil",
       "total": 22,
       "porCapa": {
         "node": 22
-      }
-    },
-    {
-      "tipo": "opera_en",
-      "total": 21,
-      "porCapa": {
-        "wikilinks": 21
       }
     },
     {
@@ -653,6 +654,29 @@
       "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "slug": "documento_engremiat",
+      "tiposCandidato": [
+        "recurso",
+        "recurso_codigo",
+        "tabla_baserow"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 5,
+      "fuentes": [
+        "baserow_estructura",
+        "codigo_node",
+        "vault_ficha",
+        "vault_mencion",
+        "vault_wikilink"
+      ],
+      "centralidad": 3,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
       "nombre": "Impacto",
       "slug": "impacto",
       "tiposCandidato": [
@@ -903,26 +927,6 @@
       "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
     },
     {
-      "nombre": "Repository",
-      "slug": "repository",
-      "tiposCandidato": [
-        "modulo"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 4,
-      "fuentes": [
-        "codigo_appsscript",
-        "vault_ficha",
-        "vault_mencion",
-        "vault_wikilink"
-      ],
-      "centralidad": 7,
-      "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
-      "accionRecomendada": "confirmar_ya_solido",
-      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
-    },
-    {
       "nombre": "Verificador de Capacidades",
       "slug": "verificador_de_capacidades",
       "tiposCandidato": [
@@ -932,6 +936,26 @@
       "corroboracionCruzada": 4,
       "fuentes": [
         "codigo_node",
+        "vault_ficha",
+        "vault_mencion",
+        "vault_wikilink"
+      ],
+      "centralidad": 8,
+      "decision": "confirmar",
+      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
+      "accionRecomendada": "confirmar_ya_solido",
+      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
+    },
+    {
+      "nombre": "Repository",
+      "slug": "repository",
+      "tiposCandidato": [
+        "modulo"
+      ],
+      "yaEsFichaVault": true,
+      "corroboracionCruzada": 4,
+      "fuentes": [
+        "codigo_appsscript",
         "vault_ficha",
         "vault_mencion",
         "vault_wikilink"
@@ -1118,28 +1142,6 @@
         "vault_wikilink"
       ],
       "centralidad": 4,
-      "decision": "confirmar",
-      "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
-      "accionRecomendada": "confirmar_ya_solido",
-      "accionRazon": "Ya bien corroborado en el primer censo (≥4 fuentes reales) -- consolidado sin cambios. Candidato a enriquecer con `vinculoReal` explícito usando las fuentes ya encontradas."
-    },
-    {
-      "nombre": "DOCUMENTO_ENGREMIAT",
-      "slug": "documento_engremiat",
-      "tiposCandidato": [
-        "recurso",
-        "recurso_codigo",
-        "tabla_baserow"
-      ],
-      "yaEsFichaVault": true,
-      "corroboracionCruzada": 4,
-      "fuentes": [
-        "baserow_estructura",
-        "codigo_node",
-        "vault_ficha",
-        "vault_wikilink"
-      ],
-      "centralidad": 3,
       "decision": "confirmar",
       "razon": "ficha real ya existente, bien corroborada por el resto del ecosistema -- entidad con identidad propia consolidada.",
       "accionRecomendada": "confirmar_ya_solido",
@@ -4573,7 +4575,7 @@
     }
   ],
   "consolidacion": {
-    "generadoEn": "2026-09-03T10:28:17.067Z",
+    "generadoEn": "2026-09-03T10:34:13.945Z",
     "fuentesAdicionales": [
       "modulos_ids_js (MODULO_POR_ENTIDAD_MVP real)",
       "telar_b2_real (transcripciones reales de deliberación)",
