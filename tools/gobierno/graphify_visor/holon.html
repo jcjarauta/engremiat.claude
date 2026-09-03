@@ -23,6 +23,10 @@
   .tag { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10.5px; margin-right: 4px; margin-bottom: 4px; }
   .arista { font-size: 11.5px; color: #9a9aa2; padding: 3px 0; border-bottom: 1px solid #202126; }
   .arista b { color: #e7e7ea; }
+  .fila-equipo { cursor: pointer; padding: 3px 4px; margin: 0 -4px; border-radius: 4px; transition: background 0.12s; }
+  .fila-equipo:hover { background: #202126; }
+  .fila-equipo.activa { background: #24262e; }
+  #reset-equipo { display: none; font-size: 11px; color: #9a9aa2; text-decoration: underline; cursor: pointer; margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -30,12 +34,13 @@
   <div id="red"></div>
   <div id="panel">
     <h2>El Holon real</h2>
-    <p class="hint">Quién hace qué con quién, dónde -- las 39 aristas reales de <code>07_Holon_Relaciones/</code> (§8.33). Personajes coloreados por <code>equipo</code> real (frontmatter): agrupación por colaboración ya existente en el grafo, no propuesta de antemano.</p>
+    <p class="hint">Quién hace qué con quién, dónde -- las 40 aristas reales de <code>07_Holon_Relaciones/</code> (§8.33). Cada equipo real vive en su propio carril vertical -- Espacios, Recursos y Reglas quedan libres en medio, porque son el "dónde" que cruza equipos. Clic en un equipo para aislar sus componentes y relaciones.</p>
     <div class="leyenda">
-      <h3>Equipos reales (Personaje)</h3>
-      <div class="fila-leyenda"><span class="marca circulo" style="background:#7c93e8;"></span>Concilio -- deliberación (Concilio + 8 Acervos + Vigilia)</div>
-      <div class="fila-leyenda"><span class="marca circulo" style="background:#e8a33d;"></span>Guardia -- ejecución con Puerta Humana</div>
-      <div class="fila-leyenda"><span class="marca circulo" style="background:#4fce6f;"></span>Frontera -- comunicación externa</div>
+      <h3>Equipos reales (Personaje) -- clic para aislar</h3>
+      <div class="fila-leyenda fila-equipo" data-equipo="concilio"><span class="marca circulo" style="background:#7c93e8;"></span>Concilio -- deliberación (Concilio + 8 Acervos + Vigilia)</div>
+      <div class="fila-leyenda fila-equipo" data-equipo="guardia"><span class="marca circulo" style="background:#e8a33d;"></span>Guardia -- ejecución con Puerta Humana</div>
+      <div class="fila-leyenda fila-equipo" data-equipo="frontera"><span class="marca circulo" style="background:#4fce6f;"></span>Frontera -- comunicación externa</div>
+      <div id="reset-equipo">✕ ver todos los equipos</div>
       <h3 style="margin-top:14px;">Otros tipos reales</h3>
       <div class="fila-leyenda"><span class="marca" style="background:#c76bd6;"></span>Espacio</div>
       <div class="fila-leyenda"><span class="marca diamante" style="background:#e85c8a;"></span>Recurso</div>
@@ -51,18 +56,43 @@
 const COLOR_EQUIPO = { concilio: '#7c93e8', guardia: '#e8a33d', frontera: '#4fce6f' };
 const COLOR_TIPO = { espacio: '#c76bd6', recurso: '#e85c8a', regla: '#5c5f6b', personaje: '#8a8d99' };
 const FORMA_TIPO = { espacio: 'box', recurso: 'diamond', regla: 'triangle', personaje: 'dot' };
+const CARRIL_X = { concilio: -420, guardia: 0, frontera: 420 };
+const ETIQUETA_ZONA = { concilio: 'CONCILIO', guardia: 'GUARDIA', frontera: 'FRONTERA' };
+
+function colorDe(n) {
+  return n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo];
+}
 
 async function cargar() {
   const datos = await (await fetch('grafo_holon.json')).json();
 
-  const nodes = new vis.DataSet(datos.nodos.map(n => ({
-    id: n.id, label: n.nombre,
-    title: n.tipo + (n.equipo ? ' · ' + n.equipo : ''),
-    color: { background: n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo], border: '#0f1013' },
-    font: { color: '#0f1013', size: 12, face: 'system-ui' },
-    shape: FORMA_TIPO[n.tipo] || 'dot',
-    size: n.tipo === 'espacio' ? 20 : 16,
-  })));
+  // reparte cada personaje de un equipo en su propio carril vertical --
+  // dos columnas por carril para que 11 Acervos/Concilio/Vigilia no se apilen en una sola fila
+  const contadorEquipo = {};
+  const nodes = new vis.DataSet(datos.nodos.map(n => {
+    const enCarril = n.tipo === 'personaje' && n.equipo;
+    let xInicial;
+    if (enCarril) {
+      const idx = contadorEquipo[n.equipo] || 0;
+      contadorEquipo[n.equipo] = idx + 1;
+      const col = idx % 2 === 0 ? -1 : 1;
+      const fila = Math.floor(idx / 2);
+      xInicial = CARRIL_X[n.equipo] + col * 55;
+      var yInicial = fila * 90 - 150;
+    }
+    return {
+      id: n.id, label: n.nombre,
+      title: n.tipo + (n.equipo ? ' · ' + n.equipo : ''),
+      color: { background: colorDe(n), border: '#0f1013' },
+      font: { color: '#0f1013', size: 12, face: 'system-ui' },
+      shape: FORMA_TIPO[n.tipo] || 'dot',
+      size: n.tipo === 'espacio' ? 20 : 16,
+      x: enCarril ? xInicial : undefined,
+      y: enCarril ? yInicial : undefined,
+      fixed: enCarril ? { x: true, y: false } : false,
+      equipo: n.equipo, tipo: n.tipo,
+    };
+  }));
   const edges = new vis.DataSet(datos.aristas.map((a, i) => ({
     id: i, from: a.source, to: a.target, arrows: 'to',
     label: a.relation, font: { color: '#9a9aa2', size: 9, strokeWidth: 0, background: '#0f1013' },
@@ -70,23 +100,91 @@ async function cargar() {
   })));
 
   const network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
-    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, avoidOverlap: 0.6 } },
+    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, avoidOverlap: 0.6 }, stabilization: { iterations: 300 } },
     interaction: { hover: true },
   });
+  // el canvas nace con tamano 0 si el layout flex aun no ha resuelto cuando vis-network
+  // se construye -- forzar setSize+redraw antes de fit evita que se quede con zoom 1 fijo
+  network.once('stabilizationIterationsDone', () => {
+    network.setSize('100%', '100%');
+    network.redraw();
+    network.fit({ animation: false });
+  });
+  window.addEventListener('resize', () => network.fit({ animation: false }));
+  window.debugRed = { network, nodes, edges, datos };
+
+  // fondo de carril + etiqueta por equipo, en coordenadas del propio grafo --
+  // se mantiene alineado con los nodos aunque el usuario haga pan/zoom
+  network.on('afterDrawing', (ctx) => {
+    ctx.save();
+    Object.entries(CARRIL_X).forEach(([equipo, x]) => {
+      ctx.fillStyle = COLOR_EQUIPO[equipo] + '14';
+      ctx.fillRect(x - 150, -700, 300, 1000);
+      ctx.fillStyle = COLOR_EQUIPO[equipo] + '99';
+      ctx.font = '700 22px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(ETIQUETA_ZONA[equipo], x, -650);
+    });
+    ctx.restore();
+  });
+
+  const nombreDe = id => (datos.nodos.find(x => x.id === id) || {}).nombre || id;
+
+  function mostrarFicha(n) {
+    const salientes = datos.aristas.filter(a => a.source === n.id);
+    const entrantes = datos.aristas.filter(a => a.target === n.id);
+    let html = `<h3>${n.nombre}</h3>`;
+    html += `<p><span class="tag" style="background:${colorDe(n)}33;color:${colorDe(n)}">${n.tipo}</span>` + (n.equipo ? `<span class="tag" style="background:${COLOR_EQUIPO[n.equipo]}33;color:${COLOR_EQUIPO[n.equipo]}">${n.equipo}</span>` : '') + `</p>`;
+    if (salientes.length) { html += '<p style="margin-top:10px;"><b>Hace:</b></p>'; salientes.forEach(a => html += `<div class="arista"><b>${a.relation}</b> → ${nombreDe(a.target)}</div>`); }
+    if (entrantes.length) { html += '<p style="margin-top:10px;"><b>Recibe:</b></p>'; entrantes.forEach(a => html += `<div class="arista">${nombreDe(a.source)} <b>${a.relation}</b> →</div>`); }
+    document.getElementById('ficha').innerHTML = html;
+  }
 
   network.on('click', (params) => {
     if (!params.nodes.length) return;
     const n = datos.nodos.find(x => x.id === params.nodes[0]);
-    if (!n) return;
-    const salientes = datos.aristas.filter(a => a.source === n.id);
-    const entrantes = datos.aristas.filter(a => a.target === n.id);
-    const nombreDe = id => (datos.nodos.find(x => x.id === id) || {}).nombre || id;
-    let html = `<h3>${n.nombre}</h3>`;
-    html += `<p><span class="tag" style="background:${(n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo])}33;color:${n.tipo === 'personaje' && n.equipo ? COLOR_EQUIPO[n.equipo] : COLOR_TIPO[n.tipo]}">${n.tipo}</span>` + (n.equipo ? `<span class="tag" style="background:${COLOR_EQUIPO[n.equipo]}33;color:${COLOR_EQUIPO[n.equipo]}">${n.equipo}</span>` : '') + `</p>`;
-    if (salientes.length) { html += '<p style="margin-top:10px;"><b>Hace:</b></p>'; salientes.forEach(a => html += `<div class="arista"><b>${a.relation}</b> → ${nombreDe(a.target)}</div>`); }
-    if (entrantes.length) { html += '<p style="margin-top:10px;"><b>Recibe:</b></p>'; entrantes.forEach(a => html += `<div class="arista">${nombreDe(a.source)} <b>${a.relation}</b> →</div>`); }
-    document.getElementById('ficha').innerHTML = html;
+    if (n) mostrarFicha(n);
   });
+
+  // aislar un equipo: sus miembros + todo lo que hacen/reciben quedan a color pleno, el resto se atenúa
+  function aislarEquipo(equipo) {
+    const miembros = new Set(datos.nodos.filter(n => n.equipo === equipo).map(n => n.id));
+    const vecinos = new Set(miembros);
+    const aristasVivas = new Set();
+    datos.aristas.forEach((a, i) => {
+      if (miembros.has(a.source) || miembros.has(a.target)) {
+        vecinos.add(a.source); vecinos.add(a.target);
+        aristasVivas.add(i);
+      }
+    });
+    nodes.update(datos.nodos.map(n => ({
+      id: n.id,
+      color: { background: vecinos.has(n.id) ? colorDe(n) : '#2a2b31', border: '#0f1013' },
+      font: { color: vecinos.has(n.id) ? '#0f1013' : '#5a5b63', size: 12, face: 'system-ui' },
+    })));
+    edges.update(datos.aristas.map((a, i) => ({
+      id: i,
+      color: { color: aristasVivas.has(i) ? (COLOR_EQUIPO[equipo] || '#3a3b47') : '#232428' },
+      font: { color: aristasVivas.has(i) ? '#c7c8d6' : '#3a3b47', size: 9, strokeWidth: 0, background: '#0f1013' },
+    })));
+    document.getElementById('reset-equipo').style.display = 'block';
+    document.querySelectorAll('.fila-equipo').forEach(f => f.classList.toggle('activa', f.dataset.equipo === equipo));
+  }
+
+  function verTodos() {
+    nodes.update(datos.nodos.map(n => ({ id: n.id, color: { background: colorDe(n), border: '#0f1013' }, font: { color: '#0f1013', size: 12, face: 'system-ui' } })));
+    edges.update(datos.aristas.map((a, i) => ({ id: i, color: { color: '#3a3b47' }, font: { color: '#9a9aa2', size: 9, strokeWidth: 0, background: '#0f1013' } })));
+    document.getElementById('reset-equipo').style.display = 'none';
+    document.querySelectorAll('.fila-equipo').forEach(f => f.classList.remove('activa'));
+  }
+
+  document.querySelectorAll('.fila-equipo').forEach(fila => {
+    fila.addEventListener('click', () => {
+      if (fila.classList.contains('activa')) { verTodos(); return; }
+      aislarEquipo(fila.dataset.equipo);
+    });
+  });
+  document.getElementById('reset-equipo').addEventListener('click', verTodos);
 }
 
 cargar();

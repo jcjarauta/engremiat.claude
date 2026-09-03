@@ -598,6 +598,18 @@ Tres Reglas se habían quedado sin `## Vínculo real` en pasadas anteriores: El 
 
 Censo regenerado (mismos totales reales: 225 candidatas, 46 confirmar / 51 promover / 46 revisar / 82 descartar) -- sin regresión. Actualizado el resumen visual (badge `encontrar_huecos.mjs` en la tarjeta "Los dos continentes"), desplegado en VPS y republicado como Artifact.
 
+### 8.37 "Reformula el grafo para que se puedan ver los componentes de cada equipo y sus relaciones"
+
+`holon.html` coloreaba por `equipo` desde §8.33, pero el layout físico (forceAtlas2 libre) no agrupaba nada -- el color era la única señal, fácil de perder en 29 nodos mezclados. Reformulado con criterio espacial, no solo cromático:
+
+- **3 carriles verticales fijos** -- cada Personaje con `equipo` recibe una `x` fija según su equipo real (Concilio/Guardia/Frontera), con dos columnas por carril para no apilar los 8 Acervos en una sola fila; la física solo reajusta su `y`. Espacios/Recursos/Reglas quedan sin `x` fija -- son el "dónde", cruzan carriles por diseño.
+- **Fondo de zona + etiqueta por carril**, dibujado en coordenadas del propio grafo (`afterDrawing`) para que no se desalinee con pan/zoom.
+- **Aislar equipo al clic**: clic en "Concilio"/"Guardia"/"Frontera" en la leyenda atenúa todo lo que no sea ese equipo + sus vecinos directos (relaciones entrantes/salientes reales) -- responde literalmente "ver los componentes de cada equipo y sus relaciones" sin salir del grafo. Clic de nuevo, o "✕ ver todos los equipos", restaura.
+
+**Bug real encontrado y corregido verificando en el navegador, no solo mirando el código**: el `fit()` automático tras la estabilización se quedaba con zoom 1 fijo -- el canvas de vis-network se construye antes de que el layout flex del contenedor haya resuelto su tamaño real, y `fit()` calcula el zoom contra ese tamaño 0 cacheado. Corregido forzando `network.setSize('100%','100%')` + `redraw()` antes de `fit()`, más un listener de `resize` de ventana. Verificado con captura real en el VPS: sin la corrección, el grafo cargaba con los 3 carriles invisibles fuera de encuadre; con ella, encuadra los 29 nodos automáticamente al cargar.
+
+Desplegado en VPS (`holon.html`), sin cambios en `grafo_holon.json` (mismos 29 nodos / 40 aristas reales -- reformulación de layout, no de datos).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
