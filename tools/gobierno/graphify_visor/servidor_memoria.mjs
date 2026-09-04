@@ -54,6 +54,28 @@ async function obtenerAccessTokenSheets() {
   return j.access_token;
 }
 
+// -- §8.78: escritura real de arbol_campanas.html -- alcance 'spreadsheets' completo (no
+// .readonly), separado a proposito del resto de lecturas de este servidor (principio de
+// minimo privilegio). Verificado antes de instrumentar nada: la cuenta de servicio SI
+// tiene permiso de Editor real en este Sheet (PUT de prueba real confirmado, §8.75).
+async function obtenerAccessTokenSheetsEscritura() {
+  const cred = JSON.parse(readFileSync(SHEETS_CREDENCIALES_PATH, 'utf-8'));
+  const ahora = Math.floor(Date.now() / 1000);
+  const header = base64urlSheets(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claim = base64urlSheets(JSON.stringify({ iss: cred.client_email, scope: 'https://www.googleapis.com/auth/spreadsheets', aud: 'https://oauth2.googleapis.com/token', exp: ahora + 3600, iat: ahora }));
+  const firmante = createSign('RSA-SHA256');
+  firmante.update(header + '.' + claim);
+  firmante.end();
+  const jwt = header + '.' + claim + '.' + base64urlSheets(firmante.sign(cred.private_key));
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt })
+  });
+  const j = await r.json();
+  if (!j.access_token) throw new Error('AUTH_FAILED_SHEETS_ESCRITURA: ' + JSON.stringify(j));
+  return j.access_token;
+}
+
 async function leerProyectosReales() {
   if (cacheProyectos.datos && Date.now() - cacheProyectos.en < 30000) return cacheProyectos.datos;
   const token = await obtenerAccessTokenSheets();
@@ -136,6 +158,149 @@ async function leerProcesosTareasReales(proyectoId) {
         })),
     }))
     .sort((a, b) => (a.ordenSecuencia || '').localeCompare(b.ordenSecuencia || ''));
+}
+
+// -- §8.78: arbol_campanas.html -- extension real de leerProcesosTareasReales() hacia
+// arriba: 01_CAMPANAS -> 02_PROYECTOS -> 04_PROYECTO_PRODUCTO -> 03_PRODUCTOS ->
+// 05_PROCESOS -> 06_TAREAS. Cada nodo lleva su fila real (para el enlace "Ficha" al Sheet,
+// mismo patron #gid=X&range=A{fila} ya usado en incidencias) y su gid real de pestaña.
+const GID_SHEET = {
+  '01_CAMPANAS': 611657524, '02_PROYECTOS': 2118131766, '03_PRODUCTOS': 1323015476,
+  '04_PROYECTO_PRODUCTO': 221118053, '05_PROCESOS': 1834850944, '06_TAREAS': 1602917602,
+};
+function urlFilaSheet(hoja, filaReal) {
+  return 'https://docs.google.com/spreadsheets/d/' + SHEETS_SPREADSHEET_ID + '/edit#gid=' + GID_SHEET[hoja] + '&range=A' + filaReal;
+}
+let cacheCampanas = { en: 0, datos: null };
+let cacheProyectos2 = { en: 0, datos: null };
+let cacheProductos = { en: 0, datos: null };
+let cacheJerarquia = { en: 0, datos: null };
+
+async function leerJerarquiaCampanas() {
+  if (cacheJerarquia.datos && Date.now() - cacheJerarquia.en < 20000) return cacheJerarquia.datos;
+  const [campanas, proyectos, pp, productos, procesos, tareas] = await Promise.all([
+    leerTablaSheetCacheada('01_CAMPANAS', 'A1:L1000', cacheCampanas),
+    leerTablaSheetCacheada('02_PROYECTOS', 'A1:N1000', cacheProyectos2),
+    leerTablaSheetCacheada('04_PROYECTO_PRODUCTO', 'A1:C1000', cacheProyectoProducto),
+    leerTablaSheetCacheada('03_PRODUCTOS', 'A1:M1000', cacheProductos),
+    leerTablaSheetCacheada('05_PROCESOS', 'A1:S1000', cacheProcesos),
+    leerTablaSheetCacheada('06_TAREAS', 'A1:N1000', cacheTareas),
+  ]);
+  const col = (tabla, nombre) => tabla.cab.indexOf(nombre);
+  const conFila = (tabla) => tabla.filas.map((f, i) => ({ f, filaReal: i + 2 }));
+
+  const iCaId = col(campanas, 'ID'), iCaNombre = col(campanas, 'NOMBRE'), iCaEstado = col(campanas, 'ESTADO'), iCaAvance = col(campanas, 'PORCENTAJE_AVANCE');
+  const iPrId = col(proyectos, 'ID'), iPrCampana = col(proyectos, 'CAMPANA_ID'), iPrNombre = col(proyectos, 'NOMBRE'), iPrEstado = col(proyectos, 'ESTADO'), iPrAvance = col(proyectos, 'PORCENTAJE_AVANCE');
+  const iPPProyecto = col(pp, 'PROYECTO_ID'), iPPProducto = col(pp, 'PRODUCTO_ID');
+  const iPdId = col(productos, 'ID'), iPdNombre = col(productos, 'NOMBRE'), iPdEstado = col(productos, 'ESTADO');
+  const iPcId = col(procesos, 'ID'), iPcProducto = col(procesos, 'PRODUCTO_ID'), iPcNombre = col(procesos, 'NOMBRE'), iPcEstado = col(procesos, 'ESTADO'), iPcAvance = col(procesos, 'PORCENTAJE_AVANCE');
+  const iTrProceso = col(tareas, 'PROCESO_ID'), iTrId = col(tareas, 'ID'), iTrNombre = col(tareas, 'NOMBRE'), iTrEstado = col(tareas, 'ESTADO'), iTrAvance = col(tareas, 'PORCENTAJE_AVANCE');
+
+  const tareasDe = (procesoId) => conFila(tareas).filter(({ f }) => f[iTrProceso] === procesoId)
+    .map(({ f, filaReal }) => ({
+      tipo: 'Tarea', id: f[iTrId], nombre: f[iTrNombre] || '', estado: f[iTrEstado] || '', porcentajeAvance: f[iTrAvance] || '',
+      urlSheet: urlFilaSheet('06_TAREAS', filaReal), hijos: [],
+    }));
+  const procesosDe = (productoId) => conFila(procesos).filter(({ f }) => f[iPcProducto] === productoId)
+    .map(({ f, filaReal }) => ({
+      tipo: 'Proceso', id: f[iPcId], nombre: f[iPcNombre] || '', estado: f[iPcEstado] || '', porcentajeAvance: f[iPcAvance] || '',
+      urlSheet: urlFilaSheet('05_PROCESOS', filaReal), hijos: tareasDe(f[iPcId]),
+    }));
+  const productosDeProyecto = (proyectoId) => {
+    const ids = pp.filas.filter((f) => f[iPPProyecto] === proyectoId).map((f) => f[iPPProducto]);
+    return conFila(productos).filter(({ f }) => ids.includes(f[iPdId]))
+      .map(({ f, filaReal }) => ({
+        tipo: 'Producto', id: f[iPdId], nombre: f[iPdNombre] || '', estado: f[iPdEstado] || '', porcentajeAvance: '',
+        urlSheet: urlFilaSheet('03_PRODUCTOS', filaReal), hijos: procesosDe(f[iPdId]),
+      }));
+  };
+  const proyectosDe = (campanaId) => conFila(proyectos).filter(({ f }) => f[iPrCampana] === campanaId)
+    .map(({ f, filaReal }) => ({
+      tipo: 'Proyecto', id: f[iPrId], nombre: f[iPrNombre] || '', estado: f[iPrEstado] || '', porcentajeAvance: f[iPrAvance] || '',
+      urlSheet: urlFilaSheet('02_PROYECTOS', filaReal), hijos: productosDeProyecto(f[iPrId]),
+    }));
+
+  const arbol = conFila(campanas).map(({ f, filaReal }) => ({
+    tipo: 'Campaña', id: f[iCaId], nombre: f[iCaNombre] || '', estado: f[iCaEstado] || '', porcentajeAvance: f[iCaAvance] || '',
+    urlSheet: urlFilaSheet('01_CAMPANAS', filaReal), hijos: proyectosDe(f[iCaId]),
+  }));
+  cacheJerarquia = { en: Date.now(), datos: arbol };
+  return arbol;
+}
+
+// -- §8.78: creacion real, cruda -- decision del operador tras encontrar que
+// guardarFormulario()/insertarRegistroTransaccional() SIEMPRE escriben en
+// SpreadsheetApp.getActiveSpreadsheet() (el Sheet del maestro, nunca Gestor de Proyectos
+// desde su webhook standalone -- confirmado con una prueba real que aterrizo en el Sheet
+// equivocado, limpiada despues). Mismo patron ya en produccion para este mismo problema
+// real (AprovisionamientoService.js: crearProyectoEnGestorDeProyectos_) -- API directa,
+// ID generado a mano, sin 91_HISTORIAL. Aceptado a proposito: un solo operador, riesgo de
+// carrera bajo.
+const PREFIJO_ID = { CAMPANA: 'CAM', PROYECTO: 'PRO', PRODUCTO: 'PRD', PROCESO: 'PCS', TAREA: 'TAR' };
+const HOJA_ID = { CAMPANA: '01_CAMPANAS', PROYECTO: '02_PROYECTOS', PRODUCTO: '03_PRODUCTOS', PROCESO: '05_PROCESOS', TAREA: '06_TAREAS' };
+
+async function siguienteIdReal(token, hoja, prefijo) {
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A2:A2000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const filas = (await r.json()).values || [];
+  const regex = new RegExp('^' + prefijo + '-(\\d{4})$');
+  let maximo = 0;
+  filas.forEach((f) => { const m = regex.exec(String((f[0] || '')).trim()); if (m) maximo = Math.max(maximo, Number(m[1])); });
+  return prefijo + '-' + String(maximo + 1).padStart(4, '0');
+}
+
+async function appendFilaReal(token, hoja, fila) {
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A1:append?valueInputOption=USER_ENTERED',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' }, body: JSON.stringify({ values: [fila] }) }
+  );
+  if (r.status >= 400) throw new Error('Sheets respondio ' + r.status + ' al escribir en ' + hoja + ': ' + await r.text());
+}
+
+async function crearRegistroCrudo(tipo, campos, padreId) {
+  const clave = tipo.toUpperCase();
+  const hoja = HOJA_ID[clave];
+  if (!hoja) throw new Error('tipo desconocido: ' + tipo);
+  const token = await obtenerAccessTokenSheetsEscritura();
+  const tabla = await leerTablaSheetCacheada(hoja, 'A1:AE1', { en: 0, datos: null }); // cabeceras reales, cache propio (siempre fresco)
+  const id = await siguienteIdReal(token, hoja, PREFIJO_ID[clave]);
+  const ahora = new Date().toISOString();
+  const fkPorTipo = { PROYECTO: 'CAMPANA_ID', PROCESO: 'PRODUCTO_ID', TAREA: 'PROCESO_ID' };
+  const fila = tabla.cab.map((cabecera) => {
+    if (cabecera === 'ID') return id;
+    if (cabecera === fkPorTipo[clave] && padreId) return padreId;
+    if (cabecera in campos) return campos[cabecera];
+    if (cabecera === 'ESTADO') return campos.ESTADO || (clave === 'CAMPANA' ? 'Borrador' : clave === 'PROYECTO' ? 'Planificado' : 'Pendiente');
+    if (cabecera === 'FECHA_CREACION' || cabecera === 'FECHA_MODIFICACION') return ahora;
+    if (cabecera === 'ACTIVO') return 'SÍ';
+    if (cabecera === 'ORIGEN_CREACION' || cabecera === 'CREADO_POR' || cabecera === 'MODIFICADO_POR') return 'Panel Operativo (arbol_campanas.html)';
+    return '';
+  });
+  await appendFilaReal(token, hoja, fila);
+
+  // Producto vinculado a un Proyecto real: crea tambien la fila real de 04_PROYECTO_PRODUCTO
+  // (mismo patron que PROYECTO_VINCULAR_ID en guardarFormulario, aqui hecho a mano)
+  if (clave === 'PRODUCTO' && padreId) {
+    const tablaPP = await leerTablaSheetCacheada('04_PROYECTO_PRODUCTO', 'A1:H1', { en: 0, datos: null });
+    const idPP = await siguienteIdReal(token, '04_PROYECTO_PRODUCTO', 'PPR');
+    const filaPP = tablaPP.cab.map((c) => {
+      if (c === 'ID') return idPP;
+      if (c === 'PROYECTO_ID') return padreId;
+      if (c === 'PRODUCTO_ID') return id;
+      if (c === 'CANTIDAD_ASIGNADA') return 1;
+      if (c === 'ESTADO') return 'Activa';
+      if (c === 'FECHA_CREACION' || c === 'FECHA_MODIFICACION') return ahora;
+      if (c === 'ACTIVO') return 'SÍ';
+      if (c === 'ORIGEN_CREACION' || c === 'CREADO_POR' || c === 'MODIFICADO_POR') return 'Panel Operativo (arbol_campanas.html)';
+      return '';
+    });
+    await appendFilaReal(token, '04_PROYECTO_PRODUCTO', filaPP);
+  }
+
+  cacheJerarquia = { en: 0, datos: null }; // invalida cache -- el arbol acaba de cambiar de verdad
+  return { id };
 }
 
 // -- §8.74/75: Panel Operativo -- pivote real del operador (no Bastidor): "empezar a producir"
@@ -530,6 +695,33 @@ const servidor = createServer(async (req, res) => {
       }
       const incidencias = await leerIncidenciasProductoAbiertas();
       res.writeHead(200); res.end(JSON.stringify({ incidencias, leidoEn: new Date(cacheIncidencias.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/jerarquia_campanas') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const arbol = await leerJerarquiaCampanas();
+      res.writeHead(200); res.end(JSON.stringify({ arbol, leidoEn: new Date(cacheJerarquia.en).toISOString() })); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/crear_registro') {
+      // §8.78: reemplaza al intento inicial via webhook (guardar_formulario) -- ese
+      // camino escribia en el Sheet equivocado (el del maestro, no Gestor de Proyectos).
+      // Escritura cruda real, directa a este Sheet, decision explicita del operador.
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para escribir en el Sheet' })); return;
+      }
+      const { tipo, campos, padreId } = await leerCuerpo(req);
+      if (!tipo || !campos || !campos.NOMBRE) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan tipo/campos.NOMBRE' })); return;
+      }
+      try {
+        const resultado = await crearRegistroCrudo(tipo, campos, padreId || null);
+        res.writeHead(200); res.end(JSON.stringify(resultado)); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo crear el registro real: ' + e.message })); return;
+      }
     }
 
     if (req.method === 'GET' && req.url === '/api/concilio_estado') {

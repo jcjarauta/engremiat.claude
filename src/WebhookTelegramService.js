@@ -101,6 +101,19 @@ function doPost(e, tokenTelegram, modulosInstalados) {
         respuesta = JSON.stringify({ ok: true, resultado: actualizarRegistroTransaccional('CLIENTE', cuerpo.id, cuerpo.campos, { origen: 'ADMIN' }) });
       } else if (cuerpo && cuerpo.accion === 'confirmar_proyecto_narrador') {
         respuesta = JSON.stringify({ ok: true, resultado: insertarRegistroTransaccional('PROYECTO', cuerpo.campos, { origen: 'SCRIPT' }) });
+      } else if (cuerpo && cuerpo.accion === 'guardar_formulario') {
+        /*
+         * §8.78 -- unica accion real, generica para los 5 niveles de la jerarquia
+         * (CAMPANA/PROYECTO/PRODUCTO/PROCESO/TAREA) -- envuelve guardarFormulario()
+         * tal cual ya existe (FormularioValidacionService.js), conserva validacion
+         * real (FK/duplicidad/reglas de negocio), generacion de ID y 91_HISTORIAL.
+         * Nunca un insert directo -- ver arbol_campanas.html.
+         */
+        try {
+          respuesta = JSON.stringify({ ok: true, resultado: guardarFormulario(cuerpo.entidad, cuerpo.idRegistro, cuerpo.datosCrudos, cuerpo.correlationId) });
+        } catch (errorGuardar) {
+          respuesta = JSON.stringify({ ok: false, error: errorGuardar.message });
+        }
       } else if (cuerpo && cuerpo.accion === 'configurar_gestor_proyectos_spreadsheet_id') {
         PropertiesService.getScriptProperties().setProperty('GESTOR_PROYECTOS_SPREADSHEET_ID', String(cuerpo.spreadsheetId || ''));
         respuesta = JSON.stringify({ ok: true });

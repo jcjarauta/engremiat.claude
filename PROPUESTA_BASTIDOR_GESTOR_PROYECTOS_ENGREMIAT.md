@@ -1064,6 +1064,22 @@ Verificado con una llamada real aislada a `_registrar_bus_trabajo()` (sin lanzar
 
 Verificado con curl real (`Ejecutor Local (devstral-dev)`: 1 tarea, 12.3s, 150/80 tokens reales) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+### 8.78 Árbol de campañas -- primera escritura real en el núcleo de la jerarquía
+
+El operador pidió un árbol de navegación real (mismo espíritu que "Gestión de campaña" del Sheet) para operar directamente Campaña→Proyecto→Producto→Proceso→Tarea. Investigado antes de construir: existe un único mecanismo real genérico para crear cualquier nivel, `guardarFormulario(entidad, idRegistro, datosCrudos)` (`FormularioValidacionService.js`, schema-driven contra `ESQUEMAS_FORMULARIO_MVP`) -- la forma correcta de escribir, con validación real (FK/duplicidad/reglas de negocio), generación de ID y `91_HISTORIAL`.
+
+**Hallazgo real crítico, encontrado con una prueba real que falló silenciosamente**: `guardarFormulario()`/`insertarRegistroTransaccional()` escriben SIEMPRE en `SpreadsheetApp.getActiveSpreadsheet()` -- para el webhook standalone del maestro, eso es su propio Sheet de desarrollo (`4.Copia de TALLER_PRODUCCION_DEV`), **nunca** Gestor de Proyectos. Confirmado con una acción nueva (`guardar_formulario`, desplegada real vía `clasp push`+`clasp deploy -i` al deployment ya existente) que reportó éxito (`CAM-0049`) pero la fila apareció en el Sheet equivocado -- limpiada después. Mismo problema ya documentado en memoria (`proyecto_master_clientes_herencia_webhook`) y en el propio código (`AprovisionamientoService.js`, comentario explícito: *"esa función siempre escribe en getActiveSpreadsheet(), no admite un destino explícito"*). No existe ningún camino real de tercer nivel (`tools/constructor/clientes.json` está vacío -- Gestor de Proyectos nunca se montó con cascarón propio con webhook aparte).
+
+**Decisión del operador** (tres caminos presentados, elegido el recomendado): escritura cruda, sin la validación de `guardarFormulario` -- mismo patrón ya en producción para este mismo problema real (`crearProyectoEnGestorDeProyectos_`, `AprovisionamientoService.js`): API directa, ID generado a mano (regex sobre la columna real), sin `91_HISTORIAL`. Aceptado a propósito: un solo operador, riesgo de carrera bajo.
+
+**Construido**:
+- `leerJerarquiaCampanas()`: extensión real de `leerProcesosTareasReales()` hacia arriba -- `01_CAMPANAS→02_PROYECTOS→04_PROYECTO_PRODUCTO→03_PRODUCTOS→05_PROCESOS→06_TAREAS`, árbol anidado real, cada nodo con `urlSheet` (fila real, mismo patrón `#gid=X&range=A{fila}`). Nuevo `GET /api/jerarquia_campanas`.
+- `crearRegistroCrudo(tipo, campos, padreId)`: escritura directa vía Sheets API (alcance `spreadsheets` completo, separado del resto de lecturas por principio de mínimo privilegio), genérica para los 5 niveles, con generación real de ID por prefijo (`CAM/PRO/PRD/PCS/TAR`) y creación automática de la fila de enlace real `04_PROYECTO_PRODUCTO` cuando se crea un Producto bajo un Proyecto (mismo patrón que `PROYECTO_VINCULAR_ID`). Nuevo `POST /api/crear_registro`.
+- `guardar_formulario` (la acción del webhook, real y desplegada) queda tal cual, sin revertir -- funciona correctamente contra el Sheet del maestro, solo no es la herramienta para Gestor de Proyectos.
+- Nueva página `arbol_campanas.html`: árbol colapsable (colapsado por defecto), "Ficha" real por nodo, "+Crear" del siguiente nivel con formulario mínimo (`prompt()` secuencial, NOMBRE obligatorio + 1-2 campos reales opcionales por tipo).
+
+Verificado con escritura real de extremo a extremo antes de dar por cerrado: `CAM-0006` (Campaña) → `PRO-0027` (Proyecto, `CAMPANA_ID` correctamente enlazado) -- ambas confirmadas en el Sheet real y borradas después (limpieza de prueba). Verificado también con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

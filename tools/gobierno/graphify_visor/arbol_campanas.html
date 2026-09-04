@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- árbol de campañas</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 900px; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  #estado { font-size: 12px; color: var(--color-base-texto-suave); margin: 10px 0 16px; }
+  .nodo { margin-left: 18px; border-left: 1px solid var(--color-base-borde-suave); padding-left: 10px; }
+  .fila { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 12.5px; }
+  .fila .chevron { color: var(--color-base-texto-tenue); font-size: 10px; cursor: pointer; width: 12px; }
+  .fila.abierto > .chevron { transform: rotate(90deg); }
+  .fila .tipo { font-size: 9.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--color-base-texto-tenue); width: 60px; flex: none; }
+  .fila .nombre { font-weight: 600; flex: 1; cursor: pointer; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  a.ficha, button.crear { font-size: 10.5px; color: #6ea8ff; text-decoration: none; background: none; border: 1px solid var(--color-base-borde); border-radius: 4px; padding: 2px 7px; cursor: pointer; }
+  a.ficha:hover, button.crear:hover { border-color: #6ea8ff; }
+  .hijos { display: none; }
+  .hijos.abierto { display: block; }
+  .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
+</style>
+</head>
+<body>
+<h1>Árbol de campañas</h1>
+<p class="hint">
+  Espejo real del Sheet, con escritura -- Campaña → Proyecto → Producto → Proceso → Tarea (jerarquía real de <code>01_CAMPANAS</code>…<code>06_TAREAS</code>).
+  "Ficha" abre la fila exacta en el Sheet; "+Crear" escribe una fila real ahí mismo (creación cruda, sin pasar por la validación completa del formulario del Sheet -- decisión explícita, ver §8.78).
+  No es Bastidor ni Panel Operativo -- página propia, para no seguir amontonando.
+</p>
+<p id="estado">Comprobando el árbol real...</p>
+<div id="arbol" class="raiz-hijos"></div>
+
+<script>
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+const CAMPOS_POR_TIPO = {
+  'Campaña': [{ c: 'NOMBRE', r: true }, { c: 'FECHA_INICIO_PLAN' }, { c: 'FECHA_FIN_PLAN' }],
+  'Proyecto': [{ c: 'NOMBRE', r: true }, { c: 'TIPO_PROYECTO' }],
+  'Producto': [{ c: 'NOMBRE', r: true }],
+  'Proceso': [{ c: 'NOMBRE', r: true }],
+  'Tarea': [{ c: 'NOMBRE', r: true }],
+};
+const SIGUIENTE_TIPO = { 'Campaña': 'Proyecto', 'Proyecto': 'Producto', 'Producto': 'Proceso', 'Proceso': 'Tarea' };
+
+function renderNodo(n) {
+  const hijoTipo = SIGUIENTE_TIPO[n.tipo];
+  return `
+    <div class="nodo">
+      <div class="fila" data-id="${n.id}">
+        ${n.hijos.length || hijoTipo ? '<span class="chevron" onclick="toggle(this)">▸</span>' : '<span class="chevron"></span>'}
+        <span class="tipo">${n.tipo}</span>
+        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}</span>
+        <span class="badge">${n.estado || 'sin estado'}</span>
+        ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
+        <a class="ficha" href="${n.urlSheet}" target="_blank">Ficha</a>
+        ${hijoTipo ? `<button class="crear" onclick="crear('${hijoTipo}', '${n.id}')">+ ${hijoTipo}</button>` : ''}
+      </div>
+      <div class="hijos">${n.hijos.map(renderNodo).join('')}</div>
+    </div>`;
+}
+
+function toggle(chevron) {
+  const fila = chevron.closest('.fila');
+  const hijos = fila.nextElementSibling;
+  fila.classList.toggle('abierto');
+  hijos.classList.toggle('abierto');
+  chevron.textContent = fila.classList.contains('abierto') ? '▾' : '▸';
+}
+
+let arbolReal = [];
+
+async function cargarArbol() {
+  const estado = document.getElementById('estado');
+  const cont = document.getElementById('arbol');
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/jerarquia_campanas', { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { arbol, leidoEn } = await r.json();
+    arbolReal = arbol;
+    estado.textContent = `${arbol.length} campaña(s) real(es) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    cont.innerHTML = arbol.map(renderNodo).join('') || '<p class="hint">Ninguna campaña real todavía.</p>';
+  } catch {
+    estado.textContent = 'No se pudo leer el árbol real ahora mismo.';
+    cont.innerHTML = '';
+  }
+}
+
+async function crear(tipo, padreId) {
+  const campos = CAMPOS_POR_TIPO[tipo];
+  const datos = {};
+  for (const campo of campos) {
+    const valor = window.prompt(`${tipo} nueva${padreId ? ' (bajo ' + padreId + ')' : ''} -- ${campo.c}${campo.r ? ' (obligatorio)' : ' (opcional, Enter para saltar)'}:`);
+    if (valor === null) return; // cancelado
+    if (campo.r && !valor.trim()) { alert('NOMBRE es obligatorio -- cancelado.'); return; }
+    if (valor.trim()) datos[campo.c] = valor.trim();
+  }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: tipo === 'Campaña' ? 'CAMPANA' : tipo.toUpperCase(), campos: datos, padreId }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    alert(`${tipo} real creada: ${j.id}`);
+    await cargarArbol();
+  } catch (e) {
+    alert('No se pudo crear: ' + e.message);
+  }
+}
+
+cargarArbol();
+</script>
+</body>
+</html>
