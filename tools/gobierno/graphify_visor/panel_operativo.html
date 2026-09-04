@@ -57,10 +57,17 @@
 <h3 style="font-size:12.5px;margin:16px 0 6px;">Con tarea ya en marcha</h3>
 <div id="listaConTarea"></div>
 
-<h2>Consumo real -- tiempo por tarea y API</h2>
+<h2>Consumo real -- tiempo por tarea y tokens</h2>
 <p id="estadoBus">Comprobando la actividad real...</p>
 <table id="tablaResumen" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
-<p id="estadoApi" class="hint" style="margin-top:12px;"></p>
+
+<h3 style="font-size:12.5px;margin:18px 0 6px;">Modelos locales (Ollama/LiteLLM, $0 real, tokens reales)</h3>
+<p class="hint" style="margin:0 0 8px;">Ejecutor Local (devstral-dev) y demás modelos locales -- sin coste en USD, pero con tokens/tiempo reales que sí importa vigilar. Instrumentado en <code>ejecutor-local.py</code>, escribe directo en <code>92_BUS_TRABAJO</code>.</p>
+<table id="tablaLocales" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+
+<h3 style="font-size:12.5px;margin:18px 0 6px;">Modelos de API de pago (GASTO_API)</h3>
+<p class="hint" style="margin:0 0 8px;">Solo modelos con API medida por consumo (ej. DeepSeek) -- Claude no tiene una API de este tipo que registrar aquí, se usa vía suscripción, no por llamada.</p>
+<table id="tablaApi" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
 
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
@@ -128,37 +135,73 @@ function segARegible(seg) {
 async function cargarResumenTrabajo() {
   const estado = document.getElementById('estadoBus');
   const tabla = document.getElementById('tablaResumen');
+  const tablaLocales = document.getElementById('tablaLocales');
   try {
     const r = await fetch(URL_MEMORIA + '/api/resumen_trabajo', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { resumen, leidoEn } = await r.json();
     estado.textContent = `Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    // §8.77: trabajadores con tokens reales (modelo local instrumentado) van a su propia
+    // tabla; el resto (cron, revisores humanos...) se queda en el resumen de tiempo puro.
+    const conTokens = resumen.filter(t => t.tokensEntrada || t.tokensSalida);
+    const sinTokens = resumen.filter(t => !t.tokensEntrada && !t.tokensSalida);
     tabla.innerHTML = `
       <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
         <th style="padding:4px 8px 4px 0;">Trabajador</th><th>Tareas</th><th>Tiempo total</th><th>Tiempo medio</th>
-      </tr>` + resumen.map(t => `
+      </tr>` + sinTokens.map(t => `
       <tr style="border-top:1px solid var(--color-base-borde-suave);">
         <td style="padding:5px 8px 5px 0; font-weight:600;">${t.trabajador}</td>
         <td>${t.tareas}</td>
         <td>${segARegible(t.duracionTotalSeg)}</td>
         <td>${segARegible(t.duracionMediaSeg)}</td>
       </tr>`).join('') || '<tr><td class="hint">Sin actividad real todavía.</td></tr>';
+    tablaLocales.innerHTML = `
+      <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
+        <th style="padding:4px 8px 4px 0;">Modelo local</th><th>Tareas</th><th>Tiempo total</th><th>Tokens entrada</th><th>Tokens salida</th>
+      </tr>` + conTokens.map(t => `
+      <tr style="border-top:1px solid var(--color-base-borde-suave);">
+        <td style="padding:5px 8px 5px 0; font-weight:600;">${t.modelo || t.trabajador}</td>
+        <td>${t.tareas}</td>
+        <td>${segARegible(t.duracionTotalSeg)}</td>
+        <td>${t.tokensEntrada.toLocaleString('es-ES')}</td>
+        <td>${t.tokensSalida.toLocaleString('es-ES')}</td>
+      </tr>`).join('') || '<tr><td class="hint">Sin actividad local instrumentada todavía.</td></tr>';
   } catch {
     estado.textContent = 'No se pudo leer el resumen real ahora mismo.';
-    tabla.innerHTML = '';
+    tabla.innerHTML = ''; tablaLocales.innerHTML = '';
   }
 }
 
 async function cargarConsumoApi() {
-  const cont = document.getElementById('estadoApi');
+  const tabla = document.getElementById('tablaApi');
   try {
     const r = await fetch(URL_MEMORIA + '/api/recursos', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { recursos } = await r.json();
-    const total = recursos.reduce((s, x) => s + (parseFloat(x.costeUsd) || 0), 0);
-    cont.textContent = `Consumo real de API (GASTO_API): $${total.toFixed(4)} en ${recursos.length} llamada(s) reales -- sin cruce por trabajador (GASTO_API no guarda a qué tarea pertenece cada llamada).`;
+    const porServicio = new Map();
+    recursos.forEach(x => {
+      const s = x.servicio || '(sin servicio)';
+      if (!porServicio.has(s)) porServicio.set(s, { llamadas: 0, coste: 0, tokensEntrada: 0, tokensSalida: 0 });
+      const e = porServicio.get(s);
+      e.llamadas += 1;
+      e.coste += parseFloat(x.costeUsd) || 0;
+      e.tokensEntrada += x.tokensEntrada || 0;
+      e.tokensSalida += x.tokensSalida || 0;
+    });
+    const filas = [...porServicio.entries()].sort((a, b) => b[1].coste - a[1].coste);
+    tabla.innerHTML = `
+      <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
+        <th style="padding:4px 8px 4px 0;">Modelo de pago</th><th>Llamadas</th><th>Tokens ent.</th><th>Tokens sal.</th><th>Coste real</th>
+      </tr>` + filas.map(([servicio, e]) => `
+      <tr style="border-top:1px solid var(--color-base-borde-suave);">
+        <td style="padding:5px 8px 5px 0; font-weight:600;">${servicio}</td>
+        <td>${e.llamadas}</td>
+        <td>${e.tokensEntrada.toLocaleString('es-ES')}</td>
+        <td>${e.tokensSalida.toLocaleString('es-ES')}</td>
+        <td>$${e.coste.toFixed(4)}</td>
+      </tr>`).join('') || '<tr><td class="hint">Sin consumo real todavía.</td></tr>';
   } catch {
-    cont.textContent = 'No se pudo leer el consumo real de API ahora mismo.';
+    tabla.innerHTML = '<tr><td class="hint">No se pudo leer el consumo real de API ahora mismo.</td></tr>';
   }
 }
 

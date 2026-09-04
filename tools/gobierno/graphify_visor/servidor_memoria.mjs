@@ -226,22 +226,32 @@ let cacheResumenTrabajo = { en: 0, datos: null };
 async function leerResumenTrabajoReal() {
   if (cacheResumenTrabajo.datos && Date.now() - cacheResumenTrabajo.en < 30000) return cacheResumenTrabajo.datos;
   const token = await obtenerAccessTokenSheets();
+  // §8.77: A1:P (no A1:M) -- MODELO/TOKENS_ENTRADA/TOKENS_SALIDA son columnas reales
+  // nuevas (N/O/P), anadidas para el consumo real de modelos locales (Ejecutor Local,
+  // devstral-dev via Ollama/LiteLLM, coste $0 pero tokens/tiempo reales que si importa
+  // vigilar). Instrumentado en G:\Mi unidad\DEVS\engremiat-litellm\ejecutor-local.py.
   const r = await fetch(
-    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/92_BUS_TRABAJO!A1:M500',
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/92_BUS_TRABAJO!A1:P500',
     { headers: { Authorization: 'Bearer ' + token } }
   );
   const j = await r.json();
   const filas = j.values || [];
   const cab = filas[0] || [];
-  const iReclamadoPor = cab.indexOf('RECLAMADO_POR'), iDuracion = cab.indexOf('DURACION_SEGUNDOS'), iId = cab.indexOf('ID_TAREA');
+  const iReclamadoPor = cab.indexOf('RECLAMADO_POR'), iDuracion = cab.indexOf('DURACION_SEGUNDOS'), iId = cab.indexOf('ID_TAREA'),
+    iModelo = cab.indexOf('MODELO'), iTokEnt = cab.indexOf('TOKENS_ENTRADA'), iTokSal = cab.indexOf('TOKENS_SALIDA');
   const porTrabajador = new Map();
   filas.slice(1).filter((f) => f[iId]).forEach((f) => {
     const trabajador = f[iReclamadoPor] || '(sin asignar)';
     const dur = parseFloat(f[iDuracion]);
-    if (!porTrabajador.has(trabajador)) porTrabajador.set(trabajador, { trabajador, tareas: 0, duracionTotalSeg: 0 });
+    if (!porTrabajador.has(trabajador)) porTrabajador.set(trabajador, {
+      trabajador, tareas: 0, duracionTotalSeg: 0, modelo: f[iModelo] || '', tokensEntrada: 0, tokensSalida: 0,
+    });
     const e = porTrabajador.get(trabajador);
     e.tareas += 1;
     if (!isNaN(dur)) e.duracionTotalSeg += dur;
+    if (f[iModelo]) e.modelo = f[iModelo];
+    e.tokensEntrada += parseInt(f[iTokEnt], 10) || 0;
+    e.tokensSalida += parseInt(f[iTokSal], 10) || 0;
   });
   const resumen = [...porTrabajador.values()]
     .map((e) => ({ ...e, duracionMediaSeg: e.tareas ? Math.round((e.duracionTotalSeg / e.tareas) * 10) / 10 : 0 }))
@@ -282,9 +292,12 @@ function valorSelect(campo) {
 async function leerRecursosReales() {
   if (cacheRecursos.datos && Date.now() - cacheRecursos.en < 30000) return cacheRecursos.datos;
   const filas = await leerFilasBaserow(TABLA_GASTO_API);
+  // §8.77: TOKENS_ENTRADA/TOKENS_SALIDA son columnas reales de GASTO_API que no se leian
+  // todavia (Fase 1 de la propuesta de consumo real -- tokens ya existian, faltaba exponerlos).
   const recursos = filas.map((f) => ({
     nombre: f.NOMBRE || '', modelo: f.MODELO || '', servicio: valorSelect(f.SERVICIO),
     costeUsd: f.COSTE_ESTIMADO_USD || 0, accion: f.ACCION || '', fecha: f.FECHA || '',
+    tokensEntrada: parseInt(f.TOKENS_ENTRADA, 10) || 0, tokensSalida: parseInt(f.TOKENS_SALIDA, 10) || 0,
   }));
   cacheRecursos = { en: Date.now(), datos: recursos };
   return recursos;

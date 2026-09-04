@@ -1050,6 +1050,20 @@ Construido: nueva `leerResumenTrabajoReal()` + `GET /api/resumen_trabajo` -- agr
 
 Verificado con curl real (`cron`: 9 tareas/0s reales -- automatizado; `Claude`: 5 tareas/180s de media; `DeepSeek`: 4 tareas/3.4s de media) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+### 8.77 Consumo real por tokens/tiempo -- modelos de pago y locales, "todo en Sheets"
+
+Investigación pedida por el operador: inventario real de modelos de pago (`config.yaml` de LiteLLM, `G:\Mi unidad\DEVS\engremiat-litellm\`) -- `deepseek-verificador` (ya real en `GASTO_API`, 253 llamadas) y `claude` (configurado en el gateway pero sin API medida que registrar, confirma lo dicho por el operador). Modelos locales reales (Ollama, `$0`, corriendo en este PC): `local-codigo`→`devstral-dev` (el de "desarrollo de software"), `local-rapido`→`qwen3:8b`, `local-potente`→`qwen3:14b`. Investigado también: DeepSeek no publica límites RPM/TPM fijos (concurrencia dinámica, `429` al frenar) -- "vigilar límites" solo es honesto como tendencia real de consumo en el tiempo, no como % contra un número inventado.
+
+**Decisión del operador**: "todo en Sheets, evitamos hacer trabajo a mano" -- en vez de crear una tabla Baserow nueva (como `GASTO_API`) para el consumo local, se amplía `92_BUS_TRABAJO` (Sheet, ya real, ya con el patrón de `append` probado por cron/Claude/DeepSeek) con 3 columnas nuevas reales: `MODELO`/`TOKENS_ENTRADA`/`TOKENS_SALIDA` (vía `sheets_update_sheet_properties` + `sheets_update_values`, verificado: la cuenta de servicio SÍ tiene permiso de escritura real en este Sheet, no solo lectura -- confirmado con un `PUT` real antes de instrumentar nada).
+
+**Instrumentado en real**: `G:\Mi unidad\DEVS\engremiat-litellm\ejecutor-local.py` (el único punto de llamada real a un modelo local con tool-calling, "Ejecutor Local") ahora firma su propio JWT (RS256, `cryptography` stdlib del venv, mismo flujo que los scripts Node del proyecto) y añade una fila real a `92_BUS_TRABAJO` al terminar cada sesión -- tokens acumulados de verdad desde `resp["usage"]` de cada llamada real a LiteLLM, duración real de la sesión completa. **Deliberadamente mejor-esfuerzo, nunca bloqueante**: todo el propósito de Ejecutor Local es correr sin conectividad, así que el registro en Sheets va en un `try/except` que nunca puede romper la sesión real -- si Google no responde, se omite en silencio y el JSONL local sigue siendo la fuente de verdad, como ya era.
+
+Verificado con una llamada real aislada a `_registrar_bus_trabajo()` (sin lanzar toda la sesión del modelo): fila real `EJEC-LOCAL-TEST-VERIFICACION` confirmada en el Sheet con las 16 columnas correctas (`devstral-dev`, 150/80 tokens). Queda esa fila de prueba real sin borrar, marcada como tal.
+
+**Lado de lectura**: `leerResumenTrabajoReal()` amplía su rango a `A1:P` (antes `A1:M`) y agrega `MODELO`/`TOKENS_ENTRADA`/`TOKENS_SALIDA` por trabajador; `leerRecursosReales()` (GASTO_API) ahora también lee `TOKENS_ENTRADA`/`TOKENS_SALIDA` (columnas reales ya existentes, sin leer todavía). `panel_operativo.html`: 3 tablas reales separadas -- tiempo puro (cron/Claude/DeepSeek sin tokens), modelos locales (tokens+tiempo, $0 real), modelos de pago (tokens+coste, agrupado por `servicio` dinámicamente -- listo para ChatGPT el día que aparezca una fila real, sin tocar código).
+
+Verificado con curl real (`Ejecutor Local (devstral-dev)`: 1 tarea, 12.3s, 150/80 tokens reales) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
