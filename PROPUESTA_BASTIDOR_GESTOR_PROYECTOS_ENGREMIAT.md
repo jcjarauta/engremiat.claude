@@ -1190,6 +1190,14 @@ Pedido: *"crea un sheet nuevo core y vincula la web, empezamos de limpio"*. Ante
 
 Verificado en real, extremo a extremo: `GET /api/jerarquia_campanas`/`incidencias_producto_abiertas`/`resumen_trabajo` devuelven vacío tras el corte; `POST /api/crear_registro` escribe correctamente en el Sheet CORE nuevo (confirmado leyendo la fila real desde Sheets, no solo por la respuesta del servidor). El Sheet antiguo, verificado que sigue intacto (no se ha escrito ni borrado nada ahí).
 
+### 8.91 Sistematizar la creación de grafos como Proyecto real en CORE
+
+Pedido: *"actua como experto asesor tecnico y valora la propuesta: necesitamos sistematizar la creacion de grafos... la idea es crear un mecanismo propio para la generacion de grafos a traves del gestor de proyectos de forma periodica"*. Valoración dada: la propuesta no pide infraestructura nueva -- reutiliza exactamente lo ya probado (jerarquía real del CORE, `92_BUS_TRABAJO` como bus de reclamación de trabajo, worker local `ejecutor-local.py`, y el patrón de cron ya en producción de `chequear_libreria_clientes.mjs`). Matiz dado como asesor: de las 6 fases reales reconstruidas del pipeline que se ha seguido esta sesión (detectar candidato → clasificar tipo → diseño → construir extractor+página → desplegar+verificar → documentar+enlazar → regenerar periódicamente), solo 3 son mecánicas de verdad y delegables sin riesgo al worker local (construir siguiendo plantilla, desplegar, documentar) -- detectar/clasificar sigue necesitando criterio humano/Claude, no delegarlo sin más.
+
+**Construido como primer contenido real del Sheet CORE** (jerarquía completa, verificada leyendo `GET /api/jerarquia_campanas`): Campaña `CAM-0001` "Panel Operativo" → Proyecto `PRO-0001` "Grafos del sistema" → Producto `PRD-0001` "Mecanismo de generación sistemática de grafos" (el producto es el propio pipeline, no un grafo individual -- cada grafo real es una Tarea recurrente de este mecanismo) → 6 Procesos reales (uno por fase del pipeline reconstruido) → 6 Tareas concretas bajo los procesos mecánicos: `TAR-0001` crear `plantilla_extractor.mjs` (hueco real encontrado al ordenar esto -- existe plantilla de frontend pero ninguna de backend), `TAR-0002/0003/0004` los tres extractores reales que faltan (Recurso/Módulo/Regla, mismos huecos ya señalados en `grafos.html`), `TAR-0005` `regenerar_grafos.mjs` (orquestador), `TAR-0006` registrar la tarea programada real.
+
+No se construyó código nuevo en esta sección -- es trabajo de backlog real, listo para reclamarse vía el mismo mecanismo de `92_BUS_TRABAJO` ya probado, cuando se decida lanzar el worker local contra estas tareas concretas.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
