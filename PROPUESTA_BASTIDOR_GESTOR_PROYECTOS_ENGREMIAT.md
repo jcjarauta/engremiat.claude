@@ -848,6 +848,16 @@ Nueva acción real `confirmar_proyecto_narrador` en el dispatcher del webhook (`
 
 **Un bug real encontrado y corregido en el propio camino de verificación**: `narrador_construir_proyecto.mjs` leía la columna `CLAVE` de `90_CONFIGURACION` (identificador interno, ej. `ENCARGO_CLIENTE`) en vez de la columna `VALOR` (el texto real que espera la celda, "Encargo de cliente") -- la primera escritura de prueba falló exactamente por esto, con un error real y honesto del propio `insertarRegistroTransaccional` (`ERROR_INSERCION_PROYECTO: Campos obligatorios ausentes o vacíos: ESTADO`, que además reveló un segundo campo real que faltaba). Corregido: `ESTADO` se fija ahora a `Borrador` de forma determinista (nunca pedido a la IA -- es un hecho fijo de todo Proyecto recién propuesto, no una decisión creativa).
 
+### 8.57 "Construye los dos puntos" -- primer rediseño real de Bastidor
+
+Los dos puntos de la valoración anterior (§8.56 fin), construidos y verificados.
+
+**1. Paleta en pestañas reales** -- Reparto (17 personajes reales, "quién actúa") / Módulos (18, "qué tipo de historia") / Escenario (recurso+oficio+espacio+regla, el fondo fijo, nunca elenco elegible), sustituyendo la lista única mezclada por familia. Verificado en el navegador: cada pestaña filtra de verdad por `tipo` real de la pieza.
+
+**2. Tablero de Misiones reales, en vivo** -- `servidor_memoria.mjs` gana `GET /api/proyectos`: lee `02_PROYECTOS` EN VIVO con credenciales JWT solo del lado servidor (mismo patrón ya probado en `spike_concilio_coop`/`narrador_construir_proyecto.mjs`), caché de 30s para no golpear la API de Sheets en cada pintado. La mesa lo muestra como tarjetas reales con `ESTADO`/`TIPO_PROYECTO`/`PRIORIDAD` -- literalmente "simular el trabajo real del Sheet desde Bastidor", lo que pedía el operador.
+
+**Hallazgo real, corregido antes de darlo por bueno**: el `clienteId` de un universo cargado desde Baserow (`cliente:PAQ-0001`) y el `CLIENTE_ID` real del Sheet (`CLI-0001`) son dos espacios de IDs distintos, sin puente verificado entre ellos -- filtrar por igualdad literal habría fingido un cruce que no existe. Corregido: el filtrado por cliente solo se activa cuando el id real tiene forma de `CLIENTE_ID` del Sheet; en cualquier otro caso se muestra el tablero completo, con una nota honesta explicando por qué no está filtrado, en vez de mostrar "0 misiones" de forma engañosa.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

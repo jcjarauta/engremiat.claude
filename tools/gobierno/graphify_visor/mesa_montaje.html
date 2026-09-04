@@ -34,6 +34,13 @@
   .universo-real .nombre { font-weight: 600; }
   .universo-real button { width: 100%; margin-top: 6px; font-size: 11.5px; }
   .gap-real { color: #e8b45c; }
+  .pestanas { display: flex; gap: 4px; margin-top: 10px; }
+  .pestana { flex: 1; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto-suave); border-radius: 6px; padding: 6px 4px; font-size: 11.5px; cursor: pointer; }
+  .pestana.activa { background: var(--color-base-borde-suave); color: var(--color-base-texto); border-color: var(--color-base-texto-tenue); }
+  .mision-real { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 8px; margin-bottom: 6px; font-size: 12px; }
+  .mision-real .nombre { font-weight: 600; margin-bottom: 3px; }
+  .badge-mision { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .badge-mision.prioridad-alta { background: #e85c8a33; color: #e85c8a; }
   #capaConexion { position: absolute; inset: 0; background: rgba(0,0,0,0.55); display: none; align-items: center; justify-content: center; }
   #capaConexion.activa { display: flex; }
   #cajaConexion { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 18px; width: 320px; }
@@ -62,7 +69,12 @@
     <p class="hint">Clientes reales con módulos ya activados (Baserow, PAQUETE_CLIENTE) -- cargar uno coloca sus piezas reales de golpe, en vez de empezar de cero.</p>
     <div id="listaUniversos" class="hint">Cargando...</div>
     <input type="text" id="buscarPieza" placeholder="Buscar pieza real...">
-    <h3>Piezas por familia real</h3>
+    <div id="pestanasPaleta" class="pestanas">
+      <button class="pestana activa" data-tab="personaje">Reparto</button>
+      <button class="pestana" data-tab="modulo">Módulos</button>
+      <button class="pestana" data-tab="escenario">Escenario</button>
+    </div>
+    <p class="hint" id="hintPestana">Quién actúa -- los 17 personajes reales.</p>
     <div id="listaPiezas"></div>
   </div>
 
@@ -88,6 +100,9 @@
   </div>
 
   <div id="panelDerecho">
+    <h3>Misiones reales de este universo</h3>
+    <p class="hint" id="estadoMisiones">Comprobando el tablero real...</p>
+    <div id="listaMisiones"></div>
     <h3>Pieza seleccionada</h3>
     <div id="fichaPieza"><p class="hint">Clic en una pieza de la mesa para ver su estado real y sus eventos disponibles.</p></div>
     <h3>Registro de eventos</h3>
@@ -138,6 +153,25 @@ let registroEventos = [];
 let origenReal = null; // -- Fase 5 (§8.53): de que cliente/universo real viene este montaje, si viene de uno
 const LLAVE_LOCALSTORAGE = 'engremiat_mesa_montaje_v1';
 
+// -- §8.57: paleta en pestanas reales (personaje/modulo/escenario) -- ya no una
+// lista mezclada. "escenario" agrupa los 4 tipos reales que no son elenco
+// elegible (recurso/oficio/espacio/regla): el fondo fijo, no lo que se compone.
+let pestanaActiva = 'personaje';
+const TIPOS_ESCENARIO = ['recurso', 'oficio', 'espacio', 'regla'];
+const HINT_PESTANA = {
+  personaje: 'Quién actúa -- los 17 personajes reales.',
+  modulo: 'Qué tipo de historia -- los 18 módulos reales de negocio.',
+  escenario: 'El escenario fijo -- reglas, espacios, recursos y oficios reales. No es elenco, es donde y con qué se opera.',
+};
+function piezasDeLaPestana() {
+  if (pestanaActiva === 'escenario') return todosLosMiembros.filter(m => TIPOS_ESCENARIO.includes(m.tipo));
+  return todosLosMiembros.filter(m => m.tipo === pestanaActiva);
+}
+function renderPaletaPestana() {
+  const q = document.getElementById('buscarPieza').value.trim().toLowerCase();
+  renderPaleta(piezasDeLaPestana().filter(m => m.nombre.toLowerCase().includes(q)));
+}
+
 // -- Fase 4 (§8.52): memoria compartida real, mas alla de este navegador --
 // servidor propio (servidor_memoria.mjs), fichero JSON real en el VPS, sin credenciales.
 // localStorage nunca desaparece: es el respaldo real si el servidor no responde.
@@ -166,13 +200,19 @@ async function cargar() {
   });
   todosLosMiembros = [...porSlug.values()].sort((a, b) => a.nombre.localeCompare(b.nombre));
 
-  renderPaleta(todosLosMiembros);
-  document.getElementById('buscarPieza').addEventListener('input', (e) => {
-    const q = e.target.value.trim().toLowerCase();
-    renderPaleta(todosLosMiembros.filter(m => m.nombre.toLowerCase().includes(q)));
+  renderPaletaPestana();
+  document.getElementById('buscarPieza').addEventListener('input', renderPaletaPestana);
+  document.querySelectorAll('.pestana').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pestanaActiva = btn.dataset.tab;
+      document.querySelectorAll('.pestana').forEach(b => b.classList.toggle('activa', b === btn));
+      document.getElementById('hintPestana').textContent = HINT_PESTANA[pestanaActiva];
+      renderPaletaPestana();
+    });
   });
 
   await cargarUniversosReales();
+  await cargarMisionesReales();
 
   nodes = new vis.DataSet([]);
   edges = new vis.DataSet([]);
@@ -204,7 +244,7 @@ async function cargar() {
   document.getElementById('btnExportar').addEventListener('click', exportarJSON);
   document.getElementById('btnImportar').addEventListener('click', () => document.getElementById('inputImportar').click());
   document.getElementById('inputImportar').addEventListener('change', importarJSON);
-  document.getElementById('btnLimpiar').addEventListener('click', () => { if (confirm('¿Vaciar la mesa? Se pierde lo no guardado.')) vaciarMesa(); });
+  document.getElementById('btnLimpiar').addEventListener('click', () => { if (confirm('¿Vaciar la mesa? Se pierde lo no guardado.')) { vaciarMesa(); cargarMisionesReales(); } });
 
   await comprobarMemoria();
   await renderMontajesGuardados();
@@ -257,7 +297,7 @@ async function cargarUniversosReales() {
   });
 }
 
-function cargarUniversoReal(grafo, clienteId) {
+async function cargarUniversoReal(grafo, clienteId) {
   if (nodes.length && !confirm('¿Sustituir el contenido actual de la mesa por este universo real? Se pierde lo no guardado.')) return;
   vaciarMesa();
   const cliente = grafo.nodos.find(n => n.id === clienteId);
@@ -274,6 +314,50 @@ function cargarUniversoReal(grafo, clienteId) {
   };
   document.getElementById('nombreMontaje').value = origenReal.clienteNombre;
   actualizarResumen();
+  await cargarMisionesReales();
+}
+
+// -- §8.57: tablero real de misiones -- lee 02_PROYECTOS EN VIVO (servidor_memoria.mjs,
+// credenciales JWT solo del lado servidor) para el universo cargado. Si el montaje viene
+// de un cliente real (origenReal.clienteId) filtra a lo suyo; si no, muestra el tablero
+// real completo, dicho tal cual -- nunca fingido como "de este cliente" sin serlo.
+async function cargarMisionesReales() {
+  const cont = document.getElementById('listaMisiones');
+  const estado = document.getElementById('estadoMisiones');
+  if (!memoriaConectada) {
+    estado.textContent = 'Sin conexión con la memoria compartida -- no se puede leer el tablero real.';
+    cont.innerHTML = '';
+    return;
+  }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/proyectos', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { proyectos, leidoEn } = await r.json();
+    // origenReal.clienteId de "Universos reales" (Fase 5) viene de Baserow PAQUETE_CLIENTE
+    // ("cliente:PAQ-0001") -- un espacio de IDs distinto al CLIENTE_ID real del Sheet
+    // ("CLI-0001"). Sin un puente real verificado entre los dos, filtrar por igualdad
+    // literal seria fingir un cruce que no existe -- solo se filtra cuando el id real
+    // ya tiene forma de CLIENTE_ID del Sheet.
+    const clienteIdSheet = origenReal && /^CLI-\d+$/.test(origenReal.clienteId || '') ? origenReal.clienteId : null;
+    const filtrados = clienteIdSheet ? proyectos.filter(p => p.clienteId === clienteIdSheet) : proyectos;
+    if (clienteIdSheet) {
+      estado.textContent = `${filtrados.length} misión(es) real(es) de ${origenReal.clienteNombre} -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    } else if (origenReal && origenReal.clienteId) {
+      estado.textContent = `Tablero completo (${filtrados.length}) -- el id real de este cliente viene de Baserow (${origenReal.clienteId}), no cruza todavía con CLIENTE_ID del Sheet. Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    } else {
+      estado.textContent = `${filtrados.length} misión(es) reales en total (universo sin cliente vinculado -- tablero completo) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    }
+    cont.innerHTML = filtrados.slice(0, 30).map(p => `
+      <div class="mision-real">
+        <div class="nombre">${p.nombre || p.id}</div>
+        <span class="badge-mision">${p.estado || 'sin estado'}</span>
+        <span class="badge-mision">${p.tipoProyecto || 'sin tipo'}</span>
+        <span class="badge-mision ${p.prioridad === 'Alta' ? 'prioridad-alta' : ''}">${p.prioridad || 'sin prioridad'}</span>
+      </div>`).join('') || '<p class="hint">Ninguna misión real todavía.</p>';
+  } catch {
+    estado.textContent = 'No se pudo leer el tablero real ahora mismo.';
+    cont.innerHTML = '';
+  }
 }
 
 function renderPaleta(miembros) {
@@ -533,7 +617,7 @@ async function borrarMontaje(nombre) {
   await renderMontajesGuardados();
 }
 
-function aplicarMontaje(m) {
+async function aplicarMontaje(m) {
   vaciarMesa();
   document.getElementById('nombreMontaje').value = m.nombre || '';
   (m.piezas || []).forEach(p => colocarPieza(p.slug));
@@ -549,6 +633,7 @@ function aplicarMontaje(m) {
   origenReal = m.origenReal || null;
   renderRegistroEventos();
   actualizarResumen();
+  await cargarMisionesReales();
 }
 
 function exportarJSON() {

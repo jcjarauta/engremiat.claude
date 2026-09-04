@@ -14,12 +14,68 @@ import { createServer } from 'node:http';
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createSign } from 'node:crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DIR_DATOS = process.env.DATOS_DIR || join(__dirname, 'datos');
 if (!existsSync(DIR_DATOS)) mkdirSync(DIR_DATOS, { recursive: true });
 const FICHERO = join(DIR_DATOS, 'memoria_compartida.json');
 const PUERTO = Number(process.env.PUERTO || 9330);
+
+// -- §8.57: panel real de Misiones -- lee 02_PROYECTOS en vivo del Gestor de
+// Proyectos, credenciales JWT SOLO del lado servidor (mismo patron ya usado en
+// spike_concilio_coop/servidor.mjs y narrador_construir_proyecto.mjs -- nunca
+// en el navegador). Cache corto (30s) para no golpear la API de Sheets en cada
+// pintado de la mesa.
+const SHEETS_SPREADSHEET_ID = '142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ'; // Gestor de Proyectos - LaTroballa Software
+const SHEETS_CREDENCIALES_PATH = process.env.ENGREMIAT_SHEETS_CREDENTIALS_PATH;
+const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+let cacheProyectos = { en: 0, datos: null };
+
+function base64urlSheets(input) {
+  return Buffer.from(input).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+async function obtenerAccessTokenSheets() {
+  const cred = JSON.parse(readFileSync(SHEETS_CREDENCIALES_PATH, 'utf-8'));
+  const ahora = Math.floor(Date.now() / 1000);
+  const header = base64urlSheets(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const claim = base64urlSheets(JSON.stringify({ iss: cred.client_email, scope: SHEETS_SCOPE, aud: 'https://oauth2.googleapis.com/token', exp: ahora + 3600, iat: ahora }));
+  const firmante = createSign('RSA-SHA256');
+  firmante.update(header + '.' + claim);
+  firmante.end();
+  const jwt = header + '.' + claim + '.' + base64urlSheets(firmante.sign(cred.private_key));
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt })
+  });
+  const j = await r.json();
+  if (!j.access_token) throw new Error('AUTH_FAILED_SHEETS: ' + JSON.stringify(j));
+  return j.access_token;
+}
+
+async function leerProyectosReales() {
+  if (cacheProyectos.datos && Date.now() - cacheProyectos.en < 30000) return cacheProyectos.datos;
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/02_PROYECTOS!A1:AB1000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const j = await r.json();
+  const filas = j.values || [];
+  const cab = filas[0] || [];
+  const idx = (nombre) => cab.indexOf(nombre);
+  const iId = idx('ID'), iNombre = idx('NOMBRE'), iEstado = idx('ESTADO'), iTipo = idx('TIPO_PROYECTO'),
+    iPrioridad = idx('PRIORIDAD'), iAvance = idx('PORCENTAJE_AVANCE'), iCliente = idx('CLIENTE_ID'), iActivo = idx('ACTIVO');
+  const proyectos = filas.slice(1)
+    .filter((f) => f[iId] && f[iActivo] === 'SÍ')
+    .map((f) => ({
+      id: f[iId], nombre: f[iNombre] || '', estado: f[iEstado] || '', tipoProyecto: f[iTipo] || '',
+      prioridad: f[iPrioridad] || '', porcentajeAvance: f[iAvance] || '', clienteId: f[iCliente] || '',
+    }));
+  cacheProyectos = { en: Date.now(), datos: proyectos };
+  return proyectos;
+}
 
 function leerMemoria() {
   if (!existsSync(FICHERO)) return { eventos: [], montajes: [] };
@@ -55,6 +111,14 @@ const servidor = createServer(async (req, res) => {
   try {
     if (req.method === 'GET' && req.url === '/api/memoria') {
       res.writeHead(200); res.end(JSON.stringify(leerMemoria())); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/proyectos') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const proyectos = await leerProyectosReales();
+      res.writeHead(200); res.end(JSON.stringify({ proyectos, leidoEn: new Date(cacheProyectos.en).toISOString() })); return;
     }
 
     if (req.method === 'POST' && req.url === '/api/eventos') {

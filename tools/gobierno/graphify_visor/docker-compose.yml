@@ -57,9 +57,11 @@ services:
     environment:
       - PUERTO=9330
       - DATOS_DIR=/app/datos
+      - ENGREMIAT_SHEETS_CREDENTIALS_PATH=/app/.sheets_credenciales.json
     volumes:
       - ./servidor_memoria.mjs:/app/servidor_memoria.mjs:ro
       - ./datos_memoria:/app/datos
+      - ./.sheets_credenciales.json:/app/.sheets_credenciales.json:ro
     command: node /app/servidor_memoria.mjs
     ports:
       - "100.107.171.88:9330:9330"
