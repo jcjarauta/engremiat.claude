@@ -1198,6 +1198,8 @@ Pedido: *"actua como experto asesor tecnico y valora la propuesta: necesitamos s
 
 No se construyó código nuevo en esta sección -- es trabajo de backlog real, listo para reclamarse vía el mismo mecanismo de `92_BUS_TRABAJO` ya probado, cuando se decida lanzar el worker local contra estas tareas concretas.
 
+**Refinamiento del operador sobre el Proceso 1** (*"detectar candidatos lo puede hacer si el nodo crece o decrece con capturas en el tiempo, tambien puede decir lo que hace a traves de sus nodos y relaciones"*): corrige el veredicto "no delegable" dado antes -- la *señal* de detección sí es mecánica, solo el juicio final no lo es. La mitad de "describir un nodo por sus relaciones" **ya está construida y probada**: `extraer_anatomia_entidad.mjs` (§8.46) calcula `rolReal`/`agenciaReal` de cada entidad a partir de sus aristas reales salientes -- no hay que inventar nada, solo reutilizarlo sobre los grafos del visor. La mitad de "crece o decrece con capturas en el tiempo" no existe todavía -- requiere guardar capturas fechadas y diferenciar grado por nodo, puro cálculo, sin LLM. El Proceso 1 queda partido en tres sub-fases reales: 1a (capturar+diferenciar, delegable sin LLM), 1b (describir por rol real, delegable al worker local reutilizando §8.46), 1c (decidir si amerita grafo propio y de qué tipo -- sigue siendo Puerta Humana). Añadida `TAR-0007` "Crear detectar_candidatos.mjs" bajo `PCS-0001` con esta especificación.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
