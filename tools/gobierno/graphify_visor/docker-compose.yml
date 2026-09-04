@@ -44,6 +44,8 @@ services:
       - ./home.html:/app/home.html:ro
       - ./vista_sistema.html:/app/vista_sistema.html:ro
       - ./grafo_visor.json:/app/grafo_visor.json:ro
+      - ./grafos.html:/app/grafos.html:ro
+      - ./plantilla_grafo_espacio.html:/app/plantilla_grafo_espacio.html:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320

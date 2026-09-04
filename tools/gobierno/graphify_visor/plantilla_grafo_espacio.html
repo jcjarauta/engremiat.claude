@@ -1,0 +1,151 @@
+<!--
+  PLANTILLA real -- base para cualquier grafo nuevo de tipo "Espacio" (§8.87,
+  PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). No se sirve por si sola --
+  es un punto de partida a copiar, nunca un fichero que se enlaza desde grafos.html.
+
+  QUE ES UN "GRAFO DE TIPO ESPACIO"
+  Un Espacio real es una entidad ya establecida en espacio.schema.json /
+  01_Mundo/Espacios/*.md del vault (n8n, El Sheet, Baserow, Telar, Consola,
+  VPS y Tailscale...) -- un lugar/entorno real donde el sistema opera. Un grafo
+  "de tipo Espacio" visualiza la estructura INTERNA de uno de esos Espacios
+  (sus paginas, sus nodos, sus flujos), nunca varios Espacios a la vez sin
+  distincion -- si un grafo cruza varios Espacios reales de golpe, es
+  "Transversal", no "Espacio" (ver grafos.html).
+
+  COMO USAR ESTA PLANTILLA (5 pasos reales)
+  1. Copiar este fichero con el nombre real del nuevo grafo (ej. vista_telar.html).
+  2. Escribir un extractor real -- mismo estilo honesto que mapear_grafo_visor.mjs
+     (solo lectura, nunca inventar aristas/nodos, escribir un grafo_<nombre>.json).
+  3. Rellenar las 3 constantes marcadas PERSONALIZAR abajo (titulo, espacio real,
+     ruta del JSON).
+  4. Adaptar colorDe()/formaFicha() a los tipos reales de nodo de ESE grafo --
+     todo lo demas (fisica, fondo, etiquetas por zoom) ya funciona sin tocar.
+  5. Anadir la fila al volumen en docker-compose.yml + una entrada en grafos.html
+     bajo la seccion "Espacio" + una entrada en registro_ecosistema.json.
+     Desplegar con: node desplegar_visor.mjs --grafo (si el JSON se regenera con
+     un script propio, mejor pasar --grafo solo si el script ya esta integrado
+     ahi; si no, ejecutar el extractor a mano antes del despliegue).
+-->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- PERSONALIZAR 1/3: titulo real del grafo -->
+<title>Engremiat -- grafo real de [ESPACIO] ([que muestra])</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 360px; padding: 16px; background: var(--color-base-panel); overflow-y: auto; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .hint { color: var(--color-base-texto-suave); font-size: 12.5px; line-height: 1.4; }
+  .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+  .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  #ficha { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
+  #ficha p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; margin: 2px 4px 2px 0; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <a class="volver" href="grafos.html">← Grafos del sistema</a>
+    <!-- PERSONALIZAR 2/3: nombre real del Espacio + descripcion real de que muestra este grafo -->
+    <h2>[Nombre del Espacio]</h2>
+    <p class="hint">[Descripcion real y concreta de que representa este grafo -- de donde sale el dato, que extractor lo genera. Nunca inventar.]</p>
+    <!-- Leyenda: un <div class="leyenda-item"> por cada tipo real de nodo que exista en este grafo -->
+    <div class="leyenda-item"><span class="punto" style="background:#4c9aff"></span>[tipo de nodo real 1]</div>
+    <div class="leyenda-item"><span class="punto" style="background:#e85c8a"></span>[tipo de nodo real 2]</div>
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
+  </div>
+</div>
+<script>
+// PERSONALIZAR 3/3: ruta real del JSON que genera el extractor de este grafo
+const RUTA_DATOS = 'grafo_[nombre].json';
+
+const COLOR_FONDO = getComputedStyle(document.documentElement).getPropertyValue('--color-base-fondo').trim() || '#0f1013';
+let network, nodes, datosGlobal;
+let nodoEnHover = null;
+
+fetch(RUTA_DATOS).then(r => r.json()).then(datos => {
+  datosGlobal = datos;
+
+  // TODO: sustituir por los tipos reales de nodo de este grafo -- nunca reusar
+  // ciegamente los de vista_sistema.html si este grafo describe otra cosa.
+  const colorDe = (n) => {
+    if (n.tipo === 'tipoA') return '#4c9aff';
+    if (n.tipo === 'tipoB') return '#e85c8a';
+    return '#5c5f6b';
+  };
+  const colorArista = {};
+
+  // Todo en formato nodo (dot) -- criterio ya fijado en vista_sistema.html
+  // (§8.86): la diferencia real entre tipos va en color/tamano, nunca en forma.
+  nodes = new vis.DataSet(datos.nodos.map(n => ({
+    id: n.id, label: n.nombre, title: n.id,
+    color: { background: colorDe(n), border: COLOR_FONDO },
+    font: { color: 'rgba(0,0,0,0)', size: 11 },
+    shape: 'dot',
+    size: 12,
+  })));
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({
+    id: i, from: a.source, to: a.target, arrows: 'to',
+    color: { color: colorArista[a.relation] || '#3a3b47' },
+  })));
+
+  // Fisica real ya probada en produccion (index.html/graph.html original,
+  // reutilizada tal cual en vista_sistema.html §8.86) -- damping/centralGravity/
+  // avoidOverlap para que el grafo se asiente, y congelado tras estabilizar
+  // (inercia cero real: arrastrar un nodo lo deja donde se suelta, no vuelve a
+  // moverse solo). No hace falta retocar esto para un grafo nuevo salvo que el
+  // numero de nodos sea muy distinto (decenas -> cientos).
+  network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, centralGravity: 0.008, damping: 0.4, avoidOverlap: 0.6 },
+      stabilization: { iterations: 300, fit: true },
+    },
+    interaction: { hover: true, dragView: true, zoomView: true },
+  });
+
+  network.once('stabilizationIterationsDone', () => {
+    network.setOptions({ physics: { enabled: false } });
+    network.setSize('100%', '100%');
+    network.redraw();
+    network.fit({ animation: false });
+  });
+
+  // Etiquetas ocultas por defecto, visibles al acercar zoom o al pasar el raton
+  // (mismo patron real de grafo_maestro.html §8.39-40 / vista_sistema.html §8.85).
+  function refrescarEtiquetas() {
+    const escala = network.getScale();
+    nodes.update(datos.nodos.map(n => ({
+      id: n.id,
+      font: { color: (n.id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)' },
+    })));
+  }
+  network.on('zoom', refrescarEtiquetas);
+  network.on('hoverNode', (p) => { nodoEnHover = p.node; refrescarEtiquetas(); });
+  network.on('blurNode', () => { nodoEnHover = null; refrescarEtiquetas(); });
+
+  // TODO: ficha real por tipo de nodo -- reemplazar con los campos reales de este grafo.
+  network.on('click', (params) => {
+    if (!params.nodes.length) return;
+    const n = datos.nodos.find(x => x.id === params.nodes[0]);
+    if (!n) return;
+    document.getElementById('ficha').innerHTML =
+      '<h3>' + n.nombre + '</h3>' +
+      '<p>' + (n.tipo || '') + '</p>';
+  });
+}).catch(() => {
+  document.getElementById('ficha').innerHTML = '<p class="hint">No se pudo cargar ' + RUTA_DATOS + ' -- ejecuta antes el extractor real de este grafo.</p>';
+});
+</script>
+</body>
+</html>
