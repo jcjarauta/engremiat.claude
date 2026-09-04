@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T06:04:04.232Z",
+  "generadoEn": "2026-09-04T06:09:39.758Z",
   "espacios": [
     {
       "id": "baserow",
@@ -220,6 +220,20 @@
         {
           "sistema": "Sheet",
           "recordId": "93_MAPEO_IDS_TEMPORALES"
+        }
+      ]
+    },
+    {
+      "id": "personaje_de_cliente",
+      "nombre": "Personaje de cliente",
+      "tipo": "recurso",
+      "estado": "nascente",
+      "resumen": "Tabla real de Baserow (`PERSONAJE`, id 283 -- ID/NOMBRE/RASGO/QUIERE_O_NECESITA/PROCESO_ID/CREADO_POR/FECHA_CREACION), distinta a propósito del roster operativo de Coordinador/Ejecutor/los Acervo (ese es el elenco propio de Engremiat, modelado en `personaje.schema.json`). Esta es la pieza real por la que **el cliente** del constructor de universos crea su propio personaje para personalizar su expe",
+      "relacionesDeclaradas": [],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "PERSONAJE"
         }
       ]
     }

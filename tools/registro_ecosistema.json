@@ -269,6 +269,10 @@
   {
    "fichero": "AGORA.md + Cronista.md (boveda)",
    "que_hace": "§8.60: cerrados 2 de los 9 huecos reales Baserow del informe (§8.59), investigando cada uno antes de tocar nada -- ningun cruce fingido. AGORA.md ya existia (real, honesto, describia el modulo activo de Piloto Plaza sin autocitarse) -- anadido su sección \"## Vínculo real\" (Baserow: AGORA). Cronista.md ya tenia Vínculo real (repo + n8n) -- anadida la cita Baserow: TAREA, confirmada real: el mismo workflow cronista-segmentar-generador.json que ya escribe PLANTILLA_MISION tambien escribe filas reales en TAREA (Baserow id 278), con puerta humana. Correccion real encontrada a tiempo: \"Acervo.md\" (indice de los 8 personajes-voz del Concilio) NO es el mismo concepto que la tabla ACERVO de Baserow (el \"almacen comun del taller\", TITULO/CATEGORIA/CONTENIDO/FUENTE) -- mismo nombre, dos cosas reales distintas. Anadir la cita ahi habria sido el error exacto que este ejercicio queria evitar -- movido a Tier 4 (ficha nueva de verdad, no una cita prestada). Baserow paso de 9/18 a 11/18 tablas con espejo real declarado. Verificado sin errores en el navegador tras regenerar universo_real.json (ambas copias)."
+  },
+  {
+   "fichero": "Personaje de cliente.md (boveda) + schemas/personaje.schema.json",
+   "que_hace": "§8.61: cerrado el Tier 3. PERSONAJE (Baserow, id 283) llevaba anotado como candidata real sin fusionar en personaje.schema.json, sin evidencia suficiente de a que mecanismo pertenecia. El operador aporto el dato real que faltaba: es la forma real por la que el CLIENTE del constructor de universos crea su propio personaje para personalizar su experiencia -- distinto del roster operativo de Engremiat (Coordinador/Ejecutor/Acervos). Creada la ficha real 'Personaje de cliente.md' (01_Mundo/Recursos/, tipo: recurso, separada a proposito de tipo: personaje para no confundir las dos cosas), con su Vinculo real (Baserow: PERSONAJE). personaje.schema.json actualizado para dejar de tratarlo como pregunta abierta. Baserow paso de 11/18 a 12/18. validar_bocetador.mjs sigue APROBADO, app verificada sin errores en el navegador."
   }
  ]
 }

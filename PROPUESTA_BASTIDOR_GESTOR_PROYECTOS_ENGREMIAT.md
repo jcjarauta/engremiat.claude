@@ -881,6 +881,14 @@ Cerrados 2 de los 9 huecos Baserow reales del informe (§8.59), investigando cad
 
 Baserow pasó de 9/18 a **11/18** tablas con espejo real declarado. Verificado sin errores en el navegador tras regenerar `universo_real.json`.
 
+### 8.61 Tier 3 cerrado -- PERSONAJE (Baserow) es donde el cliente crea su propio personaje
+
+`personaje.schema.json` ya había detectado la tabla real `PERSONAJE` (Baserow, id 283) y la había dejado fuera del roster operativo (Coordinador/Ejecutor/Acervos) a propósito, sin evidencia suficiente de a qué mecanismo real pertenecía ("candidata real, no fusionada sin más evidencia"). El operador aportó el dato real que faltaba: **es la forma real que tiene el cliente del constructor de universos de crear su propio personaje para personalizar su experiencia** -- distinto del elenco operativo de Engremiat, no una versión incompleta del mismo concepto.
+
+Creada la ficha real propia, `Personaje de cliente.md` (`01_Mundo/Recursos/`, `tipo: recurso`), separada a propósito del `tipo: personaje` operativo para no confundir las dos cosas en ningún listado. Documenta lo que ya se sabe con certeza (qué es, para quién) sin fingir saber más de lo real (cuántos clientes la usan hoy, qué flujo real la escribe). `personaje.schema.json` actualizado para dejar de tratarlo como pregunta abierta y apuntar a la ficha real.
+
+Baserow pasó de 11/18 a **12/18** tablas con espejo real declarado. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
