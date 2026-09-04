@@ -277,6 +277,10 @@
   {
    "fichero": "Catalogo compartido de referencia.md (boveda)",
    "que_hace": "§8.62: cerrado el Tier 2 -- ENTIDAD_ORGANIZATIVA, UBICACION_GEOGRAFICA, COMPETENCIA y PERSONA_COMPETENCIA (Baserow), ya nombradas en Los dos continentes de datos.md pero deliberadamente sin cita real ahi (esa ficha es una regla de arquitectura, no la dueña de ninguna tabla). Las cuatro forman un conjunto real disenado junto -- jerarquias PADRE_ID reales, COMPETENCIA basada en el codigo oficial ESCO de la UE, PERSONA_COMPETENCIA como tabla puente -- el equivalente compartido, cruzando clientes, de lo que cada Sheet ya tiene por su cuenta (33_COMPETENCIA/34_PERSONA_COMPETENCIA/11_PERSONAS_EQUIPOS). Creada una unica ficha real (01_Mundo/Recursos/, tipo: recurso, mas honesto a como se disenaron juntas que 4 fichas sueltas) citando las 4 tablas reales, sin fingir un flujo de uso que no se ha verificado. Baserow paso de 12/18 a 16/18. validar_bocetador.mjs sigue APROBADO, app verificada sin errores en el navegador."
+  },
+  {
+   "fichero": "Almacen del taller.md + Documento adjunto.md (boveda)",
+   "que_hace": "§8.63: cerrado el Tier 4 -- los 2 huecos genuinos, sin ficha previa. ACERVO (Baserow, id 286) -> 'Almacen del taller.md' (tipo: recurso, distinta a proposito de Acervo.md el indice de los 8 personajes-voz, mismo nombre coloquial dos cosas reales), recogiendo tal cual la descripcion ya escrita en PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md ('el almacen comun del taller'), honesto en que el ciclo que la usa sigue siendo diseno, no codigo. DOCUMENTO (Baserow, id 276) -> 'Documento adjunto.md', distinta a proposito de DOCUMENTO_ENGREMIAT (esa cataloga documentos del propio ecosistema; esta es un adjunto polimorfico real via ENTIDAD_TIPO+ENTIDAD_ID). Resultado final verificado ejecutando encontrar_huecos.mjs: Baserow 18/18, Sheet 46/46 -- 0 huecos reales. validar_bocetador.mjs sigue APROBADO, app verificada sin errores (77 nodos reales)."
   }
  ]
 }

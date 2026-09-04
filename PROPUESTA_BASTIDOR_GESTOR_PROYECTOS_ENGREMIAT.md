@@ -897,6 +897,15 @@ Creada una única ficha real, `Catálogo compartido de referencia.md` (`01_Mundo
 
 Baserow pasó de 12/18 a **16/18** tablas con espejo real declarado. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
 
+### 8.63 Tier 4 cerrado -- 18/18 tablas de Baserow con espejo real
+
+Los dos huecos genuinos, sin ficha previa ni mención en ningún otro documento.
+
+- **`ACERVO`** -- `Almacén del taller.md` (nueva, `tipo: recurso`, distinta a propósito de `Acervo.md`, el índice de los 8 personajes-voz -- mismo nombre coloquial, dos cosas reales). Recoge tal cual la descripción real ya escrita en `PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md` ("el almacén común del taller... se llena y se consulta en cada interacción"), y dice honestamente que el ciclo que la usa sigue siendo diseño, no código.
+- **`DOCUMENTO`** -- `Documento adjunto.md` (nueva), distinta a propósito de `DOCUMENTO_ENGREMIAT` (esa cataloga los documentos del propio ecosistema; esta es un adjunto polimórfico real, `ENTIDAD_TIPO`+`ENTIDAD_ID`, a cualquier entidad).
+
+**Resultado final, verificado ejecutando el propio informe**: Baserow **18/18**, Sheet **46/46** -- **0 huecos reales** entre lo que ya existe en Sheet/Baserow y lo que la bóveda declara conocer. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores (77 nodos reales).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T06:12:05.197Z",
+  "generadoEn": "2026-09-04T06:14:08.526Z",
   "espacios": [
     {
       "id": "baserow",
@@ -262,6 +262,38 @@
         {
           "sistema": "Baserow",
           "recordId": "PERSONA_COMPETENCIA"
+        }
+      ]
+    },
+    {
+      "id": "almacen_del_taller",
+      "nombre": "Almacén del taller",
+      "tipo": "recurso",
+      "estado": "nascente",
+      "resumen": "Tabla real de Baserow (`ACERVO`, id 286 -- TITULO/CATEGORIA/CONTENIDO/FUENTE/FECHA). Ya descrita en prosa en `PROPUESTA_EMPAQUETADO_PRODUCTO_CLIENTE_FINAL.md` (\"Acervo: el ciclo mayor, explicado sin tecnicismos\"), sin ficha propia hasta ahora -- y sin relación con Acervo (el índice de los 8 personajes-voz de Concilio): mismo nombre coloquial, dos cosas reales distintas.",
+      "relacionesDeclaradas": [
+        "Baserow"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "ACERVO"
+        }
+      ]
+    },
+    {
+      "id": "documento_adjunto",
+      "nombre": "Documento adjunto",
+      "tipo": "recurso",
+      "estado": "nascente",
+      "resumen": "Tabla real de Baserow (`DOCUMENTO`, id 276 -- ID/ENTIDAD_TIPO/ENTIDAD_ID/TIPO_DOCUMENTO/TITULO/DESCRIPCION/URL/FECHA_DOCUMENTO), **distinta a propósito** de DOCUMENTO_ENGREMIAT: esa cataloga los propios documentos y mecanismos del ecosistema (56 filas reales, informes/prompts/scripts); esta es un adjunto polimórfico real -- `ENTIDAD_TIPO`+`ENTIDAD_ID` la enlazan a cualquier entidad real del núcleo",
+      "relacionesDeclaradas": [
+        "Baserow"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "DOCUMENTO"
         }
       ]
     }
