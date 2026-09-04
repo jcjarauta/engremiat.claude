@@ -138,7 +138,7 @@ async function leerProcesosTareasReales(proyectoId) {
     .sort((a, b) => (a.ordenSecuencia || '').localeCompare(b.ordenSecuencia || ''));
 }
 
-// -- §8.74: Panel Operativo -- pivote real del operador (no Bastidor): "empezar a producir"
+// -- §8.74/75: Panel Operativo -- pivote real del operador (no Bastidor): "empezar a producir"
 // usando el backlog real que YA existe sobre el propio Engremiat, en vez de trabajo hipotetico
 // de cliente. NIVEL_INCIDENCIA='Producto' es el campo real que separa incidencias sobre la
 // propia libreria (candidatas de autoregeneracion) de trabajo de proyecto/cliente piloto
@@ -146,9 +146,17 @@ async function leerProcesosTareasReales(proyectoId) {
 // totales de nivel Producto. 18_VINCULO (TIPO_VINCULO='Corrige', Incidencia->Tarea) es el cruce
 // real ya usado por el propio Sheet (ver AprovisionamientoService.js/Biblioteca.html) para
 // enlazar una incidencia con la tarea que la corrige.
+//
+// §8.75: espejo real del Sheet, no una copia decorativa -- el operador pidio explicitamente que
+// el Sheet siga siendo el almacen de datos, la interfaz solo refleja. Inspirado en el
+// PanelOperativo.html real ya construido en el Sheet (secciones por tipo de senal, boton real
+// para abrir el registro exacto) -- aqui el "abrir" es un enlace real a la fila exacta
+// (#gid=X&range=A{fila}), no un google.script.run (no disponible fuera del Sheet).
 let cacheIncidencias = { en: 0, datos: null };
 let cacheVinculos = { en: 0, datos: null };
 const ESTADOS_INCIDENCIA_ABIERTA = new Set(['Abierta', 'En análisis', 'En resolución']);
+const GID_13_INCIDENCIAS = 1182532531;
+const ORDEN_PRIORIDAD = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
 
 async function leerIncidenciasProductoAbiertas() {
   const [inc, vinc, tareas] = await Promise.all([
@@ -158,7 +166,10 @@ async function leerIncidenciasProductoAbiertas() {
   ]);
   const iId = inc.cab.indexOf('ID'), iNivel = inc.cab.indexOf('NIVEL_INCIDENCIA'), iTitulo = inc.cab.indexOf('TITULO'),
     iPrioridad = inc.cab.indexOf('PRIORIDAD'), iEstado = inc.cab.indexOf('ESTADO'), iFechaLimite = inc.cab.indexOf('FECHA_LIMITE');
-  const abiertas = inc.filas.filter((f) => f[iId] && f[iNivel] === 'Producto' && ESTADOS_INCIDENCIA_ABIERTA.has(f[iEstado]));
+  // filaReal = indice en filas (0-based, sin cabecera) + 2 -- fila 1 es la cabecera real del Sheet
+  const abiertas = inc.filas
+    .map((f, i) => ({ f, filaReal: i + 2 }))
+    .filter(({ f }) => f[iId] && f[iNivel] === 'Producto' && ESTADOS_INCIDENCIA_ABIERTA.has(f[iEstado]));
 
   const iVOrigenTipo = vinc.cab.indexOf('ENTIDAD_ORIGEN_TIPO'), iVOrigenId = vinc.cab.indexOf('ENTIDAD_ORIGEN_ID'),
     iVDestinoTipo = vinc.cab.indexOf('ENTIDAD_DESTINO_TIPO'), iVDestinoId = vinc.cab.indexOf('ENTIDAD_DESTINO_ID'),
@@ -168,10 +179,13 @@ async function leerIncidenciasProductoAbiertas() {
   const iTrId = tareas.cab.indexOf('ID'), iTrNombre = tareas.cab.indexOf('NOMBRE'), iTrEstado = tareas.cab.indexOf('ESTADO');
   const tareaPorId = new Map(tareas.filas.map((t) => [t[iTrId], { nombre: t[iTrNombre] || '', estado: t[iTrEstado] || '' }]));
 
-  return abiertas.map((f) => ({
-    id: f[iId], titulo: f[iTitulo] || '', prioridad: f[iPrioridad] || '', estado: f[iEstado] || '', fechaLimite: f[iFechaLimite] || '',
-    tareasVinculadas: corrige.filter((v) => v[iVOrigenId] === f[iId]).map((v) => ({ id: v[iVDestinoId], ...(tareaPorId.get(v[iVDestinoId]) || { nombre: '(no encontrada)', estado: '' }) })),
-  }));
+  return abiertas
+    .map(({ f, filaReal }) => ({
+      id: f[iId], titulo: f[iTitulo] || '', prioridad: f[iPrioridad] || '', estado: f[iEstado] || '', fechaLimite: f[iFechaLimite] || '',
+      urlSheet: 'https://docs.google.com/spreadsheets/d/' + SHEETS_SPREADSHEET_ID + '/edit#gid=' + GID_13_INCIDENCIAS + '&range=A' + filaReal,
+      tareasVinculadas: corrige.filter((v) => v[iVOrigenId] === f[iId]).map((v) => ({ id: v[iVDestinoId], ...(tareaPorId.get(v[iVDestinoId]) || { nombre: '(no encontrada)', estado: '' }) })),
+    }))
+    .sort((a, b) => (ORDEN_PRIORIDAD[a.prioridad] ?? 9) - (ORDEN_PRIORIDAD[b.prioridad] ?? 9));
 }
 
 // -- §8.67: puente barato Recursos -> Quien. 12_DECISIONES esta real pero vacia hoy

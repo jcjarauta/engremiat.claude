@@ -1026,6 +1026,20 @@ El operador propuso simplificar radicalmente: en vez de seguir construyendo el j
 
 Verificado con curl real contra el endpoint nuevo (INC-0001↔TAR-0001 correctamente anidado) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola. Registrado en `indice.html`.
 
+### 8.75 Panel Operativo espejo real del Sheet, inspirado en `PanelOperativo.html`/fichas reales
+
+El operador aportó capturas reales de la Ficha (`FichaCampana.html`, patrón: resumen numérico arriba, botones de acción junto al título, secciones con conteo + "+Añadir") y del menú real del Taller de Producción -- y confirmó el principio rector: **el Sheet es el almacén de datos, la interfaz solo refleja** (mismo principio ya aplicado a Misiones→Cómo en §8.68, generalizado aquí a todo lo que se construya).
+
+Investigado antes de mejorar: `src/PanelOperativo.html` (real, ya construido, container-bound al Sheet) resuelve el mismo problema de "no colapsar al operador" con un patrón maduro: secciones por tipo de señal (Tareas retrasadas / Tareas bloqueadas / Decisiones pendientes / Incidencias abiertas / Recursos no disponibles...), `botonAbrir_(entidad, id)` -- botón que abre la Ficha exacta en un clic -- y borde izquierdo rojo (`.item.alerta`) para severidad visual.
+
+**Aplicado a `panel_operativo.html`** (fuera del Sheet, no puede usar `google.script.run`, mismo efecto por otro medio):
+- Resumen KPI arriba (abiertas / Alta-Crítica / sin tarea vinculada), antes de cualquier lista.
+- Dos secciones reales, no una lista plana: "Sin tarea vinculada -- nadie las está trabajando" (borde rojo, urgentes de verdad) vs. "Con tarea ya en marcha" (borde neutro).
+- `urlSheet` real por incidencia (`leerIncidenciasProductoAbiertas()` ahora calcula la fila real del Sheet, `gid` real de `13_INCIDENCIAS`=`1182532531`) -- "Abrir fila en el Sheet →", un clic, sin buscar.
+- Ordenado por prioridad real (Crítica→Alta→Media→Baja), no por el orden crudo de la hoja.
+
+Verificado con curl real (URLs `#gid=1182532531&range=A{fila}` correctas, ej. `INC-0001`→`A2`) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

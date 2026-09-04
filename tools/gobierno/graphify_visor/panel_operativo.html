@@ -8,13 +8,19 @@
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
   body { padding: 24px 28px 60px; max-width: 760px; }
   h1 { font-size: 18px; margin: 0 0 4px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 10px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
   p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
-  .mision-real { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; font-size: 12.5px; background: var(--color-base-panel); }
-  .mision-real .nombre { font-weight: 600; margin-bottom: 3px; }
-  .badge-mision { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
-  .badge-mision.prioridad-alta { background: #e85c8a33; color: #e85c8a; }
-  .badge-mision.prioridad-critica { background: #e85c8a55; color: #ff8fae; }
+  #resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
+  .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); }
+  .kpi b { font-size: 14px; }
+  .item { border-left: 3px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 7px 10px; margin-bottom: 6px; font-size: 12.5px; background: var(--color-base-panel); }
+  .item.alerta { border-left-color: #e85c8a; }
+  .item .titulo { font-weight: 600; margin-bottom: 3px; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .badge.prioridad-alta { background: #e85c8a33; color: #e85c8a; }
+  .badge.prioridad-critica { background: #e85c8a55; color: #ff8fae; }
+  a.abrir { display: inline-block; margin-top: 5px; font-size: 11px; color: #6ea8ff; text-decoration: none; }
+  a.abrir:hover { text-decoration: underline; }
   ul.tareas-vinculadas { margin: 5px 0 0 16px; padding: 0; font-size: 11.5px; color: var(--color-base-texto-suave); }
   #estadoIncidencias, #estadoBus { font-size: 12px; color: var(--color-base-texto-suave); margin-bottom: 8px; }
 </style>
@@ -23,14 +29,20 @@
 <h1>Panel operativo</h1>
 <p class="hint">
   Mesa de trabajo real del operador -- no es Bastidor (el juego para futuros clientes, sigue intacto en
-  <a href="mesa_montaje.html">mesa_montaje.html</a>). Este panel es el mínimo para "empezar a producir":
-  el backlog real de incidencias sobre la propia librería Engremiat (<code>NIVEL_INCIDENCIA=Producto</code>),
-  sus tareas vinculadas, y quién del ciclo (Ejecutor/Vigilia/Relevo/Cronista) está trabajando qué ahora mismo.
+  <a href="mesa_montaje.html">mesa_montaje.html</a>). Espejo real del Sheet (§8.75) -- el dato vive en
+  <code>13_INCIDENCIAS</code>/<code>18_VINCULO</code>/<code>92_BUS_TRABAJO</code>, el Sheet es el almacén,
+  esta página solo refleja. Inspirado en el <code>PanelOperativo.html</code> real ya construido en el propio Sheet.
 </p>
 
 <h2>Incidencias reales abiertas (nivel Producto)</h2>
 <p id="estadoIncidencias">Comprobando el backlog real...</p>
-<div id="listaIncidencias"></div>
+<div id="resumen"></div>
+
+<h3 style="font-size:12.5px;margin:14px 0 6px;">Sin tarea vinculada -- nadie las está trabajando</h3>
+<div id="listaSinTarea"></div>
+
+<h3 style="font-size:12.5px;margin:16px 0 6px;">Con tarea ya en marcha</h3>
+<div id="listaConTarea"></div>
 
 <h2>Quién trabaja de verdad (92_BUS_TRABAJO)</h2>
 <p id="estadoBus">Comprobando la actividad real...</p>
@@ -39,27 +51,43 @@
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 
+function renderIncidencia(i) {
+  const prioridadClase = i.prioridad === 'Alta' ? 'prioridad-alta' : i.prioridad === 'Crítica' ? 'prioridad-critica' : '';
+  const alerta = !i.tareasVinculadas.length ? 'alerta' : '';
+  return `
+    <div class="item ${alerta}">
+      <div class="titulo">${i.id} -- ${i.titulo}</div>
+      <span class="badge ${prioridadClase}">${i.prioridad || 'sin prioridad'}</span>
+      <span class="badge">${i.estado}</span>
+      ${i.fechaLimite ? `<span class="badge">límite ${i.fechaLimite}</span>` : ''}
+      ${i.tareasVinculadas.length ? '<ul class="tareas-vinculadas">' + i.tareasVinculadas.map(t =>
+        `<li>${t.id} -- ${t.nombre} <span class="badge">${t.estado || 'sin estado'}</span></li>`).join('') + '</ul>' : ''}
+      <br><a class="abrir" href="${i.urlSheet}" target="_blank">Abrir fila en el Sheet →</a>
+    </div>`;
+}
+
 async function cargarIncidencias() {
   const estado = document.getElementById('estadoIncidencias');
-  const cont = document.getElementById('listaIncidencias');
+  const resumen = document.getElementById('resumen');
+  const contSin = document.getElementById('listaSinTarea');
+  const contCon = document.getElementById('listaConTarea');
   try {
     const r = await fetch(URL_MEMORIA + '/api/incidencias_producto_abiertas', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { incidencias, leidoEn } = await r.json();
-    estado.textContent = `${incidencias.length} incidencia(s) real(es) abiertas -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
-    cont.innerHTML = incidencias.map(i => `
-      <div class="mision-real">
-        <div class="nombre">${i.id} -- ${i.titulo}</div>
-        <span class="badge-mision ${i.prioridad === 'Alta' ? 'prioridad-alta' : i.prioridad === 'Crítica' ? 'prioridad-critica' : ''}">${i.prioridad || 'sin prioridad'}</span>
-        <span class="badge-mision">${i.estado}</span>
-        ${i.fechaLimite ? `<span class="badge-mision">límite ${i.fechaLimite}</span>` : ''}
-        ${i.tareasVinculadas.length ? '<ul class="tareas-vinculadas">' + i.tareasVinculadas.map(t =>
-          `<li>${t.id} -- ${t.nombre} <span class="badge-mision">${t.estado || 'sin estado'}</span></li>`).join('') + '</ul>'
-          : '<p class="hint" style="margin:4px 0 0;">Sin tarea vinculada todavía (VINCULO tipo Corrige).</p>'}
-      </div>`).join('') || '<p class="hint">Ninguna incidencia real abierta de nivel Producto -- backlog limpio.</p>';
+    estado.textContent = `Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    const sinTarea = incidencias.filter(i => !i.tareasVinculadas.length);
+    const conTarea = incidencias.filter(i => i.tareasVinculadas.length);
+    const criticas = incidencias.filter(i => i.prioridad === 'Alta' || i.prioridad === 'Crítica').length;
+    resumen.innerHTML = `
+      <div class="kpi"><b>${incidencias.length}</b> abiertas</div>
+      <div class="kpi"><b>${criticas}</b> Alta/Crítica</div>
+      <div class="kpi"><b>${sinTarea.length}</b> sin tarea vinculada</div>`;
+    contSin.innerHTML = sinTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna -- todo lo abierto ya tiene tarea real en marcha.</p>';
+    contCon.innerHTML = conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>';
   } catch {
     estado.textContent = 'No se pudo leer el backlog real ahora mismo.';
-    cont.innerHTML = '';
+    resumen.innerHTML = ''; contSin.innerHTML = ''; contCon.innerHTML = '';
   }
 }
 
@@ -74,10 +102,10 @@ async function cargarBusTrabajo() {
     const porTrabajador = {};
     tareas.forEach(t => { (porTrabajador[t.reclamadoPor || '(sin reclamar)'] = porTrabajador[t.reclamadoPor || '(sin reclamar)'] || []).push(t); });
     cont.innerHTML = Object.entries(porTrabajador).map(([trabajador, ts]) => `
-      <div class="mision-real">
-        <div class="nombre">${trabajador} <span class="badge-mision">${ts.length}</span></div>
+      <div class="item">
+        <div class="titulo">${trabajador} <span class="badge">${ts.length}</span></div>
         <ul class="tareas-vinculadas">${ts.slice(0, 5).map(t =>
-          `<li>${t.id} -- <span class="badge-mision">${t.estado}</span> ${t.fecha ? '(' + t.fecha + ')' : ''}</li>`).join('')}</ul>
+          `<li>${t.id} -- <span class="badge">${t.estado}</span> ${t.fecha ? '(' + t.fecha + ')' : ''}</li>`).join('')}</ul>
       </div>`).join('') || '<p class="hint">Sin actividad real todavía.</p>';
   } catch {
     estado.textContent = 'No se pudo leer el bus de trabajo real ahora mismo.';
