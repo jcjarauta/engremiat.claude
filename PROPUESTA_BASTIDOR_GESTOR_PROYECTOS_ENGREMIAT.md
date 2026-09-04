@@ -1080,6 +1080,12 @@ El operador pidió un árbol de navegación real (mismo espíritu que "Gestión 
 
 Verificado con escritura real de extremo a extremo antes de dar por cerrado: `CAM-0006` (Campaña) → `PRO-0027` (Proyecto, `CAMPANA_ID` correctamente enlazado) -- ambas confirmadas en el Sheet real y borradas después (limpieza de prueba). Verificado también con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+### 8.79 Home -- menú de entrada real del operador
+
+El operador confirmó en su propio navegador que Panel Operativo y Árbol de campañas funcionan de verdad (22 incidencias reales, tabla de consumo real con `deepseek`/`(sin servicio)`, 5 campañas reales) y pidió un home sencillo, deliberadamente mínimo, con las 2 piezas actuales -- "lo vamos mejorando" con el tiempo, no una decisión de diseño cerrada.
+
+Construido: `home.html`, menú de tarjetas real (grid simple), sin dependencias de `indice.html` (ese sigue siendo el índice técnico de las 17 herramientas de `graphify_visor`; este es el punto de entrada del operador, solo sus 2 herramientas reales de trabajo diario). Verificado en el navegador: clic real en "Panel operativo" navega correctamente, 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

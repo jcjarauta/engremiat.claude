@@ -41,6 +41,7 @@ services:
       - ./boceto_layout_6_zonas.html:/app/boceto_layout_6_zonas.html:ro
       - ./panel_operativo.html:/app/panel_operativo.html:ro
       - ./arbol_campanas.html:/app/arbol_campanas.html:ro
+      - ./home.html:/app/home.html:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320
