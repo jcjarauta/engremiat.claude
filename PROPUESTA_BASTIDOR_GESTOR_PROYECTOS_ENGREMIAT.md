@@ -1142,6 +1142,16 @@ El operador, tras ver el grafo en su propio navegador (denso, con las ~50 etique
 
 Verificado en el navegador real, dos comprobaciones directas: (1) `getComputedStyle(document.body).backgroundColor` → `rgb(15, 16, 19)`, exactamente `--color-base-fondo`; (2) disparando eventos `wheel` reales sobre el canvas (la vía que usan los usuarios de verdad -- `moveTo()` programático NO dispara el evento `zoom` de vis-network, es una peculiaridad de la API a tener en cuenta al probar, no un bug) hasta escala 3.97, el color de fuente de `home.html` pasó de transparente a `#e7e7ea` real. Desplegado con la propia `desplegar_visor.mjs` recién construida (primer uso real en producción de la herramienta).
 
+### 8.86 Formato de nodo uniforme + física real de "movimiento e inercias"
+
+Pedido: *"CAMBIALO A TODO EN FORMATO NODO Y INVESTIGA SOBRE FORMAS DE MEJORAR EL COMPORTAMIENTO DEL GRAFO, MOVIMIENTO, INERCIAS"*. Investigado antes de tocar física a ciegas: `index.html`/`graph.html` -- el primer visor real de este proyecto, Graphify -- ya habían resuelto exactamente este problema, con la misma configuración mínima que `vista_sistema.html` tenía hasta ahora (solo `gravitationalConstant`+`springLength`, sin `damping`/`centralGravity`/`avoidOverlap`/congelado tras estabilizar) como defecto real a corregir: sin esos parámetros el grafo oscila sin asentarse nunca y sigue temblando solo para siempre, incluso sin que nadie lo toque.
+
+**Formato de nodo**: quitada la distinción por forma (antes `box` para endpoint, `diamond` para recurso real) -- todo `shape: 'dot'`, la diferencia real entre página/servidor/endpoint/recurso queda solo en color y tamaño. Leyenda del panel actualizada a juego.
+
+**Física**: adoptada la receta real ya probada en producción en `index.html`/`graph.html`: `centralGravity: 0.008` (no colapsa todo al centro), `damping: 0.4` (más fricción, para antes, sin rebote), `avoidOverlap: 0.6` (separa nodos que se pisan, mismo valor que ya usa `holon.html`), `stabilization: {iterations: 300, fit: true}`, y sobre todo `network.once('stabilizationIterationsDone', () => network.setOptions({physics:{enabled:false}}))` -- inercia cero real tras asentarse: arrastrar un nodo lo deja exactamente donde se suelta, no vuelve a moverse solo. Incluye también el fix real de tamaño-de-canvas-cero ya encontrado antes en `holon.html`/`grafo_maestro.html` (`setSize`+`redraw`+`fit` dentro del mismo callback).
+
+Verificado en el navegador real: `network.physics.options.enabled === false` tras estabilizar; arrastrado `home.html` a otra posición y comprobado que sigue exactamente ahí 2 segundos después, sin rebote ni deriva. Desplegado con `desplegar_visor.mjs`.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

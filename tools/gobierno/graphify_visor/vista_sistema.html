@@ -15,7 +15,6 @@
   .hint { color: var(--color-base-texto-suave); font-size: 12.5px; line-height: 1.4; }
   .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
   .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-  .cuadro { border-radius: 3px; }
   #ficha { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
   #ficha h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
   #ficha p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
@@ -35,8 +34,8 @@
     <div class="leyenda-item"><span class="punto" style="background:#4c9aff"></span>Página alcanzable desde home</div>
     <div class="leyenda-item"><span class="punto" style="background:#5c5f6b"></span>Página real, fuera del alcance de home (herramienta de desarrollo)</div>
     <div class="leyenda-item"><span class="punto" style="background:#9c6ade"></span>servidor_memoria.mjs</div>
-    <div class="leyenda-item"><span class="punto cuadro" style="background:#2f9e44"></span>Endpoint real (/api/...)</div>
-    <div class="leyenda-item"><span class="punto" style="background:#e85c8a;border-radius:2px;transform:rotate(45deg)"></span>Recurso real (pestaña Sheet / tabla Baserow)</div>
+    <div class="leyenda-item"><span class="punto" style="background:#2f9e44"></span>Endpoint real (/api/...)</div>
+    <div class="leyenda-item"><span class="punto" style="background:#e85c8a"></span>Recurso real (pestaña Sheet / tabla Baserow)</div>
     <p class="hint">Tipos de arista: <strong style="color:#4c9aff">enlaza</strong> (navegación entre páginas), <strong style="color:#2f9e44">llama_api / sirve</strong> (fetch real hacia un endpoint), <strong style="color:#e85c8a">toca</strong> (el servidor lee/escribe ese recurso real).</p>
     <button id="btnAtenuar" onclick="alternarAtenuado()">Ocultar herramientas de desarrollo</button>
     <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
@@ -70,18 +69,19 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
     if (n.tipo === 'recurso_real') return '#e85c8a';
     return '#5c5f6b';
   };
-  const formaDe = (n) => n.tipo === 'endpoint' ? 'box' : n.tipo === 'recurso_real' ? 'diamond' : 'dot';
   const colorArista = { enlaza: '#4c9aff', llama_api: '#2f9e4488', sirve: '#2f9e44', toca: '#e85c8a88' };
 
   // Sin etiqueta visible por defecto -- un grafo denso con ~50 nombres encima ensucia
   // la vista inicial (feedback real del operador). Mismo patron ya resuelto en
   // grafo_maestro.html (§8.39-40): la etiqueta aparece al acercar el zoom o al pasar
   // el raton por encima, nunca desaparece del todo (title conserva el id real siempre).
+  // Todo en formato nodo (dot) -- un solo lenguaje visual, la diferencia real
+  // entre pagina/servidor/endpoint/recurso queda solo en color y tamano, nunca en forma.
   nodes = new vis.DataSet(datos.nodos.map(n => ({
     id: n.id, label: n.nombre, title: n.id,
     color: { background: colorDe(n), border: COLOR_FONDO },
     font: { color: 'rgba(0,0,0,0)', size: n.id === 'home.html' ? 14 : 11 },
-    shape: formaDe(n),
+    shape: 'dot',
     size: n.id === 'home.html' ? 22 : n.tipo === 'servidor' ? 18 : n.tipo === 'pagina' ? 14 : 10,
   })));
   edges = new vis.DataSet(datos.aristas.map((a, i) => ({
@@ -90,9 +90,29 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
     dashes: a.relation === 'toca' || a.relation === 'llama_api',
   })));
 
+  // Fisica real ya probada en produccion en index.html/graph.html (el primer visor,
+  // Graphify) -- mismo defecto que tenia esta pagina: sin damping/centralGravity/
+  // avoidOverlap el grafo oscila sin asentarse nunca, y sin congelar tras estabilizar
+  // sigue temblando para siempre aunque nadie lo toque. damping alto = mas friccion
+  // (para antes, menos rebote); centralGravity bajo = no colapsa todo al centro;
+  // avoidOverlap separa nodos que se pisan. Tras estabilizar, physics.enabled=false
+  // -- inercia cero real: arrastrar un nodo lo deja donde se suelta, no vuelve a moverse solo.
   network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
-    physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -90, springLength: 130 } },
-    interaction: { hover: true },
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, centralGravity: 0.008, damping: 0.4, avoidOverlap: 0.6 },
+      stabilization: { iterations: 300, fit: true },
+    },
+    interaction: { hover: true, dragView: true, zoomView: true },
+  });
+
+  network.once('stabilizationIterationsDone', () => {
+    network.setOptions({ physics: { enabled: false } });
+    // el canvas nace con tamano 0 si el layout flex aun no ha resuelto cuando vis-network
+    // se construye (mismo bug real ya encontrado en holon.html/grafo_maestro.html)
+    network.setSize('100%', '100%');
+    network.redraw();
+    network.fit({ animation: false });
   });
 
   function refrescarEtiquetas() {
