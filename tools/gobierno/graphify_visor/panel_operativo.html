@@ -14,9 +14,11 @@
   #resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
   .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); }
   .kpi b { font-size: 14px; }
-  .item { border-left: 3px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 7px 10px; margin-bottom: 6px; font-size: 12.5px; background: var(--color-base-panel); }
+  .item { border-left: 3px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 7px 10px; margin-bottom: 6px; font-size: 12.5px; background: var(--color-base-panel); cursor: pointer; }
   .item.alerta { border-left-color: #e85c8a; }
   .item .titulo { font-weight: 600; margin-bottom: 3px; }
+  .item .detalle { display: none; }
+  .item.abierto .detalle { display: block; }
   .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
   .badge.prioridad-alta { background: #e85c8a33; color: #e85c8a; }
   .badge.prioridad-critica { background: #e85c8a55; color: #ff8fae; }
@@ -66,14 +68,16 @@ function renderIncidencia(i) {
   const prioridadClase = i.prioridad === 'Alta' ? 'prioridad-alta' : i.prioridad === 'Crítica' ? 'prioridad-critica' : '';
   const alerta = !i.tareasVinculadas.length ? 'alerta' : '';
   return `
-    <div class="item ${alerta}">
+    <div class="item ${alerta}" onclick="this.classList.toggle('abierto')">
       <div class="titulo">${i.id} -- ${i.titulo}</div>
       <span class="badge ${prioridadClase}">${i.prioridad || 'sin prioridad'}</span>
       <span class="badge">${i.estado}</span>
       ${i.fechaLimite ? `<span class="badge">límite ${i.fechaLimite}</span>` : ''}
-      ${i.tareasVinculadas.length ? '<ul class="tareas-vinculadas">' + i.tareasVinculadas.map(t =>
-        `<li>${t.id} -- ${t.nombre} <span class="badge">${t.estado || 'sin estado'}</span></li>`).join('') + '</ul>' : ''}
-      <br><a class="abrir" href="${i.urlSheet}" target="_blank">Abrir fila en el Sheet →</a>
+      <div class="detalle">
+        ${i.tareasVinculadas.length ? '<ul class="tareas-vinculadas">' + i.tareasVinculadas.map(t =>
+          `<li>${t.id} -- ${t.nombre} <span class="badge">${t.estado || 'sin estado'}</span></li>`).join('') + '</ul>' : ''}
+        <br><a class="abrir" href="${i.urlSheet}" target="_blank" onclick="event.stopPropagation()">Abrir fila en el Sheet →</a>
+      </div>
     </div>`;
 }
 
