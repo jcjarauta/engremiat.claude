@@ -23,6 +23,7 @@
   a.abrir:hover { text-decoration: underline; }
   ul.tareas-vinculadas { margin: 5px 0 0 16px; padding: 0; font-size: 11.5px; color: var(--color-base-texto-suave); }
   #estadoIncidencias, #estadoBus { font-size: 12px; color: var(--color-base-texto-suave); margin-bottom: 8px; }
+  #filtroPrioridad { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 5px 8px; font-size: 12px; }
 </style>
 </head>
 <body>
@@ -37,6 +38,15 @@
 <h2>Incidencias reales abiertas (nivel Producto)</h2>
 <p id="estadoIncidencias">Comprobando el backlog real...</p>
 <div id="resumen"></div>
+<label style="font-size:12px;color:var(--color-base-texto-suave);">Prioridad:
+  <select id="filtroPrioridad">
+    <option value="">Todas</option>
+    <option value="Crítica">Crítica</option>
+    <option value="Alta">Alta</option>
+    <option value="Media">Media</option>
+    <option value="Baja">Baja</option>
+  </select>
+</label>
 
 <h3 style="font-size:12.5px;margin:14px 0 6px;">Sin tarea vinculada -- nadie las está trabajando</h3>
 <div id="listaSinTarea"></div>
@@ -66,30 +76,43 @@ function renderIncidencia(i) {
     </div>`;
 }
 
+let incidenciasReales = [];
+
+function renderIncidenciasFiltradas() {
+  const contSin = document.getElementById('listaSinTarea');
+  const contCon = document.getElementById('listaConTarea');
+  const filtro = document.getElementById('filtroPrioridad').value;
+  const visibles = filtro ? incidenciasReales.filter(i => i.prioridad === filtro) : incidenciasReales;
+  const sinTarea = visibles.filter(i => !i.tareasVinculadas.length);
+  const conTarea = visibles.filter(i => i.tareasVinculadas.length);
+  contSin.innerHTML = sinTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna -- todo lo abierto ya tiene tarea real en marcha.</p>';
+  contCon.innerHTML = conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>';
+  document.title = `(${incidenciasReales.length}) Engremiat -- panel operativo`;
+}
+
 async function cargarIncidencias() {
   const estado = document.getElementById('estadoIncidencias');
   const resumen = document.getElementById('resumen');
-  const contSin = document.getElementById('listaSinTarea');
-  const contCon = document.getElementById('listaConTarea');
   try {
     const r = await fetch(URL_MEMORIA + '/api/incidencias_producto_abiertas', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { incidencias, leidoEn } = await r.json();
+    incidenciasReales = incidencias;
     estado.textContent = `Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
-    const sinTarea = incidencias.filter(i => !i.tareasVinculadas.length);
-    const conTarea = incidencias.filter(i => i.tareasVinculadas.length);
+    const sinTareaTotal = incidencias.filter(i => !i.tareasVinculadas.length).length;
     const criticas = incidencias.filter(i => i.prioridad === 'Alta' || i.prioridad === 'Crítica').length;
     resumen.innerHTML = `
       <div class="kpi"><b>${incidencias.length}</b> abiertas</div>
       <div class="kpi"><b>${criticas}</b> Alta/Crítica</div>
-      <div class="kpi"><b>${sinTarea.length}</b> sin tarea vinculada</div>`;
-    contSin.innerHTML = sinTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna -- todo lo abierto ya tiene tarea real en marcha.</p>';
-    contCon.innerHTML = conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>';
+      <div class="kpi"><b>${sinTareaTotal}</b> sin tarea vinculada</div>`;
+    renderIncidenciasFiltradas();
   } catch {
     estado.textContent = 'No se pudo leer el backlog real ahora mismo.';
-    resumen.innerHTML = ''; contSin.innerHTML = ''; contCon.innerHTML = '';
+    resumen.innerHTML = ''; document.getElementById('listaSinTarea').innerHTML = ''; document.getElementById('listaConTarea').innerHTML = '';
   }
 }
+
+document.getElementById('filtroPrioridad').addEventListener('change', renderIncidenciasFiltradas);
 
 async function cargarBusTrabajo() {
   const estado = document.getElementById('estadoBus');
