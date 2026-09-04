@@ -919,6 +919,12 @@ Construidos los 4 puentes más baratos del cruce 13×8 (§8.63 fin): `/api/proye
 
 **Lo que se trata con cautela, no adoptado sin más**: el rediseño completo en 7 regiones (Estado/Constructor/Narrador/Espacio de trabajo/Comunidad/Gestor de misión/Inspector) es coherente pero implicaría rehacer de golpe lo ya construido y verificado -- se evolucionará por pasos, no de una vez. Los conectores tipo CAD (puertos/tipos/restricciones) y la idea de "quest log" son inspiración razonable, no verificadas contra dato real todavía.
 
+### 8.65 Auditoría ◇ por entidad + siguiente puente barato (Concilio)
+
+**Auditoría ◇ a nivel de las ~91 fichas reales**: solo **1 caso real** de ◇ inferido -- `Coordinador.md`/`METRICA_FABRICACION` ("atribución razonada por encaje de rol, no un script real encontrado"). Otros 3 candidatos reales (`AGORA.md`, `Personaje de cliente.md`, `Catálogo compartido de referencia.md`) resultaron ser huecos "—" bien documentados, no ◇ -- declaran explícitamente que no infieren más de lo que saben. `Acervo Sociocracia.md` es una categoría distinta: no un dato inferido, sino un comportamiento real de IA que contradice su propia definición (propuso un umbral de votos en vez de consentimiento). No se construyó mecanismo nuevo para 1 solo caso real -- desproporcionado.
+
+**Siguiente puente barato construido**: Concilio ya tenía su propio endpoint real `/salud` (`spike_concilio_coop/servidor.mjs`) pero sin CORS -- no se tocó ese servidor, ajeno a este visor. Servido como proxy real server-to-server desde `servidor_memoria.mjs` (`/api/concilio_estado`, caché 10s). Mesa gana la caja real "Centro compartido -- Concilio", asientos humanos ocupados en vivo. Verificado con dato real (curl: 0/2 en el momento de la prueba) y con la lógica de render real.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

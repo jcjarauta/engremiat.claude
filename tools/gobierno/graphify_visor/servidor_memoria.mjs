@@ -132,6 +132,22 @@ async function leerMisionesFeriaReales() {
   return misiones;
 }
 
+// -- §8.65: puente real para Centro compartido -- Concilio ya tiene su propio endpoint
+// real /salud (spike_concilio_coop/servidor.mjs), pero sin CORS -- no lo tocamos (no es
+// nuestro, sigue siendo "no producción crítica" pero ajeno a este visor). Se sirve como
+// proxy real desde aqui, server-to-server, sin credenciales, sin tocar el otro servidor.
+const CONCILIO_URL = process.env.CONCILIO_URL || 'http://100.107.171.88:2568';
+let cacheConcilio = { en: 0, datos: null };
+
+async function leerEstadoConcilio() {
+  if (cacheConcilio.datos && Date.now() - cacheConcilio.en < 10000) return cacheConcilio.datos;
+  const r = await fetch(CONCILIO_URL + '/salud', { signal: AbortSignal.timeout(3000) });
+  if (!r.ok) throw new Error('Concilio respondio ' + r.status);
+  const datos = await r.json();
+  cacheConcilio = { en: Date.now(), datos };
+  return datos;
+}
+
 function leerMemoria() {
   if (!existsSync(FICHERO)) return { eventos: [], montajes: [] };
   try { return JSON.parse(readFileSync(FICHERO, 'utf-8')); } catch { return { eventos: [], montajes: [] }; }
@@ -190,6 +206,15 @@ const servidor = createServer(async (req, res) => {
       }
       const misiones = await leerMisionesFeriaReales();
       res.writeHead(200); res.end(JSON.stringify({ misiones, leidoEn: new Date(cacheMisionesFeria.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/concilio_estado') {
+      try {
+        const estado = await leerEstadoConcilio();
+        res.writeHead(200); res.end(JSON.stringify({ ...estado, leidoEn: new Date(cacheConcilio.en).toISOString() })); return;
+      } catch (e) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'Concilio no responde ahora mismo: ' + e.message })); return;
+      }
     }
 
     if (req.method === 'POST' && req.url === '/api/eventos') {

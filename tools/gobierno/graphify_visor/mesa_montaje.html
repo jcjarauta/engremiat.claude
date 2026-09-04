@@ -100,6 +100,8 @@
   </div>
 
   <div id="panelDerecho">
+    <h3>Centro compartido -- Concilio</h3>
+    <p class="hint" id="estadoConcilio">Comprobando Concilio real...</p>
     <h3>Misiones reales de este universo</h3>
     <p class="hint" id="estadoMisiones">Comprobando el tablero real...</p>
     <div id="listaMisiones"></div>
@@ -257,6 +259,7 @@ async function cargar() {
   await cargarMisionesReales();
   await cargarRecursosReales();
   await cargarFeriaReales();
+  await cargarConcilioReal();
   actualizarResumen();
 }
 
@@ -416,6 +419,21 @@ async function cargarFeriaReales() {
   } catch {
     estado.textContent = 'No se pudo leer Feria ahora mismo.';
     cont.innerHTML = '';
+  }
+}
+
+// -- §8.65: puente real -- Concilio ya tiene /salud real (spike_concilio_coop), servido
+// aqui vía proxy de servidor_memoria.mjs (nunca CORS directo al otro servidor).
+async function cargarConcilioReal() {
+  const estado = document.getElementById('estadoConcilio');
+  if (!memoriaConectada) { estado.textContent = 'Sin conexión con la memoria compartida.'; return; }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/concilio_estado', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { humanos, maxHumanos, leidoEn } = await r.json();
+    estado.textContent = `${humanos}/${maxHumanos} asientos humanos ocupados ahora mismo -- leído ${leidoEn.slice(11, 19)}.`;
+  } catch {
+    estado.textContent = 'Concilio no responde ahora mismo (real: puede estar apagado, no fingido).';
   }
 }
 
