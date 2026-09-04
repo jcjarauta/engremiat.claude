@@ -1108,6 +1108,14 @@ El operador pidió una pantalla de aterrizaje real con visión global antes de b
 
 Verificado con curl real (`CAM-0001`: 5 proyectos, 4 productos, 5 procesos, 1 tarea, 0 retrasadas) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+### 8.82 Corrección de rumbo -- los contadores no bastan, hacen falta los nombres
+
+El operador corrigió la Capa 1 nada más verla: *"este dato no tiene valor, necesito saber en cada campaña los proyectos relacionados"* -- y, en la misma línea, *"quiero ver toda la jerarquía sin tener que desplegar"*. Los contadores numéricos por campaña (`5 proy · 4 prod...`) no sustituyen ver los nombres reales, y el árbol colapsado exige clic nodo por nodo para llegar a ellos.
+
+Corregido: quitados los contadores por nodo (sin valor real, según el propio operador); añadido botón real "Expandir todo" / "Colapsar todo" que abre o cierra toda la jerarquía de una vez, en vez de exigir clics uno a uno -- los nombres reales de cada Proyecto/Producto/Proceso/Tarea quedan visibles con una sola acción. La barra de KPIs globales (agregados, no por nodo) se mantiene -- ahí sí tiene sentido un número ("13 proyectos en total"), a diferencia de repetir el mismo dato junto a cada nombre ya visible.
+
+Verificado en el navegador: expandir/colapsar todo funciona sobre 3 niveles reales de profundidad, sin romper el toggle individual por nodo, 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

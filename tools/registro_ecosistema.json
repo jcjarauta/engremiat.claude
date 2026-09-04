@@ -345,6 +345,10 @@
   {
    "fichero": "servidor_memoria.mjs + arbol_campanas.html (mirada global -- KPIs y contadores reales)",
    "que_hace": "§8.81: Capa 1 de la propuesta de vision global. Investigado PanelCampanaService.js real (contadores {proyectos,productos,procesos,tareas} + desviacion + sobreasignacion reales) y DashboardService.js real (obtenerResumenGlobal(), listarTareasRetrasadas()). Construido barato, reutilizando el mismo arbol que ya se lee: leerJerarquiaCampanas() ahora extrae FECHA_FIN_PLAN de cada Tarea (ya estaba en rango, sin leer) y calcula retrasada (mismo criterio real que listarTareasRetrasadas(): estado no cerrado + fecha vencida); cada Campana lleva contadores reales (proyectos/productos/procesos/tareas/tareasRetrasadas) agregados sobre su propio subarbol. arbol_campanas.html: barra de KPIs globales arriba + contadores reales por Campana en la lista raiz antes de expandir (mismo dato que el panel real del Sheet). Capa 2 (desviacion real FECHA_FIN_REAL + sobreasignacion RESPONSABLE_ID) queda anotada, pendiente, mas cara. Verificado con curl real (CAM-0001: 5 proyectos/4 productos/5 procesos/1 tarea/0 retrasadas) y con la logica de render real en el navegador (mock de fetch), 0 errores nuevos de consola."
+  },
+  {
+   "fichero": "arbol_campanas.html (correccion: nombres reales, no contadores)",
+   "que_hace": "§8.82: el operador corrigio la Capa 1 nada mas verla -- los contadores numericos por campana no tienen valor real, necesita ver los nombres de los proyectos relacionados, y quiere ver toda la jerarquia sin desplegar nodo por nodo. Quitados los contadores por nodo; anadido boton real 'Expandir todo'/'Colapsar todo' que abre o cierra toda la jerarquia de una vez -- los nombres reales de cada nivel quedan visibles con una sola accion, sin tocar el toggle individual por nodo que sigue funcionando igual. La barra de KPIs globales (agregados, no por nodo) se mantiene sin cambios. Verificado en el navegador sobre 3 niveles reales de profundidad, 0 errores nuevos de consola."
   }
  ]
 }

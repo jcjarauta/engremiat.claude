@@ -23,8 +23,8 @@
   .hijos { display: none; }
   .hijos.abierto { display: block; }
   .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
-  #btnNuevaCampana { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 12px; cursor: pointer; margin-bottom: 14px; }
-  #btnNuevaCampana:hover { border-color: #6ea8ff; }
+  #btnNuevaCampana, #btnExpandirTodo { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 12px; cursor: pointer; margin-bottom: 14px; margin-right: 8px; }
+  #btnNuevaCampana:hover, #btnExpandirTodo:hover { border-color: #6ea8ff; }
   #kpisGlobales { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 18px; }
   .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); }
   .kpi b { font-size: 14px; }
@@ -56,6 +56,7 @@
 <p id="estado">Comprobando el árbol real...</p>
 <div id="kpisGlobales"></div>
 <button id="btnNuevaCampana" onclick="crear('Campaña', null)">+ Nueva Campaña</button>
+<button id="btnExpandirTodo" onclick="expandirColapsarTodo()">Expandir todo</button>
 <div id="arbol" class="raiz-hijos"></div>
 
 <div id="capaFicha">
@@ -82,18 +83,12 @@ const SIGUIENTE_TIPO = { 'Campaña': 'Proyecto', 'Proyecto': 'Producto', 'Produc
 
 function renderNodo(n) {
   const hijoTipo = SIGUIENTE_TIPO[n.tipo];
-  // §8.81: contadores reales de la campaña -- mismo dato que "1 proyectos, 1 productos..."
-  // del panel real del Sheet, calculado server-side sobre el mismo subarbol.
-  const c = n.contadores;
-  const contadoresHtml = c
-    ? `<span class="contadores">${c.proyectos} proy · ${c.productos} prod · ${c.procesos} proc · ${c.tareas} tar${c.tareasRetrasadas ? ` · <span class="retrasadas">${c.tareasRetrasadas} retrasada${c.tareasRetrasadas > 1 ? 's' : ''}</span>` : ''}</span>`
-    : '';
   return `
     <div class="nodo">
       <div class="fila" data-id="${n.id}">
         ${n.hijos.length || hijoTipo ? '<span class="chevron" onclick="toggle(this)">▸</span>' : '<span class="chevron"></span>'}
         <span class="tipo">${n.tipo}</span>
-        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}${contadoresHtml}</span>
+        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}</span>
         <span class="badge ${n.retrasada ? 'alerta' : ''}">${n.estado || 'sin estado'}</span>
         ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
         <a class="ficha" onclick="abrirFicha('${n.tipo}', '${n.id}', '${n.urlSheet}')">Ficha</a>
@@ -101,6 +96,19 @@ function renderNodo(n) {
       </div>
       <div class="hijos">${n.hijos.map(renderNodo).join('')}</div>
     </div>`;
+}
+
+let todoExpandido = false;
+function expandirColapsarTodo() {
+  todoExpandido = !todoExpandido;
+  document.querySelectorAll('.fila').forEach((fila) => {
+    const hijos = fila.nextElementSibling;
+    const chevron = fila.querySelector('.chevron');
+    fila.classList.toggle('abierto', todoExpandido);
+    if (hijos && hijos.classList.contains('hijos')) hijos.classList.toggle('abierto', todoExpandido);
+    if (chevron && chevron.getAttribute('onclick')) chevron.textContent = todoExpandido ? '▾' : '▸';
+  });
+  document.getElementById('btnExpandirTodo').textContent = todoExpandido ? 'Colapsar todo' : 'Expandir todo';
 }
 
 function renderKpisGlobales(arbol) {
