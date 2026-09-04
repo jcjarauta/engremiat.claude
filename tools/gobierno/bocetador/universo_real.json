@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T05:52:26.627Z",
+  "generadoEn": "2026-09-04T05:57:41.968Z",
   "espacios": [
     {
       "id": "baserow",
@@ -49,6 +49,12 @@
         "Los dos continentes de datos",
         "La fragua protegida",
         "El ciclo de vida remoto"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "NODO_ENGREMIAT"
+        }
       ]
     },
     {
@@ -103,6 +109,20 @@
         "Concilio",
         "Vigilia",
         "Narrador"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "TELAR_SESION"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "TELAR_BIBLIOTECA"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "PLANTILLA_MISION"
+        }
       ]
     },
     {
@@ -111,7 +131,13 @@
       "tipo": "espacio",
       "estado": "activo",
       "resumen": "Gobernar permisos, módulos, recursos, riesgos y salud del universo.",
-      "relacionesDeclaradas": []
+      "relacionesDeclaradas": [],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "97_ESTADO_CONSOLA"
+        }
+      ]
     }
   ],
   "recursos": [
@@ -126,6 +152,12 @@
         "Puerta Humana",
         "VPS y Tailscale",
         "Exportador de gasto"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "GASTO_API"
+        }
       ]
     },
     {
@@ -137,6 +169,12 @@
       "relacionesDeclaradas": [
         "Coordinador",
         "Mensajero"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "92_BUS_TRABAJO"
+        }
       ]
     },
     {
@@ -147,6 +185,12 @@
       "resumen": "Tabla real de Baserow que cataloga documentos y mecanismos reales del propio ecosistema (56 filas: 46 documentos + 10 mecanismos reales, campo TIPO distingue ambos), con notas de Obsidian generadas desde ahí, dentro de Google Drive, como vista de solo lectura -- incluye su propio campo `HUECO_DETECTADO` por fila, el mismo espíritu que este censo aplica al universo entero. Tocada de verdad por `pro",
       "relacionesDeclaradas": [
         "Acervo Prompter"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "DOCUMENTO_ENGREMIAT"
+        }
       ]
     },
     {
@@ -165,6 +209,12 @@
       "resumen": "Las 14 pestañas reales `STG_*` del Sheet -- decisión real del 2026-09-02, documentada en `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §6.5: no son plumbing sin valor conceptual, son la zona real de aterrizaje para carga masiva de datos de un cliente nuevo. Diseño real: `STG_*` → paso de mapeo con IA controlada + Puerta Humana → `insertarRegistroTransaccional`, nunca escritura directa sobre l",
       "relacionesDeclaradas": [
         "Puerta Humana"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "93_MAPEO_IDS_TEMPORALES"
+        }
       ]
     }
   ],
@@ -226,6 +276,12 @@
         "Formularios",
         "IntegrityService",
         "CORE"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "90_CONFIGURACION"
+        }
       ]
     },
     {
@@ -240,6 +296,40 @@
         "Formularios",
         "EstructuraInicial",
         "ConfigRepository"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "01_CAMPANAS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "02_PROYECTOS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "03_PRODUCTOS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "04_PROYECTO_PRODUCTO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "05_PROCESOS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "06_TAREAS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "16_ASIGNACION"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "17_RELACION"
+        }
       ]
     },
     {
@@ -251,6 +341,28 @@
       "relacionesDeclaradas": [
         "Economico",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "39_PEDIDO_CLIENTE"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "40_PEDIDO_CLIENTE_LINEA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "41_ENTREGA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "42_ENTREGA_LINEA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "43_CONTRATO_SERVICIO"
+        }
       ]
     },
     {
@@ -262,6 +374,12 @@
       "relacionesDeclaradas": [
         "Convocatorias",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "44_OPORTUNIDAD"
+        }
       ]
     },
     {
@@ -273,6 +391,16 @@
       "relacionesDeclaradas": [
         "Aprovisionamiento",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "38_CLIENTE"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "PAQUETE_CLIENTE"
+        }
       ]
     },
     {
@@ -284,6 +412,48 @@
       "relacionesDeclaradas": [
         "GASTO_API",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "08_MATERIALES"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "09_PRODUCTO_MATERIAL"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "10_TAREA_MATERIAL"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "15_PROVEEDORES"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "19_MOVIMIENTO_MATERIAL"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "21_PROVEEDOR_MATERIAL"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "25_PEDIDO_PROVEEDOR"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "26_PEDIDO_PROVEEDOR_LINEA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "27_RECEPCION"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "28_RECEPCION_LINEA"
+        }
       ]
     },
     {
@@ -306,6 +476,12 @@
       "relacionesDeclaradas": [
         "Ventas",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "37_ETIQUETA_IMPACTO"
+        }
       ]
     },
     {
@@ -317,6 +493,12 @@
       "relacionesDeclaradas": [
         "Oportunidad",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "36_CONVOCATORIA"
+        }
       ]
     },
     {
@@ -329,6 +511,20 @@
         "Ventas",
         "GASTO_API",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "30_PRESUPUESTO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "31_FUENTE_FINANCIACION"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "32_COSTE"
+        }
       ]
     },
     {
@@ -386,6 +582,52 @@
       "relacionesDeclaradas": [
         "Cliente",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "07_TAREA_RESPONSABLE"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "11_PERSONAS_EQUIPOS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "22_EQUIPO_MIEMBRO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "23_RECURSO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "24_TAREA_RECURSO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "29_HORARIO"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "33_COMPETENCIA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "34_PERSONA_COMPETENCIA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "35_RECURSO_COMPETENCIA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "45_TAREA_COMPETENCIA"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "46_TAREA_RECURSO_NECESIDAD"
+        }
       ]
     },
     {
@@ -397,6 +639,24 @@
       "relacionesDeclaradas": [
         "Puente historia leyes",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "12_DECISIONES"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "13_INCIDENCIAS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "14_DOCUMENTOS"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "18_VINCULO"
+        }
       ]
     },
     {
@@ -407,6 +667,12 @@
       "resumen": "Módulo real -- dueño de una sola pestaña real del Sheet (`MODULO_POR_ENTIDAD_MVP`, `src/Ids.js`): `20_EJECUCION_TAREA`. El más pequeño de los módulos reales de negocio -- sin paquete propio todavía en `package-map.json`.",
       "relacionesDeclaradas": [
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "20_EJECUCION_TAREA"
+        }
       ]
     },
     {
@@ -418,6 +684,12 @@
       "relacionesDeclaradas": [
         "El Sheet",
         "Modulos acoplables"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "94_ESCENARIOS"
+        }
       ]
     }
   ],
@@ -453,6 +725,12 @@
         "Acervo Prompter",
         "n8n",
         "Baserow"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "VIGILIA_TAREA"
+        }
       ]
     },
     {
@@ -469,6 +747,16 @@
         "Baserow",
         "Actualizar libreria cliente",
         "Cerrar ciclo"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "METRICA_FABRICACION"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "99_TRIAGE_LOCAL"
+        }
       ]
     },
     {
@@ -481,6 +769,20 @@
         "El Sheet",
         "Relevo",
         "Puerta Humana"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "EJECUTOR_LOCAL"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "96_PROMPT_EJECUTOR"
+        },
+        {
+          "sistema": "Sheet",
+          "recordId": "95_DIARIO_NAVEGACION"
+        }
       ]
     },
     {
@@ -606,6 +908,12 @@
       "relacionesDeclaradas": [
         "Concilio",
         "Zona de aterrizaje STG"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "94_ESCENARIOS"
+        }
       ]
     },
     {
@@ -723,6 +1031,12 @@
       "relacionesDeclaradas": [
         "92_BUS_TRABAJO",
         "Mensajero"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "92_BUS_TRABAJO"
+        }
       ]
     },
     {
@@ -832,6 +1146,12 @@
       "resumen": "El sistema no se disculpa por sus límites — los documenta. Ejemplo real: el backup automático VPS→Pi espera hasta 5 minutos a que la Pi responda; si no aparece, cancela el trabajo y lo deja escrito en el log, nunca falla en silencio (ver El ciclo de vida remoto). Mismo espíritu que `98_LOG_GOBIERNO`, que registra sus propios `drift_detectado` reales en vez de ocultarlos.",
       "relacionesDeclaradas": [
         "Coordinador"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Sheet",
+          "recordId": "98_LOG_GOBIERNO"
+        }
       ]
     },
     {

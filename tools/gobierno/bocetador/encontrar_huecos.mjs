@@ -40,13 +40,15 @@ function recogerVinculosReales() {
     for (const v of f.vinculoReal || []) vinculos.push({ ...v, fuente: nombre });
   }
 
+  // §8.59: cargar_desde_vault.mjs ya extrae "## Vínculo real" de la bóveda completa
+  // (misma lógica real que extraer_anatomia_entidad.mjs) -- las fixtures de arriba
+  // siguen siendo un puñado de ejemplos ilustrativos, esta es la cobertura real.
   const universoPath = join(__dirname, 'universo_real.json');
   try {
     const u = leerJson(universoPath);
     for (const grupo of ['espacios', 'recursos', 'modulos', 'personajes', 'oficios', 'reglas']) {
       for (const n of u[grupo] || []) {
-        // El cargador de la boveda no escribe vinculoReal todavia (§8.9) --
-        // se anota como pendiente real, no se inventa uno para que cuadre.
+        for (const v of n.vinculoReal || []) vinculos.push({ ...v, fuente: n.nombre + ' (bóveda)' });
       }
     }
   } catch { /* universo_real.json es opcional para este informe */ }

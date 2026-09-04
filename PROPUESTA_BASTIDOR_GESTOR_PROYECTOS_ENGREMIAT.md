@@ -864,6 +864,12 @@ Los dos puntos de la valoración anterior (§8.56 fin), construidos y verificado
 
 **Hallazgo real, anotado, no corregido en esta pasada**: `encontrar_huecos.mjs` (§8.57) cruza Sheet/Baserow contra `vinculoReal`, pero solo lee `fixtures/` -- un puñado de ejemplos ilustrativos (4 Espacios, 2 Personajes...), no la bóveda completa. Y `cargar_desde_vault.mjs` tampoco extrae las secciones reales "## Vínculo real" -- solo "## Relaciones". Son **dos parsers reales del mismo vault, sin compartir datos** (el Bocetador y `extraer_anatomia_entidad.mjs` del Graphify Visor) -- por eso el informe de huecos entiende mucha menos cobertura real de la que existe hoy. Queda anotado como pendiente real, no urgente.
 
+### 8.59 "Soluciona esto" -- unificados los dos lectores del vault
+
+Resuelto el hallazgo anotado en §8.58. `cargar_desde_vault.mjs` gana `extraerVinculoReal(cuerpo)` -- **misma lógica real** ya probada en `extraer_anatomia_entidad.mjs` (`Sheet:\`XX_NOMBRE\``, `Baserow:\`NOMBRE\``), reutilizada letra por letra, no reinventada -- y añade el campo `vinculoReal` a cada nodo real del `universo_real.json` que tenga citas. `encontrar_huecos.mjs` completa el bucle que antes estaba vacío para leer estos vínculos reales, además de los ejemplos ilustrativos de `fixtures/`.
+
+**Resultado real, verificado ejecutando el propio informe**: Sheet pasó de 2/46 a **46/46** pestañas de negocio con espejo real declarado (ej. `Operativa.md` ya citaba 11 pestañas reales que nadie veía desde este informe). Baserow pasó de 1/18 a **9/18** -- `PLANTILLA_MISION`/`TELAR_SESION`/`TELAR_BIBLIOTECA` ya aparecen cubiertas, y quedan huecos reales genuinos (`AGORA`, `TAREA`, `PERSONAJE`, `ACERVO`...) -- una cifra creíble, no sospechosamente perfecta, señal de que el cruce funciona de verdad y no está inflando nada. `universo_real.json` regenerado (ambas copias), verificado sin errores en el navegador.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

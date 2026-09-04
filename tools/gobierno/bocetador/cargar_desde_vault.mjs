@@ -75,6 +75,25 @@ function extraerRelaciones(cuerpo) {
   return [...seccion[1].matchAll(/\[\[([^\]]+)\]\]/g)].map(m => m[1]);
 }
 
+// -- §8.59: cierra el hallazgo de encontrar_huecos.mjs -- el Bocetador y el Graphify
+// Visor (extraer_anatomia_entidad.mjs) eran dos lectores del mismo vault que no se
+// cruzaban. Misma logica real de extraccion que ya usa extraer_anatomia_entidad.mjs
+// para "## Vínculo real" (Sheet:`XX_NOMBRE`, Baserow:`NOMBRE`) -- reutilizada, no
+// reinventada, para que ambos parsers vean exactamente la misma cita real.
+function extraerVinculoReal(cuerpo) {
+  const idx = cuerpo.indexOf('## Vínculo real');
+  if (idx < 0) return [];
+  const zona = cuerpo.slice(idx);
+  const vinculos = [];
+  zona.split('\n').forEach((linea) => {
+    if (!linea.trim().startsWith('-')) return;
+    let m;
+    if ((m = linea.match(/Sheet:\s*`(\d\d_[A-Z_]+)`/))) vinculos.push({ sistema: 'Sheet', recordId: m[1] });
+    if ((m = linea.match(/Baserow:\s*`([A-Z_]+)`/))) vinculos.push({ sistema: 'Baserow', recordId: m[1] });
+  });
+  return vinculos;
+}
+
 function extraerResumen(cuerpo) {
   const antesDeRelaciones = cuerpo.split(/## Relaciones/)[0];
   const parrafo = antesDeRelaciones.split(/\n\s*\n/).map(p => p.trim()).find(p => p && !p.startsWith('#') && !p.startsWith('-'));
@@ -88,6 +107,7 @@ function cargarNodos(carpeta, tipo) {
     const texto = readFileSync(ruta, 'utf-8');
     const { fm, cuerpo } = parsearFrontmatter(texto);
     const nombre = fm.title || ruta.split(/[\\/]/).pop().replace('.md', '');
+    const vinculoReal = extraerVinculoReal(cuerpo);
     nodos.push({
       id: slug(nombre),
       nombre,
@@ -95,6 +115,7 @@ function cargarNodos(carpeta, tipo) {
       estado: fm.estado || 'desconocido',
       resumen: extraerResumen(cuerpo),
       relacionesDeclaradas: extraerRelaciones(cuerpo),
+      ...(vinculoReal.length ? { vinculoReal } : {}),
     });
   }
   return nodos;
