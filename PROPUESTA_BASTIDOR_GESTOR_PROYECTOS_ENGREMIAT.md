@@ -1166,6 +1166,16 @@ Pedido: *"inserta este grafo en la pagina home, valora la propuesta: la idea es 
 
 Verificado en el navegador real: home → Grafos del sistema → las 3 secciones con contenido (Espacio/Personaje/Herramienta) y las 2 vacías con su huella honesta (Recurso·Módulo·Regla, con enlace a la plantilla). Desplegado con `desplegar_visor.mjs` (un fallo transitorio real de arranque en frío del contenedor tras el recreate, en 3 páginas antiguas -- ya documentado como comportamiento conocido de `npx serve`, confirmado 200 al reintentar segundos después).
 
+### 8.88 Corrección: solo el grafo nuevo a la vista, histórico plegado sin nombres
+
+Pedido: *"por ahora solo quiero ver el nuevo grafo, el historico hazlo desplegable para consultar pero que no aparezca al entrar, tampoco hagas visible los nombres del historico"*. La agrupación por tipo de §8.87 se mantiene íntegra (nada se pierde), pero deja de ser lo primero que se ve: `grafos.html` ahora abre con una única sección "Nuevo" (la tarjeta de `vista_sistema.html`), y el resto de las 9 tarjetas + sus 4 secciones por tipo quedan dentro de un `<details>` nativo, cerrado por defecto -- su `<summary>` solo dice "Histórico -- 9 grafos anteriores", ningún nombre visible hasta desplegarlo. Sin JavaScript -- `<details>`/`<summary>` es HTML nativo, más simple y robusto que replicar el patrón manual de clases `.abierto` ya usado en otras páginas del visor.
+
+Verificado en el navegador real: al entrar solo se ve la tarjeta nueva y la línea "▸ Histórico -- 9 grafos anteriores"; clic la despliega mostrando las 4 secciones por tipo completas, con su chevron cambiando a "▾".
+
+### 8.89 Enlace a Home en panel_operativo.html y arbol_campanas.html
+
+Pedido: *"tambien añade a tablero de control y panel de campañas el link a home"*. Ninguna de las dos páginas tenía manera de volver a `home.html` -- solo se llegaba a ellas navegando desde ahí, sin retorno. Añadido `<a class="volver" href="home.html">← Home</a>` al principio de ambas, mismo estilo ya usado en `vista_sistema.html`/`grafos.html`. Verificado en el navegador real en ambas páginas.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
