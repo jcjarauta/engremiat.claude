@@ -138,6 +138,42 @@ async function leerProcesosTareasReales(proyectoId) {
     .sort((a, b) => (a.ordenSecuencia || '').localeCompare(b.ordenSecuencia || ''));
 }
 
+// -- §8.74: Panel Operativo -- pivote real del operador (no Bastidor): "empezar a producir"
+// usando el backlog real que YA existe sobre el propio Engremiat, en vez de trabajo hipotetico
+// de cliente. NIVEL_INCIDENCIA='Producto' es el campo real que separa incidencias sobre la
+// propia libreria (candidatas de autoregeneracion) de trabajo de proyecto/cliente piloto
+// (Amigurumi, Huerto...) -- comprobado con datos reales antes de construir: 22 abiertas de 49
+// totales de nivel Producto. 18_VINCULO (TIPO_VINCULO='Corrige', Incidencia->Tarea) es el cruce
+// real ya usado por el propio Sheet (ver AprovisionamientoService.js/Biblioteca.html) para
+// enlazar una incidencia con la tarea que la corrige.
+let cacheIncidencias = { en: 0, datos: null };
+let cacheVinculos = { en: 0, datos: null };
+const ESTADOS_INCIDENCIA_ABIERTA = new Set(['Abierta', 'En análisis', 'En resolución']);
+
+async function leerIncidenciasProductoAbiertas() {
+  const [inc, vinc, tareas] = await Promise.all([
+    leerTablaSheetCacheada('13_INCIDENCIAS', 'A1:S300', cacheIncidencias),
+    leerTablaSheetCacheada('18_VINCULO', 'A1:H500', cacheVinculos),
+    leerTablaSheetCacheada('06_TAREAS', 'A1:N1000', cacheTareas),
+  ]);
+  const iId = inc.cab.indexOf('ID'), iNivel = inc.cab.indexOf('NIVEL_INCIDENCIA'), iTitulo = inc.cab.indexOf('TITULO'),
+    iPrioridad = inc.cab.indexOf('PRIORIDAD'), iEstado = inc.cab.indexOf('ESTADO'), iFechaLimite = inc.cab.indexOf('FECHA_LIMITE');
+  const abiertas = inc.filas.filter((f) => f[iId] && f[iNivel] === 'Producto' && ESTADOS_INCIDENCIA_ABIERTA.has(f[iEstado]));
+
+  const iVOrigenTipo = vinc.cab.indexOf('ENTIDAD_ORIGEN_TIPO'), iVOrigenId = vinc.cab.indexOf('ENTIDAD_ORIGEN_ID'),
+    iVDestinoTipo = vinc.cab.indexOf('ENTIDAD_DESTINO_TIPO'), iVDestinoId = vinc.cab.indexOf('ENTIDAD_DESTINO_ID'),
+    iVTipo = vinc.cab.indexOf('TIPO_VINCULO');
+  const corrige = vinc.filas.filter((f) => f[iVTipo] === 'Corrige' && f[iVOrigenTipo] === 'Incidencia' && f[iVDestinoTipo] === 'Tarea');
+
+  const iTrId = tareas.cab.indexOf('ID'), iTrNombre = tareas.cab.indexOf('NOMBRE'), iTrEstado = tareas.cab.indexOf('ESTADO');
+  const tareaPorId = new Map(tareas.filas.map((t) => [t[iTrId], { nombre: t[iTrNombre] || '', estado: t[iTrEstado] || '' }]));
+
+  return abiertas.map((f) => ({
+    id: f[iId], titulo: f[iTitulo] || '', prioridad: f[iPrioridad] || '', estado: f[iEstado] || '', fechaLimite: f[iFechaLimite] || '',
+    tareasVinculadas: corrige.filter((v) => v[iVOrigenId] === f[iId]).map((v) => ({ id: v[iVDestinoId], ...(tareaPorId.get(v[iVDestinoId]) || { nombre: '(no encontrada)', estado: '' }) })),
+  }));
+}
+
 // -- §8.67: puente barato Recursos -> Quien. 12_DECISIONES esta real pero vacia hoy
 // (0 filas, comprobado antes de construir nada) -- 92_BUS_TRABAJO si tiene actividad
 // real rica (quien reclamo, cuando, resultado). Mismo patron JWT ya probado.
@@ -416,6 +452,14 @@ const servidor = createServer(async (req, res) => {
       }
       const procesos = await leerProcesosTareasReales(proyectoId);
       res.writeHead(200); res.end(JSON.stringify({ procesos, leidoEn: new Date(cacheProcesos.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/incidencias_producto_abiertas') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const incidencias = await leerIncidenciasProductoAbiertas();
+      res.writeHead(200); res.end(JSON.stringify({ incidencias, leidoEn: new Date(cacheIncidencias.en).toISOString() })); return;
     }
 
     if (req.method === 'GET' && req.url === '/api/concilio_estado') {

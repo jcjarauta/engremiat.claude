@@ -985,6 +985,47 @@ Distinción real hecha antes de reutilizar nada: el formulario del Sheet (`Solic
 
 Construido: `solicitarMontajeReal()` en `servidor_memoria.mjs` (proxy real al webhook), `GET /api/modulos_montaje_disponibles` (14 módulos reales de negocio, `package-map.json` menos CORE), `POST /api/aprovisionar_montaje`. En `mesa_montaje.html`: caja real "Constructor del universo -- solicitar montaje real" (nombre + checkboxes de módulos + botón), junto a Narrador. Verificado con curl real contra el endpoint propio (`SOL-007`, tras un hipo transitorio del contenedor recién reiniciado en el primer intento) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+### 8.72 Identidad de las 7 cajas (boceto_sheet) + investigación de estándares de juegos cooperativos
+
+**Ejercicio "sin tocar código"**: nuevo `boceto_sheet` real (Google Sheets, `1CQY-y5FulzoamTgXTB8maG82evNFYHECe-6WxeXbBV4`), tabla con una fila por caja del layout de 6 zonas (Centro compartido se cuenta aparte de Comunidad a efectos de identidad -- 7 filas), columnas `CAJA / PREGUNTA FUNDAMENTAL / QUÉ QUIERO REPRESENTAR (propuesta) / TU AJUSTE`. Primera identidad propuesta, con la distinción clave hecha explícita por primera vez -- **Constructor del universo** (donde NACE un universo nuevo, vía Aprovisionamiento) vs. **Espacio de trabajo** (un universo YA existente, en marcha) son dos cajas reales distintas, no la misma cosa vista dos veces.
+
+**Investigación de estándares reales de diseño de juegos cooperativos/progresión** (búsqueda web, 5 hallazgos):
+1. **Engine/deck-building** -- acumular piezas interconectadas que producen más capacidad con el tiempo. Ya construido de verdad: los módulos acoplables con `moduleDependencies` resueltas automáticamente.
+2. **Legacy/campaign games** -- mundo persistente, cambios permanentes, narrativa ramificada por decisiones reales. Ya real: cada montaje aprobado es irreversible; `91_HISTORIAL`/`12_DECISIONES` son el registro legacy.
+3. **Progressive disclosure / revelación gradual de complejidad** -- *"complejidad revelada a medida que el jugador se la gana, no antes"*. Hallazgo clave: explica formalmente por qué la mesa se siente desordenada hoy -- se muestran las 7+ cajas completas a cualquiera, tenga o no un universo montado.
+4. **Colony sim / árbol de progreso** -- construir algo desbloquea nuevas líneas de producción. Aplicado: activar un módulo debería desbloquear su caja correspondiente, no mostrar cajas vacías de módulos que el cliente no tiene.
+5. **Gamificación seria de gestión de proyectos** -- existe investigación académica real sobre este mismo objetivo (cerrar la brecha teoría/práctica con decisiones simuladas), no es una idea excéntrica.
+
+**Reformulación propuesta** (capas por madurez del universo del visitante, eje temporal sobre el layout espacial de 6 zonas ya fijado):
+- **Etapa 0** (sin universo): Estado del universo + Narrador + Constructor del universo visibles; resto oculto/atenuado.
+- **Etapa 1** (montaje recién aprobado): se desbloquea Espacio de trabajo (jerarquía real, vacía, invitando a la primera misión).
+- **Etapa 2** (universo con actividad real): se desbloquean Gestor de proyectos y Comunidad.
+- **Etapa 3** (sistema maduro): Información/Traza/Inspector cobra sentido -- hay historia real que auditar.
+
+No construido -- reformulación de diseño, pendiente de valorar tamaño/granularidad de las 7 cajas (§8.73) antes de tocar código.
+
+### 8.73 Sobredimensión conceptual, no de cantidad -- auditoría de las 7 cajas
+
+El operador corrigió el enfoque: la pregunta no era "¿7 cajas es mucho o poco?" (cuestión de cantidad, ya resuelta -- 7 encaja en el rango real recomendado 4-7, ver investigación UX de §8.72), sino si cada caja representa **una sola cosa coherente**. Auditoría real, caja por caja:
+
+Bien dimensionadas (un mecanismo real, sin mezcla): Narrador, Constructor del universo, Comunidad, Información/Traza/Inspector.
+
+Dos problemas reales encontrados:
+1. **"Estado del universo" no es una caja del mismo nivel que las demás** -- las otras son *dominios* (mecanismo/dato propio real); esta es un *resumen agregado de las otras 6*, sin mecanismo propio. Es una capa por encima, no una séptima caja al lado.
+2. **"Espacio de trabajo" está sobredimensionado** -- mismo fallo que ya se encontró en "Escenario" del Bocetador (§8.63: recursos+oficios+espacios+reglas amontonados en una pestaña). Aquí se definió con Ficha+Árbol jerárquico+Kanban+Gantt+Mesa+Misiones -- 5 mecanismos reales distintos, cada uno con fichero propio en el Sheet (`FichaProyecto.html`, `Kanban*.html`, `GanttPlanReal.html`), metidos bajo un solo nombre. Efecto colateral: el límite con "Gestor de proyectos" queda borroso justo en el Gantt (¿trabajo o gobierno del trabajo?).
+
+Propuesta (no construida): sacar Estado del universo de la lista de 7 (pasa a capa de resumen) y partir Espacio de trabajo en sus piezas reales, resolviendo explícitamente a qué caja pertenece el Gantt.
+
+### 8.74 Pivote real -- Panel Operativo, no Bastidor, para "empezar a producir"
+
+El operador propuso simplificar radicalmente: en vez de seguir construyendo el juego cooperativo (para futuros clientes hipotéticos), dar prioridad a una herramienta mínima para que él mismo, como operador, empiece a trabajar el backlog real del propio sistema Engremiat -- usando los ciclos ya reales (Ejecutor/Vigilia/Relevo/Cronista), sin Narrador (esta misma conversación ya cumple esa función).
+
+**Verificado antes de construir** (mismo criterio de toda la sesión): el backlog real existe y es sustancial -- **67 incidencias reales totales, 37 abiertas**, de las cuales **49 son de `NIVEL_INCIDENCIA=Producto`** (sobre la propia librería Engremiat, no trabajo de cliente/proyecto piloto como Amigurumi/Huerto/Yurta) y **22 de esas siguen abiertas**. Este es el campo real que separa limpiamente "autoregeneración de Engremiat" de "trabajo de cliente" en la misma hoja. `18_VINCULO` (`TIPO_VINCULO='Corrige'`, `Incidencia→Tarea`) es el cruce real ya usado por el propio Sheet para enlazar una incidencia con la tarea que la corrige -- confirmado con datos reales (`VIN-0001`: `INC-0001` Corrige `TAR-0001`).
+
+**Construido**: nueva página independiente `panel_operativo.html` (deliberadamente separada de `mesa_montaje.html` -- no repetir el error de amontonar cajas ya diagnosticado en §8.74 mismo). Dos secciones, nada más: (1) incidencias reales abiertas de nivel Producto, con sus tareas vinculadas anidadas (`leerIncidenciasProductoAbiertas()`, nuevo `GET /api/incidencias_producto_abiertas`); (2) `92_BUS_TRABAJO` reutilizado tal cual (`/api/bus_trabajo`, ya existía), agrupado por quién del ciclo real está trabajando qué. Bastidor (Narrador, Constructor del universo, Comunidad, Feria, la mesa/canvas) queda intacto, sin tocar -- sigue siendo el producto para futuros clientes, ahora explícitamente separado del uso operativo diario.
+
+Verificado con curl real contra el endpoint nuevo (INC-0001↔TAR-0001 correctamente anidado) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola. Registrado en `indice.html`.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
