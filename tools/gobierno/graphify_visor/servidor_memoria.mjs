@@ -81,6 +81,33 @@ async function leerProyectosReales() {
   return proyectos;
 }
 
+// -- §8.67: puente barato Recursos -> Quien. 12_DECISIONES esta real pero vacia hoy
+// (0 filas, comprobado antes de construir nada) -- 92_BUS_TRABAJO si tiene actividad
+// real rica (quien reclamo, cuando, resultado). Mismo patron JWT ya probado.
+let cacheBusTrabajo = { en: 0, datos: null };
+async function leerBusTrabajoReal() {
+  if (cacheBusTrabajo.datos && Date.now() - cacheBusTrabajo.en < 30000) return cacheBusTrabajo.datos;
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/92_BUS_TRABAJO!A1:M500',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const j = await r.json();
+  const filas = j.values || [];
+  const cab = filas[0] || [];
+  const idx = (nombre) => cab.indexOf(nombre);
+  const iId = idx('ID_TAREA'), iReclamadoPor = idx('RECLAMADO_POR'), iEstado = idx('ESTADO'),
+    iFecha = idx('FECHA_RECLAMACION'), iResultado = idx('RESULTADO');
+  const tareas = filas.slice(1)
+    .filter((f) => f[iId])
+    .map((f) => ({
+      id: f[iId], reclamadoPor: f[iReclamadoPor] || '', estado: f[iEstado] || '',
+      fecha: f[iFecha] || '', resultado: (f[iResultado] || '').slice(0, 140),
+    }));
+  cacheBusTrabajo = { en: Date.now(), datos: tareas };
+  return tareas;
+}
+
 // -- §8.64: puentes 2 y 4 del cruce de 13x8 preguntas -- GASTO_API (Recursos) y
 // PLANTILLA_MISION (Feria), ambos ya reales en Baserow, mismo patron de lectura que
 // exportador_prometheus_gasto.mjs (Authorization: TOKEN, no Bearer -- Baserow real, no OAuth).
@@ -190,6 +217,14 @@ const servidor = createServer(async (req, res) => {
       }
       const proyectos = await leerProyectosReales();
       res.writeHead(200); res.end(JSON.stringify({ proyectos, leidoEn: new Date(cacheProyectos.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/bus_trabajo') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const tareas = await leerBusTrabajoReal();
+      res.writeHead(200); res.end(JSON.stringify({ tareas, leidoEn: new Date(cacheBusTrabajo.en).toISOString() })); return;
     }
 
     if (req.method === 'GET' && req.url === '/api/recursos') {

@@ -114,6 +114,7 @@
     <h3>Recursos reales</h3>
     <p class="hint" id="estadoRecursos">Comprobando el gasto real...</p>
     <div id="listaRecursos"></div>
+    <p class="hint" id="quienTrabajo"></p>
     <h3>Feria -- escenarios publicados</h3>
     <p class="hint" id="estadoFeria">Comprobando lo publicado ahora...</p>
     <div id="listaFeria"></div>
@@ -394,6 +395,19 @@ async function cargarRecursosReales() {
   } catch {
     estado.textContent = 'No se pudo leer el gasto real ahora mismo.';
     cont.innerHTML = '';
+  }
+  // §8.67: puente Quien -- 92_BUS_TRABAJO ya sabe quien reclamo cada tarea real
+  const quien = document.getElementById('quienTrabajo');
+  try {
+    const r2 = await fetch(URL_MEMORIA + '/api/bus_trabajo', { signal: AbortSignal.timeout(4000) });
+    if (!r2.ok) throw new Error('respuesta no ok');
+    const { tareas } = await r2.json();
+    const porQuien = {};
+    tareas.forEach(t => { const q = t.reclamadoPor || '(sin asignar)'; porQuien[q] = (porQuien[q] || 0) + 1; });
+    const resumen = Object.entries(porQuien).sort((a, b) => b[1] - a[1]).map(([q, n]) => `${q} (${n})`).join(', ');
+    quien.textContent = tareas.length ? `Quién trabajó de verdad (92_BUS_TRABAJO, ${tareas.length} tarea(s)): ${resumen}.` : 'Ningún trabajo real registrado todavía en el bus.';
+  } catch {
+    quien.textContent = '';
   }
 }
 

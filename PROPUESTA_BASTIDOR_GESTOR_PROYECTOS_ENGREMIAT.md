@@ -931,6 +931,12 @@ Construidos los 4 puentes más baratos del cruce 13×8 (§8.63 fin): `/api/proye
 
 Resultado real: **61/77 nodos** del mapa ganan `rolReal`/`agenciaReal` -- los 16 restantes son fichas más nuevas que `atlas_familias.json` todavía no cubre (Narrador, Acervo, Pregonero...), gap real y honesto, no oculto. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
 
+### 8.67 Siguiente puente barato -- Recursos (Quién), vía 92_BUS_TRABAJO
+
+Candidata inicial: `12_DECISIONES` para Gobierno (Cuándo/Por qué). Comprobado antes de tocar nada: **real pero vacía hoy** (0 filas, solo cabecera) -- no se construye un puente hacia dato vacío sin decirlo.
+
+`92_BUS_TRABAJO` sí tiene actividad real rica -- 9 tareas reales, `RECLAMADO_POR` (DeepSeek, Claude, cron...), `ESTADO`, `RESULTADO`. Nuevo `/api/bus_trabajo`. La mesa muestra ahora "Quién trabajó de verdad" agrupado por trabajador real. Verificado con curl y con la lógica de render real, sin errores.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

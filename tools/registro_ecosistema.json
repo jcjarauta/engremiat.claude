@@ -293,6 +293,10 @@
   {
    "fichero": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
    "que_hace": "§8.66: puente barato Mapa del universo -> Como/Cuanto. rolReal/agenciaReal ya calculados por extraer_anatomia_entidad.mjs y servidos en atlas_familias.json, pero universo_real.json (lo que carga el Bocetador) nunca los cruzaba -- mismo patron real que la unificacion de vinculoReal (§8.59): leer el fichero real ya existente, no recalcular nada. cargarRolYAgenciaReal() lee atlas_familias.json y anade rolReal/agenciaReal a cada nodo real que tenga match por slug. Resultado real: 61/77 nodos del universo_real.json ganan estos dos campos (los 16 restantes son fichas mas nuevas que atlas_familias.json todavia no cubre -- gap real, honesto, no oculto). Regenerado universo_real.json (ambas copias), validar_bocetador.mjs sigue APROBADO, app verificada sin errores en el navegador."
+  },
+  {
+   "fichero": "servidor_memoria.mjs + mesa_montaje.html (puente Recursos->Quien)",
+   "que_hace": "§8.67: puente barato Recursos -> Quien, via 92_BUS_TRABAJO. Comprobado antes de construir: 12_DECISIONES (candidata inicial para Gobierno) esta real pero VACIA hoy (0 filas, solo cabecera) -- no se construyo un puente hacia dato vacio, se comprobo primero. 92_BUS_TRABAJO si tiene actividad real rica (RECLAMADO_POR/ESTADO/FECHA_RECLAMACION/RESULTADO, 9 tareas reales ya registradas por Concilio/Ejecutor/workers). Nuevo /api/bus_trabajo (mismo patron JWT ya probado). mesa_montaje.html amplia cargarRecursosReales() para mostrar 'Quien trabajo de verdad' agrupado por RECLAMADO_POR real. Verificado con curl real y con la logica de render real (mock de fetch, 0 errores de consola)."
   }
  ]
 }
