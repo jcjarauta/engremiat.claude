@@ -858,6 +858,12 @@ Los dos puntos de la valoración anterior (§8.56 fin), construidos y verificado
 
 **Hallazgo real, corregido antes de darlo por bueno**: el `clienteId` de un universo cargado desde Baserow (`cliente:PAQ-0001`) y el `CLIENTE_ID` real del Sheet (`CLI-0001`) son dos espacios de IDs distintos, sin puente verificado entre ellos -- filtrar por igualdad literal habría fingido un cruce que no existe. Corregido: el filtrado por cliente solo se activa cuando el id real tiene forma de `CLIENTE_ID` del Sheet; en cualquier otro caso se muestra el tablero completo, con una nota honesta explicando por qué no está filtrado, en vez de mostrar "0 misiones" de forma engañosa.
 
+### 8.58 "Empieza sincronizando Bocetador"
+
+`cargar_desde_vault.mjs` regenerado (solo lectura de la bóveda real) sobre las dos copias reales (`bocetador/universo_real.json` y la que la app empaqueta, `app/src/universo_real.json`): 10 Espacios, 5 Recursos, 21 Módulos, 20 Personajes (**Narrador y Pregonero ya incluidos**, faltaban en la copia anterior), 11 Oficios, 6 Reglas, 32 Relaciones -- 73 nodos reales. Verificado en el navegador de verdad: `npm run dev`, la app carga **108 figuras sin ningún error**, con un único aviso honesto propio (3 relaciones que referencian un grupo descriptivo sin caja propia, marcado explícitamente "no es un error"). `validar_bocetador.mjs` sigue **APROBADO**.
+
+**Hallazgo real, anotado, no corregido en esta pasada**: `encontrar_huecos.mjs` (§8.57) cruza Sheet/Baserow contra `vinculoReal`, pero solo lee `fixtures/` -- un puñado de ejemplos ilustrativos (4 Espacios, 2 Personajes...), no la bóveda completa. Y `cargar_desde_vault.mjs` tampoco extrae las secciones reales "## Vínculo real" -- solo "## Relaciones". Son **dos parsers reales del mismo vault, sin compartir datos** (el Bocetador y `extraer_anatomia_entidad.mjs` del Graphify Visor) -- por eso el informe de huecos entiende mucha menos cobertura real de la que existe hoy. Queda anotado como pendiente real, no urgente.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

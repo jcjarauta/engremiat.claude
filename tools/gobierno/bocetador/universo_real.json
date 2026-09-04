@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-02T18:42:12.500Z",
+  "generadoEn": "2026-09-04T05:52:26.627Z",
   "espacios": [
     {
       "id": "baserow",
@@ -98,12 +98,20 @@
       "nombre": "Telar",
       "tipo": "espacio",
       "estado": "activo",
-      "resumen": "No es un personaje — es el taller donde varios oficios y personajes trabajan juntos. Cuatro ciclos reales (Urdimbre → Trama → Hilo conductor → Parte de Vigilia/Relevo), validados dos veces, domain-agnostic: sirve igual para tejer un cuento, diseñar un producto o convocar una cooperativa. Dentro de este espacio operan Concilio, los Acervos y Vigilia — el mismo mecanismo que ya construye proyectos d",
+      "resumen": "No es un personaje — es el taller donde varios oficios y personajes trabajan juntos. Cuatro ciclos reales (Urdimbre → Trama → Hilo conductor → Parte de Vigilia/Relevo), validados dos veces, domain-agnostic: sirve igual para tejer un cuento, diseñar un producto o convocar una cooperativa. Dentro de este espacio operan Concilio, los Acervo y Vigilia — el mismo mecanismo que ya construye proyectos de",
       "relacionesDeclaradas": [
         "Concilio",
         "Vigilia",
         "Narrador"
       ]
+    },
+    {
+      "id": "consola",
+      "nombre": "Consola",
+      "tipo": "espacio",
+      "estado": "activo",
+      "resumen": "Gobernar permisos, módulos, recursos, riesgos y salud del universo.",
+      "relacionesDeclaradas": []
     }
   ],
   "recursos": [
@@ -129,6 +137,34 @@
       "relacionesDeclaradas": [
         "Coordinador",
         "Mensajero"
+      ]
+    },
+    {
+      "id": "documento_engremiat",
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "tipo": "recurso",
+      "estado": "activo",
+      "resumen": "Tabla real de Baserow que cataloga documentos y mecanismos reales del propio ecosistema (56 filas: 46 documentos + 10 mecanismos reales, campo TIPO distingue ambos), con notas de Obsidian generadas desde ahí, dentro de Google Drive, como vista de solo lectura -- incluye su propio campo `HUECO_DETECTADO` por fila, el mismo espíritu que este censo aplica al universo entero. Tocada de verdad por `pro",
+      "relacionesDeclaradas": [
+        "Acervo Prompter"
+      ]
+    },
+    {
+      "id": "agora",
+      "nombre": "AGORA",
+      "tipo": "recurso",
+      "estado": "nascente",
+      "resumen": "Tabla real de Baserow (ID/USUARIO/TIPO/NOMBRE/DESCRIPCION/ESTADO/SALDO_USUARIO) marcada como módulo activo para el cliente real Piloto Plaza (ver `grafo_paquete_cliente.json`) -- pero, a diferencia de CRONISTA o EJECUTOR_LOCAL, sin ningún script real que la toque todavía y sin ninguna mención previa en la bóveda. `SALDO_USUARIO` sugiere un mecanismo de saldo/comunidad, pero no hay dato real sufici",
+      "relacionesDeclaradas": []
+    },
+    {
+      "id": "zona_de_aterrizaje_stg",
+      "nombre": "Zona de aterrizaje STG",
+      "tipo": "recurso",
+      "estado": "activo",
+      "resumen": "Las 14 pestañas reales `STG_*` del Sheet -- decisión real del 2026-09-02, documentada en `PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md` §6.5: no son plumbing sin valor conceptual, son la zona real de aterrizaje para carga masiva de datos de un cliente nuevo. Diseño real: `STG_*` → paso de mapeo con IA controlada + Puerta Humana → `insertarRegistroTransaccional`, nunca escritura directa sobre l",
+      "relacionesDeclaradas": [
+        "Puerta Humana"
       ]
     }
   ],
@@ -323,7 +359,7 @@
       "nombre": "Modulos acoplables",
       "tipo": "modulo",
       "estado": "activo",
-      "resumen": "El barrio de los diez módulos de negocio reales — cada uno entre 1 y 5 archivos, menos de 1.500 líneas. \"Cada organización enciende solo lo que necesita\" (`package-map.json`, `moduloInstalado_`): modularidad técnica que ya es, sin haberlo llamado así, modularidad de quién participa en qué.",
+      "resumen": "El barrio de los catorce módulos de negocio reales (eran diez, corregido tras el censo real de entidades de §8.23-24: Operativa, Seguimiento, Ejecucion y Escenarios estaban registrados de verdad en `MODULO_POR_ENTIDAD_MVP` pero sin ficha) — cada uno entre 1 y 5 archivos, menos de 1.500 líneas (los diez originales; los cuatro nuevos son dueños reales de pestañas del Sheet, algunos sin paquete propi",
       "relacionesDeclaradas": [
         "Ventas",
         "Oportunidad",
@@ -334,7 +370,54 @@
         "Convocatorias",
         "Economico",
         "Comunicacion",
-        "Aprovisionamiento"
+        "Aprovisionamiento",
+        "Operativa",
+        "Seguimiento",
+        "Ejecucion",
+        "Escenarios"
+      ]
+    },
+    {
+      "id": "operativa",
+      "nombre": "Operativa",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real -- dueño de 11 pestañas reales del Sheet (`MODULO_POR_ENTIDAD_MVP`, `src/Ids.js`): `07_TAREA_RESPONSABLE`, `11_PERSONAS_EQUIPOS`, `22_EQUIPO_MIEMBRO`, `23_RECURSO`, `24_TAREA_RECURSO`, `29_HORARIO`, `33_COMPETENCIA`, `34_PERSONA_COMPETENCIA`, `35_RECURSO_COMPETENCIA`, `45_TAREA_COMPETENCIA`, `46_TAREA_RECURSO_NECESIDAD`. Decisión explícita del propio código, citada en su comentario rea",
+      "relacionesDeclaradas": [
+        "Cliente",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "seguimiento",
+      "nombre": "Seguimiento",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real -- dueño de 4 pestañas reales del Sheet (`MODULO_POR_ENTIDAD_MVP`, `src/Ids.js`): `12_DECISIONES`, `13_INCIDENCIAS`, `14_DOCUMENTOS`, `18_VINCULO`. A diferencia de Ventas/Compras/Económico, no tiene todavía un paquete propio en `package-map.json` -- código real, sin empaquetado propio todavía.",
+      "relacionesDeclaradas": [
+        "Puente historia leyes",
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "ejecucion",
+      "nombre": "Ejecucion",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real -- dueño de una sola pestaña real del Sheet (`MODULO_POR_ENTIDAD_MVP`, `src/Ids.js`): `20_EJECUCION_TAREA`. El más pequeño de los módulos reales de negocio -- sin paquete propio todavía en `package-map.json`.",
+      "relacionesDeclaradas": [
+        "Modulos acoplables"
+      ]
+    },
+    {
+      "id": "escenarios",
+      "nombre": "Escenarios",
+      "tipo": "modulo",
+      "estado": "activo",
+      "resumen": "Módulo real -- dueño de una sola pestaña real del Sheet (`MODULO_POR_ENTIDAD_MVP`, `src/Ids.js`): `94_ESCENARIOS`. Real por partida doble: ya tiene su propia cicatriz en la cronología -- `92_ESCENARIOS` colisionaba de número con `92_BUS_TRABAJO` (el mecanismo de gobierno), corregido reubicando `ESCENARIO` a la hoja 94 (ver El Sheet). En el master real (`engremiat.master.claude`) sigue existiendo l",
+      "relacionesDeclaradas": [
+        "El Sheet",
+        "Modulos acoplables"
       ]
     }
   ],
@@ -521,7 +604,8 @@
       "estado": "activo",
       "resumen": "Habla desde la perspectiva de quien usa esto sin saber nada de por dentro — el único Acervo que en Concilio no defiende ningún mecanismo, defiende a quien va a tocar el resultado sin haber leído ni una línea de este universo.",
       "relacionesDeclaradas": [
-        "Concilio"
+        "Concilio",
+        "Zona de aterrizaje STG"
       ]
     },
     {
@@ -542,6 +626,24 @@
       "resumen": "No delibera dentro de Concilio como los otros siete — trabaja antes que ellos. Convierte una necesidad vaga o una incidencia real en una única pregunta de investigación bien estructurada para Vigilia, aplicando meta-prompting: da la estructura del razonamiento que hace falta, no el contenido de la respuesta. No responde la pregunta — la formula, para que Concilio la responda después.",
       "relacionesDeclaradas": [
         "Vigilia",
+        "Concilio"
+      ]
+    },
+    {
+      "id": "acervo",
+      "nombre": "Acervo",
+      "tipo": "personaje",
+      "estado": "activo",
+      "resumen": "El índice real de la familia de personajes-voz que delibera y prepara la deliberación dentro de Telar. Ocho fichas reales -- siete que deliberan dentro de Concilio (Acervo Tecnico, Acervo Logico, Acervo Logistico, Acervo Narrativo, Acervo Filosofico, Acervo Usuario, Acervo Sociocracia) más Acervo Prompter, que trabaja antes que los demás y no delibera dentro de Concilio.",
+      "relacionesDeclaradas": [
+        "Acervo Tecnico",
+        "Acervo Logico",
+        "Acervo Logistico",
+        "Acervo Narrativo",
+        "Acervo Filosofico",
+        "Acervo Usuario",
+        "Acervo Sociocracia",
+        "Acervo Prompter",
         "Concilio"
       ]
     },
@@ -743,6 +845,18 @@
         "Baserow",
         "El Sheet"
       ]
+    },
+    {
+      "id": "fisica",
+      "nombre": "Física",
+      "tipo": "regla",
+      "estado": "activo",
+      "resumen": "La capa donde una afirmación deja de ser narrativa y tiene que poder verificarse contra el código o el Sheet reales -- \"es el mismo principio que ya rige la Física y las Leyes de este universo\" (Estilo). No es una regla nueva: es un concepto ya citado tres veces en fichas reales sin tener la suya propia -- GASTO_API es \"el primer punto real donde Historia, Leyes y Física se tocan sin metáfora\", y ",
+      "relacionesDeclaradas": [
+        "Estilo",
+        "GASTO_API",
+        "Coordinador"
+      ]
     }
   ],
   "relaciones": [
@@ -905,6 +1019,132 @@
       "origenNombre": "Mensajero",
       "destinoId": "92_bus_trabajo",
       "destinoNombre": "92_BUS_TRABAJO",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "concilio_opera_en_telar",
+      "origenId": "concilio",
+      "origenNombre": "Concilio",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_tecnico_opera_en_telar",
+      "origenId": "acervo_tecnico",
+      "origenNombre": "Acervo Tecnico",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_logico_opera_en_telar",
+      "origenId": "acervo_logico",
+      "origenNombre": "Acervo Logico",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_logistico_opera_en_telar",
+      "origenId": "acervo_logistico",
+      "origenNombre": "Acervo Logistico",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_narrativo_opera_en_telar",
+      "origenId": "acervo_narrativo",
+      "origenNombre": "Acervo Narrativo",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_filosofico_opera_en_telar",
+      "origenId": "acervo_filosofico",
+      "origenNombre": "Acervo Filosofico",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_usuario_opera_en_telar",
+      "origenId": "acervo_usuario",
+      "origenNombre": "Acervo Usuario",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_sociocracia_opera_en_telar",
+      "origenId": "acervo_sociocracia",
+      "origenNombre": "Acervo Sociocracia",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_prompter_opera_en_telar",
+      "origenId": "acervo_prompter",
+      "origenNombre": "Acervo Prompter",
+      "destinoId": "telar",
+      "destinoNombre": "Telar",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "coordinador_opera_en_92_bus_trabajo",
+      "origenId": "coordinador",
+      "origenNombre": "Coordinador",
+      "destinoId": "92_bus_trabajo",
+      "destinoNombre": "92_BUS_TRABAJO",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "relevo_opera_en_92_bus_trabajo",
+      "origenId": "relevo",
+      "origenNombre": "Relevo",
+      "destinoId": "92_bus_trabajo",
+      "destinoNombre": "92_BUS_TRABAJO",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "verificador_de_campos_opera_en_baserow",
+      "origenId": "verificador_de_campos",
+      "origenNombre": "Verificador de Campos",
+      "destinoId": "baserow",
+      "destinoNombre": "Baserow",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "acervo_usuario_opera_en_zona_de_aterrizaje_stg",
+      "origenId": "acervo_usuario",
+      "origenNombre": "Acervo Usuario",
+      "destinoId": "zona_de_aterrizaje_stg",
+      "destinoNombre": "Zona de aterrizaje STG",
+      "tipo": "opera_en",
+      "estado": "activo"
+    },
+    {
+      "id": "verificador_de_capacidades_opera_en_documento_engremiat",
+      "origenId": "verificador_de_capacidades",
+      "origenNombre": "Verificador de Capacidades",
+      "destinoId": "documento_engremiat",
+      "destinoNombre": "DOCUMENTO_ENGREMIAT",
       "tipo": "opera_en",
       "estado": "activo"
     }

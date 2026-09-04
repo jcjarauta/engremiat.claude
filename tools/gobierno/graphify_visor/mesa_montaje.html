@@ -212,7 +212,6 @@ async function cargar() {
   });
 
   await cargarUniversosReales();
-  await cargarMisionesReales();
 
   nodes = new vis.DataSet([]);
   edges = new vis.DataSet([]);
@@ -248,6 +247,7 @@ async function cargar() {
 
   await comprobarMemoria();
   await renderMontajesGuardados();
+  await cargarMisionesReales();
   actualizarResumen();
 }
 
