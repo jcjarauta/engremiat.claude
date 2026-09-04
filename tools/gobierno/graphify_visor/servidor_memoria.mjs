@@ -27,7 +27,10 @@ const PUERTO = Number(process.env.PUERTO || 9330);
 // spike_concilio_coop/servidor.mjs y narrador_construir_proyecto.mjs -- nunca
 // en el navegador). Cache corto (30s) para no golpear la API de Sheets en cada
 // pintado de la mesa.
-const SHEETS_SPREADSHEET_ID = '142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ'; // Gestor de Proyectos - LaTroballa Software
+// §8.90: repuntado real a un Sheet CORE limpio (pedido explicito: "empezamos de limpio").
+// Antes: 142vRqXfDj4C7KyY7TVf5Oh18gwtDcvAkYxFQ0lb6CGQ (Gestor de Proyectos - LaTroballa
+// Software) -- se queda intacto, sin tocar, solo deja de ser el backend de este servidor.
+const SHEETS_SPREADSHEET_ID = '1Mtfjnhls8jppNzsm15Nuq6DnIFM_jbQYFu8bGh5Zv1g'; // CORE
 const SHEETS_CREDENCIALES_PATH = process.env.ENGREMIAT_SHEETS_CREDENTIALS_PATH;
 const SHEETS_SCOPE = 'https://www.googleapis.com/auth/spreadsheets.readonly';
 let cacheProyectos = { en: 0, datos: null };
@@ -165,8 +168,8 @@ async function leerProcesosTareasReales(proyectoId) {
 // 05_PROCESOS -> 06_TAREAS. Cada nodo lleva su fila real (para el enlace "Ficha" al Sheet,
 // mismo patron #gid=X&range=A{fila} ya usado en incidencias) y su gid real de pestaña.
 const GID_SHEET = {
-  '01_CAMPANAS': 611657524, '02_PROYECTOS': 2118131766, '03_PRODUCTOS': 1323015476,
-  '04_PROYECTO_PRODUCTO': 221118053, '05_PROCESOS': 1834850944, '06_TAREAS': 1602917602,
+  '01_CAMPANAS': 566540335, '02_PROYECTOS': 1482516988, '03_PRODUCTOS': 1687603049,
+  '04_PROYECTO_PRODUCTO': 1265423333, '05_PROCESOS': 592523771, '06_TAREAS': 1151510253,
 };
 function urlFilaSheet(hoja, filaReal) {
   return 'https://docs.google.com/spreadsheets/d/' + SHEETS_SPREADSHEET_ID + '/edit#gid=' + GID_SHEET[hoja] + '&range=A' + filaReal;
@@ -272,8 +275,13 @@ async function leerJerarquiaCampanas() {
 // real (AprovisionamientoService.js: crearProyectoEnGestorDeProyectos_) -- API directa,
 // ID generado a mano, sin 91_HISTORIAL. Aceptado a proposito: un solo operador, riesgo de
 // carrera bajo.
-const PREFIJO_ID = { CAMPANA: 'CAM', PROYECTO: 'PRO', PRODUCTO: 'PRD', PROCESO: 'PCS', TAREA: 'TAR' };
-const HOJA_ID = { CAMPANA: '01_CAMPANAS', PROYECTO: '02_PROYECTOS', PRODUCTO: '03_PRODUCTOS', PROCESO: '05_PROCESOS', TAREA: '06_TAREAS' };
+// §8.90: bug real encontrado al probar la escritura contra el Sheet CORE -- la UI siempre
+// envia 'Campaña' (con tilde), 'Campaña'.toUpperCase() da 'CAMPAÑA' (con Ñ), nunca coincidia
+// con la clave 'CAMPANA' (sin tilde) de aqui. La creacion de una Campaña raiz nunca habia
+// funcionado de verdad -- las pruebas previas (CAM-0006->PRO-0027) solo crearon un Proyecto
+// bajo una Campaña ya existente, nunca una Campaña nueva.
+const PREFIJO_ID = { 'CAMPAÑA': 'CAM', PROYECTO: 'PRO', PRODUCTO: 'PRD', PROCESO: 'PCS', TAREA: 'TAR' };
+const HOJA_ID = { 'CAMPAÑA': '01_CAMPANAS', PROYECTO: '02_PROYECTOS', PRODUCTO: '03_PRODUCTOS', PROCESO: '05_PROCESOS', TAREA: '06_TAREAS' };
 
 async function siguienteIdReal(token, hoja, prefijo) {
   const r = await fetch(
@@ -308,7 +316,7 @@ async function crearRegistroCrudo(tipo, campos, padreId) {
     if (cabecera === 'ID') return id;
     if (cabecera === fkPorTipo[clave] && padreId) return padreId;
     if (cabecera in campos) return campos[cabecera];
-    if (cabecera === 'ESTADO') return campos.ESTADO || (clave === 'CAMPANA' ? 'Borrador' : clave === 'PROYECTO' ? 'Planificado' : 'Pendiente');
+    if (cabecera === 'ESTADO') return campos.ESTADO || (clave === 'CAMPAÑA' ? 'Borrador' : clave === 'PROYECTO' ? 'Planificado' : 'Pendiente');
     if (cabecera === 'FECHA_CREACION' || cabecera === 'FECHA_MODIFICACION') return ahora;
     if (cabecera === 'ACTIVO') return 'SÍ';
     if (cabecera === 'ORIGEN_CREACION' || cabecera === 'CREADO_POR' || cabecera === 'MODIFICADO_POR') return 'Panel Operativo (arbol_campanas.html)';
@@ -379,7 +387,7 @@ async function leerFichaReal(tipo, id) {
 let cacheIncidencias = { en: 0, datos: null };
 let cacheVinculos = { en: 0, datos: null };
 const ESTADOS_INCIDENCIA_ABIERTA = new Set(['Abierta', 'En análisis', 'En resolución']);
-const GID_13_INCIDENCIAS = 1182532531;
+const GID_13_INCIDENCIAS = 8301489;
 const ORDEN_PRIORIDAD = { 'Crítica': 0, 'Alta': 1, 'Media': 2, 'Baja': 3 };
 
 async function leerIncidenciasProductoAbiertas() {

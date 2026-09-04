@@ -24,7 +24,7 @@
  *   node desplegar_visor.mjs --grafo             -- + regenera grafo_visor.json antes
  *   node desplegar_visor.mjs --servicio otronombre
  */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, statSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -77,14 +77,23 @@ function main() {
     console.log('=== 1/4 (omitido -- pasa --grafo para regenerar grafo_visor.json antes) ===');
   }
 
-  console.log(`\n=== 2/4 Copiando al VPS los ${extraerFicherosDelServicio(servicio).length} ficheros reales declarados para '${servicio}' ===`);
-  const ficheros = extraerFicherosDelServicio(servicio);
-  const faltantes = ficheros.filter((f) => !existsSync(join(DIR_VISOR, f)));
-  if (faltantes.length) throw new Error('Declarados en docker-compose.yml pero no existen en local: ' + faltantes.join(', '));
+  const declarados = extraerFicherosDelServicio(servicio);
+  // Algunos volumenes son server-only a proposito -- secretos (.sheets_credenciales.json,
+  // nunca en git) o directorios de datos persistidos (datos_memoria) que solo existen ya
+  // creados en el VPS. No son un error: se omiten del scp, nunca se sobrescriben a ciegas.
+  const ficheros = declarados.filter((f) => existsSync(join(DIR_VISOR, f)) && statSync(join(DIR_VISOR, f)).isFile());
+  const omitidos = declarados.filter((f) => !ficheros.includes(f));
+  if (omitidos.length) console.log(`(omitidos, server-only: ${omitidos.join(', ')})`);
+  console.log(`\n=== 2/4 Copiando al VPS los ${ficheros.length} ficheros reales declarados para '${servicio}' ===`);
   ejecutar('scp', ['-i', CLAVE_SSH, '-o', 'StrictHostKeyChecking=accept-new', ...ficheros, `${HOST_VPS}:${RUTA_REMOTA}/`], { cwd: DIR_VISOR });
 
-  console.log(`\n=== 3/4 Recreando el contenedor '${servicio}' (up -d, no restart) ===`);
-  ejecutar('ssh', ['-i', CLAVE_SSH, HOST_VPS, `cd ${RUTA_REMOTA} && docker compose up -d ${servicio}`]);
+  // up -d recoge volumenes NUEVOS (necesita recreate), pero no basta para un proceso Node
+  // ya corriendo (graphify-visor sirve estatico con npx serve, relee el fichero en cada
+  // request -- pero memoria-montaje carga servidor_memoria.mjs UNA VEZ en memoria al
+  // arrancar; un cambio de codigo sin reiniciar el proceso no tiene efecto real, bug real
+  // encontrado en §8.90). restart despues de up -d es idempotente y cubre ambos casos.
+  console.log(`\n=== 3/4 Recreando y reiniciando '${servicio}' (up -d + restart, no basta uno solo) ===`);
+  ejecutar('ssh', ['-i', CLAVE_SSH, HOST_VPS, `cd ${RUTA_REMOTA} && docker compose up -d ${servicio} && docker compose restart ${servicio}`]);
 
   console.log('\n=== 4/4 Verificando en real ===');
   const paginas = ficheros.filter((f) => f.endsWith('.html'));
