@@ -119,6 +119,12 @@
     <input id="narradorObstaculo" placeholder="¿Qué lo dificulta hoy?" style="margin-top:4px;">
     <button id="btnNarrador" style="margin-top:6px;width:100%;">Pedir propuesta real (coste real, céntimos de USD)</button>
     <div id="resultadoNarrador"></div>
+    <h3>Constructor del universo -- solicitar montaje real</h3>
+    <p class="hint">Puente real a Aprovisionamiento (§8.71) -- escribe una fila real en <code>SOLICITUDES_MONTAJE</code>. CORE va siempre incluido. No aprueba nada -- eso lo sigue haciendo a mano una persona autorizada.</p>
+    <input id="montajeNombre" placeholder="Nombre del universo/sheet a solicitar">
+    <div id="listaModulosMontaje" class="hint" style="margin-top:6px;">Cargando módulos disponibles...</div>
+    <button id="btnSolicitarMontaje" style="margin-top:6px;width:100%;">Solicitar montaje real</button>
+    <div id="resultadoMontaje"></div>
     <h3>Misiones reales de este universo</h3>
     <p class="hint" id="estadoMisiones">Comprobando el tablero real...</p>
     <div id="listaMisiones"></div>
@@ -280,6 +286,7 @@ async function cargar() {
   await cargarFeriaReales();
   await cargarConcilioReal();
   await cargarTelarReal();
+  await cargarModulosMontajeReales();
   actualizarResumen();
 }
 
@@ -558,6 +565,44 @@ document.getElementById('btnNarrador').addEventListener('click', async () => {
       </div>`;
   } catch (e) {
     cont.innerHTML = '<p class="hint">El Narrador no pudo proponer ahora mismo: ' + e.message + '</p>';
+  }
+});
+
+// -- §8.71: Constructor del universo -> Aprovisionamiento. Los modulos disponibles vienen del
+// propio servidor (mismo listado real que package-map.json moduleDependencies, menos CORE).
+async function cargarModulosMontajeReales() {
+  const cont = document.getElementById('listaModulosMontaje');
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/modulos_montaje_disponibles', { signal: AbortSignal.timeout(4000) });
+    const { modulos } = await r.json();
+    cont.innerHTML = modulos.map(m =>
+      `<label style="display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;font-size:11px;">
+        <input type="checkbox" class="chk-modulo-montaje" value="${m}"> ${m}
+      </label>`).join('');
+  } catch {
+    cont.innerHTML = '<p class="hint">No se pudo leer la lista real de módulos.</p>';
+  }
+}
+
+document.getElementById('btnSolicitarMontaje').addEventListener('click', async () => {
+  const nombre = document.getElementById('montajeNombre').value.trim();
+  const cont = document.getElementById('resultadoMontaje');
+  if (!nombre) { cont.innerHTML = '<p class="hint">Escribe un nombre primero.</p>'; return; }
+  const modulosSeleccionados = [...document.querySelectorAll('.chk-modulo-montaje:checked')].map(c => c.value);
+  cont.innerHTML = '<p class="hint">Enviando la solicitud real...</p>';
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/aprovisionar_montaje', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre, modulosSeleccionados }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    cont.innerHTML = `<div class="mision-real"><div class="nombre">Solicitud real creada: ${j.idTemporal}</div>
+      <p class="hint" style="margin:4px 0;">Módulos resueltos (con dependencias): ${j.modulosResueltos.join(', ')}</p>
+      <p class="hint" style="margin:4px 0;">Pendiente de aprobación humana -- no se ha creado ningún Sheet todavía.</p></div>`;
+  } catch (e) {
+    cont.innerHTML = '<p class="hint">No se pudo crear la solicitud real ahora mismo: ' + e.message + '</p>';
   }
 });
 

@@ -975,6 +975,16 @@ Nuevo `tools/gobierno/graphify_visor/boceto_layout_6_zonas.html`, deliberadament
 
 Propósito explícito: punto de partida para revisar zona por zona, en conversación, qué representar y cómo -- no una decisión de diseño cerrada. Registrado en `indice.html`. Verificado en el navegador: las 7 cajas abren/cierran al clic, sin errores nuevos de consola.
 
+### 8.71 Constructor del universo -- puente real a Aprovisionamiento
+
+Investigación previa a construir (el operador propuso "el módulo CORE con la idea de que el visitante pueda solicitar montajes"): se encontró que el mecanismo de "solicitar montaje" **ya existe, real, probado de extremo a extremo en producción** (`ROADMAP_GESTOR_PROYECTOS_CLIENTE_VENTAS.md`: *"Activada y probada de extremo a extremo"*) -- `SOLICITUDES_MONTAJE` (Sheet real, columnas `ID_TEMPORAL/NOMBRE/MODULOS/ESTADO/...`, columna `ESTADO` protegida por email autorizado) + `SolicitudMontaje.html`/`AprobarSolicitudMontaje.html` (diálogos Apps Script) + el webhook real (`WebhookTelegramService.js`, acción `crear_solicitud_montaje` → `AprovisionamientoService.js`).
+
+Distinción real hecha antes de reutilizar nada: el formulario del Sheet (`SolicitudMontaje.html`) es admin puro, vive dentro de un Sheet ya existente -- no es candidato para dar cara a un "visitante" desde Bastidor. El **webhook** detrás sí lo es (server-to-server, mismo patrón ya probado con Narrador). Verificado con `curl` real antes de escribir código (`SOL-003`, dependencias resueltas correctamente VENTAS→CLIENTE→CORE).
+
+**Hallazgo de seguridad real, registrado en `HALLAZGOS_PENDIENTES.md`** (documento nuevo para hallazgos no bloqueantes): el dispatcher del webhook no comprueba ningún token por `accion` -- cualquiera con la URL puede escribir una fila real. Bajo riesgo hoy (URL solo interna), pero la URL se guarda como secreto server-side de todas formas (`WEBHOOK_APPS_SCRIPT_URL`, nunca en el HTML servido al navegador), mismo patrón que `DEEPSEEK_KEY`/`BASEROW_TOKEN`.
+
+Construido: `solicitarMontajeReal()` en `servidor_memoria.mjs` (proxy real al webhook), `GET /api/modulos_montaje_disponibles` (14 módulos reales de negocio, `package-map.json` menos CORE), `POST /api/aprovisionar_montaje`. En `mesa_montaje.html`: caja real "Constructor del universo -- solicitar montaje real" (nombre + checkboxes de módulos + botón), junto a Narrador. Verificado con curl real contra el endpoint propio (`SOL-007`, tras un hipo transitorio del contenedor recién reiniciado en el primer intento) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

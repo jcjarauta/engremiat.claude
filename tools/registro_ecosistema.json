@@ -309,6 +309,10 @@
   {
    "fichero": "boceto_layout_6_zonas.html",
    "que_hace": "§8.70: esqueleto del layout de 6 zonas pedido por el operador -- deliberadamente no funcional (sin fetch, sin datos en vivo). Las 7 cajas (Estado del universo, Narrador, Constructor del universo, Espacio de trabajo, Gestor de proyectos, Comunidad, Informacion/Traza/Inspector) muestran nombre + pregunta fundamental + lista de herramientas propuestas marcadas ya-construido/parcial/pendiente, derivado directamente del mapeo real de §8.69. Registrado en indice.html. Proposito explicito: punto de partida para revisar zona por zona en conversacion, no una decision de diseno cerrada. Verificado en el navegador: expande/colapsa al clic, 0 errores nuevos de consola."
+  },
+  {
+   "fichero": "servidor_memoria.mjs + mesa_montaje.html + HALLAZGOS_PENDIENTES.md (puente Aprovisionamiento)",
+   "que_hace": "§8.71: puente real Constructor del universo -> Aprovisionamiento. Investigacion previa: 'solicitar montaje' ya existe, real, probado de extremo a extremo en produccion (SOLICITUDES_MONTAJE + SolicitudMontaje.html/AprobarSolicitudMontaje.html + webhook real accion crear_solicitud_montaje -> AprovisionamientoService.js). El formulario del Sheet es admin puro (vive dentro de un Sheet existente, no candidato para un visitante) -- el webhook detras si lo es, mismo patron server-to-server ya probado con Narrador. Verificado con curl real antes de escribir codigo (SOL-003, dependencias resueltas VENTAS->CLIENTE->CORE). Hallazgo de seguridad real registrado en nuevo HALLAZGOS_PENDIENTES.md: el dispatcher del webhook no comprueba token por accion -- bajo riesgo hoy (URL solo interna), pero se guarda como secreto server-side de todas formas (WEBHOOK_APPS_SCRIPT_URL), nunca en el HTML. Construido: solicitarMontajeReal(), GET /api/modulos_montaje_disponibles (14 modulos reales), POST /api/aprovisionar_montaje. mesa_montaje.html: caja real 'Constructor del universo -- solicitar montaje real' junto a Narrador. Verificado con curl real contra el endpoint propio (SOL-007) y con la logica de render real en el navegador (mock de fetch), 0 errores nuevos de consola."
   }
  ]
 }

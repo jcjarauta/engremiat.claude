@@ -312,6 +312,32 @@ async function narradorProponerProyecto(queConstruye, necesidad, obstaculo) {
   return { propuesta, coste };
 }
 
+// -- §8.71: puente real Constructor del universo -> Aprovisionamiento. El webhook real
+// (src/WebhookTelegramService.js) ya despacha 'crear_solicitud_montaje' -> crearSolicitudMontaje()
+// (AprovisionamientoService.js), probado de extremo a extremo (SOLICITUDES_MONTAJE real, fila
+// SOL-003 verificada con curl antes de escribir este puente). La URL vive SOLO server-side (nunca
+// en el HTML servido al navegador) -- ver HALLAZGOS_PENDIENTES.md #1: el webhook no comprueba
+// ningun token por accion, asi que esta URL es en si misma el secreto real.
+const WEBHOOK_APPS_SCRIPT_URL = process.env.WEBHOOK_APPS_SCRIPT_URL;
+// Modulos reales de negocio (package-map.json moduleDependencies, menos CORE -- ese va siempre
+// incluido por crearSolicitudMontaje() y no se ofrece como opcion, mismo criterio que SolicitudMontaje.html real.
+const MODULOS_MONTAJE_DISPONIBLES = [
+  'GANTT', 'ECONOMICO', 'IMPACTO', 'COMPRAS', 'CONVOCATORIAS', 'CLIENTE', 'VENTAS',
+  'OPORTUNIDAD', 'ESCENARIOS', 'OPERATIVA', 'SEGUIMIENTO', 'EJECUCION', 'APROVISIONAMIENTO', 'COMUNICACION',
+];
+
+async function solicitarMontajeReal(nombre, modulosSeleccionados) {
+  const r = await fetch(WEBHOOK_APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accion: 'crear_solicitud_montaje', nombre, modulosSeleccionados }),
+    redirect: 'follow',
+  });
+  const j = await r.json();
+  if (!j.ok) throw new Error('WEBHOOK_ERROR: ' + JSON.stringify(j));
+  return j.resultado;
+}
+
 function leerMemoria() {
   if (!existsSync(FICHERO)) return { eventos: [], montajes: [] };
   try { return JSON.parse(readFileSync(FICHERO, 'utf-8')); } catch { return { eventos: [], montajes: [] }; }
@@ -431,6 +457,26 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ propuesta, coste })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'el Narrador no pudo proponer ahora mismo: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url === '/api/modulos_montaje_disponibles') {
+      res.writeHead(200); res.end(JSON.stringify({ modulos: MODULOS_MONTAJE_DISPONIBLES })); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/aprovisionar_montaje') {
+      if (!WEBHOOK_APPS_SCRIPT_URL) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin URL de webhook real configurada' })); return;
+      }
+      const { nombre, modulosSeleccionados } = await leerCuerpo(req);
+      if (!nombre) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'falta nombre' })); return;
+      }
+      try {
+        const resultado = await solicitarMontajeReal(nombre, Array.isArray(modulosSeleccionados) ? modulosSeleccionados : []);
+        res.writeHead(200); res.end(JSON.stringify(resultado)); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo crear la solicitud real ahora mismo: ' + e.message })); return;
       }
     }
 
