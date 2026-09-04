@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T05:57:42.224Z",
+  "generadoEn": "2026-09-04T06:04:04.232Z",
   "espacios": [
     {
       "id": "baserow",
@@ -199,7 +199,13 @@
       "tipo": "recurso",
       "estado": "nascente",
       "resumen": "Tabla real de Baserow (ID/USUARIO/TIPO/NOMBRE/DESCRIPCION/ESTADO/SALDO_USUARIO) marcada como módulo activo para el cliente real Piloto Plaza (ver `grafo_paquete_cliente.json`) -- pero, a diferencia de CRONISTA o EJECUTOR_LOCAL, sin ningún script real que la toque todavía y sin ninguna mención previa en la bóveda. `SALDO_USUARIO` sugiere un mecanismo de saldo/comunidad, pero no hay dato real sufici",
-      "relacionesDeclaradas": []
+      "relacionesDeclaradas": [],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "AGORA"
+        }
+      ]
     },
     {
       "id": "zona_de_aterrizaje_stg",
@@ -794,6 +800,12 @@
       "relacionesDeclaradas": [
         "n8n",
         "Vigilia"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "TAREA"
+        }
       ]
     },
     {

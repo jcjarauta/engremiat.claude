@@ -870,6 +870,17 @@ Resuelto el hallazgo anotado en §8.58. `cargar_desde_vault.mjs` gana `extraerVi
 
 **Resultado real, verificado ejecutando el propio informe**: Sheet pasó de 2/46 a **46/46** pestañas de negocio con espejo real declarado (ej. `Operativa.md` ya citaba 11 pestañas reales que nadie veía desde este informe). Baserow pasó de 1/18 a **9/18** -- `PLANTILLA_MISION`/`TELAR_SESION`/`TELAR_BIBLIOTECA` ya aparecen cubiertas, y quedan huecos reales genuinos (`AGORA`, `TAREA`, `PERSONAJE`, `ACERVO`...) -- una cifra creíble, no sospechosamente perfecta, señal de que el cruce funciona de verdad y no está inflando nada. `universo_real.json` regenerado (ambas copias), verificado sin errores en el navegador.
 
+### 8.60 "Empieza" (Tier 1 de los huecos reales)
+
+Cerrados 2 de los 9 huecos Baserow reales del informe (§8.59), investigando cada uno antes de tocar nada.
+
+- **`AGORA`** -- `AGORA.md` ya existía en la bóveda (real, honesto, describía el módulo activo de Piloto Plaza sin autocitarse) -- solo le faltaba su propia sección "## Vínculo real".
+- **`TAREA`** (Baserow, id 278) -- añadida a `Cronista.md`, confirmada real: el mismo workflow `cronista-segmentar-generador.json` que ya escribe `PLANTILLA_MISION` también escribe filas reales en `TAREA`, con puerta humana.
+
+**Corrección real encontrada a tiempo, antes de escribir nada mal**: `Acervo.md` (índice de los 8 personajes-voz del Concilio) **no es el mismo concepto** que la tabla `ACERVO` de Baserow (el "almacén común del taller", `TITULO`/`CATEGORIA`/`CONTENIDO`/`FUENTE`) -- mismo nombre, dos cosas reales distintas. Añadir la cita ahí habría sido exactamente el error que este ejercicio quería evitar -- movido al Tier 4 (necesita ficha nueva de verdad, no una cita prestada de una ficha que habla de otra cosa).
+
+Baserow pasó de 9/18 a **11/18** tablas con espejo real declarado. Verificado sin errores en el navegador tras regenerar `universo_real.json`.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
