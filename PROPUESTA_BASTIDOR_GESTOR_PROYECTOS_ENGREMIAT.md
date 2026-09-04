@@ -1096,6 +1096,18 @@ Además, botón real "+ Nueva Campaña" a nivel raíz del árbol -- faltaba crea
 
 0 errores nuevos de consola.
 
+### 8.81 Mirada global -- KPIs reales y contadores por campaña (Capa 1)
+
+El operador pidió una pantalla de aterrizaje real con visión global antes de bajar a la jerarquía -- "cuántos proyectos, procesos...". Investigado antes de construir: `PanelCampanaService.js` real (el motor de "Gestión de campaña" que enseñó, captura con "1 proyectos, 1 productos...") ya calcula `contadores: {proyectos, productos, procesos, tareas}` por campaña, más desviación real (`diasDesviacion`) y sobreasignación real cuando hay `FECHA_FIN_REAL`/fechas cruzadas. `DashboardService.js` real (`obtenerResumenGlobal()`, `listarTareasRetrasadas()`) da el equivalente agregado global por estado y tareas vencidas.
+
+**Capa 1 (construida)** -- barata porque reutiliza el mismo árbol que ya se lee, sin ninguna llamada nueva al Sheet salvo `FECHA_FIN_PLAN` (ya estaba dentro del rango leído, solo faltaba extraerla):
+- `leerJerarquiaCampanas()`: cada nodo Tarea lleva ahora `fechaFinPlan` y `retrasada` (mismo criterio real que `listarTareasRetrasadas()` -- estado no cerrado + fecha vencida). Cada nodo Campaña lleva `contadores` real (proyectos/productos/procesos/tareas/tareasRetrasadas), calculado agregando su propio subárbol ya construido.
+- `arbol_campanas.html`: barra de KPIs globales arriba (campañas activas/proyectos/procesos/tareas/tareas retrasadas, en rojo si hay), y cada Campaña en la lista raíz muestra sus contadores reales antes de expandir (mismo dato que "1 proyectos, 1 productos..." del panel real).
+
+**Capa 2 (pendiente, anotada, más cara)** -- requiere leer `FECHA_FIN_REAL` (desviación real por proceso/tarea ya cerrada) y cruzar `RESPONSABLE_ID`+fechas entre nodos del mismo nivel (aviso real de sobreasignación) -- mismo cálculo que `PanelCampanaService.js` ya hace, pendiente de construir cuando se valide esta primera capa en uso real.
+
+Verificado con curl real (`CAM-0001`: 5 proyectos, 4 productos, 5 procesos, 1 tarea, 0 retrasadas) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

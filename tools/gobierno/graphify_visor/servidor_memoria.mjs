@@ -194,11 +194,23 @@ async function leerJerarquiaCampanas() {
   const iPPProyecto = col(pp, 'PROYECTO_ID'), iPPProducto = col(pp, 'PRODUCTO_ID');
   const iPdId = col(productos, 'ID'), iPdNombre = col(productos, 'NOMBRE'), iPdEstado = col(productos, 'ESTADO');
   const iPcId = col(procesos, 'ID'), iPcProducto = col(procesos, 'PRODUCTO_ID'), iPcNombre = col(procesos, 'NOMBRE'), iPcEstado = col(procesos, 'ESTADO'), iPcAvance = col(procesos, 'PORCENTAJE_AVANCE');
-  const iTrProceso = col(tareas, 'PROCESO_ID'), iTrId = col(tareas, 'ID'), iTrNombre = col(tareas, 'NOMBRE'), iTrEstado = col(tareas, 'ESTADO'), iTrAvance = col(tareas, 'PORCENTAJE_AVANCE');
+  const iTrProceso = col(tareas, 'PROCESO_ID'), iTrId = col(tareas, 'ID'), iTrNombre = col(tareas, 'NOMBRE'), iTrEstado = col(tareas, 'ESTADO'), iTrAvance = col(tareas, 'PORCENTAJE_AVANCE'), iTrFechaFinPlan = col(tareas, 'FECHA_FIN_PLAN');
+
+  // §8.81: "tarea retrasada" real -- mismo criterio que listarTareasRetrasadas()
+  // (DashboardService.js): ESTADO no cerrado + FECHA_FIN_PLAN real vencida.
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const ESTADOS_TAREA_CERRADA = new Set(['Terminada', 'Cancelada']);
+  function esTareaRetrasadaReal(estado, fechaFinPlanTexto) {
+    if (ESTADOS_TAREA_CERRADA.has(estado)) return false;
+    if (!fechaFinPlanTexto) return false;
+    const f = new Date(fechaFinPlanTexto);
+    return !isNaN(f) && f < hoy;
+  }
 
   const tareasDe = (procesoId) => conFila(tareas).filter(({ f }) => f[iTrProceso] === procesoId)
     .map(({ f, filaReal }) => ({
       tipo: 'Tarea', id: f[iTrId], nombre: f[iTrNombre] || '', estado: f[iTrEstado] || '', porcentajeAvance: f[iTrAvance] || '',
+      fechaFinPlan: f[iTrFechaFinPlan] || '', retrasada: esTareaRetrasadaReal(f[iTrEstado], f[iTrFechaFinPlan]),
       urlSheet: urlFilaSheet('06_TAREAS', filaReal), hijos: [],
     }));
   const procesosDe = (productoId) => conFila(procesos).filter(({ f }) => f[iPcProducto] === productoId)
@@ -220,10 +232,34 @@ async function leerJerarquiaCampanas() {
       urlSheet: urlFilaSheet('02_PROYECTOS', filaReal), hijos: productosDeProyecto(f[iPrId]),
     }));
 
-  const arbol = conFila(campanas).map(({ f, filaReal }) => ({
-    tipo: 'Campaña', id: f[iCaId], nombre: f[iCaNombre] || '', estado: f[iCaEstado] || '', porcentajeAvance: f[iCaAvance] || '',
-    urlSheet: urlFilaSheet('01_CAMPANAS', filaReal), hijos: proyectosDe(f[iCaId]),
-  }));
+  // §8.81: contadores reales por campaña -- mismo dato que "contadores" real de
+  // PanelCampanaService.js (proyectos/productos/procesos/tareas), calculado sobre el
+  // mismo subarbol que ya construimos, sin ninguna lectura nueva.
+  function contarSubarbol(proyectosDeCampana) {
+    const c = { proyectos: 0, productos: 0, procesos: 0, tareas: 0, tareasRetrasadas: 0 };
+    proyectosDeCampana.forEach((p) => {
+      c.proyectos++;
+      p.hijos.forEach((prod) => {
+        c.productos++;
+        prod.hijos.forEach((proc) => {
+          c.procesos++;
+          proc.hijos.forEach((tar) => {
+            c.tareas++;
+            if (tar.retrasada) c.tareasRetrasadas++;
+          });
+        });
+      });
+    });
+    return c;
+  }
+
+  const arbol = conFila(campanas).map(({ f, filaReal }) => {
+    const hijos = proyectosDe(f[iCaId]);
+    return {
+      tipo: 'Campaña', id: f[iCaId], nombre: f[iCaNombre] || '', estado: f[iCaEstado] || '', porcentajeAvance: f[iCaAvance] || '',
+      contadores: contarSubarbol(hijos), urlSheet: urlFilaSheet('01_CAMPANAS', filaReal), hijos,
+    };
+  });
   cacheJerarquia = { en: Date.now(), datos: arbol };
   return arbol;
 }

@@ -25,6 +25,13 @@
   .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
   #btnNuevaCampana { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 12px; cursor: pointer; margin-bottom: 14px; }
   #btnNuevaCampana:hover { border-color: #6ea8ff; }
+  #kpisGlobales { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 18px; }
+  .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); }
+  .kpi b { font-size: 14px; }
+  .kpi.alerta { border-color: #e85c8a; }
+  .kpi.alerta b { color: #e85c8a; }
+  .contadores { font-size: 10.5px; color: var(--color-base-texto-tenue); margin-left: 4px; }
+  .contadores .retrasadas { color: #e85c8a; }
   a.ficha { cursor: pointer; }
   #capaFicha { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
   #capaFicha.abierta { display: flex; }
@@ -47,6 +54,7 @@
   No es Bastidor ni Panel Operativo -- página propia, para no seguir amontonando.
 </p>
 <p id="estado">Comprobando el árbol real...</p>
+<div id="kpisGlobales"></div>
 <button id="btnNuevaCampana" onclick="crear('Campaña', null)">+ Nueva Campaña</button>
 <div id="arbol" class="raiz-hijos"></div>
 
@@ -74,19 +82,43 @@ const SIGUIENTE_TIPO = { 'Campaña': 'Proyecto', 'Proyecto': 'Producto', 'Produc
 
 function renderNodo(n) {
   const hijoTipo = SIGUIENTE_TIPO[n.tipo];
+  // §8.81: contadores reales de la campaña -- mismo dato que "1 proyectos, 1 productos..."
+  // del panel real del Sheet, calculado server-side sobre el mismo subarbol.
+  const c = n.contadores;
+  const contadoresHtml = c
+    ? `<span class="contadores">${c.proyectos} proy · ${c.productos} prod · ${c.procesos} proc · ${c.tareas} tar${c.tareasRetrasadas ? ` · <span class="retrasadas">${c.tareasRetrasadas} retrasada${c.tareasRetrasadas > 1 ? 's' : ''}</span>` : ''}</span>`
+    : '';
   return `
     <div class="nodo">
       <div class="fila" data-id="${n.id}">
         ${n.hijos.length || hijoTipo ? '<span class="chevron" onclick="toggle(this)">▸</span>' : '<span class="chevron"></span>'}
         <span class="tipo">${n.tipo}</span>
-        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}</span>
-        <span class="badge">${n.estado || 'sin estado'}</span>
+        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}${contadoresHtml}</span>
+        <span class="badge ${n.retrasada ? 'alerta' : ''}">${n.estado || 'sin estado'}</span>
         ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
         <a class="ficha" onclick="abrirFicha('${n.tipo}', '${n.id}', '${n.urlSheet}')">Ficha</a>
         ${hijoTipo ? `<button class="crear" onclick="crear('${hijoTipo}', '${n.id}')">+ ${hijoTipo}</button>` : ''}
       </div>
       <div class="hijos">${n.hijos.map(renderNodo).join('')}</div>
     </div>`;
+}
+
+function renderKpisGlobales(arbol) {
+  const total = { campanas: 0, proyectos: 0, procesos: 0, tareas: 0, tareasRetrasadas: 0 };
+  arbol.forEach((campana) => {
+    if (campana.estado === 'Activa') total.campanas++;
+    const c = campana.contadores || {};
+    total.proyectos += c.proyectos || 0;
+    total.procesos += c.procesos || 0;
+    total.tareas += c.tareas || 0;
+    total.tareasRetrasadas += c.tareasRetrasadas || 0;
+  });
+  document.getElementById('kpisGlobales').innerHTML = `
+    <div class="kpi"><b>${total.campanas}</b> campañas activas</div>
+    <div class="kpi"><b>${total.proyectos}</b> proyectos</div>
+    <div class="kpi"><b>${total.procesos}</b> procesos</div>
+    <div class="kpi"><b>${total.tareas}</b> tareas</div>
+    <div class="kpi ${total.tareasRetrasadas ? 'alerta' : ''}"><b>${total.tareasRetrasadas}</b> tareas retrasadas</div>`;
 }
 
 function toggle(chevron) {
@@ -133,9 +165,11 @@ async function cargarArbol() {
     const { arbol, leidoEn } = await r.json();
     arbolReal = arbol;
     estado.textContent = `${arbol.length} campaña(s) real(es) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    renderKpisGlobales(arbol);
     cont.innerHTML = arbol.map(renderNodo).join('') || '<p class="hint">Ninguna campaña real todavía.</p>';
   } catch {
     estado.textContent = 'No se pudo leer el árbol real ahora mismo.';
+    document.getElementById('kpisGlobales').innerHTML = '';
     cont.innerHTML = '';
   }
 }
