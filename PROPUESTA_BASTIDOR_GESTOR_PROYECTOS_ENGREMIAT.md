@@ -889,6 +889,14 @@ Creada la ficha real propia, `Personaje de cliente.md` (`01_Mundo/Recursos/`, `t
 
 Baserow pasó de 11/18 a **12/18** tablas con espejo real declarado. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
 
+### 8.62 Tier 2 cerrado -- el catálogo compartido de referencia
+
+`ENTIDAD_ORGANIZATIVA`, `UBICACION_GEOGRAFICA`, `COMPETENCIA` y `PERSONA_COMPETENCIA` ya estaban nombradas en `Los dos continentes de datos.md`, pero deliberadamente sin cita real ahí (esa ficha es una regla de arquitectura, no la dueña de ninguna tabla). Las cuatro forman un real conjunto diseñado junto -- jerarquías `PADRE_ID` reales, `COMPETENCIA` basada en el código oficial ESCO de la UE, `PERSONA_COMPETENCIA` como tabla puente -- el equivalente compartido, cruzando clientes, de lo que cada Sheet ya tiene por su cuenta (`33_COMPETENCIA`/`34_PERSONA_COMPETENCIA`/`11_PERSONAS_EQUIPOS`).
+
+Creada una única ficha real, `Catálogo compartido de referencia.md` (`01_Mundo/Recursos/`, `tipo: recurso`), en vez de cuatro fichas sueltas -- más honesto a como se diseñaron juntas. Cita las 4 tablas reales en su `## Vínculo real`, y dice explícitamente lo que no se sabe todavía (filas reales, quién las escribe/consulta) en vez de fingir un flujo verificado.
+
+Baserow pasó de 12/18 a **16/18** tablas con espejo real declarado. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

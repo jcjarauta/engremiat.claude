@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T06:09:39.758Z",
+  "generadoEn": "2026-09-04T06:12:05.460Z",
   "espacios": [
     {
       "id": "baserow",
@@ -234,6 +234,34 @@
         {
           "sistema": "Baserow",
           "recordId": "PERSONAJE"
+        }
+      ]
+    },
+    {
+      "id": "catalogo_compartido_de_referencia",
+      "nombre": "Catálogo compartido de referencia",
+      "tipo": "recurso",
+      "estado": "nascente",
+      "resumen": "Cuatro tablas reales de Baserow, diseñadas juntas como el catálogo de referencia compartido del núcleo soberano (ver Los dos continentes de datos): datos que no pertenecen a un cliente concreto (eso vive en su Sheet), sino al ecosistema entero.",
+      "relacionesDeclaradas": [
+        "Baserow"
+      ],
+      "vinculoReal": [
+        {
+          "sistema": "Baserow",
+          "recordId": "ENTIDAD_ORGANIZATIVA"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "UBICACION_GEOGRAFICA"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "COMPETENCIA"
+        },
+        {
+          "sistema": "Baserow",
+          "recordId": "PERSONA_COMPETENCIA"
         }
       ]
     }
