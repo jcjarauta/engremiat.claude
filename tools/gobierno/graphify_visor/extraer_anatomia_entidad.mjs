@@ -6,6 +6,7 @@
 // Propuesta y diseno: PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.41.
 import fs from 'fs';
 import path from 'path';
+import { actualizarFichaGrafo } from './ficha_grafo.mjs';
 
 const DIR = 'C:/Users/pc/Desktop/engremiat.claude/tools/gobierno/graphify_visor';
 const VAULT = 'G:/Mi unidad/engremiat.claude/Obsidian-Engremiat/Universos/Engremiat';
@@ -466,7 +467,21 @@ relacionales.forEach(([slug, e]) => {
 });
 
 const out = { generadoEn: new Date().toISOString(), totalEntidadesConAnatomia: Object.keys(entidades).length, entidades };
-fs.writeFileSync(path.join(DIR, 'anatomia_entidades.json'), JSON.stringify(out, null, 1));
+const rutaAnatomia = path.join(DIR, 'anatomia_entidades.json');
+fs.writeFileSync(rutaAnatomia, JSON.stringify(out, null, 1));
+
+actualizarFichaGrafo({
+  rutaGrafo: rutaAnatomia,
+  id: 'anatomia',
+  nombre: 'Anatomía de entidades',
+  tipo: 'Transversal',
+  espacioReal: null,
+  descripcion: 'Cabeza/columna/extremidades reales de las entidades, calculadas sobre 7 fuentes reales distintas (n8n, Apps Script, Node, Sheet, Baserow, vault).',
+  extractor: 'extraer_anatomia_entidad.mjs',
+  pagina: 'anatomia.html',
+  contadores: { entidades: Object.keys(entidades).length },
+});
+
 console.log('Entidades con anatomia real:', Object.keys(entidades).length);
 Object.entries(entidades).forEach(([slug, e]) => {
   console.log(`- ${e.nombre}: ${e.fuentes.map(f => `${f.tipo}(${f.nodos.length}n/espina ${f.espina.length})`).join(', ')}`);

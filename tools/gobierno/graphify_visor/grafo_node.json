@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T14:35:51.242Z",
+  "generadoEn": "2026-09-04T23:37:03.758Z",
   "nodos": [
     {
       "id": "tools/acervo_prompter.mjs",
@@ -120,7 +120,7 @@
       "tocaBaserow": false,
       "tocaVault": true,
       "tocaVps": false,
-      "queHace": "Solo lectura -- recorre la boveda real de Obsidian (01_Mundo/Espacios,Recursos,Modulos + 02_Personajes + 08_Oficios + 03_Reglas + 07_Holon_Relaciones) y genera el paquete real que el Bocetador carga con 'Cargar Universo real': 63 nodos + 18 relaciones reales, nunca inventados. Hallazgo real: el vocabulario de tipo_relacion ya en uso en 07_Holon_Relaciones/ (activa_a, alimenta_a, corrige_a, depende_de, gobierna_a, opera_en, parte_de, verifica_a) era mas rico que el que tenia relacion.schema.json (solo 3 aristas del canvas) -- corregido, union de las dos fuentes reales."
+      "queHace": "§8.66: puente barato Mapa del universo -> Como/Cuanto. rolReal/agenciaReal ya calculados por extraer_anatomia_entidad.mjs y servidos en atlas_familias.json, pero universo_real.json (lo que carga el Bocetador) nunca los cruzaba -- mismo patron real que la unificacion de vinculoReal (§8.59): leer el fichero real ya existente, no recalcular nada. cargarRolYAgenciaReal() lee atlas_familias.json y anade rolReal/agenciaReal a cada nodo real que tenga match por slug. Resultado real: 61/77 nodos del universo_real.json ganan estos dos campos (los 16 restantes son fichas mas nuevas que atlas_familias.json todavia no cubre -- gap real, honesto, no oculto). Regenerado universo_real.json (ambas copias), validar_bocetador.mjs sigue APROBADO, app verificada sin errores en el navegador."
     },
     {
       "id": "tools/gobierno/bocetador/cargar_estructura_baserow.mjs",
@@ -343,6 +343,28 @@
       "queHace": "Crea las 13 aristas reales opera_en que faltaban -- de 19 Personajes, solo 5 respondian ya Donde. Cada una fundamentada en algo ya escrito en otra ficha real (Telar.md, Coordinador.md, vinculoReal de Verificador de Campos y Acervo Usuario), nunca inventada. Aplicado en real: 13/13 creadas."
     },
     {
+      "id": "tools/gobierno/graphify_visor/desplegar_visor.mjs",
+      "nombre": "desplegar_visor.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": "§8.84: el operador senalo que generar y desplegar el grafo llevo muchos pasos manuales -- 'podemos crear alguna herramienta para automatizarlo?'. El ciclo manual (scp + ssh docker compose up -d + curl) ya habia causado antes un 404 en silencio por un fichero sin su linea de montaje en docker-compose.yml. Construido para no repetir ese bug: en vez de mantener una segunda lista de ficheros, lee docker-compose.yml y despliega exactamente los ficheros ya declarados como volumen del servicio -- unica fuente real de verdad. Pasos: (1) opcional --grafo regenera grafo_visor.json, (2) scp real de cada fichero declarado, (3) ssh docker compose up -d <servicio> (recreate real, nunca restart), (4) curl de verificacion real de cada pagina .html servida. Verificado con una ejecucion real completa: regenero el grafo (recogio automaticamente la propia vista_sistema.html, 16 a 17 paginas), copio 32 ficheros reales, recreo el contenedor, confirmo 200 real en las 16 paginas servidas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "nombre": "exportar_atlas_familias.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "§8.47: puente de datos real -- convierte anatomia_entidades.json (grafo en bruto, pensado para calcular) en atlas_familias.json (datos ya aplanados por familia real, pensados para dibujar). Cruza anatomia_entidades.json + censo_entidades.json (corroboracionCruzada/centralidad) + grafo_wikilinks.json (tipo real) + grafo_holon.json (equipo real). Una entidad puede aparecer en varias familias si de verdad juega varios roles reales (ej. Cliente es Compositor en Node y Esquema dependiente en Sheet/Baserow) -- nunca forzada a una sola. Real: 11 familias, 70 apariciones de entidad de 61 entidades reales."
+    },
+    {
       "id": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
       "nombre": "extraer_anatomia_entidad.mjs",
       "carpeta": "tools/gobierno/graphify_visor",
@@ -351,7 +373,40 @@
       "tocaBaserow": true,
       "tocaVault": true,
       "tocaVps": false,
-      "queHace": "§8.41-43: calcula la anatomia real de cada entidad -- cabeza (punto de entrada real, sin aristas entrantes), columna (el camino dirigido real mas largo desde ahi, DFS con corte de ciclos) y extremidades (el resto), sobre siete fuentes reales: grafo_n8n.json (workflows), graph.json+concat-map.json de tools/graphify/ (Apps Script), grafo_node.json (Node, espina = cadena real de import), grafo_historial.json/grafo_paquete_cliente.json (mecanismos con flujo propio: 91_HISTORIAL, PAQUETE_CLIENTE), esquema real de Sheet (estructura_sheet.json del bocetador -- columnas reales como extremidades, columnas *_ID que coinciden con una clave real de ENTIDADES_MVP de src/Ids.js como aristas de FK reales hacia otra pestaña), esquema real de Baserow (estructura_baserow.json -- campos reales como extremidades, campos tipo link_row de la propia API de Baserow como aristas reales), y grafo_wikilinks.json como ultimo respaldo (relaciones reales del Holon). Una tabla no tiene flujo de ejecucion, pero si una forma real -- sus columnas y sus relaciones reales, nunca inventadas. Lee el vinculoReal real de cada ficha para saber que fuente resolver. Salida: anatomia_entidades.json, 60 entidades reales con anatomia calculable de 91 (excluyendo las 32 fichas-relacion de 07_Holon)."
+      "queHace": "§8.41-46: calcula la anatomia real de cada entidad -- cabeza (punto de entrada real, sin aristas entrantes), columna (el camino dirigido real mas largo desde ahi, DFS con corte de ciclos) y extremidades (el resto), sobre siete fuentes reales: grafo_n8n.json (workflows), graph.json+concat-map.json de tools/graphify/ (Apps Script), grafo_node.json (Node, espina = cadena real de import), grafo_historial.json/grafo_paquete_cliente.json (mecanismos con flujo propio: 91_HISTORIAL, PAQUETE_CLIENTE), esquema real de Sheet (estructura_sheet.json del bocetador -- columnas reales como extremidades, columnas *_ID que coinciden con una clave real de ENTIDADES_MVP de src/Ids.js como aristas de FK reales hacia otra pestaña), esquema real de Baserow (estructura_baserow.json -- campos reales como extremidades, campos tipo link_row de la propia API de Baserow como aristas reales), y grafo_wikilinks.json como ultimo respaldo (relaciones reales del Holon). Una tabla no tiene flujo de ejecucion, pero si una forma real -- sus columnas y sus relaciones reales, nunca inventadas. Lee el vinculoReal real de cada ficha para saber que fuente resolver. Salida: anatomia_entidades.json, 61 entidades reales con anatomia calculable de 91 (excluyendo las 32 fichas-relacion de 07_Holon). §8.45: bug real corregido -- la fuente relacional/Holon elegia la mejor entrada GLOBAL del componente compartido, asi que Concilio/los 8 Acervos/El Sheet/El Vault/Headscale/Mensajero devolvian el mismo cuerpo, cabeza y columna letra por letra. Corregido forzando la raiz en la propia entidad (`raizForzada` en calcularEspina). Anade dos metricas reales nuevas por fuente: agenciaReal (aristas reales salientes desde la propia cabeza) y territorioPropio (solo en 'relacional': % de la columna que no aparece en la columna de ningun otro personaje del mismo componente -- cuanto de su cuerpo es identidad exclusiva vs sustrato compartido). §8.46: anade rolReal -- el verbo real dominante de las aristas salientes de la propia cabeza, traducido a un vocabulario pequeno de roles universales (Operador/Guardian/Proveedor/Orquestador/Dependiente/Ejecutor/Compositor/Utilidad/Esquema dependiente/Disparador/Decisor/Pasivo) comparable ENTRE fuentes distintas. El wikilink se excluye del calculo del rol (es tejido narrativo, no accion funcional) aunque si cuenta para agenciaReal. Hallazgo real: los 8 Acervos + Headscale + Relevo + Mensajero comparten la misma familia real (Operador) pese a estar en 3 equipos distintos -- el parecido es de comportamiento, no de vecindario."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "nombre": "ficha_grafo.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
+      "nombre": "generar_tokens_css.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "§8.47: lee design-tokens.json y escribe tokens.css (variables CSS reales) -- equivalente funcional a Style Dictionary, sin dependencia npm, mismo criterio de todo tools/ (solo Node built-in, nada que instalar). Recorre el JSON DTCG y convierte cada token con $value en --categoria-subcategoria-nombre. Real: 46 tokens exportados."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "nombre": "mapear_ciclos_reales.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "§8.49: revision completa de TODOS los ciclos reales consolidados en el proyecto -- 9 mecanismos encontrados, de naturaleza distinta, nunca forzados a un solo esquema: jerarquia (Campana->Proyecto->Producto->Proceso->Tarea, via ENTIDADES_MVP de src/Ids.js, orden real por numero de hoja), ciclo_vida (Mision real 14 estados B0-validado desde grafo_telar_estados.json; ejecucion real del workflow de Cronista desde la espina ya calculada en anatomia_entidades.json), plantilla (el ciclo de trabajo del Telar -- Urdimbre/Trama/Hilo conductor/Parte de Vigilia-Relevo, citado literalmente de Telar.md, domain-agnostic -- la Mision lo instancia via instanciaDe), operativo (ciclo_autonomo.mjs, CICLO_AUDITORIA_ENGREMIAT.md de 4 fases, METRICA_FABRICACION del Coordinador, el propio censo dato-real->hueco-real->ficha-real), fisico (El ciclo de vida remoto, IDs reales despertar-pc/apagar-pi). Deja fuera a proposito los bucles estructurales de teoria de grafos ya encontrados en el censo (§8.23) -- esos no son procesos temporales, son dependencias circulares de codigo. Salida: ciclos_reales.json, servido en 100.107.171.88:9320/ciclos_reales.json."
     },
     {
       "id": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
@@ -373,7 +428,62 @@
       "tocaBaserow": true,
       "tocaVault": true,
       "tocaVps": true,
-      "queHace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los 44 scripts reales de Node en tools/. Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS, relaciones por fichero de datos (escribe/lee, incluido un paso de respaldo a nivel de fichero completo) y relaciones por recurso real compartido (misma pestana Sheet o tabla Baserow) -- corregido dos veces en real (2026-09-03) tras ver el grafo demasiado desligado: de 6 a 93 aristas reales. Servido en http://100.107.171.88:9320/nodejs.html."
+      "queHace": "Solo lectura -- segunda vista real, complementa a Graphify (que solo cubre Apps Script) con los scripts reales de Node en tools/ (recorre todo el arbol, incluye tools/gobierno/graphify_visor/). Extrae imports internos reales, toques reales a Sheet/Baserow/Vault/VPS, relaciones por fichero de datos (escribe/lee, incluido un paso de respaldo a nivel de fichero completo) y relaciones por recurso real compartido (misma pestana Sheet o tabla Baserow). Regenerado el 2026-09-03 (§8.44) para incorporar las herramientas construidas esta sesion (censo, Holon, anatomia) -- de 89 a 59 scripts + 41 datos + 21 recursos = 121 nodos reales, 155 aristas; cerro el hueco real de Fisica en anatomia.html. Servido en http://100.107.171.88:9320/nodejs.html."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "nombre": "mapear_grafo_por_tipo.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/mapear_grafo_visor.mjs",
+      "nombre": "mapear_grafo_visor.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/plantilla_extractor.mjs",
+      "nombre": "plantilla_extractor.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/regenerar_grafos.mjs",
+      "nombre": "regenerar_grafos.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "nombre": "servidor_memoria.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": "§8.52: Fase 4 del plan del Bastidor (la memoria compartida real) -- primer y unico servicio de ESCRITURA de todo el visor (las once vistas anteriores son solo lectura via npx serve). Antes, el registro de eventos y los montajes guardados de mesa_montaje.html vivian solo en localStorage -- memoria de un navegador, invisible para cualquier otra maquina. Servidor HTTP Node propio (sin framework, sin credenciales externas), 3 rutas reales: GET /api/memoria (todo), POST /api/eventos (anota uno, timestamp real puesto por el servidor no por el cliente), POST/DELETE /api/montajes (guarda/borra por nombre). Persiste en un fichero JSON real en disco (./datos_memoria, fuera del sync de codigo, montado rw) -- deliberadamente NO Baserow todavia, mismo criterio de \"no infraestructura prematura\" ya validado investigando los informes de arquitectura (§8.47). Precedente real reutilizado: tools/gobierno/spike_concilio_coop/servidor.mjs (ya corria un servidor Node propio en el VPS). mesa_montaje.html actualizado: localStorage pasa a ser el respaldo real (nunca desaparece, sigue funcionando sin conexion) y la memoria compartida (100.107.171.88:9330) pasa a ser la fuente cuando esta conectada -- estado mostrado honestamente en pantalla (\"conectada\" / \"sin conexion, guardando solo en este navegador\"), nunca fingido. Desplegado como segundo servicio en el mismo docker-compose.yml del visor. Verificado real: servidor responde en :9330 (curl real via SSH y navegacion directa del navegador), CORS + cabecera Access-Control-Allow-Private-Network anadida (Chrome trata el rango CGNAT de Tailscale como red privada a efectos de Private Network Access). El fetch cross-origen especifico desde la pestana de automatizacion de pruebas no se pudo completar (ERR_BLOCKED_BY_CLIENT, sin traza de red -- limitacion del entorno de pruebas en sandbox, no del codigo real: la navegacion directa al mismo puerto SI devuelve datos reales); pendiente de que el operador confirme el estado \"conectada\" en su propio navegador real."
     },
     {
       "id": "tools/gobierno/graphify_visor/valorar_vinculoreal_confirmadas.mjs",
@@ -385,6 +495,17 @@
       "tocaVault": true,
       "tocaVps": false,
       "queHace": "Valora cada entidad CONFIRMADA del censo real (§8.23): ya_tiene la seccion ## Vinculo real en su ficha, evidencia_precisa (script/tabla/workflow/modulo real concreto reutilizable) o evidencia_difusa (solo un fichero entero de Apps Script, no un recordId util). Anade dos fuentes que el barrido de la consolidacion no cubria del todo: el grafo completo de Apps Script y las transcripciones reales de Telar B2. Escribe valoracion_vinculoreal.json. Segunda pasada tras la propuesta real del operador (perspectiva del Sheet maestro): anade el mapeo real hoja->modulo computado desde ENTIDADES_MVP+MODULO_POR_ENTIDAD_MVP de src/Ids.js (revela que CORE es dueno real de 8 pestanas, invisible a la coincidencia de texto porque \"CORE\" no es substring de ninguna pestana -- es una relacion de propiedad, no textual), mas dos corpus nuevos: src/ (161 ficheros reales de Apps Script, mas granulares que el unico concat.js de Graphify) y los .ps1 del ecosistema. Encontrada la misma trampa de homonimia que en §8.23 (Fisica <-> InstaladorJerarquiaFisica.js, jerarquia espacial de un cliente, no el concepto filosofico) -- excluida explicitamente."
+    },
+    {
+      "id": "tools/gobierno/narrador_construir_proyecto.mjs",
+      "nombre": "narrador_construir_proyecto.mjs",
+      "carpeta": "tools/gobierno",
+      "tipo": "script",
+      "tocaSheet": true,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "§8.55: Paso 2 del encaje juego cooperativo -- modo construcción del Narrador (el visitante puede no tener proyecto todavía). Reutiliza dos mecanismos reales ya probados, ninguno nuevo: la elicitación corta de Telar (pocas preguntas reales, DeepSeek sintetiza sin inventar fuera de lo dado) + el patrón proponer/confirmar de Cronista (solo un humano confirma, nunca se escribe directo). Solo la mitad \"proponer\": tres respuestas reales (qué construye/por qué/qué lo dificulta) -> DeepSeek devuelve un Proyecto real estructurado (NOMBRE/DESCRIPCION/OBJETIVO/RESULTADO_ESPERADO/CRITERIOS_ACEPTACION/TIPO_PROYECTO/PRIORIDAD/OBSERVACIONES), con TIPO_PROYECTO/PRIORIDAD tomados EN VIVO de 90_CONFIGURACION (nunca duplicados a mano) -- nunca escribe nada en el Sheet. Verificado real con un escenario plausible de La Troballa (taller de macetas de barro, encargo real de un vecino): eligio TIPO_PROYECTO=ENCARGO_CLIENTE del catalogo real, y cuando falto un dato real (cantidad de barro, tiempo de secado) lo anoto en OBSERVACIONES en vez de inventarlo -- misma honestidad del fallo del resto del sistema. Coste real de la prueba: $0.00059. La mitad \"confirmar\" (escribir de verdad, via insertarRegistroTransaccional) necesita una accion nueva en WebhookTelegramService.js -- diseniada pero NO desplegada, pendiente de confirmacion explicita antes de tocar produccion."
     },
     {
       "id": "tools/gobierno/puente_historia_leyes.mjs",
@@ -439,7 +560,7 @@
       "tocaBaserow": true,
       "tocaVault": false,
       "tocaVps": true,
-      "queHace": ""
+      "queHace": "§8.54: Paso 1 del encaje juego cooperativo. El roster de los 7 Acervos deliberantes de Concilio ya no vive hardcodeado en servidor.mjs -- se construye en real desde personajes.json (generado por generar_dialogos.mjs, \"un solo motor, dos pieles\", ya existía sin usarse para esto). Un Acervo entra al roster si su propio dialogo real (prosa de su ficha del vault) no dice \"no delibera\" -- así Acervo Prompter y Narrador quedan fuera sin lista de exclusión mantenida a mano que se puede desincronizar del vault real. Hallazgo real en el camino: la ficha Narrador.md YA existía (estado: por_construir), con prosa casi identica a lo que se diseño esta sesion (\"acompana al usuario en su propia aventura... narra la historia mientras se recorre\") y aclara explicitamente que no delibera en Concilio -- se dejo con su estado real intacto, no se fingio que ya esta construido. Verificado real: log del contenedor confirma \"lobby de 7 Acervos\" tras redeploy limpio (down/up) en 100.107.171.88:2568."
     },
     {
       "id": "tools/gobierno/telar/b1/servidor_b1.mjs",
@@ -686,6 +807,11 @@
       "tipo": "dato"
     },
     {
+      "id": "dato:atlas_familias.json",
+      "nombre": "atlas_familias.json",
+      "tipo": "dato"
+    },
+    {
       "id": "dato:estructura_baserow.json",
       "nombre": "estructura_baserow.json",
       "tipo": "dato"
@@ -761,6 +887,21 @@
       "tipo": "dato"
     },
     {
+      "id": "dato:fichas_grafos.json",
+      "nombre": "fichas_grafos.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:design-tokens.json",
+      "nombre": "design-tokens.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:ciclos_reales.json",
+      "nombre": "ciclos_reales.json",
+      "tipo": "dato"
+    },
+    {
       "id": "dato:cronista-segmentar-generador.json",
       "nombre": "cronista-segmentar-generador.json",
       "tipo": "dato"
@@ -781,8 +922,28 @@
       "tipo": "dato"
     },
     {
+      "id": "dato:grafo_visor.json",
+      "nombre": "grafo_visor.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:grafo_NOMBRE.json",
+      "nombre": "grafo_NOMBRE.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:memoria_compartida.json",
+      "nombre": "memoria_compartida.json",
+      "tipo": "dato"
+    },
+    {
       "id": "dato:.ultima_sincronizacion_boveda.json",
       "nombre": ".ultima_sincronizacion_boveda.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:personajes.json",
+      "nombre": "personajes.json",
       "tipo": "dato"
     },
     {
@@ -956,8 +1117,28 @@
       "tipo": "recurso_real"
     },
     {
+      "id": "recurso:02_PROYECTOS",
+      "nombre": "02_PROYECTOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:04_PROYECTO_PRODUCTO",
+      "nombre": "04_PROYECTO_PRODUCTO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:12_DECISIONES",
+      "nombre": "12_DECISIONES",
+      "tipo": "recurso_real"
+    },
+    {
       "id": "recurso:18_VINCULO",
       "nombre": "18_VINCULO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:TELAR_SESION",
+      "nombre": "TELAR_SESION",
       "tipo": "recurso_real"
     }
   ],
@@ -1075,6 +1256,11 @@
     {
       "source": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
       "target": "dato:universo_real.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
+      "target": "dato:atlas_familias.json",
       "relation": "escribe_debil"
     },
     {
@@ -1238,6 +1424,11 @@
       "relation": "toca_recurso"
     },
     {
+      "source": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
+    },
+    {
       "source": "dato:grafo_wikilinks.json",
       "target": "tools/gobierno/graphify_visor/cargar_grafo_holon.mjs",
       "relation": "lee"
@@ -1368,6 +1559,36 @@
       "relation": "toca_recurso"
     },
     {
+      "source": "dato:anatomia_entidades.json",
+      "target": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:censo_entidades.json",
+      "target": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_wikilinks.json",
+      "target": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_holon.json",
+      "target": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
+      "target": "dato:atlas_familias.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
+    },
+    {
       "source": "dato:grafo_n8n.json",
       "target": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
       "relation": "lee"
@@ -1395,7 +1616,7 @@
     {
       "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
       "target": "dato:anatomia_entidades.json",
-      "relation": "escribe"
+      "relation": "escribe_debil"
     },
     {
       "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
@@ -1406,6 +1627,46 @@
       "source": "tools/gobierno/graphify_visor/extraer_anatomia_entidad.mjs",
       "target": "recurso:PAQUETE_CLIENTE",
       "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "target": "dato:fichas_grafos.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "dato:design-tokens.json",
+      "target": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:grafo_telar_estados.json",
+      "target": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:anatomia_entidades.json",
+      "target": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "target": "dato:ciclos_reales.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_ciclos_reales.mjs",
+      "target": "recurso:METRICA_FABRICACION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
     },
     {
       "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
@@ -1421,6 +1682,11 @@
       "source": "tools/gobierno/graphify_visor/mapear_grafo_n8n.mjs",
       "target": "dato:telar-interactivo.json",
       "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
     },
     {
       "source": "dato:registro_ecosistema.json",
@@ -1446,6 +1712,131 @@
       "source": "tools/gobierno/graphify_visor/mapear_grafo_node.mjs",
       "target": "dato:01_x.json",
       "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "target": "dato:universo_real.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "target": "recurso:DOCUMENTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_por_tipo.mjs",
+      "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_visor.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "dato:estructura_sheet.json",
+      "target": "tools/gobierno/graphify_visor/mapear_grafo_visor.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "dato:estructura_baserow.json",
+      "target": "tools/gobierno/graphify_visor/mapear_grafo_visor.mjs",
+      "relation": "lee"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/mapear_grafo_visor.mjs",
+      "target": "dato:grafo_visor.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/plantilla_extractor.mjs",
+      "target": "tools/gobierno/graphify_visor/ficha_grafo.mjs",
+      "relation": "import"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/plantilla_extractor.mjs",
+      "target": "dato:grafo_NOMBRE.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "dato:memoria_compartida.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:01_CAMPANAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:02_PROYECTOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:03_PRODUCTOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:04_PROYECTO_PRODUCTO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:05_PROCESOS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:06_TAREAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:12_DECISIONES",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:18_VINCULO",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:PLANTILLA_MISION",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "recurso:TELAR_SESION",
+      "relation": "toca_recurso"
     },
     {
       "source": "dato:censo_entidades.json",
@@ -1516,6 +1907,11 @@
       "source": "tools/gobierno/sincronizar_boveda.mjs",
       "target": "recurso:DOCUMENTO",
       "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:personajes.json",
+      "target": "tools/gobierno/spike_concilio_coop/servidor.mjs",
+      "relation": "lee"
     },
     {
       "source": "tools/gobierno/spike_concilio_coop/servidor.mjs",
@@ -1737,5 +2133,40 @@
       "target": "recurso:13_INCIDENCIAS",
       "relation": "toca_recurso"
     }
-  ]
+  ],
+  "ficha": {
+    "id": "nodejs",
+    "nombre": "Capa Node (tools/)",
+    "tipo": "Herramienta",
+    "espacioReal": null,
+    "descripcion": "Scripts reales de tools/ -- imports, ficheros de datos y recursos reales compartidos (Sheet+Baserow) entre ellos.",
+    "extractor": "mapear_grafo_node.mjs",
+    "pagina": "nodejs.html",
+    "contadores": {
+      "nodos": 144,
+      "aristas": 198,
+      "scripts": 70
+    },
+    "actualizadoEn": "2026-09-04T23:37:03.759Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:31:02.606Z",
+        "nodos": 143,
+        "aristas": 196,
+        "scripts": 69
+      },
+      {
+        "en": "2026-09-04T23:36:24.281Z",
+        "nodos": 143,
+        "aristas": 198,
+        "scripts": 69
+      },
+      {
+        "en": "2026-09-04T23:37:03.759Z",
+        "nodos": 144,
+        "aristas": 198,
+        "scripts": 70
+      }
+    ]
+  }
 }

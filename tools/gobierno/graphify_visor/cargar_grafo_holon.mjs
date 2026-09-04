@@ -12,6 +12,7 @@
  */
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { actualizarFichaGrafo } from './ficha_grafo.mjs';
 
 const DIR = import.meta.dirname;
 const RUTA_VAULT = 'G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat';
@@ -70,6 +71,18 @@ function main() {
 
   const paquete = { generadoEn: new Date().toISOString(), nodos, aristas };
   writeFileSync(salida, JSON.stringify(paquete, null, 2), 'utf-8');
+
+  actualizarFichaGrafo({
+    rutaGrafo: salida,
+    id: 'holon',
+    nombre: 'Holon -- quién hace qué, con quién',
+    tipo: 'Personaje',
+    espacioReal: null,
+    descripcion: 'Grafo completo de relaciones reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...), coloreado por equipo real.',
+    extractor: 'cargar_grafo_holon.mjs',
+    pagina: 'holon.html',
+    contadores: { nodos: nodos.length, aristas: aristas.length },
+  });
 
   const porTipoRelacion = {};
   for (const a of aristas) porTipoRelacion[a.relation] = (porTipoRelacion[a.relation] || 0) + 1;

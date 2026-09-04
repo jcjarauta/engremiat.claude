@@ -1,0 +1,212 @@
+{
+  "generadoEn": "2026-09-04T23:37:04.642Z",
+  "nodos": [
+    {
+      "id": "puerta_humana",
+      "nombre": "Puerta Humana",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "relevo",
+      "nombre": "Relevo",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "coordinador",
+      "nombre": "Coordinador",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "ejecutor",
+      "nombre": "Ejecutor",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "el_sheet_manda",
+      "nombre": "El Sheet manda",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "el_sheet",
+      "nombre": "El Sheet",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "baserow",
+      "nombre": "Baserow",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "verificar_contra_hechos",
+      "nombre": "Verificar contra hechos",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "verificador_de_campos",
+      "nombre": "Verificador de Campos",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "verificador_de_capacidades",
+      "nombre": "Verificador de Capacidades",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "honestidad_del_fallo",
+      "nombre": "Honestidad del fallo",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "los_dos_continentes_de_datos",
+      "nombre": "Los dos continentes de datos",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "vps_y_tailscale",
+      "nombre": "VPS y Tailscale",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "fisica",
+      "nombre": "Física",
+      "tipo": "regla",
+      "esPrimario": true
+    },
+    {
+      "id": "estilo",
+      "nombre": "Estilo",
+      "tipo": "externo",
+      "esPrimario": false
+    },
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "esPrimario": false
+    }
+  ],
+  "aristas": [
+    {
+      "source": "puerta_humana",
+      "target": "relevo",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "coordinador",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "puerta_humana",
+      "target": "ejecutor",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "el_sheet_manda",
+      "target": "el_sheet",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "el_sheet_manda",
+      "target": "baserow",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "verificar_contra_hechos",
+      "target": "verificador_de_campos",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "verificar_contra_hechos",
+      "target": "verificador_de_capacidades",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "honestidad_del_fallo",
+      "target": "coordinador",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "vps_y_tailscale",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "baserow",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "los_dos_continentes_de_datos",
+      "target": "el_sheet",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "fisica",
+      "target": "estilo",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "fisica",
+      "target": "gasto_api",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "fisica",
+      "target": "coordinador",
+      "relation": "relaciona_con"
+    }
+  ],
+  "ficha": {
+    "id": "grafo_regla",
+    "nombre": "Reglas reales",
+    "tipo": "Regla",
+    "espacioReal": null,
+    "descripcion": "Fichas reales de 03_Reglas/ (6 fichas: El Sheet manda, Física, Honestidad del fallo...) y sus relaciones declaradas reales.",
+    "extractor": "mapear_grafo_por_tipo.mjs --tipo regla",
+    "pagina": "vista_reglas.html",
+    "contadores": {
+      "nodos": 16,
+      "aristas": 14,
+      "primarios": 6,
+      "externos": 1
+    },
+    "actualizadoEn": "2026-09-04T23:37:04.643Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:27:13.021Z",
+        "nodos": 16,
+        "aristas": 14,
+        "primarios": 6,
+        "externos": 1
+      },
+      {
+        "en": "2026-09-04T23:36:25.313Z",
+        "nodos": 16,
+        "aristas": 14,
+        "primarios": 6,
+        "externos": 1
+      },
+      {
+        "en": "2026-09-04T23:37:04.643Z",
+        "nodos": 16,
+        "aristas": 14,
+        "primarios": 6,
+        "externos": 1
+      }
+    ]
+  }
+}

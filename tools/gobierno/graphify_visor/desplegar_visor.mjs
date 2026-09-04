@@ -71,10 +71,12 @@ function main() {
   if (!existsSync(CLAVE_SSH)) throw new Error('No se encuentra la clave SSH real: ' + CLAVE_SSH);
 
   if (regenerarGrafo) {
-    console.log('=== 1/4 Regenerando grafo_visor.json ===');
-    ejecutar('node', ['mapear_grafo_visor.mjs'], { cwd: DIR_VISOR });
+    // §8.93: generalizado -- antes solo regeneraba vista_sistema.html, ahora regenera
+    // TODOS los extractores reales conocidos (regenerar_grafos.mjs, TAR-0005).
+    console.log('=== 1/4 Regenerando todos los grafos reales (regenerar_grafos.mjs) ===');
+    ejecutar('node', ['regenerar_grafos.mjs'], { cwd: DIR_VISOR });
   } else {
-    console.log('=== 1/4 (omitido -- pasa --grafo para regenerar grafo_visor.json antes) ===');
+    console.log('=== 1/4 (omitido -- pasa --grafo para regenerar todos los grafos reales antes) ===');
   }
 
   const declarados = extraerFicherosDelServicio(servicio);

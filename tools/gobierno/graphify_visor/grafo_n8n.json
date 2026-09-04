@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T04:31:59.612Z",
+  "generadoEn": "2026-09-04T23:37:03.839Z",
   "workflows": 2,
   "nodos": [
     {
@@ -1516,5 +1516,40 @@
       "target": "Telar Interactivo::Mostrar escribiendo (capitulo)",
       "workflow": "Telar Interactivo"
     }
-  ]
+  ],
+  "ficha": {
+    "id": "n8n",
+    "nombre": "Automatización (n8n)",
+    "tipo": "Espacio",
+    "espacioReal": "n8n",
+    "descripcion": "Workflows reales ya exportados (Cronista, Telar Interactivo) -- única capa que muestra automatización real con Puerta Humana propia.",
+    "extractor": "mapear_grafo_n8n.mjs",
+    "pagina": "n8n.html",
+    "contadores": {
+      "nodos": 137,
+      "aristas": 138,
+      "workflows": 2
+    },
+    "actualizadoEn": "2026-09-04T23:37:03.841Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:31:02.691Z",
+        "nodos": 137,
+        "aristas": 138,
+        "workflows": 2
+      },
+      {
+        "en": "2026-09-04T23:36:24.358Z",
+        "nodos": 137,
+        "aristas": 138,
+        "workflows": 2
+      },
+      {
+        "en": "2026-09-04T23:37:03.841Z",
+        "nodos": 137,
+        "aristas": 138,
+        "workflows": 2
+      }
+    ]
+  }
 }

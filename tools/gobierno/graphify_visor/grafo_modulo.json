@@ -1,0 +1,506 @@
+{
+  "generadoEn": "2026-09-04T23:37:04.584Z",
+  "nodos": [
+    {
+      "id": "repository",
+      "nombre": "Repository",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "integrityservice",
+      "nombre": "IntegrityService",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "el_sheet",
+      "nombre": "El Sheet",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "core",
+      "nombre": "CORE",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "verificar_contra_hechos",
+      "nombre": "Verificar contra hechos",
+      "tipo": "regla",
+      "esPrimario": false
+    },
+    {
+      "id": "formularios",
+      "nombre": "Formularios",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "estructurainicial",
+      "nombre": "EstructuraInicial",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "cliente",
+      "nombre": "Cliente",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "aprovisionamiento",
+      "nombre": "Aprovisionamiento",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "configrepository",
+      "nombre": "ConfigRepository",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "ventas",
+      "nombre": "Ventas",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "economico",
+      "nombre": "Economico",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "modulos_acoplables",
+      "nombre": "Modulos acoplables",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "oportunidad",
+      "nombre": "Oportunidad",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "convocatorias",
+      "nombre": "Convocatorias",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "compras",
+      "nombre": "Compras",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "esPrimario": false
+    },
+    {
+      "id": "gantt",
+      "nombre": "Gantt",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "impacto",
+      "nombre": "Impacto",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "comunicacion",
+      "nombre": "Comunicacion",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "operativa",
+      "nombre": "Operativa",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "seguimiento",
+      "nombre": "Seguimiento",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "ejecucion",
+      "nombre": "Ejecucion",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "escenarios",
+      "nombre": "Escenarios",
+      "tipo": "modulo",
+      "esPrimario": true
+    },
+    {
+      "id": "puente_historia_leyes",
+      "nombre": "Puente historia leyes",
+      "tipo": "oficio",
+      "esPrimario": false
+    }
+  ],
+  "aristas": [
+    {
+      "source": "repository",
+      "target": "integrityservice",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "repository",
+      "target": "el_sheet",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "repository",
+      "target": "core",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "integrityservice",
+      "target": "repository",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "integrityservice",
+      "target": "verificar_contra_hechos",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "integrityservice",
+      "target": "core",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "formularios",
+      "target": "repository",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "formularios",
+      "target": "core",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "cliente",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "aprovisionamiento",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "estructurainicial",
+      "target": "core",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "configrepository",
+      "target": "formularios",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "configrepository",
+      "target": "integrityservice",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "configrepository",
+      "target": "core",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "core",
+      "target": "repository",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "core",
+      "target": "integrityservice",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "core",
+      "target": "formularios",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "core",
+      "target": "estructurainicial",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "core",
+      "target": "configrepository",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "ventas",
+      "target": "economico",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "ventas",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "oportunidad",
+      "target": "convocatorias",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "oportunidad",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "cliente",
+      "target": "aprovisionamiento",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "cliente",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "compras",
+      "target": "gasto_api",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "compras",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "gantt",
+      "target": "repository",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "gantt",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "impacto",
+      "target": "ventas",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "impacto",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "convocatorias",
+      "target": "oportunidad",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "convocatorias",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "economico",
+      "target": "ventas",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "economico",
+      "target": "gasto_api",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "economico",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "comunicacion",
+      "target": "cliente",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "comunicacion",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "cliente",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "comunicacion",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "aprovisionamiento",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "ventas",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "oportunidad",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "cliente",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "compras",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "gantt",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "impacto",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "convocatorias",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "economico",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "comunicacion",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "aprovisionamiento",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "operativa",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "seguimiento",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "ejecucion",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "modulos_acoplables",
+      "target": "escenarios",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "operativa",
+      "target": "cliente",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "operativa",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "seguimiento",
+      "target": "puente_historia_leyes",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "seguimiento",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "ejecucion",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "escenarios",
+      "target": "el_sheet",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "escenarios",
+      "target": "modulos_acoplables",
+      "relation": "relaciona_con"
+    }
+  ],
+  "ficha": {
+    "id": "grafo_modulo",
+    "nombre": "Módulos reales",
+    "tipo": "Modulo",
+    "espacioReal": null,
+    "descripcion": "Fichas reales de 01_Mundo/Modulos/ (CORE + Módulos_acoplables) y sus relaciones declaradas reales.",
+    "extractor": "mapear_grafo_por_tipo.mjs --tipo modulo",
+    "pagina": "vista_modulos.html",
+    "contadores": {
+      "nodos": 25,
+      "aristas": 62,
+      "primarios": 21,
+      "externos": 0
+    },
+    "actualizadoEn": "2026-09-04T23:37:04.585Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:27:12.943Z",
+        "nodos": 25,
+        "aristas": 62,
+        "primarios": 21,
+        "externos": 0
+      },
+      {
+        "en": "2026-09-04T23:36:25.236Z",
+        "nodos": 25,
+        "aristas": 62,
+        "primarios": 21,
+        "externos": 0
+      },
+      {
+        "en": "2026-09-04T23:37:04.585Z",
+        "nodos": 25,
+        "aristas": 62,
+        "primarios": 21,
+        "externos": 0
+      }
+    ]
+  }
+}

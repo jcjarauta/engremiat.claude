@@ -47,6 +47,14 @@ services:
       - ./grafos.html:/app/grafos.html:ro
       - ./taller.html:/app/taller.html:ro
       - ./plantilla_grafo_espacio.html:/app/plantilla_grafo_espacio.html:ro
+      - ./plantilla_extractor.mjs:/app/plantilla_extractor.mjs:ro
+      - ./vista_recursos.html:/app/vista_recursos.html:ro
+      - ./vista_modulos.html:/app/vista_modulos.html:ro
+      - ./vista_reglas.html:/app/vista_reglas.html:ro
+      - ./grafo_recurso.json:/app/grafo_recurso.json:ro
+      - ./grafo_modulo.json:/app/grafo_modulo.json:ro
+      - ./grafo_regla.json:/app/grafo_regla.json:ro
+      - ./fichas_grafos.json:/app/fichas_grafos.json:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320

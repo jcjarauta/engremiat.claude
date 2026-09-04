@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-03T10:34:14.233Z",
+  "generadoEn": "2026-09-04T23:37:04.203Z",
   "nodos": [
     {
       "id": "baserow",
@@ -406,5 +406,31 @@
       "target": "documento_engremiat",
       "relation": "opera_en"
     }
-  ]
+  ],
+  "ficha": {
+    "id": "holon",
+    "nombre": "Holon -- quién hace qué, con quién",
+    "tipo": "Personaje",
+    "espacioReal": null,
+    "descripcion": "Grafo completo de relaciones reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...), coloreado por equipo real.",
+    "extractor": "cargar_grafo_holon.mjs",
+    "pagina": "holon.html",
+    "contadores": {
+      "nodos": 29,
+      "aristas": 40
+    },
+    "actualizadoEn": "2026-09-04T23:37:04.204Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:36:24.772Z",
+        "nodos": 29,
+        "aristas": 40
+      },
+      {
+        "en": "2026-09-04T23:37:04.204Z",
+        "nodos": 29,
+        "aristas": 40
+      }
+    ]
+  }
 }

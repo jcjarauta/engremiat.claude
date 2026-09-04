@@ -18,6 +18,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { actualizarFichaGrafo } from './ficha_grafo.mjs';
 
 const DIR_WORKFLOWS = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'tools', 'n8n-workflows');
 const SALIDA_POR_DEFECTO = join(dirname(fileURLToPath(import.meta.url)), 'grafo_n8n.json');
@@ -59,6 +60,18 @@ function main() {
 
   const paquete = { generadoEn: new Date().toISOString(), workflows: WORKFLOWS.length, nodos, aristas };
   writeFileSync(salida, JSON.stringify(paquete, null, 2), 'utf-8');
+
+  actualizarFichaGrafo({
+    rutaGrafo: salida,
+    id: 'n8n',
+    nombre: 'Automatización (n8n)',
+    tipo: 'Espacio',
+    espacioReal: 'n8n',
+    descripcion: 'Workflows reales ya exportados (Cronista, Telar Interactivo) -- única capa que muestra automatización real con Puerta Humana propia.',
+    extractor: 'mapear_grafo_n8n.mjs',
+    pagina: 'n8n.html',
+    contadores: { nodos: nodos.length, aristas: aristas.length, workflows: WORKFLOWS.length },
+  });
 
   console.log('=== Grafo real de workflows n8n (2 ya exportados) ===');
   console.log(`${nodos.length} nodos reales, ${aristas.length} conexiones reales, de ${WORKFLOWS.length} workflows.`);

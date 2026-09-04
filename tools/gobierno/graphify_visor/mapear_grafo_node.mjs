@@ -37,6 +37,7 @@
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, dirname, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { actualizarFichaGrafo } from './ficha_grafo.mjs';
 
 const RAIZ_REPO = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const DIR_TOOLS = join(RAIZ_REPO, 'tools');
@@ -176,6 +177,18 @@ function main() {
 
   const paquete = { generadoEn: new Date().toISOString(), nodos, aristas };
   writeFileSync(salida, JSON.stringify(paquete, null, 2), 'utf-8');
+
+  actualizarFichaGrafo({
+    rutaGrafo: salida,
+    id: 'nodejs',
+    nombre: 'Capa Node (tools/)',
+    tipo: 'Herramienta',
+    espacioReal: null,
+    descripcion: 'Scripts reales de tools/ -- imports, ficheros de datos y recursos reales compartidos (Sheet+Baserow) entre ellos.',
+    extractor: 'mapear_grafo_node.mjs',
+    pagina: 'nodejs.html',
+    contadores: { nodos: nodos.length, aristas: aristas.length, scripts: nodos.filter((n) => n.tipo === 'script').length },
+  });
 
   console.log('=== Grafo real de la capa Node (tools/) ===');
   console.log(`${nodos.filter(n => n.tipo === 'script').length} scripts reales, ${nodosDatoVistos.size} ficheros de datos, ${nodosRecursoVistos.size} recursos reales compartidos (Sheet+Baserow), ${aristas.length} aristas reales.`);

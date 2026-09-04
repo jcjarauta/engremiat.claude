@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- grafo real de Módulos</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
+  #layout { display: flex; height: 100vh; }
+  #red { flex: 1; }
+  #panel { width: 340px; padding: 16px; background: var(--color-base-panel); overflow-y: auto; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
+  h2 { margin: 0 0 4px; font-size: 18px; }
+  .hint { color: var(--color-base-texto-suave); font-size: 12.5px; line-height: 1.4; }
+  .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+  .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  #ficha { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
+  #ficha h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
+  #ficha p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
+  .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; margin: 2px 4px 2px 0; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<div id="layout">
+  <div id="red"></div>
+  <div id="panel">
+    <a class="volver" href="grafos.html">← Grafos del sistema</a>
+    <h2>Módulos reales</h2>
+    <p class="hint">Fichas reales de 01_Mundo/Modulos/ del vault (CORE + Módulos_acoplables) y sus relaciones declaradas reales. Generado por mapear_grafo_por_tipo.mjs --tipo modulo, sobre universo_real.json (cargar_desde_vault.mjs) -- nunca reparsea el vault dos veces. Ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.93.</p>
+    <div class="leyenda-item"><span class="punto" style="background:#4ea8de"></span>Módulo real</div>
+    <div class="leyenda-item"><span class="punto" style="background:#c76bd6"></span>Espacio real referenciado</div>
+    <div class="leyenda-item"><span class="punto" style="background:#8a8d99"></span>Personaje real referenciado</div>
+    <div class="leyenda-item"><span class="punto" style="background:#f4a261"></span>Oficio real referenciado</div>
+    <div class="leyenda-item"><span class="punto" style="background:#2e2f35"></span>Referenciado sin ficha propia</div>
+    <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
+  </div>
+</div>
+<script>
+const COLOR_FONDO = getComputedStyle(document.documentElement).getPropertyValue('--color-base-fondo').trim() || '#0f1013';
+const COLOR_TIPO = { recurso: '#e85c8a', espacio: '#c76bd6', personaje: '#8a8d99', oficio: '#f4a261', modulo: '#4ea8de', regla: '#5c5f6b', externo: '#2e2f35' };
+let network, nodes, nodoEnHover = null;
+
+fetch('grafo_modulo.json').then(r => r.json()).then(datos => {
+  nodes = new vis.DataSet(datos.nodos.map(n => ({
+    id: n.id, label: n.nombre, title: n.id,
+    color: { background: COLOR_TIPO[n.tipo] || '#5c5f6b', border: COLOR_FONDO },
+    font: { color: 'rgba(0,0,0,0)', size: n.esPrimario ? 13 : 11 },
+    shape: 'dot', size: n.esPrimario ? 16 : 10,
+  })));
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({ id: i, from: a.source, to: a.target, arrows: 'to', color: { color: '#3a3b47' } })));
+
+  network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, centralGravity: 0.008, damping: 0.4, avoidOverlap: 0.6 },
+      stabilization: { iterations: 300, fit: true },
+    },
+    interaction: { hover: true, dragView: true, zoomView: true },
+  });
+  network.once('stabilizationIterationsDone', () => {
+    network.setOptions({ physics: { enabled: false } });
+    network.setSize('100%', '100%'); network.redraw(); network.fit({ animation: false });
+  });
+  function refrescarEtiquetas() {
+    const escala = network.getScale();
+    nodes.update(datos.nodos.map(n => ({ id: n.id, font: { color: (n.id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)' } })));
+  }
+  network.on('zoom', refrescarEtiquetas);
+  network.on('hoverNode', (p) => { nodoEnHover = p.node; refrescarEtiquetas(); });
+  network.on('blurNode', () => { nodoEnHover = null; refrescarEtiquetas(); });
+
+  network.on('click', (params) => {
+    if (!params.nodes.length) return;
+    const n = datos.nodos.find(x => x.id === params.nodes[0]);
+    if (!n) return;
+    document.getElementById('ficha').innerHTML =
+      '<h3>' + n.nombre + '</h3>' +
+      '<p><span class="tag" style="background:' + (COLOR_TIPO[n.tipo] || '#5c5f6b') + '33;color:' + (COLOR_TIPO[n.tipo] || '#5c5f6b') + '">' + n.tipo + '</span></p>' +
+      (n.tipo === 'externo' ? '<p>Nombre real referenciado desde un Módulo, sin ficha propia en el vault.</p>' : '');
+  });
+}).catch(() => {
+  document.getElementById('ficha').innerHTML = '<p class="hint">No se pudo cargar grafo_modulo.json -- ejecuta antes: node mapear_grafo_por_tipo.mjs --tipo modulo</p>';
+});
+</script>
+</body>
+</html>

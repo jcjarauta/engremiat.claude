@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T21:45:20.022Z",
+  "generadoEn": "2026-09-04T23:37:03.908Z",
   "nodos": [
     {
       "id": "anatomia.html",
@@ -19,6 +19,11 @@
     {
       "id": "entidades.html",
       "nombre": "entidades.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "grafos.html",
+      "nombre": "grafos.html",
       "tipo": "pagina"
     },
     {
@@ -72,6 +77,11 @@
       "tipo": "pagina"
     },
     {
+      "id": "plantilla_grafo_espacio.html",
+      "nombre": "plantilla_grafo_espacio.html",
+      "tipo": "pagina"
+    },
+    {
       "id": "resumen_universo.html",
       "nombre": "resumen_universo.html",
       "tipo": "pagina"
@@ -79,6 +89,26 @@
     {
       "id": "sheet-real.html",
       "nombre": "sheet-real.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "taller.html",
+      "nombre": "taller.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "vista_modulos.html",
+      "nombre": "vista_modulos.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "vista_recursos.html",
+      "nombre": "vista_recursos.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "vista_reglas.html",
+      "nombre": "vista_reglas.html",
       "tipo": "pagina"
     },
     {
@@ -187,6 +217,11 @@
       "tipo": "endpoint"
     },
     {
+      "id": "endpoint:/api/reclamar_tarea",
+      "nombre": "/api/reclamar_tarea",
+      "tipo": "endpoint"
+    },
+    {
       "id": "recurso:01_CAMPANAS",
       "nombre": "01_CAMPANAS",
       "tipo": "recurso_real"
@@ -255,6 +290,11 @@
   "aristas": [
     {
       "source": "arbol_campanas.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "arbol_campanas.html",
       "target": "endpoint:/api/ficha",
       "relation": "llama_api"
     },
@@ -309,6 +349,41 @@
       "relation": "llama_api"
     },
     {
+      "source": "grafos.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "indice.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "index.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "sheet-real.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "grafo_maestro.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "entidades.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "grafos.html",
+      "target": "resumen_universo.html",
+      "relation": "enlaza"
+    },
+    {
       "source": "home.html",
       "target": "panel_operativo.html",
       "relation": "enlaza"
@@ -320,7 +395,12 @@
     },
     {
       "source": "home.html",
-      "target": "vista_sistema.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "home.html",
+      "target": "taller.html",
       "relation": "enlaza"
     },
     {
@@ -400,6 +480,11 @@
     },
     {
       "source": "panel_operativo.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "panel_operativo.html",
       "target": "mesa_montaje.html",
       "relation": "enlaza"
     },
@@ -419,8 +504,58 @@
       "relation": "llama_api"
     },
     {
-      "source": "vista_sistema.html",
+      "source": "plantilla_grafo_espacio.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "taller.html",
       "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "taller.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "taller.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "taller.html",
+      "target": "endpoint:/api/jerarquia_campanas",
+      "relation": "llama_api"
+    },
+    {
+      "source": "taller.html",
+      "target": "endpoint:/api/bus_trabajo",
+      "relation": "llama_api"
+    },
+    {
+      "source": "taller.html",
+      "target": "endpoint:/api/reclamar_tarea",
+      "relation": "llama_api"
+    },
+    {
+      "source": "vista_modulos.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_recursos.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_reglas.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_sistema.html",
+      "target": "grafos.html",
       "relation": "enlaza"
     },
     {
@@ -466,6 +601,11 @@
     {
       "source": "servidor_memoria.mjs",
       "target": "endpoint:/api/crear_registro",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/reclamar_tarea",
       "relation": "sirve"
     },
     {
@@ -573,5 +713,56 @@
       "target": "recurso:TELAR_SESION",
       "relation": "toca"
     }
-  ]
+  ],
+  "ficha": {
+    "id": "vista_sistema",
+    "nombre": "Vista inicial del sistema",
+    "tipo": "Espacio",
+    "espacioReal": null,
+    "descripcion": "Páginas, servidor, endpoints reales y recursos (Sheet/Baserow) del propio Panel Operativo/graphify_visor, con raíz en home.html.",
+    "extractor": "mapear_grafo_visor.mjs",
+    "pagina": "vista_sistema.html",
+    "contadores": {
+      "nodos": 57,
+      "aristas": 85,
+      "paginas": 23,
+      "endpoints": 20,
+      "recursos": 13
+    },
+    "actualizadoEn": "2026-09-04T23:37:03.909Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:24:13.029Z",
+        "nodos": 54,
+        "aristas": 87,
+        "paginas": 20,
+        "endpoints": 20,
+        "recursos": 13
+      },
+      {
+        "en": "2026-09-04T23:24:44.794Z",
+        "nodos": 54,
+        "aristas": 87,
+        "paginas": 20,
+        "endpoints": 20,
+        "recursos": 13
+      },
+      {
+        "en": "2026-09-04T23:36:24.444Z",
+        "nodos": 57,
+        "aristas": 85,
+        "paginas": 23,
+        "endpoints": 20,
+        "recursos": 13
+      },
+      {
+        "en": "2026-09-04T23:37:03.909Z",
+        "nodos": 57,
+        "aristas": 85,
+        "paginas": 23,
+        "endpoints": 20,
+        "recursos": 13
+      }
+    ]
+  }
 }

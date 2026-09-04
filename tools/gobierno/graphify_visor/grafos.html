@@ -21,7 +21,6 @@
   a.item h3 { margin: 0 0 6px; font-size: 13.5px; }
   a.item p { margin: 0 0 8px; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }
   .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; margin: 0 4px 4px 0; }
-  .vacio { color: var(--color-base-texto-tenue); font-size: 12px; font-style: italic; border: 1px dashed var(--color-base-borde); border-radius: 8px; padding: 12px 14px; }
 
   /* Historico plegado por defecto -- ni el contador de golpe deja ver nombres,
      solo se revelan al desplegar (pedido explicito del operador). */
@@ -40,99 +39,74 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Grafos del sistema</h1>
-<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-88, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
+<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-93, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas de arriba se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
 
-<section>
-  <h2>Nuevo</h2>
-  <div class="grid">
-    <a class="item" href="vista_sistema.html">
-      <h3>Vista inicial del sistema</h3>
-      <span class="badge" style="background:#5c5f6b33;color:#9a9aa2">Espacio: sin ficha propia todavía (hueco real)</span>
-      <p>Páginas, servidor, endpoints reales y recursos (Sheet/Baserow) del propio Panel Operativo/graphify_visor -- con raíz en home.html.</p>
-    </a>
-  </div>
-</section>
+<div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
 <details class="historico" id="historico">
-  <summary>Histórico -- 9 grafos anteriores</summary>
+  <summary>Histórico -- construidos antes del pipeline formal (5)</summary>
   <div>
-    <section>
-      <h2>Espacio <span class="cuenta">(2)</span></h2>
-      <p class="tipo-desc">Un Espacio real (espacio.schema.json / 01_Mundo/Espacios/*.md) -- estos grafos muestran su estructura interna.</p>
-      <div class="grid">
-        <a class="item" href="n8n.html">
-          <h3>Automatización (n8n)</h3>
-          <span class="badge" style="background:#4fce6f33;color:#4fce6f">Espacio: n8n</span>
-          <p>137 nodos reales / 138 conexiones reales de los workflows ya exportados (Cronista incluido) -- única capa que muestra automatización real con Puerta Humana propia.</p>
-        </a>
-        <a class="item" href="sheet-real.html">
-          <h3>El Sheet (con pestañas)</h3>
-          <span class="badge" style="background:#e85c8a33;color:#e85c8a">Espacio: El Sheet</span>
-          <span class="badge" style="background:#c76bd633;color:#c76bd6">Baserow</span>
-          <span class="badge" style="background:#4c9aff33;color:#4c9aff">Telar</span>
-          <p>91_HISTORIAL por CORRELATION_ID, jerarquía real Campaña→Tarea, PAQUETE_CLIENTE→módulos activos, ciclo de vida real de Telar -- 4 vistas en pestañas.</p>
-        </a>
-      </div>
-    </section>
-
-    <section>
-      <h2>Personaje <span class="cuenta">(1)</span></h2>
-      <p class="tipo-desc">Un Personaje real (personaje.schema.json / 02_Personajes/*.md).</p>
-      <div class="grid">
-        <a class="item" href="holon.html">
-          <h3>Holon -- quién hace qué, con quién</h3>
-          <p>Grafo completo de relaciones reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...), coloreado por equipo real.</p>
-        </a>
-      </div>
-    </section>
-
-    <section>
-      <h2>Herramienta <span class="cuenta">(1)</span></h2>
-      <p class="tipo-desc">Una Herramienta real (herramienta.schema.json) -- un script real de <code>tools/gobierno/*.mjs</code>, ya registrado en registro_ecosistema.json.</p>
-      <div class="grid">
-        <a class="item" href="nodejs.html">
-          <h3>Capa Node (tools/)</h3>
-          <p>121 nodos / 155 aristas reales -- imports, ficheros de datos y recursos reales compartidos entre los scripts de tools/.</p>
-        </a>
-      </div>
-    </section>
-
-    <section>
-      <h2>Recurso · Módulo · Regla <span class="cuenta">(0 -- huecos reales)</span></h2>
-      <p class="tipo-desc">Tipos reales del vault sin grafo propio todavía. Recurso: 8 fichas en 01_Mundo/Recursos/ (GASTO_API, DOCUMENTO_ENGREMIAT...). Módulo: CORE + Módulos_acoplables. Regla: 6 fichas en 03_Reglas/. Ningún extractor los cubre hoy de forma dedicada.</p>
-      <div class="vacio">Sin grafo propio todavía -- candidato real para la próxima vista construida con <a class="volver" href="plantilla_grafo_espacio.html" style="color:inherit;text-decoration:underline">plantilla_grafo_espacio.html</a> (adaptada al tipo correspondiente).</div>
-    </section>
-
-    <section>
-      <h2>Transversal <span class="cuenta">(5)</span></h2>
-      <p class="tipo-desc">Grafos que cruzan varios tipos reales a la vez a propósito (vistas maestras/de censo), o que grafican una capa técnica (código) sin corresponder a un único Espacio/Personaje/Recurso.</p>
-      <div class="grid">
-        <a class="item" href="index.html">
-          <h3>Graphify -- código Apps Script</h3>
-          <p>1587 nodos / 4668 aristas reales, 81 comunidades -- el grafo de código de todos los clientes reales sobre la librería Engremiat.</p>
-        </a>
-        <a class="item" href="grafo_maestro.html">
-          <h3>Grafo maestro</h3>
-          <p>Las 94 fichas de entidad reales del vault sin filtrar por tipo -- 331 aristas reales, wikilinks narrativos en capa separada y ocultable.</p>
-        </a>
-        <a class="item" href="anatomia.html">
-          <h3>Anatomía de entidades</h3>
-          <p>Cabeza/columna/extremidades reales de 61 entidades, calculadas sobre 7 fuentes reales distintas (n8n, Apps Script, Node, Sheet, Baserow, vault).</p>
-        </a>
-        <a class="item" href="entidades.html">
-          <h3>Censo de entidades</h3>
-          <p>222 candidatas reales cruzando los 8 grafos + las 70 pestañas del Sheet + 18 tablas de Baserow, con decisión y razón real por candidata.</p>
-        </a>
-        <a class="item" href="resumen_universo.html">
-          <h3>Resumen del universo</h3>
-          <p>Mapa de una página con datos reales de la bóveda, el censo y la infraestructura -- pensado como resumen, no como grafo interactivo.</p>
-        </a>
-      </div>
-    </section>
+    <p class="tipo-desc">Grafos reales previos a §8.93 -- todavía sin ficha dinámica propia, por motivos reales distintos en cada caso: <code>sheet-real.html</code> reúne 4 datasets en pestañas (no un extractor único), <code>grafo_maestro.html</code> es composite (lee 3 ficheros reales a la vez en el navegador), <code>index.html</code>/<code>graph.html</code> nace de un pipeline externo (Graphify/Apps Script, no de este visor), <code>entidades.html</code> depende de un pipeline de censo con escritura real en el vault (Puerta Humana, no se re-ejecuta sin más), y <code>resumen_universo.html</code> es curado a mano, no generado. Ninguno inventado -- simplemente no encajan en "un extractor, una ficha".</p>
+    <div class="grid">
+      <a class="item" href="index.html">
+        <h3>Graphify -- código Apps Script</h3>
+        <p>1587 nodos / 4668 aristas reales, 81 comunidades -- el grafo de código de todos los clientes reales sobre la librería Engremiat.</p>
+      </a>
+      <a class="item" href="sheet-real.html">
+        <h3>El Sheet (con pestañas)</h3>
+        <p>91_HISTORIAL, jerarquía real Campaña→Tarea, PAQUETE_CLIENTE→módulos activos, ciclo de vida real de Telar -- 4 vistas en pestañas.</p>
+      </a>
+      <a class="item" href="grafo_maestro.html">
+        <h3>Grafo maestro</h3>
+        <p>Las 94 fichas de entidad reales del vault sin filtrar por tipo -- 331 aristas reales, wikilinks narrativos en capa separada y ocultable.</p>
+      </a>
+      <a class="item" href="entidades.html">
+        <h3>Censo de entidades</h3>
+        <p>222 candidatas reales cruzando los 8 grafos + las 70 pestañas del Sheet + 18 tablas de Baserow, con decisión y razón real por candidata.</p>
+      </a>
+      <a class="item" href="resumen_universo.html">
+        <h3>Resumen del universo</h3>
+        <p>Mapa de una página con datos reales de la bóveda, el censo y la infraestructura -- pensado como resumen, no como grafo interactivo.</p>
+      </a>
+    </div>
   </div>
 </details>
 <script>
 if (location.hash === '#historico') document.getElementById('historico').open = true;
+
+const COLOR_TIPO = {
+  Espacio: '#c76bd6', Personaje: '#8a8d99', Recurso: '#e85c8a', Modulo: '#4ea8de',
+  Herramienta: '#e8a33d', Transversal: '#5c5f6b',
+};
+
+fetch('fichas_grafos.json').then(r => r.json()).then(m => {
+  const fichas = Object.values(m.fichas).sort((a, b) => a.tipo.localeCompare(b.tipo));
+  const porTipo = {};
+  fichas.forEach(f => { (porTipo[f.tipo] = porTipo[f.tipo] || []).push(f); });
+
+  const tarjeta = (f) => {
+    const color = COLOR_TIPO[f.tipo] || '#5c5f6b';
+    const badge = f.espacioReal ? `Espacio: ${f.espacioReal}` : (f.tipo === 'Espacio' ? 'Espacio: sin ficha propia todavía (hueco real)' : `Tipo: ${f.tipo}`);
+    const cifras = Object.entries(f.contadores).map(([k, v]) => `${v} ${k}`).join(' · ');
+    return `<a class="item" href="${f.pagina}">
+      <h3>${f.nombre}</h3>
+      <span class="badge" style="background:${color}33;color:${color}">${badge}</span>
+      <p>${f.descripcion}</p>
+      <p class="tipo-desc" style="margin:0">${cifras}</p>
+    </a>`;
+  };
+
+  const html = Object.entries(porTipo).map(([tipo, lista]) => `
+    <section>
+      <h2>${tipo} <span class="cuenta">(${lista.length})</span></h2>
+      <div class="grid">${lista.map(tarjeta).join('')}</div>
+    </section>
+  `).join('');
+
+  document.getElementById('dinamico').innerHTML = html || '<p class="hint">Sin fichas reales todavía.</p>';
+}).catch(() => {
+  document.getElementById('dinamico').innerHTML = '<p class="hint">No se pudo cargar fichas_grafos.json.</p>';
+});
 </script>
 </body>
 </html>

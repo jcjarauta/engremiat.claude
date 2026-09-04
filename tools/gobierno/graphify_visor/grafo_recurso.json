@@ -1,0 +1,197 @@
+{
+  "generadoEn": "2026-09-04T23:37:04.528Z",
+  "nodos": [
+    {
+      "id": "gasto_api",
+      "nombre": "GASTO_API",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "coordinador",
+      "nombre": "Coordinador",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "puerta_humana",
+      "nombre": "Puerta Humana",
+      "tipo": "regla",
+      "esPrimario": false
+    },
+    {
+      "id": "vps_y_tailscale",
+      "nombre": "VPS y Tailscale",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "exportador_de_gasto",
+      "nombre": "Exportador de gasto",
+      "tipo": "oficio",
+      "esPrimario": false
+    },
+    {
+      "id": "92_bus_trabajo",
+      "nombre": "92_BUS_TRABAJO",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "mensajero",
+      "nombre": "Mensajero",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "documento_engremiat",
+      "nombre": "DOCUMENTO_ENGREMIAT",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "acervo_prompter",
+      "nombre": "Acervo Prompter",
+      "tipo": "personaje",
+      "esPrimario": false
+    },
+    {
+      "id": "agora",
+      "nombre": "AGORA",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "zona_de_aterrizaje_stg",
+      "nombre": "Zona de aterrizaje STG",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "personaje_de_cliente",
+      "nombre": "Personaje de cliente",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "catalogo_compartido_de_referencia",
+      "nombre": "Catálogo compartido de referencia",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "baserow",
+      "nombre": "Baserow",
+      "tipo": "espacio",
+      "esPrimario": false
+    },
+    {
+      "id": "almacen_del_taller",
+      "nombre": "Almacén del taller",
+      "tipo": "recurso",
+      "esPrimario": true
+    },
+    {
+      "id": "documento_adjunto",
+      "nombre": "Documento adjunto",
+      "tipo": "recurso",
+      "esPrimario": true
+    }
+  ],
+  "aristas": [
+    {
+      "source": "gasto_api",
+      "target": "coordinador",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "gasto_api",
+      "target": "puerta_humana",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "gasto_api",
+      "target": "vps_y_tailscale",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "gasto_api",
+      "target": "exportador_de_gasto",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "92_bus_trabajo",
+      "target": "coordinador",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "92_bus_trabajo",
+      "target": "mensajero",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "documento_engremiat",
+      "target": "acervo_prompter",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "zona_de_aterrizaje_stg",
+      "target": "puerta_humana",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "catalogo_compartido_de_referencia",
+      "target": "baserow",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "almacen_del_taller",
+      "target": "baserow",
+      "relation": "relaciona_con"
+    },
+    {
+      "source": "documento_adjunto",
+      "target": "baserow",
+      "relation": "relaciona_con"
+    }
+  ],
+  "ficha": {
+    "id": "grafo_recurso",
+    "nombre": "Recursos reales",
+    "tipo": "Recurso",
+    "espacioReal": null,
+    "descripcion": "Fichas reales de 01_Mundo/Recursos/ (GASTO_API, DOCUMENTO_ENGREMIAT, Zona de aterrizaje STG...) y sus relaciones declaradas reales.",
+    "extractor": "mapear_grafo_por_tipo.mjs --tipo recurso",
+    "pagina": "vista_recursos.html",
+    "contadores": {
+      "nodos": 16,
+      "aristas": 11,
+      "primarios": 9,
+      "externos": 0
+    },
+    "actualizadoEn": "2026-09-04T23:37:04.529Z",
+    "historial": [
+      {
+        "en": "2026-09-04T23:27:06.157Z",
+        "nodos": 16,
+        "aristas": 11,
+        "primarios": 9,
+        "externos": 0
+      },
+      {
+        "en": "2026-09-04T23:36:25.158Z",
+        "nodos": 16,
+        "aristas": 11,
+        "primarios": 9,
+        "externos": 0
+      },
+      {
+        "en": "2026-09-04T23:37:04.529Z",
+        "nodos": 16,
+        "aristas": 11,
+        "primarios": 9,
+        "externos": 0
+      }
+    ]
+  }
+}

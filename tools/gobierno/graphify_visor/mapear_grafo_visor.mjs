@@ -24,6 +24,7 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { actualizarFichaGrafo } from './ficha_grafo.mjs';
 
 const DIR_VISOR = dirname(fileURLToPath(import.meta.url));
 const DIR_BOCETADOR = join(DIR_VISOR, '..', 'bocetador');
@@ -104,6 +105,20 @@ function main() {
 
   const paquete = { generadoEn: new Date().toISOString(), nodos, aristas };
   writeFileSync(salida, JSON.stringify(paquete, null, 2), 'utf-8');
+
+  // §8.93 (TAR-0008): ficha dinamica real -- documenta este grafo Y alimenta la deteccion
+  // de candidatos por historial (TAR-0007), unificadas en una sola estructura.
+  actualizarFichaGrafo({
+    rutaGrafo: salida,
+    id: 'vista_sistema',
+    nombre: 'Vista inicial del sistema',
+    tipo: 'Espacio',
+    espacioReal: null, // hueco real -- "Panel Operativo"/graphify_visor no tiene ficha propia en 01_Mundo/Espacios/ todavia
+    descripcion: 'Páginas, servidor, endpoints reales y recursos (Sheet/Baserow) del propio Panel Operativo/graphify_visor, con raíz en home.html.',
+    extractor: 'mapear_grafo_visor.mjs',
+    pagina: 'vista_sistema.html',
+    contadores: { nodos: nodos.length, aristas: aristas.length, paginas: htmls.length, endpoints: nodosEndpointVistos.size, recursos: nodosRecursoVistos.size },
+  });
 
   console.log('=== Grafo real del sistema Panel Operativo (raíz: home.html) ===');
   console.log(`${htmls.length} páginas reales, 1 servidor, ${nodosEndpointVistos.size} endpoints reales, ${nodosRecursoVistos.size} recursos reales tocados, ${aristas.length} aristas reales.`);

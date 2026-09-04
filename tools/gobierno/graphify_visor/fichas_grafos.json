@@ -1,0 +1,291 @@
+{
+  "fichas": {
+    "vista_sistema": {
+      "id": "vista_sistema",
+      "nombre": "Vista inicial del sistema",
+      "tipo": "Espacio",
+      "espacioReal": null,
+      "descripcion": "Páginas, servidor, endpoints reales y recursos (Sheet/Baserow) del propio Panel Operativo/graphify_visor, con raíz en home.html.",
+      "extractor": "mapear_grafo_visor.mjs",
+      "pagina": "vista_sistema.html",
+      "contadores": {
+        "nodos": 57,
+        "aristas": 85,
+        "paginas": 23,
+        "endpoints": 20,
+        "recursos": 13
+      },
+      "actualizadoEn": "2026-09-04T23:37:03.909Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:24:13.029Z",
+          "nodos": 54,
+          "aristas": 87,
+          "paginas": 20,
+          "endpoints": 20,
+          "recursos": 13
+        },
+        {
+          "en": "2026-09-04T23:24:44.794Z",
+          "nodos": 54,
+          "aristas": 87,
+          "paginas": 20,
+          "endpoints": 20,
+          "recursos": 13
+        },
+        {
+          "en": "2026-09-04T23:36:24.444Z",
+          "nodos": 57,
+          "aristas": 85,
+          "paginas": 23,
+          "endpoints": 20,
+          "recursos": 13
+        },
+        {
+          "en": "2026-09-04T23:37:03.909Z",
+          "nodos": 57,
+          "aristas": 85,
+          "paginas": 23,
+          "endpoints": 20,
+          "recursos": 13
+        }
+      ]
+    },
+    "grafo_recurso": {
+      "id": "grafo_recurso",
+      "nombre": "Recursos reales",
+      "tipo": "Recurso",
+      "espacioReal": null,
+      "descripcion": "Fichas reales de 01_Mundo/Recursos/ (GASTO_API, DOCUMENTO_ENGREMIAT, Zona de aterrizaje STG...) y sus relaciones declaradas reales.",
+      "extractor": "mapear_grafo_por_tipo.mjs --tipo recurso",
+      "pagina": "vista_recursos.html",
+      "contadores": {
+        "nodos": 16,
+        "aristas": 11,
+        "primarios": 9,
+        "externos": 0
+      },
+      "actualizadoEn": "2026-09-04T23:37:04.529Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:27:06.157Z",
+          "nodos": 16,
+          "aristas": 11,
+          "primarios": 9,
+          "externos": 0
+        },
+        {
+          "en": "2026-09-04T23:36:25.158Z",
+          "nodos": 16,
+          "aristas": 11,
+          "primarios": 9,
+          "externos": 0
+        },
+        {
+          "en": "2026-09-04T23:37:04.529Z",
+          "nodos": 16,
+          "aristas": 11,
+          "primarios": 9,
+          "externos": 0
+        }
+      ]
+    },
+    "grafo_modulo": {
+      "id": "grafo_modulo",
+      "nombre": "Módulos reales",
+      "tipo": "Modulo",
+      "espacioReal": null,
+      "descripcion": "Fichas reales de 01_Mundo/Modulos/ (CORE + Módulos_acoplables) y sus relaciones declaradas reales.",
+      "extractor": "mapear_grafo_por_tipo.mjs --tipo modulo",
+      "pagina": "vista_modulos.html",
+      "contadores": {
+        "nodos": 25,
+        "aristas": 62,
+        "primarios": 21,
+        "externos": 0
+      },
+      "actualizadoEn": "2026-09-04T23:37:04.585Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:27:12.943Z",
+          "nodos": 25,
+          "aristas": 62,
+          "primarios": 21,
+          "externos": 0
+        },
+        {
+          "en": "2026-09-04T23:36:25.236Z",
+          "nodos": 25,
+          "aristas": 62,
+          "primarios": 21,
+          "externos": 0
+        },
+        {
+          "en": "2026-09-04T23:37:04.585Z",
+          "nodos": 25,
+          "aristas": 62,
+          "primarios": 21,
+          "externos": 0
+        }
+      ]
+    },
+    "grafo_regla": {
+      "id": "grafo_regla",
+      "nombre": "Reglas reales",
+      "tipo": "Regla",
+      "espacioReal": null,
+      "descripcion": "Fichas reales de 03_Reglas/ (6 fichas: El Sheet manda, Física, Honestidad del fallo...) y sus relaciones declaradas reales.",
+      "extractor": "mapear_grafo_por_tipo.mjs --tipo regla",
+      "pagina": "vista_reglas.html",
+      "contadores": {
+        "nodos": 16,
+        "aristas": 14,
+        "primarios": 6,
+        "externos": 1
+      },
+      "actualizadoEn": "2026-09-04T23:37:04.643Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:27:13.021Z",
+          "nodos": 16,
+          "aristas": 14,
+          "primarios": 6,
+          "externos": 1
+        },
+        {
+          "en": "2026-09-04T23:36:25.313Z",
+          "nodos": 16,
+          "aristas": 14,
+          "primarios": 6,
+          "externos": 1
+        },
+        {
+          "en": "2026-09-04T23:37:04.643Z",
+          "nodos": 16,
+          "aristas": 14,
+          "primarios": 6,
+          "externos": 1
+        }
+      ]
+    },
+    "nodejs": {
+      "id": "nodejs",
+      "nombre": "Capa Node (tools/)",
+      "tipo": "Herramienta",
+      "espacioReal": null,
+      "descripcion": "Scripts reales de tools/ -- imports, ficheros de datos y recursos reales compartidos (Sheet+Baserow) entre ellos.",
+      "extractor": "mapear_grafo_node.mjs",
+      "pagina": "nodejs.html",
+      "contadores": {
+        "nodos": 144,
+        "aristas": 198,
+        "scripts": 70
+      },
+      "actualizadoEn": "2026-09-04T23:37:03.759Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:31:02.606Z",
+          "nodos": 143,
+          "aristas": 196,
+          "scripts": 69
+        },
+        {
+          "en": "2026-09-04T23:36:24.281Z",
+          "nodos": 143,
+          "aristas": 198,
+          "scripts": 69
+        },
+        {
+          "en": "2026-09-04T23:37:03.759Z",
+          "nodos": 144,
+          "aristas": 198,
+          "scripts": 70
+        }
+      ]
+    },
+    "n8n": {
+      "id": "n8n",
+      "nombre": "Automatización (n8n)",
+      "tipo": "Espacio",
+      "espacioReal": "n8n",
+      "descripcion": "Workflows reales ya exportados (Cronista, Telar Interactivo) -- única capa que muestra automatización real con Puerta Humana propia.",
+      "extractor": "mapear_grafo_n8n.mjs",
+      "pagina": "n8n.html",
+      "contadores": {
+        "nodos": 137,
+        "aristas": 138,
+        "workflows": 2
+      },
+      "actualizadoEn": "2026-09-04T23:37:03.841Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:31:02.691Z",
+          "nodos": 137,
+          "aristas": 138,
+          "workflows": 2
+        },
+        {
+          "en": "2026-09-04T23:36:24.358Z",
+          "nodos": 137,
+          "aristas": 138,
+          "workflows": 2
+        },
+        {
+          "en": "2026-09-04T23:37:03.841Z",
+          "nodos": 137,
+          "aristas": 138,
+          "workflows": 2
+        }
+      ]
+    },
+    "holon": {
+      "id": "holon",
+      "nombre": "Holon -- quién hace qué, con quién",
+      "tipo": "Personaje",
+      "espacioReal": null,
+      "descripcion": "Grafo completo de relaciones reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...), coloreado por equipo real.",
+      "extractor": "cargar_grafo_holon.mjs",
+      "pagina": "holon.html",
+      "contadores": {
+        "nodos": 29,
+        "aristas": 40
+      },
+      "actualizadoEn": "2026-09-04T23:37:04.204Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:36:24.772Z",
+          "nodos": 29,
+          "aristas": 40
+        },
+        {
+          "en": "2026-09-04T23:37:04.204Z",
+          "nodos": 29,
+          "aristas": 40
+        }
+      ]
+    },
+    "anatomia": {
+      "id": "anatomia",
+      "nombre": "Anatomía de entidades",
+      "tipo": "Transversal",
+      "espacioReal": null,
+      "descripcion": "Cabeza/columna/extremidades reales de las entidades, calculadas sobre 7 fuentes reales distintas (n8n, Apps Script, Node, Sheet, Baserow, vault).",
+      "extractor": "extraer_anatomia_entidad.mjs",
+      "pagina": "anatomia.html",
+      "contadores": {
+        "entidades": 66
+      },
+      "actualizadoEn": "2026-09-04T23:37:04.455Z",
+      "historial": [
+        {
+          "en": "2026-09-04T23:36:25.062Z",
+          "entidades": 66
+        },
+        {
+          "en": "2026-09-04T23:37:04.455Z",
+          "entidades": 66
+        }
+      ]
+    }
+  }
+}
