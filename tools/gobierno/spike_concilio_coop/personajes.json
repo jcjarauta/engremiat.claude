@@ -1,7 +1,7 @@
 {
- "generado": "2026-09-01T19:57:41.284Z",
+ "generado": "2026-09-04T05:05:32.312Z",
  "fuente": "G:\\Mi unidad\\engremiat.claude\\Obsidian-Engremiat\\Universos\\Engremiat\\02_Personajes",
- "total": 19,
+ "total": 20,
  "personajes": [
   {
    "id": "Concilio",
@@ -76,7 +76,7 @@
   {
    "id": "Acervo Usuario",
    "estado": "activo",
-   "dialogo": "Habla desde la perspectiva de quien usa esto sin saber nada de por dentro — el único Acervo que en Concilio no defiende ningún mecanismo, defiende a quien va a tocar el resultado sin haber leído ni una línea de este universo."
+   "dialogo": "Habla desde la perspectiva de quien usa esto sin saber nada de por dentro — el único Acervo que en Concilio no defiende ningún mecanismo, defiende a quien va a tocar el resultado sin haber leído ni una línea de este universo.\n\n**Encontrado su cuerpo real investigando el hueco** (§8.30-31): la Fase N9 (`src/PlantillaImportacionMasivaService.js`) ya construye exactamente esta voz en código -- deja que un cliente real, sin tocar el Sheet a mano, le pida a una IA externa \"rellena esto para mi campaña de Sant Jordi\" y suba de vuelta los CSV ya rellenos a las pestañas `STG_*` (ver Zona de aterrizaje STG). Dentro de esa misma pieza vive `94_ESCENARIOS`: un escenario real (`PERFIL`/`GUION`/`EJE_COMPETENCIA`/`EJE_RECURSO`/`EJE_AUSENCIA`) no genera datos ideales a propósito -- deja encajes de competencia imperfectos, huecos de horario, tareas \"con incidencias\" y decisiones \"rechazadas\", coherentes con un guion humano de 3-4 frases (\"la imprenta llega tarde, el responsable de logística está de baja\"). Es la fricción real del mundo, escrita para que la pruebe una IA que no conoce el sistema por dentro -- la voz de este Acervo, hecha mecanismo.\n\n**Gestionado temporalmente por DeepSeek** -- decisión real del operador (2026-09-03): mientras dura la fase de pruebas de concepto, es DeepSeek quien opera este Acervo para poblar y recorrer distintos `94_ESCENARIOS` (\"universos paralelos\" del mismo Sheet, cada uno con su propio `GUION` y su propio nivel de fricción) antes de que ningún dato de un escenario toque nunca las tablas reales de producción."
   },
   {
    "id": "Acervo Sociocracia",
@@ -87,6 +87,11 @@
    "id": "Acervo Prompter",
    "estado": "activo",
    "dialogo": "No delibera dentro de Concilio como los otros siete — trabaja antes que ellos. Convierte una necesidad vaga o una incidencia real en una única pregunta de investigación bien estructurada para Vigilia, aplicando meta-prompting: da la estructura del razonamiento que hace falta, no el contenido de la respuesta. No responde la pregunta — la formula, para que Concilio la responda después."
+  },
+  {
+   "id": "Acervo",
+   "estado": "activo",
+   "dialogo": "El índice real de la familia de personajes-voz que delibera y prepara la deliberación dentro de Telar. Ocho fichas reales -- siete que deliberan dentro de Concilio (Acervo Tecnico, Acervo Logico, Acervo Logistico, Acervo Narrativo, Acervo Filosofico, Acervo Usuario, Acervo Sociocracia) más Acervo Prompter, que trabaja antes que los demás y no delibera dentro de Concilio.\n\nEncontrado por el censo real de entidades (§8.23-27): \"Acervo\"/\"Acervos\" ya se usaban en `Narrador.md` y `Telar.md` sin apuntar a ninguna ficha real -- no porque faltara consistencia de nombres, sino porque faltaba esta ficha-índice. Mismo patrón real que `Modulos acoplables.md` para los módulos."
   },
   {
    "id": "Verificador de Campos",

@@ -820,6 +820,18 @@ Fase 5 del plan del Bastidor (universos completos), cerrando el ciclo de 5 fases
 
 **Con esto se cierran las 5 fases del plan del Bastidor** (almacén de piezas → mesa de montaje → motor de estados → memoria compartida → universos completos). El plan original preguntaba "¿podemos hacer máquinas con las piezas de Engremiat para construir universos?" -- la respuesta construida y verificada es sí, con un límite real y explícito: el puente a universos completos existe y funciona, pero solo hay un universo real cargado en Baserow hoy, y una pieza real (AGORA) que el almacén todavía no conoce.
 
+### 8.54 "Actúa como experto en juegos cooperativos multiplataforma... investiga y empieza el paso 1"
+
+Cerradas las 5 fases del Bastidor (§8.50-53), el operador pidió valorar el encaje de todo lo construido con Engremiat como **juego cooperativo real**, no una metáfora. Investigado con datos reales: Engremiat ya tiene **tres modos de juego cooperativo reales y distintos**, construidos en momentos distintos sin saber que convergían -- Concilio (deliberación en tiempo real, 2 humanos + IA), Feria/Taller (`PLANTILLA_MISION`, escenarios versionados con puerta humana, grupo de Telegram), Telar (ficción interactiva individual, DeepSeek narra). Investigación externa real (diseño de cooperativos, gamificación de PM) confirmó que la propia jerarquía `Proyecto→Proceso→Tarea` del Sheet **ya es** la estructura quest→misión→tarea que la literatura de gamificación de gestión de proyectos describe -- no hay que inventar una capa de juego, hay que exponer la que ya existe (`TAREA_COMPETENCIA`+`NIVEL_MINIMO` = prueba de habilidad real; `DECISION`/`INCIDENCIA` = complicaciones reales).
+
+**El Narrador -- hallazgo, no invención**: buscando qué personaje real "acompaña al visitante a resolver misiones", ninguno de los 17 `personaje` del atlas encajaba -- pero la ficha `Narrador.md` **ya existía** en la bóveda (`estado: por_construir`), con prosa casi idéntica a lo que se diseñó en esta misma conversación ("acompaña al usuario en su propia aventura por el sistema... narra la historia mientras se recorre") y aclarando explícitamente que no delibera en Concilio. Se dejó su estado real tal cual -- no se fingió que ya está construido.
+
+Decidido con el operador: el visitante real es **el cliente real** (ej. alguien de La Troballa), y el juego puede tanto narrar trabajo ya real (por defecto, sin escribir nada -- mismo aislamiento que ya usa Taller con `taller_ref:ID`) como proponer trabajo nuevo jugando (reutilizando el patrón proponer/confirmar de Cronista, con puerta humana).
+
+**Paso 1, construido y verificado real**: `servidor.mjs` (Concilio, spike) ya no hardcodea el roster de 7 Acervos -- lo construye desde `personajes.json`, generado por `generar_dialogos.mjs` (ya existía, sin usarse para esto: "un solo motor, dos pieles"). Filtro real: un Acervo delibera si su propia prosa del vault no dice "no delibera" -- así Acervo Prompter y Narrador quedan fuera sin mantener una lista de exclusión a mano. Verificado en real tras redeploy limpio: `docker logs` confirma "lobby de 7 Acervos" en `100.107.171.88:2568`.
+
+Sources: [coopboardgames.com -- cooperative storytelling/RPG rankings](https://coopboardgames.com/rankings/best-storytelling-board-games/), [Gamified project management system and method (patente)](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10606584), [Baldur's Gate 3 Companions Guide](https://baldursgate3.wiki.fextralife.com/Companions).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

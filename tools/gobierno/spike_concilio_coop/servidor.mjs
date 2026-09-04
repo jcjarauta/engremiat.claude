@@ -8,27 +8,36 @@ import { createSign } from 'node:crypto';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Spike real v3: lobby de seleccion de personaje. El operador elige de
-// verdad cual de los 7 Acervos deliberantes de Concilio encarna (hasta
+// verdad cual de los Acervos deliberantes de Concilio encarna (hasta
 // MAX_HUMANOS a la vez) -- no hay 2 asientos fijos. Los que nadie elige
-// los lleva DeepSeek, con la misma voz que ya tiene en el vault
-// (02_Personajes/Acervos/, ver personajes.json). Acervo Prompter queda
-// fuera del roster a proposito: su propia ficha dice que no delibera
-// dentro de Concilio, trabaja antes -- formula la pregunta, no la
-// responde. Sala COMPARTIDA de verdad para todos los conectados,
-// elijan ya su asiento o sigan en el lobby.
+// los lleva DeepSeek, con la misma voz que ya tiene en el vault.
+//
+// El roster ya NO vive hardcodeado aqui -- se construye en real desde
+// personajes.json (generado por generar_dialogos.mjs directamente de
+// 02_Personajes/ del vault, "un solo motor, dos pieles"). Un Acervo entra
+// al roster si su propio dialogo real no dice "no delibera" -- asi
+// Acervo Prompter (trabaja antes, formula la pregunta) y Narrador (todavia
+// por_construir, y su propia ficha dice explicitamente que no delibera en
+// Concilio -- "acompana... narra", no vota) quedan fuera sin necesidad de
+// una lista de exclusion mantenida a mano que se puede desincronizar del
+// vault real. Sala COMPARTIDA de verdad para todos los conectados, elijan
+// ya su asiento o sigan en el lobby.
 
 const PUERTO = Number(process.env.PUERTO || 2567);
 const MAX_HUMANOS = 2;
 
-const ROSTER = {
-  'Acervo Tecnico': 'Tu unica pregunta es: esto es implementable, mantenible, con coste real de construir? Responde siempre desde ahi, en 2-3 frases, en primera persona.',
-  'Acervo Logico': 'Exiges cadena de causa-efecto, sin saltarse pasos. Preguntas "y eso por que se sigue de lo anterior?". Responde en 2-3 frases, en primera persona.',
-  'Acervo Logistico': 'Piensas en flujo real de trabajo: quien, cuando, con que recursos. Conviertes una buena idea en algo ejecutable de verdad. Responde en 2-3 frases, en primera persona.',
-  'Acervo Narrativo': 'Velas por la coherencia de la historia, el tono, la continuidad. Responde en 2-3 frases, en primera persona.',
-  'Acervo Filosofico': 'Preguntas por que y a quien sirve algo -- soberania, dignidad, "Nothing About Us Without Us". Devuelves cualquier propuesta a la Mision antes de dejarla avanzar: procomun, no contabilidad de deudas. Responde en 2-3 frases, en primera persona.',
-  'Acervo Usuario': 'Hablas desde la perspectiva de quien usa esto sin saber nada de por dentro -- no defiendes ningun mecanismo, defiendes a quien va a tocar el resultado sin haber leido ni una linea de este universo. Responde en 2-3 frases, en primera persona.',
-  'Acervo Sociocracia': 'Defiendes la legitimidad del proceso de decision: consentimiento, no mayoria -- "nadie tiene objecion razonada". Responde en 2-3 frases, en primera persona.',
-};
+function cargarRosterReal() {
+  const personajes = JSON.parse(readFileSync(join(__dirname, 'personajes.json'), 'utf-8')).personajes;
+  const roster = {};
+  for (const p of personajes) {
+    if (!p.id.startsWith('Acervo ')) continue; // solo los Acervos son asiento real de Concilio
+    if (/no delibera/i.test(p.dialogo)) continue; // la propia ficha dice que no vota aqui (Prompter)
+    roster[p.id] = p.dialogo + '\n\nResponde siempre desde ahi, en 2-3 frases, en primera persona.';
+  }
+  return roster;
+}
+
+const ROSTER = cargarRosterReal();
 const NOMBRES_ROSTER = Object.keys(ROSTER);
 
 const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
