@@ -1086,6 +1086,16 @@ El operador confirmó en su propio navegador que Panel Operativo y Árbol de cam
 
 Construido: `home.html`, menú de tarjetas real (grid simple), sin dependencias de `indice.html` (ese sigue siendo el índice técnico de las 17 herramientas de `graphify_visor`; este es el punto de entrada del operador, solo sus 2 herramientas reales de trabajo diario). Verificado en el navegador: clic real en "Panel operativo" navega correctamente, 0 errores nuevos de consola.
 
+### 8.80 Ficha espejo en árbol_campanas.html + crear Campaña desde la raíz
+
+El operador señaló que "Ficha" en el árbol dirigía al Sheet externo (Drive) -- mismo principio ya aplicado repetidamente (§8.68/§8.75): replicar, no enlazar. Construido `leerFichaReal(tipo, id)` -- lee la fila real completa (todas las columnas, no solo las 4 usadas en el árbol) directamente del Sheet, sin compartir caché con `leerJerarquiaCampanas()` (rangos distintos). Nuevo `GET /api/ficha?tipo=X&id=Y`.
+
+En `arbol_campanas.html`: "Ficha" abre ahora un modal real con todos los campos con valor (etiqueta = nombre real de columna), en vez de salir de la página -- con un enlace "Editar en el Sheet →" aparte, para cuando de verdad haga falta. Verificado con curl real contra `CAM-0001` (23 campos reales, incluido `CREADO_POR=sacandofilo@gmail.com`) y con la lógica de render real en el navegador (mock de fetch).
+
+Además, botón real "+ Nueva Campaña" a nivel raíz del árbol -- faltaba crear el primer nivel de la jerarquía (antes solo había "+Crear" para los niveles con padre). Reutiliza `crear('Campaña', null)`, la misma función real ya verificada esta sesión con `CAM-0006` (sin `padreId`, correcto para el nivel raíz).
+
+0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

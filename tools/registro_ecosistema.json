@@ -337,6 +337,10 @@
   {
    "fichero": "home.html",
    "que_hace": "§8.79: el operador confirmo en su propio navegador que Panel Operativo y Arbol de campanas funcionan de verdad (22 incidencias reales, tabla de consumo con deepseek/(sin servicio), 5 campanas reales) y pidio un home sencillo con las 2 piezas actuales, deliberadamente minimo -- 'lo vamos mejorando' con el tiempo. Construido: menu de tarjetas real (grid simple), separado a proposito de indice.html (ese sigue siendo el indice tecnico de las 17 herramientas de graphify_visor; este es el punto de entrada del operador, solo sus 2 herramientas de trabajo diario). Verificado en el navegador: clic real en 'Panel operativo' navega correctamente, 0 errores nuevos de consola."
+  },
+  {
+   "fichero": "servidor_memoria.mjs + arbol_campanas.html (ficha espejo + crear Campana raiz)",
+   "que_hace": "§8.80: el operador senalo que 'Ficha' dirigia al Sheet externo (Drive) -- mismo principio ya aplicado repetidamente (replicar, no enlazar). Construido leerFichaReal(tipo, id) -- lee la fila real completa (todas las columnas, sin compartir cache con leerJerarquiaCampanas()), nuevo GET /api/ficha?tipo=X&id=Y. arbol_campanas.html: 'Ficha' abre un modal real con todos los campos con valor (etiqueta = nombre real de columna), sin salir de la pagina, con enlace 'Editar en el Sheet' aparte. Ademas, boton real '+ Nueva Campana' a nivel raiz (faltaba crear el primer nivel de la jerarquia) -- reutiliza crear('Campana', null), la misma funcion ya verificada con CAM-0006. Verificado con curl real contra CAM-0001 (23 campos reales) y con la logica de render real en el navegador (mock de fetch), 0 errores nuevos de consola."
   }
  ]
 }

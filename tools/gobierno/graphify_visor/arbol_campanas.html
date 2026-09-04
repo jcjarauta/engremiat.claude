@@ -23,17 +23,43 @@
   .hijos { display: none; }
   .hijos.abierto { display: block; }
   .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
+  #btnNuevaCampana { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 12px; cursor: pointer; margin-bottom: 14px; }
+  #btnNuevaCampana:hover { border-color: #6ea8ff; }
+  a.ficha { cursor: pointer; }
+  #capaFicha { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
+  #capaFicha.abierta { display: flex; }
+  #cajaFicha { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 20px; width: 480px; max-width: 90vw; max-height: 75vh; overflow-y: auto; }
+  #cajaFicha h3 { margin: 0 0 12px; font-size: 14px; }
+  #cajaFicha .campo { display: flex; gap: 10px; padding: 4px 0; border-top: 1px solid var(--color-base-borde-suave); font-size: 12px; }
+  #cajaFicha .campo:first-of-type { border-top: none; }
+  #cajaFicha .campo b { width: 170px; flex: none; color: var(--color-base-texto-suave); font-weight: 500; }
+  #cajaFicha .campo span { word-break: break-word; }
+  #cajaFicha .pie { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+  #cajaFicha .pie a { font-size: 11px; color: #6ea8ff; }
+  #cajaFicha .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
 </style>
 </head>
 <body>
 <h1>Árbol de campañas</h1>
 <p class="hint">
   Espejo real del Sheet, con escritura -- Campaña → Proyecto → Producto → Proceso → Tarea (jerarquía real de <code>01_CAMPANAS</code>…<code>06_TAREAS</code>).
-  "Ficha" abre la fila exacta en el Sheet; "+Crear" escribe una fila real ahí mismo (creación cruda, sin pasar por la validación completa del formulario del Sheet -- decisión explícita, ver §8.78).
+  "Ficha" despliega los campos reales de esa fila aquí mismo (espejo, §8.80) -- ya no abre el Sheet. "+Crear" escribe una fila real ahí mismo (creación cruda, sin pasar por la validación completa del formulario del Sheet -- decisión explícita, ver §8.78).
   No es Bastidor ni Panel Operativo -- página propia, para no seguir amontonando.
 </p>
 <p id="estado">Comprobando el árbol real...</p>
+<button id="btnNuevaCampana" onclick="crear('Campaña', null)">+ Nueva Campaña</button>
 <div id="arbol" class="raiz-hijos"></div>
+
+<div id="capaFicha">
+  <div id="cajaFicha">
+    <h3 id="fichaTitulo">Ficha</h3>
+    <div id="fichaCampos"></div>
+    <div class="pie">
+      <a id="fichaEnlaceSheet" href="#" target="_blank">Editar en el Sheet →</a>
+      <button onclick="cerrarFicha()">Cerrar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
@@ -56,7 +82,7 @@ function renderNodo(n) {
         <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}</span>
         <span class="badge">${n.estado || 'sin estado'}</span>
         ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
-        <a class="ficha" href="${n.urlSheet}" target="_blank">Ficha</a>
+        <a class="ficha" onclick="abrirFicha('${n.tipo}', '${n.id}', '${n.urlSheet}')">Ficha</a>
         ${hijoTipo ? `<button class="crear" onclick="crear('${hijoTipo}', '${n.id}')">+ ${hijoTipo}</button>` : ''}
       </div>
       <div class="hijos">${n.hijos.map(renderNodo).join('')}</div>
@@ -72,6 +98,31 @@ function toggle(chevron) {
 }
 
 let arbolReal = [];
+
+async function abrirFicha(tipo, id, urlSheet) {
+  const capa = document.getElementById('capaFicha');
+  const cont = document.getElementById('fichaCampos');
+  document.getElementById('fichaTitulo').textContent = `Ficha -- ${tipo} ${id}`;
+  document.getElementById('fichaEnlaceSheet').href = urlSheet;
+  cont.innerHTML = '<p class="hint">Leyendo la fila real...</p>';
+  capa.classList.add('abierta');
+  try {
+    const tipoApi = tipo === 'Campaña' ? 'CAMPANA' : tipo.toUpperCase();
+    const r = await fetch(URL_MEMORIA + `/api/ficha?tipo=${tipoApi}&id=${encodeURIComponent(id)}`, { signal: AbortSignal.timeout(8000) });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    cont.innerHTML = Object.entries(j.campos)
+      .filter(([, valor]) => valor !== '')
+      .map(([campo, valor]) => `<div class="campo"><b>${campo}</b><span>${valor}</span></div>`)
+      .join('') || '<p class="hint">Sin campos con valor real.</p>';
+  } catch (e) {
+    cont.innerHTML = '<p class="hint">No se pudo leer la ficha real: ' + e.message + '</p>';
+  }
+}
+
+function cerrarFicha() {
+  document.getElementById('capaFicha').classList.remove('abierta');
+}
 
 async function cargarArbol() {
   const estado = document.getElementById('estado');

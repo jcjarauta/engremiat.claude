@@ -303,6 +303,29 @@ async function crearRegistroCrudo(tipo, campos, padreId) {
   return { id };
 }
 
+// -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
+// (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
+// leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
+// Lectura directa, sin compartir cache con leerJerarquiaCampanas() (esa usa rangos mas
+// estrechos -- aqui se lee la fila completa real, todas las columnas).
+async function leerFichaReal(tipo, id) {
+  const hoja = HOJA_ID[tipo.toUpperCase()];
+  if (!hoja) throw new Error('tipo desconocido: ' + tipo);
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A1:AZ2000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const filas = (await r.json()).values || [];
+  const cab = filas[0] || [];
+  const iId = cab.indexOf('ID');
+  const filaReal = filas.slice(1).find((f) => f[iId] === id);
+  if (!filaReal) throw new Error('no se encontró ' + id + ' en ' + hoja);
+  const campos = {};
+  cab.forEach((nombreCampo, i) => { if (nombreCampo) campos[nombreCampo] = filaReal[i] || ''; });
+  return campos;
+}
+
 // -- §8.74/75: Panel Operativo -- pivote real del operador (no Bastidor): "empezar a producir"
 // usando el backlog real que YA existe sobre el propio Engremiat, en vez de trabajo hipotetico
 // de cliente. NIVEL_INCIDENCIA='Producto' es el campo real que separa incidencias sobre la
@@ -703,6 +726,23 @@ const servidor = createServer(async (req, res) => {
       }
       const arbol = await leerJerarquiaCampanas();
       res.writeHead(200); res.end(JSON.stringify({ arbol, leidoEn: new Date(cacheJerarquia.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/ficha')) {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const params = new URL(req.url, 'http://x').searchParams;
+      const tipo = params.get('tipo'), id = params.get('id');
+      if (!tipo || !id) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan tipo/id' })); return;
+      }
+      try {
+        const campos = await leerFichaReal(tipo, id);
+        res.writeHead(200); res.end(JSON.stringify({ campos })); return;
+      } catch (e) {
+        res.writeHead(404); res.end(JSON.stringify({ error: e.message })); return;
+      }
     }
 
     if (req.method === 'POST' && req.url === '/api/crear_registro') {
