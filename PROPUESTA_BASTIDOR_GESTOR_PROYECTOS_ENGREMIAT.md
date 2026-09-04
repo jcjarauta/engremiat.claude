@@ -969,6 +969,12 @@ Cerrados los tres puentes que exigían tocar servidores propios:
 
 **No construido todavía** -- la zonificación 2D real es un cambio estructural mayor, no una reordenación incremental. Anotado explícitamente en la propia interfaz de la mesa (nota visible arriba del panel derecho) para que quede trazado, no oculto en un documento aparte. Verificado con curl real contra los 3 endpoints nuevos y con la lógica de render real en el navegador (mock de fetch + clic real en el botón de Narrador), 0 errores nuevos de consola (el único error visto era residuo de un clic de una sesión anterior, confirmado con una carga fresca).
 
+### 8.70 Esqueleto del layout de 6 zonas (boceto teórico)
+
+Nuevo `tools/gobierno/graphify_visor/boceto_layout_6_zonas.html`, deliberadamente no funcional -- sin fetch, sin datos en vivo. Ordena las 6 zonas del boceto ASCII del operador (Estado del universo / Narrador / Constructor-Espacio de trabajo-Gestor de proyectos / Comunidad / Información-Traza-Inspector) como cajas clicables, cada una con: nombre, pregunta fundamental que responde, y una lista de herramientas propuestas marcadas ya construido / parcial / pendiente (misma leyenda de 3 colores). Contenido derivado directamente del mapeo real hecho en §8.69, incluida la corrección del "Gestor de proyectos" (navegador hacia el espejo, no enlace al Sheet).
+
+Propósito explícito: punto de partida para revisar zona por zona, en conversación, qué representar y cómo -- no una decisión de diseño cerrada. Registrado en `indice.html`. Verificado en el navegador: las 7 cajas abren/cierran al clic, sin errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

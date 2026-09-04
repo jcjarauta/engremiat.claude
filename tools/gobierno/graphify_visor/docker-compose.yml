@@ -38,6 +38,7 @@ services:
       - ./atlas_familias.json:/app/atlas_familias.json:ro
       - ./ciclos_reales.json:/app/ciclos_reales.json:ro
       - ./mesa_montaje.html:/app/mesa_montaje.html:ro
+      - ./boceto_layout_6_zonas.html:/app/boceto_layout_6_zonas.html:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Bastidor -- boceto de layout (6 zonas)</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 28px 32px 60px; }
+  h1 { font-size: 20px; margin: 0 0 6px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 13px; max-width: 760px; line-height: 1.6; margin: 0 0 8px; }
+  .leyenda { display: flex; gap: 18px; flex-wrap: wrap; margin: 18px 0 26px; font-size: 12px; color: var(--color-base-texto-suave); }
+  .leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .punto { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .punto.construido { background: var(--color-relacion-alimenta_a); }
+  .punto.parcial { background: var(--color-tipo-oficio); }
+  .punto.pendiente { background: var(--color-tipo-recurso); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-rows: auto auto auto auto auto;
+    gap: 10px;
+    max-width: 1100px;
+  }
+  .zona {
+    background: var(--color-base-panel);
+    border: 1px solid var(--color-base-borde);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .zona:hover { border-color: var(--color-rol-orquestador); }
+  .zona.abierta { border-color: var(--color-rol-orquestador); }
+  .zona-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .zona h2 { font-size: 14px; margin: 0; }
+  .zona .pregunta { font-size: 11px; color: var(--color-rol-orquestador); margin: 3px 0 0; text-transform: uppercase; letter-spacing: .04em; }
+  .zona .estado-tag { font-size: 10px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--color-base-borde); white-space: nowrap; }
+  .estado-tag.construido { color: var(--color-relacion-alimenta_a); border-color: var(--color-relacion-alimenta_a); }
+  .estado-tag.parcial { color: var(--color-tipo-oficio); border-color: var(--color-tipo-oficio); }
+  .estado-tag.pendiente { color: var(--color-tipo-recurso); border-color: var(--color-tipo-recurso); }
+
+  .zona-cuerpo { display: none; margin-top: 12px; font-size: 12px; }
+  .zona.abierta .zona-cuerpo { display: block; }
+  .zona-cuerpo ul { margin: 0; padding-left: 18px; line-height: 1.6; }
+  .zona-cuerpo li.construido::marker { color: var(--color-relacion-alimenta_a); }
+  .zona-cuerpo li.pendiente::marker { color: var(--color-tipo-recurso); }
+  .zona-cuerpo .nota { color: var(--color-base-texto-suave); font-size: 11px; margin-top: 8px; font-style: italic; }
+
+  .fila-estado { grid-column: 1 / -1; }
+  .fila-narrador { grid-column: 1 / -1; }
+  .fila-comunidad { grid-column: 1 / -1; }
+  .fila-info { grid-column: 1 / -1; }
+
+  .fila-narrador { background: linear-gradient(90deg, var(--color-base-panel), var(--color-base-panel)); }
+
+  .col-izq { grid-column: 1; }
+  .col-centro { grid-column: 2; }
+  .col-der { grid-column: 3; }
+
+  @media (max-width: 820px) {
+    .layout { grid-template-columns: 1fr; }
+    .col-izq, .col-centro, .col-der { grid-column: 1; }
+  }
+</style>
+</head>
+<body>
+<h1>Bastidor -- boceto de layout (6 zonas)</h1>
+<p class="hint">
+  Boceto teórico, no funcional -- ordena por zona lo que ya existe real (ver §8.54-69 de
+  <code>PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md</code>) y lo que falta por construir.
+  Layout original aportado por el operador. Clic en cada caja para desplegar su propuesta de
+  herramientas -- este es el punto de partida para revisar caja a caja qué representar y cómo.
+</p>
+<div class="leyenda">
+  <span><span class="punto construido"></span> ya construido y verificado</span>
+  <span><span class="punto parcial"></span> parcialmente construido</span>
+  <span><span class="punto pendiente"></span> boceto teórico, sin construir</span>
+</div>
+
+<div class="layout" id="layout"></div>
+
+<script>
+const ZONAS = [
+  {
+    id: 'estado-universo', fila: 'fila-estado', nombre: 'Estado del universo',
+    pregunta: 'Síntesis -- Cuánto / Cuándo (vista agregada, no una sola pregunta)',
+    estado: 'pendiente',
+    herramientas: [
+      { t: 'Universos/clientes reales cargados ahora (PAQUETE_CLIENTE)', c: 'pendiente' },
+      { t: 'Misiones activas totales (agregado de /api/proyectos)', c: 'pendiente' },
+      { t: 'Coste real acumulado (agregado de GASTO_API)', c: 'pendiente' },
+      { t: 'Quién ocupa el turno de Centro compartido ahora mismo (Concilio/Telar/nadie)', c: 'pendiente' },
+      { t: 'Marca de última actividad real del sistema', c: 'pendiente' },
+    ],
+    nota: 'No existe hoy como franja propia -- los datos que la alimentarían ya están servidos por separado (proyectos, recursos, Concilio, Telar), falta agregarlos en una sola vista resumen.',
+  },
+  {
+    id: 'narrador', fila: 'fila-narrador', nombre: 'Narrador',
+    pregunta: 'Cómo se construye -- acompañamiento, sin cortarse entre misiones',
+    estado: 'parcial',
+    herramientas: [
+      { t: '3 preguntas reales + propuesta vía DeepSeek (/api/narrador_proponer)', c: 'construido' },
+      { t: 'Coste real mostrado por llamada ($0.00067 verificado)', c: 'construido' },
+      { t: 'Acción de "confirmar" -- escribir la propuesta de verdad en el Sheet (falta acción nueva en el webhook real)', c: 'pendiente' },
+      { t: 'Historial de propuestas anteriores del jugador en esta sesión', c: 'pendiente' },
+      { t: 'Indicador de sesión narrativa en curso vs. en reposo', c: 'pendiente' },
+    ],
+    nota: 'Caja propia ya construida (§8.56/69) -- lo que falta es la mitad "confirmar" y memoria de sesión, no el disparo real.',
+  },
+  {
+    id: 'constructor', fila: 'col-izq', nombre: 'Constructor del universo',
+    pregunta: 'Quién / Qué / Dónde -- de qué está hecho el universo',
+    estado: 'parcial',
+    herramientas: [
+      { t: 'Paleta real por pestañas: Reparto / Módulos / Escenario (91 entidades)', c: 'construido' },
+      { t: '"Universos reales" -- cargar de golpe un cliente vía PAQUETE_CLIENTE', c: 'construido' },
+      { t: 'Fichas de recurso reales (Personaje de cliente, Catálogo compartido, Almacén del taller, Documento adjunto) con vista propia, hoy solo citadas en la bóveda', c: 'pendiente' },
+      { t: 'rolReal/agenciaReal visibles en la propia pieza (hoy solo en universo_real.json, 61/77 nodos)', c: 'pendiente' },
+    ],
+    nota: 'La columna con más terreno ya ganado -- falta sobre todo dar cara visual a lo que hoy es solo dato.',
+  },
+  {
+    id: 'espacio-trabajo', fila: 'col-centro', nombre: 'Espacio de trabajo',
+    pregunta: 'Qué se hace / Cómo -- el corazón operativo, espejo real del Sheet',
+    estado: 'parcial',
+    herramientas: [
+      { t: 'Mesa/canvas real (vis-network) -- piezas, vínculos, estado por evento', c: 'construido' },
+      { t: '"Cómo" de una misión: procesos+tareas anidados reales (/api/procesos_tareas)', c: 'construido' },
+      { t: 'Ficha de producto/proyecto -- espejo real de FichaProyecto.html/FichaProducto.html', c: 'pendiente' },
+      { t: 'Árbol jerárquico real 01_CAMPANAS→02_PROYECTOS→...→06_TAREAS', c: 'pendiente' },
+      { t: 'Kanban real -- cambio de estado por selección, espejo de Kanban*.html', c: 'pendiente' },
+      { t: 'Gantt real -- barras por fecha, espejo de GanttPlanReal.html (deliberadamente no arrastrable en el original)', c: 'pendiente' },
+    ],
+    nota: 'Corrección real del operador (§8.69): estas 4 vistas se REPLICAN como nativas de Bastidor, nunca se enlazan al Sheet -- mismo principio ya aplicado a Misiones→Cómo.',
+  },
+  {
+    id: 'gestor-proyectos', fila: 'col-der', nombre: 'Gestor de proyectos',
+    pregunta: 'Por qué / Cuándo -- gobierno y planificación',
+    estado: 'parcial',
+    herramientas: [
+      { t: 'Proyectos reales con Responsable/Fecha/Objetivo (/api/proyectos)', c: 'construido' },
+      { t: '"Quién trabajó de verdad" -- 92_BUS_TRABAJO (/api/bus_trabajo)', c: 'construido' },
+      { t: 'Navegador real hacia las vistas espejadas del Espacio de trabajo (saltar a la Ficha/Gantt de un Proyecto)', c: 'pendiente' },
+      { t: '12_DECISIONES -- real pero vacía hoy (0 filas); la llenaría cada ronda de Vigilia+Cronista al crear incidencias/tareas, cauce todavía no escrito', c: 'pendiente' },
+      { t: 'Panel de Incidencias reales (13_INCIDENCIAS)', c: 'pendiente' },
+    ],
+    nota: 'Hipótesis corregida (§8.69): NO es una vista que enlaza al Sheet por ser "de operador" -- es un navegador hacia las mismas vistas espejo del centro, nunca un destino propio con enlace externo.',
+  },
+  {
+    id: 'comunidad', fila: 'fila-comunidad', nombre: 'Comunidad',
+    pregunta: 'Dónde ocurre la acción compartida en vivo',
+    estado: 'parcial',
+    herramientas: [
+      { t: 'Centro compartido -- Concilio: asientos, deliberando, transcripción real (/api/concilio_estado + /api/concilio_transcripcion)', c: 'construido' },
+      { t: 'Centro compartido -- Telar: sesión real vía Baserow 290 (/api/telar_estado)', c: 'construido' },
+      { t: 'Feria -- escenarios publicados reales (PLANTILLA_MISION, /api/misiones_feria)', c: 'construido' },
+      { t: 'Unificar visualmente Centro compartido + Feria en una sola franja horizontal (hoy repartidos por la columna derecha vertical)', c: 'pendiente' },
+    ],
+    nota: '"Uno a la vez" ya confirmado como patrón real de game mastering -- Concilio y Telar comparten el mismo turno, Feria corre siempre en paralelo.',
+  },
+  {
+    id: 'info-traza', fila: 'fila-info', nombre: 'Información / Traza / Inspector',
+    pregunta: 'Cuándo / Con qué -- auditoría, consulta, no seguimiento en vivo',
+    estado: 'parcial',
+    herramientas: [
+      { t: 'Registro de eventos reales de esta mesa', c: 'construido' },
+      { t: 'Enlace real a 91_HISTORIAL completo (única excepción real de "enlazar, no replicar" -- auditoría de bajo tráfico)', c: 'construido' },
+      { t: 'Recursos reales (GASTO_API) + "quién trabajó de verdad" (92_BUS_TRABAJO)', c: 'construido' },
+      { t: 'Vínculos reales en la mesa + "Esta máquina" (montajes guardados)', c: 'construido' },
+      { t: 'Unificar todo esto en una franja inferior colapsable, hoy disperso al final de la columna derecha', c: 'pendiente' },
+    ],
+    nota: 'Todo el contenido ya es real -- lo pendiente es puramente de disposición (layout), no de datos.',
+  },
+];
+
+const cont = document.getElementById('layout');
+cont.innerHTML = ZONAS.map(z => `
+  <div class="zona ${z.fila}" id="zona-${z.id}" data-id="${z.id}">
+    <div class="zona-cabecera">
+      <div>
+        <h2>${z.nombre}</h2>
+        <p class="pregunta">${z.pregunta}</p>
+      </div>
+      <span class="estado-tag ${z.estado}">${z.estado === 'construido' ? 'construido' : z.estado === 'parcial' ? 'parcial' : 'pendiente'}</span>
+    </div>
+    <div class="zona-cuerpo">
+      <ul>
+        ${z.herramientas.map(h => `<li class="${h.c}">${h.t}</li>`).join('')}
+      </ul>
+      <p class="nota">${z.nota}</p>
+    </div>
+  </div>
+`).join('');
+
+document.querySelectorAll('.zona').forEach(el => {
+  el.addEventListener('click', () => el.classList.toggle('abierta'));
+});
+</script>
+</body>
+</html>
