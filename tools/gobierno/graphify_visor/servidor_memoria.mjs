@@ -215,6 +215,41 @@ async function leerBusTrabajoReal() {
   return tareas;
 }
 
+// -- §8.76: Panel Operativo -- el operador pidio simplificar la lista verbosa de 23 tareas
+// individuales a un resumen real por trabajador. DURACION_SEGUNDOS es una columna real de
+// 92_BUS_TRABAJO que leerBusTrabajoReal() no leia todavia -- comprobado con datos reales antes
+// de construir (2.3s-900s segun el trabajador). Se investigo cruzar esto con GASTO_API por
+// trabajador -- descartado: GASTO_API.NOMBRE es texto libre ("DeepSeek 2026-08-30T19:48Z"), sin
+// ID de tarea real que lo ligue a una fila de 92_BUS_TRABAJO -- cruzarlo seria inventar una
+// relacion que no existe. El consumo de API se muestra aparte, como total agregado real.
+let cacheResumenTrabajo = { en: 0, datos: null };
+async function leerResumenTrabajoReal() {
+  if (cacheResumenTrabajo.datos && Date.now() - cacheResumenTrabajo.en < 30000) return cacheResumenTrabajo.datos;
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/92_BUS_TRABAJO!A1:M500',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const j = await r.json();
+  const filas = j.values || [];
+  const cab = filas[0] || [];
+  const iReclamadoPor = cab.indexOf('RECLAMADO_POR'), iDuracion = cab.indexOf('DURACION_SEGUNDOS'), iId = cab.indexOf('ID_TAREA');
+  const porTrabajador = new Map();
+  filas.slice(1).filter((f) => f[iId]).forEach((f) => {
+    const trabajador = f[iReclamadoPor] || '(sin asignar)';
+    const dur = parseFloat(f[iDuracion]);
+    if (!porTrabajador.has(trabajador)) porTrabajador.set(trabajador, { trabajador, tareas: 0, duracionTotalSeg: 0 });
+    const e = porTrabajador.get(trabajador);
+    e.tareas += 1;
+    if (!isNaN(dur)) e.duracionTotalSeg += dur;
+  });
+  const resumen = [...porTrabajador.values()]
+    .map((e) => ({ ...e, duracionMediaSeg: e.tareas ? Math.round((e.duracionTotalSeg / e.tareas) * 10) / 10 : 0 }))
+    .sort((a, b) => b.tareas - a.tareas);
+  cacheResumenTrabajo = { en: Date.now(), datos: resumen };
+  return resumen;
+}
+
 // -- §8.64: puentes 2 y 4 del cruce de 13x8 preguntas -- GASTO_API (Recursos) y
 // PLANTILLA_MISION (Feria), ambos ya reales en Baserow, mismo patron de lectura que
 // exportador_prometheus_gasto.mjs (Authorization: TOKEN, no Bearer -- Baserow real, no OAuth).
@@ -438,6 +473,14 @@ const servidor = createServer(async (req, res) => {
       }
       const tareas = await leerBusTrabajoReal();
       res.writeHead(200); res.end(JSON.stringify({ tareas, leidoEn: new Date(cacheBusTrabajo.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/resumen_trabajo') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const resumen = await leerResumenTrabajoReal();
+      res.writeHead(200); res.end(JSON.stringify({ resumen, leidoEn: new Date(cacheResumenTrabajo.en).toISOString() })); return;
     }
 
     if (req.method === 'GET' && req.url === '/api/recursos') {

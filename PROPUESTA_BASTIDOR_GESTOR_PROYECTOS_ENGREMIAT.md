@@ -1040,6 +1040,16 @@ Investigado antes de mejorar: `src/PanelOperativo.html` (real, ya construido, co
 
 Verificado con curl real (URLs `#gid=1182532531&range=A{fila}` correctas, ej. `INC-0001`→`A2`) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
 
+Ajustes rápidos posteriores (mismo turno): meta viewport (faltaba); incidencias colapsadas por defecto, detalle al clic (mismo patrón que `boceto_layout_6_zonas.html`); filtro por prioridad (client-side) + contador real en `document.title`.
+
+### 8.76 "Quién trabaja de verdad" simplificado -- tiempo real por tarea, sin cruce inventado
+
+El operador pidió simplificar la sección `92_BUS_TRABAJO` (23 tareas individuales listadas una a una) a solo lo esencial: consumo de API y tiempo por tarea. Investigado antes de construir: `DURACION_SEGUNDOS` es una columna real de `92_BUS_TRABAJO` que `leerBusTrabajoReal()` no leía todavía (comprobado con datos reales: de 2.3s a 900s según el trabajador). Se evaluó cruzar esto con `GASTO_API` por trabajador -- **descartado**: `GASTO_API.NOMBRE` es texto libre (`"DeepSeek 2026-08-30T19:48:16Z"`), sin ID de tarea real que lo ligue a una fila de `92_BUS_TRABAJO`; forzar ese cruce habría sido inventar una relación que no existe en los datos.
+
+Construido: nueva `leerResumenTrabajoReal()` + `GET /api/resumen_trabajo` -- agrega por trabajador (tareas, duración total, duración media), sin tocar `leerBusTrabajoReal()`/`/api/bus_trabajo` (sigue usado tal cual por `mesa_montaje.html`). `panel_operativo.html`: la lista verbosa se sustituye por una tabla compacta (Trabajador/Tareas/Tiempo total/Tiempo medio, legible en s o min), más una línea aparte y honesta con el consumo total real de `GASTO_API` (`/api/recursos`, ya existente), explicitando que no hay cruce por trabajador porque el dato no lo permite.
+
+Verificado con curl real (`cron`: 9 tareas/0s reales -- automatizado; `Claude`: 5 tareas/180s de media; `DeepSeek`: 4 tareas/3.4s de media) y con la lógica de render real en el navegador (mock de fetch), 0 errores nuevos de consola.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

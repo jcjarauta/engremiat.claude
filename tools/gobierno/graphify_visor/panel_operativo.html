@@ -57,9 +57,10 @@
 <h3 style="font-size:12.5px;margin:16px 0 6px;">Con tarea ya en marcha</h3>
 <div id="listaConTarea"></div>
 
-<h2>Quién trabaja de verdad (92_BUS_TRABAJO)</h2>
+<h2>Consumo real -- tiempo por tarea y API</h2>
 <p id="estadoBus">Comprobando la actividad real...</p>
-<div id="listaBus"></div>
+<table id="tablaResumen" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
+<p id="estadoApi" class="hint" style="margin-top:12px;"></p>
 
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
@@ -119,30 +120,51 @@ async function cargarIncidencias() {
 
 document.getElementById('filtroPrioridad').addEventListener('change', renderIncidenciasFiltradas);
 
-async function cargarBusTrabajo() {
+function segARegible(seg) {
+  if (seg >= 60) return (seg / 60).toFixed(1) + ' min';
+  return seg.toFixed(1) + ' s';
+}
+
+async function cargarResumenTrabajo() {
   const estado = document.getElementById('estadoBus');
-  const cont = document.getElementById('listaBus');
+  const tabla = document.getElementById('tablaResumen');
   try {
-    const r = await fetch(URL_MEMORIA + '/api/bus_trabajo', { signal: AbortSignal.timeout(6000) });
+    const r = await fetch(URL_MEMORIA + '/api/resumen_trabajo', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
-    const { tareas, leidoEn } = await r.json();
-    estado.textContent = `${tareas.length} entrada(s) real(es) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
-    const porTrabajador = {};
-    tareas.forEach(t => { (porTrabajador[t.reclamadoPor || '(sin reclamar)'] = porTrabajador[t.reclamadoPor || '(sin reclamar)'] || []).push(t); });
-    cont.innerHTML = Object.entries(porTrabajador).map(([trabajador, ts]) => `
-      <div class="item">
-        <div class="titulo">${trabajador} <span class="badge">${ts.length}</span></div>
-        <ul class="tareas-vinculadas">${ts.slice(0, 5).map(t =>
-          `<li>${t.id} -- <span class="badge">${t.estado}</span> ${t.fecha ? '(' + t.fecha + ')' : ''}</li>`).join('')}</ul>
-      </div>`).join('') || '<p class="hint">Sin actividad real todavía.</p>';
+    const { resumen, leidoEn } = await r.json();
+    estado.textContent = `Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    tabla.innerHTML = `
+      <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
+        <th style="padding:4px 8px 4px 0;">Trabajador</th><th>Tareas</th><th>Tiempo total</th><th>Tiempo medio</th>
+      </tr>` + resumen.map(t => `
+      <tr style="border-top:1px solid var(--color-base-borde-suave);">
+        <td style="padding:5px 8px 5px 0; font-weight:600;">${t.trabajador}</td>
+        <td>${t.tareas}</td>
+        <td>${segARegible(t.duracionTotalSeg)}</td>
+        <td>${segARegible(t.duracionMediaSeg)}</td>
+      </tr>`).join('') || '<tr><td class="hint">Sin actividad real todavía.</td></tr>';
   } catch {
-    estado.textContent = 'No se pudo leer el bus de trabajo real ahora mismo.';
-    cont.innerHTML = '';
+    estado.textContent = 'No se pudo leer el resumen real ahora mismo.';
+    tabla.innerHTML = '';
+  }
+}
+
+async function cargarConsumoApi() {
+  const cont = document.getElementById('estadoApi');
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/recursos', { signal: AbortSignal.timeout(6000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { recursos } = await r.json();
+    const total = recursos.reduce((s, x) => s + (parseFloat(x.costeUsd) || 0), 0);
+    cont.textContent = `Consumo real de API (GASTO_API): $${total.toFixed(4)} en ${recursos.length} llamada(s) reales -- sin cruce por trabajador (GASTO_API no guarda a qué tarea pertenece cada llamada).`;
+  } catch {
+    cont.textContent = 'No se pudo leer el consumo real de API ahora mismo.';
   }
 }
 
 cargarIncidencias();
-cargarBusTrabajo();
+cargarResumenTrabajo();
+cargarConsumoApi();
 </script>
 </body>
 </html>
