@@ -906,6 +906,19 @@ Los dos huecos genuinos, sin ficha previa ni mención en ningún otro documento.
 
 **Resultado final, verificado ejecutando el propio informe**: Baserow **18/18**, Sheet **46/46** -- **0 huecos reales** entre lo que ya existe en Sheet/Baserow y lo que la bóveda declara conocer. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores (77 nodos reales).
 
+### 8.64 Los 4 puentes construidos + segunda opinión externa contrastada
+
+Construidos los 4 puentes más baratos del cruce 13×8 (§8.63 fin): `/api/proyectos` ampliado (`RESPONSABLE_ID`/`FECHA_INICIO_PLAN`/`OBJETIVO`), `/api/recursos` nuevo (`GASTO_API` en vivo, mismo patrón real que `exportador_prometheus_gasto.mjs`), enlace real a `sheet-real.html` desde Memoria, `/api/misiones_feria` nuevo (`PLANTILLA_MISION` en vivo). Un bug real corregido en el camino: los campos `single_select` de Baserow llegan como `{id,value,color}`, no texto -- corregido antes de verificar. Los 3 puentes servidos verificados con dato real (curl) y con la lógica de render real de `mesa_montaje.html`.
+
+**Segunda opinión externa, contrastada, no adoptada a ciegas**: el operador compartió esta matriz y el estado del proyecto con ChatGPT (actuando como experto en Engremiat y juegos cooperativos). Propuesta recibida y evaluada -- lo que se **adopta**:
+
+- **Corrección de la definición de "fractal"**: no es repetir las 8 preguntas dentro de cada caja (inmanejable) -- es que las 8 preguntas son un **contrato de inspección universal**, aplicable a cualquier entidad en cualquier nivel (Universo→Misión→Proyecto→Proceso→Tarea→Decisión), no una estructura fija repetida.
+- **Cuarto estado, ◇ inferido** -- distinto de ✓/~/—, para cuando el dato es una atribución razonada, no un hecho verificado. Ya existía sin nombrarlo: `Coordinador.md` ya dice *"atribución razonada por encaje de rol, no un script real encontrado que la toque"* -- exactamente un caso ◇ real, ya en la bóveda.
+- **Las 104 celdas son un mapa de cobertura de desarrollo, no 104 casillas de UI que rellenar** -- corrección aceptada sobre el uso previsto de la matriz.
+- **"Comunidad" (presencia/actividad en vivo) no es algo nuevo que construir -- es Feria**, ya real, ya con actividad de grupo real vía Telegram. Confirmado por el operador.
+
+**Lo que se trata con cautela, no adoptado sin más**: el rediseño completo en 7 regiones (Estado/Constructor/Narrador/Espacio de trabajo/Comunidad/Gestor de misión/Inspector) es coherente pero implicaría rehacer de golpe lo ya construido y verificado -- se evolucionará por pasos, no de una vez. Los conectores tipo CAD (puertos/tipos/restricciones) y la idea de "quest log" son inspiración razonable, no verificadas contra dato real todavía.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

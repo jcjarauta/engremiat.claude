@@ -46,18 +46,23 @@ services:
 
   # Fase 4 del Bastidor -- memoria compartida real de la mesa de montaje
   # (§8.52). Unico servicio de este visor con ESCRITURA -- las diez vistas
-  # anteriores son solo lectura via npx serve. Sin credenciales externas:
-  # persiste en un fichero JSON real en ./datos_memoria (montado rw, fuera
-  # del sync de codigo). Precedente real: tools/gobierno/spike_concilio_coop.
+  # anteriores son solo lectura via npx serve. Persiste en un fichero JSON
+  # real en ./datos_memoria (montado rw, fuera del sync de codigo).
+  # §8.64: ademas de las credenciales JWT de Sheets, ahora tambien lee
+  # Baserow (GASTO_API, PLANTILLA_MISION) -- mismo token real .env que ya
+  # usa tools/gobierno/spike_concilio_coop, reutilizado, nunca duplicado.
   memoria-montaje:
     image: node:22-alpine
     container_name: engremiat-memoria-montaje
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
     environment:
       - PUERTO=9330
       - DATOS_DIR=/app/datos
       - ENGREMIAT_SHEETS_CREDENTIALS_PATH=/app/.sheets_credenciales.json
+      - BASEROW_URL=http://100.107.171.88
     volumes:
       - ./servidor_memoria.mjs:/app/servidor_memoria.mjs:ro
       - ./datos_memoria:/app/datos

@@ -108,6 +108,13 @@
     <h3>Registro de eventos</h3>
     <p class="hint">Nada se mueve porque sí -- cada cambio de estado sale de un evento real, disparado a mano, y queda aquí anotado.</p>
     <div id="registroEventos"><p class="hint">Ningún evento todavía.</p></div>
+    <p class="hint"><a href="sheet-real.html" target="_blank">Ver 91_HISTORIAL completo →</a> -- la auditoría real de todo el sistema, no solo de esta mesa.</p>
+    <h3>Recursos reales</h3>
+    <p class="hint" id="estadoRecursos">Comprobando el gasto real...</p>
+    <div id="listaRecursos"></div>
+    <h3>Feria -- escenarios publicados</h3>
+    <p class="hint" id="estadoFeria">Comprobando lo publicado ahora...</p>
+    <div id="listaFeria"></div>
     <h3>Montajes guardados</h3>
     <p class="hint" id="estadoMemoria">Comprobando memoria compartida...</p>
     <div id="montajesGuardados"></div>
@@ -248,6 +255,8 @@ async function cargar() {
   await comprobarMemoria();
   await renderMontajesGuardados();
   await cargarMisionesReales();
+  await cargarRecursosReales();
+  await cargarFeriaReales();
   actualizarResumen();
 }
 
@@ -356,6 +365,56 @@ async function cargarMisionesReales() {
       </div>`).join('') || '<p class="hint">Ninguna misión real todavía.</p>';
   } catch {
     estado.textContent = 'No se pudo leer el tablero real ahora mismo.';
+    cont.innerHTML = '';
+  }
+}
+
+// -- §8.64: puente 2 -- Recursos, antes solo servido a Grafana (exportador_prometheus_gasto.mjs),
+// ahora tambien a esta mesa. Mismo patron real que cargarMisionesReales.
+async function cargarRecursosReales() {
+  const cont = document.getElementById('listaRecursos');
+  const estado = document.getElementById('estadoRecursos');
+  if (!memoriaConectada) { estado.textContent = 'Sin conexión con la memoria compartida.'; cont.innerHTML = ''; return; }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/recursos', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { recursos, leidoEn } = await r.json();
+    const conNombre = recursos.filter(x => x.nombre);
+    const costeTotal = conNombre.reduce((s, x) => s + Number(x.costeUsd || 0), 0);
+    estado.textContent = `${conNombre.length} gasto(s) real(es) -- $${costeTotal.toFixed(4)} en total -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    cont.innerHTML = conNombre.slice(-10).reverse().map(x => `
+      <div class="mision-real">
+        <div class="nombre">${x.accion || x.servicio || 'gasto real'}</div>
+        <span class="badge-mision">${x.servicio || 'sin servicio'}</span>
+        <span class="badge-mision">$${Number(x.costeUsd || 0).toFixed(5)}</span>
+      </div>`).join('') || '<p class="hint">Ningún gasto real todavía.</p>';
+  } catch {
+    estado.textContent = 'No se pudo leer el gasto real ahora mismo.';
+    cont.innerHTML = '';
+  }
+}
+
+// -- §8.64: puente 4 -- Feria, primeras preguntas reales servidas (Qué/Cuándo/Cómo) --
+// antes vivía entera en Telegram, invisible desde Bastidor.
+async function cargarFeriaReales() {
+  const cont = document.getElementById('listaFeria');
+  const estado = document.getElementById('estadoFeria');
+  if (!memoriaConectada) { estado.textContent = 'Sin conexión con la memoria compartida.'; cont.innerHTML = ''; return; }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/misiones_feria', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { misiones, leidoEn } = await r.json();
+    const publicadas = misiones.filter(x => x.estado === 'publicado');
+    estado.textContent = `${publicadas.length} misión(es) publicada(s) de ${misiones.length} real(es) en total -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
+    cont.innerHTML = misiones.slice(0, 10).map(x => `
+      <div class="mision-real">
+        <div class="nombre">${x.nombre}</div>
+        <span class="badge-mision">${x.escenario || 'sin escenario'}</span>
+        <span class="badge-mision">${x.estado || 'sin estado'}</span>
+        <span class="badge-mision">v${x.version || '?'}</span>
+      </div>`).join('') || '<p class="hint">Ninguna misión real todavía.</p>';
+  } catch {
+    estado.textContent = 'No se pudo leer Feria ahora mismo.';
     cont.innerHTML = '';
   }
 }

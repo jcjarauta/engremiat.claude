@@ -66,15 +66,70 @@ async function leerProyectosReales() {
   const cab = filas[0] || [];
   const idx = (nombre) => cab.indexOf(nombre);
   const iId = idx('ID'), iNombre = idx('NOMBRE'), iEstado = idx('ESTADO'), iTipo = idx('TIPO_PROYECTO'),
-    iPrioridad = idx('PRIORIDAD'), iAvance = idx('PORCENTAJE_AVANCE'), iCliente = idx('CLIENTE_ID'), iActivo = idx('ACTIVO');
+    iPrioridad = idx('PRIORIDAD'), iAvance = idx('PORCENTAJE_AVANCE'), iCliente = idx('CLIENTE_ID'), iActivo = idx('ACTIVO'),
+    // §8.64: Quien/Cuando/Por que de Misiones -- el dato real ya existia en 02_PROYECTOS,
+    // solo faltaba que este endpoint lo sirviera (mismo hallazgo del cruce de 13x8 preguntas)
+    iResponsable = idx('RESPONSABLE_ID'), iFechaInicioPlan = idx('FECHA_INICIO_PLAN'), iObjetivo = idx('OBJETIVO');
   const proyectos = filas.slice(1)
     .filter((f) => f[iId] && f[iActivo] === 'SÍ')
     .map((f) => ({
       id: f[iId], nombre: f[iNombre] || '', estado: f[iEstado] || '', tipoProyecto: f[iTipo] || '',
       prioridad: f[iPrioridad] || '', porcentajeAvance: f[iAvance] || '', clienteId: f[iCliente] || '',
+      responsableId: f[iResponsable] || '', fechaInicioPlan: f[iFechaInicioPlan] || '', objetivo: f[iObjetivo] || '',
     }));
   cacheProyectos = { en: Date.now(), datos: proyectos };
   return proyectos;
+}
+
+// -- §8.64: puentes 2 y 4 del cruce de 13x8 preguntas -- GASTO_API (Recursos) y
+// PLANTILLA_MISION (Feria), ambos ya reales en Baserow, mismo patron de lectura que
+// exportador_prometheus_gasto.mjs (Authorization: TOKEN, no Bearer -- Baserow real, no OAuth).
+const BASEROW_URL = process.env.BASEROW_URL || 'http://100.107.171.88';
+const BASEROW_TOKEN = process.env.BASEROW_TOKEN;
+const TABLA_GASTO_API = 285;
+const TABLA_PLANTILLA_MISION = 284;
+let cacheRecursos = { en: 0, datos: null };
+let cacheMisionesFeria = { en: 0, datos: null };
+
+async function leerFilasBaserow(tabla) {
+  let url = BASEROW_URL + '/api/database/rows/table/' + tabla + '/?user_field_names=true&size=200';
+  const filas = [];
+  while (url) {
+    const r = await fetch(url, { headers: { Authorization: BASEROW_TOKEN } });
+    if (r.status >= 400) throw new Error('Baserow respondio ' + r.status + ' leyendo tabla ' + tabla);
+    const j = await r.json();
+    filas.push(...j.results);
+    url = j.next;
+  }
+  return filas;
+}
+
+// Baserow devuelve los campos single_select como {id,value,color}, no como texto plano --
+// mismo objeto en cualquier campo de seleccion real (aqui: SERVICIO, TIPO_CAPTURA, ESTADO)
+function valorSelect(campo) {
+  return campo && typeof campo === 'object' ? (campo.value || '') : (campo || '');
+}
+
+async function leerRecursosReales() {
+  if (cacheRecursos.datos && Date.now() - cacheRecursos.en < 30000) return cacheRecursos.datos;
+  const filas = await leerFilasBaserow(TABLA_GASTO_API);
+  const recursos = filas.map((f) => ({
+    nombre: f.NOMBRE || '', modelo: f.MODELO || '', servicio: valorSelect(f.SERVICIO),
+    costeUsd: f.COSTE_ESTIMADO_USD || 0, accion: f.ACCION || '', fecha: f.FECHA || '',
+  }));
+  cacheRecursos = { en: Date.now(), datos: recursos };
+  return recursos;
+}
+
+async function leerMisionesFeriaReales() {
+  if (cacheMisionesFeria.datos && Date.now() - cacheMisionesFeria.en < 30000) return cacheMisionesFeria.datos;
+  const filas = await leerFilasBaserow(TABLA_PLANTILLA_MISION);
+  const misiones = filas.map((f) => ({
+    nombre: f.NOMBRE || '', escenario: f.ESCENARIO || '', orden: f.ORDEN || '',
+    tipoCaptura: valorSelect(f.TIPO_CAPTURA), estado: valorSelect(f.ESTADO), version: f.VERSION || '',
+  }));
+  cacheMisionesFeria = { en: Date.now(), datos: misiones };
+  return misiones;
 }
 
 function leerMemoria() {
@@ -119,6 +174,22 @@ const servidor = createServer(async (req, res) => {
       }
       const proyectos = await leerProyectosReales();
       res.writeHead(200); res.end(JSON.stringify({ proyectos, leidoEn: new Date(cacheProyectos.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/recursos') {
+      if (!BASEROW_TOKEN) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer Baserow' })); return;
+      }
+      const recursos = await leerRecursosReales();
+      res.writeHead(200); res.end(JSON.stringify({ recursos, leidoEn: new Date(cacheRecursos.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url === '/api/misiones_feria') {
+      if (!BASEROW_TOKEN) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer Baserow' })); return;
+      }
+      const misiones = await leerMisionesFeriaReales();
+      res.writeHead(200); res.end(JSON.stringify({ misiones, leidoEn: new Date(cacheMisionesFeria.en).toISOString() })); return;
     }
 
     if (req.method === 'POST' && req.url === '/api/eventos') {
