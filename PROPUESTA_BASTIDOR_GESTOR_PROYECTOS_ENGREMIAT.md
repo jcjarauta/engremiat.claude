@@ -937,6 +937,20 @@ Candidata inicial: `12_DECISIONES` para Gobierno (Cuándo/Por qué). Comprobado 
 
 `92_BUS_TRABAJO` sí tiene actividad real rica -- 9 tareas reales, `RECLAMADO_POR` (DeepSeek, Claude, cron...), `ESTADO`, `RESULTADO`. Nuevo `/api/bus_trabajo`. La mesa muestra ahora "Quién trabajó de verdad" agrupado por trabajador real. Verificado con curl y con la lógica de render real, sin errores.
 
+### 8.68 Corrección real de rumbo -- replicar, no enlazar al Sheet + Centro compartido ampliado
+
+Contexto nuevo aportado por el usuario sobre `12_DECISIONES`: la escribe cada ronda real de Vigilia+Cronista al crear incidencias/tareas -- el hueco sigue siendo genuino (el cauce existe conceptualmente, no está escribiendo ahí todavía), anotado, no construido.
+
+Propuesta inicial para el "Cómo" de Misiones (`05_PROCESOS`/`06_TAREAS`): un conteo ligero + enlace al Sheet real (Gantt/Ficha), igual que se hizo con Memoria→`sheet-real.html`. **Corregido por el usuario**: el jugador de Bastidor no tiene por qué tener acceso al Sheet -- hay que replicar la dinámica real, no enlazarla. Memoria guardada ([[feedback_bastidor_replicar_no_enlazar_sheet]]): la distinción real es dinámica de juego activa (replicar con endpoint propio) vs. registro de consulta ocasional (enlace vale, como Memoria).
+
+Construido: `leerProcesosTareasReales(proyectoId)` en `servidor_memoria.mjs`, replicando la cadena relacional real `02_PROYECTOS → 04_PROYECTO_PRODUCTO (PRODUCTO_ID) → 05_PROCESOS (PRODUCTO_ID) → 06_TAREAS (PROCESO_ID)` -- comprobada con datos reales antes de construir (13 procesos, 19+ tareas reales, nada vacío). Nuevo `GET /api/procesos_tareas?proyectoId=X`. En `mesa_montaje.html`, cada misión de la lista es ahora clicable y despliega su "Cómo" real (procesos con estado/avance, tareas anidadas) en un panel nuevo (`#comoMision`), sin salir de Bastidor.
+
+Verificado con curl real contra PRO-0003 (4 procesos reales, sin tareas -- honesto) y PRO-0020 (1 proceso con 1 tarea real "Terminada" anidada), y con la lógica de render real en el navegador (mock de fetch, mismo patrón de siempre por el CORS del sandbox) -- ambos casos renderizan correctamente.
+
+Centro compartido -- Concilio (`spike_concilio_coop/servidor.mjs`) ampliado: `/salud` ahora expone `deliberando`, `mensajesCiclo`, `cicloInicio`, `costeCicloUsd` (antes solo `humanos`/`maxHumanos`). Cierra parcialmente Qué/Cuándo de Centro compartido -- el "Qué" completo (transcripción real de `sala.mensajes`) queda pendiente, requeriría exponer contenido de mensajes, no solo conteo.
+
+Pendiente explícito para la siguiente ronda: transcripción real de Concilio (Qué), Telar (`TELAR_SESION.HISTORIAL`/workflow n8n, Qué/Cuándo), y la interfaz de disparo real de Narrador (Cómo) -- los tres exigen tocar sus propios servidores/flujos, no son puentes de solo lectura baratos.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

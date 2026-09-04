@@ -297,6 +297,10 @@
   {
    "fichero": "servidor_memoria.mjs + mesa_montaje.html (puente Recursos->Quien)",
    "que_hace": "§8.67: puente barato Recursos -> Quien, via 92_BUS_TRABAJO. Comprobado antes de construir: 12_DECISIONES (candidata inicial para Gobierno) esta real pero VACIA hoy (0 filas, solo cabecera) -- no se construyo un puente hacia dato vacio, se comprobo primero. 92_BUS_TRABAJO si tiene actividad real rica (RECLAMADO_POR/ESTADO/FECHA_RECLAMACION/RESULTADO, 9 tareas reales ya registradas por Concilio/Ejecutor/workers). Nuevo /api/bus_trabajo (mismo patron JWT ya probado). mesa_montaje.html amplia cargarRecursosReales() para mostrar 'Quien trabajo de verdad' agrupado por RECLAMADO_POR real. Verificado con curl real y con la logica de render real (mock de fetch, 0 errores de consola)."
+  },
+  {
+   "fichero": "servidor_memoria.mjs + mesa_montaje.html + spike_concilio_coop/servidor.mjs",
+   "que_hace": "§8.68: correccion real de rumbo aportada por el operador -- el 'Como' de Misiones (05_PROCESOS/06_TAREAS) NO se resuelve enlazando al Sheet real (el jugador de Bastidor no tiene por que tener acceso a el), se resuelve replicando la dinamica real con datos servidos, mismo patron que /api/proyectos. Nueva leerProcesosTareasReales(proyectoId): replica la cadena relacional real 02_PROYECTOS -> 04_PROYECTO_PRODUCTO (PRODUCTO_ID) -> 05_PROCESOS (PRODUCTO_ID) -> 06_TAREAS (PROCESO_ID), comprobada con datos reales antes de construir (13 procesos, 19+ tareas reales, nada vacio). Nuevo GET /api/procesos_tareas?proyectoId=X. mesa_montaje.html: cada mision de la lista es ahora clicable, despliega su Como real (procesos+tareas anidados) en panel nuevo #comoMision, sin salir de Bastidor. Ademas, spike_concilio_coop/servidor.mjs ampliado: /salud ahora expone deliberando/mensajesCiclo/cicloInicio/costeCicloUsd (antes solo humanos/maxHumanos) -- cierra parcialmente Que/Cuando de Centro compartido, la transcripcion real de sala.mensajes queda pendiente. Verificado con curl real (PRO-0003: 4 procesos sin tareas, honesto; PRO-0020: 1 proceso con 1 tarea real anidada) y con la logica de render real en el navegador (mock de fetch)."
   }
  ]
 }

@@ -105,6 +105,7 @@
     <h3>Misiones reales de este universo</h3>
     <p class="hint" id="estadoMisiones">Comprobando el tablero real...</p>
     <div id="listaMisiones"></div>
+    <div id="comoMision"></div>
     <h3>Pieza seleccionada</h3>
     <div id="fichaPieza"><p class="hint">Clic en una pieza de la mesa para ver su estado real y sus eventos disponibles.</p></div>
     <h3>Registro de eventos</h3>
@@ -361,7 +362,7 @@ async function cargarMisionesReales() {
       estado.textContent = `${filtrados.length} misión(es) reales en total (universo sin cliente vinculado -- tablero completo) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
     }
     cont.innerHTML = filtrados.slice(0, 30).map(p => `
-      <div class="mision-real">
+      <div class="mision-real" style="cursor:pointer" onclick="cargarComoDeMision('${p.id}', ${JSON.stringify(p.nombre || p.id)})">
         <div class="nombre">${p.nombre || p.id}</div>
         <span class="badge-mision">${p.estado || 'sin estado'}</span>
         <span class="badge-mision">${p.tipoProyecto || 'sin tipo'}</span>
@@ -370,6 +371,32 @@ async function cargarMisionesReales() {
   } catch {
     estado.textContent = 'No se pudo leer el tablero real ahora mismo.';
     cont.innerHTML = '';
+  }
+}
+
+// -- §8.68: el "Como" de una mision -- replica la cadena real 04_PROYECTO_PRODUCTO ->
+// 05_PROCESOS -> 06_TAREAS, no enlaza al Sheet (el jugador de Bastidor no tiene acceso
+// a el). Se pide al hacer clic en una mision, no de golpe para las 30 -- coste real bajo.
+async function cargarComoDeMision(proyectoId, nombre) {
+  const cont = document.getElementById('comoMision');
+  cont.innerHTML = '<p class="hint">Leyendo el "Cómo" real de ' + nombre + '...</p>';
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/procesos_tareas?proyectoId=' + encodeURIComponent(proyectoId), { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { procesos } = await r.json();
+    if (!procesos.length) {
+      cont.innerHTML = '<p class="hint">"' + nombre + '" no tiene Procesos/Tareas reales todavía en el Sheet.</p>';
+      return;
+    }
+    cont.innerHTML = '<h4 style="margin:8px 0 4px;font-size:13px;">Cómo -- ' + nombre + '</h4>' + procesos.map(pc => `
+      <div class="mision-real" style="margin-bottom:6px;">
+        <div class="nombre">${pc.nombre} <span class="badge-mision">${pc.estado || 'sin estado'}</span> <span class="badge-mision">${pc.porcentajeAvance || '0%'}</span></div>
+        ${pc.tareas.length ? '<ul style="margin:4px 0 0 16px;padding:0;font-size:11px;">' + pc.tareas.map(t =>
+          `<li>${t.nombre} -- <span class="badge-mision">${t.estado || 'sin estado'}</span></li>`).join('') + '</ul>'
+          : '<p class="hint" style="margin:4px 0 0;">Sin tareas reales todavía.</p>'}
+      </div>`).join('');
+  } catch {
+    cont.innerHTML = '<p class="hint">No se pudo leer el "Cómo" real ahora mismo.</p>';
   }
 }
 

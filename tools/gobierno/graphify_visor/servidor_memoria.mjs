@@ -81,6 +81,63 @@ async function leerProyectosReales() {
   return proyectos;
 }
 
+// -- §8.68: Misiones -> Como. El usuario corrigio el enfoque: no basta con enlazar al
+// Sheet real (Gantt/Ficha) -- el jugador de Bastidor no tiene por que tener acceso al
+// Sheet, hay que replicar la dinamica real sirviendo los datos. Cadena relacional real:
+// 02_PROYECTOS -> 04_PROYECTO_PRODUCTO (PRODUCTO_ID) -> 05_PROCESOS (PRODUCTO_ID) ->
+// 06_TAREAS (PROCESO_ID). Confirmado con datos reales antes de construir (13 procesos,
+// 19+ tareas reales, no vacio como 12_DECISIONES).
+let cacheProyectoProducto = { en: 0, datos: null };
+let cacheProcesos = { en: 0, datos: null };
+let cacheTareas = { en: 0, datos: null };
+
+async function leerTablaSheetCacheada(nombreHoja, rangoColumnas, cache) {
+  if (cache.datos && Date.now() - cache.en < 30000) return cache.datos;
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + nombreHoja + '!' + rangoColumnas,
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const j = await r.json();
+  const filas = j.values || [];
+  const cab = filas[0] || [];
+  const datos = { cab, filas: filas.slice(1) };
+  cache.en = Date.now(); cache.datos = datos;
+  return datos;
+}
+
+async function leerProcesosTareasReales(proyectoId) {
+  const [pp, procesos, tareas] = await Promise.all([
+    leerTablaSheetCacheada('04_PROYECTO_PRODUCTO', 'A1:C1000', cacheProyectoProducto),
+    leerTablaSheetCacheada('05_PROCESOS', 'A1:S1000', cacheProcesos),
+    leerTablaSheetCacheada('06_TAREAS', 'A1:N1000', cacheTareas),
+  ]);
+  const iPPProyecto = pp.cab.indexOf('PROYECTO_ID'), iPPProducto = pp.cab.indexOf('PRODUCTO_ID');
+  const productoIds = new Set(pp.filas.filter((f) => f[iPPProyecto] === proyectoId).map((f) => f[iPPProducto]));
+
+  const iPcId = procesos.cab.indexOf('ID'), iPcProducto = procesos.cab.indexOf('PRODUCTO_ID'), iPcNombre = procesos.cab.indexOf('NOMBRE'),
+    iPcOrden = procesos.cab.indexOf('ORDEN_SECUENCIA'), iPcEstado = procesos.cab.indexOf('ESTADO'), iPcAvance = procesos.cab.indexOf('PORCENTAJE_AVANCE'),
+    iPcInicioPlan = procesos.cab.indexOf('FECHA_INICIO_PLAN'), iPcFinPlan = procesos.cab.indexOf('FECHA_FIN_PLAN');
+  const procesosDelProyecto = procesos.filas.filter((f) => productoIds.has(f[iPcProducto]));
+
+  const iTrProceso = tareas.cab.indexOf('PROCESO_ID'), iTrNombre = tareas.cab.indexOf('NOMBRE'), iTrOrden = tareas.cab.indexOf('ORDEN_SECUENCIA'),
+    iTrEstado = tareas.cab.indexOf('ESTADO'), iTrAvance = tareas.cab.indexOf('PORCENTAJE_AVANCE'),
+    iTrInicioPlan = tareas.cab.indexOf('FECHA_INICIO_PLAN'), iTrFinPlan = tareas.cab.indexOf('FECHA_FIN_PLAN');
+
+  return procesosDelProyecto
+    .map((f) => ({
+      id: f[iPcId], nombre: f[iPcNombre] || '', ordenSecuencia: f[iPcOrden] || '', estado: f[iPcEstado] || '',
+      porcentajeAvance: f[iPcAvance] || '', fechaInicioPlan: f[iPcInicioPlan] || '', fechaFinPlan: f[iPcFinPlan] || '',
+      tareas: tareas.filas
+        .filter((t) => t[iTrProceso] === f[iPcId])
+        .map((t) => ({
+          nombre: t[iTrNombre] || '', ordenSecuencia: t[iTrOrden] || '', estado: t[iTrEstado] || '',
+          porcentajeAvance: t[iTrAvance] || '', fechaInicioPlan: t[iTrInicioPlan] || '', fechaFinPlan: t[iTrFinPlan] || '',
+        })),
+    }))
+    .sort((a, b) => (a.ordenSecuencia || '').localeCompare(b.ordenSecuencia || ''));
+}
+
 // -- §8.67: puente barato Recursos -> Quien. 12_DECISIONES esta real pero vacia hoy
 // (0 filas, comprobado antes de construir nada) -- 92_BUS_TRABAJO si tiene actividad
 // real rica (quien reclamo, cuando, resultado). Mismo patron JWT ya probado.
@@ -241,6 +298,18 @@ const servidor = createServer(async (req, res) => {
       }
       const misiones = await leerMisionesFeriaReales();
       res.writeHead(200); res.end(JSON.stringify({ misiones, leidoEn: new Date(cacheMisionesFeria.en).toISOString() })); return;
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/procesos_tareas')) {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
+      }
+      const proyectoId = new URL(req.url, 'http://x').searchParams.get('proyectoId');
+      if (!proyectoId) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'falta proyectoId' })); return;
+      }
+      const procesos = await leerProcesosTareasReales(proyectoId);
+      res.writeHead(200); res.end(JSON.stringify({ procesos, leidoEn: new Date(cacheProcesos.en).toISOString() })); return;
     }
 
     if (req.method === 'GET' && req.url === '/api/concilio_estado') {

@@ -204,7 +204,11 @@ async function deliberar() {
 const httpServer = createServer((req, res) => {
   if (req.url === '/salud') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, spike: 'concilio_coop_v3', humanos: humanosSentados().length, maxHumanos: MAX_HUMANOS }));
+    res.end(JSON.stringify({
+      ok: true, spike: 'concilio_coop_v3', humanos: humanosSentados().length, maxHumanos: MAX_HUMANOS,
+      deliberando: sala.deliberando, mensajesCiclo: sala.mensajes.length, cicloInicio: sala.cicloInicio,
+      costeCicloUsd: sala.costeCicloUsd,
+    }));
     return;
   }
   if (req.url === '/' || req.url === '/index.html') {
