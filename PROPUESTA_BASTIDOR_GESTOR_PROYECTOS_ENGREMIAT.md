@@ -1134,6 +1134,14 @@ El ciclo de esta sesión (generar grafo → `scp` → `ssh docker compose up -d`
 
 Verificado con una ejecución real completa (`node desplegar_visor.mjs --grafo`): regeneró el grafo (recogió automáticamente la propia `vista_sistema.html`, 16→17 páginas), copió los 32 ficheros reales declarados, recreó el contenedor, y confirmó 200 real en las 16 páginas `.html` servidas -- ciclo de ~4 pasos manuales reducido a un solo comando.
 
+### 8.85 Personalizar `vista_sistema.html` -- sin etiquetas de golpe, fondo del sistema de diseño real
+
+El operador, tras ver el grafo en su propio navegador (denso, con las ~50 etiquetas de nombre encima ensuciando la vista), pidió investigar cómo personalizarlo: sin etiquetas por defecto, fondo igual al del resto del visor. Investigado antes de tocar código: `grafo_maestro.html` (§8.39-40) ya resolvió exactamente este problema en este mismo proyecto -- etiqueta con opacidad dependiente del zoom real (`network.on('zoom', ...)` + `network.getScale()`) y "siempre visible la del nodo bajo el cursor" (`hoverNode`/`blurNode`), en vez de quitarlas del todo. Mejor que ocultarlas para siempre: siguen apareciendo al acercarse o al pasar el ratón, coherente con "revelación gradual" ya establecido como criterio de diseño esta sesión.
+
+**Aplicado a `vista_sistema.html`**: mismo patrón (umbral simple de escala ≥1.6, sin necesidad de la métrica de centralidad que sí usa `grafo_maestro.html` porque este grafo es mucho más pequeño). Además, `vista_sistema.html` no cargaba `tokens.css` -- tenía sus propios hex duplicados (`#0f1013`, `#17181c`...) en vez del sistema de diseño real ya usado por las páginas "migradas" (`grafo_maestro.html`, `holon.html`, `anatomia.html`, §8.48). Corregido: `<link rel="stylesheet" href="tokens.css">` + `var(--color-base-fondo/panel/borde/texto)`.
+
+Verificado en el navegador real, dos comprobaciones directas: (1) `getComputedStyle(document.body).backgroundColor` → `rgb(15, 16, 19)`, exactamente `--color-base-fondo`; (2) disparando eventos `wheel` reales sobre el canvas (la vía que usan los usuarios de verdad -- `moveTo()` programático NO dispara el evento `zoom` de vis-network, es una peculiaridad de la API a tener en cuenta al probar, no un bug) hasta escala 3.97, el color de fuente de `home.html` pasó de transparente a `#e7e7ea` real. Desplegado con la propia `desplegar_visor.mjs` recién construida (primer uso real en producción de la herramienta).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

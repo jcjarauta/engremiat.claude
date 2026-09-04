@@ -5,22 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Engremiat -- vista inicial del sistema (raíz: home.html)</title>
 <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
+<link rel="stylesheet" href="tokens.css">
 <style>
-  html, body { margin: 0; height: 100%; background: #0f1013; font-family: system-ui, sans-serif; color: #e7e7ea; }
+  html, body { margin: 0; height: 100%; background: var(--color-base-fondo); font-family: system-ui, sans-serif; color: var(--color-base-texto); }
   #layout { display: flex; height: 100vh; }
   #red { flex: 1; }
-  #panel { width: 360px; padding: 16px; background: #17181c; overflow-y: auto; border-left: 1px solid #2c2d33; box-sizing: border-box; }
+  #panel { width: 360px; padding: 16px; background: var(--color-base-panel); overflow-y: auto; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
   h2 { margin: 0 0 4px; font-size: 18px; }
-  .hint { color: #9a9aa2; font-size: 12.5px; line-height: 1.4; }
+  .hint { color: var(--color-base-texto-suave); font-size: 12.5px; line-height: 1.4; }
   .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
   .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
   .cuadro { border-radius: 3px; }
-  #ficha { margin-top: 16px; border-top: 1px solid #2c2d33; padding-top: 12px; font-size: 12.5px; }
+  #ficha { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
   #ficha h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
-  #ficha p { margin: 4px 0; color: #c7c8d6; line-height: 1.4; }
+  #ficha p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
   .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; margin: 2px 4px 2px 0; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12.5px; }
-  #btnAtenuar { margin-top: 10px; padding: 6px 10px; font-size: 12px; background: #24252b; color: #e7e7ea; border: 1px solid #34353d; border-radius: 4px; cursor: pointer; }
+  #btnAtenuar { margin-top: 10px; padding: 6px 10px; font-size: 12px; background: var(--color-base-borde-suave); color: var(--color-base-texto); border: 1px solid var(--color-base-borde); border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -42,8 +43,10 @@
   </div>
 </div>
 <script>
+const COLOR_FONDO = getComputedStyle(document.documentElement).getPropertyValue('--color-base-fondo').trim() || '#0f1013';
 let soloAlcanzables = false;
 let network, nodes, edges, datosGlobal, alcanzablesGlobal;
+let nodoEnHover = null;
 
 fetch('grafo_visor.json').then(r => r.json()).then(datos => {
   datosGlobal = datos;
@@ -70,10 +73,14 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
   const formaDe = (n) => n.tipo === 'endpoint' ? 'box' : n.tipo === 'recurso_real' ? 'diamond' : 'dot';
   const colorArista = { enlaza: '#4c9aff', llama_api: '#2f9e4488', sirve: '#2f9e44', toca: '#e85c8a88' };
 
+  // Sin etiqueta visible por defecto -- un grafo denso con ~50 nombres encima ensucia
+  // la vista inicial (feedback real del operador). Mismo patron ya resuelto en
+  // grafo_maestro.html (§8.39-40): la etiqueta aparece al acercar el zoom o al pasar
+  // el raton por encima, nunca desaparece del todo (title conserva el id real siempre).
   nodes = new vis.DataSet(datos.nodos.map(n => ({
     id: n.id, label: n.nombre, title: n.id,
-    color: { background: colorDe(n), border: '#0f1013' },
-    font: { color: '#e7e7ea', size: n.id === 'home.html' ? 14 : 11 },
+    color: { background: colorDe(n), border: COLOR_FONDO },
+    font: { color: 'rgba(0,0,0,0)', size: n.id === 'home.html' ? 14 : 11 },
     shape: formaDe(n),
     size: n.id === 'home.html' ? 22 : n.tipo === 'servidor' ? 18 : n.tipo === 'pagina' ? 14 : 10,
   })));
@@ -87,6 +94,17 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
     physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -90, springLength: 130 } },
     interaction: { hover: true },
   });
+
+  function refrescarEtiquetas() {
+    const escala = network.getScale();
+    nodes.update(datos.nodos.map(n => ({
+      id: n.id,
+      font: { color: (n.id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)' },
+    })));
+  }
+  network.on('zoom', refrescarEtiquetas);
+  network.on('hoverNode', (p) => { nodoEnHover = p.node; refrescarEtiquetas(); });
+  network.on('blurNode', () => { nodoEnHover = null; refrescarEtiquetas(); });
 
   network.on('click', (params) => {
     if (!params.nodes.length) return;
