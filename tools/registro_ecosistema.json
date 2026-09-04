@@ -289,6 +289,10 @@
   {
    "fichero": "servidor_memoria.mjs + mesa_montaje.html (puente Concilio)",
    "que_hace": "§8.65: auditoria ◇ inferido a nivel de entidad (91 fichas): solo 1 caso real -- Coordinador.md/METRICA_FABRICACION, 'atribucion razonada por encaje de rol, no un script real encontrado'. Los otros 3 candidatos (AGORA.md, Personaje de cliente.md, Catalogo compartido de referencia.md) son huecos '-' bien documentados, no ◇ -- declaran explicitamente que NO infieren. Acervo Sociocracia.md es una categoria distinta (comportamiento real de IA que contradice su propia definicion, no un dato inferido). No se construyo mecanismo nuevo para 1 caso -- desproporcionado. Siguiente puente barato: Concilio ya tenia su propio endpoint real /salud (spike_concilio_coop) pero sin CORS -- no se toco ese servidor (ajeno a este visor). Servido como proxy real server-to-server desde servidor_memoria.mjs (nuevo /api/concilio_estado, cache 10s) -- mesa_montaje.html gana la caja real 'Centro compartido -- Concilio' mostrando asientos humanos ocupados en vivo. Verificado con dato real (curl: 0/2 asientos en el momento de la prueba) y con la logica de render real (mock de fetch). Cierra 2-3 preguntas mas de Centro compartido en la matriz 13x8."
+  },
+  {
+   "fichero": "tools/gobierno/bocetador/cargar_desde_vault.mjs",
+   "que_hace": "§8.66: puente barato Mapa del universo -> Como/Cuanto. rolReal/agenciaReal ya calculados por extraer_anatomia_entidad.mjs y servidos en atlas_familias.json, pero universo_real.json (lo que carga el Bocetador) nunca los cruzaba -- mismo patron real que la unificacion de vinculoReal (§8.59): leer el fichero real ya existente, no recalcular nada. cargarRolYAgenciaReal() lee atlas_familias.json y anade rolReal/agenciaReal a cada nodo real que tenga match por slug. Resultado real: 61/77 nodos del universo_real.json ganan estos dos campos (los 16 restantes son fichas mas nuevas que atlas_familias.json todavia no cubre -- gap real, honesto, no oculto). Regenerado universo_real.json (ambas copias), validar_bocetador.mjs sigue APROBADO, app verificada sin errores en el navegador."
   }
  ]
 }

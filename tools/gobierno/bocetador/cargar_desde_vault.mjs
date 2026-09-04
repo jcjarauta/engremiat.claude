@@ -101,6 +101,25 @@ function extraerResumen(cuerpo) {
   return parrafo.replace(/\[\[([^\]|]+)(\|[^\]]+)?\]\]/g, '$1').slice(0, 400);
 }
 
+// §8.66: Como/Cuanto de Mapa del universo -- rolReal/agenciaReal ya calculados por
+// extraer_anatomia_entidad.mjs y servidos en atlas_familias.json, pero universo_real.json
+// (lo que carga el Bocetador) nunca los cruzaba -- mismo patron real que unifico vinculoReal
+// en §8.59: leer el fichero real ya existente, no recalcular nada de cero.
+function cargarRolYAgenciaReal() {
+  const rutaAtlas = join(import.meta.dirname, '..', 'graphify_visor', 'atlas_familias.json');
+  const mapa = new Map();
+  try {
+    const atlas = JSON.parse(readFileSync(rutaAtlas, 'utf-8'));
+    atlas.familias.forEach((f) => {
+      f.miembros.forEach((m) => {
+        if (!mapa.has(m.slug)) mapa.set(m.slug, { rolReal: f.rol, agenciaReal: m.agenciaReal });
+      });
+    });
+  } catch { /* atlas_familias.json es opcional -- si no esta, se sigue sin estos dos campos */ }
+  return mapa;
+}
+const ROL_Y_AGENCIA_REAL = cargarRolYAgenciaReal();
+
 function cargarNodos(carpeta, tipo) {
   const nodos = [];
   for (const ruta of listarMd(carpeta)) {
@@ -108,14 +127,17 @@ function cargarNodos(carpeta, tipo) {
     const { fm, cuerpo } = parsearFrontmatter(texto);
     const nombre = fm.title || ruta.split(/[\\/]/).pop().replace('.md', '');
     const vinculoReal = extraerVinculoReal(cuerpo);
+    const id = slug(nombre);
+    const rolYAgencia = ROL_Y_AGENCIA_REAL.get(id);
     nodos.push({
-      id: slug(nombre),
+      id,
       nombre,
       tipo,
       estado: fm.estado || 'desconocido',
       resumen: extraerResumen(cuerpo),
       relacionesDeclaradas: extraerRelaciones(cuerpo),
       ...(vinculoReal.length ? { vinculoReal } : {}),
+      ...(rolYAgencia ? { rolReal: rolYAgencia.rolReal, agenciaReal: rolYAgencia.agenciaReal } : {}),
     });
   }
   return nodos;

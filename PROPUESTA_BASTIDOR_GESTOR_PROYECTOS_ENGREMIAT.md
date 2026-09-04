@@ -925,6 +925,12 @@ Construidos los 4 puentes más baratos del cruce 13×8 (§8.63 fin): `/api/proye
 
 **Siguiente puente barato construido**: Concilio ya tenía su propio endpoint real `/salud` (`spike_concilio_coop/servidor.mjs`) pero sin CORS -- no se tocó ese servidor, ajeno a este visor. Servido como proxy real server-to-server desde `servidor_memoria.mjs` (`/api/concilio_estado`, caché 10s). Mesa gana la caja real "Centro compartido -- Concilio", asientos humanos ocupados en vivo. Verificado con dato real (curl: 0/2 en el momento de la prueba) y con la lógica de render real.
 
+### 8.66 Siguiente puente barato -- Mapa del universo (Cómo/Cuánto)
+
+`rolReal`/`agenciaReal` ya calculados por `extraer_anatomia_entidad.mjs` y servidos en `atlas_familias.json` -- pero `cargar_desde_vault.mjs` (lo que carga el Bocetador/mapa) nunca los cruzaba. Mismo patrón exacto que la unificación de `vinculoReal` (§8.59): leer el fichero real ya existente, no recalcular nada.
+
+Resultado real: **61/77 nodos** del mapa ganan `rolReal`/`agenciaReal` -- los 16 restantes son fichas más nuevas que `atlas_familias.json` todavía no cubre (Narrador, Acervo, Pregonero...), gap real y honesto, no oculto. `validar_bocetador.mjs` sigue APROBADO, app verificada sin errores.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

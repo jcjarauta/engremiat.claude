@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T06:14:08.798Z",
+  "generadoEn": "2026-09-04T09:25:26.109Z",
   "espacios": [
     {
       "id": "baserow",
@@ -12,7 +12,9 @@
         "Coordinador",
         "VPS y Tailscale",
         "El Vault"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 1
     },
     {
       "id": "el_sheet",
@@ -23,7 +25,9 @@
       "relacionesDeclaradas": [
         "Ejecutor",
         "El Sheet manda"
-      ]
+      ],
+      "rolReal": "Pasivo",
+      "agenciaReal": 2
     },
     {
       "id": "n8n",
@@ -35,7 +39,9 @@
         "Cronista",
         "Vigilia",
         "VPS y Tailscale"
-      ]
+      ],
+      "rolReal": "Disparador",
+      "agenciaReal": 1
     },
     {
       "id": "vps_y_tailscale",
@@ -55,7 +61,9 @@
           "sistema": "Baserow",
           "recordId": "NODO_ENGREMIAT"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 5
     },
     {
       "id": "el_vault",
@@ -65,7 +73,9 @@
       "resumen": "",
       "relacionesDeclaradas": [
         "Baserow"
-      ]
+      ],
+      "rolReal": "Dependiente",
+      "agenciaReal": 2
     },
     {
       "id": "la_fragua_protegida",
@@ -97,7 +107,9 @@
       "resumen": "Servidor de coordinación Tailscale propio, autoalojado en el VPS — soberanía real, no solo red: quién entra en la malla lo decide Engremiat, no un servicio en la nube ajeno. Etapa 1 (levantado, usuario `engremiat` creado) y Etapa 2 (un nodo de prueba real se unió solo con una clave de pre-autenticación, verificado online, luego limpiado) verificadas el 2026-09-01. Ningún nodo real (VPS/Pi/PC) migr",
       "relacionesDeclaradas": [
         "VPS y Tailscale"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 2
     },
     {
       "id": "telar",
@@ -123,7 +135,9 @@
           "sistema": "Baserow",
           "recordId": "PLANTILLA_MISION"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 7
     },
     {
       "id": "consola",
@@ -137,7 +151,9 @@
           "sistema": "Sheet",
           "recordId": "97_ESTADO_CONSOLA"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 2
     }
   ],
   "recursos": [
@@ -158,7 +174,9 @@
           "sistema": "Baserow",
           "recordId": "GASTO_API"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 9
     },
     {
       "id": "92_bus_trabajo",
@@ -175,7 +193,9 @@
           "sistema": "Sheet",
           "recordId": "92_BUS_TRABAJO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 13
     },
     {
       "id": "documento_engremiat",
@@ -191,7 +211,9 @@
           "sistema": "Baserow",
           "recordId": "DOCUMENTO_ENGREMIAT"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 8
     },
     {
       "id": "agora",
@@ -221,7 +243,9 @@
           "sistema": "Sheet",
           "recordId": "93_MAPEO_IDS_TEMPORALES"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 5
     },
     {
       "id": "personaje_de_cliente",
@@ -309,7 +333,9 @@
         "IntegrityService",
         "El Sheet",
         "CORE"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 2
     },
     {
       "id": "integrityservice",
@@ -321,7 +347,9 @@
         "Repository",
         "Verificar contra hechos",
         "CORE"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 1
     },
     {
       "id": "formularios",
@@ -332,7 +360,9 @@
       "relacionesDeclaradas": [
         "Repository",
         "CORE"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 4
     },
     {
       "id": "estructurainicial",
@@ -344,7 +374,9 @@
         "Cliente",
         "Aprovisionamiento",
         "CORE"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 2
     },
     {
       "id": "configrepository",
@@ -362,7 +394,9 @@
           "sistema": "Sheet",
           "recordId": "90_CONFIGURACION"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 10
     },
     {
       "id": "core",
@@ -410,7 +444,9 @@
           "sistema": "Sheet",
           "recordId": "17_RELACION"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 27
     },
     {
       "id": "ventas",
@@ -443,7 +479,9 @@
           "sistema": "Sheet",
           "recordId": "43_CONTRATO_SERVICIO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 11
     },
     {
       "id": "oportunidad",
@@ -460,7 +498,9 @@
           "sistema": "Sheet",
           "recordId": "44_OPORTUNIDAD"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 16
     },
     {
       "id": "cliente",
@@ -481,7 +521,9 @@
           "sistema": "Baserow",
           "recordId": "PAQUETE_CLIENTE"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 23
     },
     {
       "id": "compras",
@@ -534,7 +576,9 @@
           "sistema": "Sheet",
           "recordId": "28_RECEPCION_LINEA"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 12
     },
     {
       "id": "gantt",
@@ -562,7 +606,9 @@
           "sistema": "Sheet",
           "recordId": "37_ETIQUETA_IMPACTO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 10
     },
     {
       "id": "convocatorias",
@@ -579,7 +625,9 @@
           "sistema": "Sheet",
           "recordId": "36_CONVOCATORIA"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 18
     },
     {
       "id": "economico",
@@ -605,7 +653,9 @@
           "sistema": "Sheet",
           "recordId": "32_COSTE"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 16
     },
     {
       "id": "comunicacion",
@@ -616,7 +666,9 @@
       "relacionesDeclaradas": [
         "Cliente",
         "Modulos acoplables"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 8
     },
     {
       "id": "aprovisionamiento",
@@ -628,7 +680,9 @@
         "Cliente",
         "Comunicacion",
         "Modulos acoplables"
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 1
     },
     {
       "id": "modulos_acoplables",
@@ -708,7 +762,9 @@
           "sistema": "Sheet",
           "recordId": "46_TAREA_RECURSO_NECESIDAD"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 14
     },
     {
       "id": "seguimiento",
@@ -737,7 +793,9 @@
           "sistema": "Sheet",
           "recordId": "18_VINCULO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 22
     },
     {
       "id": "ejecucion",
@@ -753,7 +811,9 @@
           "sistema": "Sheet",
           "recordId": "20_EJECUCION_TAREA"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 13
     },
     {
       "id": "escenarios",
@@ -791,7 +851,9 @@
         "Acervo Prompter",
         "Coordinador",
         "Vigilia"
-      ]
+      ],
+      "rolReal": "Orquestador",
+      "agenciaReal": 19
     },
     {
       "id": "vigilia",
@@ -811,7 +873,9 @@
           "sistema": "Baserow",
           "recordId": "VIGILIA_TAREA"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 13
     },
     {
       "id": "coordinador",
@@ -837,7 +901,9 @@
           "sistema": "Sheet",
           "recordId": "99_TRIAGE_LOCAL"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 10
     },
     {
       "id": "ejecutor",
@@ -863,7 +929,9 @@
           "sistema": "Sheet",
           "recordId": "95_DIARIO_NAVEGACION"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 2
     },
     {
       "id": "cronista",
@@ -880,7 +948,9 @@
           "sistema": "Baserow",
           "recordId": "TAREA"
         }
-      ]
+      ],
+      "rolReal": "Disparador",
+      "agenciaReal": 1
     },
     {
       "id": "pregonero",
@@ -904,7 +974,9 @@
         "Cronista",
         "Pregonero",
         "Puerta Humana"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 6
     },
     {
       "id": "narrador",
@@ -933,7 +1005,9 @@
         "Regenerar estatico",
         "Extraer decisiones",
         "Salud del ecosistema"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 10
     },
     {
       "id": "acervo_tecnico",
@@ -943,7 +1017,9 @@
       "resumen": "En el Concilio, su única pregunta es: ¿esto es implementable, mantenible, con coste real de construir? El voto que evita que una idea bonita choque contra la realidad del código.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 2
     },
     {
       "id": "acervo_logico",
@@ -953,7 +1029,9 @@
       "resumen": "Exige cadena de causa-efecto, sin saltarse pasos. En Concilio es quien pregunta \"¿y eso por qué se sigue de lo anterior?\" cuando una síntesis quiere atajar. Coautor, junto a Acervo Narrativo, de las síntesis reales que analizaron la historia propia de este universo.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 3
     },
     {
       "id": "acervo_logistico",
@@ -963,7 +1041,9 @@
       "resumen": "Piensa en flujo real de trabajo: quién, cuándo, con qué recursos. En Concilio es la voz que convierte una buena idea en algo que de verdad se puede ejecutar en el tiempo y con las manos disponibles, no solo en el papel.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 2
     },
     {
       "id": "acervo_narrativo",
@@ -973,7 +1053,9 @@
       "resumen": "Vela por la coherencia de la historia, el tono, la continuidad. Junto a Acervo Logico, coautor real de las síntesis que primero analizaron la propia historia de Engremiat — el Acervo que más cerca trabaja del Narrador todavía por construir.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 4
     },
     {
       "id": "acervo_filosofico",
@@ -983,7 +1065,9 @@
       "resumen": "Pregunta por qué y a quién sirve algo — soberanía, dignidad, \"Nothing About Us Without Us\". La voz que en Concilio devuelve cualquier propuesta a la Misión (ver 00_Mapa) antes de dejarla avanzar: procomún, no contabilidad de deudas.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 3
     },
     {
       "id": "acervo_usuario",
@@ -1000,7 +1084,9 @@
           "sistema": "Sheet",
           "recordId": "94_ESCENARIOS"
         }
-      ]
+      ],
+      "rolReal": "Ejecutor",
+      "agenciaReal": 5
     },
     {
       "id": "acervo_sociocracia",
@@ -1010,7 +1096,9 @@
       "resumen": "Defiende la legitimidad del propio proceso de decisión: consentimiento, no mayoría — \"nadie tiene objeción razonada\", no un umbral de votos.",
       "relacionesDeclaradas": [
         "Concilio"
-      ]
+      ],
+      "rolReal": "Operador",
+      "agenciaReal": 2
     },
     {
       "id": "acervo_prompter",
@@ -1021,7 +1109,9 @@
       "relacionesDeclaradas": [
         "Vigilia",
         "Concilio"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 2
     },
     {
       "id": "acervo",
@@ -1051,7 +1141,9 @@
         "Coordinador",
         "Baserow",
         "Verificar contra hechos"
-      ]
+      ],
+      "rolReal": "Pasivo",
+      "agenciaReal": 0
     },
     {
       "id": "verificador_de_capacidades",
@@ -1063,7 +1155,9 @@
         "Coordinador",
         "Baserow",
         "Verificar contra hechos"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 1
     }
   ],
   "oficios": [
@@ -1075,7 +1169,9 @@
       "resumen": "Oficio, no personaje: regenera el `Codigo.js` (envoltorios) de un cliente con la fuente **viva** de la librería, nunca desde git local, tras encontrar una divergencia real. Modo diagnóstico por defecto; `--aplicar` hace el push real. Encontró y resolvió `INC-0061` en su primer uso real — un oficio que ya demostró su valor, no una idea sin probar.",
       "relacionesDeclaradas": [
         "Coordinador"
-      ]
+      ],
+      "rolReal": "Compositor",
+      "agenciaReal": 4
     },
     {
       "id": "cerrar_ciclo",
@@ -1085,7 +1181,9 @@
       "resumen": "Escribe filas reales de cierre de ciclo (triaje/auditoría) en una pestaña del Sheet vía API directa, sin herramientas MCP — reemplaza un trabajo manual que tomaba 89,8 segundos por 2,5 segundos medidos. Cualquier ciclo futuro solo cambia el JSON de datos, no el oficio.",
       "relacionesDeclaradas": [
         "Coordinador"
-      ]
+      ],
+      "rolReal": "Pasivo",
+      "agenciaReal": 0
     },
     {
       "id": "chequear_libreria_clientes",
@@ -1096,7 +1194,9 @@
       "relacionesDeclaradas": [
         "Ejecutar chequeo libreria",
         "Mensajero"
-      ]
+      ],
+      "rolReal": "Compositor",
+      "agenciaReal": 4
     },
     {
       "id": "ejecutar_chequeo_libreria",
@@ -1123,7 +1223,9 @@
           "sistema": "Sheet",
           "recordId": "92_BUS_TRABAJO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 13
     },
     {
       "id": "exportador_de_gasto",
@@ -1133,7 +1235,9 @@
       "resumen": "Lee GASTO_API real en vivo y lo expone como métricas Prometheus para el panel de Grafana. Desplegado y verificado en el VPS el 2026-09-01: $0,18 de gasto real acumulado, 55 llamadas en 24h, visible en un panel vivo. El oficio que convierte un libro de gasto en algo que se puede vigilar de un vistazo.",
       "relacionesDeclaradas": [
         "GASTO_API"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 1
     },
     {
       "id": "puente_historia_leyes",
@@ -1143,7 +1247,9 @@
       "resumen": "El oficio que ejerce Mensajero entre los dos continentes de datos: lee una `TAREA` real de Baserow y escribe solo una referencia (nunca el dato completo) en `18_VINCULO` del lado Sheets. Dry-run por defecto, verificado en real contra `TAR-0008` sin escribir nada — la disciplina de Puerta Humana aplicada al propio cruce de fronteras.",
       "relacionesDeclaradas": [
         "Mensajero"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 2
     },
     {
       "id": "chequear_consistencia",
@@ -1154,7 +1260,9 @@
       "relacionesDeclaradas": [
         "Mensajero",
         "El Sheet"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 1
     },
     {
       "id": "regenerar_estatico",
@@ -1164,7 +1272,9 @@
       "resumen": "Reconstruye el HTML estático de la Consola preservando el estado ya publicado — nunca resetea a un valor por defecto. Regla real de este oficio, no accidental: cualquier script que regenere algo estático debe leer primero el estado actual, o destruye trabajo real de un operador sin darse cuenta.",
       "relacionesDeclaradas": [
         "Mensajero"
-      ]
+      ],
+      "rolReal": "Pasivo",
+      "agenciaReal": 0
     },
     {
       "id": "extraer_decisiones",
@@ -1175,7 +1285,9 @@
       "relacionesDeclaradas": [
         "Mensajero",
         "Puerta Humana"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 1
     },
     {
       "id": "salud_del_ecosistema",
@@ -1186,7 +1298,9 @@
       "relacionesDeclaradas": [
         "Honestidad del fallo",
         "Mensajero"
-      ]
+      ],
+      "rolReal": "Pasivo",
+      "agenciaReal": 0
     }
   ],
   "reglas": [
@@ -1200,7 +1314,9 @@
         "Relevo",
         "Coordinador",
         "Ejecutor"
-      ]
+      ],
+      "rolReal": "Disparador",
+      "agenciaReal": 1
     },
     {
       "id": "el_sheet_manda",
@@ -1238,7 +1354,9 @@
           "sistema": "Sheet",
           "recordId": "98_LOG_GOBIERNO"
         }
-      ]
+      ],
+      "rolReal": "Esquema dependiente",
+      "agenciaReal": 4
     },
     {
       "id": "los_dos_continentes_de_datos",
@@ -1250,7 +1368,9 @@
         "VPS y Tailscale",
         "Baserow",
         "El Sheet"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 2
     },
     {
       "id": "fisica",
@@ -1262,7 +1382,9 @@
         "Estilo",
         "GASTO_API",
         "Coordinador"
-      ]
+      ],
+      "rolReal": "Utilidad",
+      "agenciaReal": 12
     }
   ],
   "relaciones": [
