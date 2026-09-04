@@ -232,6 +232,86 @@ async function leerEstadoConcilio() {
   return datos;
 }
 
+// -- §8.69: el "Que" completo de Centro compartido -- proxy real server-to-server al
+// /transcripcion nuevo de spike_concilio_coop, mismo patron que leerEstadoConcilio.
+async function leerTranscripcionConcilio() {
+  const r = await fetch(CONCILIO_URL + '/transcripcion', { signal: AbortSignal.timeout(3000) });
+  if (!r.ok) throw new Error('Concilio respondio ' + r.status);
+  return r.json();
+}
+
+// -- §8.69: Telar, el otro ocupante real de Centro compartido (mutuamente excluyente con
+// Concilio -- "uno a la vez", patron real de game mastering ya investigado en §8.55).
+// Su sesion real vive en Baserow tabla 290, escrita por el workflow n8n
+// tools/n8n-workflows/telar-interactivo.json -- comprobado con datos reales antes de
+// construir (1 sesion real: "El taller de la Rosa", ESTADO=generando).
+const TABLA_TELAR_SESION = 290;
+let cacheTelar = { en: 0, datos: null };
+async function leerTelarReal() {
+  if (cacheTelar.datos && Date.now() - cacheTelar.en < 15000) return cacheTelar.datos;
+  const filas = await leerFilasBaserow(TABLA_TELAR_SESION);
+  const sesiones = filas.map((f) => ({
+    nombre: f.NOMBRE || '', capituloActual: f.CAPITULO_ACTUAL || '', estado: valorSelect(f.ESTADO),
+    historial: (f.HISTORIAL || '').slice(0, 600), chatId: f.CHAT_ID || '',
+  }));
+  cacheTelar = { en: Date.now(), datos: sesiones };
+  return sesiones;
+}
+
+// -- §8.69: el "Como" de Narrador -- envuelve narrador_construir_proyecto.mjs (real,
+// probado por CLI) en un endpoint HTTP para que Bastidor pueda dispararlo en vivo. Sigue
+// siendo SOLO la mitad "proponer" -- nunca escribe en el Sheet, mismo limite documentado
+// en ese script (la mitad "confirmar" necesita una accion nueva en el webhook real que
+// todavia no existe). Reutiliza leerProyectosReales() para el catalogo de 90_CONFIGURACION
+// via la misma cuenta de servicio, y llama a DeepSeek con el mismo prompt real ya probado.
+const DEEPSEEK_URL = 'https://api.deepseek.com/chat/completions';
+const DEEPSEEK_KEY = process.env.DEEPSEEK_KEY;
+const PRECIO_DEEPSEEK = { entrada: 0.44, salida: 1.32 }; // USD/1M tokens, mismo precio real de spike_concilio_coop
+
+async function leerCatalogoProyectoReal() {
+  const token = await obtenerAccessTokenSheets();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/90_CONFIGURACION!A1:D100',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  const j = await r.json();
+  const filas = (j.values || []).slice(1);
+  const porCategoria = {};
+  for (const [, categoria, , valor] of filas) {
+    if (!categoria || !valor) continue;
+    (porCategoria[categoria] = porCategoria[categoria] || []).push(valor);
+  }
+  return { tipoProyecto: porCategoria.TIPO_PROYECTO || [], prioridad: porCategoria.PRIORIDAD || [] };
+}
+
+async function narradorProponerProyecto(queConstruye, necesidad, obstaculo) {
+  const catalogo = await leerCatalogoProyectoReal();
+  const systemPrompt = `Eres el Narrador de Engremiat, acompañando a un cliente real a construir un Proyecto real -- no una ficción. ` +
+    `Convierte sus tres respuestas en una propuesta de Proyecto real, estructurada, en JSON. ` +
+    `No inventes nada que no se derive de las respuestas dadas -- si algo no está claro, dilo en OBSERVACIONES, no lo rellenes con relleno genérico. ` +
+    `TIPO_PROYECTO debe ser EXACTAMENTE uno de estos valores reales: ${catalogo.tipoProyecto.join(', ')}. ` +
+    `PRIORIDAD debe ser EXACTAMENTE uno de estos valores reales: ${catalogo.prioridad.join(', ')}. ` +
+    `Responde solo el JSON, sin explicación adicional, con las claves: NOMBRE, DESCRIPCION, OBJETIVO, RESULTADO_ESPERADO, CRITERIOS_ACEPTACION, TIPO_PROYECTO, PRIORIDAD, OBSERVACIONES.`;
+  const userPrompt = `Qué quiere construir: ${queConstruye}\nPor qué lo necesita: ${necesidad}\nQué lo dificulta hoy: ${obstaculo}`;
+  const r = await fetch(DEEPSEEK_URL, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + DEEPSEEK_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'deepseek-chat',
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+      temperature: 0.4,
+      response_format: { type: 'json_object' },
+    }),
+  });
+  const j = await r.json();
+  if (!j.choices) throw new Error('DEEPSEEK_ERROR: ' + JSON.stringify(j));
+  const usage = j.usage || {};
+  const coste = ((usage.prompt_tokens || 0) / 1e6) * PRECIO_DEEPSEEK.entrada + ((usage.completion_tokens || 0) / 1e6) * PRECIO_DEEPSEEK.salida;
+  const propuesta = JSON.parse(j.choices[0].message.content);
+  propuesta.ESTADO = 'Borrador';
+  return { propuesta, coste };
+}
+
 function leerMemoria() {
   if (!existsSync(FICHERO)) return { eventos: [], montajes: [] };
   try { return JSON.parse(readFileSync(FICHERO, 'utf-8')); } catch { return { eventos: [], montajes: [] }; }
@@ -318,6 +398,39 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ...estado, leidoEn: new Date(cacheConcilio.en).toISOString() })); return;
       } catch (e) {
         res.writeHead(503); res.end(JSON.stringify({ error: 'Concilio no responde ahora mismo: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url === '/api/concilio_transcripcion') {
+      try {
+        const t = await leerTranscripcionConcilio();
+        res.writeHead(200); res.end(JSON.stringify(t)); return;
+      } catch (e) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'Concilio no responde ahora mismo: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url === '/api/telar_estado') {
+      if (!BASEROW_TOKEN) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer Baserow' })); return;
+      }
+      const sesiones = await leerTelarReal();
+      res.writeHead(200); res.end(JSON.stringify({ sesiones, leidoEn: new Date(cacheTelar.en).toISOString() })); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/narrador_proponer') {
+      if (!DEEPSEEK_KEY || !SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas (DeepSeek/Sheets)' })); return;
+      }
+      const { queConstruye, necesidad, obstaculo } = await leerCuerpo(req);
+      if (!queConstruye || !necesidad || !obstaculo) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan queConstruye/necesidad/obstaculo' })); return;
+      }
+      try {
+        const { propuesta, coste } = await narradorProponerProyecto(queConstruye, necesidad, obstaculo);
+        res.writeHead(200); res.end(JSON.stringify({ propuesta, coste })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'el Narrador no pudo proponer ahora mismo: ' + e.message })); return;
       }
     }
 

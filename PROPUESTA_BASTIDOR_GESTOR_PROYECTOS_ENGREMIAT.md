@@ -951,6 +951,24 @@ Centro compartido -- Concilio (`spike_concilio_coop/servidor.mjs`) ampliado: `/s
 
 Pendiente explícito para la siguiente ronda: transcripción real de Concilio (Qué), Telar (`TELAR_SESION.HISTORIAL`/workflow n8n, Qué/Cuándo), y la interfaz de disparo real de Narrador (Cómo) -- los tres exigen tocar sus propios servidores/flujos, no son puentes de solo lectura baratos.
 
+### 8.69 Los tres pendientes cerrados + primera propuesta de layout de 6 zonas
+
+Cerrados los tres puentes que exigían tocar servidores propios:
+
+1. **Concilio (Qué)**: nuevo `GET /transcripcion` en `spike_concilio_coop/servidor.mjs` (mensajes reales `autor/texto/esIA`, últimos 20), proxied vía `/api/concilio_transcripcion`. `/salud` también ampliado con `deliberando/mensajesCiclo/cicloInicio/costeCicloUsd`.
+2. **Telar (Qué/Cuándo)**: su sesión real vive en Baserow tabla 290 (escrita por `tools/n8n-workflows/telar-interactivo.json`) -- comprobado con datos reales antes de construir (1 sesión real, "El taller de la Rosa", `ESTADO=generando`). Nuevo `leerTelarReal()` + `GET /api/telar_estado`, mismo patrón que Recursos/Feria.
+3. **Narrador (Cómo)**: `narrador_construir_proyecto.mjs` (CLI probado) envuelto en `POST /api/narrador_proponer` -- llama a DeepSeek en vivo con el mismo prompt real, coste real verificado ($0.00067/llamada). Sigue siendo SOLO "proponer", nunca escribe en el Sheet (mismo límite ya documentado en el script original). Caja propia real en la mesa (§8.56 cumplido): 3 campos + botón, dispara la llamada real, muestra la propuesta y su coste.
+
+**Propuesta de layout de 6 zonas** (aportada por el usuario, boceto ASCII): Estado del universo (barra superior) / Narrador (franja propia) / Constructor del universo · Espacio de trabajo · Gestor de proyectos (3 columnas) / Comunidad (franja) / Información·Traza·Inspector (barra inferior). Mapeo real contra lo ya construido:
+- Narrador franja propia -- coincide con §8.56, hoy no tiene sitio propio en la mesa (corregido en esta misma ronda).
+- Constructor del universo = paleta Reparto/Módulos/Escenario + Universos reales (ya existe).
+- Comunidad = Centro compartido (Concilio/Telar) + Feria bajo un mismo concepto (hoy repartidos por la columna).
+- Información/Traza/Inspector = Registro de eventos + enlace 91_HISTORIAL + Vínculos + Esta máquina (ya existe, disperso).
+- **Espacio de trabajo (centro)**: corrección real del usuario -- no es solo el canvas + "Cómo" de Misiones, es donde viven TODAS las vistas ya diseñadas y maduras del Sheet real (Ficha de producto/proyecto, árbol jerárquico 01→06, Kanban, Gantt) replicadas como vistas nativas de Bastidor, alimentadas por los mismos endpoints reales.
+- **Gestor de proyectos (columna derecha)**: hipótesis mía inicial (enlazar al Sheet por ser vista de "operador") corregida por el usuario -- también es espejo, no enlace. Es un navegador real hacia las mismas vistas replicadas del Espacio de trabajo, no un destino propio. Memoria guardada ([[feedback_bastidor_replicar_no_enlazar_sheet]]) generalizada: Bastidor espeja TODO el Sheet (jerarquía, fichas, Gantt, Kanban), el único enlace real que se mantiene es Memoria/91_HISTORIAL (auditoría de bajo tráfico).
+
+**No construido todavía** -- la zonificación 2D real es un cambio estructural mayor, no una reordenación incremental. Anotado explícitamente en la propia interfaz de la mesa (nota visible arriba del panel derecho) para que quede trazado, no oculto en un documento aparte. Verificado con curl real contra los 3 endpoints nuevos y con la lógica de render real en el navegador (mock de fetch + clic real en el botón de Narrador), 0 errores nuevos de consola (el único error visto era residuo de un clic de una sesión anterior, confirmado con una carga fresca).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

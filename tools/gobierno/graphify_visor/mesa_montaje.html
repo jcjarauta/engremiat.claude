@@ -100,8 +100,25 @@
   </div>
 
   <div id="panelDerecho">
-    <h3>Centro compartido -- Concilio</h3>
+    <p class="hint" style="border:1px dashed var(--color-base-borde);padding:6px;border-radius:6px;">
+      Diseño en marcha (§8.69): esta columna reúne hoy 8 cajas reales en una sola lista. La
+      propuesta de zonificación (Estado del universo / Narrador / Constructor·Espacio de
+      trabajo·Gestor de proyectos / Comunidad / Información-Traza-Inspector) todavía no está
+      construida -- se hará por partes. Lo que ves abajo ya es real, solo falta reordenarlo.
+    </p>
+    <h3>Centro compartido -- Concilio / Telar</h3>
+    <p class="hint">"Uno a la vez" -- game mastering real: comparten el mismo turno de la mesa.</p>
     <p class="hint" id="estadoConcilio">Comprobando Concilio real...</p>
+    <div id="transcripcionConcilio"></div>
+    <p class="hint" id="estadoTelar">Comprobando Telar real...</p>
+    <div id="listaTelar"></div>
+    <h3>Narrador</h3>
+    <p class="hint">Caja propia (§8.56) -- construye universos y acompaña sin cortarse entre misiones. Solo "propone" -- nunca escribe en el Sheet todavía (falta la acción de confirmación real en el webhook).</p>
+    <input id="narradorQueConstruye" placeholder="¿Qué quiere construir?">
+    <input id="narradorNecesidad" placeholder="¿Por qué lo necesita?" style="margin-top:4px;">
+    <input id="narradorObstaculo" placeholder="¿Qué lo dificulta hoy?" style="margin-top:4px;">
+    <button id="btnNarrador" style="margin-top:6px;width:100%;">Pedir propuesta real (coste real, céntimos de USD)</button>
+    <div id="resultadoNarrador"></div>
     <h3>Misiones reales de este universo</h3>
     <p class="hint" id="estadoMisiones">Comprobando el tablero real...</p>
     <div id="listaMisiones"></div>
@@ -262,6 +279,7 @@ async function cargar() {
   await cargarRecursosReales();
   await cargarFeriaReales();
   await cargarConcilioReal();
+  await cargarTelarReal();
   actualizarResumen();
 }
 
@@ -463,20 +481,85 @@ async function cargarFeriaReales() {
   }
 }
 
-// -- §8.65: puente real -- Concilio ya tiene /salud real (spike_concilio_coop), servido
-// aqui vía proxy de servidor_memoria.mjs (nunca CORS directo al otro servidor).
+// -- §8.65/69: puente real -- Concilio ya tiene /salud real (spike_concilio_coop), servido
+// aqui vía proxy de servidor_memoria.mjs (nunca CORS directo al otro servidor). §8.69 anade
+// la transcripcion real (el "Que" completo, no solo el conteo).
 async function cargarConcilioReal() {
   const estado = document.getElementById('estadoConcilio');
+  const trans = document.getElementById('transcripcionConcilio');
   if (!memoriaConectada) { estado.textContent = 'Sin conexión con la memoria compartida.'; return; }
   try {
     const r = await fetch(URL_MEMORIA + '/api/concilio_estado', { signal: AbortSignal.timeout(4000) });
     if (!r.ok) throw new Error('respuesta no ok');
-    const { humanos, maxHumanos, leidoEn } = await r.json();
-    estado.textContent = `${humanos}/${maxHumanos} asientos humanos ocupados ahora mismo -- leído ${leidoEn.slice(11, 19)}.`;
+    const { humanos, maxHumanos, deliberando, mensajesCiclo, leidoEn } = await r.json();
+    estado.textContent = `${humanos}/${maxHumanos} asientos humanos, ${deliberando ? 'deliberando ahora' : 'en reposo'}, ${mensajesCiclo} intervención(es) este ciclo -- leído ${leidoEn.slice(11, 19)}.`;
   } catch {
     estado.textContent = 'Concilio no responde ahora mismo (real: puede estar apagado, no fingido).';
+    trans.innerHTML = '';
+    return;
+  }
+  try {
+    const r2 = await fetch(URL_MEMORIA + '/api/concilio_transcripcion', { signal: AbortSignal.timeout(4000) });
+    const { mensajes } = await r2.json();
+    trans.innerHTML = mensajes.length
+      ? '<ul style="margin:4px 0 0 16px;padding:0;font-size:11px;">' + mensajes.slice(-6).map(m =>
+          `<li><b>${m.autor}</b>${m.esIA ? ' 🤖' : ''}: ${m.texto.slice(0, 140)}</li>`).join('') + '</ul>'
+      : '<p class="hint" style="margin:2px 0 0;">Ningún mensaje real en este ciclo todavía.</p>';
+  } catch { trans.innerHTML = ''; }
+}
+
+// -- §8.69: Telar, el otro ocupante real de Centro compartido -- lee su sesion real
+// (Baserow tabla 290, escrita por el workflow n8n telar-interactivo.json).
+async function cargarTelarReal() {
+  const estado = document.getElementById('estadoTelar');
+  const cont = document.getElementById('listaTelar');
+  if (!memoriaConectada) { estado.textContent = 'Sin conexión con la memoria compartida.'; cont.innerHTML = ''; return; }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/telar_estado', { signal: AbortSignal.timeout(4000) });
+    if (!r.ok) throw new Error('respuesta no ok');
+    const { sesiones, leidoEn } = await r.json();
+    estado.textContent = `${sesiones.length} sesión(es) real(es) de Telar -- leído ${leidoEn.slice(11, 19)}.`;
+    cont.innerHTML = sesiones.map(s => `
+      <div class="mision-real">
+        <div class="nombre">${s.nombre || '(sin título)'} <span class="badge-mision">${s.estado || 'sin estado'}</span> <span class="badge-mision">cap. ${s.capituloActual || '?'}</span></div>
+        <p class="hint" style="margin:4px 0 0;">${s.historial}${s.historial.length >= 600 ? '…' : ''}</p>
+      </div>`).join('') || '';
+  } catch {
+    estado.textContent = 'No se pudo leer Telar real ahora mismo.';
+    cont.innerHTML = '';
   }
 }
+
+// -- §8.69: el "Como" de Narrador -- dispara narrador_construir_proyecto.mjs en vivo via
+// HTTP. Coste real de DeepSeek cada vez que se pulsa (~$0.0007 verificado) -- accion
+// explicita del jugador, nunca automatica.
+document.getElementById('btnNarrador').addEventListener('click', async () => {
+  const queConstruye = document.getElementById('narradorQueConstruye').value.trim();
+  const necesidad = document.getElementById('narradorNecesidad').value.trim();
+  const obstaculo = document.getElementById('narradorObstaculo').value.trim();
+  const cont = document.getElementById('resultadoNarrador');
+  if (!queConstruye || !necesidad || !obstaculo) { cont.innerHTML = '<p class="hint">Rellena las 3 preguntas primero.</p>'; return; }
+  cont.innerHTML = '<p class="hint">El Narrador está pensando (llamada real a DeepSeek)...</p>';
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/narrador_proponer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ queConstruye, necesidad, obstaculo }),
+      signal: AbortSignal.timeout(20000),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    const p = j.propuesta;
+    cont.innerHTML = `
+      <div class="mision-real">
+        <div class="nombre">${p.NOMBRE} <span class="badge-mision">${p.ESTADO}</span> <span class="badge-mision">${p.TIPO_PROYECTO}</span> <span class="badge-mision">${p.PRIORIDAD}</span></div>
+        <p class="hint" style="margin:4px 0;">${p.DESCRIPCION}</p>
+        <p class="hint" style="margin:4px 0;"><b>Objetivo:</b> ${p.OBJETIVO}</p>
+        <p class="hint" style="margin:4px 0;"><b>Coste real de esta propuesta:</b> $${j.coste.toFixed(6)} -- <i>no escrita todavía, falta la confirmación real.</i></p>
+      </div>`;
+  } catch (e) {
+    cont.innerHTML = '<p class="hint">El Narrador no pudo proponer ahora mismo: ' + e.message + '</p>';
+  }
+});
 
 function renderPaleta(miembros) {
   const porFamilia = {};

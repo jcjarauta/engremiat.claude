@@ -211,6 +211,17 @@ const httpServer = createServer((req, res) => {
     }));
     return;
   }
+
+  // §8.69: el "Que" completo de Centro compartido -- /salud solo daba el conteo,
+  // esto expone el contenido real (autor+texto+esIA) para que Bastidor pueda mostrar
+  // la deliberacion en curso sin duplicar la logica de la sala en otro sitio.
+  if (req.url === '/transcripcion') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      mensajes: sala.mensajes.slice(-20).map((m) => ({ autor: m.autor, texto: m.texto, esIA: !!m.esIA })),
+    }));
+    return;
+  }
   if (req.url === '/' || req.url === '/index.html') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(readFileSync(join(__dirname, 'publico', 'index.html')));
