@@ -85,24 +85,31 @@ function renderIncidencia(i) {
 }
 
 let incidenciasReales = [];
-let filtroActivo = 'todas'; // 'todas' | 'critica' | 'sin-tarea'
+let filtroActivo = null; // null (nada visible) | 'todas' | 'critica' | 'sin-tarea'
 
 function renderIncidenciasFiltradas() {
   const contSin = document.getElementById('listaSinTarea');
   const contCon = document.getElementById('listaConTarea');
+  if (!filtroActivo) {
+    contSin.innerHTML = '<p class="hint">Clic en un KPI de arriba para ver las incidencias.</p>';
+    contCon.innerHTML = '';
+    document.querySelectorAll('.kpi').forEach(k => k.classList.remove('activo'));
+    document.title = `(${incidenciasReales.length}) Engremiat -- panel operativo`;
+    return;
+  }
   const visibles = filtroActivo === 'critica'
     ? incidenciasReales.filter(i => i.prioridad === 'Alta' || i.prioridad === 'Crítica')
     : incidenciasReales;
   const sinTarea = visibles.filter(i => !i.tareasVinculadas.length);
   const conTarea = filtroActivo === 'sin-tarea' ? [] : visibles.filter(i => i.tareasVinculadas.length);
   contSin.innerHTML = sinTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna -- todo lo abierto ya tiene tarea real en marcha.</p>';
-  contCon.innerHTML = conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>';
+  contCon.innerHTML = filtroActivo === 'sin-tarea' ? '' : (conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>');
   document.querySelectorAll('.kpi').forEach(k => k.classList.toggle('activo', k.dataset.filtro === filtroActivo));
   document.title = `(${incidenciasReales.length}) Engremiat -- panel operativo`;
 }
 
 function filtrarPor(filtro) {
-  filtroActivo = filtroActivo === filtro ? 'todas' : filtro;
+  filtroActivo = filtroActivo === filtro ? null : filtro;
   renderIncidenciasFiltradas();
 }
 
