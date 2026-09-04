@@ -51,19 +51,21 @@ async function obtenerAccessTokenSheets() {
 
 // -- catalogo real de TIPO_PROYECTO/PRIORIDAD, leido en vivo de 90_CONFIGURACION --
 // nunca duplicado a mano: si alguien anade una categoria real nueva ahi, este
-// script la ve sin que haya que tocar su codigo.
+// script la ve sin que haya que tocar su codigo. Columna D (VALOR) es el texto
+// real que se escribe en la celda -- la columna C (CLAVE) es solo un identificador
+// interno (ver GestionCatalogos.js), nunca lo que espera el Sheet real.
 async function leerCatalogoReal() {
   const token = await obtenerAccessTokenSheets();
   const r = await fetch(
-    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/90_CONFIGURACION!A1:C100',
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/90_CONFIGURACION!A1:D100',
     { headers: { Authorization: 'Bearer ' + token } }
   );
   const j = await r.json();
   const filas = (j.values || []).slice(1); // sin cabecera
   const porCategoria = {};
-  for (const [, categoria, clave] of filas) {
-    if (!categoria || !clave) continue;
-    (porCategoria[categoria] = porCategoria[categoria] || []).push(clave);
+  for (const [, categoria, , valor] of filas) {
+    if (!categoria || !valor) continue;
+    (porCategoria[categoria] = porCategoria[categoria] || []).push(valor);
   }
   return { tipoProyecto: porCategoria.TIPO_PROYECTO || [], prioridad: porCategoria.PRIORIDAD || [] };
 }
@@ -92,7 +94,11 @@ async function proponerProyecto(queConstruye, necesidad, obstaculo, catalogo) {
   if (!j.choices) throw new Error('DEEPSEEK_ERROR: ' + JSON.stringify(j));
   const usage = j.usage || {};
   const coste = ((usage.prompt_tokens || 0) / 1e6) * PRECIO.entrada + ((usage.completion_tokens || 0) / 1e6) * PRECIO.salida;
-  return { propuesta: JSON.parse(j.choices[0].message.content), coste };
+  const propuesta = JSON.parse(j.choices[0].message.content);
+  // ESTADO real de nacimiento de todo Proyecto propuesto por el Narrador: Borrador --
+  // esto no es algo que la IA tenga que decidir, es un hecho fijo del propio flujo
+  propuesta.ESTADO = 'Borrador';
+  return { propuesta, coste };
 }
 
 async function main() {

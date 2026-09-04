@@ -842,6 +842,12 @@ El operador corrigió el orden: el visitante puede llegar sin ningún proyecto r
 
 **Construido y verificado real**: `narrador_construir_proyecto.mjs` -- la mitad "proponer". Tres respuestas reales → DeepSeek devuelve un `Proyecto` real estructurado, con `TIPO_PROYECTO`/`PRIORIDAD` leídos EN VIVO de `90_CONFIGURACION` (nunca duplicados a mano). Probado con un escenario plausible de La Troballa (taller de macetas de barro, encargo real de un vecino): clasificó `TIPO_PROYECTO=ENCARGO_CLIENTE` del catálogo real, y cuando faltó un dato real (cantidad de barro, tiempo de secado) lo anotó en `OBSERVACIONES` en vez de inventarlo. Coste real: $0.00059. La mitad "confirmar" (escritura real vía `insertarRegistroTransaccional`) necesita una acción nueva en el webhook real -- diseñada, **no desplegada**, pendiente de confirmación explícita antes de tocar producción.
 
+### 8.56 "Diseña y despliega" -- la mitad "confirmar" del Narrador, real
+
+Nueva acción real `confirmar_proyecto_narrador` en el dispatcher del webhook (`WebhookTelegramService.js`) -- escribe un `PROYECTO` real vía `insertarRegistroTransaccional`, mismo patrón exacto que `actualizar_cliente_montaje`. Desplegada de verdad (`clasp push` + `clasp deploy -i` sobre el deployment fijo, versión @37) y **verificada con una escritura real**: `PRO-0046`, `TEST-Narrador-2026-09-04 -- Taller de macetas de barro para otoño`.
+
+**Un bug real encontrado y corregido en el propio camino de verificación**: `narrador_construir_proyecto.mjs` leía la columna `CLAVE` de `90_CONFIGURACION` (identificador interno, ej. `ENCARGO_CLIENTE`) en vez de la columna `VALOR` (el texto real que espera la celda, "Encargo de cliente") -- la primera escritura de prueba falló exactamente por esto, con un error real y honesto del propio `insertarRegistroTransaccional` (`ERROR_INSERCION_PROYECTO: Campos obligatorios ausentes o vacíos: ESTADO`, que además reveló un segundo campo real que faltaba). Corregido: `ESTADO` se fija ahora a `Borrador` de forma determinista (nunca pedido a la IA -- es un hecho fijo de todo Proyecto recién propuesto, no una decisión creativa).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

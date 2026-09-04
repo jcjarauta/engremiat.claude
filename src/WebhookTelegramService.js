@@ -99,6 +99,8 @@ function doPost(e, tokenTelegram, modulosInstalados) {
         respuesta = JSON.stringify({ ok: true, resultado: instalarEstructuraInicial(cuerpo.modulos, SpreadsheetApp.openById(cuerpo.spreadsheetId)) });
       } else if (cuerpo && cuerpo.accion === 'actualizar_cliente_montaje') {
         respuesta = JSON.stringify({ ok: true, resultado: actualizarRegistroTransaccional('CLIENTE', cuerpo.id, cuerpo.campos, { origen: 'ADMIN' }) });
+      } else if (cuerpo && cuerpo.accion === 'confirmar_proyecto_narrador') {
+        respuesta = JSON.stringify({ ok: true, resultado: insertarRegistroTransaccional('PROYECTO', cuerpo.campos, { origen: 'SCRIPT' }) });
       } else if (cuerpo && cuerpo.accion === 'configurar_gestor_proyectos_spreadsheet_id') {
         PropertiesService.getScriptProperties().setProperty('GESTOR_PROYECTOS_SPREADSHEET_ID', String(cuerpo.spreadsheetId || ''));
         respuesta = JSON.stringify({ ok: true });
