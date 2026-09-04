@@ -1116,6 +1116,24 @@ Corregido: quitados los contadores por nodo (sin valor real, según el propio op
 
 Verificado en el navegador: expandir/colapsar todo funciona sobre 3 niveles reales de profundidad, sin romper el toggle individual por nodo, 0 errores nuevos de consola.
 
+### 8.83 Vista inicial del sistema -- grafo real con raíz en home.html
+
+Pedido explícito: *"extrae el grafo de graphify que parte desde el home, quiero tener una vista inicial del sistema"*. Investigado primero: `mapear_grafo_node.mjs` (el generador real detrás de `nodejs.html`) solo escanea `.mjs` bajo `tools/` -- imports, ficheros de datos JSON, recursos reales compartidos -- y no ve páginas `.html`, enlaces `<a href>` ni llamadas `fetch()`, así que no podía dar una vista partiendo de `home.html`. Hacía falta un extractor nuevo para esta capa concreta (interfaz + servidor + API), no reutilizar el existente.
+
+**Construido**: `mapear_grafo_visor.mjs` (solo lectura, mismo estilo honesto que su precedente) escanea las 16 páginas `.html` reales de `graphify_visor/` más `servidor_memoria.mjs`, y extrae solo lo que encuentra de verdad en el texto: enlaces reales `href="X.html"` entre páginas, llamadas reales `fetch(.../api/xxx)` desde cada página, los endpoints reales que el servidor declara (`req.url === '/api/xxx'`), y las pestañas/tablas reales que toca (mismo vocabulario de `estructura_sheet.json`/`estructura_baserow.json` que ya usa `mapear_grafo_node.mjs`). Salida: `grafo_visor.json`.
+
+**`vista_sistema.html`** (mismo `vis-network` que el resto del visor): calcula en el propio navegador, por BFS real sobre las aristas extraídas, qué páginas son alcanzables desde `home.html` -- las pinta en azul, home en amarillo, y el resto de páginas reales (herramientas de desarrollo de sesiones anteriores: `index.html`, `nodejs.html`, `entidades.html`, etc.) en gris, con un botón para ocultarlas del todo. Endpoints reales en verde, recursos reales (Sheet/Baserow) en rosa, servidor en morado. Clic en cualquier nodo abre su ficha real (quién lo llama, qué sirve, qué toca). Enlazada desde `home.html` como tercera pieza real del menú.
+
+Verificado en el navegador real (`http://100.107.171.88:9320/vista_sistema.html`): 17 páginas, 19 endpoints reales, 13 recursos reales tocados, 64 aristas; clic en `home.html` muestra su ficha; el botón "Ocultar herramientas de desarrollo" oculta correctamente los nodos grises sin tocar el resto del grafo.
+
+### 8.84 Automatizar el despliegue -- desplegar_visor.mjs
+
+El ciclo de esta sesión (generar grafo → `scp` → `ssh docker compose up -d` → `curl` de verificación) se repitió a mano varias veces, y ya había causado antes un bug real documentado: un fichero nuevo sin su línea de montaje en `docker-compose.yml` da 404 en silencio (§8.5x, `grafo_maestro.html`). El operador pidió automatizarlo: *"para generar el grafo has tenido que dar muchos pasos, podemos crear alguna herramienta para automatizarlo?"*.
+
+**Construido**: `desplegar_visor.mjs` no mantiene una segunda lista de ficheros (eso es justo lo que causó el bug) -- lee `docker-compose.yml` y despliega exactamente los ficheros ya declarados como volumen del servicio, la única fuente real de verdad. Pasos: (1) opcionalmente regenera `grafo_visor.json` (`--grafo`), (2) `scp` de cada fichero real declarado, (3) `ssh ... docker compose up -d <servicio>` (recreate real, nunca `restart` -- lección ya aprendida esta sesión, ahora automática en vez de tener que recordarla), (4) `curl` de verificación real de cada página `.html` servida.
+
+Verificado con una ejecución real completa (`node desplegar_visor.mjs --grafo`): regeneró el grafo (recogió automáticamente la propia `vista_sistema.html`, 16→17 páginas), copió los 32 ficheros reales declarados, recreó el contenedor, y confirmó 200 real en las 16 páginas `.html` servidas -- ciclo de ~4 pasos manuales reducido a un solo comando.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

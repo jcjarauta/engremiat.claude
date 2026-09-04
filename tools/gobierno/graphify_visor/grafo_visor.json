@@ -1,0 +1,577 @@
+{
+  "generadoEn": "2026-09-04T21:45:20.022Z",
+  "nodos": [
+    {
+      "id": "anatomia.html",
+      "nombre": "anatomia.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "arbol_campanas.html",
+      "nombre": "arbol_campanas.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "boceto_layout_6_zonas.html",
+      "nombre": "boceto_layout_6_zonas.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "entidades.html",
+      "nombre": "entidades.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "grafo_maestro.html",
+      "nombre": "grafo_maestro.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "graph.html",
+      "nombre": "graph.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "holon.html",
+      "nombre": "holon.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "home.html",
+      "nombre": "home.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "index.html",
+      "nombre": "index.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "indice.html",
+      "nombre": "indice.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "mesa_montaje.html",
+      "nombre": "mesa_montaje.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "n8n.html",
+      "nombre": "n8n.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "nodejs.html",
+      "nombre": "nodejs.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "panel_operativo.html",
+      "nombre": "panel_operativo.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "resumen_universo.html",
+      "nombre": "resumen_universo.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "sheet-real.html",
+      "nombre": "sheet-real.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "vista_sistema.html",
+      "nombre": "vista_sistema.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "servidor_memoria.mjs",
+      "nombre": "servidor_memoria.mjs",
+      "tipo": "servidor"
+    },
+    {
+      "id": "endpoint:/api/ficha",
+      "nombre": "/api/ficha",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/jerarquia_campanas",
+      "nombre": "/api/jerarquia_campanas",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/crear_registro",
+      "nombre": "/api/crear_registro",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/proyectos",
+      "nombre": "/api/proyectos",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/narrador_proponer",
+      "nombre": "/api/narrador_proponer",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/procesos_tareas",
+      "nombre": "/api/procesos_tareas",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/bus_trabajo",
+      "nombre": "/api/bus_trabajo",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/concilio_estado",
+      "nombre": "/api/concilio_estado",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/concilio_transcripcion",
+      "nombre": "/api/concilio_transcripcion",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/telar_estado",
+      "nombre": "/api/telar_estado",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/misiones_feria",
+      "nombre": "/api/misiones_feria",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/memoria",
+      "nombre": "/api/memoria",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/recursos",
+      "nombre": "/api/recursos",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/modulos_montaje_disponibles",
+      "nombre": "/api/modulos_montaje_disponibles",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/aprovisionar_montaje",
+      "nombre": "/api/aprovisionar_montaje",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/eventos",
+      "nombre": "/api/eventos",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/montajes",
+      "nombre": "/api/montajes",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/incidencias_producto_abiertas",
+      "nombre": "/api/incidencias_producto_abiertas",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/resumen_trabajo",
+      "nombre": "/api/resumen_trabajo",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "recurso:01_CAMPANAS",
+      "nombre": "01_CAMPANAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:02_PROYECTOS",
+      "nombre": "02_PROYECTOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:03_PRODUCTOS",
+      "nombre": "03_PRODUCTOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:04_PROYECTO_PRODUCTO",
+      "nombre": "04_PROYECTO_PRODUCTO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:05_PROCESOS",
+      "nombre": "05_PROCESOS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:06_TAREAS",
+      "nombre": "06_TAREAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:12_DECISIONES",
+      "nombre": "12_DECISIONES",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:13_INCIDENCIAS",
+      "nombre": "13_INCIDENCIAS",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:18_VINCULO",
+      "nombre": "18_VINCULO",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:TAREA",
+      "nombre": "TAREA",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:PLANTILLA_MISION",
+      "nombre": "PLANTILLA_MISION",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:GASTO_API",
+      "nombre": "GASTO_API",
+      "tipo": "recurso_real"
+    },
+    {
+      "id": "recurso:TELAR_SESION",
+      "nombre": "TELAR_SESION",
+      "tipo": "recurso_real"
+    }
+  ],
+  "aristas": [
+    {
+      "source": "arbol_campanas.html",
+      "target": "endpoint:/api/ficha",
+      "relation": "llama_api"
+    },
+    {
+      "source": "arbol_campanas.html",
+      "target": "endpoint:/api/jerarquia_campanas",
+      "relation": "llama_api"
+    },
+    {
+      "source": "arbol_campanas.html",
+      "target": "endpoint:/api/crear_registro",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/proyectos",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/narrador_proponer",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/procesos_tareas",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/bus_trabajo",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/concilio_estado",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/concilio_transcripcion",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/telar_estado",
+      "relation": "llama_api"
+    },
+    {
+      "source": "boceto_layout_6_zonas.html",
+      "target": "endpoint:/api/misiones_feria",
+      "relation": "llama_api"
+    },
+    {
+      "source": "home.html",
+      "target": "panel_operativo.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "home.html",
+      "target": "arbol_campanas.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "home.html",
+      "target": "vista_sistema.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "sheet-real.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/memoria",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/proyectos",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/procesos_tareas",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/recursos",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/bus_trabajo",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/misiones_feria",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/concilio_estado",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/concilio_transcripcion",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/telar_estado",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/narrador_proponer",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/modulos_montaje_disponibles",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/aprovisionar_montaje",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/eventos",
+      "relation": "llama_api"
+    },
+    {
+      "source": "mesa_montaje.html",
+      "target": "endpoint:/api/montajes",
+      "relation": "llama_api"
+    },
+    {
+      "source": "panel_operativo.html",
+      "target": "mesa_montaje.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "panel_operativo.html",
+      "target": "endpoint:/api/incidencias_producto_abiertas",
+      "relation": "llama_api"
+    },
+    {
+      "source": "panel_operativo.html",
+      "target": "endpoint:/api/resumen_trabajo",
+      "relation": "llama_api"
+    },
+    {
+      "source": "panel_operativo.html",
+      "target": "endpoint:/api/recursos",
+      "relation": "llama_api"
+    },
+    {
+      "source": "vista_sistema.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/memoria",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/proyectos",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/bus_trabajo",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/resumen_trabajo",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/recursos",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/misiones_feria",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/incidencias_producto_abiertas",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/jerarquia_campanas",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/crear_registro",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/concilio_estado",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/concilio_transcripcion",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/telar_estado",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/narrador_proponer",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/modulos_montaje_disponibles",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/aprovisionar_montaje",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/eventos",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/montajes",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:01_CAMPANAS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:02_PROYECTOS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:03_PRODUCTOS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:04_PROYECTO_PRODUCTO",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:05_PROCESOS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:06_TAREAS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:12_DECISIONES",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:13_INCIDENCIAS",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:18_VINCULO",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:PLANTILLA_MISION",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:GASTO_API",
+      "relation": "toca"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "recurso:TELAR_SESION",
+      "relation": "toca"
+    }
+  ]
+}
