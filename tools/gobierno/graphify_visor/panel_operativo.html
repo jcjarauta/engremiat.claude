@@ -12,11 +12,15 @@
   h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
   p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
   #resumen { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 20px; }
-  .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); }
+  .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); cursor: pointer; }
+  .kpi:hover { border-color: var(--color-base-texto-tenue); }
+  .kpi.activo { border-color: #6ea8ff; background: #6ea8ff22; }
   .kpi b { font-size: 14px; }
   .item { border-left: 3px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 7px 10px; margin-bottom: 6px; font-size: 12.5px; background: var(--color-base-panel); cursor: pointer; }
   .item.alerta { border-left-color: #e85c8a; }
-  .item .titulo { font-weight: 600; margin-bottom: 3px; }
+  .item .titulo { font-weight: 600; margin-bottom: 3px; display: flex; justify-content: space-between; gap: 8px; }
+  .item .chevron { color: var(--color-base-texto-tenue); font-size: 10px; transition: transform 0.15s; }
+  .item.abierto .chevron { transform: rotate(90deg); }
   .item .detalle { display: none; }
   .item.abierto .detalle { display: block; }
   .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
@@ -40,16 +44,8 @@
 
 <h2>Incidencias reales abiertas (nivel Producto)</h2>
 <p id="estadoIncidencias">Comprobando el backlog real...</p>
+<p class="hint" style="margin:0 0 4px;">Clic en un KPI para filtrar.</p>
 <div id="resumen"></div>
-<label style="font-size:12px;color:var(--color-base-texto-suave);">Prioridad:
-  <select id="filtroPrioridad">
-    <option value="">Todas</option>
-    <option value="Crítica">Crítica</option>
-    <option value="Alta">Alta</option>
-    <option value="Media">Media</option>
-    <option value="Baja">Baja</option>
-  </select>
-</label>
 
 <h3 style="font-size:12.5px;margin:14px 0 6px;">Sin tarea vinculada -- nadie las está trabajando</h3>
 <div id="listaSinTarea"></div>
@@ -59,7 +55,6 @@
 
 <h2>Consumo real -- tiempo por tarea y tokens</h2>
 <p id="estadoBus">Comprobando la actividad real...</p>
-<table id="tablaResumen" style="width:100%; border-collapse:collapse; font-size:12.5px;"></table>
 
 <h3 style="font-size:12.5px;margin:18px 0 6px;">Modelos locales (Ollama/LiteLLM, $0 real, tokens reales)</h3>
 <p class="hint" style="margin:0 0 8px;">Ejecutor Local (devstral-dev) y demás modelos locales -- sin coste en USD, pero con tokens/tiempo reales que sí importa vigilar. Instrumentado en <code>ejecutor-local.py</code>, escribe directo en <code>92_BUS_TRABAJO</code>.</p>
@@ -77,7 +72,7 @@ function renderIncidencia(i) {
   const alerta = !i.tareasVinculadas.length ? 'alerta' : '';
   return `
     <div class="item ${alerta}" onclick="this.classList.toggle('abierto')">
-      <div class="titulo">${i.id} -- ${i.titulo}</div>
+      <div class="titulo"><span>${i.id} -- ${i.titulo}</span><span class="chevron">▸</span></div>
       <span class="badge ${prioridadClase}">${i.prioridad || 'sin prioridad'}</span>
       <span class="badge">${i.estado}</span>
       ${i.fechaLimite ? `<span class="badge">límite ${i.fechaLimite}</span>` : ''}
@@ -90,17 +85,25 @@ function renderIncidencia(i) {
 }
 
 let incidenciasReales = [];
+let filtroActivo = 'todas'; // 'todas' | 'critica' | 'sin-tarea'
 
 function renderIncidenciasFiltradas() {
   const contSin = document.getElementById('listaSinTarea');
   const contCon = document.getElementById('listaConTarea');
-  const filtro = document.getElementById('filtroPrioridad').value;
-  const visibles = filtro ? incidenciasReales.filter(i => i.prioridad === filtro) : incidenciasReales;
+  const visibles = filtroActivo === 'critica'
+    ? incidenciasReales.filter(i => i.prioridad === 'Alta' || i.prioridad === 'Crítica')
+    : incidenciasReales;
   const sinTarea = visibles.filter(i => !i.tareasVinculadas.length);
-  const conTarea = visibles.filter(i => i.tareasVinculadas.length);
+  const conTarea = filtroActivo === 'sin-tarea' ? [] : visibles.filter(i => i.tareasVinculadas.length);
   contSin.innerHTML = sinTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna -- todo lo abierto ya tiene tarea real en marcha.</p>';
   contCon.innerHTML = conTarea.map(renderIncidencia).join('') || '<p class="hint">Ninguna todavía.</p>';
+  document.querySelectorAll('.kpi').forEach(k => k.classList.toggle('activo', k.dataset.filtro === filtroActivo));
   document.title = `(${incidenciasReales.length}) Engremiat -- panel operativo`;
+}
+
+function filtrarPor(filtro) {
+  filtroActivo = filtroActivo === filtro ? 'todas' : filtro;
+  renderIncidenciasFiltradas();
 }
 
 async function cargarIncidencias() {
@@ -115,17 +118,15 @@ async function cargarIncidencias() {
     const sinTareaTotal = incidencias.filter(i => !i.tareasVinculadas.length).length;
     const criticas = incidencias.filter(i => i.prioridad === 'Alta' || i.prioridad === 'Crítica').length;
     resumen.innerHTML = `
-      <div class="kpi"><b>${incidencias.length}</b> abiertas</div>
-      <div class="kpi"><b>${criticas}</b> Alta/Crítica</div>
-      <div class="kpi"><b>${sinTareaTotal}</b> sin tarea vinculada</div>`;
+      <div class="kpi" data-filtro="todas" onclick="filtrarPor('todas')"><b>${incidencias.length}</b> abiertas</div>
+      <div class="kpi" data-filtro="critica" onclick="filtrarPor('critica')"><b>${criticas}</b> Alta/Crítica</div>
+      <div class="kpi" data-filtro="sin-tarea" onclick="filtrarPor('sin-tarea')"><b>${sinTareaTotal}</b> sin tarea vinculada</div>`;
     renderIncidenciasFiltradas();
   } catch {
     estado.textContent = 'No se pudo leer el backlog real ahora mismo.';
     resumen.innerHTML = ''; document.getElementById('listaSinTarea').innerHTML = ''; document.getElementById('listaConTarea').innerHTML = '';
   }
 }
-
-document.getElementById('filtroPrioridad').addEventListener('change', renderIncidenciasFiltradas);
 
 function segARegible(seg) {
   if (seg >= 60) return (seg / 60).toFixed(1) + ' min';
@@ -134,27 +135,16 @@ function segARegible(seg) {
 
 async function cargarResumenTrabajo() {
   const estado = document.getElementById('estadoBus');
-  const tabla = document.getElementById('tablaResumen');
   const tablaLocales = document.getElementById('tablaLocales');
   try {
     const r = await fetch(URL_MEMORIA + '/api/resumen_trabajo', { signal: AbortSignal.timeout(6000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { resumen, leidoEn } = await r.json();
     estado.textContent = `Leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
-    // §8.77: trabajadores con tokens reales (modelo local instrumentado) van a su propia
-    // tabla; el resto (cron, revisores humanos...) se queda en el resumen de tiempo puro.
+    // §8.78: la tabla de tiempo puro (cron/Claude/DeepSeek sin tokens) se elimino a
+    // peticion del operador -- ruido sin valor real de vigilancia. Solo queda lo que
+    // tiene tokens reales que vigilar.
     const conTokens = resumen.filter(t => t.tokensEntrada || t.tokensSalida);
-    const sinTokens = resumen.filter(t => !t.tokensEntrada && !t.tokensSalida);
-    tabla.innerHTML = `
-      <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
-        <th style="padding:4px 8px 4px 0;">Trabajador</th><th>Tareas</th><th>Tiempo total</th><th>Tiempo medio</th>
-      </tr>` + sinTokens.map(t => `
-      <tr style="border-top:1px solid var(--color-base-borde-suave);">
-        <td style="padding:5px 8px 5px 0; font-weight:600;">${t.trabajador}</td>
-        <td>${t.tareas}</td>
-        <td>${segARegible(t.duracionTotalSeg)}</td>
-        <td>${segARegible(t.duracionMediaSeg)}</td>
-      </tr>`).join('') || '<tr><td class="hint">Sin actividad real todavía.</td></tr>';
     tablaLocales.innerHTML = `
       <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">
         <th style="padding:4px 8px 4px 0;">Modelo local</th><th>Tareas</th><th>Tiempo total</th><th>Tokens entrada</th><th>Tokens salida</th>
@@ -168,7 +158,7 @@ async function cargarResumenTrabajo() {
       </tr>`).join('') || '<tr><td class="hint">Sin actividad local instrumentada todavía.</td></tr>';
   } catch {
     estado.textContent = 'No se pudo leer el resumen real ahora mismo.';
-    tabla.innerHTML = ''; tablaLocales.innerHTML = '';
+    tablaLocales.innerHTML = '';
   }
 }
 
