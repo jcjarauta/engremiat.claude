@@ -1206,6 +1206,14 @@ No se construyó código nuevo en esta sección -- es trabajo de backlog real, l
 
 Añadido `PCS-0007` "7. Operar el pipeline (Taller)" -- transversal a los otros 6, no cabía dentro de uno solo -- con 5 tareas reales: `TAR-0010` construir `taller.html`, `TAR-0011` estado real de `92_BUS_TRABAJO` filtrado, `TAR-0012` enlazar galería + huecos reales pendientes, `TAR-0013` ficha dinámica con historial (depende de `TAR-0008`), `TAR-0014` reclamar tarea real desde Taller (solo escribe, nunca ejecuta).
 
+### 8.92 Construido: `taller.html` -- cockpit real del backlog
+
+Construidas `TAR-0010`, `TAR-0011`, `TAR-0012` y `TAR-0014` de una vez (`TAR-0013` queda pendiente de `TAR-0008`, que aún no existe). `taller.html` (nueva página, enlazada desde `home.html`) muestra el Proyecto real "Grafos del sistema" -- busca por nombre en `/api/jerarquia_campanas` (no por ID fijo, más resistente a que el ID cambie), pinta sus 7 Procesos reales con las Tareas reales de cada uno, cruza cada Tarea con `/api/bus_trabajo` para mostrar si ya está reclamada y por quién, y ofrece un botón real "Reclamar" por tarea. Enlaces a `grafos.html` (galería) y a `grafos.html#historico` (huecos reales pendientes -- añadido `id="historico"` + apertura automática por hash al `<details>` de §8.88 para que el enlace funcione).
+
+**Backend**: nueva función `reclamarTareaReal(idTarea, reclamadoPor)` + `POST /api/reclamar_tarea` -- mismo patrón de escritura cruda ya usado (append directo a `92_BUS_TRABAJO`, sin `91_HISTORIAL`), invalida la cache de `bus_trabajo` al escribir. Deliberadamente **sin ningún endpoint que ejecute código** -- coherente con la advertencia dada en el refinamiento anterior (Puerta Humana, `HALLAZGOS_PENDIENTES.md`).
+
+Verificado en real: `POST /api/reclamar_tarea` sobre `TAR-0010` escribió correctamente en `92_BUS_TRABAJO` (confirmado leyendo la fila, luego borrada por ser de prueba); simulada la lógica exacta de `taller.html` contra `/api/jerarquia_campanas` real -- encuentra el Proyecto por nombre, cuenta 7 procesos/14 tareas, coincide exactamente con lo esperado. La verificación visual directa en el navegador de automatización queda bloqueada por el mismo `ERR_BLOCKED_BY_CLIENT` ya documentado sobre el puerto 9330 (artefacto del entorno, no del código).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

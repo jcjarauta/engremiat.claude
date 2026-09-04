@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- taller de grafos</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 780px; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  h1 { font-size: 18px; margin: 6px 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  .proceso { border-left: 3px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 8px 12px; margin-bottom: 8px; background: var(--color-base-panel); }
+  .proceso .titulo { font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .proceso .desc { color: var(--color-base-texto-tenue); font-size: 11px; line-height: 1.4; margin-bottom: 6px; }
+  .tarea { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-top: 1px solid var(--color-base-borde-suave); font-size: 12.5px; }
+  .tarea:first-of-type { border-top: none; }
+  .tarea .nombre { flex: 1; }
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .badge.reclamada { background: #4c9aff33; color: #6ea8ff; }
+  button.reclamar { font-size: 11px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 4px; padding: 3px 9px; cursor: pointer; }
+  button.reclamar:hover { border-color: #6ea8ff; }
+  button.reclamar:disabled { opacity: 0.4; cursor: default; }
+  .enlaces { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+  a.enlace { display: block; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 10px 14px; text-decoration: none; color: var(--color-base-texto); font-size: 12.5px; flex: 1; min-width: 200px; }
+  a.enlace:hover { border-color: #6ea8ff; }
+  a.enlace .sub { display: block; color: var(--color-base-texto-suave); font-size: 11px; margin-top: 3px; }
+  .vacio { color: var(--color-base-texto-tenue); font-size: 12px; font-style: italic; }
+</style>
+</head>
+<body>
+<a class="volver" href="home.html">← Home</a>
+<h1>Taller -- Grafos del sistema</h1>
+<p class="hint">Cockpit real del Proyecto "Grafos del sistema" (espejo del Sheet CORE, §8.91-92). Backlog real de Procesos/Tareas, quién reclama qué ahora mismo (92_BUS_TRABAJO), y accesos a la galería y a los huecos reales pendientes. Sin botón de "ejecutar" -- lectura + gestión de backlog, la ejecución real sigue siendo manual o por cron (Puerta Humana intacta).</p>
+
+<h2>Enlaces</h2>
+<div class="enlaces">
+  <a class="enlace" href="grafos.html">Galería de grafos<span class="sub">Ver qué ya existe antes de proponer uno nuevo</span></a>
+  <a class="enlace" href="grafos.html#historico">Huecos reales pendientes<span class="sub">Recurso · Módulo · Regla, sin grafo propio todavía</span></a>
+</div>
+
+<h2>Backlog real (Procesos → Tareas)</h2>
+<p id="estado" class="hint">Comprobando el backlog real...</p>
+<div id="procesos"></div>
+
+<script>
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+const NOMBRE_PROYECTO = 'Grafos del sistema';
+let busTrabajoGlobal = [];
+
+async function cargar() {
+  try {
+    const [jerarquia, bus] = await Promise.all([
+      fetch(URL_MEMORIA + '/api/jerarquia_campanas', { signal: AbortSignal.timeout(8000) }).then(r => r.json()),
+      fetch(URL_MEMORIA + '/api/bus_trabajo', { signal: AbortSignal.timeout(8000) }).then(r => r.json()),
+    ]);
+    busTrabajoGlobal = bus.tareas || bus || [];
+
+    let proyecto = null;
+    for (const campana of jerarquia.arbol || jerarquia) {
+      proyecto = (campana.hijos || []).find(p => p.nombre === NOMBRE_PROYECTO);
+      if (proyecto) break;
+    }
+    if (!proyecto) {
+      document.getElementById('estado').textContent = 'No se encontró el Proyecto "' + NOMBRE_PROYECTO + '" en el Sheet real.';
+      return;
+    }
+
+    // Procesos reales -- cuelgan de Producto en la jerarquia real (Proyecto->Producto->Proceso->Tarea)
+    const procesos = (proyecto.hijos || []).flatMap(producto => producto.hijos || []);
+    document.getElementById('estado').textContent = procesos.length + ' procesos reales, ' +
+      procesos.reduce((n, p) => n + (p.hijos || []).length, 0) + ' tareas reales.';
+    document.getElementById('procesos').innerHTML = procesos.map(renderProceso).join('');
+  } catch (e) {
+    document.getElementById('estado').textContent = 'No se pudo leer el backlog real ahora mismo.';
+  }
+}
+
+function renderProceso(proceso) {
+  const tareas = proceso.hijos || [];
+  return '<div class="proceso">' +
+    '<div class="titulo">' + proceso.nombre + '</div>' +
+    (tareas.length ? tareas.map(t => renderTarea(t)).join('') : '<div class="vacio">Sin tareas reales todavía.</div>') +
+    '</div>';
+}
+
+function renderTarea(tarea) {
+  const reclamos = busTrabajoGlobal.filter(b => b.id === tarea.id);
+  const ultimo = reclamos[reclamos.length - 1];
+  const badge = ultimo
+    ? '<span class="badge reclamada">' + ultimo.reclamadoPor + ' -- ' + ultimo.estado + '</span>'
+    : '<span class="badge">sin reclamar</span>';
+  return '<div class="tarea">' +
+    '<span class="nombre">' + tarea.nombre + '</span>' +
+    badge +
+    '<button class="reclamar" onclick="reclamar(\'' + tarea.id + '\', this)">Reclamar</button>' +
+    '</div>';
+}
+
+async function reclamar(idTarea, boton) {
+  const quien = window.prompt('¿Quién reclama ' + idTarea + '? (nombre del operador o del worker)');
+  if (!quien || !quien.trim()) return;
+  boton.disabled = true;
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/reclamar_tarea', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idTarea, reclamadoPor: quien.trim() }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'error real desconocido');
+    cargar();
+  } catch (e) {
+    alert('No se pudo reclamar de verdad: ' + e.message);
+    boton.disabled = false;
+  }
+}
+
+cargar();
+</script>
+</body>
+</html>

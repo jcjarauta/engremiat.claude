@@ -347,6 +347,25 @@ async function crearRegistroCrudo(tipo, campos, padreId) {
   return { id };
 }
 
+// -- §8.92: taller.html -- reclamar una Tarea real del backlog (TAR-XXXX de 06_TAREAS)
+// escribiendo una fila real en 92_BUS_TRABAJO. Mismo patron de escritura cruda ya usado
+// (append directo, sin 91_HISTORIAL) -- nunca ejecuta codigo, solo marca intencion real de
+// trabajo, coherente con la decision de no dar a Taller ningun boton de "ejecutar ahora".
+async function reclamarTareaReal(idTarea, reclamadoPor) {
+  const token = await obtenerAccessTokenSheetsEscritura();
+  const tabla = await leerTablaSheetCacheada('92_BUS_TRABAJO', 'A1:P1', { en: 0, datos: null });
+  const ahora = new Date().toISOString();
+  const fila = tabla.cab.map((c) => {
+    if (c === 'ID_TAREA') return idTarea;
+    if (c === 'ESTADO') return 'Reclamada';
+    if (c === 'RECLAMADO_POR') return reclamadoPor;
+    if (c === 'FECHA_RECLAMACION') return ahora;
+    return '';
+  });
+  await appendFilaReal(token, '92_BUS_TRABAJO', fila);
+  cacheBusTrabajo = { en: 0, datos: null }; // invalida cache -- acaba de cambiar de verdad
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -805,6 +824,22 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify(resultado)); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo crear el registro real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/reclamar_tarea') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para escribir en el Sheet' })); return;
+      }
+      const { idTarea, reclamadoPor } = await leerCuerpo(req);
+      if (!idTarea || !reclamadoPor) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan idTarea/reclamadoPor' })); return;
+      }
+      try {
+        await reclamarTareaReal(idTarea, reclamadoPor);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo reclamar la tarea real: ' + e.message })); return;
       }
     }
 
