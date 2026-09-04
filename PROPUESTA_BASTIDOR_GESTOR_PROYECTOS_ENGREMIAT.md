@@ -832,6 +832,16 @@ Decidido con el operador: el visitante real es **el cliente real** (ej. alguien 
 
 Sources: [coopboardgames.com -- cooperative storytelling/RPG rankings](https://coopboardgames.com/rankings/best-storytelling-board-games/), [Gamified project management system and method (patente)](https://image-ppubs.uspto.gov/dirsearch-public/print/downloadPdf/10606584), [Baldur's Gate 3 Companions Guide](https://baldursgate3.wiki.fextralife.com/Companions).
 
+### 8.55 "El visitante puede no tener proyecto -- el Narrador acompaña a construir universos, además de misiones"
+
+Antes de construir el modo lectura, comprobado el vínculo real Cliente↔Proyecto (`02_PROYECTOS.CLIENTE_ID`) que hacía falta para resolver "los proyectos reales de este cliente" -- **roto en real**: de 26 Proyectos, solo 6 tienen `CLIENTE_ID`, y esos 6 apuntan a `CLI-0003`/`CLI-0004`, clientes que no existen en `38_CLIENTE`. `PRO-0001` ("La Troballa - Taller Ocupacional"), el más obvio candidato real, no tiene `CLIENTE_ID` en absoluto.
+
+El operador corrigió el orden: el visitante puede llegar sin ningún proyecto real todavía -- el Narrador tiene que poder **acompañar a construirlo**, no solo narrarlo. Esto resuelve el bloqueo anterior sin arreglarlo primero: un Proyecto nuevo creado por este modo recibe su `CLIENTE_ID` correcto desde el momento de nacer, así que el modo lectura tendrá datos bien enlazados de forma orgánica, sin depender de arreglar el histórico.
+
+**Ningún mecanismo nuevo** -- recombina dos ya reales y probados: la elicitación corta de Telar (pocas preguntas, DeepSeek sintetiza sin inventar fuera de lo dado) + el patrón proponer/confirmar de Cronista (solo un humano confirma, nunca se escribe directo).
+
+**Construido y verificado real**: `narrador_construir_proyecto.mjs` -- la mitad "proponer". Tres respuestas reales → DeepSeek devuelve un `Proyecto` real estructurado, con `TIPO_PROYECTO`/`PRIORIDAD` leídos EN VIVO de `90_CONFIGURACION` (nunca duplicados a mano). Probado con un escenario plausible de La Troballa (taller de macetas de barro, encargo real de un vecino): clasificó `TIPO_PROYECTO=ENCARGO_CLIENTE` del catálogo real, y cuando faltó un dato real (cantidad de barro, tiempo de secado) lo anotó en `OBSERVACIONES` en vez de inventarlo. Coste real: $0.00059. La mitad "confirmar" (escritura real vía `insertarRegistroTransaccional`) necesita una acción nueva en el webhook real -- diseñada, **no desplegada**, pendiente de confirmación explícita antes de tocar producción.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
