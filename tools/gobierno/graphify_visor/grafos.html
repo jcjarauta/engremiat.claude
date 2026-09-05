@@ -70,7 +70,7 @@
 
 <div class="constructor">
   <h2>Constructor de grafos</h2>
-  <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) <b>o</b> la URL de una página HTML propia que ya cargue uno -- si no es JSON directo, se busca en su código real qué <code>.json</code> carga de verdad esa página y se usa ese (§8.105, nunca se interpreta el contenido con un modelo: si ninguna referencia real encaja, se rechaza). Se renderiza aquí mismo con la plantilla ya establecida (<code>plantilla_grafo_espacio.html</code> -- misma física, mismas etiquetas por zoom/hover). Vista previa efímera -- no se guarda nada aquí; para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo).</p>
+  <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) o la URL de cualquier página HTML propia -- tres pasos reales, en orden, nunca un modelo interpretando contenido: (1) ¿es JSON directo?, (2) si no, ¿qué <code>.json</code> carga de verdad esa página? (§8.105), (3) si tampoco, se extrae en vivo un grafo real de sus propios enlaces reales a otras páginas y llamadas reales a la API -- mismo método real que usa <code>mapear_grafo_visor.mjs</code> (§8.83, §8.108), aplicado aquí a una sola página en vez de a las 25 de golpe. Se renderiza con la plantilla ya establecida. Vista previa efímera -- para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo). El mapa combinado de las 25 páginas (<code>grafo_visor.json</code>) lo sigue manteniendo la tarea programada real (§8.94).</p>
   <div class="fila-constructor">
     <input id="urlConstructor" type="text" placeholder="https://.../grafo_algo.json" value="grafo_visor.json">
     <button id="btnGenerar" onclick="generarVistaPrevia()">Generar vista previa</button>
@@ -96,16 +96,6 @@
       </div>
     </div>
   </div>
-</div>
-
-<div class="constructor">
-  <h2>Regenerar grafo_visor.json</h2>
-  <p class="tipo-desc"><code>mapear_grafo_visor.mjs</code> (§8.83) es un script local que lee de verdad todos los <code>.html</code> de este visor -- una página web nunca puede ejecutarlo (ninguna página puede lanzar procesos en tu máquina, con o sin permisos de red; no es el mismo caso que Ollama). Aquí no hay botón de "ejecutar" -- copia el comando real de abajo y córrelo tú en <code>tools/gobierno/graphify_visor/</code>. El primer comando regenera el JSON en local; el segundo lo publica en este VPS para que <a href="vista_sistema.html">vista_sistema.html</a>/<a href="vista_home.html">vista_home.html</a> reflejen el cambio.</p>
-  <p id="estadoRegenerar" class="estado-constructor">Comprobando cuándo se generó por última vez...</p>
-  <pre id="comandoRegenerar" class="prompt-texto" style="white-space:pre-wrap;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);border-radius:6px;padding:10px 12px;font-size:11.5px;line-height:1.5;margin:8px 0;font-family:ui-monospace,monospace;">cd tools/gobierno/graphify_visor
-node mapear_grafo_visor.mjs
-node desplegar_visor.mjs</pre>
-  <button class="copiar" onclick="copiarComandoRegenerar()">Copiar los 3 comandos</button>
 </div>
 
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
@@ -170,6 +160,38 @@ async function descubrirJsonDePagina(html, urlPagina) {
   return null;
 }
 
+// Tercer paso real, cuando la pagina no es JSON y tampoco carga uno ya existente: extraer
+// un grafo real de la propia pagina, el mismo metodo mecanico que ya usa mapear_grafo_visor.mjs
+// (§8.83) por cada pagina real -- un enlace real hacia otra pagina se convierte en arista
+// 'enlaza', una llamada real a la API se convierte en arista 'llama_api' hacia un nodo
+// 'endpoint' (mismas dos expresiones regulares reales, nunca escritas aqui en el comentario
+// -- bug real ya encontrado antes con el ejemplo literal de fetch(...), que se auto-capturaba
+// desde su propio comentario). Aqui aplicado a una sola pagina, no a las 25 de golpe. Nunca
+// inventa: si la pagina no tiene ni un enlace ni una llamada real, el grafo resultante es
+// solo su propio nodo, sin aristas -- un resultado real y honesto, no un error.
+function extraerGrafoDePagina(html, urlPagina) {
+  const nombrePagina = urlPagina.split('/').filter(Boolean).pop() || urlPagina;
+  const nodos = [{ id: nombrePagina, nombre: nombrePagina, tipo: 'pagina' }];
+  const aristas = [];
+  const vistos = new Set([nombrePagina]);
+
+  const hrefs = [...new Set([...html.matchAll(/href=["']([a-zA-Z0-9_-]+\.html)["']/g)].map(m => m[1]))];
+  for (const destino of hrefs) {
+    if (destino === nombrePagina) continue;
+    if (!vistos.has(destino)) { nodos.push({ id: destino, nombre: destino, tipo: 'pagina' }); vistos.add(destino); }
+    aristas.push({ source: nombrePagina, target: destino, relation: 'enlaza' });
+  }
+
+  const rutasApi = [...new Set([...html.matchAll(/\/api\/[a-zA-Z0-9_]+/g)].map(m => m[0]))];
+  for (const ruta of rutasApi) {
+    const idEndpoint = 'endpoint:' + ruta;
+    if (!vistos.has(idEndpoint)) { nodos.push({ id: idEndpoint, nombre: ruta, tipo: 'endpoint' }); vistos.add(idEndpoint); }
+    aristas.push({ source: nombrePagina, target: idEndpoint, relation: 'llama_api' });
+  }
+
+  return { nodos, aristas };
+}
+
 async function generarVistaPrevia() {
   const urlPagina = document.getElementById('urlConstructor').value.trim();
   const estado = document.getElementById('estadoConstructor');
@@ -188,19 +210,21 @@ async function generarVistaPrevia() {
     try { datos = JSON.parse(texto); } catch { /* no es JSON directo -- se intenta descubrir abajo */ }
 
     let urlJson = urlPagina;
+    let extraidoEnVivo = false;
     if (!datos || validarFormaGrafo(datos)) {
       estado.textContent = 'No es un JSON real directo -- buscando el JSON real que esa página ya carga...';
       const encontrado = await descubrirJsonDePagina(texto, urlPagina);
-      if (!encontrado) {
-        estado.className = 'estado-constructor error';
-        estado.textContent = 'Rechazado: no se encontró ningún .json real con la forma esperada referenciado en esa página.';
-        document.getElementById('previewLayout').classList.remove('activo');
-        return;
+      if (encontrado) {
+        datos = encontrado.datos;
+        urlJson = encontrado.urlJson;
+      } else {
+        estado.textContent = 'Sin JSON real que descubrir -- extrayendo en vivo de sus propios enlaces/llamadas reales...';
+        datos = extraerGrafoDePagina(texto, urlPagina);
+        urlJson = urlPagina;
+        extraidoEnVivo = true;
       }
-      datos = encontrado.datos;
-      urlJson = encontrado.urlJson;
     }
-    renderVistaPrevia(datos, urlJson, urlPagina);
+    renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo);
   } catch (e) {
     estado.className = 'estado-constructor error';
     estado.textContent = 'No se pudo generar de verdad: ' + e.message + ' (si es una URL externa, puede estar bloqueada por CORS).';
@@ -210,9 +234,9 @@ async function generarVistaPrevia() {
   }
 }
 
-function renderVistaPrevia(datos, urlJson, urlPagina) {
+function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   urlPagina = urlPagina || urlJson;
-  const descubierto = urlPagina !== urlJson;
+  const descubierto = !extraidoEnVivo && urlPagina !== urlJson;
   const idsReales = new Set(datos.nodos.map(n => n.id));
   const mapaColores = {};
   // Aristas cuyo destino no resuelve contra los nodos reales: nunca se descartan en
@@ -274,6 +298,7 @@ function renderVistaPrevia(datos, urlJson, urlPagina) {
   const estado = document.getElementById('estadoConstructor');
   estado.className = 'estado-constructor ok';
   estado.textContent = (descubierto ? 'JSON real descubierto en la página (' + urlJson + '). ' : '') +
+    (extraidoEnVivo ? 'Extraído en vivo de los enlaces/llamadas reales de la propia página. ' : '') +
     'Generado: ' + datos.nodos.length + ' nodos reales, ' + datos.aristas.length + ' aristas' +
     (idsExternos.size ? ', ' + idsExternos.size + ' destino(s) externo(s) sin resolver (no descartados)' : '') + '.';
 
@@ -282,7 +307,9 @@ function renderVistaPrevia(datos, urlJson, urlPagina) {
   document.getElementById('idPropuesta').value = nombreArchivo.replace(/[^a-z0-9_]/gi, '_').toLowerCase();
   document.getElementById('nombrePropuesta').value = nombreArchivo;
   document.getElementById('descripcionPropuesta').value =
-    'Borrador generado desde el Constructor de grafos (' + urlPagina + (descubierto ? ', JSON real descubierto: ' + urlJson : '') + '): ' +
+    'Borrador generado desde el Constructor de grafos (' + urlPagina +
+    (descubierto ? ', JSON real descubierto: ' + urlJson : '') +
+    (extraidoEnVivo ? ', extraído en vivo de sus enlaces/llamadas reales' : '') + '): ' +
     datos.nodos.length + ' nodos, ' + datos.aristas.length + ' aristas' +
     (idsExternos.size ? ', ' + idsExternos.size + ' externo(s) sin resolver' : '') + '.';
 }
@@ -316,18 +343,6 @@ function copiarConFallback(texto, mensajeExito) {
     alert('Portapapeles no disponible en este navegador. Comando real:\n\n' + texto);
   }
 }
-
-function copiarComandoRegenerar() {
-  copiarConFallback(document.getElementById('comandoRegenerar').textContent, 'Comandos copiados -- pégalos en tu terminal, en tools/gobierno/graphify_visor/.');
-}
-
-fetch('grafo_visor.json').then(r => r.json()).then(d => {
-  document.getElementById('estadoRegenerar').textContent = d.generadoEn
-    ? 'Generado por última vez: ' + new Date(d.generadoEn).toLocaleString('es-ES') + ' (' + d.nodos.length + ' nodos, ' + d.aristas.length + ' aristas).'
-    : 'Sin fecha real de generación en el fichero actual.';
-}).catch(() => {
-  document.getElementById('estadoRegenerar').textContent = 'No se pudo leer grafo_visor.json todavía -- no se ha generado nunca, o falló la última vez.';
-});
 
 function renderCandidato(c) {
   const claseP = 'prioridad-' + c.prioridad.toLowerCase();
