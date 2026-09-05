@@ -1340,6 +1340,14 @@ Pedido: *"añadimos un nuevo bloque superior llamado (constructor de grafos), en
 
 **Corrección inmediata**: pedido *"conecta esta vista previa con proponer_candidato.mjs"*. Mismo bloqueo real que en §8.102 (script CLI local, sin endpoint en vivo) -- mismo patrón ya elegido por el operador: en el panel de la vista previa, un mini-formulario (`id`/`nombre`/`tipo`/`prioridad`/`descripción`) se pre-rellena con datos reales de la vista generada (slug de la URL, contadores reales de nodos/aristas) y un botón "Copiar comando real" arma el comando exacto de `proponer_candidato.mjs` (con `--pagina` apuntando a la URL real usada) y lo copia al portapapeles -- nunca una llamada en vivo que no existe. Bug real encontrado al verificar en el navegador: `navigator.clipboard` puede no existir (contexto no seguro, o sin permiso) -- sin guarda, el clic lanzaba un `TypeError` sin capturar y no mostraba ningún aviso, ni de éxito ni de fallback. Corregido con una función común `copiarConFallback()` que comprueba `navigator.clipboard` antes de usarlo y muestra el comando real en un `alert()` si no está disponible -- aplicado también, por el mismo bug latente, a los dos botones de copiar ya existentes en `tecnico.html` (worker local). Verificado en el navegador real: dos clics consecutivos, ambos con el aviso correcto y el comando completo, sin errores nuevos en consola.
 
+### 8.104 Biblioteca: sección "Grafos JSON" -- catálogo real de los 12 `grafo_*.json` como ejemplos del esquema
+
+Pedido: *"en biblioteca añade una nueva seccion llamada (grafos json) debajo de grafos"*.
+
+**Verificado antes de listar nada**: comprobado con un script real (`node -e`) que los 12 `grafo_*.json` existentes en el visor cumplen de verdad la forma `{"nodos":[...], "aristas":[...]}` que exige el Constructor de grafos (§8.103) -- no asumido, contado nodo a nodo/arista a arista. Descripciones reales de cada uno tomadas de donde ya estaban documentadas (`fichas_grafos.json` para los 7 con ficha dinámica propia; `sheet-real.html`/`grafo_maestro.html` para los 5 restantes, más antiguos) -- ninguna inventada de cero.
+
+**Construida** la sección "Grafos JSON" en `biblioteca.html`, entre "Grafos" y "Prompts" -- 12 tarjetas reales, cada una enlazando al JSON real (se abre como fuente, mismo comportamiento que las plantillas) con su descripción real y sus contadores reales (nodos/aristas) de hoy. Explicita su doble propósito: ejemplos reales para probar el Constructor de grafos, o punto de partida real al escribir un extractor nuevo con `plantilla_extractor.mjs`. No requirió tocar `docker-compose.yml` -- los 12 ficheros ya estaban montados de antes. Desplegado y verificado en el navegador real: las 12 tarjetas renderizan completas, en el orden y ubicación pedidos.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
