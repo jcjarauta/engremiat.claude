@@ -1292,6 +1292,8 @@ Pedido: *"abre una nueva pestaña vinculada al home llamada (biblioteca)"*. Nomb
 
 **Construida `biblioteca.html`**, curada a mano (como `resumen_universo.html`) con dos capas: las 2 plantillas reales (ficheros a copiar), y **10 patrones de diseño reales** -- decisiones repetidas al menos dos veces en esta sesión, cada una con su primera aplicación real como referencia enlazada (nunca inventado): Ficha espejo, KPI como botón de filtro, Revelación gradual, Física de grafo con inercia cero, Etiquetas ocultas por zoom+hover, Ficha dinámica + historial, Extractor real (solo lectura, reutilizar antes de reparsear), Puerta Humana en dos pasos (proponer→promover), Evidencia real obligatoria antes de "Probado", y Fusión antes de regenerar. Enlazada desde `home.html` (6ª pieza real). Verificado en el navegador real: renderiza correctamente, todos los enlaces reales a su primera aplicación.
 
+**Corrección inmediata**: pedido *"oculta de la lista los patrones de diseño reales"* -- aplicado el propio patrón "Revelación gradual" (literalmente uno de los 10 catalogados) a la página que los cataloga: los 10 quedan detrás de un `<details>` plegado, "Patrones de diseño reales (10)", visible solo el contador. Las plantillas (ficheros reales) siguen visibles directamente.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

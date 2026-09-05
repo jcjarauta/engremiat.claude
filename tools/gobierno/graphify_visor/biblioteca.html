@@ -23,6 +23,11 @@
   .patron .donde { font-size: 11px; color: var(--color-base-texto-tenue); }
   .patron .donde code { color: #6fb3f2; }
   .patron .donde a { color: #6fb3f2; text-decoration: none; }
+  details.patrones summary { cursor: pointer; color: var(--color-base-texto-suave); font-size: 12px; list-style: none; padding: 6px 0; }
+  details.patrones summary::-webkit-details-marker { display: none; }
+  details.patrones summary::before { content: '▸ '; }
+  details.patrones[open] summary::before { content: '▾ '; }
+  details.patrones > div { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -43,7 +48,9 @@
 </div>
 <p class="hint">Nota real: existen otros dos ficheros con "Plantilla" en el nombre en <code>src/</code> (<code>PlantillaImportacionMasivaService.js</code>, <code>...Avanzada...</code>) -- son servicios de negocio reales de la app cliente, no patrones de desarrollo. Categoría distinta a propósito, no se mezclan aquí.</p>
 
-<h2>Patrones de diseño reales</h2>
+<details class="patrones">
+  <summary>Patrones de diseño reales (10)</summary>
+  <div>
 
 <div class="patron">
   <div class="titulo">Ficha espejo -- replicar, nunca enlazar</div>
@@ -104,6 +111,9 @@
   <div class="resuelve">Cuando un dato puede escribirse tanto en local (por un script) como en vivo (por un servidor remoto), regenerar desde local sin más arriesga sobrescribir una escritura en vivo más reciente. Se trae la versión viva y se funde ANTES de tocar nada -- regla distinta según sea un diccionario por clave (local gana solo su propia clave) o una lista con bajas (la versión viva manda).</div>
   <div class="donde">Encontrado y corregido en: <a href="grafos.html">regenerar_grafos.mjs</a> (§8.94/95).</div>
 </div>
+
+  </div>
+</details>
 
 </body>
 </html>
