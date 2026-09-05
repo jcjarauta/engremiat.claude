@@ -376,10 +376,10 @@ const RUTA_FICHAS_GRAFOS = join(__dirname, 'fichas_grafos.json');
 // verdad, el candidato sale de aqui y su ficha final entra en fichas_grafos.json. Nunca
 // coexisten los dos a la vez para el mismo id.
 const RUTA_CANDIDATOS = join(__dirname, 'candidatos_a_promover.json');
-async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion }) {
+async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion, espacioReal }) {
   const manifest = existsSync(RUTA_FICHAS_GRAFOS) ? JSON.parse(readFileSync(RUTA_FICHAS_GRAFOS, 'utf-8')) : { fichas: {} };
   manifest.fichas[id] = {
-    id, nombre, tipo, espacioReal: null, descripcion, pagina,
+    id, nombre, tipo, espacioReal: espacioReal || null, descripcion, pagina,
     extractor: 'promovido a mano (Puerta Humana, grafos.html)',
     contadores: {}, actualizadoEn: new Date().toISOString(), historial: [],
   };
@@ -870,7 +870,7 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/promover_grafo') {
-      const { id, nombre, tipo, pagina, descripcion } = await leerCuerpo(req);
+      const { id, nombre, tipo, pagina, descripcion, espacioReal } = await leerCuerpo(req);
       const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta', 'Transversal'];
       if (!id || !nombre || !tipo || !pagina) {
         res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/nombre/tipo/pagina' })); return;
@@ -879,7 +879,7 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(400); res.end(JSON.stringify({ error: 'tipo desconocido: ' + tipo + ' (validos: ' + TIPOS_REALES.join(', ') + ')' })); return;
       }
       try {
-        await promoverGrafoReal({ id, nombre, tipo, pagina, descripcion: descripcion || '' });
+        await promoverGrafoReal({ id, nombre, tipo, pagina, descripcion: descripcion || '', espacioReal: espacioReal || null });
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo promover de verdad: ' + e.message })); return;
