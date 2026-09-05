@@ -20,7 +20,9 @@
   .caja { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 10px; background: var(--color-base-fondo); }
   .caja .fila-caja { display: flex; gap: 8px; align-items: flex-start; }
   .caja .fila-caja input.nombre-caja { flex: 1; }
+  .caja .fila-caja select.tipo-caja { flex: 0 0 150px; }
   .caja textarea.tareas-caja { width: 100%; margin-top: 6px; min-height: 54px; resize: vertical; }
+  .caja p.ayuda-tipo { font-size: 10.5px; color: var(--color-base-texto-tenue); margin: 4px 0 0; }
   button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   button:hover { border-color: #6ea8ff; }
   button.quitar { padding: 4px 9px; font-size: 11px; color: #e85c8a; border-color: #e85c8a55; }
@@ -38,7 +40,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
-<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
 
 <div class="bloque">
   <h2>1. Nombre real de la página</h2>
@@ -100,18 +102,42 @@ function slug(s) {
 }
 
 
+// Tipos reales de caja -- no un unico <section> generico para todo. Cada uno reutiliza
+// un patron de HTML basico ya usado de verdad en otra pagina de este mismo visor, nunca
+// inventado aqui: Lista (ul/li, el propio comportamiento previo de Arquitecto), Texto
+// (p sueltos), Tabla (thead/tbody con th/td, mismo patron real de panel_operativo.html
+// linea 157 en adelante), Tarjetas (grid a.item, mismo patron real de home.html), y
+// Formulario (label+input por fila, mismo patron real de este propio Arquitecto/grafos.html).
+const TIPOS_CAJA = {
+  lista: { etiqueta: 'Lista', ayuda: 'Una función real por línea → <li>.' },
+  texto: { etiqueta: 'Texto', ayuda: 'Un párrafo real por línea → <p>.' },
+  tabla: { etiqueta: 'Tabla', ayuda: 'Primera línea = cabeceras reales, separadas por "|". Resto = filas reales, mismos separadores.' },
+  tarjetas: { etiqueta: 'Tarjetas', ayuda: 'Una tarjeta real por línea: "Título - descripción real".' },
+  formulario: { etiqueta: 'Formulario', ayuda: 'Un campo real por línea → etiqueta + input de partida.' },
+};
+
+function actualizarAyudaCaja(selectEl) {
+  const caja = selectEl.closest('.caja');
+  const info = TIPOS_CAJA[selectEl.value] || TIPOS_CAJA.lista;
+  caja.querySelector('.tareas-caja').placeholder = info.ayuda;
+  caja.querySelector('.ayuda-tipo').textContent = info.ayuda;
+}
+
 function anadirCaja(nombreInicial) {
   contadorCajas++;
   const id = 'caja' + contadorCajas;
   const div = document.createElement('div');
   div.className = 'caja';
   div.id = id;
+  const opcionesTipo = Object.entries(TIPOS_CAJA).map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('');
   div.innerHTML =
     '<div class="fila-caja">' +
       '<input class="nombre-caja" type="text" placeholder="Nombre real de la caja (ej. Backlog real)" value="' + (nombreInicial || '') + '">' +
+      '<select class="tipo-caja" onchange="actualizarAyudaCaja(this)">' + opcionesTipo + '</select>' +
       '<button class="quitar" onclick="document.getElementById(\'' + id + '\').remove()">Quitar</button>' +
     '</div>' +
-    '<textarea class="tareas-caja" placeholder="Una función real por línea, ej.:&#10;Mostrar el estado real de cada tarea&#10;Reclamar una tarea real"></textarea>';
+    '<textarea class="tareas-caja" placeholder="' + TIPOS_CAJA.lista.ayuda + '"></textarea>' +
+    '<p class="ayuda-tipo">' + TIPOS_CAJA.lista.ayuda + '</p>';
   document.getElementById('listaCajas').appendChild(div);
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
@@ -157,20 +183,83 @@ function copiarHtmlGenerado() {
   copiarConFallback(document.getElementById('htmlGenerado').value, 'HTML real copiado.');
 }
 
-// Genera el HTML de partida real -- una <section> por caja real, con sus tareas reales
-// como lista de partida (<li> TODO). Misma plantilla visual ya establecida (tokens.css,
-// .hint, h1/h2) que el resto de páginas -- nunca un diseño distinto inventado aquí.
+// Genera el contenido real de una caja segun su tipo -- cada rama reutiliza un patron de
+// HTML basico ya usado de verdad en otra pagina del visor (ver comentario de TIPOS_CAJA),
+// nunca un unico <ul>/<p> generico para todo.
+function generarContenidoCaja(c) {
+  if (c.tipo === 'tabla') {
+    const filas = c.tareas.length ? c.tareas : ['TODO real | TODO real'];
+    const partes = filas.map(f => f.split('|').map(x => x.trim()));
+    const cabeceras = partes[0];
+    const cuerpo = partes.slice(1);
+    return '  <table style="width:100%; border-collapse:collapse; font-size:12.5px;">\n' +
+      '    <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">\n' +
+      cabeceras.map(h => '      <th style="padding:4px 8px 4px 0;">' + escapeHtmlLocal(h) + '</th>').join('\n') + '\n' +
+      '    </tr>\n' +
+      (cuerpo.length
+        ? cuerpo.map(fila => '    <tr style="border-top:1px solid var(--color-base-borde-suave);">\n' +
+            fila.map(v => '      <td style="padding:5px 8px 5px 0;">' + escapeHtmlLocal(v) + '</td>').join('\n') + '\n    </tr>').join('\n')
+        : '    <tr><td class="hint">TODO: filas reales.</td></tr>') +
+      '\n  </table>\n';
+  }
+  if (c.tipo === 'tarjetas') {
+    const tarjetas = c.tareas.length ? c.tareas : ['TODO real - descripción real'];
+    return '  <div class="menu">\n' +
+      tarjetas.map(t => {
+        const [titulo, ...resto] = t.split(' - ');
+        const desc = resto.join(' - ').trim();
+        return '    <a class="item" href="#">\n      <h3>' + escapeHtmlLocal(titulo.trim()) + '</h3>\n' +
+          '      <p>' + escapeHtmlLocal(desc || 'TODO: descripción real.') + '</p>\n    </a>';
+      }).join('\n') +
+      '\n  </div>\n';
+  }
+  if (c.tipo === 'formulario') {
+    const campos = c.tareas.length ? c.tareas : ['TODO real'];
+    return campos.map(campo =>
+      '  <div class="fila">\n    <div>\n      <label>' + escapeHtmlLocal(campo) + '</label>\n' +
+      '      <input type="text" placeholder="TODO">\n    </div>\n  </div>'
+    ).join('\n') + '\n';
+  }
+  if (c.tipo === 'texto') {
+    return (c.tareas.length ? c.tareas : ['TODO: contenido real de esta caja.'])
+      .map(p => '  <p>' + escapeHtmlLocal(p) + '</p>').join('\n') + '\n';
+  }
+  // 'lista' -- comportamiento real ya existente desde el origen de Arquitecto.
+  return c.tareas.length
+    ? '  <ul>\n' + c.tareas.map(t => '    <li>TODO: ' + escapeHtmlLocal(t) + '</li>').join('\n') + '\n  </ul>\n'
+    : '  <p class="hint">TODO: contenido real de esta caja.</p>\n';
+}
+
+// Genera el HTML de partida real -- una <section> por caja real, con el contenido segun
+// su tipo real (ver generarContenidoCaja). Misma plantilla visual ya establecida
+// (tokens.css, .hint, h1/h2) que el resto de páginas -- nunca un diseño distinto
+// inventado aquí. CSS extra (menu/item para Tarjetas, fila/input/label para Formulario)
+// solo se incluye si de verdad hay una caja real de ese tipo -- nunca CSS muerto.
 function generarHtmlReal(nombrePagina, cajas, colgarDe) {
   const secciones = cajas.map(c =>
-    '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' +
-    (c.tareas.length
-      ? '  <ul>\n' + c.tareas.map(t => '    <li>TODO: ' + escapeHtmlLocal(t) + '</li>').join('\n') + '\n  </ul>\n'
-      : '  <p class="hint">TODO: contenido real de esta caja.</p>\n') +
-    '</section>'
+    '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' + generarContenidoCaja(c) + '</section>'
   ).join('\n\n');
   // El enlace real de "volver" apunta a la pagina real de la que cuelga (colgarDe), no
   // siempre a home.html -- coherente con lo que se va a enlazar de verdad.
   const textoVolver = colgarDe === 'home.html' ? '← Home' : '← Volver';
+
+  const tiposUsados = new Set(cajas.map(c => c.tipo));
+  let cssExtra = '';
+  if (tiposUsados.has('tarjetas')) {
+    cssExtra +=
+      '  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n' +
+      '  a.item { display: block; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 14px 16px; text-decoration: none; color: var(--color-base-texto); }\n' +
+      '  a.item:hover { border-color: #6ea8ff; }\n' +
+      '  a.item h3 { margin: 0 0 4px; font-size: 13px; }\n' +
+      '  a.item p { margin: 0; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }\n';
+  }
+  if (tiposUsados.has('formulario')) {
+    cssExtra +=
+      '  input, select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; font-family: inherit; }\n' +
+      '  .fila { display: flex; gap: 8px; margin-bottom: 8px; }\n' +
+      '  .fila > div { flex: 1; }\n' +
+      '  label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }\n';
+  }
 
   return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     '<title>Engremiat -- ' + escapeHtmlLocal(nombrePagina.toLowerCase()) + '</title>\n' +
@@ -182,6 +271,7 @@ function generarHtmlReal(nombrePagina, cajas, colgarDe) {
     '  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }\n' +
     '  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }\n' +
     '  section { margin-bottom: 20px; }\n' +
+    cssExtra +
     '</style>\n</head>\n<body>\n' +
     '<a class="volver" href="' + escapeHtmlLocal(colgarDe) + '">' + textoVolver + '</a>\n' +
     '<h1>' + escapeHtmlLocal(nombrePagina) + '</h1>\n' +
@@ -216,6 +306,7 @@ async function construirPagina() {
   const cajasEl = [...document.querySelectorAll('.caja')];
   const cajas = cajasEl.map(el => ({
     nombre: el.querySelector('.nombre-caja').value.trim(),
+    tipo: el.querySelector('.tipo-caja').value || 'lista',
     tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
   })).filter(c => c.nombre);
 
