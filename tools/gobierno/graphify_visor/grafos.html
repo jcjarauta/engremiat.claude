@@ -52,13 +52,20 @@
   .estado-constructor { font-size: 12px; margin: 4px 0 10px; min-height: 16px; }
   .estado-constructor.error { color: #e85c8a; }
   .estado-constructor.ok { color: #4fce6f; }
+  /* Mismos valores reales de plantilla_grafo_espacio.html (§8.87) -- la vista previa de
+     Constructor de grafos tiene que usar la plantilla visual establecida tal cual, no una
+     variante propia parecida (feedback real del operador). Unica adaptacion real: aqui va
+     embebida dentro de una tarjeta, no a pantalla completa (height fijo en vez de 100vh). */
   #previewLayout { display: none; }
-  #previewLayout.activo { display: flex; gap: 14px; height: 460px; border: 1px solid var(--color-base-borde); border-radius: 8px; overflow: hidden; }
-  #previewRed { flex: 1; background: var(--color-base-fondo); }
-  #previewPanel { width: 260px; padding: 12px 14px; background: var(--color-base-fondo); overflow-y: auto; font-size: 11.5px; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
-  #previewPanel .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
-  #previewPanel .punto { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #previewLayout.activo { display: flex; height: 460px; overflow: hidden; }
+  #previewRed { flex: 1; }
+  #previewPanel { width: 360px; padding: 16px; background: var(--color-base-panel); overflow-y: auto; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; font-size: 12.5px; }
+  #previewPanel .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
+  #previewPanel .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
   #previewPanel .punto.externo { border: 1px dashed var(--color-base-texto-tenue); background: transparent !important; }
+  #fichaPreview { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
+  #fichaPreview h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
+  #fichaPreview p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
   button.copiar { font-size: 11.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 5px; padding: 6px 10px; cursor: pointer; }
   button.copiar:hover { border-color: #6ea8ff; }
 </style>
@@ -70,7 +77,7 @@
 
 <div class="constructor">
   <h2>Constructor de grafos</h2>
-  <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) o la URL de cualquier página HTML propia -- tres pasos reales, en orden, nunca un modelo interpretando contenido: (1) ¿es JSON directo?, (2) si no, ¿qué <code>.json</code> carga de verdad esa página? (§8.105), (3) si tampoco, se extrae en vivo un grafo real de sus propios enlaces reales a otras páginas y llamadas reales a la API -- mismo método real que usa <code>mapear_grafo_visor.mjs</code> (§8.83, §8.108), aplicado aquí a una sola página en vez de a las 25 de golpe. Se renderiza con la plantilla ya establecida. Vista previa efímera -- para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo). El mapa combinado de las 25 páginas (<code>grafo_visor.json</code>) lo sigue manteniendo la tarea programada real (§8.94).</p>
+  <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) o la URL de cualquier página HTML propia -- tres pasos reales, en orden, nunca un modelo interpretando contenido: (1) ¿es JSON directo?, (2) si no, ¿qué <code>.json</code> carga de verdad esa página? (§8.105), (3) si tampoco, se extraen en vivo TODOS los elementos reales relacionados (§8.109): recorre de verdad cada página nueva que va descubriendo (no solo la primera), sus llamadas reales a la API, y qué endpoints sirve de verdad <code>servidor_memoria.mjs</code> -- mismo método real que usa <code>mapear_grafo_visor.mjs</code> (§8.83), aplicado aquí desde un único punto de partida en vez de a las 25 páginas de golpe. (Los recursos reales de Sheet/Baserow quedan fuera a propósito -- expondrían el esquema real de datos del cliente; ese cruce completo sigue en <code>grafo_visor.json</code>, §8.94). Se renderiza con la plantilla ya establecida. Vista previa efímera -- para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo).</p>
   <div class="fila-constructor">
     <input id="urlConstructor" type="text" placeholder="https://.../grafo_algo.json" value="grafo_visor.json">
     <button id="btnGenerar" onclick="generarVistaPrevia()">Generar vista previa</button>
@@ -80,7 +87,7 @@
     <div id="previewRed"></div>
     <div id="previewPanel">
       <div id="leyendaPreview"></div>
-      <div id="fichaPreview" style="margin-top:10px;border-top:1px solid var(--color-base-borde);padding-top:8px;"><p class="vacio">Haz clic en un nodo para ver su ficha real.</p></div>
+      <div id="fichaPreview"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
       <div id="proponerBox" style="margin-top:12px;border-top:1px solid var(--color-base-borde);padding-top:10px;">
         <p class="tipo-desc" style="margin:0 0 8px;">Proponer esta vista previa como candidato real (<code>proponer_candidato.mjs</code>) -- sin llamada en vivo (es un script local); copia el comando real de abajo y ejecútalo tú.</p>
         <input id="idPropuesta" type="text" placeholder="id (único, sin espacios)" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;">
@@ -161,35 +168,71 @@ async function descubrirJsonDePagina(html, urlPagina) {
 }
 
 // Tercer paso real, cuando la pagina no es JSON y tampoco carga uno ya existente: extraer
-// un grafo real de la propia pagina, el mismo metodo mecanico que ya usa mapear_grafo_visor.mjs
-// (§8.83) por cada pagina real -- un enlace real hacia otra pagina se convierte en arista
-// 'enlaza', una llamada real a la API se convierte en arista 'llama_api' hacia un nodo
-// 'endpoint' (mismas dos expresiones regulares reales, nunca escritas aqui en el comentario
-// -- bug real ya encontrado antes con el ejemplo literal de fetch(...), que se auto-capturaba
-// desde su propio comentario). Aqui aplicado a una sola pagina, no a las 25 de golpe. Nunca
-// inventa: si la pagina no tiene ni un enlace ni una llamada real, el grafo resultante es
-// solo su propio nodo, sin aristas -- un resultado real y honesto, no un error.
-function extraerGrafoDePagina(html, urlPagina) {
-  const nombrePagina = urlPagina.split('/').filter(Boolean).pop() || urlPagina;
-  const nodos = [{ id: nombrePagina, nombre: nombrePagina, tipo: 'pagina' }];
+// TODOS los elementos reales relacionados con ella -- no solo su vecindad inmediata
+// (feedback real del operador: "necesitamos todos los elementos relacionados con un html
+// ingresado"). Mismo metodo mecanico que mapear_grafo_visor.mjs (§8.83): un enlace real
+// hacia otra pagina real es arista 'enlaza', una llamada real a la API es arista
+// 'llama_api' hacia un nodo 'endpoint' -- pero aqui en un recorrido real (BFS) que sigue
+// cada pagina nueva que se descubre, no solo la primera. Nunca inventa: una pagina real
+// que no resuelve al pedirla se omite sin mas, nunca se le atribuye contenido supuesto.
+const TOPE_PAGINAS_RELACIONADAS = 40; // limite real de seguridad -- nunca un rastreo sin fin
+async function extraerGrafoRelacionado(textoInicial, urlPaginaInicial) {
+  const nombreInicial = urlPaginaInicial.split('/').filter(Boolean).pop() || urlPaginaInicial;
+  const nodos = new Map([[nombreInicial, { id: nombreInicial, nombre: nombreInicial, tipo: 'pagina' }]]);
   const aristas = [];
-  const vistos = new Set([nombrePagina]);
+  const visitadas = new Set();
+  const pendientes = [{ nombre: nombreInicial, texto: textoInicial }];
+  let tope = false;
 
-  const hrefs = [...new Set([...html.matchAll(/href=["']([a-zA-Z0-9_-]+\.html)["']/g)].map(m => m[1]))];
-  for (const destino of hrefs) {
-    if (destino === nombrePagina) continue;
-    if (!vistos.has(destino)) { nodos.push({ id: destino, nombre: destino, tipo: 'pagina' }); vistos.add(destino); }
-    aristas.push({ source: nombrePagina, target: destino, relation: 'enlaza' });
+  while (pendientes.length) {
+    if (visitadas.size >= TOPE_PAGINAS_RELACIONADAS) { tope = true; break; }
+    const { nombre: nombrePagina, texto: textoCache } = pendientes.shift();
+    if (visitadas.has(nombrePagina)) continue;
+    visitadas.add(nombrePagina);
+
+    let texto = textoCache;
+    if (texto === undefined) {
+      try { texto = await (await fetch(new URL(nombrePagina, urlPaginaInicial).href)).text(); }
+      catch { continue; } // pagina real que no resuelve -- se omite, nunca se inventa su contenido
+    }
+
+    const hrefs = [...new Set([...texto.matchAll(/href=["']([a-zA-Z0-9_-]+\.html)["']/g)].map(m => m[1]))];
+    for (const destino of hrefs) {
+      if (destino === nombrePagina) continue;
+      if (!nodos.has(destino)) nodos.set(destino, { id: destino, nombre: destino, tipo: 'pagina' });
+      aristas.push({ source: nombrePagina, target: destino, relation: 'enlaza' });
+      if (!visitadas.has(destino)) pendientes.push({ nombre: destino });
+    }
+
+    const rutasApi = [...new Set([...texto.matchAll(/\/api\/[a-zA-Z0-9_]+/g)].map(m => m[0]))];
+    for (const ruta of rutasApi) {
+      const idEndpoint = 'endpoint:' + ruta;
+      if (!nodos.has(idEndpoint)) nodos.set(idEndpoint, { id: idEndpoint, nombre: ruta, tipo: 'endpoint' });
+      aristas.push({ source: nombrePagina, target: idEndpoint, relation: 'llama_api' });
+    }
   }
 
-  const rutasApi = [...new Set([...html.matchAll(/\/api\/[a-zA-Z0-9_]+/g)].map(m => m[0]))];
-  for (const ruta of rutasApi) {
-    const idEndpoint = 'endpoint:' + ruta;
-    if (!vistos.has(idEndpoint)) { nodos.push({ id: idEndpoint, nombre: ruta, tipo: 'endpoint' }); vistos.add(idEndpoint); }
-    aristas.push({ source: nombrePagina, target: idEndpoint, relation: 'llama_api' });
+  // Servidor real: mismo cruce que mapear_grafo_visor.mjs, mismo fichero real, solo
+  // lectura -- pero acotado a los endpoints ya encontrados en este recorrido, nunca se
+  // vuelca el listado completo del servidor si no viene al caso con esta pagina. Los
+  // recursos reales del Sheet/Baserow (capa 'toca' de mapear_grafo_visor.mjs) se quedan
+  // fuera a propósito: cruzarlos exigiría exponer el esquema real de datos del cliente
+  // (nombres de pestañas/tablas de negocio), y esta caja es de uso general -- ese cruce
+  // completo sigue disponible en grafo_visor.json (§8.94).
+  const idsEndpointReales = [...nodos.values()].filter(n => n.tipo === 'endpoint').map(n => n.nombre);
+  if (idsEndpointReales.length) {
+    try {
+      const textoServidor = await (await fetch('servidor_memoria.mjs')).text();
+      const declarados = new Set([...textoServidor.matchAll(/req\.url(?:\.startsWith)?\(?\s*===?\s*['"](\/api\/[a-zA-Z0-9_]+)/g)].map(m => m[1]));
+      const relevantes = idsEndpointReales.filter(r => declarados.has(r));
+      if (relevantes.length) {
+        nodos.set('servidor_memoria.mjs', { id: 'servidor_memoria.mjs', nombre: 'servidor_memoria.mjs', tipo: 'servidor' });
+        for (const ruta of relevantes) aristas.push({ source: 'servidor_memoria.mjs', target: 'endpoint:' + ruta, relation: 'sirve' });
+      }
+    } catch { /* servidor_memoria.mjs no accesible ahora mismo -- se omite esa capa, nunca se inventa */ }
   }
 
-  return { nodos, aristas };
+  return { nodos: [...nodos.values()], aristas, tope };
 }
 
 async function generarVistaPrevia() {
@@ -218,8 +261,8 @@ async function generarVistaPrevia() {
         datos = encontrado.datos;
         urlJson = encontrado.urlJson;
       } else {
-        estado.textContent = 'Sin JSON real que descubrir -- extrayendo en vivo de sus propios enlaces/llamadas reales...';
-        datos = extraerGrafoDePagina(texto, urlPagina);
+        estado.textContent = 'Sin JSON real que descubrir -- extrayendo en vivo todos los elementos reales relacionados...';
+        datos = await extraerGrafoRelacionado(texto, urlPagina);
         urlJson = urlPagina;
         extraidoEnVivo = true;
       }
@@ -332,9 +375,10 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   const estado = document.getElementById('estadoConstructor');
   estado.className = 'estado-constructor ok';
   estado.textContent = (descubierto ? 'JSON real descubierto en la página (' + urlJson + '). ' : '') +
-    (extraidoEnVivo ? 'Extraído en vivo de los enlaces/llamadas reales de la propia página. ' : '') +
+    (extraidoEnVivo ? 'Extraído en vivo, recorriendo todas las páginas reales relacionadas. ' : '') +
     'Generado: ' + datos.nodos.length + ' nodos reales, ' + datos.aristas.length + ' aristas' +
-    (idsExternos.size ? ', ' + idsExternos.size + ' destino(s) externo(s) sin resolver (no descartados)' : '') + '.';
+    (idsExternos.size ? ', ' + idsExternos.size + ' destino(s) externo(s) sin resolver (no descartados)' : '') +
+    (datos.tope ? ' -- tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado, puede haber más sin recorrer' : '') + '.';
 
   ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos };
   const nombreArchivo = (urlPagina.split('/').pop() || urlPagina).replace(/\.(json|html)$/i, '');
