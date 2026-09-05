@@ -1388,6 +1388,13 @@ Corrección del operador sobre la sección anterior: *"el objetivo de este espac
 
 **Bug real encontrado y corregido al verificar con `node`** (mismo patrón ya visto en §8.105: el propio texto explicativo se auto-capturaba): tanto el párrafo de ayuda visible como el comentario de código incluían literalmente ejemplos de enlace/llamada de API -- al probar contra la propia `grafos.html`, esas cadenas de ejemplo se colaban como si fueran datos reales extraídos de la página (nodo fantasma "X.html", endpoint fantasma "/api/xxx"). Corregido reescribiendo ambos textos en prosa, sin sintaxis literal que la propia expresión regular pudiera reconocer. Re-verificado con `node` contra 4 páginas reales: `grafos.html` (4 nodos reales, 3 aristas -- correcto: enlaza a `home.html`/`indice.html`, llama a `/api/promover_grafo`), `home.html` (7 nodos, sus 6 tarjetas reales), `tecnico.html` (2 nodos, solo su enlace a Home), `vista_recursos.html` (sigue resolviendo por descubrimiento, como antes -- el orden de los 3 pasos no rompe el caso ya cubierto).
 
+**Corrección inmediata de UX** (feedback real del operador con captura de pantalla: *"le falta mucho detalle"* sobre un grafo de 7 nodos donde todos eran puntos azules idénticos sin nombre visible): tres mejoras reales sobre la misma vista previa, sin tocar la extracción en sí --
+1. Las etiquetas de nodo, antes ocultas hasta hacer zoom o pasar el ratón (patrón pensado para el grafo denso de 50+ nodos de `vista_sistema.html`), ahora se muestran siempre en cualquier vista previa de 30 nodos o menos -- el caso real y típico de una extracción de una sola página.
+2. Cuando el grafo viene de una extracción en vivo, la página raíz (la que se pegó) se destaca en amarillo y más grande -- mismo criterio visual ya usado para `home.html` en `vista_sistema.html` -- con su propia entrada en la leyenda.
+3. La ficha al hacer clic en un nodo, antes solo mostraba el tipo, ahora lista de verdad sus aristas reales entrantes y salientes (`enlaza a: ...`, `referenciado desde: ...`) y, si es una página, un enlace real "Abrir X →" para visitarla -- mismo nivel de detalle real que ya tenían `vista_sistema.html`/`vista_home.html`.
+
+Verificada la sintaxis del script embebido con `node --check` (vía `vm.Script`) antes de darlo por bueno -- sin poder confirmar visualmente sin navegador (declinado por el operador en un turno anterior), se dejó a su verificación directa.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

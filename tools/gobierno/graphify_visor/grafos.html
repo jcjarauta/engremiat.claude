@@ -237,6 +237,10 @@ async function generarVistaPrevia() {
 function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   urlPagina = urlPagina || urlJson;
   const descubierto = !extraidoEnVivo && urlPagina !== urlJson;
+  // Raiz real: solo tiene sentido cuando se extrajo en vivo de UNA pagina concreta (el
+  // primer nodo que genera extraerGrafoDePagina es siempre esa pagina) -- un JSON directo
+  // o descubierto es un grafo completo sin una unica raiz real que destacar.
+  const idRaiz = extraidoEnVivo ? datos.nodos[0].id : null;
   const idsReales = new Set(datos.nodos.map(n => n.id));
   const mapaColores = {};
   // Aristas cuyo destino no resuelve contra los nodos reales: nunca se descartan en
@@ -248,15 +252,25 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
     if (!idsReales.has(a.target)) idsExternos.add(a.target);
   }
 
+  // Grafos pequeños (los que suele producir la extraccion en vivo de una sola pagina, o el
+  // descubrimiento de un JSON real) muestran su etiqueta siempre -- ocultarla hasta el hover
+  // solo tiene sentido en un grafo denso de decenas de nodos (feedback real: "le falta mucho
+  // detalle" viendo solo puntos sin nombre en un grafo de 7 nodos).
+  const totalNodos = datos.nodos.length + idsExternos.size;
+  const etiquetasSiempreVisibles = totalNodos <= 30;
+  const colorEtiqueta = (id, nodoEnHover, escala) =>
+    (etiquetasSiempreVisibles || id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)';
+
   const nodesArr = datos.nodos.map(n => ({
     id: n.id, label: n.nombre || n.id, title: n.id,
-    color: { background: colorParaTipo(n.tipo || 'sin tipo', mapaColores), border: '#0f1013' },
-    font: { color: 'rgba(0,0,0,0)', size: 11 }, shape: 'dot', size: 12,
+    color: n.id === idRaiz ? { background: '#ffd43b', border: '#0f1013' } : { background: colorParaTipo(n.tipo || 'sin tipo', mapaColores), border: '#0f1013' },
+    font: { color: colorEtiqueta(n.id, null, 0), size: n.id === idRaiz ? 13 : 11 },
+    shape: 'dot', size: n.id === idRaiz ? 20 : 12,
   }));
   for (const idExt of idsExternos) {
     nodesArr.push({ id: idExt, label: '(externo) ' + idExt, title: idExt,
       color: { background: 'transparent', border: '#5c5f6b' },
-      font: { color: 'rgba(0,0,0,0)', size: 11 }, shape: 'dot', size: 10 });
+      font: { color: colorEtiqueta(idExt, null, 0), size: 11 }, shape: 'dot', size: 10 });
   }
   const nodes = new vis.DataSet(nodesArr);
   const edges = new vis.DataSet(datos.aristas.map((a, i) => ({ id: i, from: a.source, to: a.target, arrows: 'to', color: { color: '#3a3b47' } })));
@@ -281,19 +295,39 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   previewNetwork.on('blurNode', () => { nodoEnHover = null; refrescar(); });
   function refrescar() {
     const escala = previewNetwork.getScale();
-    nodes.update(nodesArr.map(n => ({ id: n.id, font: { color: (n.id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)' } })));
+    nodes.update(nodesArr.map(n => ({ id: n.id, font: { color: colorEtiqueta(n.id, nodoEnHover, escala) } })));
   }
+
+  // Ficha real con detalle de verdad -- antes solo mostraba tipo, sin decir con que
+  // conecta ni si es la pagina raiz de la extraccion (feedback real: "le falta mucho
+  // detalle"). Ahora lista las aristas reales entrantes/salientes de ese nodo concreto.
   previewNetwork.on('click', (p) => {
     if (!p.nodes.length) return;
-    const n = datos.nodos.find(x => x.id === p.nodes[0]);
-    document.getElementById('fichaPreview').innerHTML = n
-      ? '<h3 style="margin:0 0 6px;font-size:13px;">' + (n.nombre || n.id) + '</h3><p class="hint" style="margin:0;">' + (n.tipo || 'sin tipo') + '</p>'
-      : '<p class="hint" style="margin:0;">Nodo externo -- no resuelve contra ningún nodo real de este JSON (' + p.nodes[0] + ').</p>';
+    const idNodo = p.nodes[0];
+    const n = datos.nodos.find(x => x.id === idNodo);
+    if (!n) {
+      document.getElementById('fichaPreview').innerHTML = '<p class="hint" style="margin:0;">Nodo externo -- no resuelve contra ningún nodo real de este JSON (' + idNodo + ').</p>';
+      return;
+    }
+    const salientes = datos.aristas.filter(a => a.source === idNodo);
+    const entrantes = datos.aristas.filter(a => a.target === idNodo);
+    const nombreDe = (id) => (datos.nodos.find(x => x.id === id) || {}).nombre || id;
+    let html = '<h3 style="margin:0 0 4px;font-size:13px;">' + (n.nombre || n.id) + '</h3>';
+    html += '<p class="hint" style="margin:2px 0;">' + (n.tipo || 'sin tipo') + (idNodo === idRaiz ? ' -- página raíz de esta extracción' : '') + '</p>';
+    if (n.tipo === 'pagina' || !n.tipo) {
+      html += '<p class="hint" style="margin:6px 0 0;"><a class="volver" href="' + n.id + '" target="_blank">Abrir ' + n.id + ' →</a></p>';
+    }
+    if (salientes.length) html += '<p class="hint" style="margin:6px 0 2px;"><b>Enlaza/llama a:</b></p><p class="hint" style="margin:0;">' + salientes.map(a => a.relation + ' → ' + nombreDe(a.target)).join('<br>') + '</p>';
+    if (entrantes.length) html += '<p class="hint" style="margin:6px 0 2px;"><b>Referenciado desde:</b></p><p class="hint" style="margin:0;">' + entrantes.map(a => nombreDe(a.source) + ' (' + a.relation + ')').join('<br>') + '</p>';
+    if (!salientes.length && !entrantes.length) html += '<p class="hint" style="margin:6px 0 0;">Sin aristas reales -- nodo aislado en este grafo.</p>';
+    document.getElementById('fichaPreview').innerHTML = html;
   });
 
-  document.getElementById('leyendaPreview').innerHTML = Object.entries(mapaColores).map(([tipo, color]) =>
-    '<div class="leyenda-item"><span class="punto" style="background:' + color + '"></span>' + tipo + '</div>'
-  ).join('') + (idsExternos.size ? '<div class="leyenda-item"><span class="punto externo"></span>externo (' + idsExternos.size + ')</div>' : '');
+  document.getElementById('leyendaPreview').innerHTML =
+    (idRaiz ? '<div class="leyenda-item"><span class="punto" style="background:#ffd43b"></span>página raíz (la que pegaste)</div>' : '') +
+    Object.entries(mapaColores).map(([tipo, color]) =>
+      '<div class="leyenda-item"><span class="punto" style="background:' + color + '"></span>' + tipo + '</div>'
+    ).join('') + (idsExternos.size ? '<div class="leyenda-item"><span class="punto externo"></span>externo (' + idsExternos.size + ')</div>' : '');
 
   const estado = document.getElementById('estadoConstructor');
   estado.className = 'estado-constructor ok';
