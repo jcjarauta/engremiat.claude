@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Engremiat -- grafos del sistema</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
@@ -40,12 +41,47 @@
   details.mas summary::-webkit-details-marker { display: none; }
   details.mas summary::before { content: '▸ '; }
   details.mas[open] summary::before { content: '▾ '; }
+
+  .constructor { border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 16px 18px; margin-bottom: 34px; background: var(--color-base-panel); }
+  .constructor h2 { margin-bottom: 6px; }
+  .fila-constructor { display: flex; gap: 8px; margin: 10px 0; }
+  .fila-constructor input { flex: 1; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 8px 10px; font-size: 12.5px; font-family: ui-monospace, monospace; }
+  .fila-constructor button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 8px 14px; cursor: pointer; white-space: nowrap; }
+  .fila-constructor button:hover { border-color: #6ea8ff; }
+  .fila-constructor button:disabled { opacity: 0.5; cursor: default; }
+  .estado-constructor { font-size: 12px; margin: 4px 0 10px; min-height: 16px; }
+  .estado-constructor.error { color: #e85c8a; }
+  .estado-constructor.ok { color: #4fce6f; }
+  #previewLayout { display: none; }
+  #previewLayout.activo { display: flex; gap: 14px; height: 460px; border: 1px solid var(--color-base-borde); border-radius: 8px; overflow: hidden; }
+  #previewRed { flex: 1; background: var(--color-base-fondo); }
+  #previewPanel { width: 260px; padding: 12px 14px; background: var(--color-base-fondo); overflow-y: auto; font-size: 11.5px; border-left: 1px solid var(--color-base-borde); box-sizing: border-box; }
+  #previewPanel .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  #previewPanel .punto { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #previewPanel .punto.externo { border: 1px dashed var(--color-base-texto-tenue); background: transparent !important; }
 </style>
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Grafos del sistema</h1>
 <p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-96, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Solo el grafo inicial queda a la vista; el resto se pliega para no saturar la pantalla. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
+
+<div class="constructor">
+  <h2>Constructor de grafos</h2>
+  <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) y se renderiza aquí mismo con la plantilla ya establecida (<code>plantilla_grafo_espacio.html</code> -- misma física, mismas etiquetas por zoom/hover). Solo re-visualiza datos ya reales y estructurados, nunca interpreta una página cualquiera ni inventa nodos: si el JSON no tiene esa forma, se rechaza con un aviso concreto. Vista previa efímera -- no se guarda nada aquí; para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo).</p>
+  <div class="fila-constructor">
+    <input id="urlConstructor" type="text" placeholder="https://.../grafo_algo.json" value="grafo_visor.json">
+    <button id="btnGenerar" onclick="generarVistaPrevia()">Generar vista previa</button>
+  </div>
+  <div id="estadoConstructor" class="estado-constructor"></div>
+  <div id="previewLayout">
+    <div id="previewRed"></div>
+    <div id="previewPanel">
+      <div id="leyendaPreview"></div>
+      <div id="fichaPreview" style="margin-top:10px;border-top:1px solid var(--color-base-borde);padding-top:8px;"><p class="vacio">Haz clic en un nodo para ver su ficha real.</p></div>
+    </div>
+  </div>
+</div>
 
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
@@ -58,6 +94,121 @@
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta', 'Transversal'];
 const ORDEN_PRIORIDAD = { Alta: 0, Media: 1, Baja: 2 };
+
+// -- Constructor de grafos: re-visualiza un JSON real ya estructurado (misma forma que
+// cualquier grafo_*.json) con la misma plantilla/fisica que plantilla_grafo_espacio.html.
+// Nunca interpreta contenido libre -- valida la forma real y rechaza con aviso concreto si
+// no encaja, en vez de intentar adivinar/inventar estructura (decision tomada con el
+// operador antes de construir esto, ver PROPUESTA_BASTIDOR §8.103).
+const PALETA_TIPOS = ['#4c9aff', '#e85c8a', '#4fce6f', '#e8a33d', '#c76bd6', '#4ea8de', '#8a8d99'];
+let previewNetwork = null;
+
+function colorParaTipo(tipo, mapaColores) {
+  if (!(tipo in mapaColores)) {
+    mapaColores[tipo] = PALETA_TIPOS[Object.keys(mapaColores).length % PALETA_TIPOS.length];
+  }
+  return mapaColores[tipo];
+}
+
+function validarFormaGrafo(datos) {
+  if (!datos || typeof datos !== 'object') return 'La URL no devolvió un objeto JSON.';
+  if (!Array.isArray(datos.nodos)) return 'Falta "nodos" (array) -- no tiene la forma real esperada {"nodos":[...], "aristas":[...]}.';
+  if (!Array.isArray(datos.aristas)) return 'Falta "aristas" (array) -- no tiene la forma real esperada {"nodos":[...], "aristas":[...]}.';
+  if (!datos.nodos.length) return '"nodos" está vacío -- nada real que mostrar.';
+  if (datos.nodos.some(n => !n || !n.id)) return 'Hay algún nodo real sin "id" -- no se puede referenciar en las aristas.';
+  return null;
+}
+
+async function generarVistaPrevia() {
+  const url = document.getElementById('urlConstructor').value.trim();
+  const estado = document.getElementById('estadoConstructor');
+  const boton = document.getElementById('btnGenerar');
+  estado.className = 'estado-constructor';
+  estado.textContent = '';
+  if (!url) { estado.className = 'estado-constructor error'; estado.textContent = 'Pega primero una URL real.'; return; }
+
+  boton.disabled = true;
+  estado.textContent = 'Cargando ' + url + '...';
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const datos = await r.json();
+    const error = validarFormaGrafo(datos);
+    if (error) { estado.className = 'estado-constructor error'; estado.textContent = 'Rechazado: ' + error; document.getElementById('previewLayout').classList.remove('activo'); return; }
+    renderVistaPrevia(datos, url);
+  } catch (e) {
+    estado.className = 'estado-constructor error';
+    estado.textContent = 'No se pudo generar de verdad: ' + e.message + ' (si es una URL externa, puede estar bloqueada por CORS).';
+    document.getElementById('previewLayout').classList.remove('activo');
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+function renderVistaPrevia(datos, url) {
+  const idsReales = new Set(datos.nodos.map(n => n.id));
+  const mapaColores = {};
+  // Aristas cuyo destino no resuelve contra los nodos reales: nunca se descartan en
+  // silencio (mismo criterio real que mapear_grafo_por_tipo.mjs) -- se genera un nodo
+  // "externo" visible para cada una, marcado en la leyenda.
+  const idsExternos = new Set();
+  for (const a of datos.aristas) {
+    if (!idsReales.has(a.source)) idsExternos.add(a.source);
+    if (!idsReales.has(a.target)) idsExternos.add(a.target);
+  }
+
+  const nodesArr = datos.nodos.map(n => ({
+    id: n.id, label: n.nombre || n.id, title: n.id,
+    color: { background: colorParaTipo(n.tipo || 'sin tipo', mapaColores), border: '#0f1013' },
+    font: { color: 'rgba(0,0,0,0)', size: 11 }, shape: 'dot', size: 12,
+  }));
+  for (const idExt of idsExternos) {
+    nodesArr.push({ id: idExt, label: '(externo) ' + idExt, title: idExt,
+      color: { background: 'transparent', border: '#5c5f6b' },
+      font: { color: 'rgba(0,0,0,0)', size: 11 }, shape: 'dot', size: 10 });
+  }
+  const nodes = new vis.DataSet(nodesArr);
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({ id: i, from: a.source, to: a.target, arrows: 'to', color: { color: '#3a3b47' } })));
+
+  document.getElementById('previewLayout').classList.add('activo');
+  if (previewNetwork) previewNetwork.destroy();
+  previewNetwork = new vis.Network(document.getElementById('previewRed'), { nodes, edges }, {
+    physics: {
+      solver: 'forceAtlas2Based',
+      forceAtlas2Based: { gravitationalConstant: -90, springLength: 130, centralGravity: 0.008, damping: 0.4, avoidOverlap: 0.6 },
+      stabilization: { iterations: 300, fit: true },
+    },
+    interaction: { hover: true, dragView: true, zoomView: true },
+  });
+  let nodoEnHover = null;
+  previewNetwork.once('stabilizationIterationsDone', () => {
+    previewNetwork.setOptions({ physics: { enabled: false } });
+    previewNetwork.fit({ animation: false });
+  });
+  previewNetwork.on('zoom', refrescar);
+  previewNetwork.on('hoverNode', (p) => { nodoEnHover = p.node; refrescar(); });
+  previewNetwork.on('blurNode', () => { nodoEnHover = null; refrescar(); });
+  function refrescar() {
+    const escala = previewNetwork.getScale();
+    nodes.update(nodesArr.map(n => ({ id: n.id, font: { color: (n.id === nodoEnHover || escala >= 1.6) ? '#e7e7ea' : 'rgba(0,0,0,0)' } })));
+  }
+  previewNetwork.on('click', (p) => {
+    if (!p.nodes.length) return;
+    const n = datos.nodos.find(x => x.id === p.nodes[0]);
+    document.getElementById('fichaPreview').innerHTML = n
+      ? '<h3 style="margin:0 0 6px;font-size:13px;">' + (n.nombre || n.id) + '</h3><p class="hint" style="margin:0;">' + (n.tipo || 'sin tipo') + '</p>'
+      : '<p class="hint" style="margin:0;">Nodo externo -- no resuelve contra ningún nodo real de este JSON (' + p.nodes[0] + ').</p>';
+  });
+
+  document.getElementById('leyendaPreview').innerHTML = Object.entries(mapaColores).map(([tipo, color]) =>
+    '<div class="leyenda-item"><span class="punto" style="background:' + color + '"></span>' + tipo + '</div>'
+  ).join('') + (idsExternos.size ? '<div class="leyenda-item"><span class="punto externo"></span>externo (' + idsExternos.size + ')</div>' : '');
+
+  const estado = document.getElementById('estadoConstructor');
+  estado.className = 'estado-constructor ok';
+  estado.textContent = 'Generado: ' + datos.nodos.length + ' nodos reales, ' + datos.aristas.length + ' aristas' +
+    (idsExternos.size ? ', ' + idsExternos.size + ' destino(s) externo(s) sin resolver (no descartados)' : '') + '.';
+}
 
 function renderCandidato(c) {
   const claseP = 'prioridad-' + c.prioridad.toLowerCase();
