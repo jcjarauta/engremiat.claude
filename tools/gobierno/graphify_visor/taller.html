@@ -20,6 +20,9 @@
   .tarea .nombre { flex: 1; }
   .badge { display: inline-block; padding: 1px 7px; border-radius: 4px; font-size: 10px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
   .badge.reclamada { background: #4c9aff33; color: #6ea8ff; }
+  .badge.estado-terminada, .badge.estado-completado { background: #4fce6f33; color: #4fce6f; }
+  .badge.estado-en-proceso { background: #e8a33d33; color: #e8a33d; }
+  .badge.estado-bloqueada, .badge.estado-cancelada { background: #e85c8a33; color: #e85c8a; }
   button.reclamar { font-size: 11px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 4px; padding: 3px 9px; cursor: pointer; }
   button.reclamar:hover { border-color: #6ea8ff; }
   button.reclamar:disabled { opacity: 0.4; cursor: default; }
@@ -44,10 +47,6 @@
 <h2>Backlog real (Procesos → Tareas)</h2>
 <p id="estado" class="hint">Comprobando el backlog real...</p>
 <div id="procesos"></div>
-
-<h2>Fichas reales de los grafos (con historial)</h2>
-<p class="hint">Cada extractor escribe su propia ficha al terminar (§8.93) -- aquí se ve su historial real de capturas, la misma señal que usa <code>detectar_candidatos.mjs</code> (Proceso 1a).</p>
-<div id="fichas"></div>
 
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
@@ -84,22 +83,32 @@ async function cargar() {
 
 function renderProceso(proceso) {
   const tareas = proceso.hijos || [];
+  const claseEstado = 'estado-' + (proceso.estado || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-');
   return '<div class="proceso">' +
-    '<div class="titulo">' + proceso.nombre + '</div>' +
+    '<div class="titulo">' + proceso.nombre + ' <span class="badge ' + claseEstado + '">' + (proceso.estado || 'sin estado') + '</span></div>' +
     (tareas.length ? tareas.map(t => renderTarea(t)).join('') : '<div class="vacio">Sin tareas reales todavía.</div>') +
     '</div>';
 }
 
 function renderTarea(tarea) {
+  // Estado real de la propia Tarea (06_TAREAS!ESTADO) -- la señal de verdad de si
+  // ya se hizo. El reclamo de 92_BUS_TRABAJO es una señal aparte (quien la esta
+  // trabajando ahora), nunca sustituye al estado real -- antes solo se mostraba el
+  // reclamo, y una tarea Terminada en el Sheet seguia saliendo "sin reclamar".
+  const claseEstado = 'estado-' + (tarea.estado || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-');
+  const badgeEstado = '<span class="badge ' + claseEstado + '">' + (tarea.estado || 'sin estado') + '</span>';
+
   const reclamos = busTrabajoGlobal.filter(b => b.id === tarea.id);
   const ultimo = reclamos[reclamos.length - 1];
-  const badge = ultimo
-    ? '<span class="badge reclamada">' + ultimo.reclamadoPor + ' -- ' + ultimo.estado + '</span>'
-    : '<span class="badge">sin reclamar</span>';
+  const badgeReclamo = ultimo ? '<span class="badge reclamada">' + ultimo.reclamadoPor + ' -- ' + ultimo.estado + '</span>' : '';
+
+  const yaTerminada = tarea.estado === 'Terminada';
+  const boton = yaTerminada ? '' : '<button class="reclamar" onclick="reclamar(\'' + tarea.id + '\', this)">Reclamar</button>';
+
   return '<div class="tarea">' +
     '<span class="nombre">' + tarea.nombre + '</span>' +
-    badge +
-    '<button class="reclamar" onclick="reclamar(\'' + tarea.id + '\', this)">Reclamar</button>' +
+    badgeEstado + badgeReclamo +
+    boton +
     '</div>';
 }
 
@@ -121,31 +130,7 @@ async function reclamar(idTarea, boton) {
   }
 }
 
-function renderFicha(f) {
-  const historial = f.historial || [];
-  const puntos = historial.map(h => Object.entries(h).filter(([k]) => k !== 'en').map(([k, v]) => k + '=' + v).join(', ')).join(' → ');
-  return '<div class="proceso">' +
-    '<div class="titulo">' + f.nombre + ' <span class="badge">' + f.tipo + '</span></div>' +
-    '<p style="margin:4px 0;color:var(--color-base-texto-suave);font-size:11.5px">' + f.descripcion + '</p>' +
-    '<p style="margin:4px 0;font-size:11px">' + historial.length + ' captura(s): ' + puntos + '</p>' +
-    '<a class="enlace" style="display:inline-block;padding:4px 10px;min-width:0" href="' + f.pagina + '">Abrir ' + f.pagina + ' →</a>' +
-    '</div>';
-}
-
-async function cargarFichas() {
-  try {
-    const m = await fetch('fichas_grafos.json', { signal: AbortSignal.timeout(8000) }).then(r => r.json());
-    const fichas = Object.values(m.fichas || {});
-    document.getElementById('fichas').innerHTML = fichas.length
-      ? fichas.map(renderFicha).join('')
-      : '<p class="vacio">Sin fichas reales todavía.</p>';
-  } catch (e) {
-    document.getElementById('fichas').innerHTML = '<p class="hint">No se pudo leer fichas_grafos.json ahora mismo.</p>';
-  }
-}
-
 cargar();
-cargarFichas();
 </script>
 </body>
 </html>
