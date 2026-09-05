@@ -370,10 +370,9 @@ async function alSoltarEnColumna(evt, columnaEl) {
     estado.className = 'estado ok';
     estado.textContent = 'Movido de verdad. Las dos páginas reales están reconstruidas en la cola.';
     pasos.innerHTML = [
-      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rOrigen.archivo) + '</code> (página de origen, "' + escapeHtmlLocal(rOrigen.nombre) + '"). ' +
-        '<button onclick="ejecutarAplicarReal(\'' + escapeHtmlLocal(rOrigen.archivo) + '\', this)">Ejecutar ahora</button>',
+      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rOrigen.archivo) + '</code> (página de origen, "' + escapeHtmlLocal(rOrigen.nombre) + '").',
       'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rDestino.archivo) + '</code> (página de destino, "' + escapeHtmlLocal(rDestino.nombre) + '"). ' +
-        '<button onclick="ejecutarAplicarReal(\'' + escapeHtmlLocal(rDestino.archivo) + '\', this)">Ejecutar ahora</button>',
+        '<button onclick="ejecutarAplicarVariosReal([\'' + escapeHtmlLocal(rOrigen.archivo) + '\',\'' + escapeHtmlLocal(rDestino.archivo) + '\'], this)">Ejecutar las dos ahora</button>',
     ].map(p => '<li>' + p + '</li>').join('');
   } catch (e) {
     estado.className = 'estado error';
@@ -399,6 +398,30 @@ async function ejecutarAplicarReal(archivo, boton) {
     if (!j.ok) throw new Error(j.error || 'fallo real desconocido');
     alert('Aplicado de verdad:\n\n' + j.salida);
     boton.textContent = 'Aplicado ✓';
+  } catch (e) {
+    alert('No se pudo ejecutar de verdad -- ¿está arrancado "node servidor_aplicar_local.mjs" en tu máquina?\n\n' + e.message);
+    boton.textContent = textoOriginal;
+    boton.disabled = false;
+  }
+}
+
+// Igual que ejecutarAplicarReal, pero para un movimiento real entre dos paginas -- un
+// solo boton real aplica las DOS reconstrucciones reales en orden (origen, luego
+// destino), sin que el operador tenga que pulsar dos veces.
+async function ejecutarAplicarVariosReal(archivos, boton) {
+  const textoOriginal = boton.textContent;
+  boton.disabled = true;
+  const salidas = [];
+  try {
+    for (const archivo of archivos) {
+      boton.textContent = 'Ejecutando ' + archivo + '...';
+      const r = await fetch(URL_SERVIDOR_LOCAL + '/aplicar?archivo=' + encodeURIComponent(archivo), { method: 'POST' });
+      const j = await r.json();
+      if (!j.ok) throw new Error(archivo + ': ' + (j.error || 'fallo real desconocido'));
+      salidas.push(archivo + ':\n' + j.salida);
+    }
+    alert('Aplicadas de verdad (' + archivos.length + '):\n\n' + salidas.join('\n\n---\n\n'));
+    boton.textContent = 'Aplicadas ✓';
   } catch (e) {
     alert('No se pudo ejecutar de verdad -- ¿está arrancado "node servidor_aplicar_local.mjs" en tu máquina?\n\n' + e.message);
     boton.textContent = textoOriginal;
