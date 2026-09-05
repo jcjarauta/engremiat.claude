@@ -353,6 +353,48 @@ async function crearRegistroCrudo(tipo, campos, padreId) {
   return { id };
 }
 
+// §8.120: unico endpoint real que reasigna PRODUCTO_ID/ORDEN_SECUENCIA de un Proceso YA
+// EXISTENTE en 05_PROCESOS -- crear_registro solo crea filas nuevas, nunca reasigna una
+// real. Recalcula el orden real COMPLETO de la columna de destino en cada llamada (nunca
+// solo la tarjeta soltada), para que insertar en medio de una columna quede consistente.
+// Escribe PRODUCTO_ID/ORDEN_SECUENCIA aunque no cambien -- mas simple y seguro que
+// distinguir "solo reordenar" de "mover", mismo resultado real.
+async function reordenarColumnaReal(productoId, ordenIds) {
+  const token = await obtenerAccessTokenSheetsEscritura();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/05_PROCESOS!A1:S5000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (r.status >= 400) throw new Error('Sheets respondio ' + r.status + ' al leer 05_PROCESOS: ' + await r.text());
+  const filas = (await r.json()).values || [];
+  const iId = (filas[0] || []).indexOf('ID');
+  const filaRealPorId = new Map();
+  filas.forEach((f, i) => { if (i > 0 && f[iId]) filaRealPorId.set(f[iId], i + 1); });
+
+  const ahora = new Date().toISOString();
+  const data = [];
+  ordenIds.forEach((procesoId, i) => {
+    const filaReal = filaRealPorId.get(procesoId);
+    if (!filaReal) throw new Error('Proceso real no encontrado en 05_PROCESOS: ' + procesoId);
+    data.push({ range: '05_PROCESOS!B' + filaReal, values: [[productoId]] });
+    data.push({ range: '05_PROCESOS!E' + filaReal, values: [[String(i + 1).padStart(4, '0')]] });
+    data.push({ range: '05_PROCESOS!R' + filaReal, values: [[ahora]] });
+    data.push({ range: '05_PROCESOS!S' + filaReal, values: [['Mapa (mapa.html)']] });
+  });
+  // RAW, no USER_ENTERED -- con USER_ENTERED Sheets interpreta "0001" como el numero 1 y
+  // le quita los ceros reales de relleno, rompiendo el orden lexicografico real en cuanto
+  // hay 10+ cajas (bug real encontrado y corregido en la primera prueba: escribio "1" en
+  // vez de "0001"). RAW guarda el texto real tal cual, sin "inteligencia" que lo corrompa.
+  const rw = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values:batchUpdate',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valueInputOption: 'RAW', data }) }
+  );
+  if (rw.status >= 400) throw new Error('Sheets respondio ' + rw.status + ' al reordenar 05_PROCESOS: ' + await rw.text());
+  cacheJerarquia = { en: 0, datos: null };
+  cacheProcesos = { en: 0, datos: null };
+}
+
 // -- §8.92: taller.html -- reclamar una Tarea real del backlog (TAR-XXXX de 06_TAREAS)
 // escribiendo una fila real en 92_BUS_TRABAJO. Mismo patron de escritura cruda ya usado
 // (append directo, sin 91_HISTORIAL) -- nunca ejecuta codigo, solo marca intencion real de
@@ -893,6 +935,22 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify(resultado)); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo crear el registro real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/reordenar_columna') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para escribir en el Sheet' })); return;
+      }
+      const { productoId, ordenIds } = await leerCuerpo(req);
+      if (!productoId || !Array.isArray(ordenIds)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan productoId/ordenIds (array real)' })); return;
+      }
+      try {
+        await reordenarColumnaReal(productoId, ordenIds);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo reordenar de verdad: ' + e.message })); return;
       }
     }
 

@@ -7,22 +7,353 @@
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
-  body { padding: 24px 28px 60px; max-width: 820px; }
+  body { padding: 24px 28px 60px; max-width: 1100px; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
   h1 { font-size: 18px; margin: 6px 0 4px; }
-  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
-  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
-  section { margin-bottom: 20px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 16px; max-width: 820px; }
+  .columnas { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
+  .columna { flex: 0 0 230px; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 12px; transition: border-color .1s; }
+  .columna.sobre-drag { border-color: #6ea8ff; }
+  .columna h2 { margin: 0 0 2px; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--color-base-texto); }
+  .columna .archivo { font-size: 10.5px; color: var(--color-base-texto-tenue); margin: 0 0 10px; }
+  .tarjetas-lista { min-height: 30px; }
+  .tarjeta { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; cursor: grab; }
+  .tarjeta:hover { border-color: #6ea8ff; }
+  .tarjeta.arrastrando { opacity: 0.35; }
+  p.vacia { font-size: 11px; color: var(--color-base-texto-tenue); font-style: italic; margin: 0; }
+  .estado { font-size: 12px; margin: 14px 0 0; min-height: 16px; white-space: pre-wrap; }
+  .estado.error { color: #e85c8a; }
+  .estado.ok { color: #4fce6f; }
+  ol.pasos { font-size: 12px; line-height: 1.7; color: var(--color-base-texto-suave); padding-left: 20px; }
+  ol.pasos code { color: #6fb3f2; }
 </style>
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
-<h1>Mapa</h1>
-<p class="hint">TODO: descripción real de qué hace esta página y de dónde sale su dato.</p>
+<h1>Mapa -- jerarquía real de Índice</h1>
+<p class="hint">Columnas = páginas reales de <a href="grafos.html">Índice</a> creadas <b>con Arquitecto</b> (nunca las hechas a mano -- reconstruir sobrescribiría su contenido real de verdad, así que quedan fuera a propósito). Tarjetas = sus cajas reales (Proceso). Arrastra una tarjeta <b>dentro de su columna</b> para reordenarla (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>). Arrástrala <b>a otra columna</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a> -- aquí solo se configura la jerarquía.</p>
 
-<section>
-  <h2>PRESENTACIÓN</h2>
-  <p class="hint">TODO: contenido real de esta caja.</p>
-</section>
+<div id="columnas" class="columnas"><p class="hint">Leyendo la jerarquía real...</p></div>
+<p id="notaColumnas" class="hint" style="margin-top:8px;"></p>
+<div id="estadoMapa" class="estado"></div>
+<ol class="pasos" id="pasosMapa"></ol>
+
+<script>
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+const PROYECTO_INDICE_ID = 'PRO-0002';
+
+// Paginas autocontenidas, sin modulo JS compartido entre ellas (mismo criterio ya
+// establecido en todo este visor) -- estas funciones puras se duplican a proposito de
+// arquitecto.html, nunca reinventadas con logica distinta.
+function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function obtenerIndiceReal(j) {
+  for (const campana of (j.arbol || j)) {
+    const indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
+    if (indice) return indice;
+  }
+  return null;
+}
+
+const TIPOS_CAJA = {
+  lista: { etiqueta: 'Lista', ayuda: 'Una función real por línea → <li>.' },
+  texto: { etiqueta: 'Texto', ayuda: 'Un párrafo real por línea → <p>.' },
+  tabla: { etiqueta: 'Tabla', ayuda: 'Primera línea = cabeceras reales, separadas por "|". Resto = filas reales, mismos separadores.' },
+  tarjetas: { etiqueta: 'Tarjetas', ayuda: 'Una tarjeta real por línea: "Título - descripción real".' },
+  formulario: { etiqueta: 'Formulario', ayuda: 'Un campo real por línea → etiqueta + input de partida.' },
+};
+
+function generarContenidoCaja(c) {
+  if (c.tipo === 'tabla') {
+    const filas = c.tareas.length ? c.tareas : ['TODO real | TODO real'];
+    const partes = filas.map(f => f.split('|').map(x => x.trim()));
+    const cabeceras = partes[0];
+    const cuerpo = partes.slice(1);
+    return '  <table style="width:100%; border-collapse:collapse; font-size:12.5px;">\n' +
+      '    <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">\n' +
+      cabeceras.map(h => '      <th style="padding:4px 8px 4px 0;">' + escapeHtmlLocal(h) + '</th>').join('\n') + '\n' +
+      '    </tr>\n' +
+      (cuerpo.length
+        ? cuerpo.map(fila => '    <tr style="border-top:1px solid var(--color-base-borde-suave);">\n' +
+            fila.map(v => '      <td style="padding:5px 8px 5px 0;">' + escapeHtmlLocal(v) + '</td>').join('\n') + '\n    </tr>').join('\n')
+        : '    <tr><td class="hint">TODO: filas reales.</td></tr>') +
+      '\n  </table>\n';
+  }
+  if (c.tipo === 'tarjetas') {
+    const tarjetas = c.tareas.length ? c.tareas : ['TODO real - descripción real'];
+    return '  <div class="menu">\n' +
+      tarjetas.map(t => {
+        const [titulo, ...resto] = t.split(' - ');
+        const desc = resto.join(' - ').trim();
+        return '    <a class="item" href="#">\n      <h3>' + escapeHtmlLocal(titulo.trim()) + '</h3>\n' +
+          '      <p>' + escapeHtmlLocal(desc || 'TODO: descripción real.') + '</p>\n    </a>';
+      }).join('\n') +
+      '\n  </div>\n';
+  }
+  if (c.tipo === 'formulario') {
+    const campos = c.tareas.length ? c.tareas : ['TODO real'];
+    return campos.map(campo =>
+      '  <div class="fila">\n    <div>\n      <label>' + escapeHtmlLocal(campo) + '</label>\n' +
+      '      <input type="text" placeholder="TODO">\n    </div>\n  </div>'
+    ).join('\n') + '\n';
+  }
+  if (c.tipo === 'texto') {
+    return (c.tareas.length ? c.tareas : ['TODO: contenido real de esta caja.'])
+      .map(p => '  <p>' + escapeHtmlLocal(p) + '</p>').join('\n') + '\n';
+  }
+  return c.tareas.length
+    ? '  <ul>\n' + c.tareas.map(t => '    <li>TODO: ' + escapeHtmlLocal(t) + '</li>').join('\n') + '\n  </ul>\n'
+    : '  <p class="hint">TODO: contenido real de esta caja.</p>\n';
+}
+
+function generarHtmlReal(nombrePagina, cajas, colgarDe) {
+  const secciones = cajas.map(c =>
+    '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' + generarContenidoCaja(c) + '</section>'
+  ).join('\n\n');
+  const textoVolver = colgarDe === 'home.html' ? '← Home' : '← Volver';
+
+  const tiposUsados = new Set(cajas.map(c => c.tipo));
+  let cssExtra = '';
+  if (tiposUsados.has('tarjetas')) {
+    cssExtra +=
+      '  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n' +
+      '  a.item { display: block; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 14px 16px; text-decoration: none; color: var(--color-base-texto); }\n' +
+      '  a.item:hover { border-color: #6ea8ff; }\n' +
+      '  a.item h3 { margin: 0 0 4px; font-size: 13px; }\n' +
+      '  a.item p { margin: 0; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }\n';
+  }
+  if (tiposUsados.has('formulario')) {
+    cssExtra +=
+      '  input, select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; font-family: inherit; }\n' +
+      '  .fila { display: flex; gap: 8px; margin-bottom: 8px; }\n' +
+      '  .fila > div { flex: 1; }\n' +
+      '  label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }\n';
+  }
+
+  return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Engremiat -- ' + escapeHtmlLocal(nombrePagina.toLowerCase()) + '</title>\n' +
+    '<link rel="stylesheet" href="tokens.css">\n<style>\n' +
+    '  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }\n' +
+    '  body { padding: 24px 28px 60px; max-width: 820px; }\n' +
+    '  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }\n' +
+    '  h1 { font-size: 18px; margin: 6px 0 4px; }\n' +
+    '  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }\n' +
+    '  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }\n' +
+    '  section { margin-bottom: 20px; }\n' +
+    cssExtra +
+    '</style>\n</head>\n<body>\n' +
+    '<a class="volver" href="' + escapeHtmlLocal(colgarDe) + '">' + textoVolver + '</a>\n' +
+    '<h1>' + escapeHtmlLocal(nombrePagina) + '</h1>\n' +
+    '<p class="hint">TODO: descripción real de qué hace esta página y de dónde sale su dato.</p>\n\n' +
+    secciones + '\n</body>\n</html>\n';
+}
+
+// Estado real en memoria de las columnas ya cargadas -- se reconstruye desde cero (nunca
+// se muta a mano) despues de cada escritura real, para no arriesgar drift con el Sheet.
+let columnasReales = [];
+
+async function cargarMapa() {
+  const cont = document.getElementById('columnas');
+  cont.innerHTML = '<p class="hint">Leyendo la jerarquía real...</p>';
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+    const indice = obtenerIndiceReal(j);
+    const productos = (indice && indice.hijos) || [];
+
+    const fichas = await Promise.all(productos.map(p =>
+      fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(p.id)).then(r => r.json())
+    ));
+
+    // Solo entran aqui las paginas reales creadas POR Arquitecto -- reconstruir con
+    // generarHtmlReal() sobrescribe TODO el body con cajas+fragmentos, y una pagina real
+    // hecha a mano (panel_operativo.html, tecnico.html...) perderia su contenido real de
+    // verdad sin aviso. "(creada con Arquitecto)" en la DESCRIPCION real es la unica marca
+    // fiable -- comprobado contra las 7 paginas reales de Indice antes de construir esto:
+    // solo mapa.html la lleva, las otras 6 son reales pero hechas a mano.
+    columnasReales = productos.map((p, i) => {
+      const campos = (fichas[i] && fichas[i].campos) || {};
+      const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || p.nombre || '');
+      const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
+      return {
+        id: p.id,
+        nombre: (campos.NOMBRE || p.nombre || '').replace(/\s*\([\w.-]+\.html\)\s*$/, ''),
+        archivo: mArchivo ? mArchivo[1] : '',
+        colgarDe: mColgarDe ? mColgarDe[1] : 'home.html',
+        creadaConArquitecto: /\(creada con Arquitecto\)/.test(campos.DESCRIPCION || ''),
+        procesos: (p.hijos || []).map(pc => ({ id: pc.id, nombre: pc.nombre })),
+      };
+    }).filter(c => c.archivo && c.creadaConArquitecto);
+
+    renderColumnas();
+  } catch (e) {
+    cont.innerHTML = '<p class="estado error">No se pudo leer la jerarquía real: ' + escapeHtmlLocal(e.message) + '</p>';
+  }
+}
+
+function renderColumnas() {
+  const cont = document.getElementById('columnas');
+  const nota = document.getElementById('notaColumnas');
+  if (!columnasReales.length) {
+    cont.innerHTML = '<p class="hint">Todavía no hay ninguna página real creada con Arquitecto (aparte de esta misma). Crea una nueva en <a href="arquitecto.html">Arquitecto</a> para empezar a organizar la jerarquía aquí.</p>';
+    nota.textContent = '';
+    return;
+  }
+  nota.innerHTML = columnasReales.length === 1
+    ? 'Solo hay una página real creada con Arquitecto todavía -- puedes reordenar sus cajas, pero mover entre páginas necesita al menos dos.'
+    : '';
+  cont.innerHTML = columnasReales.map(c =>
+    '<div class="columna" data-producto-id="' + c.id + '" ondragover="alPasarSobreColumna(event, this)" ondragleave="this.classList.remove(\'sobre-drag\')" ondrop="alSoltarEnColumna(event, this)">' +
+      '<h2>' + escapeHtmlLocal(c.nombre) + '</h2>' +
+      '<p class="archivo">' + escapeHtmlLocal(c.archivo) + '</p>' +
+      '<div class="tarjetas-lista">' +
+        (c.procesos.length
+          ? c.procesos.map(pc =>
+              '<div class="tarjeta" draggable="true" data-proceso-id="' + pc.id + '" data-origen-producto-id="' + c.id + '" ' +
+                'ondragstart="alEmpezarArrastre(event, this)" ondragend="this.classList.remove(\'arrastrando\')">' +
+                escapeHtmlLocal(pc.nombre) +
+              '</div>'
+            ).join('')
+          : '<p class="vacia">Sin cajas reales todavía.</p>') +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+function alEmpezarArrastre(evt, el) {
+  el.classList.add('arrastrando');
+  evt.dataTransfer.setData('text/plain', JSON.stringify({ procesoId: el.dataset.procesoId, origenProductoId: el.dataset.origenProductoId }));
+  evt.dataTransfer.effectAllowed = 'move';
+}
+
+function alPasarSobreColumna(evt, columnaEl) {
+  evt.preventDefault();
+  columnaEl.classList.add('sobre-drag');
+}
+
+// Calcula donde insertar segun la posicion real del cursor -- compara con el punto medio
+// vertical de cada tarjeta ya presente (sin contar la que se esta arrastrando).
+function calcularIndiceInsercion(columnaEl, y) {
+  const tarjetas = [...columnaEl.querySelectorAll('.tarjeta:not(.arrastrando)')];
+  for (let i = 0; i < tarjetas.length; i++) {
+    const r = tarjetas[i].getBoundingClientRect();
+    if (y < r.top + r.height / 2) return i;
+  }
+  return tarjetas.length;
+}
+
+async function alSoltarEnColumna(evt, columnaEl) {
+  evt.preventDefault();
+  columnaEl.classList.remove('sobre-drag');
+  const { procesoId, origenProductoId } = JSON.parse(evt.dataTransfer.getData('text/plain'));
+  const productoDestinoId = columnaEl.dataset.productoId;
+  const indice = calcularIndiceInsercion(columnaEl, evt.clientY);
+
+  const colOrigen = columnasReales.find(c => c.id === origenProductoId);
+  const colDestino = columnasReales.find(c => c.id === productoDestinoId);
+  const proceso = colOrigen.procesos.find(p => p.id === procesoId);
+
+  // Nuevo orden real de la columna destino: sus procesos actuales (sin el que se mueve,
+  // si ya estaba aqui) mas el que se suelta, en la posicion real donde se solto.
+  const restoDestino = colDestino.procesos.filter(p => p.id !== procesoId).map(p => p.id);
+  restoDestino.splice(indice, 0, procesoId);
+
+  const estado = document.getElementById('estadoMapa');
+  const pasos = document.getElementById('pasosMapa');
+  pasos.innerHTML = '';
+
+  if (origenProductoId === productoDestinoId) {
+    // Reordenar dentro de la misma columna -- bajo riesgo, se aplica sola sin confirmar.
+    estado.className = 'estado';
+    estado.textContent = 'Reordenando "' + proceso.nombre + '" dentro de "' + colDestino.nombre + '"...';
+    try {
+      await fetch(URL_MEMORIA + '/api/reordenar_columna', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productoId: productoDestinoId, ordenIds: restoDestino }),
+      });
+      const r = await reconstruirYEncolarPagina(productoDestinoId);
+      estado.className = 'estado ok';
+      estado.textContent = 'Orden real guardado. Página "' + r.nombre + '" reconstruida en la cola.';
+      pasos.innerHTML = '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(r.archivo) + '</code> para aplicar el nuevo orden real.</li>';
+    } catch (e) {
+      estado.className = 'estado error';
+      estado.textContent = 'No se pudo reordenar de verdad: ' + e.message;
+    }
+    await cargarMapa();
+    return;
+  }
+
+  // Cruzar de columna reasigna PRODUCTO_ID de verdad -- nunca sin confirmacion explicita,
+  // mismo criterio ya usado en mesa_montaje.html (nunca escribir de verdad al soltar sin mas).
+  const confirmado = confirm('¿Mover "' + proceso.nombre + '" de "' + colOrigen.nombre + '" a "' + colDestino.nombre + '"?\n\nEsto reconstruye las DOS páginas reales.');
+  if (!confirmado) return;
+
+  const restoOrigen = colOrigen.procesos.filter(p => p.id !== procesoId).map(p => p.id);
+
+  estado.className = 'estado';
+  estado.textContent = 'Moviendo "' + proceso.nombre + '" de verdad...';
+  try {
+    if (restoOrigen.length) {
+      await fetch(URL_MEMORIA + '/api/reordenar_columna', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productoId: origenProductoId, ordenIds: restoOrigen }),
+      });
+    }
+    await fetch(URL_MEMORIA + '/api/reordenar_columna', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productoId: productoDestinoId, ordenIds: restoDestino }),
+    });
+    const [rOrigen, rDestino] = await Promise.all([
+      reconstruirYEncolarPagina(origenProductoId),
+      reconstruirYEncolarPagina(productoDestinoId),
+    ]);
+    estado.className = 'estado ok';
+    estado.textContent = 'Movido de verdad. Las dos páginas reales están reconstruidas en la cola.';
+    pasos.innerHTML = [
+      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rOrigen.archivo) + '</code> (página de origen, "' + escapeHtmlLocal(rOrigen.nombre) + '").',
+      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rDestino.archivo) + '</code> (página de destino, "' + escapeHtmlLocal(rDestino.nombre) + '").',
+    ].map(p => '<li>' + p + '</li>').join('');
+  } catch (e) {
+    estado.className = 'estado error';
+    estado.textContent = 'No se pudo mover de verdad: ' + e.message;
+  }
+  await cargarMapa();
+}
+
+// Reconstruye una pagina real completa a partir de sus cajas y fragmentos YA guardados
+// (nunca inventa contenido) y la deja en la cola con reconstruccion:true -- mismo
+// mecanismo real ya construido y probado en arquitecto.html (§8.119).
+async function reconstruirYEncolarPagina(productoId) {
+  const ficha = await (await fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(productoId))).json();
+  const campos = ficha.campos || {};
+  const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || '');
+  if (!mArchivo) throw new Error('el NOMBRE real de ' + productoId + ' no trae "(archivo.html)"');
+  const archivo = mArchivo[1];
+  const nombrePagina = (campos.NOMBRE || '').replace(/\s*\([\w.-]+\.html\)\s*$/, '');
+  const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
+  const colgarDe = mColgarDe ? mColgarDe[1] : 'home.html';
+
+  const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+  const indice = obtenerIndiceReal(j);
+  const nodoProducto = (indice.hijos || []).find(p => p.id === productoId);
+  const procesos = (nodoProducto && nodoProducto.hijos) || [];
+
+  const fragmentos = await Promise.all(procesos.map(p =>
+    fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
+      .then(r => r.ok ? r.json() : { tipo: 'lista', contenido: [] })
+  ));
+
+  const cajas = procesos.map((p, i) => ({ nombre: p.nombre, tipo: fragmentos[i].tipo, tareas: fragmentos[i].contenido || [] }));
+  const html = generarHtmlReal(nombrePagina, cajas, colgarDe);
+
+  const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo, colgarDe, nombreColgarDe: colgarDe, html, reconstruccion: true }),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido al encolar ' + archivo);
+  return { archivo, nombre: nombrePagina };
+}
+
+cargarMapa();
+</script>
 </body>
 </html>
