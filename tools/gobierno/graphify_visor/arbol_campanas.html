@@ -45,6 +45,7 @@
   #cajaFicha .pie a { font-size: 11px; color: #6ea8ff; }
   #cajaFicha .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  .fila.resaltado-deeplink { background: #4c9aff22; border-radius: 4px; }
 </style>
 </head>
 <body>
@@ -166,6 +167,39 @@ function cerrarFicha() {
   document.getElementById('capaFicha').classList.remove('abierta');
 }
 
+// §8.121: deep-link real generico -- ?proyectoId=X (o el id real de cualquier nodo del
+// arbol) abre todos sus ancestros reales y hace scroll hasta el, en vez de dejar caer al
+// operador en el arbol completo colapsado. Pedido para enlazar mapa.html directo a Indice
+// sin duplicar esta vista de arbol -- funciona igual para cualquier otro proyecto real.
+function aplicarDeepLinkReal() {
+  const idObjetivo = new URLSearchParams(location.search).get('proyectoId');
+  if (!idObjetivo) return;
+  const filaObjetivo = document.querySelector('.fila[data-id="' + idObjetivo + '"]');
+  if (!filaObjetivo) return;
+
+  let actual = filaObjetivo;
+  while (true) {
+    const contenedorHijos = actual.closest('.hijos');
+    if (!contenedorHijos) break;
+    contenedorHijos.classList.add('abierto');
+    const filaPadre = contenedorHijos.previousElementSibling;
+    if (!filaPadre || !filaPadre.classList.contains('fila')) break;
+    filaPadre.classList.add('abierto');
+    const chevronPadre = filaPadre.querySelector('.chevron');
+    if (chevronPadre && chevronPadre.getAttribute('onclick')) chevronPadre.textContent = '▾';
+    actual = filaPadre;
+  }
+
+  filaObjetivo.classList.add('abierto');
+  const propiosHijos = filaObjetivo.nextElementSibling;
+  if (propiosHijos && propiosHijos.classList.contains('hijos')) propiosHijos.classList.add('abierto');
+  const chevronPropio = filaObjetivo.querySelector('.chevron');
+  if (chevronPropio && chevronPropio.getAttribute('onclick')) chevronPropio.textContent = '▾';
+
+  filaObjetivo.classList.add('resaltado-deeplink');
+  filaObjetivo.scrollIntoView({ block: 'center', behavior: 'smooth' });
+}
+
 async function cargarArbol() {
   const estado = document.getElementById('estado');
   const cont = document.getElementById('arbol');
@@ -177,6 +211,7 @@ async function cargarArbol() {
     estado.textContent = `${arbol.length} campaña(s) real(es) -- leído ${leidoEn.slice(0, 16).replace('T', ' ')}.`;
     renderKpisGlobales(arbol);
     cont.innerHTML = arbol.map(renderNodo).join('') || '<p class="hint">Ninguna campaña real todavía.</p>';
+    aplicarDeepLinkReal();
   } catch {
     estado.textContent = 'No se pudo leer el árbol real ahora mismo.';
     document.getElementById('kpisGlobales').innerHTML = '';
