@@ -1538,6 +1538,8 @@ Pedido inicial, mal entendido a tiempo: *"repasar y crearlas nuevas desde arquit
 
 **Verificado**: sintaxis con `node`/`vm.Script`; lógica de apertura de ancestros probada en el navegador real inyectando un árbol sintético de 3 niveles (Campaña→Proyecto→Producto) y comprobando con JS que el nodo objetivo queda resaltado+abierto y que TODOS sus ancestros reales (y sus contenedores de hijos) quedan abiertos -- confirmado visualmente con captura de pantalla. Enlace real desde `mapa.html` verificado con `find` (apunta exactamente a `arbol_campanas.html?proyectoId=PRO-0002`).
 
+**Corrección inmediata**: capturado real por el propio operador (captura de pantalla) -- *"sigue sin salir la jerarquía real aquí"*. El filtro de §8.120 (solo columnas "creada con Arquitecto") dejaba a `mapa.html` mostrando una única columna real, y la intención real era repasar la jerarquía completa de Índice, no solo lo creado con Arquitecto. Corregido sin perder la salvaguarda real: `cargarMapa()` ahora muestra las 7 páginas reales de Índice como columnas, pero las 6 hechas a mano se pintan con 🔒 y en modo solo lectura de verdad (sin `draggable`, sin `ondrop` en la columna -- el navegador rechaza el drop de forma nativa, no hace falta ninguna comprobación extra) -- solo "Mapa" admite arrastre real. El aviso de "solo hay una página editable" ahora cuenta páginas editables reales, no columnas totales. Verificado en aislado con `node`+`vm` contra el Sheet real: 7 columnas reales, cada una con el recuento real correcto de cajas (2/2/3/2/3/2/1, coincide con `05_PROCESOS` leído directamente), solo `Mapa` marcada como editable.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

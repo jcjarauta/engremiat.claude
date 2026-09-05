@@ -20,6 +20,10 @@
   .tarjeta { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; cursor: grab; }
   .tarjeta:hover { border-color: #6ea8ff; }
   .tarjeta.arrastrando { opacity: 0.35; }
+  .columna.solo-lectura { opacity: 0.6; }
+  .columna.solo-lectura h2 { font-size: 12px; }
+  .tarjeta.solo-lectura { cursor: default; }
+  .tarjeta.solo-lectura:hover { border-color: var(--color-base-borde); }
   p.vacia { font-size: 11px; color: var(--color-base-texto-tenue); font-style: italic; margin: 0; }
   .estado { font-size: 12px; margin: 14px 0 0; min-height: 16px; white-space: pre-wrap; }
   .estado.error { color: #e85c8a; }
@@ -31,7 +35,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Mapa -- jerarquía real de Índice</h1>
-<p class="hint">Columnas = páginas reales de <a href="grafos.html">Índice</a> creadas <b>con Arquitecto</b> (nunca las hechas a mano -- reconstruir sobrescribiría su contenido real de verdad, así que quedan fuera a propósito). Tarjetas = sus cajas reales (Proceso). Arrastra una tarjeta <b>dentro de su columna</b> para reordenarla (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>). Arrástrala <b>a otra columna</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a> -- aquí solo se configura la jerarquía. Para ver Índice dentro del árbol real completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
+<p class="hint">Columnas = todas las páginas reales de <a href="grafos.html">Índice</a>. Tarjetas = sus cajas reales (Proceso). Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las creadas <b>con Arquitecto</b> se pueden mover/reordenar de verdad. Arrastra una tarjeta <b>dentro de su columna</b> para reordenarla (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>). Arrástrala <b>a otra columna</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a> -- aquí solo se configura la jerarquía. Para ver Índice dentro del árbol real completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
 
 <div id="columnas" class="columnas"><p class="hint">Leyendo la jerarquía real...</p></div>
 <p id="notaColumnas" class="hint" style="margin-top:8px;"></p>
@@ -164,12 +168,14 @@ async function cargarMapa() {
       fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(p.id)).then(r => r.json())
     ));
 
-    // Solo entran aqui las paginas reales creadas POR Arquitecto -- reconstruir con
-    // generarHtmlReal() sobrescribe TODO el body con cajas+fragmentos, y una pagina real
-    // hecha a mano (panel_operativo.html, tecnico.html...) perderia su contenido real de
-    // verdad sin aviso. "(creada con Arquitecto)" en la DESCRIPCION real es la unica marca
-    // fiable -- comprobado contra las 7 paginas reales de Indice antes de construir esto:
-    // solo mapa.html la lleva, las otras 6 son reales pero hechas a mano.
+    // Se muestran TODAS las paginas reales de Indice (para repasar la jerarquia completa,
+    // igual que arbol_campanas.html) -- pero solo las creadas POR Arquitecto admiten
+    // arrastre real. Reconstruir con generarHtmlReal() sobrescribe TODO el body con
+    // cajas+fragmentos, y una pagina real hecha a mano (panel_operativo.html, tecnico.html...)
+    // perderia su contenido real de verdad sin aviso. "(creada con Arquitecto)" en la
+    // DESCRIPCION real es la unica marca fiable -- comprobado contra las 7 paginas reales de
+    // Indice antes de construir esto: solo mapa.html la lleva, las otras 6 son reales pero
+    // hechas a mano, y aqui se ven en modo solo lectura, nunca arrastrables.
     columnasReales = productos.map((p, i) => {
       const campos = (fichas[i] && fichas[i].campos) || {};
       const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || p.nombre || '');
@@ -182,7 +188,7 @@ async function cargarMapa() {
         creadaConArquitecto: /\(creada con Arquitecto\)/.test(campos.DESCRIPCION || ''),
         procesos: (p.hijos || []).map(pc => ({ id: pc.id, nombre: pc.nombre })),
       };
-    }).filter(c => c.archivo && c.creadaConArquitecto);
+    }).filter(c => c.archivo);
 
     renderColumnas();
   } catch (e) {
@@ -194,15 +200,29 @@ function renderColumnas() {
   const cont = document.getElementById('columnas');
   const nota = document.getElementById('notaColumnas');
   if (!columnasReales.length) {
-    cont.innerHTML = '<p class="hint">Todavía no hay ninguna página real creada con Arquitecto (aparte de esta misma). Crea una nueva en <a href="arquitecto.html">Arquitecto</a> para empezar a organizar la jerarquía aquí.</p>';
+    cont.innerHTML = '<p class="hint">Índice todavía no tiene ninguna página real.</p>';
     nota.textContent = '';
     return;
   }
-  nota.innerHTML = columnasReales.length === 1
-    ? 'Solo hay una página real creada con Arquitecto todavía -- puedes reordenar sus cajas, pero mover entre páginas necesita al menos dos.'
+  const editables = columnasReales.filter(c => c.creadaConArquitecto).length;
+  nota.innerHTML = editables <= 1
+    ? 'Solo "' + (columnasReales.find(c => c.creadaConArquitecto) || {}).nombre + '" es editable de verdad (creada con Arquitecto) -- mover entre páginas necesita al menos dos páginas editables. Las demás se ven en solo lectura, para no arriesgar su contenido real hecho a mano.'
     : '';
-  cont.innerHTML = columnasReales.map(c =>
-    '<div class="columna" data-producto-id="' + c.id + '" ondragover="alPasarSobreColumna(event, this)" ondragleave="this.classList.remove(\'sobre-drag\')" ondrop="alSoltarEnColumna(event, this)">' +
+  cont.innerHTML = columnasReales.map(c => {
+    if (!c.creadaConArquitecto) {
+      // Solo lectura real -- sin draggable, sin drop, para no arriesgar destruir contenido
+      // real hecho a mano con una reconstruccion accidental.
+      return '<div class="columna solo-lectura" data-producto-id="' + c.id + '">' +
+        '<h2>🔒 ' + escapeHtmlLocal(c.nombre) + '</h2>' +
+        '<p class="archivo">' + escapeHtmlLocal(c.archivo) + ' -- hecha a mano, solo lectura</p>' +
+        '<div class="tarjetas-lista">' +
+          (c.procesos.length
+            ? c.procesos.map(pc => '<div class="tarjeta solo-lectura">' + escapeHtmlLocal(pc.nombre) + '</div>').join('')
+            : '<p class="vacia">Sin cajas reales todavía.</p>') +
+        '</div>' +
+      '</div>';
+    }
+    return '<div class="columna" data-producto-id="' + c.id + '" ondragover="alPasarSobreColumna(event, this)" ondragleave="this.classList.remove(\'sobre-drag\')" ondrop="alSoltarEnColumna(event, this)">' +
       '<h2>' + escapeHtmlLocal(c.nombre) + '</h2>' +
       '<p class="archivo">' + escapeHtmlLocal(c.archivo) + '</p>' +
       '<div class="tarjetas-lista">' +
@@ -215,8 +235,8 @@ function renderColumnas() {
             ).join('')
           : '<p class="vacia">Sin cajas reales todavía.</p>') +
       '</div>' +
-    '</div>'
-  ).join('');
+    '</div>';
+  }).join('');
 }
 
 function alEmpezarArrastre(evt, el) {
