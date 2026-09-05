@@ -1554,6 +1554,16 @@ Encontrado por el propio operador, a mano en `arbol_campanas.html`: creado `PRD-
 
 **Pendiente, aparcado explícitamente ("luego lo definimos")**: qué hacer con `PRD-0009 "RECURSOS"` ya creado -- retrofit a la convención real de Arquitecto y generar `recursos.html` de verdad, o dejarlo como registro genérico sin página. Decisión del operador, no asumida.
 
+### 8.123 Endurecido a redirección dura + reconstrucción automática de Proceso/Tarea
+
+Pedido tras valorar (como asesor técnico) automatizar la sincronización real Sheet↔HTML en tres capas -- Índice-en-Mapa (ya automático, es lectura en vivo), Proceso/Tarea nuevos, y enlace en `home.html`. El operador descartó explícitamente la tercera capa (*"NO HACE FALTA SINCRONIZARLA"* -- `home.html` es una página real hecha a mano, reconstruirla la destruiría igual que a las otras 6) y confirmó las otras dos.
+
+**Capa 1 -- endurecido, no solo avisado**: el aviso suave de §8.122 (`confirm()` que dejaba seguir) se sustituye por una redirección dura real: si el tipo es Producto y el padre es `PRO-0002`, `debeRedirigirAArquitecto()` cancela la creación genérica y manda de verdad a `arquitecto.html` -- nunca más un Producto de Índice a medias como `PRD-0009`. El resto de proyectos reales siguen creando Productos con el flujo genérico, sin cambios.
+
+**Capa 2 -- reconstrucción real automática**: si se crea un Proceso o una Tarea real bajo una página de Índice YA gestionada por Arquitecto (detectado leyendo su `DESCRIPCION` real en busca de `"(creada con Arquitecto)"`, mismo criterio que `mapa.html`), `intentarEncolarReconstruccionSiAplica()` reutiliza literalmente `reconstruirYEncolarPagina()` (misma función, sin cambios, duplicada en `arbol_campanas.html` como página autocontenida) para encolar la reconstrucción real -- nunca la despliega sola, el aviso final sigue diciendo `node aplicar_pagina_arquitecto.mjs X`, la Puerta Humana queda intacta. Si la página es hecha a mano, no hace nada (nunca reconstruye lo que no gestiona).
+
+**Verificado**: sintaxis con `node`/`vm.Script`; `debeRedirigirAArquitecto()` probado en aislado (Producto bajo Índice redirige de verdad a `arquitecto.html`, Producto bajo otro proyecto real no, Proceso bajo Índice no aplica); `intentarEncolarReconstruccionSiAplica()` probado en aislado con un backend simulado con dos Productos reales (uno marcado `"(creada con Arquitecto)"`, otro hecho a mano) -- los 4 casos reales (Proceso/Tarea × gestionado/hecho a mano) se comportan exactamente como se esperaba: encola solo cuando corresponde. No se hizo una prueba en vivo con una Tarea real nueva porque no habría forma de borrarla después y el patrón de escritura (`reconstruirYEncolarPagina`) ya está probado en vivo desde §8.119/§8.120 -- lo nuevo aquí es solo la lógica de detección, ya cubierta en aislado.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
