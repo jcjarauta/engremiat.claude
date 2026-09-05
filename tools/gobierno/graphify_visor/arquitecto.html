@@ -40,7 +40,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
-<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
 
 <div class="bloque">
   <h2>1. Nombre real de la página</h2>
@@ -279,6 +279,20 @@ function generarHtmlReal(nombrePagina, cajas, colgarDe) {
     secciones + '\n</body>\n</html>\n';
 }
 
+// §8.118: guarda el HTML real generado en la cola de servidor_memoria.mjs para que
+// aplicar_pagina_arquitecto.mjs (CLI, nunca el navegador) pueda guardarlo en disco,
+// añadir su linea de volumen en docker-compose.yml, desplegar y verificar -- ver
+// comentario real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs. Si esto
+// falla (servidor no disponible ahora mismo), no se pierde nada real: el HTML sigue
+// completo en el textarea de abajo para copiar y aplicar a mano.
+async function guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, html) {
+  const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo: archivoPagina, colgarDe, nombreColgarDe, html }),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+}
+
 async function crearRegistroReal(tipo, nombre, padreId, descripcion) {
   const campos = { NOMBRE: nombre };
   if (descripcion) campos.DESCRIPCION = descripcion;
@@ -328,19 +342,36 @@ async function construirPagina() {
       idsCajas.push({ procesoId, nombre: caja.nombre, idsTareas });
     }
 
-    estado.className = 'estado ok';
-    estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-      cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '.';
-
-    document.getElementById('htmlGenerado').value = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    document.getElementById('htmlGenerado').value = htmlGenerado;
     const fragmentoEnlace = '<a href="' + escapeHtmlLocal(archivoPagina) + '">' + escapeHtmlLocal(nombrePagina) + '</a>';
-    document.getElementById('pasosReales').innerHTML = [
-      'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
-      'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
-      'Enlaza la página nueva desde <code>' + escapeHtmlLocal(colgarDe) + '</code> (elegiste que cuelgue de "' + escapeHtmlLocal(nombreColgarDe) + '"), adaptando el estilo real de esa página: <code>' + escapeHtmlLocal(fragmentoEnlace) + '</code>',
-      'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.',
-      'Despliega con <code>node desplegar_visor.mjs</code> y verifica con <code>curl</code>/navegador.',
-    ].map(p => '<li>' + p + '</li>').join('');
+    const pasoEnlazar = 'Enlaza la página nueva desde <code>' + escapeHtmlLocal(colgarDe) + '</code> (elegiste que cuelgue de "' + escapeHtmlLocal(nombreColgarDe) + '"), adaptando el estilo real de esa página: <code>' + escapeHtmlLocal(fragmentoEnlace) + '</code>';
+    const pasoTodo = 'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.';
+
+    let pasos;
+    try {
+      await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado);
+      estado.className = 'estado ok';
+      estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
+        cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
+      pasos = [
+        'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- guarda el fichero real, añade su línea de volumen en <code>docker-compose.yml</code>, despliega y verifica, todo automático.',
+        pasoEnlazar,
+        pasoTodo,
+      ];
+    } catch (e) {
+      estado.className = 'estado ok';
+      estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
+        cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
+      pasos = [
+        'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
+        'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
+        pasoEnlazar,
+        pasoTodo,
+        'Despliega con <code>node desplegar_visor.mjs</code> y verifica con <code>curl</code>/navegador.',
+      ];
+    }
+    document.getElementById('pasosReales').innerHTML = pasos.map(p => '<li>' + p + '</li>').join('');
     document.getElementById('salidaHtml').classList.add('activo');
   } catch (e) {
     estado.className = 'estado error';

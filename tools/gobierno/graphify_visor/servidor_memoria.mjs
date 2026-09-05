@@ -398,6 +398,27 @@ async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion, espaci
   }
 }
 
+// -- §8.118: cola real de paginas generadas por arquitecto.html, pendientes de aplicar
+// en disco por aplicar_pagina_arquitecto.mjs (CLI, nunca el propio navegador -- ninguna
+// pagina web puede escribir un fichero nuevo en el disco del operador ni tocar
+// docker-compose.yml, mismo limite real de siempre). Vive en DIR_DATOS (server-only,
+// nunca dual-montado como fichas_grafos.json -- graphify-visor no necesita servir esto).
+const RUTA_PAGINAS_PENDIENTES = join(DIR_DATOS, 'paginas_pendientes.json');
+function leerPaginasPendientes() {
+  return existsSync(RUTA_PAGINAS_PENDIENTES) ? JSON.parse(readFileSync(RUTA_PAGINAS_PENDIENTES, 'utf-8')) : { paginas: [] };
+}
+function guardarPaginaPendiente(entrada) {
+  const datos = leerPaginasPendientes();
+  datos.paginas = (datos.paginas || []).filter((p) => p.archivo !== entrada.archivo);
+  datos.paginas.push({ ...entrada, creadoEn: new Date().toISOString() });
+  writeFileSync(RUTA_PAGINAS_PENDIENTES, JSON.stringify(datos, null, 2), 'utf-8');
+}
+function borrarPaginaPendiente(archivo) {
+  const datos = leerPaginasPendientes();
+  datos.paginas = (datos.paginas || []).filter((p) => p.archivo !== archivo);
+  writeFileSync(RUTA_PAGINAS_PENDIENTES, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -890,6 +911,37 @@ const servidor = createServer(async (req, res) => {
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo promover de verdad: ' + e.message })); return;
       }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/pagina_pendiente') {
+      const { productoId, nombre, archivo, colgarDe, nombreColgarDe, html } = await leerCuerpo(req);
+      if (!productoId || !nombre || !archivo || !html) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan productoId/nombre/archivo/html' })); return;
+      }
+      try {
+        guardarPaginaPendiente({ productoId, nombre, archivo, colgarDe: colgarDe || 'home.html', nombreColgarDe: nombreColgarDe || 'home.html', html });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la pagina pendiente real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/pagina_pendiente')) {
+      const archivo = new URL(req.url, 'http://x').searchParams.get('archivo');
+      const datos = leerPaginasPendientes();
+      if (archivo) {
+        const entrada = (datos.paginas || []).find((p) => p.archivo === archivo);
+        if (!entrada) { res.writeHead(404); res.end(JSON.stringify({ error: 'no hay ninguna pagina pendiente real con ese archivo' })); return; }
+        res.writeHead(200); res.end(JSON.stringify(entrada)); return;
+      }
+      res.writeHead(200); res.end(JSON.stringify({ paginas: (datos.paginas || []).map(({ html, ...resto }) => resto) })); return;
+    }
+
+    if (req.method === 'DELETE' && req.url.startsWith('/api/pagina_pendiente')) {
+      const archivo = new URL(req.url, 'http://x').searchParams.get('archivo');
+      if (!archivo) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta archivo' })); return; }
+      borrarPaginaPendiente(archivo);
+      res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
     }
 
     if (req.method === 'GET' && req.url === '/api/concilio_estado') {
