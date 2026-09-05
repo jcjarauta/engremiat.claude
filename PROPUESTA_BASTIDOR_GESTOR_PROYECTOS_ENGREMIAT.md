@@ -1416,6 +1416,8 @@ Pedido en dos mensajes: *"simplifica y añade un botón para promover al candida
 
 **Verificado extremo a extremo contra el VPS real**: `POST /api/promover_grafo` con `espacioReal:"n8n"` -> confirmado leyendo de vuelta `fichas_grafos.json` (`"espacioReal": "n8n"` guardado tal cual); `grafos.html?url=home.html` -> confirmado que el HTML servido contiene la lógica real que lee `?url=` y llama a `generarVistaPrevia()` sola. La entrada de prueba se borró de inmediato del `fichas_grafos.json` real (leído en vivo, editado, subido de nuevo) para no dejar un candidato falso en la galería real.
 
+**Corrección de simplificación** (feedback real con capturas): quitada del todo la `textarea` de descripción -- el texto real que generaba (URL, método usado, contadores) sigue calculándose igual y viajando en el `POST /api/promover_grafo`, solo que ya no se muestra ni se puede editar, para no saturar la caja. La leyenda de la página raíz, antes un texto genérico ("página raíz (la que pegaste)"), ahora muestra el nombre real de esa página -- mismo dato (`idRaiz`) que ya se usaba para colorearla, solo que ahora también se ve escrito. Verificado con `curl` que la `textarea` ya no aparece en el HTML servido y la leyenda sí lleva el nombre real.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

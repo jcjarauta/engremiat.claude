@@ -96,7 +96,6 @@
           <input id="espacioPropuesta" type="text" placeholder="espacio real (opcional, ej. n8n)" style="flex:1;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;">
           <select id="tipoPropuesta" style="flex:1;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px;font-size:11.5px;"></select>
         </div>
-        <textarea id="descripcionPropuesta" rows="2" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;resize:vertical;"></textarea>
         <button class="copiar" id="btnPromoverConstructor" style="width:100%;" onclick="promoverDesdeConstructor()">Promover como grafo real</button>
       </div>
     </div>
@@ -374,7 +373,7 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   });
 
   document.getElementById('leyendaPreview').innerHTML =
-    (idRaiz ? '<div class="leyenda-item"><span class="punto" style="background:#ffd43b"></span>página raíz (la que pegaste)</div>' : '') +
+    (idRaiz ? '<div class="leyenda-item"><span class="punto" style="background:#ffd43b"></span>página raíz: <b>' + idRaiz + '</b></div>' : '') +
     Object.entries(mapaColores).map(([tipo, color]) =>
       '<div class="leyenda-item"><span class="punto" style="background:' + color + '"></span>' + tipo + '</div>'
     ).join('') + (idsExternos.size ? '<div class="leyenda-item"><span class="punto externo"></span>externo (' + idsExternos.size + ')</div>' : '');
@@ -387,16 +386,15 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
     (idsExternos.size ? ', ' + idsExternos.size + ' destino(s) externo(s) sin resolver (no descartados)' : '') +
     (datos.tope ? ' -- tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado, puede haber más sin recorrer' : '') + '.';
 
-  ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos };
   const nombreArchivo = (urlPagina.split('/').pop() || urlPagina).replace(/\.(json|html)$/i, '');
-  document.getElementById('nombrePropuesta').value = nombreArchivo;
-  document.getElementById('espacioPropuesta').value = '';
-  document.getElementById('descripcionPropuesta').value =
-    'Generado desde el Constructor de grafos (' + urlPagina +
+  const descripcionReal = 'Generado desde el Constructor de grafos (' + urlPagina +
     (descubierto ? ', JSON real descubierto: ' + urlJson : '') +
     (extraidoEnVivo ? ', extraído en vivo de sus enlaces/llamadas reales' : '') + '): ' +
     datos.nodos.length + ' nodos, ' + datos.aristas.length + ' aristas' +
     (idsExternos.size ? ', ' + idsExternos.size + ' externo(s) sin resolver' : '') + '.';
+  ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos, descripcion: descripcionReal };
+  document.getElementById('nombrePropuesta').value = nombreArchivo;
+  document.getElementById('espacioPropuesta').value = '';
 }
 
 // Cierra el circulo real completo: crear (pegar una URL/HTML) -> configurar (nombre,
@@ -410,7 +408,7 @@ async function promoverDesdeConstructor() {
   const nombre = document.getElementById('nombrePropuesta').value.trim();
   const espacioReal = document.getElementById('espacioPropuesta').value.trim();
   const tipo = document.getElementById('tipoPropuesta').value;
-  const descripcion = document.getElementById('descripcionPropuesta').value.trim();
+  const descripcion = ultimoPreview.descripcion;
   if (!nombre) { alert('Falta el nombre real.'); return; }
   const id = nombre.replace(/[^a-z0-9_]/gi, '_').toLowerCase();
   const pagina = 'grafos.html?url=' + encodeURIComponent(ultimoPreview.url);
