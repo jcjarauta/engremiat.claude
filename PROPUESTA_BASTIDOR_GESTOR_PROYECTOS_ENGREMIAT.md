@@ -1462,6 +1462,20 @@ Corrección directa del operador sobre la ficha reenfocada de §8.113: *"me falt
 
 **Verificado con `node` contra el VPS real**: `grafo_recurso.json` -- el campo función reutiliza literalmente su `ficha.descripcion` real ya existente, marcado como "no reinventada aquí".
 
+### 8.115 Proyecto real "Índice": el propio catálogo de páginas como backlog -- y un incidente real de corrupción de datos, encontrado y corregido en el momento
+
+Pedido: *"crea un nuevo proyecto en CAM-0001 -- Panel Operativo llamado (índice), los productos son los html vinculados a home, los procesos son los espacios/bloques que componen el html, las tareas: lo que hacen... la idea es que en este 'índice' podamos construir nuevas html enlazadas a home de forma dinámica, valora y mejora la propuesta"*.
+
+**Investigado antes de construir**: confirmado vía `/api/jerarquia_campanas` que `CAM-0001` es de verdad "Panel Operativo", y que ya existe un Proyecto real "Grafos del sistema" (`PRO-0001`) con un único Producto. Confirmadas con `curl` las 6 páginas reales que enlaza `home.html` hoy. Detectado un problema real de nombres antes de crear nada: un Producto también llamado "Grafos del sistema" (para `grafos.html`) confundiría los dos niveles reales -- preguntado al operador, que decidió llamarlo simplemente "Índice".
+
+**Incidente real durante la construcción**: al crear ~40 filas reales seguidas vía `/api/crear_registro` (Proyecto→6 Productos→14 Procesos→20 Tareas), la API real de Google Sheets empezó a limitar la tasa de peticiones a mitad del lote. `siguienteIdReal()` en `servidor_memoria.mjs` no comprobaba el código de estado de su lectura -- ante un error real de Sheets, `.values` no existía, el máximo calculado caía a 0 EN SILENCIO, y el "siguiente id" se recalculaba como `-0001` aunque ya existiera de verdad. Resultado real confirmado leyendo el Sheet directamente (no vía el endpoint agregador, que ocultaba el problema): una fila real duplicada (`TAR-0001` dos veces, una original de `PCS-0003` y otra nueva de `PCS-0016`) y dos Productos completos (Técnico, Biblioteca) que el script daba por creados con éxito pero que **nunca llegaron a escribirse** en el Sheet real.
+
+**Corregido de raíz, en el momento, antes de continuar**: `siguienteIdReal()` ahora comprueba el status real de la respuesta y falla alto (nunca inventa un id) si Sheets no responde con éxito -- mismo criterio que ya tenía `appendFilaReal()`, ahora simétrico. Desplegado a `memoria-montaje` (con `--servicio` explícito, lección ya aprendida en §8.110) y verificado que el servidor sigue sano.
+
+**Reparación real de los datos**: releída la hoja real directamente (`sheets_get_values`, sin pasar por el agregador) para confirmar el alcance exacto del daño -- solo esa una fila duplicada y esos dos Productos ausentes, nada más corrupto. Corregido el ID duplicado (`TAR-0001`→`TAR-0029`, el siguiente real disponible) y completados Técnico/Biblioteca (Productos `PRD-0006`/`PRD-0007`, sus Procesos `PCS-0017`–`PCS-0021`, sus Tareas `TAR-0030`–`TAR-0034`, y sus filas de vínculo `04_PROYECTO_PRODUCTO`) mediante escrituras reales por lotes (`sheets_append_values`, unas pocas llamadas en vez de decenas sueltas) -- evitando repetir el mismo patrón de fallo. Releído el árbol completo de vuelta: `PRO-0002 Índice` con sus 7 Productos reales, 21 Procesos reales, 34 Tareas reales, sin IDs duplicados, todo consistente.
+
+**Resultado real final**: `PRO-0002 "Índice"` (En proceso -- deliberadamente abierto, no "Completado", porque su función real es seguir recibiendo Productos nuevos cada vez que se enlace una página nueva desde `home.html`) con 7 Productos reales (uno por página real enlazada), cada uno con sus Procesos reales (bloques/secciones reales verificadas en el propio código de cada página) y sus Tareas reales (funciones concretas ya construidas). Marcado todo como `Completado`/`Terminada` en el nivel que corresponde, reflejando lo que ya existe de verdad hoy.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

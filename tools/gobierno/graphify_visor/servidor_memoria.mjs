@@ -288,6 +288,12 @@ async function siguienteIdReal(token, hoja, prefijo) {
     'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A2:A2000',
     { headers: { Authorization: 'Bearer ' + token } }
   );
+  // Bug real encontrado y corregido (§8.115): sin este chequeo, un 429 real de Google (varias
+  // creaciones seguidas, ej. un alta masiva real) hacia que ".values" no existiera y el
+  // maximo calculado fuera 0 EN SILENCIO -- siguienteIdReal devolvia "-0001" como si la hoja
+  // real estuviera vacia, colisionando con un ID real ya existente. Ahora falla alto en vez
+  // de inventar un id equivocado.
+  if (r.status >= 400) throw new Error('Sheets respondio ' + r.status + ' al leer IDs reales de ' + hoja + ' -- no se puede calcular el siguiente id con seguridad: ' + await r.text());
   const filas = (await r.json()).values || [];
   const regex = new RegExp('^' + prefijo + '-(\\d{4})$');
   let maximo = 0;
