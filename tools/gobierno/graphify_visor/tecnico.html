@@ -47,6 +47,14 @@
   .valoracion .comparacion { margin-top: 10px; border-top: 1px dashed var(--color-base-borde); padding-top: 8px; }
   .valoracion .comparacion h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; margin: 6px 0 4px; color: var(--color-base-texto-suave); }
   .valoracion .sin-comparar { font-size: 11.5px; font-style: italic; color: var(--color-base-texto-tenue); margin-top: 8px; }
+  .badge.local { background: #4c9aff33; color: #6ea8ff; font-family: ui-monospace, monospace; }
+
+  .worker-local { border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 12px 16px; margin: 4px 0 20px; background: var(--color-base-panel); }
+  .worker-local .cabecera-worker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .worker-local .cabecera-worker span { font-weight: 600; font-size: 13px; flex: 1; }
+  button.copiar { font-size: 11.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 5px; padding: 5px 11px; cursor: pointer; }
+  button.copiar:hover { border-color: #6ea8ff; }
+  select.ficha-worker { font-size: 11.5px; background: var(--color-base-fondo); color: var(--color-base-texto); border: 1px solid var(--color-base-borde); border-radius: 5px; padding: 4px 6px; max-width: 260px; }
 </style>
 </head>
 <body>
@@ -54,12 +62,27 @@
 <h1>Técnico -- fichas de prompt</h1>
 <p class="hint">Prompts reales, ya probados contra una tarea concreta, listos para delegar a un worker (local o externo) -- mismo principio que <code>PROMPT_EJECUTOR.md</code>, extendido a tareas de desarrollo (§8.98). Ciclo real: Claude selecciona una tarea del backlog, la prueba de verdad, registra la evidencia genuina (qué funcionó, qué falló), y solo entonces se escribe la ficha -- nunca se declara "Probado" sin una prueba real detrás. Solo lectura: se escriben con <code>crear_ficha_prompt.mjs</code> (CLI), nunca desde aquí -- ningún botón de "ejecutar", Puerta Humana intacta.</p>
 
+<div class="worker-local">
+  <div class="cabecera-worker">
+    <span>Enviar una ficha al worker local (devstral-dev)</span>
+    <select id="selectorFichaWorker" class="ficha-worker"></select>
+    <button class="copiar" onclick="copiarPromptWorkerLocal()">Copiar prompt</button>
+    <button class="copiar" onclick="copiarComandoWorkerLocal()">Copiar comando</button>
+  </div>
+  <p class="hint" style="margin-top:8px;">Sin llamada en vivo desde el navegador: Ollama en la máquina del operador solo acepta conexiones desde 127.0.0.1 y bloquea (403) peticiones de otro origen por su política CORS -- comprobado en real antes de construir esto, ver <code>enviar_a_worker_local.mjs</code>. Copia el prompt de la ficha elegida, pégalo en el JSON de entrada, y ejecuta el comando real de abajo en local -- el resultado (con tokens/tiempo reales, $0) aparece luego en "Respuestas del worker local".</p>
+  <pre id="comandoWorkerLocal" class="prompt-texto">node enviar_a_worker_local.mjs &lt; tarea.json</pre>
+</div>
+
 <h2>Fichas reales <span id="cuenta"></span></h2>
 <div id="fichas"><p class="vacio">Cargando...</p></div>
 
 <h2>Valoraciones DeepSeek <span id="cuentaValoraciones"></span></h2>
 <p class="hint">Primer filtro automatico, complementa (nunca sustituye) a las fichas de arriba -- por cada tarea real del backlog de "Grafos del sistema", se envia a DeepSeek el enunciado real + contexto real del proyecto (reglas de oro, patrones ya probados) y propone valoracion/enfoque/riesgos/pasos, ANTES de que alguien la ejecute de verdad (§8.100). Cuando la tarea ya se ejecuto de verdad, se anota ademas una comparacion real contra lo que de verdad paso -- para calibrar cuanto fiarse de la valoracion antes de usarla en tareas nuevas. Mismo proveedor real que <code>tools/coordinador.mjs</code> (DeepSeek API, gasto real registrado en GASTO_API con tope $5/mes). Solo lectura: se escriben con <code>evaluar_tarea_deepseek.mjs</code> / <code>registrar_comparacion_deepseek.mjs</code> (CLI), nunca desde aqui -- ningun boton de "ejecutar", Puerta Humana intacta.</p>
 <div id="valoraciones"><p class="vacio">Cargando...</p></div>
+
+<h2>Respuestas del worker local <span id="cuentaWorkerLocal"></span></h2>
+<p class="hint">Misma idea que las valoraciones de DeepSeek, contra el modelo local (devstral-dev, $0 real, sin tope de gasto) -- para comparar la propuesta de un worker local contra la de una API de pago sobre la misma tarea real. Solo lectura: se escriben con <code>enviar_a_worker_local.mjs</code> / <code>registrar_comparacion_worker_local.mjs</code> (CLI, corren en local), nunca desde aquí.</p>
+<div id="respuestasLocal"><p class="vacio">Cargando...</p></div>
 
 <script>
 const ORDEN_ESTADO = { 'Listo para delegar': 0, 'Probado': 1, 'Borrador': 2 };
@@ -99,15 +122,38 @@ function renderFicha(f) {
     '</div>';
 }
 
+let fichasParaWorker = [];
+
 fetch('fichas_prompt.json').then(r => r.json()).then(d => {
   const fichas = Object.values(d.fichas || {}).sort((a, b) => (ORDEN_ESTADO[a.estado] ?? 9) - (ORDEN_ESTADO[b.estado] ?? 9));
+  fichasParaWorker = fichas;
   document.getElementById('cuenta').textContent = '(' + fichas.length + ')';
   document.getElementById('fichas').innerHTML = fichas.length
     ? fichas.map(renderFicha).join('')
     : '<p class="vacio">Sin fichas de prompt todavía -- usa crear_ficha_prompt.mjs tras probar una tarea real.</p>';
+  const selector = document.getElementById('selectorFichaWorker');
+  selector.innerHTML = fichas.map((f, i) => '<option value="' + i + '">' + escapeHtml(f.titulo) + '</option>').join('');
 }).catch(() => {
   document.getElementById('fichas').innerHTML = '<p class="hint">No se pudo cargar fichas_prompt.json.</p>';
 });
+
+function copiarPromptWorkerLocal() {
+  const i = Number(document.getElementById('selectorFichaWorker').value || 0);
+  const f = fichasParaWorker[i];
+  if (!f) { alert('Todavía no hay fichas cargadas.'); return; }
+  navigator.clipboard.writeText(f.prompt).then(
+    () => alert('Prompt real de "' + f.titulo + '" copiado -- pégalo como "descripcion" o "contexto" en el JSON de entrada de enviar_a_worker_local.mjs.'),
+    () => alert('No se pudo copiar automáticamente -- ábrelo con "Ver prompt completo" en la ficha y cópialo a mano.')
+  );
+}
+
+function copiarComandoWorkerLocal() {
+  const texto = document.getElementById('comandoWorkerLocal').textContent;
+  navigator.clipboard.writeText(texto).then(
+    () => alert('Comando copiado.'),
+    () => {}
+  );
+}
 
 function renderComparacion(c) {
   if (!c) return '<p class="sin-comparar">Todavía sin ejecutar de verdad -- sin comparación registrada.</p>';
@@ -143,6 +189,33 @@ fetch('evaluaciones_deepseek.json').then(r => r.json()).then(d => {
     : '<p class="vacio">Sin valoraciones todavía -- usa evaluar_tarea_deepseek.mjs sobre una tarea real del backlog.</p>';
 }).catch(() => {
   document.getElementById('valoraciones').innerHTML = '<p class="hint">No se pudo cargar evaluaciones_deepseek.json.</p>';
+});
+
+function renderRespuestaLocal(v) {
+  return '<div class="valoracion">' +
+    '<div class="cabecera">' +
+      '<span class="titulo">' + escapeHtml(v.titulo) + '</span>' +
+      '<span class="badge local">' + escapeHtml(v.modelo) + '</span>' +
+      '<span class="badge coste">' + (v.tokensEntrada + v.tokensSalida) + ' tok · ' + Number(v.duracionSegundos || 0).toFixed(1) + 's · $0</span>' +
+    '</div>' +
+    (v.tareaId ? '<div class="meta"><b>Tarea:</b> ' + escapeHtml(v.tareaId) + '</div>' : '') +
+    (v.valoracion ? '<p class="texto"><b>Valoración:</b> ' + escapeHtml(v.valoracion) + '</p>' : '') +
+    '<p class="texto"><b>Propuesta:</b> ' + escapeHtml(v.propuesta) + '</p>' +
+    renderLista('Riesgos señalados', v.riesgos, 'fallo') +
+    (v.pasos && v.pasos.length ? '<details class="prompt"><summary>Ver pasos propuestos</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:11.5px;line-height:1.6;">' + v.pasos.map(p => '<li>' + escapeHtml(p) + '</li>').join('') + '</ul></details>' : '') +
+    (v.contextoEnviado && v.contextoEnviado.length ? '<details class="prompt"><summary>Ver contexto real enviado</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:11.5px;line-height:1.6;">' + v.contextoEnviado.map(c => '<li>' + escapeHtml(c) + '</li>').join('') + '</ul></details>' : '') +
+    renderComparacion(v.comparacion) +
+    '</div>';
+}
+
+fetch('respuestas_worker_local.json').then(r => r.json()).then(d => {
+  const respuestas = Object.values(d.respuestas || {}).sort((a, b) => (b.generadoEn || '').localeCompare(a.generadoEn || ''));
+  document.getElementById('cuentaWorkerLocal').textContent = '(' + respuestas.length + ')';
+  document.getElementById('respuestasLocal').innerHTML = respuestas.length
+    ? respuestas.map(renderRespuestaLocal).join('')
+    : '<p class="vacio">Sin respuestas todavía -- usa enviar_a_worker_local.mjs sobre una tarea real del backlog.</p>';
+}).catch(() => {
+  document.getElementById('respuestasLocal').innerHTML = '<p class="hint">No se pudo cargar respuestas_worker_local.json.</p>';
 });
 </script>
 </body>

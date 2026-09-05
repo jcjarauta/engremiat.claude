@@ -61,6 +61,7 @@ services:
       - ./crear_ficha_prompt.mjs:/app/crear_ficha_prompt.mjs:ro
       - ./biblioteca.html:/app/biblioteca.html:ro
       - ./evaluaciones_deepseek.json:/app/evaluaciones_deepseek.json:ro
+      - ./respuestas_worker_local.json:/app/respuestas_worker_local.json:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320

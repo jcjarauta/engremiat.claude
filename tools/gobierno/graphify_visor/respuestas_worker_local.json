@@ -1,0 +1,49 @@
+{
+  "respuestas": {
+    "extractor_recurso_worker_local": {
+      "id": "extractor_recurso_worker_local",
+      "tareaId": "TAR-0002",
+      "titulo": "Extractor real de tipo Recurso",
+      "descripcion": "Escribir un extractor real (script Node) que genere un grafo real de las fichas de tipo Recurso del vault (01_Mundo/Recursos/), con sus nodos y sus relaciones declaradas reales, para alimentar una nueva vista del visor Graphify (vista_recursos.html) con vis-network.",
+      "contextoEnviado": [
+        "Ya existe cargar_desde_vault.mjs, que parsea el vault de Obsidian completo y escribe universo_real.json con nodos reales por categoria (espacios/recursos/modulos/personajes/oficios/reglas) y sus relacionesDeclaradas (wikilinks reales extraidos de la seccion \"## Relaciones\" de cada ficha .md).",
+        "Regla de oro del proyecto: solo lectura sobre las fuentes reales, nunca inventar un nodo o una arista que no exista de verdad en los datos.",
+        "Ya existe ficha_grafo.mjs con una funcion actualizarFichaGrafo() que cada extractor real debe llamar al terminar, pasandole contadores reales, para mantener un manifest compartido (fichas_grafos.json) con historial acumulado.",
+        "Patron ya documentado y exigido en este proyecto: antes de escribir un extractor nuevo, comprobar si otro extractor real ya existe para la misma fuente -- nunca debe haber dos lectores del mismo origen que no se crucen entre si (ya hubo un bug real de este tipo, documentado como error a no repetir).",
+        "Una entidad de un tipo puede tener relaciones declaradas hacia entidades de OTROS tipos (no solo del mismo tipo) -- cualquier indice de resolucion de relaciones debe cubrir todas las categorias reales del vault, no solo la del tipo que se esta extrayendo."
+      ],
+      "valoracion": "La tarea es factible y sigue los patrones ya establecidos en el proyecto.",
+      "propuesta": "Crear un extractor real para generar un grafo de fichas de tipo Recurso desde el vault (01_Mundo/Recursos/).",
+      "riesgos": [
+        "Duplicacion de datos si no se verifica correctamente la unicidad de las relaciones.",
+        "Errores en la resolución de relaciones si no se consideran todas las categorías del vault."
+      ],
+      "pasos": [
+        "Verificar que no exista otro extractor real para fichas de tipo Recurso.",
+        "Utilizar cargar_desde_vault.mjs para extraer los nodos y relaciones declaradas de las fichas de Recursos.",
+        "Crear un script Node que genere el grafo real de Recursos, asegurando que solo se incluyan nodos y aristas reales.",
+        "Llamar a actualizarFichaGrafo() al terminar, pasando contadores reales para mantener el manifest compartido (fichas_grafos.json)."
+      ],
+      "modelo": "devstral-dev",
+      "tokensEntrada": 511,
+      "tokensSalida": 231,
+      "duracionSegundos": 51.316,
+      "comparacion": {
+        "veredicto": "diverge",
+        "coincidencias": [
+          "Su primer paso propuesto fue 'verificar que no exista otro extractor real para fichas de tipo Recurso' -- coincide con el patron real exigido de comprobar duplicados antes de escribir.",
+          "Recomendo llamar a actualizarFichaGrafo() con contadores reales al final -- coincide con la implementacion real."
+        ],
+        "divergencias": [
+          "Propuso 'utilizar cargar_desde_vault.mjs para extraer los nodos y relaciones' en vez de leer universo_real.json (su salida ya generada) -- ambiguo como minimo, y en la practica el enfoque real evito precisamente volver a invocar el extractor original. No dejo explicito el punto central de no reparsear la fuente.",
+          "No menciono en ningun paso marcar las relaciones no resueltas como nodo 'externo' -- ausencia total, ni siquiera para descartarlo, pese a ser el patron mas caracteristico de manejo de errores de este proyecto (el mismo punto donde DeepSeek tambien divergio).",
+          "Detecto como riesgo real 'errores en la resolucion de relaciones si no se consideran todas las categorias del vault' -- el contexto se lo decia explicitamente -- pero no lo tradujo en ningun paso concreto de su propia propuesta (queda como riesgo sin resolver).",
+          "Respuesta bastante mas breve y generica que la de DeepSeek sobre la misma tarea y el mismo contexto real (2 riesgos/4 pasos de una frase cada uno, sin detalle de implementacion) -- señal real de menor profundidad para este tipo de tarea estructurada."
+        ],
+        "notas": "Primera prueba real del worker local (2026-09-05), misma tarea real (TAR-0002) y mismo contexto que se envio a DeepSeek para comparacion directa. Coincide en los dos puntos mas basicos (comprobar duplicados, llamar a actualizarFichaGrafo) pero diverge en el punto central de la tarea (evitar reparsear la fuente) y omite por completo el patron de no descartar en silencio -- para esta clase de tarea, la valoracion de DeepSeek fue mas completa y mas fiable que la del worker local con el mismo contexto real.",
+        "comparadoEn": "2026-09-05T02:04:06.055Z"
+      },
+      "generadoEn": "2026-09-05T02:03:16.497Z"
+    }
+  }
+}
