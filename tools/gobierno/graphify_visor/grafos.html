@@ -92,10 +92,7 @@
       <div id="proponerBox" style="margin-top:12px;border-top:1px solid var(--color-base-borde);padding-top:10px;">
         <p class="tipo-desc" style="margin:0 0 8px;">Configura y promueve esta vista previa como grafo real -- llamada en vivo a <code>/api/promover_grafo</code>, se guarda directo en <code>fichas_grafos.json</code> y aparece en la galería de arriba al recargar. Volver a esta ficha reabre esta misma extracción en vivo, siempre actualizada.</p>
         <input id="nombrePropuesta" type="text" placeholder="nombre real" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;">
-        <div style="display:flex;gap:6px;margin-bottom:6px;">
-          <input id="espacioPropuesta" type="text" placeholder="espacio real (opcional, ej. n8n)" style="flex:1;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;">
-          <select id="tipoPropuesta" style="flex:1;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px;font-size:11.5px;"></select>
-        </div>
+        <select id="tipoPropuesta" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px;font-size:11.5px;box-sizing:border-box;"></select>
         <button class="copiar" id="btnPromoverConstructor" style="width:100%;" onclick="promoverDesdeConstructor()">Promover como grafo real</button>
       </div>
     </div>
@@ -394,19 +391,17 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
     (idsExternos.size ? ', ' + idsExternos.size + ' externo(s) sin resolver' : '') + '.';
   ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos, descripcion: descripcionReal };
   document.getElementById('nombrePropuesta').value = nombreArchivo;
-  document.getElementById('espacioPropuesta').value = '';
 }
 
 // Cierra el circulo real completo: crear (pegar una URL/HTML) -> configurar (nombre,
-// espacio real, tipo) -> aprobar -> guardar -- todo en vivo, sin CLI. Reutiliza el mismo
-// endpoint real ya usado por el boton "Promover" de "A promover" (§8.95). Como un grafo
-// extraido en vivo no tiene una pagina visor propia, "pagina" apunta de vuelta a esta misma
-// caja con la URL original en la query -- reabrir la ficha vuelve a generar la misma
-// extraccion real, siempre actualizada, sin tener que guardar el JSON aparte.
+// tipo) -> aprobar -> guardar -- todo en vivo, sin CLI. Reutiliza el mismo endpoint real ya
+// usado por el boton "Promover" de "A promover" (§8.95). Como un grafo extraido en vivo no
+// tiene una pagina visor propia, "pagina" apunta de vuelta a esta misma caja con la URL
+// original en la query -- reabrir la ficha vuelve a generar la misma extraccion real,
+// siempre actualizada, sin tener que guardar el JSON aparte.
 async function promoverDesdeConstructor() {
   if (!ultimoPreview) { alert('Genera antes una vista previa real.'); return; }
   const nombre = document.getElementById('nombrePropuesta').value.trim();
-  const espacioReal = document.getElementById('espacioPropuesta').value.trim();
   const tipo = document.getElementById('tipoPropuesta').value;
   const descripcion = ultimoPreview.descripcion;
   if (!nombre) { alert('Falta el nombre real.'); return; }
@@ -417,11 +412,11 @@ async function promoverDesdeConstructor() {
   try {
     const r = await fetch(URL_MEMORIA + '/api/promover_grafo', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, nombre, tipo, pagina, descripcion, espacioReal: espacioReal || null }),
+      body: JSON.stringify({ id, nombre, tipo, pagina, descripcion }),
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'error real desconocido');
-    alert('"' + nombre + '" promovido como grafo real (' + tipo + (espacioReal ? ', espacio: ' + espacioReal : '') + '). Recarga la página para verlo en la galería de arriba.');
+    alert('"' + nombre + '" promovido como grafo real (' + tipo + '). Recarga la página para verlo en la galería de arriba.');
   } catch (e) {
     alert('No se pudo promover de verdad: ' + e.message);
   } finally {

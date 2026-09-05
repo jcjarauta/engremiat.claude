@@ -1418,6 +1418,8 @@ Pedido en dos mensajes: *"simplifica y añade un botón para promover al candida
 
 **Corrección de simplificación** (feedback real con capturas): quitada del todo la `textarea` de descripción -- el texto real que generaba (URL, método usado, contadores) sigue calculándose igual y viajando en el `POST /api/promover_grafo`, solo que ya no se muestra ni se puede editar, para no saturar la caja. La leyenda de la página raíz, antes un texto genérico ("página raíz (la que pegaste)"), ahora muestra el nombre real de esa página -- mismo dato (`idRaiz`) que ya se usaba para colorearla, solo que ahora también se ve escrito. Verificado con `curl` que la `textarea` ya no aparece en el HTML servido y la leyenda sí lleva el nombre real.
 
+**Segunda corrección de simplificación**: pedido *"quita la caja de espacio real"* -- eliminado el campo `espacioReal` de la caja (había sido añadido en la primera versión de §8.110 a petición explícita, pero el operador decidió que no hacía falta). `promoverDesdeConstructor()` ya no lo envía en el `POST` -- el backend lo sigue aceptando si algún día se necesita (queda `null` por defecto), no hizo falta tocar `servidor_memoria.mjs`. Verificado con `curl` que el campo ya no aparece en el HTML servido.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
