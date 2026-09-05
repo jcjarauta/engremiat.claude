@@ -419,6 +419,22 @@ function borrarPaginaPendiente(archivo) {
   writeFileSync(RUTA_PAGINAS_PENDIENTES, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
+// -- §8.119: contenido real de cada caja (Proceso), guardado aparte del Sheet -- el Sheet
+// solo sabe el NOMBRE/orden real de un Proceso, nunca su contenido de verdad. Sin esto,
+// "reconstruir" una pagina existente no tendria de donde sacar el contenido real ya escrito
+// y volveria siempre al TODO de partida. Igual que paginas_pendientes: solo datos, en
+// DIR_DATOS, nunca dual-montado.
+const RUTA_FRAGMENTOS_CAJAS = join(DIR_DATOS, 'fragmentos_cajas.json');
+function leerFragmentosCajas() {
+  return existsSync(RUTA_FRAGMENTOS_CAJAS) ? JSON.parse(readFileSync(RUTA_FRAGMENTOS_CAJAS, 'utf-8')) : { fragmentos: {} };
+}
+function guardarFragmentoCaja(procesoId, tipo, contenido) {
+  const datos = leerFragmentosCajas();
+  datos.fragmentos = datos.fragmentos || {};
+  datos.fragmentos[procesoId] = { tipo, contenido, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_FRAGMENTOS_CAJAS, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -914,12 +930,16 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/pagina_pendiente') {
-      const { productoId, nombre, archivo, colgarDe, nombreColgarDe, html } = await leerCuerpo(req);
+      const { productoId, nombre, archivo, colgarDe, nombreColgarDe, html, reconstruccion } = await leerCuerpo(req);
       if (!productoId || !nombre || !archivo || !html) {
         res.writeHead(400); res.end(JSON.stringify({ error: 'faltan productoId/nombre/archivo/html' })); return;
       }
       try {
-        guardarPaginaPendiente({ productoId, nombre, archivo, colgarDe: colgarDe || 'home.html', nombreColgarDe: nombreColgarDe || 'home.html', html });
+        // §8.119: reconstruccion=true marca que esta pagina YA existe de verdad y esto es
+        // una reconstruccion intencional (aplicar_pagina_arquitecto.mjs debe sobrescribir),
+        // no una colision accidental con una pagina nueva -- nunca se asume, siempre viaja
+        // explicito desde quien encola.
+        guardarPaginaPendiente({ productoId, nombre, archivo, colgarDe: colgarDe || 'home.html', nombreColgarDe: nombreColgarDe || 'home.html', html, reconstruccion: !!reconstruccion });
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la pagina pendiente real: ' + e.message })); return;
@@ -942,6 +962,28 @@ const servidor = createServer(async (req, res) => {
       if (!archivo) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta archivo' })); return; }
       borrarPaginaPendiente(archivo);
       res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/fragmento_caja')) {
+      const procesoId = new URL(req.url, 'http://x').searchParams.get('procesoId');
+      if (!procesoId) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta procesoId' })); return; }
+      const datos = leerFragmentosCajas();
+      const fragmento = (datos.fragmentos || {})[procesoId];
+      if (!fragmento) { res.writeHead(404); res.end(JSON.stringify({ error: 'sin fragmento real guardado todavia para ' + procesoId })); return; }
+      res.writeHead(200); res.end(JSON.stringify(fragmento)); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/fragmento_caja') {
+      const { procesoId, tipo, contenido } = await leerCuerpo(req);
+      if (!procesoId || !tipo || !Array.isArray(contenido)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan procesoId/tipo/contenido (array real)' })); return;
+      }
+      try {
+        guardarFragmentoCaja(procesoId, tipo, contenido);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el fragmento real: ' + e.message })); return;
+      }
     }
 
     if (req.method === 'GET' && req.url === '/api/concilio_estado') {

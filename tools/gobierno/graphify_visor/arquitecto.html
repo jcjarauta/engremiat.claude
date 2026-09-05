@@ -81,6 +81,23 @@
   <ol class="pasos" id="pasosReales"></ol>
 </div>
 
+<div class="bloque">
+  <h2>Editar contenido real de una página existente</h2>
+  <p class="hint">Elige una página real ya creada con Arquitecto. El nombre y el tipo de cada caja son reales (vienen del Sheet) -- lo único que escribes aquí es el contenido real de cada una. Al reconstruir, se regenera la página entera a partir de sus cajas reales y se aplica con el mismo <code>aplicar_pagina_arquitecto.mjs</code>.</p>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Página real a editar</label>
+      <select id="paginaEditar" style="width:100%;" onchange="cargarCajasEditar()"><option value="">Cargando páginas reales...</option></select>
+    </div>
+  </div>
+  <div id="listaCajasEditar"></div>
+  <div style="margin-top:16px;">
+    <button class="primario" id="btnReconstruir" onclick="guardarYReconstruir()" disabled>Guardar y reconstruir esta página</button>
+  </div>
+  <div id="estadoEditar" class="estado"></div>
+  <ol class="pasos" id="pasosEditar"></ol>
+</div>
+
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 const PROYECTO_INDICE_ID = 'PRO-0002';
@@ -142,6 +159,17 @@ function anadirCaja(nombreInicial) {
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
 
+// Busca el nodo real de Indice (PRO-0002) dentro del arbol completo real de campanas --
+// unica fuente real, reutilizada por todo lo que necesite las paginas/cajas reales de
+// Indice (el desplegable "de donde cuelga", el editor de paginas existentes, etc.).
+function obtenerIndiceReal(j) {
+  for (const campana of (j.arbol || j)) {
+    const indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
+    if (indice) return indice;
+  }
+  return null;
+}
+
 // El desplegable "¿de dónde cuelga?" se construye en vivo con las páginas reales que ya
 // son Producto dentro de Índice (PRO-0002) -- nunca una lista fija a mano, crece sola segun
 // se den de alta paginas nuevas con este mismo Arquitecto. "home.html" no es un Producto
@@ -151,11 +179,7 @@ async function cargarPaginasReales() {
   const select = document.getElementById('colgarDe');
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    let indice = null;
-    for (const campana of (j.arbol || j)) {
-      indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
-      if (indice) break;
-    }
+    const indice = obtenerIndiceReal(j);
     const paginas = [];
     for (const producto of (indice && indice.hijos) || []) {
       const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
@@ -285,10 +309,10 @@ function generarHtmlReal(nombrePagina, cajas, colgarDe) {
 // comentario real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs. Si esto
 // falla (servidor no disponible ahora mismo), no se pierde nada real: el HTML sigue
 // completo en el textarea de abajo para copiar y aplicar a mano.
-async function guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, html) {
+async function guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion) {
   const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo: archivoPagina, colgarDe, nombreColgarDe, html }),
+    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo: archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion: !!reconstruccion }),
   });
   if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
 }
@@ -376,6 +400,132 @@ async function construirPagina() {
   } catch (e) {
     estado.className = 'estado error';
     estado.textContent = 'No se pudo construir de verdad: ' + e.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+
+// §8.119: guarda solo el contenido real de una caja (nunca su nombre ni su tipo de
+// registro en el Sheet -- eso es estructura, fuera de alcance aqui). El Sheet solo
+// sabia el NOMBRE/orden real; el contenido de verdad vive aparte porque nunca tuvo
+// donde guardarse hasta ahora.
+async function guardarFragmentoCajaReal(procesoId, tipo, contenido) {
+  const r = await fetch(URL_MEMORIA + '/api/fragmento_caja', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ procesoId, tipo, contenido }),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+}
+
+// Estado real de la pagina que se esta editando ahora mismo (se rellena al elegirla).
+let paginaEditarActual = null;
+
+async function cargarPaginasEditables() {
+  const select = document.getElementById('paginaEditar');
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+    const indice = obtenerIndiceReal(j);
+    const paginas = [];
+    for (const producto of (indice && indice.hijos) || []) {
+      const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
+      if (m) paginas.push({ id: producto.id, archivo: m[1], nombre: producto.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
+    }
+    select.innerHTML = '<option value="">-- elige una página real --</option>' +
+      paginas.map(p => '<option value="' + p.id + '">' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ')</option>').join('');
+  } catch {
+    select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
+  }
+}
+cargarPaginasEditables();
+
+async function cargarCajasEditar() {
+  const productoId = document.getElementById('paginaEditar').value;
+  const lista = document.getElementById('listaCajasEditar');
+  const boton = document.getElementById('btnReconstruir');
+  document.getElementById('estadoEditar').textContent = '';
+  document.getElementById('pasosEditar').innerHTML = '';
+  boton.disabled = true;
+  paginaEditarActual = null;
+  lista.innerHTML = '';
+  if (!productoId) return;
+
+  lista.innerHTML = '<p class="hint">Leyendo cajas reales...</p>';
+  try {
+    const [ficha, jerarquia] = await Promise.all([
+      (await fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(productoId))).json(),
+      (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json(),
+    ]);
+    const campos = ficha.campos || {};
+    const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || '');
+    const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
+    if (!mArchivo) throw new Error('el NOMBRE real de este Producto no trae "(archivo.html)" -- no se puede reconstruir con seguridad');
+    const archivo = mArchivo[1];
+    const nombrePagina = (campos.NOMBRE || '').replace(/\s*\([\w.-]+\.html\)\s*$/, '');
+    const colgarDe = mColgarDe ? mColgarDe[1] : 'home.html';
+
+    const indice = obtenerIndiceReal(jerarquia);
+    const nodoProducto = (indice && indice.hijos || []).find(p => p.id === productoId);
+    const procesos = (nodoProducto && nodoProducto.hijos) || [];
+    if (!procesos.length) { lista.innerHTML = '<p class="hint">Este Producto real todavía no tiene ninguna caja (Proceso) real.</p>'; return; }
+
+    const fragmentos = await Promise.all(procesos.map(p =>
+      fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
+        .then(r => r.ok ? r.json() : { tipo: 'lista', contenido: [] })
+    ));
+
+    const opcionesTipo = Object.entries(TIPOS_CAJA).map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('');
+    lista.innerHTML = procesos.map((p, i) => {
+      const frag = fragmentos[i] || { tipo: 'lista', contenido: [] };
+      const ayuda = (TIPOS_CAJA[frag.tipo] || TIPOS_CAJA.lista).ayuda;
+      return '<div class="caja" data-proceso-id="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '">' +
+        '<div class="fila-caja">' +
+          '<div style="flex:1; padding:7px 0; font-size:12.5px;"><b>' + escapeHtmlLocal(p.nombre) + '</b></div>' +
+          '<select class="tipo-caja" onchange="actualizarAyudaCaja(this)">' + opcionesTipo.replace('value="' + frag.tipo + '"', 'value="' + frag.tipo + '" selected') + '</select>' +
+        '</div>' +
+        '<textarea class="tareas-caja" placeholder="' + ayuda + '">' + escapeHtmlLocal((frag.contenido || []).join('\n')) + '</textarea>' +
+        '<p class="ayuda-tipo">' + ayuda + '</p>' +
+      '</div>';
+    }).join('');
+
+    paginaEditarActual = { productoId, nombrePagina, archivo, colgarDe };
+    boton.disabled = false;
+  } catch (e) {
+    lista.innerHTML = '<p class="estado error">No se pudo leer de verdad: ' + escapeHtmlLocal(e.message) + '</p>';
+  }
+}
+
+async function guardarYReconstruir() {
+  if (!paginaEditarActual) return;
+  const { productoId, nombrePagina, archivo, colgarDe } = paginaEditarActual;
+  const estado = document.getElementById('estadoEditar');
+  const boton = document.getElementById('btnReconstruir');
+  estado.className = 'estado';
+  estado.textContent = 'Guardando el contenido real de cada caja...';
+  boton.disabled = true;
+
+  const cajasEl = [...document.querySelectorAll('#listaCajasEditar .caja')];
+  const cajas = cajasEl.map(el => ({
+    procesoId: el.dataset.procesoId,
+    nombre: el.dataset.nombre,
+    tipo: el.querySelector('.tipo-caja').value || 'lista',
+    tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
+  }));
+
+  try {
+    for (const c of cajas) {
+      await guardarFragmentoCajaReal(c.procesoId, c.tipo, c.tareas);
+    }
+    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    // reconstruccion=true -- distingue de una pagina nueva en la cola, ver comentario
+    // real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs.
+    await guardarPaginaPendienteReal(productoId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true);
+    estado.className = 'estado ok';
+    estado.textContent = 'Contenido real guardado y página reconstruida en la cola (' + cajas.length + ' caja(s)).';
+    document.getElementById('pasosEditar').innerHTML =
+      '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivo) + '</code> -- reconstruye el fichero real y despliega, todo automático.</li>';
+  } catch (e) {
+    estado.className = 'estado error';
+    estado.textContent = 'No se pudo guardar/reconstruir de verdad: ' + e.message;
   } finally {
     boton.disabled = false;
   }

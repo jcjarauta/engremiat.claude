@@ -66,7 +66,16 @@ async function main() {
   const entrada = await r.json();
 
   const rutaLocal = join(DIR_VISOR, archivo);
-  if (existsSync(rutaLocal)) fallar(`ya existe de verdad ${rutaLocal} -- si quieres reaplicar, bórralo tú primero (nunca se sobrescribe a ciegas)`);
+  // §8.119: reconstruccion=true significa que esta pagina ya existe de verdad y ESTO es
+  // intencional (viene de "Editar contenido real de una pagina existente" en
+  // arquitecto.html, nunca de la creacion de una pagina nueva) -- solo entonces se permite
+  // sobrescribir. Sin el flag, sigue el criterio real de siempre: nunca a ciegas.
+  if (existsSync(rutaLocal) && !entrada.reconstruccion) {
+    fallar(`ya existe de verdad ${rutaLocal} -- si quieres reaplicar, bórralo tú primero (nunca se sobrescribe a ciegas)`);
+  }
+  if (existsSync(rutaLocal) && entrada.reconstruccion) {
+    console.log(`(reconstruyendo pagina real existente -- ya tenia contenido en ${rutaLocal})`);
+  }
 
   console.log(`\n=== 2/4 Guardando el HTML real en ${rutaLocal} ===`);
   writeFileSync(rutaLocal, entrada.html, 'utf-8');
@@ -79,9 +88,13 @@ async function main() {
 
   await fetch(`${URL_MEMORIA}/api/pagina_pendiente?archivo=${encodeURIComponent(archivo)}`, { method: 'DELETE' }).catch(() => {});
 
-  console.log('\nAplicado. Pasos reales que SÍ necesitan tu criterio, todavía pendientes:');
-  console.log(`  1. Enlaza la página nueva desde ${entrada.colgarDe} (elegiste que cuelgue de "${entrada.nombreColgarDe}"): <a href="${archivo}">${entrada.nombre}</a>`);
-  console.log('  2. Rellena los TODO reales del HTML con el contenido de verdad de cada caja.');
+  if (entrada.reconstruccion) {
+    console.log('\nReconstruida y desplegada de verdad.');
+  } else {
+    console.log('\nAplicado. Pasos reales que SÍ necesitan tu criterio, todavía pendientes:');
+    console.log(`  1. Enlaza la página nueva desde ${entrada.colgarDe} (elegiste que cuelgue de "${entrada.nombreColgarDe}"): <a href="${archivo}">${entrada.nombre}</a>`);
+    console.log('  2. Rellena los TODO reales del HTML con el contenido de verdad de cada caja.');
+  }
 }
 
 main().catch((e) => fallar(e.message));
