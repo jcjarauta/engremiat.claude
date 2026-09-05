@@ -63,9 +63,11 @@
   #previewPanel .leyenda-item { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 12.5px; }
   #previewPanel .punto { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
   #previewPanel .punto.externo { border: 1px dashed var(--color-base-texto-tenue); background: transparent !important; }
-  #fichaPreview { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
-  #fichaPreview h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
-  #fichaPreview p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
+  #fichaPreview, .ficha-grafo { margin-top: 16px; border-top: 1px solid var(--color-base-borde); padding-top: 12px; font-size: 12.5px; }
+  #fichaPreview h3, .ficha-grafo h3 { margin: 0 0 6px; font-size: 14px; word-break: break-all; }
+  #fichaPreview p, .ficha-grafo p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
+  .ficha-grafo .pregunta { margin: 8px 0 2px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--color-base-texto-tenue); }
+  .ficha-grafo .respuesta { margin: 0; color: var(--color-base-texto-suave); line-height: 1.4; }
   button.copiar { font-size: 11.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 5px; padding: 6px 10px; cursor: pointer; }
   button.copiar:hover { border-color: #6ea8ff; }
 </style>
@@ -88,13 +90,14 @@
     <div id="previewRed"></div>
     <div id="previewPanel">
       <div id="leyendaPreview"></div>
-      <div id="fichaPreview"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
+      <div id="fichaGrafoPreview" class="ficha-grafo"></div>
       <div id="proponerBox" style="margin-top:12px;border-top:1px solid var(--color-base-borde);padding-top:10px;">
-        <p class="tipo-desc" style="margin:0 0 8px;">Configura y promueve esta vista previa como grafo real -- llamada en vivo a <code>/api/promover_grafo</code>, se guarda directo en <code>fichas_grafos.json</code> y aparece en la galería de arriba al recargar. Volver a esta ficha reabre esta misma extracción en vivo, siempre actualizada.</p>
+        <p class="tipo-desc" style="margin:0 0 8px;">Configura y promueve esta vista previa como grafo real -- llamada en vivo a <code>/api/promover_grafo</code>, se guarda directo en <code>fichas_grafos.json</code> y aparece en la galería de arriba al recargar. Volver a esta ficha reabre esta misma extracción en vivo, siempre actualizada. La descripción real guardada es la ficha del grafo de arriba, generada sola con la plantilla real (§8.111).</p>
         <input id="nombrePropuesta" type="text" placeholder="nombre real" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px 8px;font-size:11.5px;box-sizing:border-box;">
         <select id="tipoPropuesta" style="width:100%;margin-bottom:6px;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);color:var(--color-base-texto);border-radius:5px;padding:5px;font-size:11.5px;box-sizing:border-box;"></select>
         <button class="copiar" id="btnPromoverConstructor" style="width:100%;" onclick="promoverDesdeConstructor()">Promover como grafo real</button>
       </div>
+      <div id="fichaPreview" style="margin-top:12px;border-top:1px solid var(--color-base-borde);padding-top:10px;"><p class="hint">Haz clic en un nodo del grafo para ver su ficha real individual.</p></div>
     </div>
   </div>
 </div>
@@ -384,13 +387,50 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
     (datos.tope ? ' -- tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado, puede haber más sin recorrer' : '') + '.';
 
   const nombreArchivo = (urlPagina.split('/').pop() || urlPagina).replace(/\.(json|html)$/i, '');
-  const descripcionReal = 'Generado desde el Constructor de grafos (' + urlPagina +
-    (descubierto ? ', JSON real descubierto: ' + urlJson : '') +
-    (extraidoEnVivo ? ', extraído en vivo de sus enlaces/llamadas reales' : '') + '): ' +
-    datos.nodos.length + ' nodos, ' + datos.aristas.length + ' aristas' +
-    (idsExternos.size ? ', ' + idsExternos.size + ' externo(s) sin resolver' : '') + '.';
-  ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos, descripcion: descripcionReal };
+  const ficha = construirFichaGrafo(datos, idsExternos, { urlPagina, urlJson, descubierto, extraidoEnVivo });
+  document.getElementById('fichaGrafoPreview').innerHTML =
+    '<h3>Ficha del grafo</h3>' +
+    '<p class="pregunta">1. ¿Qué es cada nodo real?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta1) + '</p>' +
+    '<p class="pregunta">2. ¿Qué es cada arista real?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta2) + '</p>' +
+    '<p class="pregunta">3. ¿De qué fuente real sale?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta3) + '</p>' +
+    '<p class="pregunta">4. ¿Huecos/externos sin resolver?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta4) + '</p>' +
+    '<p class="pregunta">5. ¿Límite honesto?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta5) + '</p>';
+  ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos, descripcion: ficha.descripcion };
   document.getElementById('nombrePropuesta').value = nombreArchivo;
+}
+
+function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+// Construye la ficha real del grafo con la MISMA plantilla de 5 preguntas ya escrita junto
+// a actualizarFichaGrafo() en plantilla_extractor.mjs (§8.111) -- nunca un texto libre
+// distinto. Cada respuesta se calcula de verdad sobre los nodos/aristas ya generados, nunca
+// inventada. Esta misma descripcion (concatenada) es la que se guarda al promover.
+function construirFichaGrafo(datos, idsExternos, ctx) {
+  const porTipo = {};
+  for (const n of datos.nodos) porTipo[n.tipo || 'sin tipo'] = (porTipo[n.tipo || 'sin tipo'] || 0) + 1;
+  const porRelacion = {};
+  for (const a of datos.aristas) porRelacion[a.relation || 'sin tipo'] = (porRelacion[a.relation || 'sin tipo'] || 0) + 1;
+
+  const pregunta1 = Object.entries(porTipo).map(([t, n]) => n + ' de tipo "' + t + '"').join(', ') || 'sin nodos reales';
+  const pregunta2 = Object.entries(porRelacion).length
+    ? Object.entries(porRelacion).map(([r, n]) => '"' + r + '" (' + n + ')').join(', ')
+    : 'ninguna arista real';
+  const pregunta3 = ctx.extraidoEnVivo
+    ? 'Extraído en vivo de ' + ctx.urlPagina + ' -- enlaces y llamadas reales de su propio código, mismo método que mapear_grafo_visor.mjs.'
+    : (ctx.descubierto
+      ? 'JSON real ya generado, descubierto en ' + ctx.urlPagina + ' (' + ctx.urlJson + ').'
+      : 'JSON real ya generado directamente en ' + ctx.urlJson + '.');
+  const pregunta4 = idsExternos.size
+    ? idsExternos.size + ' destino(s) externo(s) sin resolver: ' + [...idsExternos].join(', ') + ' (no descartados).'
+    : 'Ninguno -- todas las aristas resuelven contra un nodo real de este grafo.';
+  const pregunta5 = ctx.extraidoEnVivo
+    ? 'Recorrido acotado a ' + TOPE_PAGINAS_RELACIONADAS + ' páginas reales; no incluye recursos reales de Sheet/Baserow (expondría el esquema de negocio del cliente, §8.109).'
+    : 'Grafo tal cual lo genera su extractor real -- consulta su propia ficha para más límites reales.';
+
+  const descripcion = 'Nodos reales: ' + pregunta1 + '. Aristas reales: ' + pregunta2 + '. Fuente: ' + pregunta3 +
+    ' Externos: ' + pregunta4 + ' Límite: ' + pregunta5;
+
+  return { pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, descripcion };
 }
 
 // Cierra el circulo real completo: crear (pegar una URL/HTML) -> configurar (nombre,
