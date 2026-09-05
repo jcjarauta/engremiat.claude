@@ -64,6 +64,7 @@ services:
       - ./evaluaciones_deepseek.json:/app/evaluaciones_deepseek.json:ro
       - ./respuestas_worker_local.json:/app/respuestas_worker_local.json:ro
       - ./servidor_memoria.mjs:/app/servidor_memoria.mjs:ro
+      - ./arquitecto.html:/app/arquitecto.html:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- arquitecto</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 820px; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  h1 { font-size: 18px; margin: 6px 0 4px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
+  .bloque { border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; background: var(--color-base-panel); }
+  input, textarea, select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; font-family: inherit; }
+  .fila { display: flex; gap: 8px; margin-bottom: 8px; }
+  .fila input { flex: 1; }
+  label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }
+  .caja { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 10px; background: var(--color-base-fondo); }
+  .caja .fila-caja { display: flex; gap: 8px; align-items: flex-start; }
+  .caja .fila-caja input.nombre-caja { flex: 1; }
+  .caja textarea.tareas-caja { width: 100%; margin-top: 6px; min-height: 54px; resize: vertical; }
+  button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+  button:hover { border-color: #6ea8ff; }
+  button.quitar { padding: 4px 9px; font-size: 11px; color: #e85c8a; border-color: #e85c8a55; }
+  button.primario { background: #4c9aff22; border-color: #4c9aff; }
+  .estado { font-size: 12px; margin: 8px 0; min-height: 16px; white-space: pre-wrap; }
+  .estado.error { color: #e85c8a; }
+  .estado.ok { color: #4fce6f; }
+  #salidaHtml { display: none; }
+  #salidaHtml.activo { display: block; }
+  textarea#htmlGenerado { width: 100%; min-height: 260px; font-family: ui-monospace, monospace; font-size: 11px; white-space: pre; }
+  ol.pasos { font-size: 12px; line-height: 1.7; color: var(--color-base-texto-suave); padding-left: 20px; }
+  ol.pasos code { color: #6fb3f2; }
+</style>
+</head>
+<body>
+<a class="volver" href="home.html">← Home</a>
+<h1>Arquitecto -- constructor dinámico de páginas</h1>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE. <b>2)</b> genera el HTML real de partida (con una sección por caja) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
+
+<div class="bloque">
+  <h2>1. Nombre real de la página</h2>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Nombre real (para mostrar)</label>
+      <input id="nombrePagina" type="text" placeholder="Ej. Cronista" oninput="sugerirArchivo()">
+    </div>
+    <div style="flex:1;">
+      <label>Fichero real (.html)</label>
+      <input id="archivoPagina" type="text" placeholder="ej_cronista.html">
+    </div>
+  </div>
+
+  <h2>2. Cajas reales (secciones)</h2>
+  <div id="listaCajas"></div>
+  <button onclick="anadirCaja()">+ Añadir caja</button>
+
+  <div style="margin-top:16px;">
+    <button class="primario" id="btnConstruir" onclick="construirPagina()">Construir página real (Sheet + HTML)</button>
+  </div>
+  <div id="estadoArquitecto" class="estado"></div>
+</div>
+
+<div class="bloque" id="salidaHtml">
+  <h2>HTML real generado</h2>
+  <p class="hint">Punto de partida real -- ya usa <code>tokens.css</code> y la misma estructura que el resto de páginas. Cópialo y sigue los pasos reales de abajo.</p>
+  <textarea id="htmlGenerado" readonly></textarea>
+  <button onclick="copiarHtmlGenerado()" style="margin-top:8px;">Copiar HTML</button>
+
+  <h2>Pasos reales que faltan (ninguna página web puede hacerlos por ti)</h2>
+  <ol class="pasos" id="pasosReales"></ol>
+</div>
+
+<script>
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+const PROYECTO_INDICE_ID = 'PRO-0002';
+let contadorCajas = 0;
+
+function slug(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+}
+
+function sugerirArchivo() {
+  const campo = document.getElementById('archivoPagina');
+  if (campo.dataset.tocado === '1') return;
+  const nombre = document.getElementById('nombrePagina').value;
+  campo.value = slug(nombre) + '.html';
+}
+document.getElementById('archivoPagina').addEventListener('input', function () { this.dataset.tocado = '1'; });
+
+function anadirCaja(nombreInicial) {
+  contadorCajas++;
+  const id = 'caja' + contadorCajas;
+  const div = document.createElement('div');
+  div.className = 'caja';
+  div.id = id;
+  div.innerHTML =
+    '<div class="fila-caja">' +
+      '<input class="nombre-caja" type="text" placeholder="Nombre real de la caja (ej. Backlog real)" value="' + (nombreInicial || '') + '">' +
+      '<button class="quitar" onclick="document.getElementById(\'' + id + '\').remove()">Quitar</button>' +
+    '</div>' +
+    '<textarea class="tareas-caja" placeholder="Una función real por línea, ej.:&#10;Mostrar el estado real de cada tarea&#10;Reclamar una tarea real"></textarea>';
+  document.getElementById('listaCajas').appendChild(div);
+}
+anadirCaja(); // arranca con una caja real vacía, nunca cero
+
+function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function copiarConFallback(texto, mensajeExito) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(() => alert(mensajeExito), () => alert('No se pudo copiar automáticamente. Contenido real:\n\n' + texto));
+  } else {
+    alert('Portapapeles no disponible. Contenido real:\n\n' + texto);
+  }
+}
+function copiarHtmlGenerado() {
+  copiarConFallback(document.getElementById('htmlGenerado').value, 'HTML real copiado.');
+}
+
+// Genera el HTML de partida real -- una <section> por caja real, con sus tareas reales
+// como lista de partida (<li> TODO). Misma plantilla visual ya establecida (tokens.css,
+// .hint, h1/h2) que el resto de páginas -- nunca un diseño distinto inventado aquí.
+function generarHtmlReal(nombrePagina, cajas) {
+  const secciones = cajas.map(c =>
+    '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' +
+    (c.tareas.length
+      ? '  <ul>\n' + c.tareas.map(t => '    <li>TODO: ' + escapeHtmlLocal(t) + '</li>').join('\n') + '\n  </ul>\n'
+      : '  <p class="hint">TODO: contenido real de esta caja.</p>\n') +
+    '</section>'
+  ).join('\n\n');
+
+  return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>Engremiat -- ' + escapeHtmlLocal(nombrePagina.toLowerCase()) + '</title>\n' +
+    '<link rel="stylesheet" href="tokens.css">\n<style>\n' +
+    '  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }\n' +
+    '  body { padding: 24px 28px 60px; max-width: 820px; }\n' +
+    '  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }\n' +
+    '  h1 { font-size: 18px; margin: 6px 0 4px; }\n' +
+    '  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }\n' +
+    '  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }\n' +
+    '  section { margin-bottom: 20px; }\n' +
+    '</style>\n</head>\n<body>\n' +
+    '<a class="volver" href="home.html">← Home</a>\n' +
+    '<h1>' + escapeHtmlLocal(nombrePagina) + '</h1>\n' +
+    '<p class="hint">TODO: descripción real de qué hace esta página y de dónde sale su dato.</p>\n\n' +
+    secciones + '\n</body>\n</html>\n';
+}
+
+async function crearRegistroReal(tipo, nombre, padreId) {
+  const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tipo, padreId, campos: { NOMBRE: nombre } }),
+  });
+  const j = await r.json();
+  if (!r.ok) throw new Error(tipo + ' "' + nombre + '": ' + (j.error || 'error real desconocido'));
+  return j.id;
+}
+
+async function construirPagina() {
+  const nombrePagina = document.getElementById('nombrePagina').value.trim();
+  const archivoPagina = document.getElementById('archivoPagina').value.trim() || (slug(nombrePagina) + '.html');
+  const estado = document.getElementById('estadoArquitecto');
+  const boton = document.getElementById('btnConstruir');
+  estado.className = 'estado';
+  estado.textContent = '';
+
+  const cajasEl = [...document.querySelectorAll('.caja')];
+  const cajas = cajasEl.map(el => ({
+    nombre: el.querySelector('.nombre-caja').value.trim(),
+    tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
+  })).filter(c => c.nombre);
+
+  if (!nombrePagina) { estado.className = 'estado error'; estado.textContent = 'Falta el nombre real de la página.'; return; }
+  if (!cajas.length) { estado.className = 'estado error'; estado.textContent = 'Añade al menos una caja real con nombre.'; return; }
+
+  boton.disabled = true;
+  estado.textContent = 'Creando la estructura real en Índice...';
+  try {
+    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', PROYECTO_INDICE_ID);
+    const idsCajas = [];
+    for (const caja of cajas) {
+      const procesoId = await crearRegistroReal('PROCESO', caja.nombre, productoId);
+      const idsTareas = [];
+      for (const tarea of caja.tareas) {
+        idsTareas.push(await crearRegistroReal('TAREA', tarea, procesoId));
+      }
+      idsCajas.push({ procesoId, nombre: caja.nombre, idsTareas });
+    }
+
+    estado.className = 'estado ok';
+    estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
+      cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + ').';
+
+    document.getElementById('htmlGenerado').value = generarHtmlReal(nombrePagina, cajas);
+    document.getElementById('pasosReales').innerHTML = [
+      'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
+      'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
+      'Enlaza la página nueva desde <code>home.html</code> (una tarjeta más, mismo patrón que las 7 ya reales).',
+      'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.',
+      'Despliega con <code>node desplegar_visor.mjs</code> y verifica con <code>curl</code>/navegador.',
+    ].map(p => '<li>' + p + '</li>').join('');
+    document.getElementById('salidaHtml').classList.add('activo');
+  } catch (e) {
+    estado.className = 'estado error';
+    estado.textContent = 'No se pudo construir de verdad: ' + e.message;
+  } finally {
+    boton.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
