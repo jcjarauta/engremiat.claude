@@ -1370,6 +1370,14 @@ Pedido: primero, confirmación de que ya existía una herramienta real que convi
 
 **Verificado con `node` directo contra el VPS** (sin navegador): de los 57 nodos reales de `grafo_visor.json`, 32 son alcanzables desde `home.html` (41 aristas), excluyendo correctamente las 11 páginas-herramienta de desarrollo (`holon.html`, `n8n.html`, `nodejs.html`, `vista_recursos/modulos/reglas.html`, `vista_sistema.html`, `anatomia.html`, `graph.html`, `boceto_layout_6_zonas.html`, `plantilla_grafo_espacio.html`) -- mismo cálculo que hace la propia página, confirmado desde fuera. `vista_home.html` responde 200 real y carga `grafo_visor.json` tal cual.
 
+### 8.107 "Regenerar grafo_visor.json": explicado y luego construido, mismo patrón CLI+panel
+
+Preguntado primero, en rol de asesor técnico: *"las funciones existen en mi máquina o lo tiene que ejecutar tú para crear los grafo_visor.json?"* -- respuesta real: `mapear_grafo_visor.mjs` es Node.js puro (solo módulos nativos + `ficha_grafo.mjs` local, cero dependencias que instalar), y cuando Claude lo "ejecuta" lo hace sobre la MISMA máquina del operador (la herramienta Bash de esta sesión no corre en un servidor remoto propio) -- el operador puede correr exactamente los mismos comandos él mismo, sin depender de Claude para nada especial.
+
+Pedido después: *"prepara una nueva sección parecida a Constructor de grafos para invocar mapear_grafo_visor.mjs y poder generar yo los JSON a mano"*. Aclarado explícitamente en el propio texto de la sección: ninguna página web puede lanzar un proceso en la máquina del operador -- ni con permisos de red, ni de ningún otro modo (a diferencia del caso Ollama del §8.102, esto no es un problema de CORS/bind resoluble, es una limitación real e insalvable del sandbox del navegador). Mismo patrón ya elegido dos veces (worker local, `proponer_candidato.mjs`): CLI + panel, nunca un botón de "ejecutar" falso.
+
+**Construida** la sección "Regenerar grafo_visor.json" en `grafos.html`: muestra en real cuándo se generó por última vez el `grafo_visor.json` ya publicado (fecha + contadores reales, leídos en vivo del propio fichero), y un botón "Copiar los 3 comandos" que copia el ciclo completo real (`cd tools/gobierno/graphify_visor` → `node mapear_grafo_visor.mjs` → `node desplegar_visor.mjs`) -- regenerar en local y publicar en el mismo paso, usando el `copiarConFallback()` ya construido en §8.105 para este mismo fichero. Desplegado y verificado con `curl`: la sección y los 3 comandos reales aparecen tal cual en el HTML servido.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

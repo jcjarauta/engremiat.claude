@@ -98,6 +98,16 @@
   </div>
 </div>
 
+<div class="constructor">
+  <h2>Regenerar grafo_visor.json</h2>
+  <p class="tipo-desc"><code>mapear_grafo_visor.mjs</code> (§8.83) es un script local que lee de verdad todos los <code>.html</code> de este visor -- una página web nunca puede ejecutarlo (ninguna página puede lanzar procesos en tu máquina, con o sin permisos de red; no es el mismo caso que Ollama). Aquí no hay botón de "ejecutar" -- copia el comando real de abajo y córrelo tú en <code>tools/gobierno/graphify_visor/</code>. El primer comando regenera el JSON en local; el segundo lo publica en este VPS para que <a href="vista_sistema.html">vista_sistema.html</a>/<a href="vista_home.html">vista_home.html</a> reflejen el cambio.</p>
+  <p id="estadoRegenerar" class="estado-constructor">Comprobando cuándo se generó por última vez...</p>
+  <pre id="comandoRegenerar" class="prompt-texto" style="white-space:pre-wrap;background:var(--color-base-fondo);border:1px solid var(--color-base-borde);border-radius:6px;padding:10px 12px;font-size:11.5px;line-height:1.5;margin:8px 0;font-family:ui-monospace,monospace;">cd tools/gobierno/graphify_visor
+node mapear_grafo_visor.mjs
+node desplegar_visor.mjs</pre>
+  <button class="copiar" onclick="copiarComandoRegenerar()">Copiar los 3 comandos</button>
+</div>
+
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
 <section>
@@ -306,6 +316,18 @@ function copiarConFallback(texto, mensajeExito) {
     alert('Portapapeles no disponible en este navegador. Comando real:\n\n' + texto);
   }
 }
+
+function copiarComandoRegenerar() {
+  copiarConFallback(document.getElementById('comandoRegenerar').textContent, 'Comandos copiados -- pégalos en tu terminal, en tools/gobierno/graphify_visor/.');
+}
+
+fetch('grafo_visor.json').then(r => r.json()).then(d => {
+  document.getElementById('estadoRegenerar').textContent = d.generadoEn
+    ? 'Generado por última vez: ' + new Date(d.generadoEn).toLocaleString('es-ES') + ' (' + d.nodos.length + ' nodos, ' + d.aristas.length + ' aristas).'
+    : 'Sin fecha real de generación en el fichero actual.';
+}).catch(() => {
+  document.getElementById('estadoRegenerar').textContent = 'No se pudo leer grafo_visor.json todavía -- no se ha generado nunca, o falló la última vez.';
+});
 
 function renderCandidato(c) {
   const claseP = 'prioridad-' + c.prioridad.toLowerCase();
