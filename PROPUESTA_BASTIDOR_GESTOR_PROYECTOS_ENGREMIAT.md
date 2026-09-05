@@ -1404,6 +1404,8 @@ Corrección del operador sobre el §8.108, aclarando el feedback anterior: *"cua
 **Verificado con `node` directo contra el VPS**: partiendo de `home.html`, `tecnico.html` o `grafos.html` -- las tres convergen al mismo componente real conectado (35 nodos, 70 aristas: 13 páginas reales interconectadas, 21 endpoints reales, y el servidor real sirviéndolos, confirmado cruzando `servidor_memoria.mjs`) -- resultado honesto y consistente sea cual sea el punto de partida dentro del mismo grupo real.
 Verificada la sintaxis del script embebido con `node --check` (vía `vm.Script`) antes de darlo por bueno -- sin poder confirmar visualmente sin navegador (declinado por el operador en un turno anterior), se dejó a su verificación directa.
 
+**Corrección de pulido**: pedido *"quita el json por defecto y añade una breve leyenda de lo que se espera pegar en constructor de grafos"*. Quitado `value="grafo_visor.json"` del input (quedaba como si fuera obligatorio pegarlo ahí, cuando es solo un ejemplo entre tres formas válidas); añadido un `placeholder` real con los dos formatos de URL aceptados, y una leyenda corta de una línea justo debajo del input -- "Acepta: 1) un grafo_*.json real · 2) una página que ya cargue uno · 3) cualquier página HTML propia (se extrae en vivo)" -- como resumen rápido sin tener que leer el párrafo largo de arriba. Verificado con `curl` que el valor por defecto ya no aparece y la leyenda sí.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

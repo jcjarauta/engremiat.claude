@@ -79,9 +79,10 @@
   <h2>Constructor de grafos</h2>
   <p class="tipo-desc">Pega la URL de un JSON real ya generado (misma forma que todos los <code>grafo_*.json</code> de este visor: <code>{"nodos":[...], "aristas":[...]}</code>) o la URL de cualquier página HTML propia -- tres pasos reales, en orden, nunca un modelo interpretando contenido: (1) ¿es JSON directo?, (2) si no, ¿qué <code>.json</code> carga de verdad esa página? (§8.105), (3) si tampoco, se extraen en vivo TODOS los elementos reales relacionados (§8.109): recorre de verdad cada página nueva que va descubriendo (no solo la primera), sus llamadas reales a la API, y qué endpoints sirve de verdad <code>servidor_memoria.mjs</code> -- mismo método real que usa <code>mapear_grafo_visor.mjs</code> (§8.83), aplicado aquí desde un único punto de partida en vez de a las 25 páginas de golpe. (Los recursos reales de Sheet/Baserow quedan fuera a propósito -- expondrían el esquema real de datos del cliente; ese cruce completo sigue en <code>grafo_visor.json</code>, §8.94). Se renderiza con la plantilla ya establecida. Vista previa efímera -- para conservarla de verdad, sigue el ciclo real ya existente (<code>proponer_candidato.mjs</code> → "A promover" más abajo).</p>
   <div class="fila-constructor">
-    <input id="urlConstructor" type="text" placeholder="https://.../grafo_algo.json" value="grafo_visor.json">
+    <input id="urlConstructor" type="text" placeholder="https://.../grafo_algo.json o https://.../pagina.html">
     <button id="btnGenerar" onclick="generarVistaPrevia()">Generar vista previa</button>
   </div>
+  <p class="tipo-desc" style="margin:-4px 0 10px;">Acepta: <b>1)</b> un <code>grafo_*.json</code> real · <b>2)</b> una página que ya cargue uno · <b>3)</b> cualquier página HTML propia (se extrae en vivo).</p>
   <div id="estadoConstructor" class="estado-constructor"></div>
   <div id="previewLayout">
     <div id="previewRed"></div>
