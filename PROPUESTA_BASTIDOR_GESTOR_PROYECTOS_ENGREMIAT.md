@@ -1544,6 +1544,16 @@ Pedido inicial, mal entendido a tiempo: *"repasar y crearlas nuevas desde arquit
 
 **Verificado**: sintaxis con `node`/`vm.Script`; estructura de datos (Proyecto/Producto/Proceso/Tarea, 4 niveles) confirmada en aislado contra el Sheet real; en el navegador real, inyectado un árbol sintético (2 Productos editables + 1 hecho a mano) y comprobado con JS que el selector `:scope` de `calcularIndiceInsercion` cuenta solo las tarjetas directas de la columna correcta (nunca las anidadas de otro Producto) y calcula bien el índice de inserción al principio/final; confirmado que la columna de solo lectura no lleva `ondrop` y su tarjeta no es `draggable` -- la salvaguarda de §8.120 sobrevive intacta a la reformulación visual.
 
+### 8.122 Aviso real al crear un Producto de Índice fuera de Arquitecto
+
+Encontrado por el propio operador, a mano en `arbol_campanas.html`: creado `PRD-0009 "RECURSOS"` (con su Proceso `PLANTILLAS` y Tarea `JERARQUIA`, todo real) usando el `+Producto` genérico de esa página -- y descubrió que no aparecía ni en `mapa.html` ni en `home.html`. Causa real: `arbol_campanas.html` es (correctamente) un editor genérico de todo el Sheet, sin saber que Índice (`PRO-0002`) es un caso especial cuyos Productos representan páginas HTML reales con una convención propia (`NOMBRE` con `(archivo.html)`, `DESCRIPCION` con `"colgada de X -- tipo Y (creada con Arquitecto)"`, HTML real generado) -- sin esa convención, `mapa.html` no puede reconocer ni reconstruir la página, y no hay ningún fichero real detrás.
+
+**Valorado como asesor técnico y pedido "continúa"**: no bloquear la creación genérica (sigue haciendo falta para cualquier otro proyecto real) -- en vez de eso, un aviso explícito justo antes de crear un Producto cuando el padre es `PRO-0002`, con la decisión final siempre del operador. Construido `avisoIndiceRealSiHaceFalta(tipo, padreId)` en `arbol_campanas.html`: si `tipo==='Producto'` y `padreId==='PRO-0002'`, muestra un `confirm()` real con el texto exacto acordado; en cualquier otro caso (otro tipo, u otro proyecto) no interrumpe nada. `crear()` respeta la respuesta -- cancela sin escribir nada real si el operador dice que no.
+
+**Verificado**: sintaxis con `node`/`vm.Script`; los 4 casos reales probados en aislado con un `confirm` simulado -- Producto bajo Índice (pregunta, ambas respuestas honradas), Producto bajo otro proyecto real (no pregunta), Proceso bajo Índice (no aplica, no es Producto).
+
+**Pendiente, aparcado explícitamente ("luego lo definimos")**: qué hacer con `PRD-0009 "RECURSOS"` ya creado -- retrofit a la convención real de Arquitecto y generar `recursos.html` de verdad, o dejarlo como registro genérico sin página. Decisión del operador, no asumida.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
@@ -1556,3 +1566,4 @@ Pedido inicial, mal entendido a tiempo: *"repasar y crearlas nuevas desde arquit
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.
 - Ninguna pestaña `STG_*` se ha analizado columna a columna todavía — ahora con un propósito claro (§6.5), sigue pendiente de hacerse.
+- `PRD-0009 "RECURSOS"` (§8.122) — Producto real creado a mano en Índice, sin la convención de Arquitecto ni HTML real detrás. Aparcado explícitamente por el operador ("luego lo definimos"): decidir si se retrofit a página real (`recursos.html`) o se deja como registro genérico sin página.

@@ -219,7 +219,22 @@ async function cargarArbol() {
   }
 }
 
+// §8.122: Indice (PRO-0002) es un caso especial real -- sus Productos representan
+// paginas HTML reales, generadas por Arquitecto (nombre "(archivo.html)", DESCRIPCION
+// "colgada de X -- tipo Y (creada con Arquitecto)", el .html real desplegado). Crear un
+// Producto aqui con el "+Producto" generico deja un huerfano real: no aparece en Mapa
+// (no lleva el sufijo real) ni tiene ningun HTML real detras -- paso exactamente asi con
+// PRD-0009 "RECURSOS". No se bloquea la creacion generica (arbol_campanas.html sigue
+// sirviendo para cualquier proyecto real) -- solo se avisa explicito antes, con la
+// decision final siempre en manos del operador.
+const PROYECTO_INDICE_ID = 'PRO-0002';
+function avisoIndiceRealSiHaceFalta(tipo, padreId) {
+  if (tipo !== 'Producto' || padreId !== PROYECTO_INDICE_ID) return true;
+  return confirm('Los Productos de Índice representan páginas HTML reales -- créalos con Arquitecto para que generen su archivo real y aparezcan en Mapa.\n\n¿Seguro que quieres crear uno aquí, sin HTML?');
+}
+
 async function crear(tipo, padreId) {
+  if (!avisoIndiceRealSiHaceFalta(tipo, padreId)) return;
   const campos = CAMPOS_POR_TIPO[tipo];
   const datos = {};
   for (const campo of campos) {
