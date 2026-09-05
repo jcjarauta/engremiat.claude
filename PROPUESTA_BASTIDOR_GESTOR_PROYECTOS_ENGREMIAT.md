@@ -1294,6 +1294,8 @@ Pedido: *"abre una nueva pestaña vinculada al home llamada (biblioteca)"*. Nomb
 
 **Corrección inmediata**: pedido *"oculta de la lista los patrones de diseño reales"* -- aplicado el propio patrón "Revelación gradual" (literalmente uno de los 10 catalogados) a la página que los cataloga: los 10 quedan detrás de un `<details>` plegado, "Patrones de diseño reales (10)", visible solo el contador. Las plantillas (ficheros reales) siguen visibles directamente.
 
+**Segunda corrección**: pedido *"esto deberia de quedar en su espacio para ir ordenando las plantillas, llamalo (grafos) y abajo crea otra seccion llamada prompts"* -- la sección única "Plantillas" se parte en espacios propios por dominio real, para poder seguir ordenando sin amontonar: **Grafos** (las 2 ya existentes) y **Prompts**, con `crear_ficha_prompt.mjs` como su primer real -- no es un fichero a copiar como los de Grafos, es el propio CLI, cuya cabecera documenta la forma exacta del JSON esperado (esa cabecera ES la plantilla real de este dominio). Añadido su volumen real a `docker-compose.yml` (antes solo se servían `fichas_prompt.json`/`tecnico.html`, nunca el propio script). Verificado en el navegador real: las dos secciones renderizan correctamente, `crear_ficha_prompt.mjs` se abre como código fuente (mismo comportamiento ya visto con `plantilla_extractor.mjs`).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

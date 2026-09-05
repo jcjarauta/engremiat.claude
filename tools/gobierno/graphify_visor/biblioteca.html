@@ -33,9 +33,9 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Biblioteca -- plantillas y patrones reutilizables</h1>
-<p class="hint">Catálogo real, curado a mano (como <code>resumen_universo.html</code>) -- nada de esto se genera solo. Dos capas distintas: plantillas reales (ficheros a copiar, código concreto) y patrones de diseño reales (decisiones repetidas al menos dos veces en esta sesión, con su primera aplicación real como referencia). Ninguno inventado -- cada patrón enlaza a dónde se aplicó de verdad.</p>
+<p class="hint">Catálogo real, curado a mano (como <code>resumen_universo.html</code>) -- nada de esto se genera solo. Las plantillas se agrupan por dominio real, cada una en su propio espacio (para poder ir ordenando más sin amontonar), más los patrones de diseño reales al final (decisiones repetidas al menos dos veces en esta sesión, con su primera aplicación real como referencia). Ninguno inventado -- cada patrón enlaza a dónde se aplicó de verdad.</p>
 
-<h2>Plantillas (ficheros reales)</h2>
+<h2>Grafos</h2>
 <div class="grid">
   <a class="plantilla" href="plantilla_grafo_espacio.html">
     <h3>plantilla_grafo_espacio.html</h3>
@@ -47,6 +47,14 @@
   </a>
 </div>
 <p class="hint">Nota real: existen otros dos ficheros con "Plantilla" en el nombre en <code>src/</code> (<code>PlantillaImportacionMasivaService.js</code>, <code>...Avanzada...</code>) -- son servicios de negocio reales de la app cliente, no patrones de desarrollo. Categoría distinta a propósito, no se mezclan aquí.</p>
+
+<h2>Prompts</h2>
+<div class="grid">
+  <a class="plantilla" href="crear_ficha_prompt.mjs">
+    <h3>crear_ficha_prompt.mjs</h3>
+    <p>No es un fichero a copiar como los de Grafos -- es el propio CLI real, y su cabecera documenta la forma exacta del JSON esperado (id/titulo/tarea/workerDestino/estado/prompt/funciono/fallo). Esa cabecera ES la plantilla real de este dominio: cómo se estructura una ficha de prompt antes de escribirla.</p>
+  </a>
+</div>
 
 <details class="patrones">
   <summary>Patrones de diseño reales (10)</summary>
