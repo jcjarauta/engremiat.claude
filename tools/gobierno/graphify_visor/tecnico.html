@@ -137,22 +137,29 @@ fetch('fichas_prompt.json').then(r => r.json()).then(d => {
   document.getElementById('fichas').innerHTML = '<p class="hint">No se pudo cargar fichas_prompt.json.</p>';
 });
 
+// navigator.clipboard puede no existir (contexto no seguro, navegador viejo, automatizacion
+// sin permiso) -- bug real encontrado al verificar en el navegador: sin esta guarda, el click
+// lanzaba un TypeError sin capturar y no mostraba ningun aviso, ni de exito ni de fallback.
+function copiarConFallback(texto, mensajeExito) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(texto).then(
+      () => alert(mensajeExito),
+      () => alert('No se pudo copiar automáticamente. Contenido real:\n\n' + texto)
+    );
+  } else {
+    alert('Portapapeles no disponible en este navegador. Contenido real:\n\n' + texto);
+  }
+}
+
 function copiarPromptWorkerLocal() {
   const i = Number(document.getElementById('selectorFichaWorker').value || 0);
   const f = fichasParaWorker[i];
   if (!f) { alert('Todavía no hay fichas cargadas.'); return; }
-  navigator.clipboard.writeText(f.prompt).then(
-    () => alert('Prompt real de "' + f.titulo + '" copiado -- pégalo como "descripcion" o "contexto" en el JSON de entrada de enviar_a_worker_local.mjs.'),
-    () => alert('No se pudo copiar automáticamente -- ábrelo con "Ver prompt completo" en la ficha y cópialo a mano.')
-  );
+  copiarConFallback(f.prompt, 'Prompt real de "' + f.titulo + '" copiado -- pégalo como "descripcion" o "contexto" en el JSON de entrada de enviar_a_worker_local.mjs.');
 }
 
 function copiarComandoWorkerLocal() {
-  const texto = document.getElementById('comandoWorkerLocal').textContent;
-  navigator.clipboard.writeText(texto).then(
-    () => alert('Comando copiado.'),
-    () => {}
-  );
+  copiarConFallback(document.getElementById('comandoWorkerLocal').textContent, 'Comando copiado.');
 }
 
 function renderComparacion(c) {
