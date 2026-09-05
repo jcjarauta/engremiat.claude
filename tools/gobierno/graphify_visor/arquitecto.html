@@ -38,7 +38,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
-<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE. <b>2)</b> genera el HTML real de partida (con una sección por caja) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija). <b>2)</b> genera el HTML real de partida (con una sección por caja) para que lo copies -- ninguna página web puede escribir un fichero nuevo en tu máquina, así que el último tramo (guardarlo, enlazarlo, desplegarlo) queda para ti, con los pasos reales exactos más abajo.</p>
 
 <div class="bloque">
   <h2>1. Nombre real de la página</h2>
@@ -50,6 +50,10 @@
     <div style="flex:1;">
       <label>Fichero real (.html)</label>
       <input id="archivoPagina" type="text" placeholder="ej_cronista.html">
+    </div>
+    <div style="flex:1;">
+      <label>¿De dónde cuelga?</label>
+      <select id="colgarDe" style="width:100%;"><option value="home.html">home.html</option></select>
     </div>
   </div>
 
@@ -108,6 +112,34 @@ function anadirCaja(nombreInicial) {
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
 
+// El desplegable "¿de dónde cuelga?" se construye en vivo con las páginas reales que ya
+// son Producto dentro de Índice (PRO-0002) -- nunca una lista fija a mano, crece sola segun
+// se den de alta paginas nuevas con este mismo Arquitecto. "home.html" no es un Producto
+// real (es la raiz, nunca un Producto de Indice) -- se anade siempre a mano como primera
+// opcion real y por defecto, tal como se pidio.
+async function cargarPaginasReales() {
+  const select = document.getElementById('colgarDe');
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+    let indice = null;
+    for (const campana of (j.arbol || j)) {
+      indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
+      if (indice) break;
+    }
+    const paginas = [];
+    for (const producto of (indice && indice.hijos) || []) {
+      const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
+      if (m) paginas.push({ archivo: m[1], nombre: producto.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
+    }
+    select.innerHTML = '<option value="home.html">home.html (raíz)</option>' +
+      paginas.map(p => '<option value="' + p.archivo + '">' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ')</option>').join('');
+  } catch {
+    // Si el Sheet real no responde ahora mismo, se queda solo la opcion real por defecto
+    // (home.html) -- nunca se inventa una lista de paginas sin poder confirmarla.
+  }
+}
+cargarPaginasReales();
+
 function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function copiarConFallback(texto, mensajeExito) {
@@ -124,7 +156,7 @@ function copiarHtmlGenerado() {
 // Genera el HTML de partida real -- una <section> por caja real, con sus tareas reales
 // como lista de partida (<li> TODO). Misma plantilla visual ya establecida (tokens.css,
 // .hint, h1/h2) que el resto de páginas -- nunca un diseño distinto inventado aquí.
-function generarHtmlReal(nombrePagina, cajas) {
+function generarHtmlReal(nombrePagina, cajas, colgarDe) {
   const secciones = cajas.map(c =>
     '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' +
     (c.tareas.length
@@ -132,6 +164,9 @@ function generarHtmlReal(nombrePagina, cajas) {
       : '  <p class="hint">TODO: contenido real de esta caja.</p>\n') +
     '</section>'
   ).join('\n\n');
+  // El enlace real de "volver" apunta a la pagina real de la que cuelga (colgarDe), no
+  // siempre a home.html -- coherente con lo que se va a enlazar de verdad.
+  const textoVolver = colgarDe === 'home.html' ? '← Home' : '← Volver';
 
   return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     '<title>Engremiat -- ' + escapeHtmlLocal(nombrePagina.toLowerCase()) + '</title>\n' +
@@ -144,16 +179,18 @@ function generarHtmlReal(nombrePagina, cajas) {
     '  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }\n' +
     '  section { margin-bottom: 20px; }\n' +
     '</style>\n</head>\n<body>\n' +
-    '<a class="volver" href="home.html">← Home</a>\n' +
+    '<a class="volver" href="' + escapeHtmlLocal(colgarDe) + '">' + textoVolver + '</a>\n' +
     '<h1>' + escapeHtmlLocal(nombrePagina) + '</h1>\n' +
     '<p class="hint">TODO: descripción real de qué hace esta página y de dónde sale su dato.</p>\n\n' +
     secciones + '\n</body>\n</html>\n';
 }
 
-async function crearRegistroReal(tipo, nombre, padreId) {
+async function crearRegistroReal(tipo, nombre, padreId, descripcion) {
+  const campos = { NOMBRE: nombre };
+  if (descripcion) campos.DESCRIPCION = descripcion;
   const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ tipo, padreId, campos: { NOMBRE: nombre } }),
+    body: JSON.stringify({ tipo, padreId, campos }),
   });
   const j = await r.json();
   if (!r.ok) throw new Error(tipo + ' "' + nombre + '": ' + (j.error || 'error real desconocido'));
@@ -163,6 +200,9 @@ async function crearRegistroReal(tipo, nombre, padreId) {
 async function construirPagina() {
   const nombrePagina = document.getElementById('nombrePagina').value.trim();
   const archivoPagina = document.getElementById('archivoPagina').value.trim() || (slug(nombrePagina) + '.html');
+  const selectColgarDe = document.getElementById('colgarDe');
+  const colgarDe = selectColgarDe.value || 'home.html';
+  const nombreColgarDe = selectColgarDe.options[selectColgarDe.selectedIndex].text;
   const estado = document.getElementById('estadoArquitecto');
   const boton = document.getElementById('btnConstruir');
   estado.className = 'estado';
@@ -180,7 +220,8 @@ async function construirPagina() {
   boton.disabled = true;
   estado.textContent = 'Creando la estructura real en Índice...';
   try {
-    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', PROYECTO_INDICE_ID);
+    const descripcionProducto = 'Página real colgada de ' + colgarDe + ' (creada con Arquitecto).';
+    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', PROYECTO_INDICE_ID, descripcionProducto);
     const idsCajas = [];
     for (const caja of cajas) {
       const procesoId = await crearRegistroReal('PROCESO', caja.nombre, productoId);
@@ -193,13 +234,14 @@ async function construirPagina() {
 
     estado.className = 'estado ok';
     estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-      cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + ').';
+      cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + '.';
 
-    document.getElementById('htmlGenerado').value = generarHtmlReal(nombrePagina, cajas);
+    document.getElementById('htmlGenerado').value = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    const fragmentoEnlace = '<a href="' + escapeHtmlLocal(archivoPagina) + '">' + escapeHtmlLocal(nombrePagina) + '</a>';
     document.getElementById('pasosReales').innerHTML = [
       'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
       'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
-      'Enlaza la página nueva desde <code>home.html</code> (una tarjeta más, mismo patrón que las 7 ya reales).',
+      'Enlaza la página nueva desde <code>' + escapeHtmlLocal(colgarDe) + '</code> (elegiste que cuelgue de "' + escapeHtmlLocal(nombreColgarDe) + '"), adaptando el estilo real de esa página: <code>' + escapeHtmlLocal(fragmentoEnlace) + '</code>',
       'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.',
       'Despliega con <code>node desplegar_visor.mjs</code> y verifica con <code>curl</code>/navegador.',
     ].map(p => '<li>' + p + '</li>').join('');
