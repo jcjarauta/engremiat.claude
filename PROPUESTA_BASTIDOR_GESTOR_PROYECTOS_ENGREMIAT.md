@@ -1348,6 +1348,8 @@ Pedido: *"en biblioteca añade una nueva seccion llamada (grafos json) debajo de
 
 **Construida** la sección "Grafos JSON" en `biblioteca.html`, entre "Grafos" y "Prompts" -- 12 tarjetas reales, cada una enlazando al JSON real (se abre como fuente, mismo comportamiento que las plantillas) con su descripción real y sus contadores reales (nodos/aristas) de hoy. Explicita su doble propósito: ejemplos reales para probar el Constructor de grafos, o punto de partida real al escribir un extractor nuevo con `plantilla_extractor.mjs`. No requirió tocar `docker-compose.yml` -- los 12 ficheros ya estaban montados de antes. Desplegado y verificado en el navegador real: las 12 tarjetas renderizan completas, en el orden y ubicación pedidos.
 
+**Corrección inmediata**: pedido *"oculta los grafos historicos"*. Los 12 se dividen en dos grupos reales y verificables: los 7 con ficha dinámica propia en `fichas_grafos.json` (mantenidos por un extractor real que se regenera, §8.94/106) y los 5 sin ella (`grafo_historial`, `grafo_jerarquia`, `grafo_paquete_cliente`, `grafo_telar_estados`, `grafo_wikilinks`) -- anteriores al mecanismo de ficha dinámica, ya no se regeneran desde este ciclo. Aplicado el mismo patrón "Revelación gradual" ya catalogado en esta misma página: los 7 mantenidos quedan visibles directamente, los 5 históricos se pliegan bajo `<details>` "Grafos históricos (5)". Verificado en el navegador real.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
