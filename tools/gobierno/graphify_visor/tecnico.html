@@ -35,6 +35,18 @@
   .evidencia h4.fallo { color: #e85c8a; }
   .evidencia ul { margin: 0; padding-left: 18px; font-size: 11.5px; line-height: 1.5; color: var(--color-base-texto-suave); }
   .vacio { color: var(--color-base-texto-tenue); font-size: 12px; font-style: italic; }
+
+  .valoracion { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 12px 16px; margin-bottom: 12px; background: var(--color-base-panel); }
+  .valoracion .cabecera { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .valoracion .titulo { font-weight: 600; font-size: 13.5px; flex: 1; }
+  .badge.coste { background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); font-family: ui-monospace, monospace; }
+  .badge.veredicto-coincide { background: #4fce6f33; color: #4fce6f; }
+  .badge.veredicto-parcial { background: #e8a33d33; color: #e8a33d; }
+  .badge.veredicto-diverge { background: #e85c8a33; color: #e85c8a; }
+  .valoracion p.texto { font-size: 12px; line-height: 1.6; margin: 8px 0; color: var(--color-base-texto); }
+  .valoracion .comparacion { margin-top: 10px; border-top: 1px dashed var(--color-base-borde); padding-top: 8px; }
+  .valoracion .comparacion h4 { font-size: 10.5px; text-transform: uppercase; letter-spacing: .03em; margin: 6px 0 4px; color: var(--color-base-texto-suave); }
+  .valoracion .sin-comparar { font-size: 11.5px; font-style: italic; color: var(--color-base-texto-tenue); margin-top: 8px; }
 </style>
 </head>
 <body>
@@ -44,6 +56,10 @@
 
 <h2>Fichas reales <span id="cuenta"></span></h2>
 <div id="fichas"><p class="vacio">Cargando...</p></div>
+
+<h2>Valoraciones DeepSeek <span id="cuentaValoraciones"></span></h2>
+<p class="hint">Primer filtro automatico, complementa (nunca sustituye) a las fichas de arriba -- por cada tarea real del backlog de "Grafos del sistema", se envia a DeepSeek el enunciado real + contexto real del proyecto (reglas de oro, patrones ya probados) y propone valoracion/enfoque/riesgos/pasos, ANTES de que alguien la ejecute de verdad (§8.100). Cuando la tarea ya se ejecuto de verdad, se anota ademas una comparacion real contra lo que de verdad paso -- para calibrar cuanto fiarse de la valoracion antes de usarla en tareas nuevas. Mismo proveedor real que <code>tools/coordinador.mjs</code> (DeepSeek API, gasto real registrado en GASTO_API con tope $5/mes). Solo lectura: se escriben con <code>evaluar_tarea_deepseek.mjs</code> / <code>registrar_comparacion_deepseek.mjs</code> (CLI), nunca desde aqui -- ningun boton de "ejecutar", Puerta Humana intacta.</p>
+<div id="valoraciones"><p class="vacio">Cargando...</p></div>
 
 <script>
 const ORDEN_ESTADO = { 'Listo para delegar': 0, 'Probado': 1, 'Borrador': 2 };
@@ -91,6 +107,42 @@ fetch('fichas_prompt.json').then(r => r.json()).then(d => {
     : '<p class="vacio">Sin fichas de prompt todavía -- usa crear_ficha_prompt.mjs tras probar una tarea real.</p>';
 }).catch(() => {
   document.getElementById('fichas').innerHTML = '<p class="hint">No se pudo cargar fichas_prompt.json.</p>';
+});
+
+function renderComparacion(c) {
+  if (!c) return '<p class="sin-comparar">Todavía sin ejecutar de verdad -- sin comparación registrada.</p>';
+  return '<div class="comparacion">' +
+    '<span class="badge veredicto-' + escapeHtml(c.veredicto) + '">Comparación real: ' + escapeHtml(c.veredicto) + '</span>' +
+    renderLista('Coincidió', c.coincidencias, 'funciono') +
+    renderLista('Divergió', c.divergencias, 'fallo') +
+    (c.notas ? '<p class="texto">' + escapeHtml(c.notas) + '</p>' : '') +
+    '</div>';
+}
+
+function renderValoracion(v) {
+  return '<div class="valoracion">' +
+    '<div class="cabecera">' +
+      '<span class="titulo">' + escapeHtml(v.titulo) + '</span>' +
+      '<span class="badge coste">$' + Number(v.costeUsd || 0).toFixed(6) + '</span>' +
+    '</div>' +
+    (v.tareaId ? '<div class="meta"><b>Tarea:</b> ' + escapeHtml(v.tareaId) + '</div>' : '') +
+    '<p class="texto"><b>Valoración:</b> ' + escapeHtml(v.valoracion) + '</p>' +
+    '<p class="texto"><b>Propuesta:</b> ' + escapeHtml(v.propuesta) + '</p>' +
+    renderLista('Riesgos señalados', v.riesgos, 'fallo') +
+    (v.pasos && v.pasos.length ? '<details class="prompt"><summary>Ver pasos propuestos</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:11.5px;line-height:1.6;">' + v.pasos.map(p => '<li>' + escapeHtml(p) + '</li>').join('') + '</ul></details>' : '') +
+    (v.contextoEnviado && v.contextoEnviado.length ? '<details class="prompt"><summary>Ver contexto real enviado</summary><ul style="margin:6px 0 0;padding-left:18px;font-size:11.5px;line-height:1.6;">' + v.contextoEnviado.map(c => '<li>' + escapeHtml(c) + '</li>').join('') + '</ul></details>' : '') +
+    renderComparacion(v.comparacion) +
+    '</div>';
+}
+
+fetch('evaluaciones_deepseek.json').then(r => r.json()).then(d => {
+  const valoraciones = Object.values(d.evaluaciones || {}).sort((a, b) => (b.generadoEn || '').localeCompare(a.generadoEn || ''));
+  document.getElementById('cuentaValoraciones').textContent = '(' + valoraciones.length + ')';
+  document.getElementById('valoraciones').innerHTML = valoraciones.length
+    ? valoraciones.map(renderValoracion).join('')
+    : '<p class="vacio">Sin valoraciones todavía -- usa evaluar_tarea_deepseek.mjs sobre una tarea real del backlog.</p>';
+}).catch(() => {
+  document.getElementById('valoraciones').innerHTML = '<p class="hint">No se pudo cargar evaluaciones_deepseek.json.</p>';
 });
 </script>
 </body>

@@ -1,0 +1,55 @@
+{
+  "evaluaciones": {
+    "extractor_recurso_deepseek": {
+      "id": "extractor_recurso_deepseek",
+      "tareaId": "TAR-0002",
+      "titulo": "Extractor real de tipo Recurso",
+      "descripcion": "Escribir un extractor real (script Node) que genere un grafo real de las fichas de tipo Recurso del vault (01_Mundo/Recursos/), con sus nodos y sus relaciones declaradas reales, para alimentar una nueva vista del visor Graphify (vista_recursos.html) con vis-network.",
+      "contextoEnviado": [
+        "Ya existe cargar_desde_vault.mjs, que parsea el vault de Obsidian completo y escribe universo_real.json con nodos reales por categoria (espacios/recursos/modulos/personajes/oficios/reglas) y sus relacionesDeclaradas (wikilinks reales extraidos de la seccion \"## Relaciones\" de cada ficha .md).",
+        "Regla de oro del proyecto: solo lectura sobre las fuentes reales, nunca inventar un nodo o una arista que no exista de verdad en los datos.",
+        "Ya existe ficha_grafo.mjs con una funcion actualizarFichaGrafo() que cada extractor real debe llamar al terminar, pasandole contadores reales, para mantener un manifest compartido (fichas_grafos.json) con historial acumulado.",
+        "Patron ya documentado y exigido en este proyecto: antes de escribir un extractor nuevo, comprobar si otro extractor real ya existe para la misma fuente -- nunca debe haber dos lectores del mismo origen que no se crucen entre si (ya hubo un bug real de este tipo, documentado como error a no repetir).",
+        "Una entidad de un tipo puede tener relaciones declaradas hacia entidades de OTROS tipos (no solo del mismo tipo) -- cualquier indice de resolucion de relaciones debe cubrir todas las categorias reales del vault, no solo la del tipo que se esta extrayendo."
+      ],
+      "valoracion": "La tarea es de dificultad media-alta porque requiere integrarse con el patrón existente de extractores reales y con el manifiesto compartido, evitando duplicar lecturas del vault. El enfoque debe ser modular y reutilizar la lógica de parseo ya probada en cargar_desde_vault.mjs, pero adaptada para generar un grafo específico de recursos. Es crucial respetar la regla de solo lectura y no inventar relaciones.",
+      "propuesta": "Crear un nuevo extractor real llamado extraer_recursos.mjs que lea únicamente las fichas de 01_Mundo/Recursos/ y genere un archivo grafo_recursos.json con nodos (cada recurso) y aristas (relacionesDeclaradas extraídas de la sección '## Relaciones' de cada ficha). Para resolver las relaciones hacia otros tipos, se debe cargar un índice global de todos los nodos reales del vault (por ejemplo, leyendo universo_real.json si existe, o parseando todas las categorías una vez) y solo incluir aristas cuyo destino exista en ese índice. Al final, llamar a actualizarFichaGrafo() con los contadores reales (nodos y aristas procesadas). Antes de implementar, verificar que no exista ya un extractor para recursos en el código base.",
+      "riesgos": [
+        "Duplicar la lectura del vault si ya existe otro extractor que procesa recursos, causando el bug documentado de lectores cruzados.",
+        "Inventar nodos o aristas que no estén explícitamente en las fichas, violando la regla de oro del proyecto.",
+        "No cubrir todas las categorías al resolver relaciones, dejando aristas hacia nodos inexistentes o sin resolver.",
+        "Olvidar llamar a actualizarFichaGrafo() o pasar contadores incorrectos, rompiendo el manifiesto compartido."
+      ],
+      "pasos": [
+        "Buscar en el repositorio si ya existe un extractor que procese 01_Mundo/Recursos/ (por ejemplo, en scripts/ o extractores/). Si existe, detenerse y reportar.",
+        "Crear el archivo extraer_recursos.mjs en la carpeta de scripts, siguiendo el patrón de cargar_desde_vault.mjs para leer archivos .md y extraer la sección '## Relaciones'.",
+        "Implementar la carga de un índice global de nodos reales (todas las categorías) leyendo universo_real.json si está disponible, o parseando las categorías necesarias una sola vez.",
+        "Procesar cada ficha de recurso: extraer el nombre del nodo, sus propiedades relevantes (si las hay) y las relaciones declaradas, filtrando solo aquellas cuyo destino exista en el índice global.",
+        "Generar el objeto de grafo con nodos y aristas, y escribirlo como grafo_recursos.json en la ubicación adecuada (por ejemplo, junto a universo_real.json).",
+        "Llamar a actualizarFichaGrafo() con los contadores reales (número de nodos y aristas generadas) y verificar que el manifiesto se actualice correctamente.",
+        "Probar el extractor con un vault de ejemplo y validar que el grafo resultante solo contiene datos reales."
+      ],
+      "modelo": "deepseek-chat",
+      "tokensEntrada": 606,
+      "tokensSalida": 752,
+      "costeUsd": 0.001259,
+      "comparacion": {
+        "veredicto": "parcial",
+        "coincidencias": [
+          "Recomendo reutilizar universo_real.json como indice global en vez de reparsear el vault -- coincide exactamente con la decision real tomada (documentada en fichas_prompt.json: 'Reutilizar universo_real.json evito duplicar ~130 lineas de logica ya escrita').",
+          "Recomendo que el indice de resolucion de relaciones cubra TODAS las categorias del vault, no solo Recursos -- coincide con el enfoque real implementado en mapear_grafo_por_tipo.mjs.",
+          "Su primer paso explicito fue 'comprobar si ya existe un extractor para esta fuente antes de escribir uno nuevo' -- coincide con el fallo real documentado ('Primer intento: escribir codigo nuevo de parseo... descartado a tiempo al confirmar que cargar_desde_vault.mjs ya lo hacia').",
+          "Recomendo llamar a actualizarFichaGrafo() con contadores reales al final -- coincide con la implementacion real."
+        ],
+        "divergencias": [
+          "Propuso descartar en silencio las relaciones cuyo destino no resuelva ('solo incluir aristas cuyo destino exista en ese indice') -- diverge del enfoque real, que marca lo no resuelto como nodo 'externo' en vez de descartarlo, y que en la practica encontro un hueco real (1 referencia sin ficha propia) gracias a NO descartarlo. Es el tipo exacto de error de silenciar datos reales que el proyecto exige evitar.",
+          "Al evaluarse la tarea de forma aislada (solo Recurso, sin saber que Modulo y Regla necesitarian lo mismo), propuso un script de un solo uso ('extraer_recursos.mjs') en vez de un unico script parametrizado por --tipo -- la solucion real parametrizada solo fue posible viendo las 3 tareas juntas, una limitacion estructural de evaluar tareas una a una y no un indicio de peor juicio tecnico.",
+          "No anticipo (ni podia hacerlo solo con el enunciado) el bug real de ficha_grafo.mjs -- leer el historial previo del propio grafo_X.json ya sobrescrito en vez del manifest compartido -- que solo se descubrio ejecutando el extractor de verdad dos veces. Confirma que la valoracion previa complementa la evidencia real, nunca la sustituye."
+        ],
+        "notas": "Primera prueba real del mecanismo (2026-09-05): la valoracion de DeepSeek, con el mismo contexto real que tuvo el desarrollo real, coincidio en el enfoque estructural principal (indice global vs. reparsear) y en el primer riesgo real evitado, pero fallo justo en el detalle de manejo de errores mas caracteristico de este proyecto (nunca descartar en silencio) -- ese matiz habria que anadirlo de forma explicita al contexto real enviado en evaluaciones futuras.",
+        "comparadoEn": "2026-09-05T01:28:53.974Z"
+      },
+      "generadoEn": "2026-09-05T01:28:16.846Z"
+    }
+  }
+}
