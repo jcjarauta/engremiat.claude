@@ -1594,6 +1594,20 @@ Pedido, con captura real: *"arragla recursos, sale desordenado"*. Investigado el
 
 **Lección real, sin resolver del todo**: la salvaguarda de §8.120 depende de una marca de texto en el Sheet que nadie actualiza automáticamente si el `.html` real cambia de manos (de generado a hecho a mano) después de crearse. No se construyó ninguna verificación automática (por ejemplo, comparar un hash real del fichero desplegado contra lo que `generarHtmlReal()` produciría) -- de momento es una responsabilidad real a tener en cuenta cada vez que una página de Índice se reescriba a mano tras su creación.
 
+### 8.127 Generador compartido real + catálogo de layouts de página (cabecera/rejilla/pie fijos)
+
+Pedido en dos pasos, valorado como asesor técnico antes de construir: primero, resolver la causa raíz del bug de §8.126 -- `generarHtmlReal()`/`generarContenidoCaja()`/`TIPOS_CAJA`/`obtenerIndiceReal`/`escapeHtmlLocal` estaban duplicadas literal en `arquitecto.html`, `mapa.html` y `arbol_campanas.html`, así que cualquier cambio real había que replicarlo a mano en los tres o quedaban desincronizados. Segundo, añadir un catálogo real de layouts de página a formato rejilla (1 columna / 2 columnas iguales / 3 columnas iguales / lateral+central+lateral) con cabecera y pie fijos, cada caja diciendo solo en qué columna empieza y cuántas ocupa -- nunca CSS libre a mano.
+
+**Hacerlo dinámico de verdad**: extraída toda la lógica pura a un fichero nuevo real, `generador_paginas.js`, servido estático igual que `tokens.css` (mismo patrón real ya probado, nada nuevo en la arquitectura) -- las tres páginas cargan `<script src="generador_paginas.js">` antes de su propio `<script>` inline, y ya no llevan ninguna copia local de esa lógica. Un cambio, un despliegue, los tres consumidores lo recogen -- se acaba de raíz la clase de bug de §8.126.
+
+**Catálogo real de layouts** (`LAYOUTS_PAGINA`, mismo patrón que `TIPOS_CAJA`): `una-columna` (`1fr`), `dos-columnas` (`1fr 1fr`), `tres-columnas` (`1fr 1fr 1fr`), y `lateral-central-lateral` (`1fr 2fr 1fr`, pedida explícita, centro el doble de ancho que los laterales). Cada caja real guarda dos números nuevos en su fragmento (`columnaInicio`, `ancho`) -- si no se especifican, por defecto ocupan toda la anchura del layout, exactamente el mismo aspecto apilado de siempre (compatibilidad real hacia atrás confirmada en vivo: una caja real sin configurar, "HERRAMIENTAS", salió a ancho completo tal cual se esperaba).
+
+**Cabecera y pie fijos**: la cabecera (volver/h1/descripción) sigue exactamente igual, fuera de la rejilla. Añadido un pie real nuevo (`<footer class="pie-real">`), reservado y vacío con el mismo `TODO` honesto que ya se usa en cajas sin contenido -- su contenido real de verdad se decide más adelante, nunca inventado ahora.
+
+**Backend**: `guardarFragmentoCaja()` extendida con `columnaInicio`/`ancho` opcionales; nuevo almacén real `layouts_pagina.json` (mismo patrón que `fragmentos_cajas.json`) con `GET`/`POST /api/layout_pagina`, porque el layout es una propiedad de la página entera, no de una caja. `arquitecto.html` gana un desplegable real de layout y dos campos numéricos (columna/ancho) por caja en "Editar contenido real de una página existente".
+
+**Verificado de extremo a extremo**: sintaxis de los tres ficheros y del nuevo fichero compartido con `node`/`vm.Script`; los tres cargados JUNTOS en el mismo contexto (`generador_paginas.js` + cada inline) sin ningún error de redeclaración (riesgo real concreto: `<script>` clásicos comparten el mismo ámbito global, redeclarar un `const` con el mismo nombre en dos bloques distintos lanza error real); probado en real sobre `Recursos` -- layout `lateral-central-lateral` con una caja real en la columna central y otra sin configurar a ancho completo, reconstruido y aplicado con `node aplicar_pagina_arquitecto.mjs recursos.html`, confirmado visualmente en el navegador real que la rejilla y el pie fijo se ven correctamente -- y devuelto todo a `una-columna` con el `TODO` honesto de partida después, sin dejar ningún experimento visible en la única página real editable que existe hoy.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

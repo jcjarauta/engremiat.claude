@@ -470,11 +470,34 @@ const RUTA_FRAGMENTOS_CAJAS = join(DIR_DATOS, 'fragmentos_cajas.json');
 function leerFragmentosCajas() {
   return existsSync(RUTA_FRAGMENTOS_CAJAS) ? JSON.parse(readFileSync(RUTA_FRAGMENTOS_CAJAS, 'utf-8')) : { fragmentos: {} };
 }
-function guardarFragmentoCaja(procesoId, tipo, contenido) {
+// §8.127: columnaInicio/ancho son opcionales (posicion real en la rejilla de la
+// pagina) -- si no se dan, quedan null y el generador real las trata como "columna 1,
+// ancho completo", el mismo aspecto apilado de siempre. Nunca CSS libre aqui, solo dos
+// numeros reales.
+function guardarFragmentoCaja(procesoId, tipo, contenido, columnaInicio, ancho) {
   const datos = leerFragmentosCajas();
   datos.fragmentos = datos.fragmentos || {};
-  datos.fragmentos[procesoId] = { tipo, contenido, actualizadoEn: new Date().toISOString() };
+  datos.fragmentos[procesoId] = {
+    tipo, contenido,
+    columnaInicio: columnaInicio || null,
+    ancho: ancho || null,
+    actualizadoEn: new Date().toISOString(),
+  };
   writeFileSync(RUTA_FRAGMENTOS_CAJAS, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
+// §8.127: layout real elegido por pagina (Producto) -- vive aparte del contenido de
+// cada caja porque es una propiedad de la PAGINA entera, no de una caja concreta. Mismo
+// patron real que fragmentos_cajas.json (solo datos, en DIR_DATOS, nunca dual-montado).
+const RUTA_LAYOUTS_PAGINA = join(DIR_DATOS, 'layouts_pagina.json');
+function leerLayoutsPagina() {
+  return existsSync(RUTA_LAYOUTS_PAGINA) ? JSON.parse(readFileSync(RUTA_LAYOUTS_PAGINA, 'utf-8')) : { layouts: {} };
+}
+function guardarLayoutPagina(productoId, layoutId) {
+  const datos = leerLayoutsPagina();
+  datos.layouts = datos.layouts || {};
+  datos.layouts[productoId] = { layoutId, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_LAYOUTS_PAGINA, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
@@ -1032,15 +1055,37 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/fragmento_caja') {
-      const { procesoId, tipo, contenido } = await leerCuerpo(req);
+      const { procesoId, tipo, contenido, columnaInicio, ancho } = await leerCuerpo(req);
       if (!procesoId || !tipo || !Array.isArray(contenido)) {
         res.writeHead(400); res.end(JSON.stringify({ error: 'faltan procesoId/tipo/contenido (array real)' })); return;
       }
       try {
-        guardarFragmentoCaja(procesoId, tipo, contenido);
+        guardarFragmentoCaja(procesoId, tipo, contenido, columnaInicio, ancho);
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el fragmento real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/layout_pagina')) {
+      const productoId = new URL(req.url, 'http://x').searchParams.get('productoId');
+      if (!productoId) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta productoId' })); return; }
+      const datos = leerLayoutsPagina();
+      const layout = (datos.layouts || {})[productoId];
+      if (!layout) { res.writeHead(404); res.end(JSON.stringify({ error: 'sin layout real guardado todavia para ' + productoId })); return; }
+      res.writeHead(200); res.end(JSON.stringify(layout)); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/layout_pagina') {
+      const { productoId, layoutId } = await leerCuerpo(req);
+      if (!productoId || !layoutId) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan productoId/layoutId' })); return;
+      }
+      try {
+        guardarLayoutPagina(productoId, layoutId);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el layout real: ' + e.message })); return;
       }
     }
 

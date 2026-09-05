@@ -23,6 +23,9 @@
   .caja .fila-caja select.tipo-caja { flex: 0 0 150px; }
   .caja textarea.tareas-caja { width: 100%; margin-top: 6px; min-height: 54px; resize: vertical; }
   .caja p.ayuda-tipo { font-size: 10.5px; color: var(--color-base-texto-tenue); margin: 4px 0 0; }
+  .caja .fila-grid { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+  .caja .fila-grid label { display: inline; margin: 0; }
+  .caja .fila-grid input[type="number"] { width: 52px; }
   button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   button:hover { border-color: #6ea8ff; }
   button.quitar { padding: 4px 9px; font-size: 11px; color: #e85c8a; border-color: #e85c8a55; }
@@ -83,11 +86,15 @@
 
 <div class="bloque">
   <h2>Editar contenido real de una página existente</h2>
-  <p class="hint">Elige una página real ya creada con Arquitecto. El nombre y el tipo de cada caja son reales (vienen del Sheet) -- lo único que escribes aquí es el contenido real de cada una. Al reconstruir, se regenera la página entera a partir de sus cajas reales y se aplica con el mismo <code>aplicar_pagina_arquitecto.mjs</code>.</p>
+  <p class="hint">Elige una página real ya creada con Arquitecto. El nombre y el tipo de cada caja son reales (vienen del Sheet) -- lo único que escribes aquí es el contenido real de cada una. El <b>layout</b> es de una lista real fija (nunca CSS libre); cada caja solo dice en qué columna empieza y cuántas ocupa. Al reconstruir, se regenera la página entera a partir de sus cajas reales y se aplica con el mismo <code>aplicar_pagina_arquitecto.mjs</code>.</p>
   <div class="fila">
     <div style="flex:1;">
       <label>Página real a editar</label>
       <select id="paginaEditar" style="width:100%;" onchange="cargarCajasEditar()"><option value="">Cargando páginas reales...</option></select>
+    </div>
+    <div style="flex:1;">
+      <label>Layout real de la página</label>
+      <select id="layoutPagina" style="width:100%;" onchange="alCambiarLayoutPagina()"></select>
     </div>
   </div>
   <div id="listaCajasEditar"></div>
@@ -98,9 +105,9 @@
   <ol class="pasos" id="pasosEditar"></ol>
 </div>
 
+<script src="generador_paginas.js"></script>
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
-const PROYECTO_INDICE_ID = 'PRO-0002';
 let contadorCajas = 0;
 
 // Mismo estandar real que ya usa grafos.html (TIPOS_REALES, linea 114) -- nunca una
@@ -119,19 +126,10 @@ function slug(s) {
 }
 
 
-// Tipos reales de caja -- no un unico <section> generico para todo. Cada uno reutiliza
-// un patron de HTML basico ya usado de verdad en otra pagina de este mismo visor, nunca
-// inventado aqui: Lista (ul/li, el propio comportamiento previo de Arquitecto), Texto
-// (p sueltos), Tabla (thead/tbody con th/td, mismo patron real de panel_operativo.html
-// linea 157 en adelante), Tarjetas (grid a.item, mismo patron real de home.html), y
-// Formulario (label+input por fila, mismo patron real de este propio Arquitecto/grafos.html).
-const TIPOS_CAJA = {
-  lista: { etiqueta: 'Lista', ayuda: 'Una función real por línea → <li>.' },
-  texto: { etiqueta: 'Texto', ayuda: 'Un párrafo real por línea → <p>.' },
-  tabla: { etiqueta: 'Tabla', ayuda: 'Primera línea = cabeceras reales, separadas por "|". Resto = filas reales, mismos separadores.' },
-  tarjetas: { etiqueta: 'Tarjetas', ayuda: 'Una tarjeta real por línea: "Título - descripción real".' },
-  formulario: { etiqueta: 'Formulario', ayuda: 'Un campo real por línea → etiqueta + input de partida.' },
-};
+// §8.127: TIPOS_CAJA/obtenerIndiceReal/escapeHtmlLocal/generarContenidoCaja/
+// generarHtmlReal ya llegan de generador_paginas.js (compartido real con mapa.html y
+// arbol_campanas.html) -- nunca duplicados aqui, esa duplicacion fue justo lo que causo
+// el bug real de §8.126.
 
 function actualizarAyudaCaja(selectEl) {
   const caja = selectEl.closest('.caja');
@@ -159,17 +157,6 @@ function anadirCaja(nombreInicial) {
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
 
-// Busca el nodo real de Indice (PRO-0002) dentro del arbol completo real de campanas --
-// unica fuente real, reutilizada por todo lo que necesite las paginas/cajas reales de
-// Indice (el desplegable "de donde cuelga", el editor de paginas existentes, etc.).
-function obtenerIndiceReal(j) {
-  for (const campana of (j.arbol || j)) {
-    const indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
-    if (indice) return indice;
-  }
-  return null;
-}
-
 // El desplegable "¿de dónde cuelga?" se construye en vivo con las páginas reales que ya
 // son Producto dentro de Índice (PRO-0002) -- nunca una lista fija a mano, crece sola segun
 // se den de alta paginas nuevas con este mismo Arquitecto. "home.html" no es un Producto
@@ -194,8 +181,6 @@ async function cargarPaginasReales() {
 }
 cargarPaginasReales();
 
-function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-
 function copiarConFallback(texto, mensajeExito) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(texto).then(() => alert(mensajeExito), () => alert('No se pudo copiar automáticamente. Contenido real:\n\n' + texto));
@@ -205,102 +190,6 @@ function copiarConFallback(texto, mensajeExito) {
 }
 function copiarHtmlGenerado() {
   copiarConFallback(document.getElementById('htmlGenerado').value, 'HTML real copiado.');
-}
-
-// Genera el contenido real de una caja segun su tipo -- cada rama reutiliza un patron de
-// HTML basico ya usado de verdad en otra pagina del visor (ver comentario de TIPOS_CAJA),
-// nunca un unico <ul>/<p> generico para todo.
-function generarContenidoCaja(c) {
-  if (c.tipo === 'tabla') {
-    const filas = c.tareas.length ? c.tareas : ['TODO real | TODO real'];
-    const partes = filas.map(f => f.split('|').map(x => x.trim()));
-    const cabeceras = partes[0];
-    const cuerpo = partes.slice(1);
-    return '  <table style="width:100%; border-collapse:collapse; font-size:12.5px;">\n' +
-      '    <tr style="text-align:left; color:var(--color-base-texto-suave); font-size:11px;">\n' +
-      cabeceras.map(h => '      <th style="padding:4px 8px 4px 0;">' + escapeHtmlLocal(h) + '</th>').join('\n') + '\n' +
-      '    </tr>\n' +
-      (cuerpo.length
-        ? cuerpo.map(fila => '    <tr style="border-top:1px solid var(--color-base-borde-suave);">\n' +
-            fila.map(v => '      <td style="padding:5px 8px 5px 0;">' + escapeHtmlLocal(v) + '</td>').join('\n') + '\n    </tr>').join('\n')
-        : '    <tr><td class="hint">TODO: filas reales.</td></tr>') +
-      '\n  </table>\n';
-  }
-  if (c.tipo === 'tarjetas') {
-    const tarjetas = c.tareas.length ? c.tareas : ['TODO real - descripción real'];
-    return '  <div class="menu">\n' +
-      tarjetas.map(t => {
-        const [titulo, ...resto] = t.split(' - ');
-        const desc = resto.join(' - ').trim();
-        return '    <a class="item" href="#">\n      <h3>' + escapeHtmlLocal(titulo.trim()) + '</h3>\n' +
-          '      <p>' + escapeHtmlLocal(desc || 'TODO: descripción real.') + '</p>\n    </a>';
-      }).join('\n') +
-      '\n  </div>\n';
-  }
-  if (c.tipo === 'formulario') {
-    const campos = c.tareas.length ? c.tareas : ['TODO real'];
-    return campos.map(campo =>
-      '  <div class="fila">\n    <div>\n      <label>' + escapeHtmlLocal(campo) + '</label>\n' +
-      '      <input type="text" placeholder="TODO">\n    </div>\n  </div>'
-    ).join('\n') + '\n';
-  }
-  if (c.tipo === 'texto') {
-    return (c.tareas.length ? c.tareas : ['TODO: contenido real de esta caja.'])
-      .map(p => '  <p>' + escapeHtmlLocal(p) + '</p>').join('\n') + '\n';
-  }
-  // 'lista' -- comportamiento real ya existente desde el origen de Arquitecto.
-  return c.tareas.length
-    ? '  <ul>\n' + c.tareas.map(t => '    <li>TODO: ' + escapeHtmlLocal(t) + '</li>').join('\n') + '\n  </ul>\n'
-    : '  <p class="hint">TODO: contenido real de esta caja.</p>\n';
-}
-
-// Genera el HTML de partida real -- una <section> por caja real, con el contenido segun
-// su tipo real (ver generarContenidoCaja). Misma plantilla visual ya establecida
-// (tokens.css, .hint, h1/h2) que el resto de páginas -- nunca un diseño distinto
-// inventado aquí. CSS extra (menu/item para Tarjetas, fila/input/label para Formulario)
-// solo se incluye si de verdad hay una caja real de ese tipo -- nunca CSS muerto.
-function generarHtmlReal(nombrePagina, cajas, colgarDe) {
-  const secciones = cajas.map(c =>
-    '<section>\n  <h2>' + escapeHtmlLocal(c.nombre) + '</h2>\n' + generarContenidoCaja(c) + '</section>'
-  ).join('\n\n');
-  // El enlace real de "volver" apunta a la pagina real de la que cuelga (colgarDe), no
-  // siempre a home.html -- coherente con lo que se va a enlazar de verdad.
-  const textoVolver = colgarDe === 'home.html' ? '← Home' : '← Volver';
-
-  const tiposUsados = new Set(cajas.map(c => c.tipo));
-  let cssExtra = '';
-  if (tiposUsados.has('tarjetas')) {
-    cssExtra +=
-      '  .menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }\n' +
-      '  a.item { display: block; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 14px 16px; text-decoration: none; color: var(--color-base-texto); }\n' +
-      '  a.item:hover { border-color: #6ea8ff; }\n' +
-      '  a.item h3 { margin: 0 0 4px; font-size: 13px; }\n' +
-      '  a.item p { margin: 0; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }\n';
-  }
-  if (tiposUsados.has('formulario')) {
-    cssExtra +=
-      '  input, select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; font-family: inherit; }\n' +
-      '  .fila { display: flex; gap: 8px; margin-bottom: 8px; }\n' +
-      '  .fila > div { flex: 1; }\n' +
-      '  label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }\n';
-  }
-
-  return '<!DOCTYPE html>\n<html lang="es">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-    '<title>Engremiat -- ' + escapeHtmlLocal(nombrePagina.toLowerCase()) + '</title>\n' +
-    '<link rel="stylesheet" href="tokens.css">\n<style>\n' +
-    '  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }\n' +
-    '  body { padding: 24px 28px 60px; max-width: 820px; }\n' +
-    '  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }\n' +
-    '  h1 { font-size: 18px; margin: 6px 0 4px; }\n' +
-    '  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }\n' +
-    '  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }\n' +
-    '  section { margin-bottom: 20px; }\n' +
-    cssExtra +
-    '</style>\n</head>\n<body>\n' +
-    '<a class="volver" href="' + escapeHtmlLocal(colgarDe) + '">' + textoVolver + '</a>\n' +
-    '<h1>' + escapeHtmlLocal(nombrePagina) + '</h1>\n' +
-    '<p class="hint">TODO: descripción real de qué hace esta página y de dónde sale su dato.</p>\n\n' +
-    secciones + '\n</body>\n</html>\n';
 }
 
 // §8.118: guarda el HTML real generado en la cola de servidor_memoria.mjs para que
@@ -409,12 +298,38 @@ async function construirPagina() {
 // registro en el Sheet -- eso es estructura, fuera de alcance aqui). El Sheet solo
 // sabia el NOMBRE/orden real; el contenido de verdad vive aparte porque nunca tuvo
 // donde guardarse hasta ahora.
-async function guardarFragmentoCajaReal(procesoId, tipo, contenido) {
+async function guardarFragmentoCajaReal(procesoId, tipo, contenido, columnaInicio, ancho) {
   const r = await fetch(URL_MEMORIA + '/api/fragmento_caja', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ procesoId, tipo, contenido }),
+    body: JSON.stringify({ procesoId, tipo, contenido, columnaInicio, ancho }),
   });
   if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+}
+
+// §8.127: layout real de la pagina (catalogo LAYOUTS_PAGINA de generador_paginas.js) --
+// vive aparte del contenido de cada caja, es una propiedad de la pagina entera.
+async function leerLayoutPaginaReal(productoId) {
+  const r = await fetch(URL_MEMORIA + '/api/layout_pagina?productoId=' + encodeURIComponent(productoId));
+  if (!r.ok) return LAYOUT_POR_DEFECTO;
+  return (await r.json()).layoutId || LAYOUT_POR_DEFECTO;
+}
+async function guardarLayoutPaginaReal(productoId, layoutId) {
+  const r = await fetch(URL_MEMORIA + '/api/layout_pagina', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productoId, layoutId }),
+  });
+  if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+}
+
+// Al cambiar el layout en el editor, actualiza el limite real (max) de las cajas de
+// columna/ancho de cada caja ya pintada -- nunca deja que se pida una columna que el
+// layout elegido no tiene.
+function alCambiarLayoutPagina() {
+  const layout = LAYOUTS_PAGINA[document.getElementById('layoutPagina').value] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
+  document.querySelectorAll('#listaCajasEditar .caja').forEach(el => {
+    el.querySelector('.columna-caja').max = layout.columnas;
+    el.querySelector('.ancho-caja').max = layout.columnas;
+  });
 }
 
 // Estado real de la pagina que se esta editando ahora mismo (se rellena al elegirla).
@@ -468,15 +383,26 @@ async function cargarCajasEditar() {
     const procesos = (nodoProducto && nodoProducto.hijos) || [];
     if (!procesos.length) { lista.innerHTML = '<p class="hint">Este Producto real todavía no tiene ninguna caja (Proceso) real.</p>'; return; }
 
-    const fragmentos = await Promise.all(procesos.map(p =>
-      fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
-        .then(r => r.ok ? r.json() : { tipo: 'lista', contenido: [] })
-    ));
+    const [fragmentos, layoutId] = await Promise.all([
+      Promise.all(procesos.map(p =>
+        fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
+          .then(r => r.ok ? r.json() : { tipo: 'lista', contenido: [] })
+      )),
+      leerLayoutPaginaReal(productoId),
+    ]);
+
+    const selectLayout = document.getElementById('layoutPagina');
+    selectLayout.innerHTML = Object.entries(LAYOUTS_PAGINA)
+      .map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('')
+      .replace('value="' + layoutId + '"', 'value="' + layoutId + '" selected');
+    const layout = LAYOUTS_PAGINA[layoutId] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
 
     const opcionesTipo = Object.entries(TIPOS_CAJA).map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('');
     lista.innerHTML = procesos.map((p, i) => {
       const frag = fragmentos[i] || { tipo: 'lista', contenido: [] };
       const ayuda = (TIPOS_CAJA[frag.tipo] || TIPOS_CAJA.lista).ayuda;
+      const columnaInicio = frag.columnaInicio || 1;
+      const ancho = frag.ancho || layout.columnas;
       return '<div class="caja" data-proceso-id="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '">' +
         '<div class="fila-caja">' +
           '<div style="flex:1; padding:7px 0; font-size:12.5px;"><b>' + escapeHtmlLocal(p.nombre) + '</b></div>' +
@@ -484,6 +410,10 @@ async function cargarCajasEditar() {
         '</div>' +
         '<textarea class="tareas-caja" placeholder="' + ayuda + '">' + escapeHtmlLocal((frag.contenido || []).join('\n')) + '</textarea>' +
         '<p class="ayuda-tipo">' + ayuda + '</p>' +
+        '<div class="fila-grid">' +
+          '<label>Columna</label><input type="number" class="columna-caja" min="1" max="' + layout.columnas + '" value="' + columnaInicio + '">' +
+          '<label>Ancho</label><input type="number" class="ancho-caja" min="1" max="' + layout.columnas + '" value="' + ancho + '">' +
+        '</div>' +
       '</div>';
     }).join('');
 
@@ -503,19 +433,23 @@ async function guardarYReconstruir() {
   estado.textContent = 'Guardando el contenido real de cada caja...';
   boton.disabled = true;
 
+  const layoutId = document.getElementById('layoutPagina').value || LAYOUT_POR_DEFECTO;
   const cajasEl = [...document.querySelectorAll('#listaCajasEditar .caja')];
   const cajas = cajasEl.map(el => ({
     procesoId: el.dataset.procesoId,
     nombre: el.dataset.nombre,
     tipo: el.querySelector('.tipo-caja').value || 'lista',
     tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
+    columnaInicio: Number(el.querySelector('.columna-caja').value) || 1,
+    ancho: Number(el.querySelector('.ancho-caja').value) || 1,
   }));
 
   try {
+    await guardarLayoutPaginaReal(productoId, layoutId);
     for (const c of cajas) {
-      await guardarFragmentoCajaReal(c.procesoId, c.tipo, c.tareas);
+      await guardarFragmentoCajaReal(c.procesoId, c.tipo, c.tareas, c.columnaInicio, c.ancho);
     }
-    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
     // reconstruccion=true -- distingue de una pagina nueva en la cola, ver comentario
     // real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs.
     await guardarPaginaPendienteReal(productoId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true);
