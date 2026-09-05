@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Engremiat -- vista inicial del sistema (raíz: home.html)</title>
+<title>Engremiat -- mapa real desde home.html</title>
 <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
 <link rel="stylesheet" href="tokens.css">
 <style>
@@ -20,7 +20,6 @@
   #ficha p { margin: 4px 0; color: var(--color-base-texto-suave); line-height: 1.4; }
   .tag { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 10.5px; margin: 2px 4px 2px 0; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12.5px; }
-  #btnAtenuar { margin-top: 10px; padding: 6px 10px; font-size: 12px; background: var(--color-base-borde-suave); color: var(--color-base-texto); border: 1px solid var(--color-base-borde); border-radius: 4px; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -28,43 +27,44 @@
   <div id="red"></div>
   <div id="panel">
     <a class="volver" href="grafos.html">← Grafos del sistema</a>
-    <h2>Vista inicial del sistema</h2>
-    <p class="hint">Grafo real extraído de graphify_visor: cada página .html, el servidor que las sirve, los endpoints reales que declara y las pestañas del Sheet / tablas Baserow que efectivamente toca. Generado por mapear_grafo_visor.mjs (solo lectura, nada inventado). Ver PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md §8.83.</p>
+    <h2>Mapa real desde home.html</h2>
+    <p class="hint">Mismo dato real que <a class="volver" href="vista_sistema.html">Vista inicial del sistema</a> (<code>grafo_visor.json</code>, generado por <code>mapear_grafo_visor.mjs</code>) -- aquí siempre filtrado a solo lo real y alcanzable navegando desde home.html (BFS real sobre las aristas <code>enlaza</code>/<code>llama_api</code>/<code>sirve</code>/<code>toca</code>, nunca inventado). Las páginas-herramienta de desarrollo fuera de ese alcance no aparecen aquí -- para verlas todas, usa la vista completa.</p>
     <div class="leyenda-item"><span class="punto" style="background:#ffd43b"></span>home.html (raíz)</div>
     <div class="leyenda-item"><span class="punto" style="background:#4c9aff"></span>Página alcanzable desde home</div>
-    <div class="leyenda-item"><span class="punto" style="background:#5c5f6b"></span>Página real, fuera del alcance de home (herramienta de desarrollo)</div>
     <div class="leyenda-item"><span class="punto" style="background:#9c6ade"></span>servidor_memoria.mjs</div>
-    <div class="leyenda-item"><span class="punto" style="background:#2f9e44"></span>Endpoint real (/api/...)</div>
-    <div class="leyenda-item"><span class="punto" style="background:#e85c8a"></span>Recurso real (pestaña Sheet / tabla Baserow)</div>
+    <div class="leyenda-item"><span class="punto" style="background:#2f9e44"></span>Endpoint real (/api/...) usado desde aquí</div>
+    <div class="leyenda-item"><span class="punto" style="background:#e85c8a"></span>Recurso real (pestaña Sheet / tabla Baserow) tocado desde aquí</div>
     <p class="hint">Tipos de arista: <strong style="color:#4c9aff">enlaza</strong> (navegación entre páginas), <strong style="color:#2f9e44">llama_api / sirve</strong> (fetch real hacia un endpoint), <strong style="color:#e85c8a">toca</strong> (el servidor lee/escribe ese recurso real).</p>
-    <button id="btnAtenuar" onclick="alternarAtenuado()">Ocultar herramientas de desarrollo</button>
-    <p class="hint" style="margin-top:8px;"><a class="volver" href="vista_home.html">Ver solo el mapa real desde home →</a> (misma idea, siempre filtrada, sin botón)</p>
     <div id="ficha"><p class="hint">Haz clic en un nodo para ver su ficha real.</p></div>
   </div>
 </div>
 <script>
 const COLOR_FONDO = getComputedStyle(document.documentElement).getPropertyValue('--color-base-fondo').trim() || '#0f1013';
-let soloAlcanzables = false;
-let network, nodes, edges, datosGlobal, alcanzablesGlobal;
+let network, datos;
 let nodoEnHover = null;
 
-fetch('grafo_visor.json').then(r => r.json()).then(datos => {
-  datosGlobal = datos;
-
-  // BFS real desde home.html, siguiendo enlaza/llama_api/sirve/toca -- no se inventa alcance, se calcula sobre las aristas reales extraídas.
+fetch('grafo_visor.json').then(r => r.json()).then(bruto => {
+  // BFS real desde home.html sobre TODAS las aristas reales (igual que vista_sistema.html)
+  // -- el alcance no se filtra solo a paginas: un endpoint/recurso cuenta como alcanzable
+  // si una pagina o el servidor alcanzables lo tocan de verdad.
   const alcanzables = new Set(['home.html']);
   let cambiado = true;
   while (cambiado) {
     cambiado = false;
-    for (const a of datos.aristas) {
+    for (const a of bruto.aristas) {
       if (alcanzables.has(a.source) && !alcanzables.has(a.target)) { alcanzables.add(a.target); cambiado = true; }
     }
   }
-  alcanzablesGlobal = alcanzables;
+  // servidor_memoria.mjs es el unico servidor real -- se incluye siempre si alguna pagina
+  // alcanzable lo llama (llama_api), nunca porque se asuma sin mirar las aristas reales.
+  datos = {
+    nodos: bruto.nodos.filter(n => alcanzables.has(n.id)),
+    aristas: bruto.aristas.filter(a => alcanzables.has(a.source) && alcanzables.has(a.target)),
+  };
 
   const colorDe = (n) => {
     if (n.id === 'home.html') return '#ffd43b';
-    if (n.tipo === 'pagina') return alcanzables.has(n.id) ? '#4c9aff' : '#5c5f6b';
+    if (n.tipo === 'pagina') return '#4c9aff';
     if (n.tipo === 'servidor') return '#9c6ade';
     if (n.tipo === 'endpoint') return '#2f9e44';
     if (n.tipo === 'recurso_real') return '#e85c8a';
@@ -72,32 +72,20 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
   };
   const colorArista = { enlaza: '#4c9aff', llama_api: '#2f9e4488', sirve: '#2f9e44', toca: '#e85c8a88' };
 
-  // Sin etiqueta visible por defecto -- un grafo denso con ~50 nombres encima ensucia
-  // la vista inicial (feedback real del operador). Mismo patron ya resuelto en
-  // grafo_maestro.html (§8.39-40): la etiqueta aparece al acercar el zoom o al pasar
-  // el raton por encima, nunca desaparece del todo (title conserva el id real siempre).
-  // Todo en formato nodo (dot) -- un solo lenguaje visual, la diferencia real
-  // entre pagina/servidor/endpoint/recurso queda solo en color y tamano, nunca en forma.
-  nodes = new vis.DataSet(datos.nodos.map(n => ({
+  const nodes = new vis.DataSet(datos.nodos.map(n => ({
     id: n.id, label: n.nombre, title: n.id,
     color: { background: colorDe(n), border: COLOR_FONDO },
     font: { color: 'rgba(0,0,0,0)', size: n.id === 'home.html' ? 14 : 11 },
     shape: 'dot',
     size: n.id === 'home.html' ? 22 : n.tipo === 'servidor' ? 18 : n.tipo === 'pagina' ? 14 : 10,
   })));
-  edges = new vis.DataSet(datos.aristas.map((a, i) => ({
+  const edges = new vis.DataSet(datos.aristas.map((a, i) => ({
     id: i, from: a.source, to: a.target, arrows: 'to',
     color: { color: colorArista[a.relation] || '#3a3b47' },
     dashes: a.relation === 'toca' || a.relation === 'llama_api',
   })));
 
-  // Fisica real ya probada en produccion en index.html/graph.html (el primer visor,
-  // Graphify) -- mismo defecto que tenia esta pagina: sin damping/centralGravity/
-  // avoidOverlap el grafo oscila sin asentarse nunca, y sin congelar tras estabilizar
-  // sigue temblando para siempre aunque nadie lo toque. damping alto = mas friccion
-  // (para antes, menos rebote); centralGravity bajo = no colapsa todo al centro;
-  // avoidOverlap separa nodos que se pisan. Tras estabilizar, physics.enabled=false
-  // -- inercia cero real: arrastrar un nodo lo deja donde se suelta, no vuelve a moverse solo.
+  // Misma fisica real ya probada (vista_sistema.html/plantilla_grafo_espacio.html).
   network = new vis.Network(document.getElementById('red'), { nodes, edges }, {
     physics: {
       solver: 'forceAtlas2Based',
@@ -109,8 +97,6 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
 
   network.once('stabilizationIterationsDone', () => {
     network.setOptions({ physics: { enabled: false } });
-    // el canvas nace con tamano 0 si el layout flex aun no ha resuelto cuando vis-network
-    // se construye (mismo bug real ya encontrado en holon.html/grafo_maestro.html)
     network.setSize('100%', '100%');
     network.redraw();
     network.fit({ animation: false });
@@ -157,22 +143,12 @@ fetch('grafo_visor.json').then(r => r.json()).then(datos => {
     }
     document.getElementById('ficha').innerHTML =
       '<h3>' + n.nombre + '</h3>' +
-      '<p><span class="tag" style="background:' + (alcanzables.has(n.id) ? '#4c9aff33;color:#4c9aff">Alcanzable desde home' : '#5c5f6b33;color:#5c5f6b">Fuera del alcance de home') + '</span></p>' +
+      '<p><span class="tag" style="background:#4c9aff33;color:#4c9aff">Alcanzable desde home</span></p>' +
       (n.id === 'home.html' ? '<p>Raíz real del sistema.</p>' : '<p><a class="volver" href="' + n.id + '" target="_blank">Abrir ' + n.id + ' →</a></p>');
   });
-}).catch(err => {
+}).catch(() => {
   document.getElementById('ficha').innerHTML = '<p class="hint">No se pudo cargar grafo_visor.json -- ejecuta antes: node mapear_grafo_visor.mjs</p>';
 });
-
-function alternarAtenuado() {
-  soloAlcanzables = !soloAlcanzables;
-  document.getElementById('btnAtenuar').textContent = soloAlcanzables ? 'Mostrar herramientas de desarrollo' : 'Ocultar herramientas de desarrollo';
-  if (!nodes) return;
-  const actualizados = datosGlobal.nodos
-    .filter(n => n.tipo === 'pagina' && !alcanzablesGlobal.has(n.id))
-    .map(n => ({ id: n.id, hidden: soloAlcanzables }));
-  nodes.update(actualizados);
-}
 </script>
 </body>
 </html>

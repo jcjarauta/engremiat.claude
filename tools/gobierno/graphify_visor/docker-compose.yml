@@ -43,6 +43,7 @@ services:
       - ./arbol_campanas.html:/app/arbol_campanas.html:ro
       - ./home.html:/app/home.html:ro
       - ./vista_sistema.html:/app/vista_sistema.html:ro
+      - ./vista_home.html:/app/vista_home.html:ro
       - ./grafo_visor.json:/app/grafo_visor.json:ro
       - ./grafos.html:/app/grafos.html:ro
       - ./taller.html:/app/taller.html:ro
