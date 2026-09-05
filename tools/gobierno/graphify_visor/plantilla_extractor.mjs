@@ -53,27 +53,28 @@ function main() {
   // de candidatos por historial (TAR-0007). Llamar SIEMPRE al final de main(), despues de
   // escribir el grafo, con los contadores reales ya calculados.
   //
-  // La "descripcion" real tiene que responder, en una o dos frases, las preguntas
-  // fundamentales que ya responden las 8 fichas reales existentes (§8.111) -- ninguna se
-  // salta ninguna, aunque nadie lo tuviera escrito como checklist hasta ahora:
-  //   1. ¿Que representa cada NODO real? (ej. grafo_recurso: "Fichas reales de
-  //      01_Mundo/Recursos/ (GASTO_API, DOCUMENTO_ENGREMIAT...)")
-  //   2. ¿Que representa cada ARISTA real, con su nombre real? (ej. holon: "relaciones
-  //      reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...)")
-  //   3. ¿De que FUENTE real sale el dato? (ej. nodejs: "Scripts reales de tools/"; anatomia:
-  //      "calculadas sobre 7 fuentes reales distintas")
-  //   4. Si hay huecos reales o nodos "externo" sin resolver, decirlo aqui explicitamente --
-  //      nunca en silencio (mismo criterio que mapear_grafo_por_tipo.mjs).
-  //   5. ¿Que limite honesto tiene este grafo, que NO cubre? (ej. n8n: "unica capa que
-  //      muestra automatizacion real con Puerta Humana propia" -- delimita que si cubre y
-  //      que no cubren las demas capas).
+  // La "descripcion" real existe para tres cosas (§8.113, revisado sobre las 5 preguntas
+  // originales de §8.111 -- se quita "limite honesto" como pregunta fija, se repetia igual
+  // en cada ficha sin aportar nada distinto): poder ANALIZAR el grafo, RECONOCERLO, y
+  // dotarle de IDENTIDAD propia. Tres bloques reales, ninguno inventado:
+  //   IDENTIDAD -- tamano real (nodos/aristas), tipo de nodo mas frecuente, y si tiene una
+  //     raiz real (una sola pagina/entidad de la que cuelga todo) o es un grafo completo
+  //     sin raiz unica. Es lo que distingue a este grafo de cualquier otro de un vistazo.
+  //   COMPOSICION (analisis real) -- que es cada NODO real y cada ARISTA real, con su
+  //     nombre real y su conteo real (ej. grafo_recurso: "Fichas reales de
+  //     01_Mundo/Recursos/"; holon: "relaciones reales opera_en/depende_de/gobierna_a...").
+  //   PROCEDENCIA (reconocimiento real) -- de que FUENTE real sale el dato (ej. nodejs:
+  //     "Scripts reales de tools/"), para poder reconocerlo como el mismo origen la
+  //     proxima vez que se regenere.
+  // Si hay huecos reales o nodos "externo" sin resolver, decirlo siempre (nunca en
+  // silencio) -- pero solo cuando de verdad los hay, no como aviso fijo en toda ficha.
   actualizarFichaGrafo({
     rutaGrafo: SALIDA,
     id: 'NOMBRE', // PERSONALIZAR: mismo slug que el nombre de fichero .html sin extension
     nombre: 'NOMBRE REAL PARA MOSTRAR', // PERSONALIZAR
     tipo: 'Espacio', // PERSONALIZAR: Espacio | Personaje | Recurso | Modulo | Herramienta | Transversal (taxonomia real S8.87)
     espacioReal: null, // PERSONALIZAR: nombre real de la ficha de Espacio si existe, null si es hueco
-    descripcion: 'DESCRIPCION REAL: que es cada nodo, que es cada arista (con su nombre real), de que fuente real sale, y su limite honesto si aplica.', // PERSONALIZAR -- ver las 5 preguntas arriba
+    descripcion: 'DESCRIPCION REAL: identidad (tamano + raiz real si la hay) + composicion (que es cada nodo/arista real) + procedencia (de que fuente real sale).', // PERSONALIZAR -- ver los 3 bloques arriba
     extractor: 'NOMBRE_DEL_FICHERO.mjs', // PERSONALIZAR
     pagina: 'NOMBRE.html', // PERSONALIZAR
     contadores: { nodos: nodos.length, aristas: aristas.length },

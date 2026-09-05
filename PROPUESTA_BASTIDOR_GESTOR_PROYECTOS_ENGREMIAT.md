@@ -1438,6 +1438,22 @@ Pedido: *"al generar vista previa construir la ficha del grafo a través de la p
 
 **Verificado con `node` contra el VPS real**, replicando la extracción + construcción de ficha sobre `home.html`: 35 nodos reales (13 páginas, 21 endpoints, 1 servidor), aristas reales por tipo (`enlaza` 27, `llama_api` 24, `sirve` 19), sin externos sin resolver -- los mismos números que ya se habían confirmado en §8.109, ahora expresados como respuestas reales a las 5 preguntas de la ficha.
 
+### 8.113 Ficha del grafo reenfocada: analizar, reconocer, dotar de identidad -- y el bug real de `sirve` que la propia ficha reveló
+
+Pedido, en rol de asesor técnico, para interpretar una ficha real generada (`grafos.html` como raíz): confirmé un hallazgo real -- 2 de los 21 endpoints reales (`/api/ficha`, `/api/procesos_tareas`) aparecían como "no confirmados servidos" pese a existir de verdad (`servidor_memoria.mjs` líneas 792/820, usando `req.url.startsWith(...)` **sin** `===`, un patrón real que la expresión regular de §8.109/110 no cubría). Después, pedido explícito: *"corrige y amplía la plantilla de ficha de grafo, elimina información que no necesitamos, el objetivo de la ficha de grafo es poder analizar el grafo, reconocerlo y dotarle de identidad"*.
+
+**Corregido primero**: la regex de `declarados` en `extraerGrafoRelacionado()` ahora reconoce las dos formas reales por separado (`req.url.startsWith('/api/...')` y `req.url === '/api/...'`) -- verificado con `node` contra `servidor_memoria.mjs` real: los 21 endpoints reales se detectan ahora los 21, no 19.
+
+**Ficha rediseñada** alrededor del objetivo real pedido -- de 5 preguntas sueltas a 3 bloques con función propia, más uno condicional:
+- **Identidad**: tamaño real (nodos/aristas), tipo de nodo dominante, y si tiene una raíz real (con su grado real -- cuántas aristas directas tiene) o es un grafo completo sin raíz única. Es lo nuevo real que faltaba -- antes no había nada que respondiera "qué hace a ESTE grafo reconocible".
+- **Composición** (antes preguntas 1+2, fusionadas): qué es cada nodo y cada arista real, con sus nombres y conteos reales.
+- **Procedencia** (antes pregunta 3): de qué fuente real sale, para reconocerlo como el mismo origen la próxima vez.
+- **Completitud** (antes preguntas 4+5, fusionadas y ahora condicionales): solo aparece si hay algo real y distinto que decir para ESTE grafo -- huecos/externos reales, o el tope de páginas si de verdad se alcanzó. Eliminado el aviso fijo de "límite honesto" que se repetía igual (Sheet/Baserow) en cada ficha sin aportar nada específico -- "información que no necesitamos" tal como se pidió.
+
+Misma actualización reflejada en el comentario real de `plantilla_extractor.mjs`, para que el extractor manual y la extracción en vivo del Constructor de grafos sigan la misma plantilla real. Verificado con `node` contra el VPS real sobre `grafos.html`: identidad real ("35 nodos, 74 aristas, mayoría "endpoint" (21), raíz "grafos.html" con 11 aristas directas"), composición real, y los 21/21 endpoints ahora confirmados como servidos.
+
+## 9. Pendiente
+
 **Resuelto 2026-09-02:**
 - ~~Producto/Proceso en el esquema de Misión~~ — decisión: sí entran como niveles propios ("siempre copiamos la verdad que vive en Sheets, nunca la simplificamos"). Añadido `jerarquia` (campanaId/proyectoId/productoId/procesoId/tareaId) a `mision.schema.json`, opcional para no romper los 5 fixtures de B0 ya verificados — re-verificado con `validar_b0.mjs`, 5/5 OK, sin regresión.
 - ~~`STG_*` sin valor conceptual~~ — decisión: es la zona real de aterrizaje para carga masiva de datos de cliente. Diseño documentado en §6.5 (STG_* → paso de mapeo con IA controlada + Puerta Humana → `insertarRegistroTransaccional`, nunca escritura directa).

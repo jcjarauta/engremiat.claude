@@ -229,7 +229,15 @@ async function extraerGrafoRelacionado(textoInicial, urlPaginaInicial) {
   if (idsEndpointReales.length) {
     try {
       const textoServidor = await (await fetch('servidor_memoria.mjs')).text();
-      const declarados = new Set([...textoServidor.matchAll(/req\.url(?:\.startsWith)?\(?\s*===?\s*['"](\/api\/[a-zA-Z0-9_]+)/g)].map(m => m[1]));
+      // Bug real encontrado y corregido: la regex anterior exigia un "===" incluso tras
+      // ".startsWith(" -- pero varios endpoints reales usan req.url.startsWith('/api/...')
+      // SIN comparacion, y se contaban como "no servidos" pese a estar de verdad
+      // implementados (ej. /api/ficha, /api/procesos_tareas). Ahora reconoce las dos formas
+      // reales por separado.
+      const declarados = new Set();
+      for (const m of textoServidor.matchAll(/req\.url\.startsWith\(\s*['"](\/api\/[a-zA-Z0-9_]+)|req\.url\s*===?\s*['"](\/api\/[a-zA-Z0-9_]+)/g)) {
+        declarados.add(m[1] || m[2]);
+      }
       const relevantes = idsEndpointReales.filter(r => declarados.has(r));
       if (relevantes.length) {
         nodos.set('servidor_memoria.mjs', { id: 'servidor_memoria.mjs', nombre: 'servidor_memoria.mjs', tipo: 'servidor' });
@@ -387,50 +395,69 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
     (datos.tope ? ' -- tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado, puede haber más sin recorrer' : '') + '.';
 
   const nombreArchivo = (urlPagina.split('/').pop() || urlPagina).replace(/\.(json|html)$/i, '');
-  const ficha = construirFichaGrafo(datos, idsExternos, { urlPagina, urlJson, descubierto, extraidoEnVivo });
+  const ficha = construirFichaGrafo(datos, idsExternos, idRaiz, { urlPagina, urlJson, descubierto, extraidoEnVivo });
   document.getElementById('fichaGrafoPreview').innerHTML =
     '<h3>Ficha del grafo</h3>' +
-    '<p class="pregunta">1. ¿Qué es cada nodo real?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta1) + '</p>' +
-    '<p class="pregunta">2. ¿Qué es cada arista real?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta2) + '</p>' +
-    '<p class="pregunta">3. ¿De qué fuente real sale?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta3) + '</p>' +
-    '<p class="pregunta">4. ¿Huecos/externos sin resolver?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta4) + '</p>' +
-    '<p class="pregunta">5. ¿Límite honesto?</p><p class="respuesta">' + escapeHtmlLocal(ficha.pregunta5) + '</p>';
+    '<p class="pregunta">Identidad</p><p class="respuesta">' + escapeHtmlLocal(ficha.identidad) + '</p>' +
+    '<p class="pregunta">Composición</p><p class="respuesta">' + escapeHtmlLocal(ficha.composicion) + '</p>' +
+    '<p class="pregunta">Procedencia</p><p class="respuesta">' + escapeHtmlLocal(ficha.procedencia) + '</p>' +
+    (ficha.completitud ? '<p class="pregunta">Completitud</p><p class="respuesta">' + escapeHtmlLocal(ficha.completitud) + '</p>' : '');
   ultimoPreview = { url: urlPagina, urlJson, datos, idsExternos, descripcion: ficha.descripcion };
   document.getElementById('nombrePropuesta').value = nombreArchivo;
 }
 
 function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-// Construye la ficha real del grafo con la MISMA plantilla de 5 preguntas ya escrita junto
-// a actualizarFichaGrafo() en plantilla_extractor.mjs (§8.111) -- nunca un texto libre
-// distinto. Cada respuesta se calcula de verdad sobre los nodos/aristas ya generados, nunca
-// inventada. Esta misma descripcion (concatenada) es la que se guarda al promover.
-function construirFichaGrafo(datos, idsExternos, ctx) {
+// Ficha real del grafo -- reenfocada (§8.113) en su objetivo real: poder ANALIZAR el grafo
+// (composicion real), RECONOCERLO (procedencia real, mismo origen la proxima vez) y
+// dotarle de IDENTIDAD (tamano real + raiz real + grado real de esa raiz). Se quita el
+// aviso fijo de "limite honesto" que se repetia igual en cada ficha sin aportar nada
+// distinto por grafo -- "completitud" solo aparece cuando hay algo real que decir (huecos
+// externos reales, o el tope de paginas alcanzado de verdad esta vez). Cada dato se calcula
+// sobre los nodos/aristas ya generados, nunca inventado. Esta misma descripcion
+// (concatenada) es la que se guarda al promover.
+function construirFichaGrafo(datos, idsExternos, idRaiz, ctx) {
   const porTipo = {};
   for (const n of datos.nodos) porTipo[n.tipo || 'sin tipo'] = (porTipo[n.tipo || 'sin tipo'] || 0) + 1;
   const porRelacion = {};
   for (const a of datos.aristas) porRelacion[a.relation || 'sin tipo'] = (porRelacion[a.relation || 'sin tipo'] || 0) + 1;
+  const tipoDominante = Object.entries(porTipo).sort((a, b) => b[1] - a[1])[0];
 
-  const pregunta1 = Object.entries(porTipo).map(([t, n]) => n + ' de tipo "' + t + '"').join(', ') || 'sin nodos reales';
-  const pregunta2 = Object.entries(porRelacion).length
-    ? Object.entries(porRelacion).map(([r, n]) => '"' + r + '" (' + n + ')').join(', ')
-    : 'ninguna arista real';
-  const pregunta3 = ctx.extraidoEnVivo
-    ? 'Extraído en vivo de ' + ctx.urlPagina + ' -- enlaces y llamadas reales de su propio código, mismo método que mapear_grafo_visor.mjs.'
+  // IDENTIDAD: tamano real + raiz real (si la hay) + su grado real -- lo que distingue a
+  // este grafo de otro cualquiera, de un vistazo.
+  let identidad = datos.nodos.length + ' nodos reales, ' + datos.aristas.length + ' aristas reales';
+  identidad += tipoDominante ? ', mayoría de tipo "' + tipoDominante[0] + '" (' + tipoDominante[1] + ')' : '';
+  if (idRaiz) {
+    const grado = datos.aristas.filter(a => a.source === idRaiz || a.target === idRaiz).length;
+    identidad += '. Raíz real: "' + idRaiz + '" (' + grado + ' arista(s) real(es) directa(s)).';
+  } else {
+    identidad += '. Sin raíz única -- grafo completo, no una extracción desde un solo punto.';
+  }
+
+  // COMPOSICION (analisis real): que es cada nodo y cada arista, con sus conteos reales.
+  const composicion = 'Nodos: ' +
+    (Object.entries(porTipo).map(([t, n]) => n + ' "' + t + '"').join(', ') || 'ninguno') +
+    '. Aristas: ' +
+    (Object.entries(porRelacion).length ? Object.entries(porRelacion).map(([r, n]) => n + ' "' + r + '"').join(', ') : 'ninguna real');
+
+  // PROCEDENCIA (reconocimiento real): de que fuente real sale, para poder identificarlo
+  // como el mismo origen la proxima vez que se genere.
+  const procedencia = ctx.extraidoEnVivo
+    ? 'Extraído en vivo de ' + ctx.urlPagina + ' (enlaces y llamadas reales de su propio código).'
     : (ctx.descubierto
-      ? 'JSON real ya generado, descubierto en ' + ctx.urlPagina + ' (' + ctx.urlJson + ').'
-      : 'JSON real ya generado directamente en ' + ctx.urlJson + '.');
-  const pregunta4 = idsExternos.size
-    ? idsExternos.size + ' destino(s) externo(s) sin resolver: ' + [...idsExternos].join(', ') + ' (no descartados).'
-    : 'Ninguno -- todas las aristas resuelven contra un nodo real de este grafo.';
-  const pregunta5 = ctx.extraidoEnVivo
-    ? 'Recorrido acotado a ' + TOPE_PAGINAS_RELACIONADAS + ' páginas reales; no incluye recursos reales de Sheet/Baserow (expondría el esquema de negocio del cliente, §8.109).'
-    : 'Grafo tal cual lo genera su extractor real -- consulta su propia ficha para más límites reales.';
+      ? 'JSON real descubierto en ' + ctx.urlPagina + ' (' + ctx.urlJson + ').'
+      : 'JSON real generado directamente en ' + ctx.urlJson + '.');
 
-  const descripcion = 'Nodos reales: ' + pregunta1 + '. Aristas reales: ' + pregunta2 + '. Fuente: ' + pregunta3 +
-    ' Externos: ' + pregunta4 + ' Límite: ' + pregunta5;
+  // COMPLETITUD: solo aparece si hay algo real y distinto que decir para ESTE grafo --
+  // nunca un aviso generico repetido igual en todas las fichas.
+  const partesCompletitud = [];
+  if (idsExternos.size) partesCompletitud.push(idsExternos.size + ' destino(s) externo(s) sin resolver: ' + [...idsExternos].join(', ') + ' (no descartados)');
+  if (ctx.extraidoEnVivo && datos.tope) partesCompletitud.push('tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado -- puede haber más sin recorrer');
+  const completitud = partesCompletitud.join('; ') + (partesCompletitud.length ? '.' : '');
 
-  return { pregunta1, pregunta2, pregunta3, pregunta4, pregunta5, descripcion };
+  const descripcion = identidad + ' ' + composicion + '. ' + procedencia + (completitud ? ' ' + completitud : '');
+
+  return { identidad, composicion, procedencia, completitud, descripcion };
 }
 
 // Cierra el circulo real completo: crear (pegar una URL/HTML) -> configurar (nombre,
