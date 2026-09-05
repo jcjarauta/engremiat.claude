@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T23:37:04.642Z",
+  "generadoEn": "2026-09-05T06:15:03.646Z",
   "nodos": [
     {
       "id": "puerta_humana",
@@ -184,7 +184,7 @@
       "primarios": 6,
       "externos": 1
     },
-    "actualizadoEn": "2026-09-04T23:37:04.643Z",
+    "actualizadoEn": "2026-09-05T06:15:03.647Z",
     "historial": [
       {
         "en": "2026-09-04T23:27:13.021Z",
@@ -202,6 +202,13 @@
       },
       {
         "en": "2026-09-04T23:37:04.643Z",
+        "nodos": 16,
+        "aristas": 14,
+        "primarios": 6,
+        "externos": 1
+      },
+      {
+        "en": "2026-09-05T06:15:03.647Z",
         "nodos": 16,
         "aristas": 14,
         "primarios": 6,

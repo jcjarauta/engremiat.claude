@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T23:37:04.528Z",
+  "generadoEn": "2026-09-05T06:15:03.545Z",
   "nodos": [
     {
       "id": "gasto_api",
@@ -169,7 +169,7 @@
       "primarios": 9,
       "externos": 0
     },
-    "actualizadoEn": "2026-09-04T23:37:04.529Z",
+    "actualizadoEn": "2026-09-05T06:15:03.546Z",
     "historial": [
       {
         "en": "2026-09-04T23:27:06.157Z",
@@ -187,6 +187,13 @@
       },
       {
         "en": "2026-09-04T23:37:04.529Z",
+        "nodos": 16,
+        "aristas": 11,
+        "primarios": 9,
+        "externos": 0
+      },
+      {
+        "en": "2026-09-05T06:15:03.546Z",
         "nodos": 16,
         "aristas": 11,
         "primarios": 9,

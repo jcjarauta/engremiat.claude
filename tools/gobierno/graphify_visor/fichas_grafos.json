@@ -9,13 +9,13 @@
       "extractor": "mapear_grafo_visor.mjs",
       "pagina": "vista_sistema.html",
       "contadores": {
-        "nodos": 57,
-        "aristas": 85,
-        "paginas": 23,
-        "endpoints": 20,
+        "nodos": 61,
+        "aristas": 105,
+        "paginas": 26,
+        "endpoints": 21,
         "recursos": 13
       },
-      "actualizadoEn": "2026-09-04T23:37:03.909Z",
+      "actualizadoEn": "2026-09-05T06:15:02.926Z",
       "historial": [
         {
           "en": "2026-09-04T23:24:13.029Z",
@@ -48,6 +48,14 @@
           "paginas": 23,
           "endpoints": 20,
           "recursos": 13
+        },
+        {
+          "en": "2026-09-05T06:15:02.926Z",
+          "nodos": 61,
+          "aristas": 105,
+          "paginas": 26,
+          "endpoints": 21,
+          "recursos": 13
         }
       ]
     },
@@ -65,7 +73,7 @@
         "primarios": 9,
         "externos": 0
       },
-      "actualizadoEn": "2026-09-04T23:37:04.529Z",
+      "actualizadoEn": "2026-09-05T06:15:03.546Z",
       "historial": [
         {
           "en": "2026-09-04T23:27:06.157Z",
@@ -87,6 +95,13 @@
           "aristas": 11,
           "primarios": 9,
           "externos": 0
+        },
+        {
+          "en": "2026-09-05T06:15:03.546Z",
+          "nodos": 16,
+          "aristas": 11,
+          "primarios": 9,
+          "externos": 0
         }
       ]
     },
@@ -104,7 +119,7 @@
         "primarios": 21,
         "externos": 0
       },
-      "actualizadoEn": "2026-09-04T23:37:04.585Z",
+      "actualizadoEn": "2026-09-05T06:15:03.595Z",
       "historial": [
         {
           "en": "2026-09-04T23:27:12.943Z",
@@ -126,6 +141,13 @@
           "aristas": 62,
           "primarios": 21,
           "externos": 0
+        },
+        {
+          "en": "2026-09-05T06:15:03.595Z",
+          "nodos": 25,
+          "aristas": 62,
+          "primarios": 21,
+          "externos": 0
         }
       ]
     },
@@ -143,7 +165,7 @@
         "primarios": 6,
         "externos": 1
       },
-      "actualizadoEn": "2026-09-04T23:37:04.643Z",
+      "actualizadoEn": "2026-09-05T06:15:03.647Z",
       "historial": [
         {
           "en": "2026-09-04T23:27:13.021Z",
@@ -165,6 +187,13 @@
           "aristas": 14,
           "primarios": 6,
           "externos": 1
+        },
+        {
+          "en": "2026-09-05T06:15:03.647Z",
+          "nodos": 16,
+          "aristas": 14,
+          "primarios": 6,
+          "externos": 1
         }
       ]
     },
@@ -177,11 +206,11 @@
       "extractor": "mapear_grafo_node.mjs",
       "pagina": "nodejs.html",
       "contadores": {
-        "nodos": 144,
-        "aristas": 198,
-        "scripts": 70
+        "nodos": 155,
+        "aristas": 213,
+        "scripts": 77
       },
-      "actualizadoEn": "2026-09-04T23:37:03.759Z",
+      "actualizadoEn": "2026-09-05T06:15:02.792Z",
       "historial": [
         {
           "en": "2026-09-04T23:31:02.606Z",
@@ -200,6 +229,12 @@
           "nodos": 144,
           "aristas": 198,
           "scripts": 70
+        },
+        {
+          "en": "2026-09-05T06:15:02.792Z",
+          "nodos": 155,
+          "aristas": 213,
+          "scripts": 77
         }
       ]
     },
@@ -216,7 +251,7 @@
         "aristas": 138,
         "workflows": 2
       },
-      "actualizadoEn": "2026-09-04T23:37:03.841Z",
+      "actualizadoEn": "2026-09-05T06:15:02.862Z",
       "historial": [
         {
           "en": "2026-09-04T23:31:02.691Z",
@@ -235,6 +270,12 @@
           "nodos": 137,
           "aristas": 138,
           "workflows": 2
+        },
+        {
+          "en": "2026-09-05T06:15:02.862Z",
+          "nodos": 137,
+          "aristas": 138,
+          "workflows": 2
         }
       ]
     },
@@ -250,7 +291,7 @@
         "nodos": 29,
         "aristas": 40
       },
-      "actualizadoEn": "2026-09-04T23:37:04.204Z",
+      "actualizadoEn": "2026-09-05T06:15:03.216Z",
       "historial": [
         {
           "en": "2026-09-04T23:36:24.772Z",
@@ -259,6 +300,11 @@
         },
         {
           "en": "2026-09-04T23:37:04.204Z",
+          "nodos": 29,
+          "aristas": 40
+        },
+        {
+          "en": "2026-09-05T06:15:03.216Z",
           "nodos": 29,
           "aristas": 40
         }
@@ -275,7 +321,7 @@
       "contadores": {
         "entidades": 66
       },
-      "actualizadoEn": "2026-09-04T23:37:04.455Z",
+      "actualizadoEn": "2026-09-05T06:15:03.472Z",
       "historial": [
         {
           "en": "2026-09-04T23:36:25.062Z",
@@ -283,6 +329,10 @@
         },
         {
           "en": "2026-09-04T23:37:04.455Z",
+          "entidades": 66
+        },
+        {
+          "en": "2026-09-05T06:15:03.472Z",
           "entidades": 66
         }
       ]

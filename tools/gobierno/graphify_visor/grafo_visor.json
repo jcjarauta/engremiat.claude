@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T23:37:03.908Z",
+  "generadoEn": "2026-09-05T06:15:02.924Z",
   "nodos": [
     {
       "id": "anatomia.html",
@@ -9,6 +9,11 @@
     {
       "id": "arbol_campanas.html",
       "nombre": "arbol_campanas.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "biblioteca.html",
+      "nombre": "biblioteca.html",
       "tipo": "pagina"
     },
     {
@@ -97,6 +102,16 @@
       "tipo": "pagina"
     },
     {
+      "id": "tecnico.html",
+      "nombre": "tecnico.html",
+      "tipo": "pagina"
+    },
+    {
+      "id": "vista_home.html",
+      "nombre": "vista_home.html",
+      "tipo": "pagina"
+    },
+    {
       "id": "vista_modulos.html",
       "nombre": "vista_modulos.html",
       "tipo": "pagina"
@@ -174,6 +189,11 @@
     {
       "id": "endpoint:/api/misiones_feria",
       "nombre": "/api/misiones_feria",
+      "tipo": "endpoint"
+    },
+    {
+      "id": "endpoint:/api/promover_grafo",
+      "nombre": "/api/promover_grafo",
       "tipo": "endpoint"
     },
     {
@@ -309,6 +329,91 @@
       "relation": "llama_api"
     },
     {
+      "source": "biblioteca.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "plantilla_grafo_espacio.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "arbol_campanas.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "panel_operativo.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "panel_operativo.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "arbol_campanas.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "vista_sistema.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "plantilla_grafo_espacio.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "vista_sistema.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "plantilla_grafo_espacio.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "tecnico.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "tecnico.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "biblioteca.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
       "source": "boceto_layout_6_zonas.html",
       "target": "endpoint:/api/proyectos",
       "relation": "llama_api"
@@ -360,28 +465,8 @@
     },
     {
       "source": "grafos.html",
-      "target": "index.html",
-      "relation": "enlaza"
-    },
-    {
-      "source": "grafos.html",
-      "target": "sheet-real.html",
-      "relation": "enlaza"
-    },
-    {
-      "source": "grafos.html",
-      "target": "grafo_maestro.html",
-      "relation": "enlaza"
-    },
-    {
-      "source": "grafos.html",
-      "target": "entidades.html",
-      "relation": "enlaza"
-    },
-    {
-      "source": "grafos.html",
-      "target": "resumen_universo.html",
-      "relation": "enlaza"
+      "target": "endpoint:/api/promover_grafo",
+      "relation": "llama_api"
     },
     {
       "source": "home.html",
@@ -401,6 +486,16 @@
     {
       "source": "home.html",
       "target": "taller.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "home.html",
+      "target": "tecnico.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "home.html",
+      "target": "biblioteca.html",
       "relation": "enlaza"
     },
     {
@@ -539,6 +634,21 @@
       "relation": "llama_api"
     },
     {
+      "source": "tecnico.html",
+      "target": "home.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_home.html",
+      "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_home.html",
+      "target": "vista_sistema.html",
+      "relation": "enlaza"
+    },
+    {
       "source": "vista_modulos.html",
       "target": "grafos.html",
       "relation": "enlaza"
@@ -556,6 +666,11 @@
     {
       "source": "vista_sistema.html",
       "target": "grafos.html",
+      "relation": "enlaza"
+    },
+    {
+      "source": "vista_sistema.html",
+      "target": "vista_home.html",
       "relation": "enlaza"
     },
     {
@@ -606,6 +721,11 @@
     {
       "source": "servidor_memoria.mjs",
       "target": "endpoint:/api/reclamar_tarea",
+      "relation": "sirve"
+    },
+    {
+      "source": "servidor_memoria.mjs",
+      "target": "endpoint:/api/promover_grafo",
       "relation": "sirve"
     },
     {
@@ -723,13 +843,13 @@
     "extractor": "mapear_grafo_visor.mjs",
     "pagina": "vista_sistema.html",
     "contadores": {
-      "nodos": 57,
-      "aristas": 85,
-      "paginas": 23,
-      "endpoints": 20,
+      "nodos": 61,
+      "aristas": 105,
+      "paginas": 26,
+      "endpoints": 21,
       "recursos": 13
     },
-    "actualizadoEn": "2026-09-04T23:37:03.909Z",
+    "actualizadoEn": "2026-09-05T06:15:02.926Z",
     "historial": [
       {
         "en": "2026-09-04T23:24:13.029Z",
@@ -761,6 +881,14 @@
         "aristas": 85,
         "paginas": 23,
         "endpoints": 20,
+        "recursos": 13
+      },
+      {
+        "en": "2026-09-05T06:15:02.926Z",
+        "nodos": 61,
+        "aristas": 105,
+        "paginas": 26,
+        "endpoints": 21,
         "recursos": 13
       }
     ]

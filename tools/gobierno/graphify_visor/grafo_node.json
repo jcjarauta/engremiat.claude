@@ -1,5 +1,5 @@
 {
-  "generadoEn": "2026-09-04T23:37:03.758Z",
+  "generadoEn": "2026-09-05T06:15:02.790Z",
   "nodos": [
     {
       "id": "tools/acervo_prompter.mjs",
@@ -332,6 +332,17 @@
       "queHace": "Segunda pasada sobre el censo real (confirmar/promover/revisar/descartar). Anade 2 fuentes reales mas: el catalogo MODULO_POR_ENTIDAD_MVP de src/Ids.js y las transcripciones reales de tools/gobierno/telar/b2/respuestas_originales/, mas correspondencias verificadas a mano (Verificador de Campos <-> tools/verificador_determinista.mjs). Clasifica las 220 entidades del censo en 19 acciones concretas con su razon real. Sobre el grupo descartar (investigado a mano, no solo con reglas): encontro y corrigio un bug real en cargar_grafo_wikilinks.mjs (relaciones con varios destinos perdian los destinos reales por derivarlos del nombre del fichero en vez del cuerpo), y encontro 5 huecos reales concretos (VIGILIA_TAREA/DOCUMENTO_ENGREMIAT/METRICA_FABRICACION tocadas por codigo real, AGORA/EJECUTOR_LOCAL modulos activos sin ficha), 2 candidatas reales a ficha nueva (Vision Mision, Fisica) y 5 pestanas/tablas que ya tenian grafo propio y el censo no las veia. El resto queda historico, tal como se pidio explicitamente. Investigando a fondo los 5 huecos reales (no solo con reglas): 3 resultaron ya narrados por fichas reales existentes (Vigilia.md/Coordinador.md/Ejecutor.md), resuelto anadiendo una seccion ## Vinculo real a cada una sin tocar el resto; 2 (DOCUMENTO_ENGREMIAT, AGORA) y 1 candidata mas (Fisica) eran huecos genuinos, resueltos creando su ficha real en 01_Mundo/Recursos/ y 03_Reglas/. Vision Mision investigada resulto ser una fila ya catalogada dentro de DOCUMENTO_ENGREMIAT, no una entidad nueva."
     },
     {
+      "id": "tools/gobierno/graphify_visor/crear_ficha_prompt.mjs",
+      "nombre": "crear_ficha_prompt.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
       "id": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
       "nombre": "crear_relaciones_opera_en.mjs",
       "carpeta": "tools/gobierno/graphify_visor",
@@ -352,6 +363,39 @@
       "tocaVault": false,
       "tocaVps": true,
       "queHace": "§8.84: el operador senalo que generar y desplegar el grafo llevo muchos pasos manuales -- 'podemos crear alguna herramienta para automatizarlo?'. El ciclo manual (scp + ssh docker compose up -d + curl) ya habia causado antes un 404 en silencio por un fichero sin su linea de montaje en docker-compose.yml. Construido para no repetir ese bug: en vez de mantener una segunda lista de ficheros, lee docker-compose.yml y despliega exactamente los ficheros ya declarados como volumen del servicio -- unica fuente real de verdad. Pasos: (1) opcional --grafo regenera grafo_visor.json, (2) scp real de cada fichero declarado, (3) ssh docker compose up -d <servicio> (recreate real, nunca restart), (4) curl de verificacion real de cada pagina .html servida. Verificado con una ejecucion real completa: regenero el grafo (recogio automaticamente la propia vista_sistema.html, 16 a 17 paginas), copio 32 ficheros reales, recreo el contenedor, confirmo 200 real en las 16 paginas servidas."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/detectar_candidatos.mjs",
+      "nombre": "detectar_candidatos.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": "§8.93 (TAR-0007): lee el historial real de cada ficha, calcula el delta relativo de sus contadores entre la primera y la ultima captura (umbral 10%), reutiliza el rolReal YA calculado por extraer_anatomia_entidad.mjs (S8.46) si existe, nunca recalculado. Solo lectura, no decide nada -- Proceso 1c sigue siendo Puerta Humana. Verificado con datos reales de esta misma sesion: senalo correctamente 'vista_sistema: paginas 20->23 (+15%)' como candidato real a revisar."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/enviar_a_worker_local.mjs",
+      "nombre": "enviar_a_worker_local.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/evaluar_tarea_deepseek.mjs",
+      "nombre": "evaluar_tarea_deepseek.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": true,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
     },
     {
       "id": "tools/gobierno/graphify_visor/exportar_atlas_familias.mjs",
@@ -384,7 +428,7 @@
       "tocaBaserow": false,
       "tocaVault": false,
       "tocaVps": false,
-      "queHace": ""
+      "queHace": "§8.93 (TAR-0008): funcion real actualizarFichaGrafo() -- cada extractor la llama al terminar de escribir su grafo_X.json. Escribe la ficha embebida en el propio grafo_X.json (self-describing) y en el manifest unico fichas_grafos.json. Bug real encontrado y corregido: el propio extractor sobrescribe su grafo_X.json entero justo antes de llamar a esta funcion, asi que leer el historial previo del MISMO fichero lo perdia en cada regeneracion -- corregido leyendo el historial previo del manifest (unico sitio que esta funcion controla en exclusiva). Verificado ejecutando un extractor dos veces seguidas: historial paso de 1 a 2 entradas reales."
     },
     {
       "id": "tools/gobierno/graphify_visor/generar_tokens_css.mjs",
@@ -461,11 +505,44 @@
       "tocaBaserow": false,
       "tocaVault": false,
       "tocaVps": false,
+      "queHace": "§8.93 (TAR-0001): plantilla real, companion de plantilla_grafo_espacio.html -- base para cualquier mapear_grafo_X.mjs nuevo, con la regla de oro (solo lectura, nunca inventar) y la llamada a actualizarFichaGrafo() ya integrada. No se ejecuta como esta, es un punto de partida a copiar."
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/proponer_candidato.mjs",
+      "nombre": "proponer_candidato.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
       "queHace": ""
     },
     {
       "id": "tools/gobierno/graphify_visor/regenerar_grafos.mjs",
       "nombre": "regenerar_grafos.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": true,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/registrar_comparacion_deepseek.mjs",
+      "nombre": "registrar_comparacion_deepseek.mjs",
+      "carpeta": "tools/gobierno/graphify_visor",
+      "tipo": "script",
+      "tocaSheet": false,
+      "tocaBaserow": false,
+      "tocaVault": false,
+      "tocaVps": false,
+      "queHace": ""
+    },
+    {
+      "id": "tools/gobierno/graphify_visor/registrar_comparacion_worker_local.mjs",
+      "nombre": "registrar_comparacion_worker_local.mjs",
       "carpeta": "tools/gobierno/graphify_visor",
       "tipo": "script",
       "tocaSheet": false,
@@ -882,6 +959,11 @@
       "tipo": "dato"
     },
     {
+      "id": "dato:fichas_prompt.json",
+      "nombre": "fichas_prompt.json",
+      "tipo": "dato"
+    },
+    {
       "id": "dato:anatomia_entidades.json",
       "nombre": "anatomia_entidades.json",
       "tipo": "dato"
@@ -889,6 +971,16 @@
     {
       "id": "dato:fichas_grafos.json",
       "nombre": "fichas_grafos.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:respuestas_worker_local.json",
+      "nombre": "respuestas_worker_local.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:evaluaciones_deepseek.json",
+      "nombre": "evaluaciones_deepseek.json",
       "tipo": "dato"
     },
     {
@@ -929,6 +1021,11 @@
     {
       "id": "dato:grafo_NOMBRE.json",
       "nombre": "grafo_NOMBRE.json",
+      "tipo": "dato"
+    },
+    {
+      "id": "dato:candidatos_a_promover.json",
+      "nombre": "candidatos_a_promover.json",
       "tipo": "dato"
     },
     {
@@ -1549,6 +1646,11 @@
       "relation": "toca_recurso"
     },
     {
+      "source": "tools/gobierno/graphify_visor/crear_ficha_prompt.mjs",
+      "target": "dato:fichas_prompt.json",
+      "relation": "escribe_debil"
+    },
+    {
       "source": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
       "target": "recurso:DOCUMENTO",
       "relation": "toca_recurso"
@@ -1556,6 +1658,41 @@
     {
       "source": "tools/gobierno/graphify_visor/crear_relaciones_opera_en.mjs",
       "target": "recurso:DOCUMENTO_ENGREMIAT",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "dato:anatomia_entidades.json",
+      "target": "tools/gobierno/graphify_visor/detectar_candidatos.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "dato:fichas_grafos.json",
+      "target": "tools/gobierno/graphify_visor/detectar_candidatos.mjs",
+      "relation": "lee_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/enviar_a_worker_local.mjs",
+      "target": "dato:respuestas_worker_local.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/enviar_a_worker_local.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/evaluar_tarea_deepseek.mjs",
+      "target": "dato:evaluaciones_deepseek.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/evaluar_tarea_deepseek.mjs",
+      "target": "recurso:TAREA",
+      "relation": "toca_recurso"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/evaluar_tarea_deepseek.mjs",
+      "target": "recurso:GASTO_API",
       "relation": "toca_recurso"
     },
     {
@@ -1769,8 +1906,43 @@
       "relation": "escribe_debil"
     },
     {
+      "source": "tools/gobierno/graphify_visor/proponer_candidato.mjs",
+      "target": "dato:candidatos_a_promover.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/regenerar_grafos.mjs",
+      "target": "dato:fichas_grafos.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/regenerar_grafos.mjs",
+      "target": "dato:candidatos_a_promover.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/registrar_comparacion_deepseek.mjs",
+      "target": "dato:evaluaciones_deepseek.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/registrar_comparacion_worker_local.mjs",
+      "target": "dato:respuestas_worker_local.json",
+      "relation": "escribe_debil"
+    },
+    {
       "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
       "target": "dato:memoria_compartida.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "dato:fichas_grafos.json",
+      "relation": "escribe_debil"
+    },
+    {
+      "source": "tools/gobierno/graphify_visor/servidor_memoria.mjs",
+      "target": "dato:candidatos_a_promover.json",
       "relation": "escribe_debil"
     },
     {
@@ -2143,11 +2315,11 @@
     "extractor": "mapear_grafo_node.mjs",
     "pagina": "nodejs.html",
     "contadores": {
-      "nodos": 144,
-      "aristas": 198,
-      "scripts": 70
+      "nodos": 155,
+      "aristas": 213,
+      "scripts": 77
     },
-    "actualizadoEn": "2026-09-04T23:37:03.759Z",
+    "actualizadoEn": "2026-09-05T06:15:02.792Z",
     "historial": [
       {
         "en": "2026-09-04T23:31:02.606Z",
@@ -2166,6 +2338,12 @@
         "nodos": 144,
         "aristas": 198,
         "scripts": 70
+      },
+      {
+        "en": "2026-09-05T06:15:02.792Z",
+        "nodos": 155,
+        "aristas": 213,
+        "scripts": 77
       }
     ]
   }
