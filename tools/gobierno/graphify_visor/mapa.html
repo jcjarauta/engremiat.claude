@@ -35,12 +35,14 @@
   .estado.ok { color: #4fce6f; }
   ol.pasos { font-size: 12px; line-height: 1.7; color: var(--color-base-texto-suave); padding-left: 20px; }
   ol.pasos code { color: #6fb3f2; }
+  ol.pasos button { font-size: 11px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 2px 9px; cursor: pointer; margin-left: 6px; }
+  ol.pasos button:hover { border-color: #6ea8ff; }
 </style>
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Mapa -- jerarquía real de Índice</h1>
-<p class="hint">Árbol real de <a href="grafos.html">Índice</a>: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver Índice dentro del árbol completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
+<p class="hint">Árbol real de <a href="grafos.html">Índice</a>: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). El botón "Ejecutar ahora" que aparece después necesita <code>node servidor_aplicar_local.mjs</code> arrancado en tu máquina (escucha solo en <code>127.0.0.1</code>) -- sin él, aplica el cambio a mano con el comando de siempre. Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver Índice dentro del árbol completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
 
 <div id="arbolMapa" class="raiz-hijos"><p class="hint">Leyendo la jerarquía real...</p></div>
 <p id="notaColumnas" class="hint" style="margin-top:8px;"></p>
@@ -227,13 +229,14 @@ function renderProceso(pc, productoPadre) {
     ? 'draggable="true" data-proceso-id="' + pc.id + '" data-origen-producto-id="' + productoPadre.id + '" ' +
       'ondragstart="alEmpezarArrastre(event, this)" ondragend="this.classList.remove(\'arrastrando\')"'
     : '';
+  // Desplegado por defecto al entrar (pedido explicito) -- igual que Producto/Proyecto.
   return '<div class="nodo">' +
-    '<div class="fila-arbol' + (puedeArrastrar ? ' tarjeta' : ' solo-lectura') + '" ' + atributosArrastre + '>' +
-      (pc.tareas.length ? '<span class="chevron" onclick="toggleArbolNodo(this)">▸</span>' : '<span class="chevron"></span>') +
+    '<div class="fila-arbol' + (puedeArrastrar ? ' tarjeta' : ' solo-lectura') + (pc.tareas.length ? ' abierto' : '') + '" ' + atributosArrastre + '>' +
+      (pc.tareas.length ? '<span class="chevron" onclick="toggleArbolNodo(this)">▾</span>' : '<span class="chevron"></span>') +
       '<span class="tipo">Proceso</span>' +
       '<span class="nombre" onclick="' + (pc.tareas.length ? 'toggleArbolNodo(this.previousElementSibling)' : '') + '">' + escapeHtmlLocal(pc.nombre) + '</span>' +
     '</div>' +
-    '<div class="hijos">' + pc.tareas.map(renderTarea).join('') + '</div>' +
+    '<div class="hijos' + (pc.tareas.length ? ' abierto' : '') + '">' + pc.tareas.map(renderTarea).join('') + '</div>' +
   '</div>';
 }
 
@@ -330,7 +333,8 @@ async function alSoltarEnColumna(evt, columnaEl) {
       const r = await reconstruirYEncolarPagina(productoDestinoId);
       estado.className = 'estado ok';
       estado.textContent = 'Orden real guardado. Página "' + r.nombre + '" reconstruida en la cola.';
-      pasos.innerHTML = '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(r.archivo) + '</code> para aplicar el nuevo orden real.</li>';
+      pasos.innerHTML = '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(r.archivo) + '</code> para aplicar el nuevo orden real. ' +
+        '<button onclick="ejecutarAplicarReal(\'' + escapeHtmlLocal(r.archivo) + '\', this)">Ejecutar ahora</button></li>';
     } catch (e) {
       estado.className = 'estado error';
       estado.textContent = 'No se pudo reordenar de verdad: ' + e.message;
@@ -366,14 +370,40 @@ async function alSoltarEnColumna(evt, columnaEl) {
     estado.className = 'estado ok';
     estado.textContent = 'Movido de verdad. Las dos páginas reales están reconstruidas en la cola.';
     pasos.innerHTML = [
-      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rOrigen.archivo) + '</code> (página de origen, "' + escapeHtmlLocal(rOrigen.nombre) + '").',
-      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rDestino.archivo) + '</code> (página de destino, "' + escapeHtmlLocal(rDestino.nombre) + '").',
+      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rOrigen.archivo) + '</code> (página de origen, "' + escapeHtmlLocal(rOrigen.nombre) + '"). ' +
+        '<button onclick="ejecutarAplicarReal(\'' + escapeHtmlLocal(rOrigen.archivo) + '\', this)">Ejecutar ahora</button>',
+      'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(rDestino.archivo) + '</code> (página de destino, "' + escapeHtmlLocal(rDestino.nombre) + '"). ' +
+        '<button onclick="ejecutarAplicarReal(\'' + escapeHtmlLocal(rDestino.archivo) + '\', this)">Ejecutar ahora</button>',
     ].map(p => '<li>' + p + '</li>').join('');
   } catch (e) {
     estado.className = 'estado error';
     estado.textContent = 'No se pudo mover de verdad: ' + e.message;
   }
   await cargarMapa();
+}
+
+// §8.125: "Ejecutar ahora" real -- ninguna pagina web puede ejecutar un comando en la
+// maquina del operador por si sola (limite real del navegador, no de politica), asi que
+// esto llama a un servidor local minimo (servidor_aplicar_local.mjs) que el operador
+// arranca a mano y que SI puede correr aplicar_pagina_arquitecto.mjs de verdad. El clic
+// real del operador es el gate humano -- el servidor local solo escucha en 127.0.0.1 y
+// rechaza cualquier origen que no sea esta pagina real.
+const URL_SERVIDOR_LOCAL = 'http://localhost:9331';
+async function ejecutarAplicarReal(archivo, boton) {
+  const textoOriginal = boton.textContent;
+  boton.disabled = true;
+  boton.textContent = 'Ejecutando...';
+  try {
+    const r = await fetch(URL_SERVIDOR_LOCAL + '/aplicar?archivo=' + encodeURIComponent(archivo), { method: 'POST' });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || 'fallo real desconocido');
+    alert('Aplicado de verdad:\n\n' + j.salida);
+    boton.textContent = 'Aplicado ✓';
+  } catch (e) {
+    alert('No se pudo ejecutar de verdad -- ¿está arrancado "node servidor_aplicar_local.mjs" en tu máquina?\n\n' + e.message);
+    boton.textContent = textoOriginal;
+    boton.disabled = false;
+  }
 }
 
 // Reconstruye una pagina real completa a partir de sus cajas y fragmentos YA guardados
