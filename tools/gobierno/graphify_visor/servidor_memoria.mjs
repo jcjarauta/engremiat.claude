@@ -366,6 +366,22 @@ async function reclamarTareaReal(idTarea, reclamadoPor) {
   cacheBusTrabajo = { en: 0, datos: null }; // invalida cache -- acaba de cambiar de verdad
 }
 
+// -- §8.94: Proceso 1c real (Puerta Humana) -- grafos.html mostraba los "historicos" sin
+// tipo asignado pero no daba forma de aceptarlos de verdad. fichas_grafos.json vive en el
+// contenedor graphify-visor (estatico); este servidor lo monta tambien, en el MISMO fichero
+// real del host (rw aqui, ro alli) -- promover escribe ahi, graphify-visor lo sirve fresco
+// sin reiniciar nada, mismo fichero.
+const RUTA_FICHAS_GRAFOS = join(__dirname, 'fichas_grafos.json');
+async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion }) {
+  const manifest = existsSync(RUTA_FICHAS_GRAFOS) ? JSON.parse(readFileSync(RUTA_FICHAS_GRAFOS, 'utf-8')) : { fichas: {} };
+  manifest.fichas[id] = {
+    id, nombre, tipo, espacioReal: null, descripcion, pagina,
+    extractor: 'promovido a mano (Puerta Humana, grafos.html)',
+    contadores: {}, actualizadoEn: new Date().toISOString(), historial: [],
+  };
+  writeFileSync(RUTA_FICHAS_GRAFOS, JSON.stringify(manifest, null, 2), 'utf-8');
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -840,6 +856,23 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo reclamar la tarea real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/promover_grafo') {
+      const { id, nombre, tipo, pagina, descripcion } = await leerCuerpo(req);
+      const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta', 'Transversal'];
+      if (!id || !nombre || !tipo || !pagina) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/nombre/tipo/pagina' })); return;
+      }
+      if (!TIPOS_REALES.includes(tipo)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'tipo desconocido: ' + tipo + ' (validos: ' + TIPOS_REALES.join(', ') + ')' })); return;
+      }
+      try {
+        await promoverGrafoReal({ id, nombre, tipo, pagina, descripcion: descripcion || '' });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo promover de verdad: ' + e.message })); return;
       }
     }
 

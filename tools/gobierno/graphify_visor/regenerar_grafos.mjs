@@ -18,10 +18,33 @@
  *   revisar el resultado antes de subirlo.
  */
 import { execFileSync } from 'node:child_process';
-import { dirname } from 'node:path';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIR_VISOR = dirname(fileURLToPath(import.meta.url));
+const RUTA_FICHAS_LOCAL = join(DIR_VISOR, 'fichas_grafos.json');
+const URL_FICHAS_VIVAS = 'http://100.107.171.88:9320/fichas_grafos.json';
+
+// §8.94: /api/promover_grafo escribe en vivo en el VPS -- si esta regeneracion local
+// corre despues (por ejemplo la tarea programada de manana 08:15) sin haber traido esa
+// promocion de vuelta, la sobrescribiria al desplegar (el extractor solo toca su propia
+// clave, pero el fichero local nunca tuvo la clave promovida en primer lugar). Se trae la
+// version viva ANTES de que corra ningun extractor y se fusiona -- las claves promovidas
+// a mano nunca se pisan, las de los extractores se refrescan igual que siempre.
+async function fusionarFichasVivasAntesDeRegenerar() {
+  try {
+    const r = await fetch(URL_FICHAS_VIVAS, { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return;
+    const vivo = await r.json();
+    const local = existsSync(RUTA_FICHAS_LOCAL) ? JSON.parse(readFileSync(RUTA_FICHAS_LOCAL, 'utf-8')) : { fichas: {} };
+    const fusionado = { fichas: { ...vivo.fichas, ...local.fichas } }; // local gana solo si ya tenia la misma clave (se refrescara igual)
+    writeFileSync(RUTA_FICHAS_LOCAL, JSON.stringify(fusionado, null, 2), 'utf-8');
+    console.log('Fichas vivas del VPS fusionadas antes de regenerar (protege promociones manuales recientes).');
+  } catch {
+    console.log('(no se pudo traer fichas_grafos.json vivo del VPS -- se sigue solo con el local)');
+  }
+}
 
 // Cada entrada real: [script, args reales]. Orden sin importancia -- son independientes.
 const EXTRACTORES_REALES = [
@@ -35,9 +58,11 @@ const EXTRACTORES_REALES = [
   ['mapear_grafo_por_tipo.mjs', ['--tipo', 'regla']],
 ];
 
-function main() {
+async function main() {
   const desplegar = process.argv.includes('--desplegar');
   let ok = 0, fallos = 0;
+
+  await fusionarFichasVivasAntesDeRegenerar();
 
   for (const [script, args] of EXTRACTORES_REALES) {
     try {

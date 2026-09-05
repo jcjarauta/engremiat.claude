@@ -84,6 +84,10 @@ services:
       - ./servidor_memoria.mjs:/app/servidor_memoria.mjs:ro
       - ./datos_memoria:/app/datos
       - ./.sheets_credenciales.json:/app/.sheets_credenciales.json:ro
+      # §8.94: MISMO fichero real que graphify-visor sirve en :ro -- aqui en rw para que
+      # POST /api/promover_grafo pueda escribirlo. Un solo fichero en el host, dos
+      # contenedores viendolo (uno sirve, el otro escribe), sin duplicar estado.
+      - ./fichas_grafos.json:/app/fichas_grafos.json
     command: node /app/servidor_memoria.mjs
     ports:
       - "100.107.171.88:9330:9330"

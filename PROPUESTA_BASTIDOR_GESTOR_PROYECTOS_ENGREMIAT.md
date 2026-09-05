@@ -1240,6 +1240,18 @@ Desplegado todo de una vez con `desplegar_visor.mjs --grafo` (que ahora regenera
 
 **Actualización real del Sheet CORE** (*"actualiza el sheet para los nuevos procesos"*): las 14 Tareas y los 7 Procesos habían quedado con `ESTADO=Pendiente` pese a estar ya construidos y desplegados -- por eso `taller.html` mostraba todo como "sin reclamar" aunque el trabajo real ya estaba hecho. Corregido escribiendo directamente en el Sheet (vía API, no por `crear_registro` -- esa solo crea filas, no las actualiza): las 14 Tareas a `Terminada`/100%, los 7 Procesos a `Completado`/100%, y el Producto/Proyecto padres también a `Completado`. Verificado leyendo `/api/jerarquia_campanas` de vuelta -- el árbol completo (Proyecto→Producto→7 Procesos→14 Tareas) refleja ahora el estado real.
 
+### 8.94 Proceso 1c real en `grafos.html`: Candidatos + A promover
+
+Pedido: *"nos falta botones de accion, para aceptar candidato y promover a su espacio en grafos.html, por otro lado, no me interesa ver en esta vista los grafos historicos, ocultalos"*, simplificado acto seguido: *"solo necesitamos ver una lista de candidatos y una lista a promover"*.
+
+**Riesgo real identificado antes de construir**: si "promover" escribe en vivo en el `fichas_grafos.json` del VPS, y la próxima regeneración local (o el propio cron de las 08:15, `TAR-0006`) corre después sin traer esa promoción de vuelta, el siguiente despliegue la sobrescribiría en silencio -- mismo tipo de bug de sincronización ya visto en otros puntos de la sesión, aquí a nivel de fichero en vez de Sheet. Corregido en `regenerar_grafos.mjs`: antes de correr ningún extractor, trae el `fichas_grafos.json` vivo del VPS (ya servido en `:9320`, lectura pública) y lo fusiona con el local -- las claves promovidas a mano nunca se pisan, las de los extractores se refrescan igual que siempre.
+
+**Backend**: `promoverGrafoReal()` + `POST /api/promover_grafo` en `servidor_memoria.mjs` -- valida el tipo contra los 6 reales, escribe una ficha manual (`extractor: "promovido a mano"`, sin `grafo_X.json` propio, historial vacío) directamente en el manifest. `docker-compose.yml`: el mismo fichero real `fichas_grafos.json` del host se monta `ro` en `graphify-visor` (lo sirve) y ahora también `rw` en `memoria-montaje` (el endpoint lo escribe) -- un solo fichero real, dos contenedores, sin duplicar estado ni reiniciar nada para que el cambio se vea.
+
+**`grafos.html`**: quitada por completo la sección "Histórico" (antes plegada, ahora oculta del todo, tal como se pidió). Dos listas nuevas, simples, tal como se redujo el alcance: **Candidatos** -- mismo cálculo exacto de `detectar_candidatos.mjs` (delta ≥10% sobre el historial real de cada ficha) reproducido en el propio navegador sobre los datos ya cargados, solo informativo. **A promover** -- los 5 grafos reales sin ficha (mismos 5 de antes, ahora sin las tarjetas descriptivas grandes), cada uno con un `<select>` de los 6 tipos reales y un botón "Promover" que escribe de verdad y recarga -- al promoverse, desaparece de "A promover" y aparece arriba, agrupado con el resto, sin que nadie edite HTML a mano.
+
+Verificado en real: `POST /api/promover_grafo` sobre un ítem de prueba escribió correctamente y `graphify-visor` lo sirvió de inmediato desde el mismo fichero (sin reiniciar) -- confirmado y luego revertido por ser de prueba. En el navegador: candidatos y "a promover" renderizan correctamente con datos reales (1 candidato real: `vista_sistema` +15% páginas; 5 pendientes de promover). El clic real del botón "Promover" queda bloqueado en el navegador de automatización por el mismo `ERR_BLOCKED_BY_CLIENT` ya conocido sobre el puerto 9330 -- no es un fallo del código, ya verificado aparte por `curl`.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

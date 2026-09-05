@@ -21,58 +21,90 @@
   a.item h3 { margin: 0 0 6px; font-size: 13.5px; }
   a.item p { margin: 0 0 8px; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }
   .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; margin: 0 4px 4px 0; }
-
-  /* Historico plegado por defecto -- ni el contador de golpe deja ver nombres,
-     solo se revelan al desplegar (pedido explicito del operador). */
-  details.historico { border-top: 1px solid var(--color-base-borde); padding-top: 18px; }
-  details.historico summary {
-    cursor: pointer; list-style: none; color: var(--color-base-texto-suave);
-    font-size: 12.5px; padding: 6px 0; user-select: none;
-  }
-  details.historico summary::-webkit-details-marker { display: none; }
-  details.historico summary::before { content: '▸ '; color: var(--color-base-texto-tenue); }
-  details.historico[open] summary::before { content: '▾ '; }
-  details.historico summary:hover { color: var(--color-base-texto); }
-  details.historico > div { margin-top: 18px; }
+  .fila-simple { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--color-base-borde-suave); font-size: 12.5px; }
+  .fila-simple:first-of-type { border-top: none; }
+  .fila-simple .nombre { flex: 1; font-weight: 600; }
+  .fila-simple select { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+  .fila-simple button { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+  .fila-simple button:hover { border-color: #6ea8ff; }
+  .vacio { color: var(--color-base-texto-tenue); font-size: 12px; font-style: italic; }
 </style>
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Grafos del sistema</h1>
-<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-93, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas de arriba se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
+<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-94, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas de arriba se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
 
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
-<details class="historico" id="historico">
-  <summary>Histórico -- construidos antes del pipeline formal (5)</summary>
-  <div>
-    <p class="tipo-desc">Grafos reales previos a §8.93 -- todavía sin ficha dinámica propia, por motivos reales distintos en cada caso: <code>sheet-real.html</code> reúne 4 datasets en pestañas (no un extractor único), <code>grafo_maestro.html</code> es composite (lee 3 ficheros reales a la vez en el navegador), <code>index.html</code>/<code>graph.html</code> nace de un pipeline externo (Graphify/Apps Script, no de este visor), <code>entidades.html</code> depende de un pipeline de censo con escritura real en el vault (Puerta Humana, no se re-ejecuta sin más), y <code>resumen_universo.html</code> es curado a mano, no generado. Ninguno inventado -- simplemente no encajan en "un extractor, una ficha".</p>
-    <div class="grid">
-      <a class="item" href="index.html">
-        <h3>Graphify -- código Apps Script</h3>
-        <p>1587 nodos / 4668 aristas reales, 81 comunidades -- el grafo de código de todos los clientes reales sobre la librería Engremiat.</p>
-      </a>
-      <a class="item" href="sheet-real.html">
-        <h3>El Sheet (con pestañas)</h3>
-        <p>91_HISTORIAL, jerarquía real Campaña→Tarea, PAQUETE_CLIENTE→módulos activos, ciclo de vida real de Telar -- 4 vistas en pestañas.</p>
-      </a>
-      <a class="item" href="grafo_maestro.html">
-        <h3>Grafo maestro</h3>
-        <p>Las 94 fichas de entidad reales del vault sin filtrar por tipo -- 331 aristas reales, wikilinks narrativos en capa separada y ocultable.</p>
-      </a>
-      <a class="item" href="entidades.html">
-        <h3>Censo de entidades</h3>
-        <p>222 candidatas reales cruzando los 8 grafos + las 70 pestañas del Sheet + 18 tablas de Baserow, con decisión y razón real por candidata.</p>
-      </a>
-      <a class="item" href="resumen_universo.html">
-        <h3>Resumen del universo</h3>
-        <p>Mapa de una página con datos reales de la bóveda, el censo y la infraestructura -- pensado como resumen, no como grafo interactivo.</p>
-      </a>
-    </div>
-  </div>
-</details>
+<section>
+  <h2>Candidatos <span class="cuenta" id="cuentaCandidatos"></span></h2>
+  <p class="tipo-desc">Señal real de crecimiento/decrecimiento sobre el historial de cada ficha (mismo cálculo que <code>detectar_candidatos.mjs</code>, Proceso 1a) -- solo informativo, la decisión sigue siendo del operador.</p>
+  <div id="candidatos"><p class="vacio">Calculando...</p></div>
+</section>
+
+<section>
+  <h2>A promover <span class="cuenta" id="cuentaAPromover">(5)</span></h2>
+  <p class="tipo-desc">Grafos reales previos a §8.93, sin ficha dinámica propia todavía -- <code>sheet-real.html</code> reúne 4 datasets en pestañas, <code>grafo_maestro.html</code> es composite, <code>index.html</code> nace de un pipeline externo (Graphify), <code>entidades.html</code> depende de un pipeline con escritura real en el vault, <code>resumen_universo.html</code> es curado a mano. Elige el tipo real y promuévelo -- pasará a aparecer arriba, agrupado con el resto.</p>
+  <div id="aPromover"></div>
+</section>
 <script>
-if (location.hash === '#historico') document.getElementById('historico').open = true;
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta', 'Transversal'];
+const PENDIENTES_DE_PROMOVER = [
+  { id: 'graphify', nombre: 'Graphify -- código Apps Script', pagina: 'index.html' },
+  { id: 'sheet_real', nombre: 'El Sheet (con pestañas)', pagina: 'sheet-real.html' },
+  { id: 'grafo_maestro', nombre: 'Grafo maestro', pagina: 'grafo_maestro.html' },
+  { id: 'censo_entidades', nombre: 'Censo de entidades', pagina: 'entidades.html' },
+  { id: 'resumen_universo', nombre: 'Resumen del universo', pagina: 'resumen_universo.html' },
+];
+
+function renderAPromover(fichasYaExistentes) {
+  const pendientes = PENDIENTES_DE_PROMOVER.filter((g) => !fichasYaExistentes.has(g.id));
+  document.getElementById('cuentaAPromover').textContent = '(' + pendientes.length + ')';
+  document.getElementById('aPromover').innerHTML = pendientes.length ? pendientes.map((g) => `
+    <div class="fila-simple">
+      <span class="nombre">${g.nombre}</span>
+      <select id="tipo-${g.id}">${TIPOS_REALES.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
+      <button onclick="promover('${g.id}')">Promover</button>
+    </div>
+  `).join('') : '<p class="vacio">Todos promovidos.</p>';
+}
+
+async function promover(id) {
+  const g = PENDIENTES_DE_PROMOVER.find(x => x.id === id);
+  const tipo = document.getElementById('tipo-' + id).value;
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/promover_grafo', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: g.id, nombre: g.nombre, tipo, pagina: g.pagina, descripcion: 'Promovido a mano desde grafos.html (§8.94).' }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'error real desconocido');
+    alert(g.nombre + ' promovido a ' + tipo + '.');
+    location.reload();
+  } catch (e) {
+    alert('No se pudo promover de verdad: ' + e.message);
+  }
+}
+function calcularCandidatos(fichas) {
+  const UMBRAL = 0.10;
+  const candidatos = [];
+  for (const f of fichas) {
+    const h = f.historial || [];
+    if (h.length < 2) continue;
+    const primero = h[0], ultimo = h[h.length - 1];
+    const cambios = [];
+    for (const clave of Object.keys(ultimo)) {
+      if (clave === 'en') continue;
+      const de = primero[clave] || 0, a = ultimo[clave] || 0;
+      const delta = de === 0 ? (a > 0 ? Infinity : 0) : (a - de) / de;
+      if (Math.abs(delta) >= UMBRAL) cambios.push(`${clave}: ${de}→${a} (${delta > 0 ? '+' : ''}${Math.round(delta * 100)}%)`);
+    }
+    if (cambios.length) candidatos.push({ nombre: f.nombre, cambios });
+  }
+  return candidatos;
+}
 
 const COLOR_TIPO = {
   Espacio: '#c76bd6', Personaje: '#8a8d99', Recurso: '#e85c8a', Modulo: '#4ea8de',
@@ -104,8 +136,18 @@ fetch('fichas_grafos.json').then(r => r.json()).then(m => {
   `).join('');
 
   document.getElementById('dinamico').innerHTML = html || '<p class="hint">Sin fichas reales todavía.</p>';
+
+  const candidatos = calcularCandidatos(fichas);
+  document.getElementById('cuentaCandidatos').textContent = '(' + candidatos.length + ')';
+  document.getElementById('candidatos').innerHTML = candidatos.length
+    ? candidatos.map(c => `<div class="fila-simple"><span class="nombre">${c.nombre}</span><span class="tipo-desc" style="margin:0">${c.cambios.join(' · ')}</span></div>`).join('')
+    : '<p class="vacio">Ninguno todavía -- hacen falta al menos 2 capturas reales de un mismo grafo para ver tendencia.</p>';
+
+  renderAPromover(new Set(Object.keys(m.fichas)));
 }).catch(() => {
   document.getElementById('dinamico').innerHTML = '<p class="hint">No se pudo cargar fichas_grafos.json.</p>';
+  document.getElementById('candidatos').innerHTML = '<p class="vacio">No se pudo calcular.</p>';
+  renderAPromover(new Set());
 });
 </script>
 </body>
