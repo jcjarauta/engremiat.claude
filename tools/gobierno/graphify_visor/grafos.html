@@ -399,6 +399,7 @@ function renderVistaPrevia(datos, urlJson, urlPagina, extraidoEnVivo) {
   document.getElementById('fichaGrafoPreview').innerHTML =
     '<h3>Ficha del grafo</h3>' +
     '<p class="pregunta">Identidad</p><p class="respuesta">' + escapeHtmlLocal(ficha.identidad) + '</p>' +
+    '<p class="pregunta">Función real en el sistema</p><p class="respuesta">' + escapeHtmlLocal(ficha.funcion) + '</p>' +
     '<p class="pregunta">Composición</p><p class="respuesta">' + escapeHtmlLocal(ficha.composicion) + '</p>' +
     '<p class="pregunta">Procedencia</p><p class="respuesta">' + escapeHtmlLocal(ficha.procedencia) + '</p>' +
     (ficha.completitud ? '<p class="pregunta">Completitud</p><p class="respuesta">' + escapeHtmlLocal(ficha.completitud) + '</p>' : '');
@@ -434,6 +435,23 @@ function construirFichaGrafo(datos, idsExternos, idRaiz, ctx) {
     identidad += '. Sin raíz única -- grafo completo, no una extracción desde un solo punto.';
   }
 
+  // FUNCION REAL EN EL SISTEMA: el campo clave que faltaba (feedback real del operador --
+  // "que hace en el sistema, cual es su funcion"). Nunca un texto libre inventado sobre la
+  // marcha: dos fuentes reales segun el caso.
+  //   - Extraido en vivo: la funcion es siempre la MISMA de verdad (extraerGrafoRelacionado()
+  //     solo produce este tipo de grafo) -- se describe una vez, tal cual hace el mecanismo.
+  //   - JSON directo/descubierto: se lee la propia ficha real YA embebida en el fichero
+  //     (datos.ficha.descripcion, escrita en su dia por actualizarFichaGrafo()) -- la funcion
+  //     real ya la documento quien construyo ese grafo, nunca se reinventa aqui.
+  let funcion;
+  if (ctx.extraidoEnVivo) {
+    funcion = 'Mapa real de navegación y de dependencias de API de esta parte del sistema: qué páginas se enlazan de verdad entre sí, qué endpoints reales llaman, y si el servidor real los confirma como servidos. Sirve para auditar acoplamiento real entre páginas y detectar llamadas a rutas no confirmadas como servidas (mismo tipo de hallazgo real ya hecho en §8.113).';
+  } else if (datos.ficha && datos.ficha.descripcion) {
+    funcion = datos.ficha.descripcion + ' (función real ya documentada en su propia ficha, no reinventada aquí.)';
+  } else {
+    funcion = 'Grafo real sin ficha propia documentada todavía -- no se puede afirmar su función real sin inventarla; revisa su extractor real de origen.';
+  }
+
   // COMPOSICION (analisis real): que es cada nodo y cada arista, con sus conteos reales.
   const composicion = 'Nodos: ' +
     (Object.entries(porTipo).map(([t, n]) => n + ' "' + t + '"').join(', ') || 'ninguno') +
@@ -455,9 +473,9 @@ function construirFichaGrafo(datos, idsExternos, idRaiz, ctx) {
   if (ctx.extraidoEnVivo && datos.tope) partesCompletitud.push('tope de ' + TOPE_PAGINAS_RELACIONADAS + ' páginas alcanzado -- puede haber más sin recorrer');
   const completitud = partesCompletitud.join('; ') + (partesCompletitud.length ? '.' : '');
 
-  const descripcion = identidad + ' ' + composicion + '. ' + procedencia + (completitud ? ' ' + completitud : '');
+  const descripcion = identidad + ' Función: ' + funcion + ' ' + composicion + '. ' + procedencia + (completitud ? ' ' + completitud : '');
 
-  return { identidad, composicion, procedencia, completitud, descripcion };
+  return { identidad, funcion, composicion, procedencia, completitud, descripcion };
 }
 
 // Cierra el circulo real completo: crear (pegar una URL/HTML) -> configurar (nombre,

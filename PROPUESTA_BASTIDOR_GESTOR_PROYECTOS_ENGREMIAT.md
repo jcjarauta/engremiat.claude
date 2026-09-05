@@ -1452,6 +1452,16 @@ Pedido, en rol de asesor técnico, para interpretar una ficha real generada (`gr
 
 Misma actualización reflejada en el comentario real de `plantilla_extractor.mjs`, para que el extractor manual y la extracción en vivo del Constructor de grafos sigan la misma plantilla real. Verificado con `node` contra el VPS real sobre `grafos.html`: identidad real ("35 nodos, 74 aristas, mayoría "endpoint" (21), raíz "grafos.html" con 11 aristas directas"), composición real, y los 21/21 endpoints ahora confirmados como servidos.
 
+### 8.114 El campo clave que faltaba: "Función real en el sistema"
+
+Corrección directa del operador sobre la ficha reenfocada de §8.113: *"me falta el campo clave, 'qué hace en el sistema?', ¿cuál es su función?, reformula la ficha de grafo para que esto quede claro"*. Cierto -- Identidad/Composición/Procedencia describen QUÉ ES y DE DÓNDE SALE el grafo, pero ninguno de los tres dice PARA QUÉ SIRVE de verdad.
+
+**Investigado antes de construir, para no inventar la función sobre la marcha**: cada `grafo_X.json` real ya generado por un extractor lleva embebida su propia `ficha` (con `descripcion`, escrita en su día por `actualizarFichaGrafo()`, §8.93) -- comprobado leyendo `grafo_recurso.json` real: *"Fichas reales de 01_Mundo/Recursos/... y sus relaciones declaradas reales."* La función real de ESOS grafos ya estaba documentada, solo había que leerla, no reinventarla.
+
+**Construido**: nuevo campo "Función real en el sistema", con dos fuentes reales según el caso -- si el grafo viene de un JSON directo o descubierto, se lee `datos.ficha.descripcion` (la función ya documentada por quien construyó ese grafo real); si viene de una extracción en vivo (`extraerGrafoRelacionado()`, que siempre produce el mismo tipo real de grafo -- páginas/endpoints/servidor), se describe una vez la función real y fija de ese mecanismo: auditar acoplamiento real entre páginas y detectar llamadas a rutas no confirmadas como servidas. Si un JSON real no trae ficha propia todavía, se dice explícitamente en vez de inventar una función -- "sin ficha propia documentada todavía". Reflejado también en `plantilla_extractor.mjs`, como cuarto bloque real junto a Identidad/Composición/Procedencia.
+
+**Verificado con `node` contra el VPS real**: `grafo_recurso.json` -- el campo función reutiliza literalmente su `ficha.descripcion` real ya existente, marcado como "no reinventada aquí".
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

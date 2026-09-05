@@ -53,13 +53,16 @@ function main() {
   // de candidatos por historial (TAR-0007). Llamar SIEMPRE al final de main(), despues de
   // escribir el grafo, con los contadores reales ya calculados.
   //
-  // La "descripcion" real existe para tres cosas (§8.113, revisado sobre las 5 preguntas
-  // originales de §8.111 -- se quita "limite honesto" como pregunta fija, se repetia igual
-  // en cada ficha sin aportar nada distinto): poder ANALIZAR el grafo, RECONOCERLO, y
-  // dotarle de IDENTIDAD propia. Tres bloques reales, ninguno inventado:
+  // La "descripcion" real existe para cuatro cosas (§8.114, revisado sobre §8.113 -- se
+  // anade FUNCION como campo clave, el que faltaba: no basta con saber que ES el grafo, hay
+  // que decir para que sirve de verdad). Cuatro bloques reales, ninguno inventado:
   //   IDENTIDAD -- tamano real (nodos/aristas), tipo de nodo mas frecuente, y si tiene una
   //     raiz real (una sola pagina/entidad de la que cuelga todo) o es un grafo completo
   //     sin raiz unica. Es lo que distingue a este grafo de cualquier otro de un vistazo.
+  //   FUNCION REAL EN EL SISTEMA -- que hace de verdad este grafo, para que se usa (ej. n8n:
+  //     "unica capa que muestra automatizacion real con Puerta Humana propia"; holon: "ver
+  //     de un vistazo quien gobierna/depende de quien"). Nunca generico ("sirve para
+  //     visualizar datos") -- una razon real y concreta de por que existe este grafo.
   //   COMPOSICION (analisis real) -- que es cada NODO real y cada ARISTA real, con su
   //     nombre real y su conteo real (ej. grafo_recurso: "Fichas reales de
   //     01_Mundo/Recursos/"; holon: "relaciones reales opera_en/depende_de/gobierna_a...").
@@ -74,7 +77,7 @@ function main() {
     nombre: 'NOMBRE REAL PARA MOSTRAR', // PERSONALIZAR
     tipo: 'Espacio', // PERSONALIZAR: Espacio | Personaje | Recurso | Modulo | Herramienta | Transversal (taxonomia real S8.87)
     espacioReal: null, // PERSONALIZAR: nombre real de la ficha de Espacio si existe, null si es hueco
-    descripcion: 'DESCRIPCION REAL: identidad (tamano + raiz real si la hay) + composicion (que es cada nodo/arista real) + procedencia (de que fuente real sale).', // PERSONALIZAR -- ver los 3 bloques arriba
+    descripcion: 'DESCRIPCION REAL: identidad (tamano + raiz real si la hay) + funcion real (para que sirve de verdad) + composicion (que es cada nodo/arista real) + procedencia (de que fuente real sale).', // PERSONALIZAR -- ver los 4 bloques arriba
     extractor: 'NOMBRE_DEL_FICHERO.mjs', // PERSONALIZAR
     pagina: 'NOMBRE.html', // PERSONALIZAR
     contadores: { nodos: nodos.length, aristas: aristas.length },
