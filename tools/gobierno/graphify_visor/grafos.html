@@ -38,12 +38,6 @@
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
 <section>
-  <h2>Candidatos <span class="cuenta" id="cuentaCandidatos"></span></h2>
-  <p class="tipo-desc">Señal real de crecimiento/decrecimiento sobre el historial de cada ficha (mismo cálculo que <code>detectar_candidatos.mjs</code>, Proceso 1a) -- solo informativo, la decisión sigue siendo del operador.</p>
-  <div id="candidatos"><p class="vacio">Calculando...</p></div>
-</section>
-
-<section>
   <h2>A promover <span class="cuenta" id="cuentaAPromover">(5)</span></h2>
   <p class="tipo-desc">Grafos reales previos a §8.93, sin ficha dinámica propia todavía -- <code>sheet-real.html</code> reúne 4 datasets en pestañas, <code>grafo_maestro.html</code> es composite, <code>index.html</code> nace de un pipeline externo (Graphify), <code>entidades.html</code> depende de un pipeline con escritura real en el vault, <code>resumen_universo.html</code> es curado a mano. Elige el tipo real y promuévelo -- pasará a aparecer arriba, agrupado con el resto.</p>
   <div id="aPromover"></div>
@@ -87,25 +81,6 @@ async function promover(id) {
     alert('No se pudo promover de verdad: ' + e.message);
   }
 }
-function calcularCandidatos(fichas) {
-  const UMBRAL = 0.10;
-  const candidatos = [];
-  for (const f of fichas) {
-    const h = f.historial || [];
-    if (h.length < 2) continue;
-    const primero = h[0], ultimo = h[h.length - 1];
-    const cambios = [];
-    for (const clave of Object.keys(ultimo)) {
-      if (clave === 'en') continue;
-      const de = primero[clave] || 0, a = ultimo[clave] || 0;
-      const delta = de === 0 ? (a > 0 ? Infinity : 0) : (a - de) / de;
-      if (Math.abs(delta) >= UMBRAL) cambios.push(`${clave}: ${de}→${a} (${delta > 0 ? '+' : ''}${Math.round(delta * 100)}%)`);
-    }
-    if (cambios.length) candidatos.push({ nombre: f.nombre, cambios });
-  }
-  return candidatos;
-}
-
 const COLOR_TIPO = {
   Espacio: '#c76bd6', Personaje: '#8a8d99', Recurso: '#e85c8a', Modulo: '#4ea8de',
   Herramienta: '#e8a33d', Transversal: '#5c5f6b',
@@ -137,16 +112,9 @@ fetch('fichas_grafos.json').then(r => r.json()).then(m => {
 
   document.getElementById('dinamico').innerHTML = html || '<p class="hint">Sin fichas reales todavía.</p>';
 
-  const candidatos = calcularCandidatos(fichas);
-  document.getElementById('cuentaCandidatos').textContent = '(' + candidatos.length + ')';
-  document.getElementById('candidatos').innerHTML = candidatos.length
-    ? candidatos.map(c => `<div class="fila-simple"><span class="nombre">${c.nombre}</span><span class="tipo-desc" style="margin:0">${c.cambios.join(' · ')}</span></div>`).join('')
-    : '<p class="vacio">Ninguno todavía -- hacen falta al menos 2 capturas reales de un mismo grafo para ver tendencia.</p>';
-
   renderAPromover(new Set(Object.keys(m.fichas)));
 }).catch(() => {
   document.getElementById('dinamico').innerHTML = '<p class="hint">No se pudo cargar fichas_grafos.json.</p>';
-  document.getElementById('candidatos').innerHTML = '<p class="vacio">No se pudo calcular.</p>';
   renderAPromover(new Set());
 });
 </script>

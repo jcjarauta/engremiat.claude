@@ -1252,6 +1252,8 @@ Pedido: *"nos falta botones de accion, para aceptar candidato y promover a su es
 
 Verificado en real: `POST /api/promover_grafo` sobre un ítem de prueba escribió correctamente y `graphify-visor` lo sirvió de inmediato desde el mismo fichero (sin reiniciar) -- confirmado y luego revertido por ser de prueba. En el navegador: candidatos y "a promover" renderizan correctamente con datos reales (1 candidato real: `vista_sistema` +15% páginas; 5 pendientes de promover). El clic real del botón "Promover" queda bloqueado en el navegador de automatización por el mismo `ERR_BLOCKED_BY_CLIENT` ya conocido sobre el puerto 9330 -- no es un fallo del código, ya verificado aparte por `curl`.
 
+**Corrección inmediata**: el operador pidió quitar la sección "Candidatos" del todo (no solo dejarla vacía) -- quitada de `grafos.html` (HTML + `calcularCandidatos()` + su render), sin tocar el resto. `detectar_candidatos.mjs` (CLI, Proceso 1a) sigue intacto -- solo se retira la vista en el navegador. "A promover" queda igual.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
