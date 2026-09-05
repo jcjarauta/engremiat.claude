@@ -7,24 +7,29 @@
 <link rel="stylesheet" href="tokens.css">
 <style>
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
-  body { padding: 24px 28px 60px; max-width: 1100px; }
+  body { padding: 24px 28px 60px; max-width: 900px; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
   h1 { font-size: 18px; margin: 6px 0 4px; }
   p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 16px; max-width: 820px; }
-  .columnas { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 12px; }
-  .columna { flex: 0 0 230px; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 12px; transition: border-color .1s; }
-  .columna.sobre-drag { border-color: #6ea8ff; }
-  .columna h2 { margin: 0 0 2px; font-size: 13px; text-transform: none; letter-spacing: 0; color: var(--color-base-texto); }
-  .columna .archivo { font-size: 10.5px; color: var(--color-base-texto-tenue); margin: 0 0 10px; }
-  .tarjetas-lista { min-height: 30px; }
-  .tarjeta { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; cursor: grab; }
-  .tarjeta:hover { border-color: #6ea8ff; }
-  .tarjeta.arrastrando { opacity: 0.35; }
-  .columna.solo-lectura { opacity: 0.6; }
-  .columna.solo-lectura h2 { font-size: 12px; }
-  .tarjeta.solo-lectura { cursor: default; }
-  .tarjeta.solo-lectura:hover { border-color: var(--color-base-borde); }
-  p.vacia { font-size: 11px; color: var(--color-base-texto-tenue); font-style: italic; margin: 0; }
+  /* Mismo patron visual real de arbol_campanas.html (nodo/fila/chevron/hijos) -- pagina
+     autocontenida, se duplica el patron a proposito, nunca un modulo compartido. */
+  .nodo { margin-left: 18px; border-left: 1px solid var(--color-base-borde-suave); padding-left: 10px; }
+  .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
+  .fila-arbol { display: flex; align-items: center; gap: 6px; padding: 4px 0; font-size: 12.5px; transition: border-color .1s; border-radius: 4px; }
+  .fila-arbol .chevron { color: var(--color-base-texto-tenue); font-size: 10px; cursor: pointer; width: 12px; }
+  .fila-arbol.abierto > .chevron { transform: rotate(90deg); }
+  .fila-arbol .tipo { font-size: 9.5px; text-transform: uppercase; letter-spacing: .03em; color: var(--color-base-texto-tenue); width: 56px; flex: none; }
+  .fila-arbol .nombre { font-weight: 600; flex: 1; cursor: pointer; }
+  .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .hijos { display: none; }
+  .hijos.abierto { display: block; }
+  /* Cajas (Proceso) arrastrables -- solo bajo un Producto real creado con Arquitecto. */
+  .fila-arbol.tarjeta { border: 1px solid transparent; cursor: grab; }
+  .fila-arbol.tarjeta:hover { border-color: #6ea8ff; }
+  .fila-arbol.tarjeta.arrastrando { opacity: 0.35; }
+  .hijos.sobre-drag { outline: 1px dashed #6ea8ff; outline-offset: 2px; }
+  .fila-arbol.solo-lectura .nombre { color: var(--color-base-texto-suave); }
+  p.vacia { font-size: 11px; color: var(--color-base-texto-tenue); font-style: italic; margin: 4px 0 4px 18px; }
   .estado { font-size: 12px; margin: 14px 0 0; min-height: 16px; white-space: pre-wrap; }
   .estado.error { color: #e85c8a; }
   .estado.ok { color: #4fce6f; }
@@ -35,9 +40,9 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Mapa -- jerarquía real de Índice</h1>
-<p class="hint">Columnas = todas las páginas reales de <a href="grafos.html">Índice</a>. Tarjetas = sus cajas reales (Proceso). Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las creadas <b>con Arquitecto</b> se pueden mover/reordenar de verdad. Arrastra una tarjeta <b>dentro de su columna</b> para reordenarla (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>). Arrástrala <b>a otra columna</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a> -- aquí solo se configura la jerarquía. Para ver Índice dentro del árbol real completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
+<p class="hint">Árbol real de <a href="grafos.html">Índice</a>: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver Índice dentro del árbol completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
 
-<div id="columnas" class="columnas"><p class="hint">Leyendo la jerarquía real...</p></div>
+<div id="arbolMapa" class="raiz-hijos"><p class="hint">Leyendo la jerarquía real...</p></div>
 <p id="notaColumnas" class="hint" style="margin-top:8px;"></p>
 <div id="estadoMapa" class="estado"></div>
 <ol class="pasos" id="pasosMapa"></ol>
@@ -152,31 +157,33 @@ function generarHtmlReal(nombrePagina, cajas, colgarDe) {
     secciones + '\n</body>\n</html>\n';
 }
 
-// Estado real en memoria de las columnas ya cargadas -- se reconstruye desde cero (nunca
-// se muta a mano) despues de cada escritura real, para no arriesgar drift con el Sheet.
-let columnasReales = [];
+// Estado real en memoria del arbol ya cargado -- se reconstruye desde cero (nunca se muta
+// a mano) despues de cada escritura real, para no arriesgar drift con el Sheet.
+let productosReales = [];
+let nombreIndiceReal = 'Índice';
 
 async function cargarMapa() {
-  const cont = document.getElementById('columnas');
+  const cont = document.getElementById('arbolMapa');
   cont.innerHTML = '<p class="hint">Leyendo la jerarquía real...</p>';
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
     const indice = obtenerIndiceReal(j);
+    nombreIndiceReal = (indice && indice.nombre) || 'Índice';
     const productos = (indice && indice.hijos) || [];
 
     const fichas = await Promise.all(productos.map(p =>
       fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(p.id)).then(r => r.json())
     ));
 
-    // Se muestran TODAS las paginas reales de Indice (para repasar la jerarquia completa,
-    // igual que arbol_campanas.html) -- pero solo las creadas POR Arquitecto admiten
+    // Se muestran TODOS los Productos reales de Indice (repasar la jerarquia completa,
+    // igual que arbol_campanas.html) -- pero solo los creados POR Arquitecto admiten
     // arrastre real. Reconstruir con generarHtmlReal() sobrescribe TODO el body con
     // cajas+fragmentos, y una pagina real hecha a mano (panel_operativo.html, tecnico.html...)
     // perderia su contenido real de verdad sin aviso. "(creada con Arquitecto)" en la
     // DESCRIPCION real es la unica marca fiable -- comprobado contra las 7 paginas reales de
     // Indice antes de construir esto: solo mapa.html la lleva, las otras 6 son reales pero
     // hechas a mano, y aqui se ven en modo solo lectura, nunca arrastrables.
-    columnasReales = productos.map((p, i) => {
+    productosReales = productos.map((p, i) => {
       const campos = (fichas[i] && fichas[i].campos) || {};
       const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || p.nombre || '');
       const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
@@ -186,57 +193,87 @@ async function cargarMapa() {
         archivo: mArchivo ? mArchivo[1] : '',
         colgarDe: mColgarDe ? mColgarDe[1] : 'home.html',
         creadaConArquitecto: /\(creada con Arquitecto\)/.test(campos.DESCRIPCION || ''),
-        procesos: (p.hijos || []).map(pc => ({ id: pc.id, nombre: pc.nombre })),
+        procesos: (p.hijos || []).map(pc => ({
+          id: pc.id, nombre: pc.nombre,
+          tareas: (pc.hijos || []).map(t => ({ id: t.id, nombre: t.nombre })),
+        })),
       };
     }).filter(c => c.archivo);
 
-    renderColumnas();
+    renderArbol();
   } catch (e) {
     cont.innerHTML = '<p class="estado error">No se pudo leer la jerarquía real: ' + escapeHtmlLocal(e.message) + '</p>';
   }
 }
 
-function renderColumnas() {
-  const cont = document.getElementById('columnas');
+function toggleArbolNodo(chevron) {
+  const fila = chevron.closest('.fila-arbol');
+  const hijos = fila.nextElementSibling;
+  fila.classList.toggle('abierto');
+  if (hijos && hijos.classList.contains('hijos')) hijos.classList.toggle('abierto');
+  chevron.textContent = fila.classList.contains('abierto') ? '▾' : '▸';
+}
+
+function renderTarea(t) {
+  return '<div class="nodo"><div class="fila-arbol">' +
+    '<span class="chevron"></span><span class="tipo">Tarea</span>' +
+    '<span class="nombre" style="cursor:default; font-weight:400; color:var(--color-base-texto-suave);">' + escapeHtmlLocal(t.nombre) + '</span>' +
+  '</div></div>';
+}
+
+function renderProceso(pc, productoPadre) {
+  const puedeArrastrar = productoPadre.creadaConArquitecto;
+  const atributosArrastre = puedeArrastrar
+    ? 'draggable="true" data-proceso-id="' + pc.id + '" data-origen-producto-id="' + productoPadre.id + '" ' +
+      'ondragstart="alEmpezarArrastre(event, this)" ondragend="this.classList.remove(\'arrastrando\')"'
+    : '';
+  return '<div class="nodo">' +
+    '<div class="fila-arbol' + (puedeArrastrar ? ' tarjeta' : ' solo-lectura') + '" ' + atributosArrastre + '>' +
+      (pc.tareas.length ? '<span class="chevron" onclick="toggleArbolNodo(this)">▸</span>' : '<span class="chevron"></span>') +
+      '<span class="tipo">Proceso</span>' +
+      '<span class="nombre" onclick="' + (pc.tareas.length ? 'toggleArbolNodo(this.previousElementSibling)' : '') + '">' + escapeHtmlLocal(pc.nombre) + '</span>' +
+    '</div>' +
+    '<div class="hijos">' + pc.tareas.map(renderTarea).join('') + '</div>' +
+  '</div>';
+}
+
+function renderProducto(p) {
+  const candado = p.creadaConArquitecto ? '' : '🔒 ';
+  const atributosColumna = p.creadaConArquitecto
+    ? 'data-producto-id="' + p.id + '" ondragover="alPasarSobreColumna(event, this)" ondragleave="this.classList.remove(\'sobre-drag\')" ondrop="alSoltarEnColumna(event, this)"'
+    : 'data-producto-id="' + p.id + '"';
+  return '<div class="nodo">' +
+    '<div class="fila-arbol' + (p.creadaConArquitecto ? '' : ' solo-lectura') + ' abierto">' +
+      '<span class="chevron" onclick="toggleArbolNodo(this)">▾</span>' +
+      '<span class="tipo">Producto</span>' +
+      '<span class="nombre" onclick="toggleArbolNodo(this.previousElementSibling)">' + candado + escapeHtmlLocal(p.nombre) + '</span>' +
+      '<span class="badge">' + escapeHtmlLocal(p.archivo) + '</span>' +
+      (p.creadaConArquitecto ? '' : '<span class="badge">hecha a mano, solo lectura</span>') +
+    '</div>' +
+    '<div class="hijos abierto" ' + atributosColumna + '>' +
+      (p.procesos.length ? p.procesos.map(pc => renderProceso(pc, p)).join('') : '<p class="vacia">Sin cajas reales todavía.</p>') +
+    '</div>' +
+  '</div>';
+}
+
+function renderArbol() {
+  const cont = document.getElementById('arbolMapa');
   const nota = document.getElementById('notaColumnas');
-  if (!columnasReales.length) {
+  if (!productosReales.length) {
     cont.innerHTML = '<p class="hint">Índice todavía no tiene ninguna página real.</p>';
     nota.textContent = '';
     return;
   }
-  const editables = columnasReales.filter(c => c.creadaConArquitecto).length;
+  const editables = productosReales.filter(c => c.creadaConArquitecto).length;
   nota.innerHTML = editables <= 1
-    ? 'Solo "' + (columnasReales.find(c => c.creadaConArquitecto) || {}).nombre + '" es editable de verdad (creada con Arquitecto) -- mover entre páginas necesita al menos dos páginas editables. Las demás se ven en solo lectura, para no arriesgar su contenido real hecho a mano.'
+    ? 'Solo "' + (productosReales.find(c => c.creadaConArquitecto) || {}).nombre + '" es editable de verdad (creada con Arquitecto) -- mover entre páginas necesita al menos dos páginas editables. Las demás se ven en solo lectura, para no arriesgar su contenido real hecho a mano.'
     : '';
-  cont.innerHTML = columnasReales.map(c => {
-    if (!c.creadaConArquitecto) {
-      // Solo lectura real -- sin draggable, sin drop, para no arriesgar destruir contenido
-      // real hecho a mano con una reconstruccion accidental.
-      return '<div class="columna solo-lectura" data-producto-id="' + c.id + '">' +
-        '<h2>🔒 ' + escapeHtmlLocal(c.nombre) + '</h2>' +
-        '<p class="archivo">' + escapeHtmlLocal(c.archivo) + ' -- hecha a mano, solo lectura</p>' +
-        '<div class="tarjetas-lista">' +
-          (c.procesos.length
-            ? c.procesos.map(pc => '<div class="tarjeta solo-lectura">' + escapeHtmlLocal(pc.nombre) + '</div>').join('')
-            : '<p class="vacia">Sin cajas reales todavía.</p>') +
-        '</div>' +
-      '</div>';
-    }
-    return '<div class="columna" data-producto-id="' + c.id + '" ondragover="alPasarSobreColumna(event, this)" ondragleave="this.classList.remove(\'sobre-drag\')" ondrop="alSoltarEnColumna(event, this)">' +
-      '<h2>' + escapeHtmlLocal(c.nombre) + '</h2>' +
-      '<p class="archivo">' + escapeHtmlLocal(c.archivo) + '</p>' +
-      '<div class="tarjetas-lista">' +
-        (c.procesos.length
-          ? c.procesos.map(pc =>
-              '<div class="tarjeta" draggable="true" data-proceso-id="' + pc.id + '" data-origen-producto-id="' + c.id + '" ' +
-                'ondragstart="alEmpezarArrastre(event, this)" ondragend="this.classList.remove(\'arrastrando\')">' +
-                escapeHtmlLocal(pc.nombre) +
-              '</div>'
-            ).join('')
-          : '<p class="vacia">Sin cajas reales todavía.</p>') +
-      '</div>' +
+  cont.innerHTML =
+    '<div class="nodo">' +
+      '<div class="fila-arbol abierto"><span class="chevron" onclick="toggleArbolNodo(this)">▾</span><span class="tipo">Proyecto</span>' +
+      '<span class="nombre" onclick="toggleArbolNodo(this.previousElementSibling)">' + escapeHtmlLocal(nombreIndiceReal) + '</span></div>' +
+      '<div class="hijos abierto">' + productosReales.map(renderProducto).join('') + '</div>' +
     '</div>';
-  }).join('');
 }
 
 function alEmpezarArrastre(evt, el) {
@@ -253,7 +290,7 @@ function alPasarSobreColumna(evt, columnaEl) {
 // Calcula donde insertar segun la posicion real del cursor -- compara con el punto medio
 // vertical de cada tarjeta ya presente (sin contar la que se esta arrastrando).
 function calcularIndiceInsercion(columnaEl, y) {
-  const tarjetas = [...columnaEl.querySelectorAll('.tarjeta:not(.arrastrando)')];
+  const tarjetas = [...columnaEl.querySelectorAll(':scope > .nodo > .fila-arbol.tarjeta:not(.arrastrando)')];
   for (let i = 0; i < tarjetas.length; i++) {
     const r = tarjetas[i].getBoundingClientRect();
     if (y < r.top + r.height / 2) return i;
@@ -268,12 +305,12 @@ async function alSoltarEnColumna(evt, columnaEl) {
   const productoDestinoId = columnaEl.dataset.productoId;
   const indice = calcularIndiceInsercion(columnaEl, evt.clientY);
 
-  const colOrigen = columnasReales.find(c => c.id === origenProductoId);
-  const colDestino = columnasReales.find(c => c.id === productoDestinoId);
+  const colOrigen = productosReales.find(c => c.id === origenProductoId);
+  const colDestino = productosReales.find(c => c.id === productoDestinoId);
   const proceso = colOrigen.procesos.find(p => p.id === procesoId);
 
-  // Nuevo orden real de la columna destino: sus procesos actuales (sin el que se mueve,
-  // si ya estaba aqui) mas el que se suelta, en la posicion real donde se solto.
+  // Nuevo orden real del Producto destino: sus Procesos actuales (sin el que se mueve, si
+  // ya estaba aqui) mas el que se suelta, en la posicion real donde se solto.
   const restoDestino = colDestino.procesos.filter(p => p.id !== procesoId).map(p => p.id);
   restoDestino.splice(indice, 0, procesoId);
 
@@ -282,7 +319,7 @@ async function alSoltarEnColumna(evt, columnaEl) {
   pasos.innerHTML = '';
 
   if (origenProductoId === productoDestinoId) {
-    // Reordenar dentro de la misma columna -- bajo riesgo, se aplica sola sin confirmar.
+    // Reordenar dentro del mismo Producto -- bajo riesgo, se aplica sola sin confirmar.
     estado.className = 'estado';
     estado.textContent = 'Reordenando "' + proceso.nombre + '" dentro de "' + colDestino.nombre + '"...';
     try {
@@ -302,7 +339,7 @@ async function alSoltarEnColumna(evt, columnaEl) {
     return;
   }
 
-  // Cruzar de columna reasigna PRODUCTO_ID de verdad -- nunca sin confirmacion explicita,
+  // Cruzar de Producto reasigna PRODUCTO_ID de verdad -- nunca sin confirmacion explicita,
   // mismo criterio ya usado en mesa_montaje.html (nunca escribir de verdad al soltar sin mas).
   const confirmado = confirm('¿Mover "' + proceso.nombre + '" de "' + colOrigen.nombre + '" a "' + colDestino.nombre + '"?\n\nEsto reconstruye las DOS páginas reales.');
   if (!confirmado) return;
