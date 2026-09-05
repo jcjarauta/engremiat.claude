@@ -52,13 +52,28 @@ function main() {
   // Ficha dinamica real (§8.93, TAR-0008) -- documenta este grafo y alimenta la deteccion
   // de candidatos por historial (TAR-0007). Llamar SIEMPRE al final de main(), despues de
   // escribir el grafo, con los contadores reales ya calculados.
+  //
+  // La "descripcion" real tiene que responder, en una o dos frases, las preguntas
+  // fundamentales que ya responden las 8 fichas reales existentes (§8.111) -- ninguna se
+  // salta ninguna, aunque nadie lo tuviera escrito como checklist hasta ahora:
+  //   1. ¿Que representa cada NODO real? (ej. grafo_recurso: "Fichas reales de
+  //      01_Mundo/Recursos/ (GASTO_API, DOCUMENTO_ENGREMIAT...)")
+  //   2. ¿Que representa cada ARISTA real, con su nombre real? (ej. holon: "relaciones
+  //      reales entre Personajes (opera_en/depende_de/gobierna_a/verifica_a...)")
+  //   3. ¿De que FUENTE real sale el dato? (ej. nodejs: "Scripts reales de tools/"; anatomia:
+  //      "calculadas sobre 7 fuentes reales distintas")
+  //   4. Si hay huecos reales o nodos "externo" sin resolver, decirlo aqui explicitamente --
+  //      nunca en silencio (mismo criterio que mapear_grafo_por_tipo.mjs).
+  //   5. ¿Que limite honesto tiene este grafo, que NO cubre? (ej. n8n: "unica capa que
+  //      muestra automatizacion real con Puerta Humana propia" -- delimita que si cubre y
+  //      que no cubren las demas capas).
   actualizarFichaGrafo({
     rutaGrafo: SALIDA,
     id: 'NOMBRE', // PERSONALIZAR: mismo slug que el nombre de fichero .html sin extension
     nombre: 'NOMBRE REAL PARA MOSTRAR', // PERSONALIZAR
     tipo: 'Espacio', // PERSONALIZAR: Espacio | Personaje | Recurso | Modulo | Herramienta | Transversal (taxonomia real S8.87)
     espacioReal: null, // PERSONALIZAR: nombre real de la ficha de Espacio si existe, null si es hueco
-    descripcion: 'DESCRIPCION REAL: que representa este grafo y de donde sale el dato.', // PERSONALIZAR
+    descripcion: 'DESCRIPCION REAL: que es cada nodo, que es cada arista (con su nombre real), de que fuente real sale, y su limite honesto si aplica.', // PERSONALIZAR -- ver las 5 preguntas arriba
     extractor: 'NOMBRE_DEL_FICHERO.mjs', // PERSONALIZAR
     pagina: 'NOMBRE.html', // PERSONALIZAR
     contadores: { nodos: nodos.length, aristas: aristas.length },

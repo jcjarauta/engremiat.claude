@@ -1420,7 +1420,15 @@ Pedido en dos mensajes: *"simplifica y añade un botón para promover al candida
 
 **Segunda corrección de simplificación**: pedido *"quita la caja de espacio real"* -- eliminado el campo `espacioReal` de la caja (había sido añadido en la primera versión de §8.110 a petición explícita, pero el operador decidió que no hacía falta). `promoverDesdeConstructor()` ya no lo envía en el `POST` -- el backend lo sigue aceptando si algún día se necesita (queda `null` por defecto), no hizo falta tocar `servidor_memoria.mjs`. Verificado con `curl` que el campo ya no aparece en el HTML servido.
 
-## 9. Pendiente
+### 8.111 Preguntas fundamentales de una ficha de grafo -- mejorar `plantilla_extractor.mjs`, no duplicar
+
+Pedido: *"en biblioteca, sección Grafos, crea una nueva plantilla para generar la ficha de grafo con todos sus elementos, la idea es que esta ficha pueda responder a las preguntas fundamentales de ese grafo"*.
+
+**Primer intento, corregido de inmediato por el operador**: escrito un fichero nuevo `plantilla_ficha_grafo.md` -- el operador señaló al momento *"ya lo tenemos en plantilla extractor, sería mejorar el extractor"*. Cierto: `plantilla_extractor.mjs` ya trae integrada la llamada real a `actualizarFichaGrafo()` -- un fichero nuevo aparte habría duplicado ese mismo punto de entrada real en vez de mejorarlo. Borrado el fichero nuevo sin desplegarlo.
+
+**Investigado antes de mejorar**: leídas las `descripcion` reales de las 8 fichas ya existentes (`vista_sistema`, `grafo_recurso`, `grafo_modulo`, `grafo_regla`, `nodejs`, `n8n`, `holon`, `anatomia`) para extraer, sin inventar ninguna categoría nueva, qué preguntas responden todas ellas sin excepción: qué es cada nodo real, qué es cada arista real (con su nombre real), de qué fuente real sale el dato, si hay huecos/externos sin resolver, y qué límite honesto tiene (qué NO cubre). Cinco preguntas reales, con una cita literal de una ficha real como ejemplo de cada una.
+
+**Construido**: ampliado el comentario que ya precedía la llamada a `actualizarFichaGrafo()` en `plantilla_extractor.mjs`, con las 5 preguntas reales y su ejemplo citado, justo donde se rellena `descripcion` -- mismo punto de entrada real que ya usaba todo extractor nuevo, sin fichero aparte que mantener sincronizado. Desplegado y verificado con `curl` contra el fichero servido (un primer chequeo salió en falso -- redeploy inmediato lo confirmó real).
 
 **Resuelto 2026-09-02:**
 - ~~Producto/Proceso en el esquema de Misión~~ — decisión: sí entran como niveles propios ("siempre copiamos la verdad que vive en Sheets, nunca la simplificamos"). Añadido `jerarquia` (campanaId/proyectoId/productoId/procesoId/tareaId) a `mision.schema.json`, opcional para no romper los 5 fixtures de B0 ya verificados — re-verificado con `validar_b0.mjs`, 5/5 OK, sin regresión.
