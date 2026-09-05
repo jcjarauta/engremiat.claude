@@ -372,6 +372,10 @@ async function reclamarTareaReal(idTarea, reclamadoPor) {
 // real del host (rw aqui, ro alli) -- promover escribe ahi, graphify-visor lo sirve fresco
 // sin reiniciar nada, mismo fichero.
 const RUTA_FICHAS_GRAFOS = join(__dirname, 'fichas_grafos.json');
+// §8.95: RUTA_CANDIDATOS es el borrador real (proponer_candidato.mjs) -- al promover de
+// verdad, el candidato sale de aqui y su ficha final entra en fichas_grafos.json. Nunca
+// coexisten los dos a la vez para el mismo id.
+const RUTA_CANDIDATOS = join(__dirname, 'candidatos_a_promover.json');
 async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion }) {
   const manifest = existsSync(RUTA_FICHAS_GRAFOS) ? JSON.parse(readFileSync(RUTA_FICHAS_GRAFOS, 'utf-8')) : { fichas: {} };
   manifest.fichas[id] = {
@@ -380,6 +384,12 @@ async function promoverGrafoReal({ id, nombre, tipo, pagina, descripcion }) {
     contadores: {}, actualizadoEn: new Date().toISOString(), historial: [],
   };
   writeFileSync(RUTA_FICHAS_GRAFOS, JSON.stringify(manifest, null, 2), 'utf-8');
+
+  if (existsSync(RUTA_CANDIDATOS)) {
+    const datos = JSON.parse(readFileSync(RUTA_CANDIDATOS, 'utf-8'));
+    datos.candidatos = (datos.candidatos || []).filter((c) => c.id !== id);
+    writeFileSync(RUTA_CANDIDATOS, JSON.stringify(datos, null, 2), 'utf-8');
+  }
 }
 
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo

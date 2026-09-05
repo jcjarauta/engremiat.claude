@@ -1254,6 +1254,20 @@ Verificado en real: `POST /api/promover_grafo` sobre un ítem de prueba escribi�
 
 **Corrección inmediata**: el operador pidió quitar la sección "Candidatos" del todo (no solo dejarla vacía) -- quitada de `grafos.html` (HTML + `calcularCandidatos()` + su render), sin tocar el resto. `detectar_candidatos.mjs` (CLI, Proceso 1a) sigue intacto -- solo se retira la vista en el navegador. "A promover" queda igual.
 
+### 8.95 "A promover" real: sin pre-rellenar, con ficha borrador y prioridad
+
+Corrección de fondo del operador sobre §8.94: *"aqui deja la lista vacia, aun no hemos iniciado ningun ciclo real, aqui tenemos que tener acceso a la ficha de grafo aunque sea un borrador, tambien tenemos que poder poner algun tipo de prioridad en la lista de a promover para no colapsar la pantalla"*. Los 5 grafos históricos que yo mismo había puesto en "A promover" eran una lista que decidí a mano -- no reflejaban ningún candidato propuesto por un ciclo real todavía, contradiciendo el principio de todo el proyecto de nunca mostrar como "en curso" algo que nadie ha iniciado de verdad.
+
+**Construido**: `candidatos_a_promover.json` -- arranca real y vacío (`{"candidatos":[]}`), nunca pre-poblado. `proponer_candidato.mjs` -- la mitad real de "proponer" del Proceso 1c (CLI: `--id --nombre --pagina --tipo --prioridad --descripcion`), escribe un candidato con **ficha borrador** completa (tipo tentativo, descripción, página, fecha) y una `prioridad` real (Alta/Media/Baja, mismo vocabulario que `PRIORIDAD` en el catálogo `90_CONFIGURACION`). `grafos.html`: la lista ordena por prioridad, muestra Alta directamente y pliega Media/Baja detrás de un `<details>` ("no colapsar la pantalla" cuando crezca) -- cada candidato lleva un enlace real "Ver ficha (borrador)" que despliega sus campos completos, un `<select>` de tipo (preseleccionado con el tentativo, editable) y el botón "Promover" ya existente. Al promover, `promoverGrafoReal()` ahora también retira el candidato de `candidatos_a_promover.json` (mismo fichero real, ya compartido `rw` entre los dos contenedores desde §8.94) -- nunca coexisten como borrador y como ficha final a la vez.
+
+**Segundo riesgo real de sincronización, mismo patrón que §8.94**: `candidatos_a_promover.json` es una *lista*, no un diccionario por clave -- promover *borra* una entrada en vivo. Si la copia local todavía la tiene (se propuso y nunca se volvió a sincronizar), desplegar sin cuidado la "resucitaría". Corregido en `regenerar_grafos.mjs`: la versión viva del VPS manda; de la copia local solo se añaden candidatos cuyo id no esté ya vivo **ni ya tenga ficha real** en `fichas_grafos.json` (si ya se promovió, nunca vuelve a aparecer como candidato).
+
+Verificado en real, extremo a extremo: propuestos 2 candidatos de prueba (`sheet_real` Alta, `grafo_maestro` Media) con `proponer_candidato.mjs`; en el navegador, Alta aparece directo con ficha borrador completa al desplegar, Media queda plegada bajo "Media / Baja prioridad (1)". Limpiados después por ser de prueba -- la lista real queda vacía, tal como corresponde a que ningún ciclo real se ha iniciado todavía.
+
+### 8.96 Solo el grafo inicial a la vista, el resto plegado
+
+Con 8 fichas reales ya generadas, el bloque dinámico agrupado por tipo volvió a mostrar todo de golpe -- la misma regresión ya corregida una vez en §8.88, esta vez sobre las tarjetas dinámicas en vez de las estáticas. Pedido: *"en este bloque solo debería de quedar el grafo inicial, oculta los antiguos"*. Aplicado el mismo criterio: `vista_sistema` (el grafo inicial, id fijo `ID_GRAFO_INICIAL`) se muestra siempre; las otras 7 fichas reales (nodejs, n8n, holon, anatomía, recurso, módulo, regla) quedan agrupadas por tipo dentro de un `<details>` plegado, "Otros grafos (7)". Nada se pierde -- solo deja de mostrarse por defecto.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

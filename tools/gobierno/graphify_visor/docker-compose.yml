@@ -55,6 +55,7 @@ services:
       - ./grafo_modulo.json:/app/grafo_modulo.json:ro
       - ./grafo_regla.json:/app/grafo_regla.json:ro
       - ./fichas_grafos.json:/app/fichas_grafos.json:ro
+      - ./candidatos_a_promover.json:/app/candidatos_a_promover.json:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320
@@ -88,6 +89,7 @@ services:
       # POST /api/promover_grafo pueda escribirlo. Un solo fichero en el host, dos
       # contenedores viendolo (uno sirve, el otro escribe), sin duplicar estado.
       - ./fichas_grafos.json:/app/fichas_grafos.json
+      - ./candidatos_a_promover.json:/app/candidatos_a_promover.json
     command: node /app/servidor_memoria.mjs
     ports:
       - "100.107.171.88:9330:9330"

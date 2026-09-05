@@ -24,7 +24,8 @@ import { fileURLToPath } from 'node:url';
 
 const DIR_VISOR = dirname(fileURLToPath(import.meta.url));
 const RUTA_FICHAS_LOCAL = join(DIR_VISOR, 'fichas_grafos.json');
-const URL_FICHAS_VIVAS = 'http://100.107.171.88:9320/fichas_grafos.json';
+const RUTA_CANDIDATOS_LOCAL = join(DIR_VISOR, 'candidatos_a_promover.json');
+const URL_BASE_VIVA = 'http://100.107.171.88:9320';
 
 // §8.94: /api/promover_grafo escribe en vivo en el VPS -- si esta regeneracion local
 // corre despues (por ejemplo la tarea programada de manana 08:15) sin haber traido esa
@@ -34,15 +35,40 @@ const URL_FICHAS_VIVAS = 'http://100.107.171.88:9320/fichas_grafos.json';
 // a mano nunca se pisan, las de los extractores se refrescan igual que siempre.
 async function fusionarFichasVivasAntesDeRegenerar() {
   try {
-    const r = await fetch(URL_FICHAS_VIVAS, { signal: AbortSignal.timeout(8000) });
+    const r = await fetch(URL_BASE_VIVA + '/fichas_grafos.json', { signal: AbortSignal.timeout(8000) });
     if (!r.ok) return;
     const vivo = await r.json();
     const local = existsSync(RUTA_FICHAS_LOCAL) ? JSON.parse(readFileSync(RUTA_FICHAS_LOCAL, 'utf-8')) : { fichas: {} };
     const fusionado = { fichas: { ...vivo.fichas, ...local.fichas } }; // local gana solo si ya tenia la misma clave (se refrescara igual)
     writeFileSync(RUTA_FICHAS_LOCAL, JSON.stringify(fusionado, null, 2), 'utf-8');
     console.log('Fichas vivas del VPS fusionadas antes de regenerar (protege promociones manuales recientes).');
+    return fusionado;
   } catch {
     console.log('(no se pudo traer fichas_grafos.json vivo del VPS -- se sigue solo con el local)');
+    return existsSync(RUTA_FICHAS_LOCAL) ? JSON.parse(readFileSync(RUTA_FICHAS_LOCAL, 'utf-8')) : { fichas: {} };
+  }
+}
+
+// §8.95: candidatos_a_promover.json es una LISTA, no un diccionario por clave -- promover
+// BORRA una entrada en vivo (deja de ser candidato, ya tiene ficha real). Si la copia local
+// todavia lo tiene (porque se propuso y nunca se volvio a sincronizar), desplegar sin
+// cuidado lo "resucitaria". Regla real: la version viva manda; solo se anaden desde local
+// los candidatos cuyo id no este ya vivo NI ya promovido (con ficha real) -- nunca se
+// resucita uno que el VPS ya dio por bueno.
+async function fusionarCandidatosVivosAntesDeRegenerar(fichasFusionadas) {
+  try {
+    const r = await fetch(URL_BASE_VIVA + '/candidatos_a_promover.json', { signal: AbortSignal.timeout(8000) });
+    if (!r.ok) return;
+    const vivo = await r.json();
+    const local = existsSync(RUTA_CANDIDATOS_LOCAL) ? JSON.parse(readFileSync(RUTA_CANDIDATOS_LOCAL, 'utf-8')) : { candidatos: [] };
+    const idsVivos = new Set((vivo.candidatos || []).map((c) => c.id));
+    const idsYaPromovidos = new Set(Object.keys(fichasFusionadas.fichas || {}));
+    const nuevosLocales = (local.candidatos || []).filter((c) => !idsVivos.has(c.id) && !idsYaPromovidos.has(c.id));
+    const fusionado = { candidatos: [...(vivo.candidatos || []), ...nuevosLocales] };
+    writeFileSync(RUTA_CANDIDATOS_LOCAL, JSON.stringify(fusionado, null, 2), 'utf-8');
+    console.log('Candidatos vivos del VPS fusionados (' + fusionado.candidatos.length + ' en total, ' + nuevosLocales.length + ' nuevos locales).');
+  } catch {
+    console.log('(no se pudo traer candidatos_a_promover.json vivo del VPS -- se sigue solo con el local)');
   }
 }
 
@@ -62,7 +88,8 @@ async function main() {
   const desplegar = process.argv.includes('--desplegar');
   let ok = 0, fallos = 0;
 
-  await fusionarFichasVivasAntesDeRegenerar();
+  const fichasFusionadas = await fusionarFichasVivasAntesDeRegenerar();
+  await fusionarCandidatosVivosAntesDeRegenerar(fichasFusionadas);
 
   for (const [script, args] of EXTRACTORES_REALES) {
     try {

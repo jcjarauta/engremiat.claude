@@ -21,75 +21,114 @@
   a.item h3 { margin: 0 0 6px; font-size: 13.5px; }
   a.item p { margin: 0 0 8px; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }
   .badge { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 10px; margin: 0 4px 4px 0; }
-  .fila-simple { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--color-base-borde-suave); font-size: 12.5px; }
-  .fila-simple:first-of-type { border-top: none; }
-  .fila-simple .nombre { flex: 1; font-weight: 600; }
-  .fila-simple select { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
-  .fila-simple button { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
-  .fila-simple button:hover { border-color: #6ea8ff; }
+  .badge.prioridad-alta { background: #e85c8a33; color: #e85c8a; }
+  .badge.prioridad-media { background: #e8a33d33; color: #e8a33d; }
+  .badge.prioridad-baja { background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
+  .candidato { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 8px; background: var(--color-base-panel); }
+  .candidato.prioridad-alta { border-left-color: #e85c8a; }
+  .candidato.prioridad-media { border-left-color: #e8a33d; }
+  .candidato .fila { display: flex; align-items: center; gap: 10px; font-size: 12.5px; }
+  .candidato .nombre { flex: 1; font-weight: 600; }
+  .candidato select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 4px 8px; font-size: 12px; }
+  .candidato button { font-size: 12px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
+  .candidato button:hover { border-color: #6ea8ff; }
+  .candidato .borrador { display: none; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--color-base-borde-suave); font-size: 11.5px; color: var(--color-base-texto-suave); }
+  .candidato.abierto .borrador { display: block; }
+  a.ver-borrador { color: #6fb3f2; text-decoration: none; font-size: 11px; cursor: pointer; }
   .vacio { color: var(--color-base-texto-tenue); font-size: 12px; font-style: italic; }
+  details.mas summary { cursor: pointer; color: var(--color-base-texto-suave); font-size: 12px; padding: 6px 0; list-style: none; }
+  details.mas summary::-webkit-details-marker { display: none; }
+  details.mas summary::before { content: '▸ '; }
+  details.mas[open] summary::before { content: '▾ '; }
 </style>
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Grafos del sistema</h1>
-<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-94, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas de arriba se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
+<p class="hint">Índice real por tipo -- cada grafo del visor visualiza una parte concreta del sistema (§8.87-96, PROPUESTA_BASTIDOR_GESTOR_PROYECTOS_ENGREMIAT.md). Taxonomía real, no inventada: los mismos tipos ya establecidos en <code>tools/gobierno/bocetador/schemas/</code> y en <code>01_Mundo/</code> del vault (Espacio/Personaje/Recurso/Módulo/Herramienta/Regla). Las tarjetas se generan solas, en vivo, desde <code>fichas_grafos.json</code> -- cada extractor real escribe su propia ficha al terminar (§8.93); nada de esto se edita a mano. Solo el grafo inicial queda a la vista; el resto se pliega para no saturar la pantalla. Complementa a <a class="volver" href="indice.html">indice.html</a> (lista técnica plana).</p>
 
 <div id="dinamico"><p class="hint">Cargando fichas reales...</p></div>
 
 <section>
-  <h2>A promover <span class="cuenta" id="cuentaAPromover">(5)</span></h2>
-  <p class="tipo-desc">Grafos reales previos a §8.93, sin ficha dinámica propia todavía -- <code>sheet-real.html</code> reúne 4 datasets en pestañas, <code>grafo_maestro.html</code> es composite, <code>index.html</code> nace de un pipeline externo (Graphify), <code>entidades.html</code> depende de un pipeline con escritura real en el vault, <code>resumen_universo.html</code> es curado a mano. Elige el tipo real y promuévelo -- pasará a aparecer arriba, agrupado con el resto.</p>
-  <div id="aPromover"></div>
+  <h2>A promover <span class="cuenta" id="cuentaAPromover"></span></h2>
+  <p class="tipo-desc">Candidatos reales propuestos con <code>proponer_candidato.mjs</code> (Proceso 1c, §8.95) -- cada uno con su ficha borrador. Vacío mientras no se proponga ninguno de verdad, nunca pre-rellenado. Prioridad Alta visible directamente; Media/Baja quedan plegadas para no saturar la pantalla.</p>
+  <div id="aPromover"><p class="vacio">Cargando...</p></div>
 </section>
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta', 'Transversal'];
-const PENDIENTES_DE_PROMOVER = [
-  { id: 'graphify', nombre: 'Graphify -- código Apps Script', pagina: 'index.html' },
-  { id: 'sheet_real', nombre: 'El Sheet (con pestañas)', pagina: 'sheet-real.html' },
-  { id: 'grafo_maestro', nombre: 'Grafo maestro', pagina: 'grafo_maestro.html' },
-  { id: 'censo_entidades', nombre: 'Censo de entidades', pagina: 'entidades.html' },
-  { id: 'resumen_universo', nombre: 'Resumen del universo', pagina: 'resumen_universo.html' },
-];
+const ORDEN_PRIORIDAD = { Alta: 0, Media: 1, Baja: 2 };
 
-function renderAPromover(fichasYaExistentes) {
-  const pendientes = PENDIENTES_DE_PROMOVER.filter((g) => !fichasYaExistentes.has(g.id));
-  document.getElementById('cuentaAPromover').textContent = '(' + pendientes.length + ')';
-  document.getElementById('aPromover').innerHTML = pendientes.length ? pendientes.map((g) => `
-    <div class="fila-simple">
-      <span class="nombre">${g.nombre}</span>
-      <select id="tipo-${g.id}">${TIPOS_REALES.map(t => `<option value="${t}">${t}</option>`).join('')}</select>
-      <button onclick="promover('${g.id}')">Promover</button>
-    </div>
-  `).join('') : '<p class="vacio">Todos promovidos.</p>';
+function renderCandidato(c) {
+  const claseP = 'prioridad-' + c.prioridad.toLowerCase();
+  return `
+    <div class="candidato ${claseP}" id="cand-${c.id}">
+      <div class="fila">
+        <span class="badge ${claseP}">${c.prioridad}</span>
+        <span class="nombre">${c.nombre}</span>
+        <a class="ver-borrador" onclick="document.getElementById('cand-${c.id}').classList.toggle('abierto')">Ver ficha (borrador)</a>
+        <select id="tipo-${c.id}">${TIPOS_REALES.map(t => `<option value="${t}" ${t === c.tipo ? 'selected' : ''}>${t}</option>`).join('')}</select>
+        <button onclick="promover('${c.id}')">Promover</button>
+      </div>
+      <div class="borrador">
+        <p style="margin:2px 0"><b>Página:</b> ${c.pagina}</p>
+        <p style="margin:2px 0"><b>Tipo propuesto:</b> ${c.tipo}</p>
+        <p style="margin:2px 0"><b>Descripción (borrador):</b> ${c.descripcion}</p>
+        <p style="margin:2px 0"><b>Propuesto:</b> ${c.propuestoEn}</p>
+      </div>
+    </div>`;
+}
+
+function renderAPromover(candidatos) {
+  document.getElementById('cuentaAPromover').textContent = '(' + candidatos.length + ')';
+  if (!candidatos.length) {
+    document.getElementById('aPromover').innerHTML = '<p class="vacio">Sin candidatos propuestos todavía -- usa proponer_candidato.mjs cuando el Proceso 1 (detectar) tenga uno real que ofrecer.</p>';
+    return;
+  }
+  const ordenados = [...candidatos].sort((a, b) => (ORDEN_PRIORIDAD[a.prioridad] ?? 9) - (ORDEN_PRIORIDAD[b.prioridad] ?? 9));
+  const altas = ordenados.filter(c => c.prioridad === 'Alta');
+  const resto = ordenados.filter(c => c.prioridad !== 'Alta');
+  let html = altas.map(renderCandidato).join('');
+  if (resto.length) {
+    html += `<details class="mas"><summary>Media / Baja prioridad (${resto.length})</summary>${resto.map(renderCandidato).join('')}</details>`;
+  }
+  document.getElementById('aPromover').innerHTML = html || '<p class="vacio">Sin candidatos de prioridad Alta.</p>';
 }
 
 async function promover(id) {
-  const g = PENDIENTES_DE_PROMOVER.find(x => x.id === id);
+  const r0 = await fetch('candidatos_a_promover.json').then(r => r.json());
+  const c = (r0.candidatos || []).find(x => x.id === id);
+  if (!c) return;
   const tipo = document.getElementById('tipo-' + id).value;
   try {
     const r = await fetch(URL_MEMORIA + '/api/promover_grafo', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: g.id, nombre: g.nombre, tipo, pagina: g.pagina, descripcion: 'Promovido a mano desde grafos.html (§8.94).' }),
+      body: JSON.stringify({ id: c.id, nombre: c.nombre, tipo, pagina: c.pagina, descripcion: c.descripcion }),
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'error real desconocido');
-    alert(g.nombre + ' promovido a ' + tipo + '.');
+    alert(c.nombre + ' promovido a ' + tipo + '.');
     location.reload();
   } catch (e) {
     alert('No se pudo promover de verdad: ' + e.message);
   }
 }
+
+fetch('candidatos_a_promover.json').then(r => r.json()).then(d => renderAPromover(d.candidatos || [])).catch(() => renderAPromover([]));
+
 const COLOR_TIPO = {
   Espacio: '#c76bd6', Personaje: '#8a8d99', Recurso: '#e85c8a', Modulo: '#4ea8de',
   Herramienta: '#e8a33d', Transversal: '#5c5f6b',
 };
 
+const ID_GRAFO_INICIAL = 'vista_sistema';
+
 fetch('fichas_grafos.json').then(r => r.json()).then(m => {
-  const fichas = Object.values(m.fichas).sort((a, b) => a.tipo.localeCompare(b.tipo));
+  const todas = Object.values(m.fichas);
+  const inicial = todas.find(f => f.id === ID_GRAFO_INICIAL);
+  const resto = todas.filter(f => f.id !== ID_GRAFO_INICIAL).sort((a, b) => a.tipo.localeCompare(b.tipo));
   const porTipo = {};
-  fichas.forEach(f => { (porTipo[f.tipo] = porTipo[f.tipo] || []).push(f); });
+  resto.forEach(f => { (porTipo[f.tipo] = porTipo[f.tipo] || []).push(f); });
 
   const tarjeta = (f) => {
     const color = COLOR_TIPO[f.tipo] || '#5c5f6b';
@@ -103,19 +142,21 @@ fetch('fichas_grafos.json').then(r => r.json()).then(m => {
     </a>`;
   };
 
-  const html = Object.entries(porTipo).map(([tipo, lista]) => `
+  let html = inicial ? `<section><div class="grid">${tarjeta(inicial)}</div></section>` : '<p class="hint">Sin grafo inicial todavía.</p>';
+
+  const seccionesResto = Object.entries(porTipo).map(([tipo, lista]) => `
     <section>
       <h2>${tipo} <span class="cuenta">(${lista.length})</span></h2>
       <div class="grid">${lista.map(tarjeta).join('')}</div>
     </section>
   `).join('');
+  if (resto.length) {
+    html += `<details class="mas"><summary>Otros grafos (${resto.length})</summary>${seccionesResto}</details>`;
+  }
 
-  document.getElementById('dinamico').innerHTML = html || '<p class="hint">Sin fichas reales todavía.</p>';
-
-  renderAPromover(new Set(Object.keys(m.fichas)));
+  document.getElementById('dinamico').innerHTML = html;
 }).catch(() => {
   document.getElementById('dinamico').innerHTML = '<p class="hint">No se pudo cargar fichas_grafos.json.</p>';
-  renderAPromover(new Set());
 });
 </script>
 </body>
