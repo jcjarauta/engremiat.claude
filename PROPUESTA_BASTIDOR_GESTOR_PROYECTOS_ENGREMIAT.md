@@ -1272,6 +1272,18 @@ Dos correcciones sobre `taller.html`: (1) quitado el bloque "Fichas reales de lo
 
 Con 8 fichas reales ya generadas, el bloque dinámico agrupado por tipo volvió a mostrar todo de golpe -- la misma regresión ya corregida una vez en §8.88, esta vez sobre las tarjetas dinámicas en vez de las estáticas. Pedido: *"en este bloque solo debería de quedar el grafo inicial, oculta los antiguos"*. Aplicado el mismo criterio: `vista_sistema` (el grafo inicial, id fijo `ID_GRAFO_INICIAL`) se muestra siempre; las otras 7 fichas reales (nodejs, n8n, holon, anatomía, recurso, módulo, regla) quedan agrupadas por tipo dentro de un `<details>` plegado, "Otros grafos (7)". Nada se pierde -- solo deja de mostrarse por defecto.
 
+### 8.98 Técnico -- fichas de prompt real, listas para delegar
+
+Pedido: *"crea una nueva pestaña vinculada al home llamada (tecnico): actua como asesor tecnico y valora la propuesta, la idea es que en este html, podamos generar prompts structurados adaptados al modelo local, mi idea es: tu haces la seleccion de procesos y tareas inicial, lo pruebas y generas evidencia de lo que ha funcionado y lo que no para el desarrollo y hacemos una ficha de prompt para algun worker externo o interno"*.
+
+**Valoración dada**: buena idea, cierra un hueco real que se venía citando toda la sesión ("delegable al worker local, con Puerta Humana") sin construir nunca el mecanismo que lo hace seguro. Precedente real directo a reutilizar en vez de inventar uno: `PROMPT_EJECUTOR.md` ya es un prompt versionado real, registrado en `registro_ecosistema.json` bajo `prompts_operativos`. Mejora dada: igual que `candidatos_a_promover.json` (§8.95), una ficha de prompt nunca declara "Probado" sin una prueba real detrás -- ciclo `Borrador → Probado → Listo para delegar`, con evidencia genuina (qué funcionó, qué falló) obligatoria a partir de "Probado".
+
+**Construido**: `crear_ficha_prompt.mjs` (CLI real, JSON por stdin -- evita el infierno de escapado de comillas de una sola línea de shell, encontrado y corregido a mitad de construcción) escribe en `fichas_prompt.json`, rechazando de plano un estado distinto de "Borrador" sin `funciono`/`fallo` reales. `tecnico.html` -- visor de solo lectura (mismo criterio que Taller: ningún botón de "ejecutar", Puerta Humana intacta), agrupa por estado, cada ficha con tarea/worker destino/fecha de prueba, listas reales de qué funcionó/qué falló, y el prompt completo en un `<details>` plegado.
+
+**Dos fichas reales pobladas de una vez** (pedido explícito: *"pruebalo y definelo con las tareas del constructor de grafos y hacemos una prueba real con contenido real"*) -- reconstruida honestamente la evidencia real de esta misma sesión, no inventada: "Escribir un extractor `mapear_grafo_X.mjs`" (TAR-0002/3/4, con la evidencia real de reutilizar `universo_real.json` y el bug de `ficha_grafo.mjs` encontrado al probarlo) y "Escribir un orquestador que regenera N extractores sin pisar estado escrito en vivo" (TAR-0005, con la evidencia real de las dos reglas de fusión distintas, diccionario vs. lista).
+
+**Bug real encontrado y corregido al verificar en el navegador**: los prompts reales incluyen marcadores `<TIPO>` -- insertados sin escapar vía `innerHTML`, el navegador los trataba como etiquetas HTML desconocidas y los descartaba en silencio ("el tipo  que:" en vez de "el tipo `<TIPO>` que:"). Corregido con un `escapeHtml()` real aplicado a todo texto dinámico de la ficha, no solo al prompt. Verificado en el navegador real tras el fix: el prompt completo se lee correcto, con los marcadores `<TIPO>` visibles.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

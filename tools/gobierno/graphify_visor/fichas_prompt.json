@@ -1,0 +1,42 @@
+{
+  "fichas": {
+    "extractor_por_tipo": {
+      "id": "extractor_por_tipo",
+      "titulo": "Escribir un extractor mapear_grafo_X.mjs para un tipo real del vault",
+      "tarea": "TAR-0002/0003/0004 (Proyecto Grafos del sistema, CORE)",
+      "workerDestino": "local-codigo (devstral-dev)",
+      "estado": "Probado",
+      "prompt": "Contexto: este proyecto ya tiene un extractor real que parsea el vault de Obsidian (tools/gobierno/bocetador/cargar_desde_vault.mjs) y escribe universo_real.json con nodos reales por categoria (espacios/recursos/modulos/personajes/oficios/reglas) y sus relacionesDeclaradas (wikilinks reales extraidos de la seccion \"## Relaciones\" de cada ficha .md).\n\nTarea: escribir un extractor real para el tipo <TIPO> que:\n1. NUNCA reparsea el vault -- lee universo_real.json (ya generado).\n2. Construye un indice de TODAS las entidades reales (todas las categorias, no solo <TIPO> -- una entidad de este tipo puede referenciar una de otro tipo).\n3. Para cada ficha real de <TIPO>, resuelve sus relacionesDeclaradas contra ese indice. Si una relacion no resuelve contra ninguna ficha real, se marca como nodo \"externo\" (nunca se descarta en silencio, nunca se inventa la ficha que falta).\n4. Escribe grafo_<tipo>.json con {generadoEn, nodos, aristas}.\n5. Llama a actualizarFichaGrafo() de ficha_grafo.mjs al final, con contadores reales.\n\nRegla de oro: solo lectura sobre el vault/universo_real.json, nunca escribir ahi. Nunca inventar un nodo o arista que no exista en universo_real.json.",
+      "funciono": [
+        "Reutilizar universo_real.json en vez de reparsear el vault evito duplicar ~130 lineas de logica ya escrita y probada en cargar_desde_vault.mjs (frontmatter, slug(), extraccion de relaciones).",
+        "Un solo script parametrizado por --tipo (recurso|modulo|regla) sirvio a los 3 tipos reales sin triplicar codigo -- la logica de resolver relaciones contra el indice global es identica para los tres.",
+        "Marcar como 'externo' lo que no resuelve (en vez de descartarlo) encontro un hueco real de verdad (1 nombre referenciado desde una Regla sin ficha propia) sin que nadie tuviera que buscarlo a mano."
+      ],
+      "fallo": [
+        "Primer intento: escribir codigo nuevo de parseo de frontmatter/wikilinks -- descartado a tiempo al confirmar que cargar_desde_vault.mjs ya lo hacia (hubiera repetido el error real ya documentado en S8.59: dos lectores del mismo vault que no se cruzan).",
+        "El bug real de ficha_grafo.mjs (leer el historial previo del propio grafo_X.json en vez del manifest) se descubrio precisamente probando ESTE extractor -- el extractor sobrescribe su fichero de salida antes de que la ficha pueda leer su propio historial anterior."
+      ],
+      "probadoEn": "2026-09-04",
+      "probadoPor": "Claude (sesion real, construccion de TAR-0002/0003/0004)",
+      "actualizadoEn": "2026-09-05T00:30:28.514Z"
+    },
+    "orquestador_regeneracion": {
+      "id": "orquestador_regeneracion",
+      "titulo": "Escribir un orquestador que regenera N extractores reales sin pisar estado escrito en vivo",
+      "tarea": "TAR-0005 (regenerar_grafos.mjs) + fusion real de sincronizacion (S8.94/95)",
+      "workerDestino": "local-codigo (devstral-dev)",
+      "estado": "Probado",
+      "prompt": "Contexto: hay varios extractores reales independientes (mapear_grafo_X.mjs) que escriben cada uno su propio grafo_X.json + una entrada en un manifest compartido (fichas_grafos.json). Ese manifest tambien puede recibir escrituras EN VIVO desde un servidor remoto (un endpoint que 'promueve' o borra entradas) -- dos fuentes de verdad para el mismo fichero.\n\nTarea: escribir un orquestador que:\n1. Ejecute cada extractor real en secuencia (execFileSync o similar), reportando OK/FALLO por cada uno, sin abortar el resto si uno falla.\n2. ANTES de ejecutar ningun extractor, traiga la version viva del manifest (fetch a la URL publica donde se sirve) y la funda con la copia local -- la copia local NUNCA debe sobrescribir a ciegas una escritura en vivo mas reciente.\n3. Reglas de fusion explicitas por tipo de dato: si es un diccionario por clave (cada extractor es dueno de su propia clave), la fusion es {...vivo, ...local} -- local gana solo en su propia clave, todo lo demas del vivo se preserva. Si es una LISTA con borrados en vivo (ej. una cola de pendientes de la que se quita un elemento al aceptarlo), la version viva manda por completo, y solo se anaden elementos locales nuevos cuyo id no exista ya en el vivo NI ya haya sido 'resuelto' en otro fichero relacionado.\n4. Acepte un flag --desplegar opcional que, al final, llame al script real de despliegue.\n\nRegla de oro: nunca perder una escritura en vivo mas reciente que la copia local por simple orden de ejecucion.",
+      "funciono": [
+        "Separar la regla de fusion en dos casos reales distintos (diccionario por clave vs. lista con borrados) evito una unica regla generica incorrecta -- un enfoque de 'ultimo en escribir gana' habria resucitado candidatos ya promovidos y borrados en vivo.",
+        "Traer la version viva ANTES de ejecutar los extractores (no despues) hizo que el fallback fuera seguro incluso si el fetch a la version viva fallaba (se sigue con la copia local, con un aviso, en vez de bloquear todo el ciclo)."
+      ],
+      "fallo": [
+        "Primera version solo protegia fichas_grafos.json (diccionario) -- se encontro el mismo problema real sin protegerlo en candidatos_a_promover.json (lista), que se resolvio aparte al ver que 'promover' BORRA una entrada en vivo en vez de solo anadir una clave nueva -- la regla de fusion de un diccionario no sirve igual para una lista con bajas."
+      ],
+      "probadoEn": "2026-09-05",
+      "probadoPor": "Claude (sesion real, construccion de TAR-0005 + fix de sincronizacion en S8.94/95)",
+      "actualizadoEn": "2026-09-05T00:43:57.823Z"
+    }
+  }
+}

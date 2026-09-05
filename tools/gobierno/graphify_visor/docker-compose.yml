@@ -56,6 +56,8 @@ services:
       - ./grafo_regla.json:/app/grafo_regla.json:ro
       - ./fichas_grafos.json:/app/fichas_grafos.json:ro
       - ./candidatos_a_promover.json:/app/candidatos_a_promover.json:ro
+      - ./tecnico.html:/app/tecnico.html:ro
+      - ./fichas_prompt.json:/app/fichas_prompt.json:ro
       - ./design-tokens.json:/app/design-tokens.json:ro
       - ./tokens.css:/app/tokens.css:ro
     command: npx --yes serve /app -l 9320
