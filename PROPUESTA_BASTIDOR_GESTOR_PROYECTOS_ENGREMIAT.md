@@ -1564,6 +1564,14 @@ Pedido tras valorar (como asesor técnico) automatizar la sincronización real S
 
 **Verificado**: sintaxis con `node`/`vm.Script`; `debeRedirigirAArquitecto()` probado en aislado (Producto bajo Índice redirige de verdad a `arquitecto.html`, Producto bajo otro proyecto real no, Proceso bajo Índice no aplica); `intentarEncolarReconstruccionSiAplica()` probado en aislado con un backend simulado con dos Productos reales (uno marcado `"(creada con Arquitecto)"`, otro hecho a mano) -- los 4 casos reales (Proceso/Tarea × gestionado/hecho a mano) se comportan exactamente como se esperaba: encola solo cuando corresponde. No se hizo una prueba en vivo con una Tarea real nueva porque no habría forma de borrarla después y el patrón de escritura (`reconstruirYEncolarPagina`) ya está probado en vivo desde §8.119/§8.120 -- lo nuevo aquí es solo la lógica de detección, ya cubierta en aislado.
 
+### 8.124 Resuelto el aparcado: `PRD-0009` retrofit a `recursos.html` real
+
+Capturado real por el operador: *"ESTO SIGUE SIN ESTAR ACTUALIZADO, CON EL NUEVO PRODUCTO/PROCESO, REVISA EL SHEET"* -- revisado el Sheet real: `PRD-0009 "RECURSOS"` seguía existiendo, tal como se esperaba, invisible en `mapa.html` a propósito (sin `(archivo.html)` en su `NOMBRE`, la salvaguarda de §8.121 lo excluye con razón). Preguntado explícito qué hacer con la decisión aparcada en §8.122 -- elegido *"retrofit a página real"*.
+
+**Ejecutado**: `NOMBRE`/`DESCRIPCION` reales de `PRD-0009` actualizados a mano vía `sheets_update_values` (`"Recursos (recursos.html)"` / `"Página real colgada de home.html -- tipo Espacio (creada con Arquitecto)."`) -- confirmado leyendo la ficha real después. HTML regenerado con la misma `generarHtmlReal()` (extraída y ejecutada en aislado con `node`+`vm`, mismo patrón de siempre) a partir de su único Proceso real `PLANTILLAS` (sin fragmento guardado, `TODO` honesto de partida). Encolado sin `reconstruccion` (es un fichero nuevo, no una reconstrucción) y aplicado con `node aplicar_pagina_arquitecto.mjs recursos.html` -- desplegado y verificado (`curl` 200). Enlazado desde `home.html` (9ª pieza real, mismo patrón `a.item`).
+
+**Verificado**: `mapa.html` ahora muestra `Recursos` como columna editable de verdad (junto a `Mapa`) -- confirmado en aislado con `node`+`vm` que el aviso de "solo una página editable" desaparece (ya hay dos), lo que deja por fin abierta la prueba real pendiente de §8.120 (mover una caja entre dos páginas de verdad) en cuanto se quiera hacer.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
@@ -1576,4 +1584,4 @@ Pedido tras valorar (como asesor técnico) automatizar la sincronización real S
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.
 - Ninguna pestaña `STG_*` se ha analizado columna a columna todavía — ahora con un propósito claro (§6.5), sigue pendiente de hacerse.
-- `PRD-0009 "RECURSOS"` (§8.122) — Producto real creado a mano en Índice, sin la convención de Arquitecto ni HTML real detrás. Aparcado explícitamente por el operador ("luego lo definimos"): decidir si se retrofit a página real (`recursos.html`) o se deja como registro genérico sin página.
+- ~~`PRD-0009 "RECURSOS"` sin convención de Arquitecto~~ (§8.122/§8.124) — resuelto: retrofit real a `Recursos (recursos.html)`, HTML generado y desplegado, enlazado desde `home.html`.
