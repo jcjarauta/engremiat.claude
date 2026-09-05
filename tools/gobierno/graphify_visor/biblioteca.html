@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- biblioteca</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 860px; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  h1 { font-size: 18px; margin: 6px 0 4px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 28px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; margin-bottom: 8px; }
+  a.plantilla { display: block; background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 14px 16px; text-decoration: none; color: var(--color-base-texto); transition: border-color .15s; }
+  a.plantilla:hover { border-color: #6ea8ff; }
+  a.plantilla h3 { margin: 0 0 6px; font-size: 13.5px; font-family: ui-monospace, monospace; }
+  a.plantilla p { margin: 0; color: var(--color-base-texto-suave); font-size: 11.5px; line-height: 1.5; }
+  .patron { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 10px 14px; margin-bottom: 8px; background: var(--color-base-panel); }
+  .patron .titulo { font-weight: 600; font-size: 13px; margin-bottom: 3px; }
+  .patron .resuelve { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.5; margin-bottom: 4px; }
+  .patron .donde { font-size: 11px; color: var(--color-base-texto-tenue); }
+  .patron .donde code { color: #6fb3f2; }
+  .patron .donde a { color: #6fb3f2; text-decoration: none; }
+</style>
+</head>
+<body>
+<a class="volver" href="home.html">← Home</a>
+<h1>Biblioteca -- plantillas y patrones reutilizables</h1>
+<p class="hint">Catálogo real, curado a mano (como <code>resumen_universo.html</code>) -- nada de esto se genera solo. Dos capas distintas: plantillas reales (ficheros a copiar, código concreto) y patrones de diseño reales (decisiones repetidas al menos dos veces en esta sesión, con su primera aplicación real como referencia). Ninguno inventado -- cada patrón enlaza a dónde se aplicó de verdad.</p>
+
+<h2>Plantillas (ficheros reales)</h2>
+<div class="grid">
+  <a class="plantilla" href="plantilla_grafo_espacio.html">
+    <h3>plantilla_grafo_espacio.html</h3>
+    <p>Base para una página nueva de tipo "Espacio": tokens.css, nodos uniformes, física con inercia cero (damping/centralGravity/congelado), etiquetas por zoom+hover. Solo quedan 3 PERSONALIZAR y 2 TODO.</p>
+  </a>
+  <a class="plantilla" href="plantilla_extractor.mjs">
+    <h3>plantilla_extractor.mjs</h3>
+    <p>Base para un extractor nuevo (mapear_grafo_X.mjs): la regla de oro (solo lectura, nunca inventar) + la llamada a actualizarFichaGrafo() ya integrada.</p>
+  </a>
+</div>
+<p class="hint">Nota real: existen otros dos ficheros con "Plantilla" en el nombre en <code>src/</code> (<code>PlantillaImportacionMasivaService.js</code>, <code>...Avanzada...</code>) -- son servicios de negocio reales de la app cliente, no patrones de desarrollo. Categoría distinta a propósito, no se mezclan aquí.</p>
+
+<h2>Patrones de diseño reales</h2>
+
+<div class="patron">
+  <div class="titulo">Ficha espejo -- replicar, nunca enlazar</div>
+  <div class="resuelve">Cuando la UI necesita mostrar una fila del Sheet, se replica su contenido real como UI nativa (modal/panel) en vez de enlazar al Sheet externo -- el operador no sale nunca de la página.</div>
+  <div class="donde">Primera aplicación real: <code>leerFichaReal()</code> en <a href="arbol_campanas.html">arbol_campanas.html</a> (§8.80).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">KPI como botón de filtro</div>
+  <div class="resuelve">En vez de un desplegable de filtro aparte, los propios contadores (KPI) son botones clicables que alternan el filtro activo -- menos controles, más directo.</div>
+  <div class="donde">Primera aplicación real: <a href="panel_operativo.html">panel_operativo.html</a>.</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Revelación gradual -- nada de golpe</div>
+  <div class="resuelve">Ninguna lista larga se muestra completa por defecto: colapsada tras un <code>&lt;details&gt;</code> o oculta hasta un clic explícito, con el contador visible pero sin nombres.</div>
+  <div class="donde">Aplicado en: incidencias de <a href="panel_operativo.html">panel_operativo.html</a>, árbol de <a href="arbol_campanas.html">arbol_campanas.html</a>, histórico de <a href="grafos.html">grafos.html</a> (§8.88/97), prioridad Media/Baja de "A promover" (§8.95).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Física de grafo con inercia cero</div>
+  <div class="resuelve">damping + centralGravity + avoidOverlap para que un grafo real se asiente, y <code>physics.enabled=false</code> tras estabilizar -- arrastrar un nodo lo deja donde se suelta, nunca vuelve a moverse solo.</div>
+  <div class="donde">Primera aplicación real: <code>index.html</code>/<code>graph.html</code> (Graphify original); adoptada en <a href="vista_sistema.html">vista_sistema.html</a> (§8.86) y en <a href="plantilla_grafo_espacio.html">plantilla_grafo_espacio.html</a>.</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Etiquetas ocultas por zoom + hover</div>
+  <div class="resuelve">En un grafo denso, las etiquetas de nombre ensucian la vista -- se ocultan por defecto y solo aparecen al acercar el zoom o al pasar el ratón por encima, nunca desaparecen del todo.</div>
+  <div class="donde">Primera aplicación real: <code>grafo_maestro.html</code> (§8.39-40); reutilizada en <a href="vista_sistema.html">vista_sistema.html</a> (§8.85) y <a href="plantilla_grafo_espacio.html">plantilla_grafo_espacio.html</a>.</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Ficha dinámica + historial</div>
+  <div class="resuelve">Un proceso que se repite (un extractor, una regeneración) escribe su propia ficha al terminar -- qué es, sus contadores reales, y un historial acumulado que sirve a la vez para documentar y para detectar tendencia.</div>
+  <div class="donde">Construido en: <a href="grafos.html">ficha_grafo.mjs</a> (§8.93), reutilizado por <a href="tecnico.html">crear_ficha_prompt.mjs</a> (§8.98, sin historial pero con el mismo espíritu de auto-documentación).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Extractor real: solo lectura, reutilizar antes de reparsear</div>
+  <div class="resuelve">Antes de escribir un extractor nuevo, comprobar si otro ya real extrae esa misma fuente -- nunca dos lectores del mismo origen que no se cruzan. Solo lectura sobre la fuente, nunca inventar un nodo/arista que no exista.</div>
+  <div class="donde">Encontrado y corregido en: <code>cargar_grafo_wikilinks.mjs</code>/<code>extraer_anatomia_entidad.mjs</code> (§8.59); aplicado de nuevo al construir <a href="grafos.html">mapear_grafo_por_tipo.mjs</a> (§8.93, reutiliza <code>universo_real.json</code> en vez de reparsear el vault).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Puerta Humana en dos pasos: proponer (borrador) → aceptar (promover)</div>
+  <div class="resuelve">Nada se declara "hecho" sin pasar antes por un borrador real explícito. Un candidato se propone con su ficha borrador (tipo tentativo, prioridad); un humano lo revisa y decide el tipo final antes de promoverlo -- nunca se pre-rellena una lista de "ya aceptado" sin que el ciclo real haya ocurrido.</div>
+  <div class="donde">Construido en: <code>proponer_candidato.mjs</code> + <code>promoverGrafoReal()</code>, <a href="grafos.html">grafos.html</a> (§8.95).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Evidencia real obligatoria antes de "Probado"</div>
+  <div class="resuelve">Un prompt/mecanismo no se declara "Probado" solo porque se escribió -- necesita una lista real de qué funcionó y qué falló, de una prueba genuina ya hecha. Sin evidencia, el estado real es "Borrador".</div>
+  <div class="donde">Construido en: <code>crear_ficha_prompt.mjs</code>, <a href="tecnico.html">tecnico.html</a> (§8.98).</div>
+</div>
+
+<div class="patron">
+  <div class="titulo">Fusión antes de regenerar -- nunca pisar una escritura en vivo</div>
+  <div class="resuelve">Cuando un dato puede escribirse tanto en local (por un script) como en vivo (por un servidor remoto), regenerar desde local sin más arriesga sobrescribir una escritura en vivo más reciente. Se trae la versión viva y se funde ANTES de tocar nada -- regla distinta según sea un diccionario por clave (local gana solo su propia clave) o una lista con bajas (la versión viva manda).</div>
+  <div class="donde">Encontrado y corregido en: <a href="grafos.html">regenerar_grafos.mjs</a> (§8.94/95).</div>
+</div>
+
+</body>
+</html>

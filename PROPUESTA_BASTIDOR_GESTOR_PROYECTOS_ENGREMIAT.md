@@ -1284,6 +1284,14 @@ Pedido: *"crea una nueva pestaña vinculada al home llamada (tecnico): actua com
 
 **Bug real encontrado y corregido al verificar en el navegador**: los prompts reales incluyen marcadores `<TIPO>` -- insertados sin escapar vía `innerHTML`, el navegador los trataba como etiquetas HTML desconocidas y los descartaba en silencio ("el tipo  que:" en vez de "el tipo `<TIPO>` que:"). Corregido con un `escapeHtml()` real aplicado a todo texto dinámico de la ficha, no solo al prompt. Verificado en el navegador real tras el fix: el prompt completo se lee correcto, con los marcadores `<TIPO>` visibles.
 
+### 8.99 Biblioteca -- plantillas y patrones reutilizables
+
+Pedido: *"abre una nueva pestaña vinculada al home llamada (biblioteca)"*. Nombre demasiado genérico para construir a ciegas -- preguntado qué debía contener; respuesta: plantillas y patrones reutilizables, no documentos.
+
+**Investigado antes de construir**: solo 2 ficheros reales del repo son plantillas de *desarrollo* (`plantilla_grafo_espacio.html`, `plantilla_extractor.mjs`) -- los otros dos con "Plantilla" en el nombre (`src/PlantillaImportacionMasivaService.js`/`...Avanzada...`) son servicios de negocio reales de la app cliente, categoría distinta a propósito, no se mezclan.
+
+**Construida `biblioteca.html`**, curada a mano (como `resumen_universo.html`) con dos capas: las 2 plantillas reales (ficheros a copiar), y **10 patrones de diseño reales** -- decisiones repetidas al menos dos veces en esta sesión, cada una con su primera aplicación real como referencia enlazada (nunca inventado): Ficha espejo, KPI como botón de filtro, Revelación gradual, Física de grafo con inercia cero, Etiquetas ocultas por zoom+hover, Ficha dinámica + historial, Extractor real (solo lectura, reutilizar antes de reparsear), Puerta Humana en dos pasos (proponer→promover), Evidencia real obligatoria antes de "Probado", y Fusión antes de regenerar. Enlazada desde `home.html` (6ª pieza real). Verificado en el navegador real: renderiza correctamente, todos los enlaces reales a su primera aplicación.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
