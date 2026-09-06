@@ -131,6 +131,35 @@ function buscarNodoEnArbol(j, id) {
   return null;
 }
 
+// §8.145: contexto real de solo lectura ("miga de pan" + lo que ya existe alrededor) --
+// version ligera de "ver el arbol al lado" (valorada y descartada por coste/riesgo, ver
+// PROPUESTA_BASTIDOR §8.145): en vez de fusionar arbol_campanas.html con Arquitecto, un
+// resumen real de contexto reutilizando buscarNodoEnArbol. Sirve para DOS casos reales
+// con el mismo dato de fondo: (1) al elegir el padre real en la cascada de "Crear pagina
+// nueva", `hijos` real dice que ya existe bajo ese padre (posibles hermanas futuras de la
+// pagina nueva); (2) al elegir una pagina real en "Editar pagina existente", `hermanos`
+// real dice que mas hay al mismo nivel que ella. `miga` es la cadena real de ancestros
+// (inclusive el propio id), siempre util en los dos casos.
+function contextoDeNodo(j, id) {
+  const hallazgo = buscarNodoEnArbol(j, id);
+  if (!hallazgo) return null;
+  const { tipo, nodo, campana, proyecto, producto, proceso } = hallazgo;
+  const miga = [];
+  if (campana) miga.push({ tipo: 'Campaña', id: campana.id, nombre: campana.nombre });
+  if (proyecto) miga.push({ tipo: 'Proyecto', id: proyecto.id, nombre: proyecto.nombre });
+  if (producto) miga.push({ tipo: 'Producto', id: producto.id, nombre: producto.nombre });
+  if (proceso) miga.push({ tipo: 'Proceso', id: proceso.id, nombre: proceso.nombre });
+  miga.push({ tipo, id: nodo.id, nombre: nodo.nombre });
+  const padreDirecto = proceso || producto || proyecto || campana || null;
+  const hermanosCrudos = padreDirecto ? (padreDirecto.hijos || []) : (j.arbol || j);
+  const marcar = (n) => ({ id: n.id, nombre: n.nombre, esPaginaReal: RE_PAGINA_REAL.test(n.nombre || '') });
+  return {
+    miga,
+    hijos: (nodo.hijos || []).map(marcar),
+    hermanos: hermanosCrudos.filter((n) => n.id !== nodo.id).map(marcar),
+  };
+}
+
 // Recorre el arbol completo real y devuelve TODOS los nodos (de cualquier tipo/nivel) cuyo
 // NOMBRE ya sigue la convencion real "(archivo.html)" -- lista global real para "Editar
 // pagina existente", con su migaPan real (Campaña -> Proyecto -> ...) para distinguir

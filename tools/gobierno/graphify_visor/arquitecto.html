@@ -105,6 +105,7 @@
   </div>
   <div id="cascadaPadreSheet"></div>
   <p class="hint" id="avisoTipoPaginaSheet" style="margin-top:4px;"></p>
+  <p class="hint" id="contextoPadreCreacion" style="margin-top:4px;"></p>
 
   <h2>1. Nombre real de la página</h2>
   <div class="fila">
@@ -169,6 +170,7 @@
     </div>
   </div>
   <p class="hint" id="enlaceMapaEditar"></p>
+  <p class="hint" id="contextoPaginaEditar"></p>
   <div id="listaCajasEditar"></div>
   <div style="margin-top:16px;">
     <button class="primario" id="btnReconstruir" onclick="guardarYReconstruir()" disabled>Guardar y reconstruir esta página</button>
@@ -201,10 +203,18 @@ async function alElegirTipoPaginaSheet() {
   await renderCascadaPadreSheet();
 }
 
-function selectPadreHtml(id, etiqueta, opciones, onchange, seleccionado) {
+// §8.145: "+ Crear nuevo/a..." real al final de cada desplegable de la cascada --
+// resuelve el hueco real mas concreto de "quiero crear el padre que aun no existe sin
+// salir de Arquitecto" (valorado como alternativa barata a fusionar el arbol completo,
+// ver PROPUESTA_BASTIDOR §8.145). tipoParaCrear marca de que tipo real es el "+Crear" de
+// ESTE desplegable -- se lee luego en manejarCambioEnCascada via data-tipo-crear.
+const GENERO_TIPO_CREAR = { 'Campaña': 'nueva', 'Proyecto': 'nuevo', 'Producto': 'nuevo', 'Proceso': 'nuevo' };
+function selectPadreHtml(id, etiqueta, opciones, onchange, seleccionado, tipoParaCrear) {
+  const opcionCrear = tipoParaCrear ? '<option value="__nuevo__">+ Crear ' + tipoParaCrear + ' ' + GENERO_TIPO_CREAR[tipoParaCrear] + ' real...</option>' : '';
   return '<div class="fila"><div style="flex:1;"><label>' + etiqueta + '</label>' +
-    '<select id="' + id + '" style="width:100%;"' + (onchange ? ' onchange="' + onchange + '"' : '') + '>' +
+    '<select id="' + id + '" style="width:100%;" data-tipo-crear="' + (tipoParaCrear || '') + '"' + (onchange ? ' onchange="' + onchange + '"' : '') + '>' +
     opciones.map(o => '<option value="' + escapeHtmlLocal(o.id) + '"' + (o.id === seleccionado ? ' selected' : '') + '>' + escapeHtmlLocal(o.nombre) + '</option>').join('') +
+    opcionCrear +
     '</select></div></div>';
 }
 
@@ -218,6 +228,7 @@ async function renderCascadaPadreSheet() {
   const aviso = document.getElementById('avisoTipoPaginaSheet');
   cont.innerHTML = '';
   aviso.textContent = '';
+  document.getElementById('contextoPadreCreacion').innerHTML = '';
   if (tipo === 'Campaña') {
     aviso.textContent = 'Una Campaña real no cuelga de ningún padre real -- es el nivel más alto del Sheet.';
     programarVistaPrevia(actualizarVistaPrevia);
@@ -231,54 +242,148 @@ async function renderCascadaPadreSheet() {
   }
   const j = cascadaPadreCache;
   if (tipo === 'Proyecto') {
-    cont.innerHTML = selectPadreHtml('campanaElegidaPadre', '¿Bajo qué Campaña real?', listarCampanasReales(j));
+    cont.innerHTML = selectPadreHtml('campanaElegidaPadre', '¿Bajo qué Campaña real?', listarCampanasReales(j), undefined, undefined, 'Campaña');
   } else if (tipo === 'Producto') {
     const proyectos = listarProyectosReales(j);
     // Mismo valor por defecto real que antes de §8.143 (PROYECTO_INDICE_ID) -- si nadie
     // toca el desplegable, el comportamiento es identico al de antes de generalizar.
     cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
-      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), undefined, PROYECTO_INDICE_ID);
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), undefined, PROYECTO_INDICE_ID, 'Proyecto');
   } else if (tipo === 'Proceso') {
     const proyectos = listarProyectosReales(j);
     cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
-      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()') +
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()', undefined, 'Proyecto') +
       '<div id="nivelProductoPadre"></div>';
     if (proyectos.length) await alElegirProyectoPadreCascada();
   } else if (tipo === 'Tarea') {
     const proyectos = listarProyectosReales(j);
     cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
-      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()') +
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()', undefined, 'Proyecto') +
       '<div id="nivelProductoPadre"></div><div id="nivelProcesoPadre"></div>';
     if (proyectos.length) await alElegirProyectoPadreCascada();
   }
+  actualizarContextoCreacion();
   programarVistaPrevia(actualizarVistaPrevia);
 }
 
 async function alElegirProyectoPadreCascada() {
   const tipo = document.getElementById('tipoPaginaSheet').value;
   const proyectoId = document.getElementById('proyectoElegidoPadre').value;
+  if (proyectoId === '__nuevo__') return; // manejarCrearNuevoEnCascada ya se encarga de re-renderizar
   const productos = listarProductosDeProyecto(cascadaPadreCache, proyectoId);
   const contProducto = document.getElementById('nivelProductoPadre');
   if (!contProducto) return;
   if (!productos.length) {
-    contProducto.innerHTML = '<p class="hint">Este Proyecto real todavía no tiene ningún Producto real.</p>';
+    contProducto.innerHTML = selectPadreHtml('productoElegidoPadre', '¿Bajo qué Producto real?', [],
+      tipo === 'Tarea' ? 'alElegirProductoPadreCascada()' : undefined, undefined, 'Producto') +
+      '<p class="hint">Este Proyecto real todavía no tiene ningún Producto real -- crea uno con "+ Crear Producto nuevo real..." de arriba.</p>';
     const contProceso = document.getElementById('nivelProcesoPadre');
     if (contProceso) contProceso.innerHTML = '';
+    actualizarContextoCreacion();
     return;
   }
   contProducto.innerHTML = selectPadreHtml('productoElegidoPadre', '¿Bajo qué Producto real?', productos,
-    tipo === 'Tarea' ? 'alElegirProductoPadreCascada()' : undefined);
+    tipo === 'Tarea' ? 'alElegirProductoPadreCascada()' : undefined, undefined, 'Producto');
   if (tipo === 'Tarea') await alElegirProductoPadreCascada();
+  actualizarContextoCreacion();
 }
 
 async function alElegirProductoPadreCascada() {
   const productoId = document.getElementById('productoElegidoPadre').value;
+  if (productoId === '__nuevo__') return; // manejarCrearNuevoEnCascada ya se encarga de re-renderizar
   const procesos = listarProcesosDeProducto(cascadaPadreCache, productoId);
   const contProceso = document.getElementById('nivelProcesoPadre');
   if (!contProceso) return;
   contProceso.innerHTML = procesos.length
-    ? selectPadreHtml('procesoElegidoPadre', '¿Bajo qué Proceso real?', procesos)
-    : '<p class="hint">Este Producto real todavía no tiene ningún Proceso real.</p>';
+    ? selectPadreHtml('procesoElegidoPadre', '¿Bajo qué Proceso real?', procesos, undefined, undefined, 'Proceso')
+    : selectPadreHtml('procesoElegidoPadre', '¿Bajo qué Proceso real?', [], undefined, undefined, 'Proceso') +
+      '<p class="hint">Este Producto real todavía no tiene ningún Proceso real -- crea uno con "+ Crear Proceso nuevo real..." de arriba.</p>';
+  actualizarContextoCreacion();
+}
+
+// §8.145: contexto real de solo lectura -- que ya existe bajo el padre real elegido en la
+// cascada (posibles hermanas futuras de la pagina nueva), reutilizando contextoDeNodo de
+// generador_paginas.js con el mismo dato ya cargado en cascadaPadreCache.
+function renderContextoHtml(contexto, modo) {
+  if (!contexto) return '';
+  const migaHtml = contexto.miga.map(m => escapeHtmlLocal(m.nombre)).join(' → ');
+  const lista = modo === 'crear' ? contexto.hijos : contexto.hermanos;
+  const etiquetaLista = modo === 'crear' ? 'Ya existen aquí' : 'Otros elementos reales aquí';
+  const listaHtml = lista.length
+    ? lista.map(n => escapeHtmlLocal(n.nombre) + (n.esPaginaReal ? ' 📄' : '')).join(', ')
+    : '(nada todavía)';
+  return '<b>Dónde está:</b> ' + migaHtml + '<br><b>' + etiquetaLista + ':</b> ' + listaHtml;
+}
+
+function actualizarContextoCreacion() {
+  const cont = document.getElementById('contextoPadreCreacion');
+  const tipo = document.getElementById('tipoPaginaSheet').value;
+  if (tipo === 'Campaña' || !cascadaPadreCache) { cont.innerHTML = ''; return; }
+  const padreId = obtenerPadreRealElegido();
+  cont.innerHTML = padreId ? renderContextoHtml(contextoDeNodo(cascadaPadreCache, padreId), 'crear') : '';
+}
+
+// Delegado real (un solo listener para toda la cascada, que crece/cambia de forma
+// dinamica) -- detecta el "+Crear..." de CUALQUIER nivel sin cablear un onchange propio
+// por cada select nuevo que aparezca.
+document.getElementById('cascadaPadreSheet').addEventListener('change', (e) => {
+  if (e.target.tagName === 'SELECT' && e.target.value === '__nuevo__') manejarCrearNuevoEnCascada(e.target);
+});
+
+// Crea de verdad la fila real que falta (Campaña/Proyecto/Producto/Proceso) sin salir de
+// Arquitecto -- el padre de ESE nuevo registro ya esta implicito en el nivel de la
+// cascada donde vive el "+Crear" (ej. "+Crear Producto" dentro de "¿Bajo qué Proyecto?"
+// ya sabe su Proyecto real por el contexto), salvo Proyecto, que necesita Campaña real y
+// puede haber mas de una -- unico caso que pregunta aparte.
+async function manejarCrearNuevoEnCascada(selectEl) {
+  const tipoNuevo = selectEl.dataset.tipoCrear;
+  // Primera opcion real (nunca "__nuevo__", que siempre va al final) -- fallback real si
+  // se cancela o falla la creacion, para no dejar el desplegable clavado en "__nuevo__".
+  const primeraOpcionReal = [...selectEl.options].find(o => o.value !== '__nuevo__');
+  const nombre = window.prompt(tipoNuevo + ' real nueva/o -- NOMBRE (obligatorio):');
+  if (!nombre || !nombre.trim()) { if (primeraOpcionReal) selectEl.value = primeraOpcionReal.value; return; }
+
+  let padreId = null;
+  if (tipoNuevo === 'Proyecto') {
+    const campanas = listarCampanasReales(cascadaPadreCache);
+    if (campanas.length === 1) {
+      padreId = campanas[0].id;
+    } else {
+      const texto = window.prompt('¿Bajo qué Campaña real? Escribe su id:\n' + campanas.map(c => c.id + ': ' + c.nombre).join('\n'));
+      padreId = texto && texto.trim();
+    }
+  } else if (tipoNuevo === 'Producto') {
+    padreId = document.getElementById('proyectoElegidoPadre') ? document.getElementById('proyectoElegidoPadre').value : null;
+  } else if (tipoNuevo === 'Proceso') {
+    padreId = document.getElementById('productoElegidoPadre') ? document.getElementById('productoElegidoPadre').value : null;
+  }
+  // tipoNuevo === 'Campaña': padreId se queda null, una Campaña real no tiene padre real.
+
+  try {
+    const nuevoId = await crearRegistroReal(tipoNuevo.toUpperCase(), nombre.trim(), padreId);
+    cascadaPadreCache = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json(); // la jerarquia real acaba de cambiar
+
+    if (tipoNuevo === 'Campaña' || tipoNuevo === 'Proyecto') {
+      // El nuevo id vive en el nivel que ya se estaba pintando (Proyecto cuelga
+      // directamente del selector de Campaña/Proyecto que disparo el "+Crear").
+      await renderCascadaPadreSheet();
+      const idSelect = tipoNuevo === 'Campaña' ? 'campanaElegidaPadre' : 'proyectoElegidoPadre';
+      const sel = document.getElementById(idSelect);
+      if (sel) { sel.value = nuevoId; sel.dispatchEvent(new Event('change')); }
+    } else if (tipoNuevo === 'Producto') {
+      await alElegirProyectoPadreCascada();
+      const sel = document.getElementById('productoElegidoPadre');
+      if (sel) { sel.value = nuevoId; sel.dispatchEvent(new Event('change')); }
+    } else if (tipoNuevo === 'Proceso') {
+      await alElegirProductoPadreCascada();
+      const sel = document.getElementById('procesoElegidoPadre');
+      if (sel) sel.value = nuevoId;
+    }
+    actualizarContextoCreacion();
+  } catch (e) {
+    alert('No se pudo crear de verdad: ' + e.message);
+    if (primeraOpcionReal) selectEl.value = primeraOpcionReal.value;
+  }
 }
 
 // Id real del padre elegido en la cascada, segun el tipo de pagina elegido -- null para
@@ -290,7 +395,8 @@ function obtenerPadreRealElegido() {
     Proceso: 'productoElegidoPadre', Tarea: 'procesoElegidoPadre',
   };
   const el = elPorTipo[tipo] && document.getElementById(elPorTipo[tipo]);
-  return el ? el.value : null;
+  const valor = el ? el.value : null;
+  return valor && valor !== '__nuevo__' ? valor : null; // "__nuevo__" transitorio, nunca un padre real valido
 }
 
 // Resuelve el nombre/id real de la Campaña que aloja la pagina que se va a crear --
@@ -1012,6 +1118,7 @@ async function cargarCajasEditar() {
   paginaEditarActual = null;
   lista.innerHTML = '';
   document.getElementById('enlaceMapaEditar').innerHTML = '';
+  document.getElementById('contextoPaginaEditar').innerHTML = '';
   if (!paginaId) return;
 
   const tipo = tipoPorPrefijoId(paginaId);
@@ -1035,6 +1142,10 @@ async function cargarCajasEditar() {
     const nodoPagina = hallazgo && hallazgo.nodo;
     const nombreCampanaEditar = tipo === 'Campaña' ? nombrePagina : (hallazgo && hallazgo.campana ? hallazgo.campana.nombre : 'Panel Operativo');
     const sinRespaldo = tipoCajaPara(tipo) === null;
+
+    // §8.145: contexto real de solo lectura -- donde esta esta pagina y que mas hay al
+    // mismo nivel real (version ligera de "ver el arbol al lado", ver PROPUESTA_BASTIDOR).
+    document.getElementById('contextoPaginaEditar').innerHTML = renderContextoHtml(contextoDeNodo(jerarquia, paginaId), 'editar');
 
     let cajas, layoutId;
     if (sinRespaldo) {
