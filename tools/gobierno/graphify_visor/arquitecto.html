@@ -46,6 +46,9 @@
   .pieza textarea.contenido-pieza { width: 100%; margin-top: 6px; min-height: 44px; resize: vertical; box-sizing: border-box; }
   .pieza select.grafo-pieza { width: 100%; margin-top: 6px; box-sizing: border-box; }
   .pieza .preview-grafo { margin-top: 6px; }
+  .pieza .leyenda-verbos { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .pieza .verbo-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; padding: 2px 8px; border-radius: 10px; border: 1px solid; color: var(--color-base-texto-suave); }
+  .pieza .verbo-badge .punto { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
   button.mini { padding: 3px 8px; font-size: 10.5px; }
   /* §8.134: cascada real de "¿de dónde cuelga?" -- un nivel real por cada paso de la
      jerarquía ya existente, nunca una lista plana sin indicar profundidad. */
@@ -329,7 +332,7 @@ function crearBloquePiezaHtml(pieza) {
   const esGrafo = pieza.tipo === 'grafo';
   const ayuda = (TIPOS_CAJA[pieza.tipo] || TIPOS_CAJA.lista).ayuda;
   const restoHtml = esGrafo
-    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml(pieza.grafoId) + '</select><div class="preview-grafo"></div>'
+    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml(pieza.grafoId) + '</select><div class="preview-grafo"></div><div class="leyenda-verbos"></div>'
     : '<textarea class="contenido-pieza" placeholder="' + ayuda + '">' + escapeHtmlLocal((pieza.contenido || []).join('\n')) + '</textarea>';
   return (
     '<div class="pieza">' +
@@ -360,7 +363,7 @@ function alCambiarTipoPieza(selectEl) {
   [...piezaEl.children].forEach(ch => { if (ch !== filaEl) ch.remove(); });
   const tipo = selectEl.value;
   const resto = tipo === 'grafo'
-    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml('') + '</select><div class="preview-grafo"></div>'
+    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml('') + '</select><div class="preview-grafo"></div><div class="leyenda-verbos"></div>'
     : '<textarea class="contenido-pieza" placeholder="' + (TIPOS_CAJA[tipo] || TIPOS_CAJA.lista).ayuda + '"></textarea>';
   filaEl.insertAdjacentHTML('afterend', resto);
 }
@@ -372,10 +375,12 @@ function alCambiarTipoPieza(selectEl) {
 async function alElegirGrafoPieza(selectEl) {
   const piezaEl = selectEl.closest('.pieza');
   const contenedor = piezaEl.querySelector('.preview-grafo');
+  const leyenda = piezaEl.querySelector('.leyenda-verbos');
   const grafoId = selectEl.value;
   if (piezaEl._redPreview) { try { piezaEl._redPreview.destroy(); } catch {} piezaEl._redPreview = null; }
   contenedor.innerHTML = '';
   contenedor.style.cssText = '';
+  leyenda.innerHTML = '';
   const info = CATALOGO_GRAFOS[grafoId];
   if (!info) return;
   contenedor.style.cssText = 'height:160px; border:1px solid var(--color-base-borde); border-radius:6px;';
@@ -389,6 +394,21 @@ async function alElegirGrafoPieza(selectEl) {
     });
     red.once('stabilizationIterationsDone', () => { red.setOptions({ physics: false }); red.setSize('100%', '100%'); red.redraw(); red.fit({ animation: false }); });
     piezaEl._redPreview = red;
+    // §8.137: "verbos" reales = el campo relation de cada arista (ej. opera_en, depende_de
+    // -- ya usado en grafo_holon.json/grafo_wikilinks.json/etc.). No todos los grafos
+    // reales lo llevan (grafo_jerarquia.json no tiene relation; grafo_n8n.json usa
+    // "workflow", que no es un verbo) -- se dice explicito en vez de inventar uno.
+    const conteoVerbos = {};
+    (datos.aristas || []).forEach(a => { if (a.relation) conteoVerbos[a.relation] = (conteoVerbos[a.relation] || 0) + 1; });
+    const verbosOrdenados = Object.entries(conteoVerbos).sort((a, b) => b[1] - a[1]);
+    leyenda.innerHTML = verbosOrdenados.length
+      ? verbosOrdenados.map(([verbo, n]) =>
+          '<span class="verbo-badge" style="border-color:var(--color-relacion-' + verbo + ', #5c5f6b);">' +
+            '<span class="punto" style="background:var(--color-relacion-' + verbo + ', #5c5f6b);"></span>' +
+            escapeHtmlLocal(verbo) + ' · ' + n +
+          '</span>'
+        ).join('')
+      : '<p class="hint" style="margin:4px 0 0;">Este grafo real no tiene verbos reales por arista.</p>';
   } catch (e) {
     contenedor.innerHTML = '<p class="hint">No se pudo cargar ' + escapeHtmlLocal(info.archivo) + ' real ahora mismo.</p>';
   }
