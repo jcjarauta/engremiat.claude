@@ -70,6 +70,11 @@ services:
       - ./mapa.html:/app/mapa.html:ro
       - ./recursos.html:/app/recursos.html:ro
       - ./generador_paginas.js:/app/generador_paginas.js:ro
+      - ./demo_arquitecto.html:/app/demo_arquitecto.html:ro
+      - ./comunidad_eventos.html:/app/comunidad_eventos.html:ro
+      - ./catalogo_ceramica.html:/app/catalogo_ceramica.html:ro
+      - ./seguimiento_horno.html:/app/seguimiento_horno.html:ro
+      - ./registro_defectos.html:/app/registro_defectos.html:ro
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"
