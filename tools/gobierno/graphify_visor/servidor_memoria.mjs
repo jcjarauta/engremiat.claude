@@ -559,6 +559,24 @@ function guardarFragmentoCaja(procesoId, caja) {
   writeFileSync(RUTA_FRAGMENTOS_CAJAS, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
+// §8.143: cajas SIN respaldo real -- solo para paginas cuyo tipo real es Tarea, la hoja
+// del Sheet (sin ningun tipo por debajo, ver tipoCajaPara en generador_paginas.js). Una
+// pagina-Producto/Proyecto/Campaña/Proceso guarda sus cajas como filas reales (Proceso/
+// Producto/Proyecto/Tarea respectivamente) -- una pagina-Tarea no puede, asi que sus
+// cajas (nombre/cabecera/pie/piezas, todo junto, nunca una fila real por caja) viven aqui,
+// indexadas por el id real de la Tarea. Mismo patron real que layouts_pagina.json --
+// solo datos, en DIR_DATOS.
+const RUTA_CAJAS_SIN_RESPALDO = join(DIR_DATOS, 'cajas_sin_respaldo.json');
+function leerCajasSinRespaldo() {
+  return existsSync(RUTA_CAJAS_SIN_RESPALDO) ? JSON.parse(readFileSync(RUTA_CAJAS_SIN_RESPALDO, 'utf-8')) : { paginas: {} };
+}
+function guardarCajasSinRespaldo(paginaId, cajas) {
+  const datos = leerCajasSinRespaldo();
+  datos.paginas = datos.paginas || {};
+  datos.paginas[paginaId] = { cajas, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_CAJAS_SIN_RESPALDO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
 // §8.127: layout real elegido por pagina (Producto) -- vive aparte del contenido de
 // cada caja porque es una propiedad de la PAGINA entera, no de una caja concreta. Mismo
 // patron real que fragmentos_cajas.json (solo datos, en DIR_DATOS, nunca dual-montado).
@@ -1207,6 +1225,27 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el layout real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'GET' && req.url.startsWith('/api/cajas_sin_respaldo')) {
+      const paginaId = new URL(req.url, 'http://x').searchParams.get('paginaId');
+      if (!paginaId) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta paginaId' })); return; }
+      const datos = leerCajasSinRespaldo();
+      const entrada = (datos.paginas || {})[paginaId];
+      res.writeHead(200); res.end(JSON.stringify({ cajas: entrada ? entrada.cajas : [] })); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/cajas_sin_respaldo') {
+      const { paginaId, cajas } = await leerCuerpo(req);
+      if (!paginaId || !Array.isArray(cajas)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan paginaId/cajas (array real)' })); return;
+      }
+      try {
+        guardarCajasSinRespaldo(paginaId, cajas);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar de verdad: ' + e.message })); return;
       }
     }
 

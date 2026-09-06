@@ -36,10 +36,24 @@ function listarProyectosReales(j) {
   const proyectos = [];
   for (const campana of (j.arbol || j)) {
     for (const proyecto of (campana.hijos || [])) {
-      proyectos.push({ id: proyecto.id, nombre: proyecto.nombre, campanaNombre: campana.nombre });
+      proyectos.push({ id: proyecto.id, nombre: proyecto.nombre, campanaId: campana.id, campanaNombre: campana.nombre });
     }
   }
   return proyectos;
+}
+
+// §8.143: lista los Productos reales de un Proyecto concreto -- para la cascada real de
+// "¿bajo qué Producto?" cuando la pagina nueva es de tipo Proceso o Tarea.
+function listarProductosDeProyecto(j, proyectoId) {
+  const proyecto = obtenerProyectoReal(j, proyectoId);
+  return proyecto ? (proyecto.hijos || []).map(p => ({ id: p.id, nombre: p.nombre })) : [];
+}
+
+// Lista los Procesos reales de un Producto concreto (buscado en TODO el arbol, no solo un
+// Proyecto) -- para la cascada real de "¿bajo qué Proceso?" cuando la pagina nueva es Tarea.
+function listarProcesosDeProducto(j, productoId) {
+  const hallazgo = buscarProductoEnArbol(j, productoId);
+  return hallazgo ? (hallazgo.producto.hijos || []).map(p => ({ id: p.id, nombre: p.nombre })) : [];
 }
 
 // Busca un Producto real por su id en CUALQUIER Proyecto del arbol completo (no asume
@@ -53,6 +67,96 @@ function buscarProductoEnArbol(j, productoId) {
     }
   }
   return null;
+}
+
+// §8.143: "poder editar tambien los html de las campañas proyectos y tareas" -- hasta
+// aqui una "pagina real" solo podia ser un Producto (unico nivel con la cascada
+// Caja=Proceso/Funcion=Tarea que encajaba perfecto). Generalizado: CUALQUIER nivel real
+// (Campaña/Proyecto/Producto/Proceso/Tarea) puede llevar la convencion real "(archivo.html)"
+// en su NOMBRE y ser una pagina editable con Arquitecto -- el id real ya dice su tipo por
+// su prefijo (mismo PREFIJO_ID real que ya usa servidor_memoria.mjs), nunca hace falta
+// preguntarlo aparte ni arrastrar el nodo completo del arbol para saberlo.
+const PREFIJO_A_TIPO = { CAM: 'Campaña', PRO: 'Proyecto', PRD: 'Producto', PCS: 'Proceso', TAR: 'Tarea' };
+function tipoPorPrefijoId(id) { return PREFIJO_A_TIPO[String(id || '').split('-')[0]] || null; }
+
+// Misma cascada fija real de servidor_memoria.mjs (SIGUIENTE_TIPO real) -- una pagina de
+// tipo X real crea sus Cajas como filas reales del tipo siguiente, y sus "funciones"
+// (lineas sueltas dentro de una pieza) como filas reales dos niveles por debajo. Tarea es
+// la hoja real del Sheet (sin tipo por debajo) -- una pagina-Tarea no puede tener cajas
+// respaldadas por una fila real, solo contenido de la propia pagina (ver
+// CAJA_SINTETICA_SIN_RESPALDO en arquitecto.html). Proceso solo tiene un nivel real por
+// debajo (Tarea) -- sus cajas si son reales, pero las "funciones" dentro de cada pieza se
+// quedan sin fila real propia (mismo trato honesto que ya reciben hoy las piezas "grafo").
+const CASCADA_TIPOS = ['Campaña', 'Proyecto', 'Producto', 'Proceso', 'Tarea'];
+function tipoCajaPara(tipoPagina) {
+  const i = CASCADA_TIPOS.indexOf(tipoPagina);
+  return i >= 0 && i + 1 < CASCADA_TIPOS.length ? CASCADA_TIPOS[i + 1] : null;
+}
+function tipoFuncionPara(tipoPagina) {
+  const i = CASCADA_TIPOS.indexOf(tipoPagina);
+  return i >= 0 && i + 2 < CASCADA_TIPOS.length ? CASCADA_TIPOS[i + 2] : null;
+}
+
+// Convencion real ya usada desde §8.123/§8.138 -- vive aqui ahora, unica fuente real
+// (antes duplicada en arbol_campanas.html).
+const RE_PAGINA_REAL = /\(([\w.-]+\.html)\)/;
+
+// Lista todas las Campañas reales del arbol completo -- para el nuevo selector real de
+// "¿bajo qué Campaña?" cuando la pagina nueva es de tipo Campaña o Proyecto.
+function listarCampanasReales(j) {
+  return (j.arbol || j).map(c => ({ id: c.id, nombre: c.nombre }));
+}
+
+// Busca un nodo real de CUALQUIER tipo por su id en el arbol completo, devolviendo tambien
+// su cadena real de ancestros (campana/proyecto/producto/proceso, los que apliquen segun
+// la profundidad real del nodo) -- generaliza buscarProductoEnArbol (que solo sabia buscar
+// Productos) para que "Editar pagina existente" pueda encontrar una pagina real en
+// cualquier nivel, no solo bajo un Proyecto concreto.
+function buscarNodoEnArbol(j, id) {
+  for (const campana of (j.arbol || j)) {
+    if (campana.id === id) return { tipo: 'Campaña', nodo: campana, campana: null, proyecto: null, producto: null, proceso: null };
+    for (const proyecto of (campana.hijos || [])) {
+      if (proyecto.id === id) return { tipo: 'Proyecto', nodo: proyecto, campana, proyecto: null, producto: null, proceso: null };
+      for (const producto of (proyecto.hijos || [])) {
+        if (producto.id === id) return { tipo: 'Producto', nodo: producto, campana, proyecto, producto: null, proceso: null };
+        for (const proceso of (producto.hijos || [])) {
+          if (proceso.id === id) return { tipo: 'Proceso', nodo: proceso, campana, proyecto, producto, proceso: null };
+          for (const tarea of (proceso.hijos || [])) {
+            if (tarea.id === id) return { tipo: 'Tarea', nodo: tarea, campana, proyecto, producto, proceso };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// Recorre el arbol completo real y devuelve TODOS los nodos (de cualquier tipo/nivel) cuyo
+// NOMBRE ya sigue la convencion real "(archivo.html)" -- lista global real para "Editar
+// pagina existente", con su migaPan real (Campaña -> Proyecto -> ...) para distinguir
+// paginas del mismo nombre en Campañas/Proyectos reales distintos.
+function listarPaginasRealesEnArbol(j) {
+  const paginas = [];
+  const detectar = (n, tipo, migaPan) => {
+    const m = RE_PAGINA_REAL.exec(n.nombre || '');
+    if (m) paginas.push({ id: n.id, tipo, archivo: m[1], nombre: n.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, ''), migaPan });
+  };
+  for (const campana of (j.arbol || j)) {
+    detectar(campana, 'Campaña', campana.nombre);
+    for (const proyecto of (campana.hijos || [])) {
+      detectar(proyecto, 'Proyecto', campana.nombre + ' → ' + proyecto.nombre);
+      for (const producto of (proyecto.hijos || [])) {
+        detectar(producto, 'Producto', campana.nombre + ' → ' + proyecto.nombre + ' → ' + producto.nombre);
+        for (const proceso of (producto.hijos || [])) {
+          detectar(proceso, 'Proceso', campana.nombre + ' → ' + proyecto.nombre + ' → ' + producto.nombre + ' → ' + proceso.nombre);
+          for (const tarea of (proceso.hijos || [])) {
+            detectar(tarea, 'Tarea', campana.nombre + ' → ' + proyecto.nombre + ' → ' + producto.nombre + ' → ' + proceso.nombre + ' → ' + tarea.nombre);
+          }
+        }
+      }
+    }
+  }
+  return paginas;
 }
 
 // §8.131: Tipos reales de PIEZA -- contenido minimo dentro de una caja (antes "tipo de

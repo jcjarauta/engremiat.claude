@@ -72,13 +72,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
-<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del Proyecto real que elijas abajo (por defecto <a href="grafos.html">Índice</a>, PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
-
-<div class="bloque">
-  <h2>¿En qué Proyecto real trabajas?</h2>
-  <p class="hint" style="margin-bottom:8px;">§8.139 -- ya no fijo a Índice: elige cualquier Proyecto real (afecta a "Crear página nueva" y a "Editar página existente"). El sitio de dónde cuelga la página en <code>home.html</code> sigue siendo siempre real de Índice, sea cual sea el Proyecto elegido aquí -- son dos cosas distintas: dónde se registra en el Sheet, y dónde aparece en la navegación real del sitio.</p>
-  <select id="proyectoElegido" style="width:100%;" onchange="alElegirProyectoArquitecto(this)"><option value="">Cargando Proyectos reales...</option></select>
-</div>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): <b>§8.143</b> tu página nueva puede ser una fila real de <b>cualquier nivel</b> que elijas abajo (por defecto Producto, como siempre), cada caja es una fila real del nivel siguiente, cada función real dentro de la caja es una fila real dos niveles por debajo (Tarea, la hoja del Sheet, no tiene nivel debajo -- sus cajas se guardan igual pero sin fila real propia). Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad la fila y sus cajas/funciones en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
 
 <div class="layout-arquitecto">
 <div class="panel-izquierdo">
@@ -94,6 +88,23 @@
       <p class="hint" id="descPlantilla" style="margin-top:4px;"></p>
     </div>
   </div>
+
+  <h2>0.5 ¿Dónde vive esta página en el Sheet?</h2>
+  <p class="hint" style="margin-bottom:8px;">§8.143 -- ya no fijo a Producto: elige cualquier nivel real de la jerarquía (Campaña→Proyecto→Producto→Proceso→Tarea). Cada Caja real que añadas más abajo se crea como una fila real del nivel siguiente (ej. página-Proyecto → Caja=Producto), y cada línea real dentro de una pieza, dos niveles por debajo -- igual que ya funcionaba para Producto (Caja=Proceso, Función=Tarea). Tarea es la hoja real del Sheet: sus cajas no pueden respaldarse en una fila real, se guardan igualmente pero sin generar filas nuevas debajo.</p>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Tipo real de esta página (nivel del Sheet)</label>
+      <select id="tipoPaginaSheet" style="width:100%;" onchange="alElegirTipoPaginaSheet()">
+        <option value="Campaña">Campaña</option>
+        <option value="Proyecto">Proyecto</option>
+        <option value="Producto" selected>Producto (como hasta ahora)</option>
+        <option value="Proceso">Proceso</option>
+        <option value="Tarea">Tarea</option>
+      </select>
+    </div>
+  </div>
+  <div id="cascadaPadreSheet"></div>
+  <p class="hint" id="avisoTipoPaginaSheet" style="margin-top:4px;"></p>
 
   <h2>1. Nombre real de la página</h2>
   <div class="fila">
@@ -178,14 +189,127 @@
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 
-// §8.139: bajo que Proyecto real se registra el Producto/Proceso/Tarea de la pagina --
-// ya no fijo a Indice. PRO-0002 sigue siendo el valor por defecto real (mismo
-// comportamiento que antes de este cambio si nadie toca el desplegable nuevo).
-let proyectoActualId = PROYECTO_INDICE_ID;
-let nombreProyectoActual = 'Índice';
-// §8.140: nombre real de la Campaña que aloja el Proyecto elegido -- necesario para la
-// ruta real de la nota gemela de Obsidian (bovedas.claude/<Campaña>/).
-let nombreCampanaActual = 'Panel Operativo';
+// §8.143: ya no hay un unico "Proyecto elegido" global -- cada pagina nueva elige su
+// propio tipo real de Sheet (Campaña/Proyecto/Producto/Proceso/Tarea) y su propio padre
+// real mediante la cascada de mas abajo. "Editar pagina existente" ya no depende de
+// ningun Proyecto elegido tampoco: lista TODAS las paginas reales del arbol completo
+// (ver cargarPaginasEditables), asi que PROYECTO_INDICE_ID/nombreProyectoActual dejan de
+// hacer falta como estado global.
+let cascadaPadreCache = null; // jerarquia real ya leida, reutilizada por la cascada de padre real
+
+async function alElegirTipoPaginaSheet() {
+  await renderCascadaPadreSheet();
+}
+
+function selectPadreHtml(id, etiqueta, opciones, onchange, seleccionado) {
+  return '<div class="fila"><div style="flex:1;"><label>' + etiqueta + '</label>' +
+    '<select id="' + id + '" style="width:100%;"' + (onchange ? ' onchange="' + onchange + '"' : '') + '>' +
+    opciones.map(o => '<option value="' + escapeHtmlLocal(o.id) + '"' + (o.id === seleccionado ? ' selected' : '') + '>' + escapeHtmlLocal(o.nombre) + '</option>').join('') +
+    '</select></div></div>';
+}
+
+// Pinta la cascada real de "¿bajo qué padre real cuelga esta página en el Sheet?" --
+// se adapta al tipo elegido (Campaña no tiene padre real; Proyecto cuelga de una
+// Campaña; Producto de un Proyecto -- comportamiento identico al de antes de §8.143;
+// Proceso/Tarea necesitan bajar uno/dos niveles mas dentro del Proyecto elegido).
+async function renderCascadaPadreSheet() {
+  const tipo = document.getElementById('tipoPaginaSheet').value;
+  const cont = document.getElementById('cascadaPadreSheet');
+  const aviso = document.getElementById('avisoTipoPaginaSheet');
+  cont.innerHTML = '';
+  aviso.textContent = '';
+  if (tipo === 'Campaña') {
+    aviso.textContent = 'Una Campaña real no cuelga de ningún padre real -- es el nivel más alto del Sheet.';
+    programarVistaPrevia(actualizarVistaPrevia);
+    return;
+  }
+  try {
+    if (!cascadaPadreCache) cascadaPadreCache = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+  } catch {
+    aviso.textContent = 'No se pudo leer la jerarquía real ahora mismo -- no se puede elegir el padre real todavía.';
+    return;
+  }
+  const j = cascadaPadreCache;
+  if (tipo === 'Proyecto') {
+    cont.innerHTML = selectPadreHtml('campanaElegidaPadre', '¿Bajo qué Campaña real?', listarCampanasReales(j));
+  } else if (tipo === 'Producto') {
+    const proyectos = listarProyectosReales(j);
+    // Mismo valor por defecto real que antes de §8.143 (PROYECTO_INDICE_ID) -- si nadie
+    // toca el desplegable, el comportamiento es identico al de antes de generalizar.
+    cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), undefined, PROYECTO_INDICE_ID);
+  } else if (tipo === 'Proceso') {
+    const proyectos = listarProyectosReales(j);
+    cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()') +
+      '<div id="nivelProductoPadre"></div>';
+    if (proyectos.length) await alElegirProyectoPadreCascada();
+  } else if (tipo === 'Tarea') {
+    const proyectos = listarProyectosReales(j);
+    cont.innerHTML = selectPadreHtml('proyectoElegidoPadre', '¿Bajo qué Proyecto real?',
+      proyectos.map(p => ({ id: p.id, nombre: p.campanaNombre + ' -- ' + p.nombre })), 'alElegirProyectoPadreCascada()') +
+      '<div id="nivelProductoPadre"></div><div id="nivelProcesoPadre"></div>';
+    if (proyectos.length) await alElegirProyectoPadreCascada();
+  }
+  programarVistaPrevia(actualizarVistaPrevia);
+}
+
+async function alElegirProyectoPadreCascada() {
+  const tipo = document.getElementById('tipoPaginaSheet').value;
+  const proyectoId = document.getElementById('proyectoElegidoPadre').value;
+  const productos = listarProductosDeProyecto(cascadaPadreCache, proyectoId);
+  const contProducto = document.getElementById('nivelProductoPadre');
+  if (!contProducto) return;
+  if (!productos.length) {
+    contProducto.innerHTML = '<p class="hint">Este Proyecto real todavía no tiene ningún Producto real.</p>';
+    const contProceso = document.getElementById('nivelProcesoPadre');
+    if (contProceso) contProceso.innerHTML = '';
+    return;
+  }
+  contProducto.innerHTML = selectPadreHtml('productoElegidoPadre', '¿Bajo qué Producto real?', productos,
+    tipo === 'Tarea' ? 'alElegirProductoPadreCascada()' : undefined);
+  if (tipo === 'Tarea') await alElegirProductoPadreCascada();
+}
+
+async function alElegirProductoPadreCascada() {
+  const productoId = document.getElementById('productoElegidoPadre').value;
+  const procesos = listarProcesosDeProducto(cascadaPadreCache, productoId);
+  const contProceso = document.getElementById('nivelProcesoPadre');
+  if (!contProceso) return;
+  contProceso.innerHTML = procesos.length
+    ? selectPadreHtml('procesoElegidoPadre', '¿Bajo qué Proceso real?', procesos)
+    : '<p class="hint">Este Producto real todavía no tiene ningún Proceso real.</p>';
+}
+
+// Id real del padre elegido en la cascada, segun el tipo de pagina elegido -- null para
+// Campaña (sin padre real).
+function obtenerPadreRealElegido() {
+  const tipo = document.getElementById('tipoPaginaSheet').value;
+  const elPorTipo = {
+    Proyecto: 'campanaElegidaPadre', Producto: 'proyectoElegidoPadre',
+    Proceso: 'productoElegidoPadre', Tarea: 'procesoElegidoPadre',
+  };
+  const el = elPorTipo[tipo] && document.getElementById(elPorTipo[tipo]);
+  return el ? el.value : null;
+}
+
+// Resuelve el nombre/id real de la Campaña que aloja la pagina que se va a crear --
+// necesario para la ruta real de la nota gemela de Obsidian (bovedas.claude/<Campaña>/).
+// Una pagina-Campaña vive en su propia carpeta real (se resuelve tras crearla).
+function resolverCampanaRealDeCreacion() {
+  const tipo = document.getElementById('tipoPaginaSheet').value;
+  const j = cascadaPadreCache;
+  if (tipo === 'Campaña' || !j) return null;
+  if (tipo === 'Proyecto') {
+    const id = document.getElementById('campanaElegidaPadre').value;
+    const c = listarCampanasReales(j).find(x => x.id === id);
+    return c ? { id: c.id, nombre: c.nombre } : null;
+  }
+  const proyectoId = document.getElementById('proyectoElegidoPadre') && document.getElementById('proyectoElegidoPadre').value;
+  const p = listarProyectosReales(j).find(x => x.id === proyectoId);
+  return p ? { id: p.campanaId, nombre: p.campanaNombre } : null;
+}
+
 // Mismo estandar real que ya usa grafos.html (TIPOS_REALES, linea 114) -- nunca una
 // lista distinta inventada aqui. "Espacio" primero y por defecto porque es el tipo
 // real mas comun (una pagina nueva casi siempre es un espacio de trabajo).
@@ -250,6 +374,7 @@ async function cargarPlantillas() {
   document.getElementById('plantillaElegida').innerHTML = '<option value="">-- Empezar desde cero --</option>' + optgroupBase + optgroupProyecto;
 }
 cargarPlantillas();
+renderCascadaPadreSheet(); // pinta la cascada real de padre desde el arranque (tipo por defecto: Producto)
 
 // Aplicar una plantilla real SUSTITUYE las cajas ya escritas -- avisa antes si ya hay
 // contenido real tecleado, nunca lo borra en silencio.
@@ -441,12 +566,16 @@ function anadirPiezaACaja(btn) {
 // (nombre fijo real del Proceso, sin quitar -- nunca se borran Procesos desde aquí,
 // procesoId marca de qué Proceso real es este bloque).
 function crearBloqueCajaHtml(opciones) {
-  const o = Object.assign({ nombre: '', nombreEditable: true, cabecera: '', pie: '', layoutInterno: LAYOUT_POR_DEFECTO, piezas: [null], columnaInicio: 1, ancho: 1, permitirQuitar: true, procesoId: '' }, opciones);
+  const o = Object.assign({ nombre: '', nombreEditable: true, cabecera: '', pie: '', layoutInterno: LAYOUT_POR_DEFECTO, piezas: [null], columnaInicio: 1, ancho: 1, permitirQuitar: true, procesoId: '', indiceSintetico: null }, opciones);
   const nombreHtml = o.nombreEditable
     ? '<input class="nombre-caja" type="text" placeholder="Nombre real de la caja (ej. Backlog real)" value="' + escapeHtmlLocal(o.nombre) + '">'
     : '<div style="flex:1; padding:7px 0; font-size:12.5px;"><b>' + escapeHtmlLocal(o.nombre) + '</b></div>';
   const quitarHtml = o.permitirQuitar ? '<button class="quitar" onclick="this.closest(\'.caja\').remove()">Quitar</button>' : '';
-  const attrs = o.procesoId ? ' data-proceso-id="' + escapeHtmlLocal(o.procesoId) + '" data-nombre="' + escapeHtmlLocal(o.nombre) + '"' : '';
+  // §8.143: una caja sin respaldo real (pagina-Tarea) no tiene procesoId real -- lleva
+  // data-indice-sintetico en su lugar, solo para que guardarYReconstruir sepa el orden.
+  const attrs = o.procesoId
+    ? ' data-proceso-id="' + escapeHtmlLocal(o.procesoId) + '" data-nombre="' + escapeHtmlLocal(o.nombre) + '"'
+    : (o.indiceSintetico !== null ? ' data-indice-sintetico="' + o.indiceSintetico + '" data-nombre="' + escapeHtmlLocal(o.nombre) + '"' : '');
   return (
     '<div class="caja"' + attrs + '>' +
       '<div class="fila-caja">' + nombreHtml + quitarHtml + '</div>' +
@@ -670,6 +799,7 @@ async function construirPagina() {
   const archivoPagina = slug(nombrePagina) + '.html';
   const colgarDe = obtenerColgarDeCascada();
   const nombreColgarDe = nombrePorArchivoCascada(colgarDe);
+  const tipoPaginaSheet = document.getElementById('tipoPaginaSheet').value;
   const tipoPagina = document.getElementById('tipoPagina').value || 'Espacio';
   const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
   const estado = document.getElementById('estadoArquitecto');
@@ -682,32 +812,53 @@ async function construirPagina() {
   if (!nombrePagina) { estado.className = 'estado error'; estado.textContent = 'Falta el nombre real de la página.'; return; }
   if (!cajas.length) { estado.className = 'estado error'; estado.textContent = 'Añade al menos una caja real con nombre.'; return; }
 
+  const padreRealId = obtenerPadreRealElegido();
+  const ETIQUETA_PADRE = { Proyecto: 'Campaña', Producto: 'Proyecto', Proceso: 'Producto', Tarea: 'Proceso' };
+  if (tipoPaginaSheet !== 'Campaña' && !padreRealId) {
+    estado.className = 'estado error';
+    estado.textContent = 'Elige de verdad bajo qué ' + ETIQUETA_PADRE[tipoPaginaSheet] + ' real cuelga esta página.';
+    return;
+  }
+
   boton.disabled = true;
-  estado.textContent = 'Creando la estructura real en ' + nombreProyectoActual + '...';
+  const infoCampanaCreacion = resolverCampanaRealDeCreacion(); // null si tipoPaginaSheet==='Campaña' (se resuelve tras crearla)
+  estado.textContent = 'Creando la estructura real (' + tipoPaginaSheet + ')...';
   try {
-    const descripcionProducto = 'Página real colgada de ' + colgarDe + ' -- tipo ' + tipoPagina + ' (creada con Arquitecto).';
-    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', proyectoActualId, descripcionProducto);
+    const descripcionPagina = 'Página real colgada de ' + colgarDe + ' -- tipo ' + tipoPagina + ' (creada con Arquitecto).';
+    const paginaId = await crearRegistroReal(tipoPaginaSheet.toUpperCase(), nombrePagina + ' (' + archivoPagina + ')', padreRealId, descripcionPagina);
     // Guarda el layout elegido ya desde la creacion -- si esto falla no bloquea nada real,
     // "Editar pagina existente" simplemente lo veria a LAYOUT_POR_DEFECTO la primera vez.
-    guardarLayoutPaginaReal(productoId, layoutId).catch(() => {});
+    guardarLayoutPaginaReal(paginaId, layoutId).catch(() => {});
+
+    // §8.143: Caja/Función crean filas reales del tipo que toque segun el nivel real de
+    // esta pagina (tipoCajaPara/tipoFuncionPara, generador_paginas.js) -- Tarea no tiene
+    // ningun nivel real por debajo, asi que sus cajas se guardan enteras sin fila real
+    // propia (mismo trato honesto que ya reciben hoy las piezas "grafo", que tampoco
+    // generan Tareas reales).
+    const tipoCaja = tipoCajaPara(tipoPaginaSheet);
+    const tipoFuncion = tipoFuncionPara(tipoPaginaSheet);
     let totalFunciones = 0;
-    for (const caja of cajas) {
-      const procesoId = await crearRegistroReal('PROCESO', caja.nombre, productoId);
-      // Una Tarea real por linea de cada pieza con contenido -- 'grafo' no crea Tareas
-      // (no tiene lineas reales, referencia un grafo ya existente). El fragmento real
-      // completo (cabecera/pie/layoutInterno/piezas) se guarda aparte, igual que ya hace
-      // "Editar pagina existente" desde §8.119 -- el Sheet solo necesita saber que hay
-      // trabajo real bajo este Proceso, no la estructura fina de piezas.
-      for (const pieza of caja.piezas) {
-        if (pieza.tipo === 'grafo') continue;
-        for (const linea of (pieza.contenido || [])) {
-          await crearRegistroReal('TAREA', linea, procesoId);
-          totalFunciones++;
+    if (tipoCaja) {
+      for (const caja of cajas) {
+        const cajaId = await crearRegistroReal(tipoCaja.toUpperCase(), caja.nombre, paginaId);
+        if (tipoFuncion) {
+          for (const pieza of caja.piezas) {
+            if (pieza.tipo === 'grafo') continue;
+            for (const linea of (pieza.contenido || [])) {
+              await crearRegistroReal(tipoFuncion.toUpperCase(), linea, cajaId);
+              totalFunciones++;
+            }
+          }
         }
+        await guardarFragmentoCajaReal(cajaId, {
+          cabecera: caja.cabecera, pie: caja.pie, layoutInterno: caja.layoutInterno,
+          piezas: caja.piezas, columnaInicio: caja.columnaInicio, ancho: caja.ancho,
+        }).catch(() => {});
       }
-      await guardarFragmentoCajaReal(procesoId, {
-        cabecera: caja.cabecera, pie: caja.pie, layoutInterno: caja.layoutInterno,
-        piezas: caja.piezas, columnaInicio: caja.columnaInicio, ancho: caja.ancho,
+    } else {
+      await fetch(URL_MEMORIA + '/api/cajas_sin_respaldo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paginaId, cajas }),
       }).catch(() => {});
     }
 
@@ -719,13 +870,14 @@ async function construirPagina() {
     // en vez de inventarlo a mano. Si esto falla, no bloquea nada real -- la página HTML
     // sigue construyéndose igual.
     let markdownPendiente = null;
+    let nombreCampanaCreacion = infoCampanaCreacion ? infoCampanaCreacion.nombre : nombrePagina; // pagina-Campaña: su propia carpeta real
     try {
       const jReal = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-      const hallazgo = buscarProductoEnArbol(jReal, productoId);
-      const urlSheetReal = hallazgo ? hallazgo.producto.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + productoId);
+      const hallazgo = buscarNodoEnArbol(jReal, paginaId);
+      const urlSheetReal = hallazgo ? hallazgo.nodo.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + paginaId);
       const urlPaginaReal = 'http://100.107.171.88:9320/' + archivoPagina;
       const markdownGenerado = generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal);
-      markdownPendiente = { campanaNombre: nombreCampanaActual, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
+      markdownPendiente = { campanaNombre: nombreCampanaCreacion, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
     } catch (e) {
       // Nota gemela no generada esta vez -- se puede generar a mano despues si hace falta.
     }
@@ -735,15 +887,15 @@ async function construirPagina() {
     const pasoTodo = 'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.';
 
     const pasoMarkdown = markdownPendiente
-      ? 'Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- crea la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaActual) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (Obsidian), con su Vínculo real de vuelta al Sheet y a la página.'
+      ? 'Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- crea la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaCreacion) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (Obsidian), con su Vínculo real de vuelta al Sheet y a la página.'
       : 'Aviso: no se pudo generar la nota real gemela de Obsidian esta vez -- la página HTML real no se ve afectada.';
 
     let pasos;
     try {
-      await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado, false, markdownPendiente);
+      await guardarPaginaPendienteReal(paginaId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado, false, markdownPendiente);
       estado.className = 'estado ok';
-      estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML y nota real de Obsidian guardados en la cola de aplicación.';
+      estado.textContent = 'Estructura real creada: ' + paginaId + ' (' + tipoPaginaSheet + ', ' + cajas.length + ' caja(s) real(es), ' +
+        totalFunciones + ' función(es) real(es)) -- colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML y nota real de Obsidian guardados en la cola de aplicación.';
       pasos = [
         pasoMarkdown + ' (ejecútalo <b>antes</b> del siguiente paso -- ese borra la entrada real de la cola al terminar).',
         'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- guarda el fichero real, añade su línea de volumen en <code>docker-compose.yml</code>, despliega y verifica, todo automático.',
@@ -752,8 +904,8 @@ async function construirPagina() {
       ];
     } catch (e) {
       estado.className = 'estado ok';
-      estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
+      estado.textContent = 'Estructura real creada: ' + paginaId + ' (' + tipoPaginaSheet + ', ' + cajas.length + ' caja(s) real(es), ' +
+        totalFunciones + ' función(es) real(es)) -- colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
       pasos = [
         'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
         'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
@@ -813,29 +965,27 @@ function alCambiarLayoutPagina() {
 // Estado real de la pagina que se esta editando ahora mismo (se rellena al elegirla).
 let paginaEditarActual = null;
 
+// §8.143: "Editar pagina existente" ya no depende de ningun Proyecto elegido -- lista
+// TODAS las paginas reales de CUALQUIER nivel (Campaña/Proyecto/Producto/Proceso/Tarea)
+// encontradas en el arbol completo (listarPaginasRealesEnArbol), cada una etiquetada con
+// su tipo real y su migaPan (Campaña -> Proyecto -> ...) para distinguirlas.
 async function cargarPaginasEditables() {
   const select = document.getElementById('paginaEditar');
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const indice = obtenerProyectoReal(j, proyectoActualId);
-    const paginas = [];
-    for (const producto of (indice && indice.hijos) || []) {
-      const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
-      if (m) paginas.push({ id: producto.id, archivo: m[1], nombre: producto.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
-    }
+    const paginas = listarPaginasRealesEnArbol(j);
     select.innerHTML = '<option value="">-- elige una página real --</option>' +
-      paginas.map(p => '<option value="' + p.id + '">' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ')</option>').join('');
-    // §8.138: puente real desde Mapa/árbol de campañas -- ?editar=PRD-000X preselecciona
-    // esa página real y hace scroll directo a "Editar página existente", en vez de
-    // aterrizar en el formulario en blanco y tener que buscarla a mano en el desplegable.
+      paginas.map(p => '<option value="' + p.id + '">[' + p.tipo + '] ' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ') -- ' + escapeHtmlLocal(p.migaPan) + '</option>').join('');
+    // §8.138: puente real desde Mapa/árbol de campañas -- ?editar=ID preselecciona esa
+    // página real y hace scroll directo a "Editar página existente", en vez de aterrizar
+    // en el formulario en blanco y tener que buscarla a mano en el desplegable.
     const idDesdeUrl = new URLSearchParams(location.search).get('editar');
     if (idDesdeUrl && paginas.some(p => p.id === idDesdeUrl)) {
       select.value = idDesdeUrl;
       await cargarCajasEditar();
-      // §8.141: bug real encontrado -- scrollIntoView({behavior:'smooth'}) nunca completaba
-      // el scroll real (confirmado: scrollY se quedaba en 0 aunque el elemento estuviera a
-      // 1400px+ de distancia real). window.scrollTo con la posicion real calculada si
-      // funciona de forma fiable -- se sustituye, sin animacion, mejor fiable que bonito.
+      // §8.141/§8.142: scrollIntoView({behavior:'smooth'}) nunca completaba el scroll
+      // real en este layout -- window.scrollTo con la posicion real calculada si funciona
+      // de forma fiable.
       const elEditar = document.getElementById('bloqueEditarExistente');
       window.scrollTo(0, elEditar.getBoundingClientRect().top + window.scrollY - 16);
     }
@@ -843,48 +993,17 @@ async function cargarPaginasEditables() {
     select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
   }
 }
+cargarPaginasEditables();
 
-// §8.139: cambiar de Proyecto real recarga solo "Editar pagina existente" -- la cascada
-// real de "de donde cuelga" (§8.134) sigue siempre sobre Indice a proposito (es la
-// navegacion real del sitio, distinta de bajo que Proyecto se registra el Producto).
-function alElegirProyectoArquitecto(selectEl) {
-  proyectoActualId = selectEl.value || PROYECTO_INDICE_ID;
-  const opt = selectEl.options[selectEl.selectedIndex];
-  nombreProyectoActual = opt ? opt.dataset.nombre : 'Índice';
-  nombreCampanaActual = opt ? opt.dataset.campana : 'Panel Operativo';
-  cargarPaginasEditables();
-}
-
-// Resuelve bajo que Proyecto real trabajar antes de pintar nada mas -- si llegamos por
-// un deep-link real ?editar=PRD-000X (§8.138), el Proyecto real de partida es el que de
-// verdad aloja esa pagina (buscarProductoEnArbol en TODO el arbol), nunca el valor por
-// defecto, o la pagina no apareceria en la lista filtrada por Proyecto.
-async function inicializarProyectoYPaginas() {
-  const select = document.getElementById('proyectoElegido');
-  try {
-    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const idDesdeUrl = new URLSearchParams(location.search).get('editar');
-    if (idDesdeUrl) {
-      const hallazgo = buscarProductoEnArbol(j, idDesdeUrl);
-      if (hallazgo) proyectoActualId = hallazgo.proyecto.id;
-    }
-    const proyectos = listarProyectosReales(j);
-    select.innerHTML = proyectos.map(p =>
-      '<option value="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '" data-campana="' + escapeHtmlLocal(p.campanaNombre) + '"' + (p.id === proyectoActualId ? ' selected' : '') + '>' +
-      escapeHtmlLocal(p.campanaNombre) + ' -- ' + escapeHtmlLocal(p.nombre) + '</option>'
-    ).join('');
-    const actual = proyectos.find(p => p.id === proyectoActualId);
-    nombreProyectoActual = actual ? actual.nombre : 'Índice';
-    nombreCampanaActual = actual ? actual.campanaNombre : 'Panel Operativo';
-  } catch {
-    select.innerHTML = '<option value="' + PROYECTO_INDICE_ID + '" data-nombre="Índice" data-campana="Panel Operativo">Índice (no se pudo leer el resto de Proyectos reales)</option>';
-  }
-  await cargarPaginasEditables();
-}
-inicializarProyectoYPaginas();
-
+// §8.143: generalizado a cualquier tipo real -- antes asumia siempre Producto (ficha
+// fija a tipo=PRODUCTO, cajas buscadas solo entre los hijos directos del Proyecto
+// elegido). El tipo real de la pagina se deduce del prefijo real de su id
+// (tipoPorPrefijoId, mismo PREFIJO_ID que ya usa servidor_memoria.mjs), y el nodo se
+// busca en TODO el arbol (buscarNodoEnArbol), no solo bajo un Proyecto concreto. Las
+// cajas de una pagina-Tarea no tienen fila real por debajo (tipoCajaPara devuelve null)
+// -- se leen de /api/cajas_sin_respaldo en vez de los hijos reales del nodo.
 async function cargarCajasEditar() {
-  const productoId = document.getElementById('paginaEditar').value;
+  const paginaId = document.getElementById('paginaEditar').value;
   const lista = document.getElementById('listaCajasEditar');
   const boton = document.getElementById('btnReconstruir');
   document.getElementById('estadoEditar').textContent = '';
@@ -893,50 +1012,71 @@ async function cargarCajasEditar() {
   paginaEditarActual = null;
   lista.innerHTML = '';
   document.getElementById('enlaceMapaEditar').innerHTML = '';
-  if (!productoId) return;
+  if (!paginaId) return;
+
+  const tipo = tipoPorPrefijoId(paginaId);
+  if (!tipo) { lista.innerHTML = '<p class="estado error">No se reconoce el tipo real de "' + escapeHtmlLocal(paginaId) + '".</p>'; return; }
 
   lista.innerHTML = '<p class="hint">Leyendo cajas reales...</p>';
   try {
     const [ficha, jerarquia] = await Promise.all([
-      (await fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(productoId))).json(),
+      (await fetch(URL_MEMORIA + '/api/ficha?tipo=' + encodeURIComponent(tipo.toUpperCase()) + '&id=' + encodeURIComponent(paginaId))).json(),
       (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json(),
     ]);
     const campos = ficha.campos || {};
     const mArchivo = /\(([\w.-]+\.html)\)/.exec(campos.NOMBRE || '');
     const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
-    if (!mArchivo) throw new Error('el NOMBRE real de este Producto no trae "(archivo.html)" -- no se puede reconstruir con seguridad');
+    if (!mArchivo) throw new Error('el NOMBRE real de esta fila no trae "(archivo.html)" -- no se puede reconstruir con seguridad');
     const archivo = mArchivo[1];
     const nombrePagina = (campos.NOMBRE || '').replace(/\s*\([\w.-]+\.html\)\s*$/, '');
     const colgarDe = mColgarDe ? mColgarDe[1] : 'home.html';
 
-    const indice = obtenerProyectoReal(jerarquia, proyectoActualId);
-    const nodoProducto = (indice && indice.hijos || []).find(p => p.id === productoId);
-    const procesos = (nodoProducto && nodoProducto.hijos) || [];
-    if (!procesos.length) { lista.innerHTML = '<p class="hint">Este Producto real todavía no tiene ninguna caja (Proceso) real.</p>'; return; }
+    const hallazgo = buscarNodoEnArbol(jerarquia, paginaId);
+    const nodoPagina = hallazgo && hallazgo.nodo;
+    const nombreCampanaEditar = tipo === 'Campaña' ? nombrePagina : (hallazgo && hallazgo.campana ? hallazgo.campana.nombre : 'Panel Operativo');
+    const sinRespaldo = tipoCajaPara(tipo) === null;
 
-    const [fragmentos, layoutId] = await Promise.all([
-      Promise.all(procesos.map(p =>
-        fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
-          .then(r => r.ok ? r.json() : { piezas: [] })
-      )),
-      leerLayoutPaginaReal(productoId),
-    ]);
+    let cajas, layoutId;
+    if (sinRespaldo) {
+      // Pagina-Tarea: sin fila real por debajo, las cajas viven enteras en
+      // cajas_sin_respaldo.json (nombre incluido, nunca en un Proceso real).
+      const [r, layoutIdReal] = await Promise.all([
+        fetch(URL_MEMORIA + '/api/cajas_sin_respaldo?paginaId=' + encodeURIComponent(paginaId)).then(r => r.ok ? r.json() : { cajas: [] }),
+        leerLayoutPaginaReal(paginaId),
+      ]);
+      cajas = r.cajas || [];
+      layoutId = layoutIdReal;
+      if (!cajas.length) { lista.innerHTML = '<p class="hint">Esta página real todavía no tiene ninguna caja. Una página-Tarea no puede tener cajas respaldadas por una fila real (Tarea es la hoja del Sheet) -- añádelas desde "0. Punto de partida" antes de construir, aquí solo se edita su contenido.</p>'; return; }
+      lista.innerHTML = cajas.map((c, i) => {
+        const n = normalizarCaja(c);
+        return crearBloqueCajaHtml({
+          nombre: c.nombre, nombreEditable: false, permitirQuitar: false, indiceSintetico: i,
+          cabecera: n.cabecera, pie: n.pie, layoutInterno: n.layoutInterno,
+          columnaInicio: n.columnaInicio || 1, ancho: n.ancho || 1, piezas: n.piezas,
+        });
+      }).join('');
+    } else {
+      const hijosCaja = (nodoPagina && nodoPagina.hijos) || [];
+      if (!hijosCaja.length) { lista.innerHTML = '<p class="hint">Esta página real todavía no tiene ninguna caja (' + tipoCajaPara(tipo) + ') real.</p>'; return; }
+      const [fragmentos, layoutIdReal] = await Promise.all([
+        Promise.all(hijosCaja.map(p =>
+          fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
+            .then(r => r.ok ? r.json() : { piezas: [] })
+        )),
+        leerLayoutPaginaReal(paginaId),
+      ]);
+      layoutId = layoutIdReal;
+      lista.innerHTML = hijosCaja.map((p, i) => {
+        const c = normalizarCaja(fragmentos[i] || {});
+        return crearBloqueCajaHtml({
+          nombre: p.nombre, nombreEditable: false, permitirQuitar: false, procesoId: p.id,
+          cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
+          columnaInicio: c.columnaInicio || 1, ancho: c.ancho || 1, piezas: c.piezas,
+        });
+      }).join('');
+    }
 
     document.getElementById('layoutPagina').innerHTML = opcionesLayoutHtml(layoutId);
-
-    // §8.131: mismo bloque real de caja que "Crear página nueva" (crearBloqueCajaHtml)
-    // -- nombre fijo (nunca editable, es el Proceso real ya existente), sin "Quitar"
-    // (nunca se borran Procesos reales desde aqui). El fragmento guardado puede venir en
-    // la forma antigua plana (antes de §8.131) o la nueva con piezas -- normalizarCaja()
-    // decide, nunca se lee un campo suelto que puede no existir en la otra forma.
-    lista.innerHTML = procesos.map((p, i) => {
-      const c = normalizarCaja(fragmentos[i] || {});
-      return crearBloqueCajaHtml({
-        nombre: p.nombre, nombreEditable: false, permitirQuitar: false, procesoId: p.id,
-        cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
-        columnaInicio: c.columnaInicio || 1, ancho: c.ancho || 1, piezas: c.piezas,
-      });
-    }).join('');
 
     // Vista previa en vivo de las piezas "grafo" ya guardadas -- que se vea de verdad
     // que grafo real tiene cada una, no solo el desplegable con el valor seleccionado.
@@ -944,10 +1084,12 @@ async function cargarCajasEditar() {
       if (sel.value) alElegirGrafoPieza(sel);
     });
 
-    paginaEditarActual = { productoId, nombrePagina, archivo, colgarDe };
-    // §8.138: puente real de vuelta -- ver donde esta colocada esta pagina real dentro
-    // de las demas de Indice, sin tener que salir y buscarla a mano en Mapa.
-    document.getElementById('enlaceMapaEditar').innerHTML = 'Ver posición real de "' + escapeHtmlLocal(nombrePagina) + '" en <a href="mapa.html">Mapa</a>.';
+    paginaEditarActual = { paginaId, tipo, nombrePagina, archivo, colgarDe, nombreCampanaEditar, sinRespaldo };
+    // §8.138: puente real de vuelta a Mapa -- Mapa solo sabe representar paginas de tipo
+    // Producto (Proyecto->Producto), asi que el enlace solo aparece para ese tipo.
+    document.getElementById('enlaceMapaEditar').innerHTML = tipo === 'Producto'
+      ? 'Ver posición real de "' + escapeHtmlLocal(nombrePagina) + '" en <a href="mapa.html">Mapa</a>.'
+      : '';
     boton.disabled = false;
     alCambiarLayoutPagina();
   } catch (e) {
@@ -957,7 +1099,7 @@ async function cargarCajasEditar() {
 
 async function guardarYReconstruir() {
   if (!paginaEditarActual) return;
-  const { productoId, nombrePagina, archivo, colgarDe } = paginaEditarActual;
+  const { paginaId, nombrePagina, archivo, colgarDe, nombreCampanaEditar, sinRespaldo } = paginaEditarActual;
   const estado = document.getElementById('estadoEditar');
   const boton = document.getElementById('btnReconstruir');
   estado.className = 'estado';
@@ -967,7 +1109,7 @@ async function guardarYReconstruir() {
   const layoutId = document.getElementById('layoutPagina').value || LAYOUT_POR_DEFECTO;
   const cajasEl = [...document.querySelectorAll('#listaCajasEditar > .caja')];
   const cajas = cajasEl.map(el => ({
-    procesoId: el.dataset.procesoId,
+    procesoId: el.dataset.procesoId || null,
     nombre: el.dataset.nombre,
     cabecera: el.querySelector('.cabecera-caja').value.trim(),
     pie: el.querySelector('.pie-caja').value.trim(),
@@ -978,12 +1120,19 @@ async function guardarYReconstruir() {
   }));
 
   try {
-    await guardarLayoutPaginaReal(productoId, layoutId);
-    for (const c of cajas) {
-      await guardarFragmentoCajaReal(c.procesoId, {
-        cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
-        piezas: c.piezas, columnaInicio: c.columnaInicio, ancho: c.ancho,
+    await guardarLayoutPaginaReal(paginaId, layoutId);
+    if (sinRespaldo) {
+      await fetch(URL_MEMORIA + '/api/cajas_sin_respaldo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paginaId, cajas }),
       });
+    } else {
+      for (const c of cajas) {
+        await guardarFragmentoCajaReal(c.procesoId, {
+          cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
+          piezas: c.piezas, columnaInicio: c.columnaInicio, ancho: c.ancho,
+        });
+      }
     }
     const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
 
@@ -991,22 +1140,22 @@ async function guardarYReconstruir() {
     let markdownPendiente = null;
     try {
       const jReal = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-      const hallazgo = buscarProductoEnArbol(jReal, productoId);
-      const urlSheetReal = hallazgo ? hallazgo.producto.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + productoId);
+      const hallazgo = buscarNodoEnArbol(jReal, paginaId);
+      const urlSheetReal = hallazgo ? hallazgo.nodo.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + paginaId);
       const urlPaginaReal = 'http://100.107.171.88:9320/' + archivo;
       const markdownGenerado = generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal);
-      markdownPendiente = { campanaNombre: nombreCampanaActual, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
+      markdownPendiente = { campanaNombre: nombreCampanaEditar, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
     } catch (e) {
       // Nota gemela no actualizada esta vez -- se puede regenerar a mano despues.
     }
 
     // reconstruccion=true -- distingue de una pagina nueva en la cola, ver comentario
     // real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs.
-    await guardarPaginaPendienteReal(productoId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true, markdownPendiente);
+    await guardarPaginaPendienteReal(paginaId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true, markdownPendiente);
     estado.className = 'estado ok';
     estado.textContent = 'Contenido real guardado y página reconstruida en la cola (' + cajas.length + ' caja(s)), nota real de Obsidian incluida.';
     document.getElementById('pasosEditar').innerHTML =
-      (markdownPendiente ? '<li>Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivo) + '</code> -- actualiza la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaActual) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (ejecútalo <b>antes</b> del siguiente paso -- ese borra la entrada real de la cola al terminar).</li>' : '') +
+      (markdownPendiente ? '<li>Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivo) + '</code> -- actualiza la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaEditar) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (ejecútalo <b>antes</b> del siguiente paso -- ese borra la entrada real de la cola al terminar).</li>' : '') +
       '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivo) + '</code> -- reconstruye el fichero real y despliega, todo automático.</li>';
   } catch (e) {
     estado.className = 'estado error';

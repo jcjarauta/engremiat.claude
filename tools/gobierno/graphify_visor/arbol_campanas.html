@@ -160,11 +160,12 @@ async function intentarEncolarReconstruccionSiAplica(tipo, padreId) {
 // §8.129: "desactivar" real (nunca borrado fisico) -- ver comentario real junto a
 // establecerActivoReal() en servidor_memoria.mjs. Aviso explicito de hijos reales antes
 // de decidir, nunca cascada automatica -- cada nivel se desactiva a mano si se quiere.
-// §8.138: puente real hacia Arquitecto -- un nodo Producto real cuyo nombre sigue la
-// convencion "(archivo.html)" es una pagina real de Indice ya registrada (mismo regex
-// real que ya usan mapa.html/arquitecto.html para reconocerlas, nunca comprobado por
-// proyecto padre -- la convencion ya es suficiente, igual que en el resto del visor).
-const RE_PAGINA_REAL = /\(([\w.-]+\.html)\)/;
+// §8.138/§8.143: puente real hacia Arquitecto -- un nodo real de CUALQUIER tipo
+// (Campaña/Proyecto/Producto/Proceso/Tarea) cuyo nombre sigue la convencion
+// "(archivo.html)" es una pagina real ya registrada (RE_PAGINA_REAL real, compartido
+// desde generador_paginas.js -- antes fijo solo a Producto, generalizado tras pedirlo
+// explicito: "necesitamos poder editar tambien los html de las campañas proyectos y
+// tareas ahora solo salen los productos como opcion editable").
 
 function renderNodo(n) {
   const hijoTipo = SIGUIENTE_TIPO[n.tipo];
@@ -173,7 +174,7 @@ function renderNodo(n) {
   const botonActivo = activo
     ? `<button class="desactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', false, ${n.hijos.length})">🗑 Desactivar</button>`
     : `<button class="reactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', true, ${n.hijos.length})">♻ Reactivar</button>`;
-  const esPaginaReal = n.tipo === 'Producto' && RE_PAGINA_REAL.test(n.nombre || '');
+  const esPaginaReal = RE_PAGINA_REAL.test(n.nombre || '');
   const botonArquitecto = esPaginaReal
     ? `<a class="ficha" href="arquitecto?editar=${encodeURIComponent(n.id)}">✎ Editar en Arquitecto</a>`
     : '';
@@ -199,7 +200,7 @@ async function desactivarRegistroReal(tipo, id, nombre, activo, numHijos) {
   if (!activo && numHijos > 0) {
     mensaje += '\n\nTiene ' + numHijos + ' hijo(s) real(es) que NO se desactivan solos -- seguirán apareciendo salvo que los desactives también, uno a uno.';
   }
-  if (tipo === 'Producto' && /\(([\w.-]+\.html)\)/.test(nombre)) {
+  if (RE_PAGINA_REAL.test(nombre)) {
     mensaje += '\n\nEsto solo toca el Sheet -- si tiene una página HTML real desplegada, su fichero y su enlace en home.html NO se tocan, eso sigue siendo cosa tuya.';
   }
   if (!confirm(mensaje)) return;
