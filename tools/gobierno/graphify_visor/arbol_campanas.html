@@ -20,6 +20,12 @@
   .badge { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; background: var(--color-base-borde-suave); color: var(--color-base-texto-suave); }
   a.ficha, button.crear { font-size: 10.5px; color: #6ea8ff; text-decoration: none; background: none; border: 1px solid var(--color-base-borde); border-radius: 4px; padding: 2px 7px; cursor: pointer; }
   a.ficha:hover, button.crear:hover { border-color: #6ea8ff; }
+  button.desactivar { font-size: 10.5px; color: #e85c8a; text-decoration: none; background: none; border: 1px solid #e85c8a55; border-radius: 4px; padding: 2px 7px; cursor: pointer; }
+  button.desactivar:hover { border-color: #e85c8a; }
+  button.reactivar { font-size: 10.5px; color: #4fce6f; text-decoration: none; background: none; border: 1px solid #4fce6f55; border-radius: 4px; padding: 2px 7px; cursor: pointer; }
+  button.reactivar:hover { border-color: #4fce6f; }
+  .fila.inactiva { opacity: 0.5; }
+  #toggleInactivos { font-size: 12px; color: var(--color-base-texto-suave); margin-left: 4px; }
   .hijos { display: none; }
   .hijos.abierto { display: block; }
   .raiz-hijos { margin-left: 0; border-left: none; padding-left: 0; }
@@ -60,6 +66,7 @@
 <div id="kpisGlobales"></div>
 <button id="btnNuevaCampana" onclick="crear('Campaña', null)">+ Nueva Campaña</button>
 <button id="btnExpandirTodo" onclick="expandirColapsarTodo()">Expandir todo</button>
+<label id="toggleInactivos"><input type="checkbox" id="chkMostrarInactivos" onchange="cargarArbol()"> Mostrar inactivos</label>
 <div id="arbol" class="raiz-hijos"></div>
 
 <div id="capaFicha">
@@ -150,21 +157,52 @@ async function intentarEncolarReconstruccionSiAplica(tipo, padreId) {
   }
 }
 
+// §8.129: "desactivar" real (nunca borrado fisico) -- ver comentario real junto a
+// establecerActivoReal() en servidor_memoria.mjs. Aviso explicito de hijos reales antes
+// de decidir, nunca cascada automatica -- cada nivel se desactiva a mano si se quiere.
 function renderNodo(n) {
   const hijoTipo = SIGUIENTE_TIPO[n.tipo];
+  const activo = n.activo !== false;
+  const nombreJs = String(n.nombre).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  const botonActivo = activo
+    ? `<button class="desactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', false, ${n.hijos.length})">🗑 Desactivar</button>`
+    : `<button class="reactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', true, ${n.hijos.length})">♻ Reactivar</button>`;
   return `
     <div class="nodo">
-      <div class="fila" data-id="${n.id}">
+      <div class="fila${activo ? '' : ' inactiva'}" data-id="${n.id}">
         ${n.hijos.length || hijoTipo ? '<span class="chevron" onclick="toggle(this)">▸</span>' : '<span class="chevron"></span>'}
         <span class="tipo">${n.tipo}</span>
-        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}</span>
+        <span class="nombre" onclick="toggle(this.previousElementSibling.previousElementSibling)">${n.id} -- ${n.nombre}${activo ? '' : ' (inactivo)'}</span>
         <span class="badge ${n.retrasada ? 'alerta' : ''}">${n.estado || 'sin estado'}</span>
         ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
         <a class="ficha" onclick="abrirFicha('${n.tipo}', '${n.id}', '${n.urlSheet}')">Ficha</a>
         ${hijoTipo ? `<button class="crear" onclick="crear('${hijoTipo}', '${n.id}')">+ ${hijoTipo}</button>` : ''}
+        ${botonActivo}
       </div>
       <div class="hijos">${n.hijos.map(renderNodo).join('')}</div>
     </div>`;
+}
+
+async function desactivarRegistroReal(tipo, id, nombre, activo, numHijos) {
+  let mensaje = '¿' + (activo ? 'Reactivar' : 'Desactivar') + ' de verdad "' + nombre + '" (' + id + ')?';
+  if (!activo && numHijos > 0) {
+    mensaje += '\n\nTiene ' + numHijos + ' hijo(s) real(es) que NO se desactivan solos -- seguirán apareciendo salvo que los desactives también, uno a uno.';
+  }
+  if (tipo === 'Producto' && /\(([\w.-]+\.html)\)/.test(nombre)) {
+    mensaje += '\n\nEsto solo toca el Sheet -- si tiene una página HTML real desplegada, su fichero y su enlace en home.html NO se tocan, eso sigue siendo cosa tuya.';
+  }
+  if (!confirm(mensaje)) return;
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/activar_registro', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, id, activo }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    await cargarArbol();
+  } catch (e) {
+    alert('No se pudo ' + (activo ? 'reactivar' : 'desactivar') + ' de verdad: ' + e.message);
+  }
 }
 
 let todoExpandido = false;
@@ -216,7 +254,12 @@ async function abrirFicha(tipo, id, urlSheet) {
   cont.innerHTML = '<p class="hint">Leyendo la fila real...</p>';
   capa.classList.add('abierta');
   try {
-    const tipoApi = tipo === 'Campaña' ? 'CAMPANA' : tipo.toUpperCase();
+    // §8.128: bug real encontrado -- 'CAMPANA' (sin tilde a mano) nunca coincidia con la
+    // clave real 'CAMPAÑA' (con Ñ) que ya usan HOJA_ID/PREFIJO_ID desde el fix de §8.90.
+    // 'Campaña'.toUpperCase() ya da 'CAMPAÑA' de forma nativa -- nunca hacia falta el caso
+    // especial, y de hecho lo rompia. "Ficha" y "+Nueva Campaña" llevaban rotos desde que
+    // se anadio este caso especial.
+    const tipoApi = tipo.toUpperCase();
     const r = await fetch(URL_MEMORIA + `/api/ficha?tipo=${tipoApi}&id=${encodeURIComponent(id)}`, { signal: AbortSignal.timeout(8000) });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'respuesta no ok');
@@ -269,8 +312,9 @@ function aplicarDeepLinkReal() {
 async function cargarArbol() {
   const estado = document.getElementById('estado');
   const cont = document.getElementById('arbol');
+  const incluirInactivos = document.getElementById('chkMostrarInactivos').checked;
   try {
-    const r = await fetch(URL_MEMORIA + '/api/jerarquia_campanas', { signal: AbortSignal.timeout(8000) });
+    const r = await fetch(URL_MEMORIA + '/api/jerarquia_campanas' + (incluirInactivos ? '?incluirInactivos=1' : ''), { signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error('respuesta no ok');
     const { arbol, leidoEn } = await r.json();
     arbolReal = arbol;
@@ -314,7 +358,7 @@ async function crear(tipo, padreId) {
   try {
     const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: tipo === 'Campaña' ? 'CAMPANA' : tipo.toUpperCase(), campos: datos, padreId }),
+      body: JSON.stringify({ tipo: tipo.toUpperCase(), campos: datos, padreId }),
       signal: AbortSignal.timeout(15000),
     });
     const j = await r.json();

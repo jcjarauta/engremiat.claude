@@ -178,26 +178,36 @@ let cacheCampanas = { en: 0, datos: null };
 let cacheProyectos2 = { en: 0, datos: null };
 let cacheProductos = { en: 0, datos: null };
 let cacheJerarquia = { en: 0, datos: null };
+let cacheJerarquiaConInactivos = { en: 0, datos: null };
 
-async function leerJerarquiaCampanas() {
-  if (cacheJerarquia.datos && Date.now() - cacheJerarquia.en < 20000) return cacheJerarquia.datos;
+// §8.129: incluirInactivos=true trae tambien las filas reales marcadas ACTIVO='NO' (para
+// el interruptor real "Mostrar inactivos" de arbol_campanas.html) -- por defecto, las
+// filas reales desactivadas desaparecen del arbol (y de mapa.html, que usa esta misma
+// funcion). Rangos ampliados para llegar de verdad a la columna ACTIVO real de cada
+// tabla (antes se cortaban antes de esa columna en 4 de las 5 tablas).
+async function leerJerarquiaCampanas(incluirInactivos) {
+  const cacheKey = incluirInactivos ? cacheJerarquiaConInactivos : cacheJerarquia;
+  if (cacheKey.datos && Date.now() - cacheKey.en < 20000) return cacheKey.datos;
   const [campanas, proyectos, pp, productos, procesos, tareas] = await Promise.all([
-    leerTablaSheetCacheada('01_CAMPANAS', 'A1:L1000', cacheCampanas),
-    leerTablaSheetCacheada('02_PROYECTOS', 'A1:N1000', cacheProyectos2),
+    leerTablaSheetCacheada('01_CAMPANAS', 'A1:T1000', cacheCampanas),
+    leerTablaSheetCacheada('02_PROYECTOS', 'A1:Q1000', cacheProyectos2),
     leerTablaSheetCacheada('04_PROYECTO_PRODUCTO', 'A1:C1000', cacheProyectoProducto),
-    leerTablaSheetCacheada('03_PRODUCTOS', 'A1:M1000', cacheProductos),
-    leerTablaSheetCacheada('05_PROCESOS', 'A1:S1000', cacheProcesos),
-    leerTablaSheetCacheada('06_TAREAS', 'A1:N1000', cacheTareas),
+    leerTablaSheetCacheada('03_PRODUCTOS', 'A1:T1000', cacheProductos),
+    leerTablaSheetCacheada('05_PROCESOS', 'A1:V1000', cacheProcesos),
+    leerTablaSheetCacheada('06_TAREAS', 'A1:S1000', cacheTareas),
   ]);
   const col = (tabla, nombre) => tabla.cab.indexOf(nombre);
   const conFila = (tabla) => tabla.filas.map((f, i) => ({ f, filaReal: i + 2 }));
+  // Real: en blanco o "SÍ" cuenta como activa (nunca se inventa un "NO" por un valor
+  // vacio en filas reales antiguas de antes de que existiera esta columna).
+  const esActivaReal = (valor) => valor !== 'NO';
 
-  const iCaId = col(campanas, 'ID'), iCaNombre = col(campanas, 'NOMBRE'), iCaEstado = col(campanas, 'ESTADO'), iCaAvance = col(campanas, 'PORCENTAJE_AVANCE');
-  const iPrId = col(proyectos, 'ID'), iPrCampana = col(proyectos, 'CAMPANA_ID'), iPrNombre = col(proyectos, 'NOMBRE'), iPrEstado = col(proyectos, 'ESTADO'), iPrAvance = col(proyectos, 'PORCENTAJE_AVANCE');
+  const iCaId = col(campanas, 'ID'), iCaNombre = col(campanas, 'NOMBRE'), iCaEstado = col(campanas, 'ESTADO'), iCaAvance = col(campanas, 'PORCENTAJE_AVANCE'), iCaActivo = col(campanas, 'ACTIVO');
+  const iPrId = col(proyectos, 'ID'), iPrCampana = col(proyectos, 'CAMPANA_ID'), iPrNombre = col(proyectos, 'NOMBRE'), iPrEstado = col(proyectos, 'ESTADO'), iPrAvance = col(proyectos, 'PORCENTAJE_AVANCE'), iPrActivo = col(proyectos, 'ACTIVO');
   const iPPProyecto = col(pp, 'PROYECTO_ID'), iPPProducto = col(pp, 'PRODUCTO_ID');
-  const iPdId = col(productos, 'ID'), iPdNombre = col(productos, 'NOMBRE'), iPdEstado = col(productos, 'ESTADO');
-  const iPcId = col(procesos, 'ID'), iPcProducto = col(procesos, 'PRODUCTO_ID'), iPcNombre = col(procesos, 'NOMBRE'), iPcEstado = col(procesos, 'ESTADO'), iPcAvance = col(procesos, 'PORCENTAJE_AVANCE');
-  const iTrProceso = col(tareas, 'PROCESO_ID'), iTrId = col(tareas, 'ID'), iTrNombre = col(tareas, 'NOMBRE'), iTrEstado = col(tareas, 'ESTADO'), iTrAvance = col(tareas, 'PORCENTAJE_AVANCE'), iTrFechaFinPlan = col(tareas, 'FECHA_FIN_PLAN');
+  const iPdId = col(productos, 'ID'), iPdNombre = col(productos, 'NOMBRE'), iPdEstado = col(productos, 'ESTADO'), iPdActivo = col(productos, 'ACTIVO');
+  const iPcId = col(procesos, 'ID'), iPcProducto = col(procesos, 'PRODUCTO_ID'), iPcNombre = col(procesos, 'NOMBRE'), iPcEstado = col(procesos, 'ESTADO'), iPcAvance = col(procesos, 'PORCENTAJE_AVANCE'), iPcActivo = col(procesos, 'ACTIVO');
+  const iTrProceso = col(tareas, 'PROCESO_ID'), iTrId = col(tareas, 'ID'), iTrNombre = col(tareas, 'NOMBRE'), iTrEstado = col(tareas, 'ESTADO'), iTrAvance = col(tareas, 'PORCENTAJE_AVANCE'), iTrFechaFinPlan = col(tareas, 'FECHA_FIN_PLAN'), iTrActivo = col(tareas, 'ACTIVO');
 
   // §8.81: "tarea retrasada" real -- mismo criterio que listarTareasRetrasadas()
   // (DashboardService.js): ESTADO no cerrado + FECHA_FIN_PLAN real vencida.
@@ -210,29 +220,29 @@ async function leerJerarquiaCampanas() {
     return !isNaN(f) && f < hoy;
   }
 
-  const tareasDe = (procesoId) => conFila(tareas).filter(({ f }) => f[iTrProceso] === procesoId)
+  const tareasDe = (procesoId) => conFila(tareas).filter(({ f }) => f[iTrProceso] === procesoId && (incluirInactivos || esActivaReal(f[iTrActivo])))
     .map(({ f, filaReal }) => ({
       tipo: 'Tarea', id: f[iTrId], nombre: f[iTrNombre] || '', estado: f[iTrEstado] || '', porcentajeAvance: f[iTrAvance] || '',
       fechaFinPlan: f[iTrFechaFinPlan] || '', retrasada: esTareaRetrasadaReal(f[iTrEstado], f[iTrFechaFinPlan]),
-      urlSheet: urlFilaSheet('06_TAREAS', filaReal), hijos: [],
+      activo: esActivaReal(f[iTrActivo]), urlSheet: urlFilaSheet('06_TAREAS', filaReal), hijos: [],
     }));
-  const procesosDe = (productoId) => conFila(procesos).filter(({ f }) => f[iPcProducto] === productoId)
+  const procesosDe = (productoId) => conFila(procesos).filter(({ f }) => f[iPcProducto] === productoId && (incluirInactivos || esActivaReal(f[iPcActivo])))
     .map(({ f, filaReal }) => ({
       tipo: 'Proceso', id: f[iPcId], nombre: f[iPcNombre] || '', estado: f[iPcEstado] || '', porcentajeAvance: f[iPcAvance] || '',
-      urlSheet: urlFilaSheet('05_PROCESOS', filaReal), hijos: tareasDe(f[iPcId]),
+      activo: esActivaReal(f[iPcActivo]), urlSheet: urlFilaSheet('05_PROCESOS', filaReal), hijos: tareasDe(f[iPcId]),
     }));
   const productosDeProyecto = (proyectoId) => {
     const ids = pp.filas.filter((f) => f[iPPProyecto] === proyectoId).map((f) => f[iPPProducto]);
-    return conFila(productos).filter(({ f }) => ids.includes(f[iPdId]))
+    return conFila(productos).filter(({ f }) => ids.includes(f[iPdId]) && (incluirInactivos || esActivaReal(f[iPdActivo])))
       .map(({ f, filaReal }) => ({
         tipo: 'Producto', id: f[iPdId], nombre: f[iPdNombre] || '', estado: f[iPdEstado] || '', porcentajeAvance: '',
-        urlSheet: urlFilaSheet('03_PRODUCTOS', filaReal), hijos: procesosDe(f[iPdId]),
+        activo: esActivaReal(f[iPdActivo]), urlSheet: urlFilaSheet('03_PRODUCTOS', filaReal), hijos: procesosDe(f[iPdId]),
       }));
   };
-  const proyectosDe = (campanaId) => conFila(proyectos).filter(({ f }) => f[iPrCampana] === campanaId)
+  const proyectosDe = (campanaId) => conFila(proyectos).filter(({ f }) => f[iPrCampana] === campanaId && (incluirInactivos || esActivaReal(f[iPrActivo])))
     .map(({ f, filaReal }) => ({
       tipo: 'Proyecto', id: f[iPrId], nombre: f[iPrNombre] || '', estado: f[iPrEstado] || '', porcentajeAvance: f[iPrAvance] || '',
-      urlSheet: urlFilaSheet('02_PROYECTOS', filaReal), hijos: productosDeProyecto(f[iPrId]),
+      activo: esActivaReal(f[iPrActivo]), urlSheet: urlFilaSheet('02_PROYECTOS', filaReal), hijos: productosDeProyecto(f[iPrId]),
     }));
 
   // §8.81: contadores reales por campaña -- mismo dato que "contadores" real de
@@ -256,14 +266,17 @@ async function leerJerarquiaCampanas() {
     return c;
   }
 
-  const arbol = conFila(campanas).map(({ f, filaReal }) => {
-    const hijos = proyectosDe(f[iCaId]);
-    return {
-      tipo: 'Campaña', id: f[iCaId], nombre: f[iCaNombre] || '', estado: f[iCaEstado] || '', porcentajeAvance: f[iCaAvance] || '',
-      contadores: contarSubarbol(hijos), urlSheet: urlFilaSheet('01_CAMPANAS', filaReal), hijos,
-    };
-  });
-  cacheJerarquia = { en: Date.now(), datos: arbol };
+  const arbol = conFila(campanas)
+    .filter(({ f }) => incluirInactivos || esActivaReal(f[iCaActivo]))
+    .map(({ f, filaReal }) => {
+      const hijos = proyectosDe(f[iCaId]);
+      return {
+        tipo: 'Campaña', id: f[iCaId], nombre: f[iCaNombre] || '', estado: f[iCaEstado] || '', porcentajeAvance: f[iCaAvance] || '',
+        activo: esActivaReal(f[iCaActivo]), contadores: contarSubarbol(hijos), urlSheet: urlFilaSheet('01_CAMPANAS', filaReal), hijos,
+      };
+    });
+  if (incluirInactivos) cacheJerarquiaConInactivos = { en: Date.now(), datos: arbol };
+  else cacheJerarquia = { en: Date.now(), datos: arbol };
   return arbol;
 }
 
@@ -350,7 +363,69 @@ async function crearRegistroCrudo(tipo, campos, padreId) {
   }
 
   cacheJerarquia = { en: 0, datos: null }; // invalida cache -- el arbol acaba de cambiar de verdad
+  cacheJerarquiaConInactivos = { en: 0, datos: null };
   return { id };
+}
+
+function letraColumnaReal(indiceCero) {
+  let n = indiceCero + 1, letra = '';
+  while (n > 0) {
+    const resto = (n - 1) % 26;
+    letra = String.fromCharCode(65 + resto) + letra;
+    n = Math.floor((n - 1) / 26);
+  }
+  return letra;
+}
+
+// §8.129: "desactivar" real -- nunca un borrado fisico de la fila (irreversible, y todo
+// el resto del codigo da por hecho que una fila real nunca desaparece). Escribe
+// ACTIVO='NO'/'SÍ' en la fila real de cualquiera de los 5 tipos reales -- las 5 tablas
+// ya tienen esta columna real (Campaña/Producto la tenian desde siempre; Proyecto/
+// Proceso/Tarea se les anadio a proposito para esto, con 'SÍ' de partida en todas las
+// filas reales ya existentes). Nunca cascada real a los hijos -- eso lo decide el
+// operador nivel a nivel, con el aviso real de cuantos hijos tiene antes de decidir.
+async function establecerActivoReal(tipo, id, activo) {
+  const clave = tipo.toUpperCase();
+  const hoja = HOJA_ID[clave];
+  if (!hoja) throw new Error('tipo desconocido: ' + tipo);
+  const token = await obtenerAccessTokenSheetsEscritura();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A1:AZ5000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (r.status >= 400) throw new Error('Sheets respondio ' + r.status + ' al leer ' + hoja + ': ' + await r.text());
+  const filas = (await r.json()).values || [];
+  const cab = filas[0] || [];
+  const iId = cab.indexOf('ID');
+  const iActivo = cab.indexOf('ACTIVO');
+  const iModPor = cab.indexOf('MODIFICADO_POR');
+  const iFechaMod = cab.indexOf('FECHA_MODIFICACION');
+  if (iId === -1 || iActivo === -1) throw new Error(hoja + ' no tiene columnas ID/ACTIVO reales');
+
+  let filaReal = -1;
+  for (let i = 1; i < filas.length; i++) {
+    if ((filas[i][iId] || '') === id) { filaReal = i + 1; break; }
+  }
+  if (filaReal === -1) throw new Error('no se encontro la fila real de ' + id + ' en ' + hoja);
+
+  const data = [{ range: hoja + '!' + letraColumnaReal(iActivo) + filaReal, values: [[activo ? 'SÍ' : 'NO']] }];
+  if (iModPor !== -1) data.push({ range: hoja + '!' + letraColumnaReal(iModPor) + filaReal, values: [['Panel Operativo (arbol_campanas.html)']] });
+  if (iFechaMod !== -1) data.push({ range: hoja + '!' + letraColumnaReal(iFechaMod) + filaReal, values: [[new Date().toISOString()]] });
+
+  const rw = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values:batchUpdate',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valueInputOption: 'RAW', data }) }
+  );
+  if (rw.status >= 400) throw new Error('Sheets respondio ' + rw.status + ' al escribir ACTIVO real en ' + hoja + ': ' + await rw.text());
+
+  cacheJerarquia = { en: 0, datos: null };
+  cacheJerarquiaConInactivos = { en: 0, datos: null };
+  if (hoja === '01_CAMPANAS') cacheCampanas = { en: 0, datos: null };
+  if (hoja === '02_PROYECTOS') cacheProyectos2 = { en: 0, datos: null };
+  if (hoja === '03_PRODUCTOS') cacheProductos = { en: 0, datos: null };
+  if (hoja === '05_PROCESOS') cacheProcesos = { en: 0, datos: null };
+  if (hoja === '06_TAREAS') cacheTareas = { en: 0, datos: null };
 }
 
 // §8.120: unico endpoint real que reasigna PRODUCTO_ID/ORDEN_SECUENCIA de un Proceso YA
@@ -392,6 +467,7 @@ async function reordenarColumnaReal(productoId, ordenIds) {
   );
   if (rw.status >= 400) throw new Error('Sheets respondio ' + rw.status + ' al reordenar 05_PROCESOS: ' + await rw.text());
   cacheJerarquia = { en: 0, datos: null };
+  cacheJerarquiaConInactivos = { en: 0, datos: null };
   cacheProcesos = { en: 0, datos: null };
 }
 
@@ -917,12 +993,17 @@ const servidor = createServer(async (req, res) => {
       res.writeHead(200); res.end(JSON.stringify({ incidencias, leidoEn: new Date(cacheIncidencias.en).toISOString() })); return;
     }
 
-    if (req.method === 'GET' && req.url === '/api/jerarquia_campanas') {
+    if (req.method === 'GET' && req.url.startsWith('/api/jerarquia_campanas')) {
       if (!SHEETS_CREDENCIALES_PATH) {
         res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para leer el Sheet' })); return;
       }
-      const arbol = await leerJerarquiaCampanas();
-      res.writeHead(200); res.end(JSON.stringify({ arbol, leidoEn: new Date(cacheJerarquia.en).toISOString() })); return;
+      // §8.129: ?incluirInactivos=1 trae tambien las filas reales desactivadas -- solo lo
+      // usa el interruptor real "Mostrar inactivos" de arbol_campanas.html, nunca por
+      // defecto (mapa.html y el resto de consumidores nunca ven una pagina desactivada).
+      const incluirInactivos = new URL(req.url, 'http://x').searchParams.get('incluirInactivos') === '1';
+      const arbol = await leerJerarquiaCampanas(incluirInactivos);
+      const cacheUsada = incluirInactivos ? cacheJerarquiaConInactivos : cacheJerarquia;
+      res.writeHead(200); res.end(JSON.stringify({ arbol, leidoEn: new Date(cacheUsada.en).toISOString() })); return;
     }
 
     if (req.method === 'GET' && req.url.startsWith('/api/ficha')) {
@@ -958,6 +1039,22 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify(resultado)); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo crear el registro real: ' + e.message })); return;
+      }
+    }
+
+    if (req.method === 'POST' && req.url === '/api/activar_registro') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para escribir en el Sheet' })); return;
+      }
+      const { tipo, id, activo } = await leerCuerpo(req);
+      if (!tipo || !id || typeof activo !== 'boolean') {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan tipo/id/activo (booleano real)' })); return;
+      }
+      try {
+        await establecerActivoReal(tipo, id, activo);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo ' + (activo ? 'reactivar' : 'desactivar') + ' de verdad: ' + e.message })); return;
       }
     }
 
