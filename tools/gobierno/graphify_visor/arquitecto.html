@@ -479,8 +479,10 @@ async function cargarPlantillas() {
     '</optgroup>';
   document.getElementById('plantillaElegida').innerHTML = '<option value="">-- Empezar desde cero --</option>' + optgroupBase + optgroupProyecto;
 }
-cargarPlantillas();
-renderCascadaPadreSheet(); // pinta la cascada real de padre desde el arranque (tipo por defecto: Producto)
+// §8.147: cargarPlantillas()/renderCascadaPadreSheet() ya no se llaman aqui sueltas --
+// se disparan juntas con cargarPaginasEditables() dentro de inicializarArquitecto()
+// (mas abajo), para poder esperar a que las 3 terminen antes de aplicar el deep-link
+// real ?editar= y hacer scroll.
 
 // Aplicar una plantilla real SUSTITUYE las cajas ya escritas -- avisa antes si ya hay
 // contenido real tecleado, nunca lo borra en silencio.
@@ -1082,24 +1084,37 @@ async function cargarPaginasEditables() {
     const paginas = listarPaginasRealesEnArbol(j);
     select.innerHTML = '<option value="">-- elige una página real --</option>' +
       paginas.map(p => '<option value="' + p.id + '">[' + p.tipo + '] ' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ') -- ' + escapeHtmlLocal(p.migaPan) + '</option>').join('');
-    // §8.138: puente real desde Mapa/árbol de campañas -- ?editar=ID preselecciona esa
-    // página real y hace scroll directo a "Editar página existente", en vez de aterrizar
-    // en el formulario en blanco y tener que buscarla a mano en el desplegable.
-    const idDesdeUrl = new URLSearchParams(location.search).get('editar');
-    if (idDesdeUrl && paginas.some(p => p.id === idDesdeUrl)) {
-      select.value = idDesdeUrl;
-      await cargarCajasEditar();
-      // §8.141/§8.142: scrollIntoView({behavior:'smooth'}) nunca completaba el scroll
-      // real en este layout -- window.scrollTo con la posicion real calculada si funciona
-      // de forma fiable.
-      const elEditar = document.getElementById('bloqueEditarExistente');
-      window.scrollTo(0, elEditar.getBoundingClientRect().top + window.scrollY - 16);
-    }
   } catch {
     select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
   }
 }
-cargarPaginasEditables();
+
+// §8.147: bug real encontrado -- el deep-link real ?editar=ID (§8.138) se aplicaba y
+// hacia scroll DENTRO de cargarPaginasEditables(), sin esperar a que las otras llamadas
+// reales de arranque (cargarPlantillas(), renderCascadaPadreSheet() -- esta ultima nueva
+// desde §8.143/§8.145, con su propio fetch real y su propio contenido real que anade
+// ENCIMA del bloque de edicion) terminasen de verdad. Si esas tardaban mas en red real
+// que cargarPaginasEditables(), el scroll se calculaba ANTES de que ese contenido de
+// arriba creciera -- la pagina terminaba desplazada, aterrizando en una zona vacia real
+// (sintoma identico al de §8.141, pero causado esta vez por una carrera real entre
+// llamadas de arranque, confirmado reproduciendo la carrera con latencias de red
+// simuladas). Corregido: el deep-link (seleccionar + scroll) se aplica DESPUES de que
+// las 3 llamadas reales de arranque hayan terminado del todo (Promise.all), nunca antes.
+async function inicializarArquitecto() {
+  await Promise.all([cargarPlantillas(), renderCascadaPadreSheet(), cargarPaginasEditables()]);
+  const idDesdeUrl = new URLSearchParams(location.search).get('editar');
+  const select = document.getElementById('paginaEditar');
+  if (idDesdeUrl && [...select.options].some(o => o.value === idDesdeUrl)) {
+    select.value = idDesdeUrl;
+    await cargarCajasEditar();
+    // §8.141/§8.142: scrollIntoView({behavior:'smooth'}) nunca completaba el scroll real
+    // en este layout -- window.scrollTo con la posicion real calculada si funciona de
+    // forma fiable, y ahora se calcula ya con el layout real de arranque estable.
+    const elEditar = document.getElementById('bloqueEditarExistente');
+    window.scrollTo(0, elEditar.getBoundingClientRect().top + window.scrollY - 16);
+  }
+}
+inicializarArquitecto();
 
 // §8.143: generalizado a cualquier tipo real -- antes asumia siempre Producto (ficha
 // fija a tipo=PRODUCTO, cajas buscadas solo entre los hijos directos del Proyecto

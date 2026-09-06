@@ -1861,6 +1861,18 @@ Pedido explícito: *"crea una nueva campaña completa y compleja con una propues
 
 **Verificado en real**: árbol completo confirmado vía `/api/jerarquia_campanas` (34 filas reales nuevas: 1 Campaña, 4 Proyectos, 5 Productos, 10 Procesos, 27 Tareas); las 5 páginas HTML reales verificadas visualmente en el navegador (screenshot) -- tarjetas/tabla/badges/formulario en el catálogo, checklist/métrica/código en el horno, checklist/texto en defectos, lista/texto/imagen/botones en comunidad, y el grafo real `jerarquia` renderizando en vivo en la página de Campaña; bóveda real `bovedas.claude/Demo Arquitecto/` confirmada con sus 5 notas gemelas + `00_Indice.md`.
 
+### 8.147 Bug real corregido: el deep-link `?editar=` seguía aterrizando vacío -- carrera real entre las llamadas de arranque, no el scroll
+
+Reportado tras usar la campaña "Demo Arquitecto" de §8.146 para probar Arquitecto: *"aun abre arquitecto vacio cuando damos clic en editar desde arbol campanas, revisalo"*.
+
+**Diagnóstico real, sin asumir que fuera el mismo bug de §8.141/§8.142**: probados los 5 tipos reales de página (Producto, Proyecto, Producto, Proceso, Tarea) con `fetch` inyectado y datos reales exactos -- `cargarPaginasEditables()`/`cargarCajasEditar()` seleccionaban y cargaban el contenido real correctamente en los 5 casos, sin excepción. El código de selección funcionaba -- el síntoma tenía que venir de otro sitio.
+
+**Causa real encontrada**: reproducida la carrera real entre las 3 llamadas de arranque (`cargarPlantillas()`, `renderCascadaPadreSheet()` -- nueva desde §8.143/§8.145, con su propio `fetch` real y su propio contenido real que crece ENCIMA del bloque de edición -- y `cargarPaginasEditables()`), disparadas todas sin esperarse entre sí (mismo patrón real de siempre). Con latencias de red simuladas (100ms vs 900ms) para forzar que `renderCascadaPadreSheet()` tardase más: `cargarPaginasEditables()` calculaba y ejecutaba el scroll real ANTES de que el bloque nuevo "0.5 ¿Dónde vive esta página en el Sheet?" (con su selector + su contexto de solo lectura de §8.145) terminase de crecer por encima -- el scroll aterrizaba en una posición que, para cuando el layout real se asentaba del todo, ya no correspondía al bloque de edición. Confirmado con la prueba real: `elTop` quedaba a 1588px del viewport (vacío real, "0. Punto de partida") en vez de los ~16px reales esperados.
+
+**Corregido**: separado `cargarPaginasEditables()` (solo puebla el desplegable real) del deep-link real (`inicializarArquitecto()`, nueva) -- las 3 llamadas de arranque ahora se esperan juntas con `Promise.all` antes de aplicar `?editar=` y hacer scroll, así el layout real de arranque ya está estable cuando se calcula la posición real, sin importar cuál de las 3 tarde más en red real.
+
+**Verificado en real**: reproducida la carrera exacta (100ms/900ms) contra el fichero ya corregido y desplegado -- `elTop` queda ahora en ~16px reales y `scrollY` se mueve correctamente, confirmado también visualmente por captura (sección "Editar contenido real de una página existente" con "Índice (grafos.html)" ya seleccionado, su contexto real y su caja "Constructor de grafos" cargada, todo visible sin más scroll manual).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
