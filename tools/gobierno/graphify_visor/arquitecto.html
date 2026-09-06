@@ -11,7 +11,15 @@
 <script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
 <style>
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
-  body { padding: 24px 28px 60px; max-width: 820px; }
+  body { padding: 24px 28px 60px; max-width: 1400px; }
+  /* §8.133: boceto en vivo -- configurador a la izquierda, vista previa real sticky a la
+     derecha. Bajo 1100px de ancho se apila (misma idea que "responsive" del resto del
+     visor, nunca scroll horizontal real). */
+  .layout-arquitecto { display: grid; grid-template-columns: minmax(420px, 620px) 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 1100px) { .layout-arquitecto { grid-template-columns: 1fr; } }
+  .panel-derecho { position: sticky; top: 16px; }
+  .panel-derecho h2 { margin-top: 0; }
+  #vistaPreviaFrame { width: 100%; height: calc(100vh - 140px); min-height: 400px; border: 1px solid var(--color-base-borde); border-radius: 10px; background: var(--color-base-fondo); }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
   h1 { font-size: 18px; margin: 6px 0 4px; }
   p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
@@ -58,7 +66,10 @@
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
 <p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
 
-<div class="bloque">
+<div class="layout-arquitecto">
+<div class="panel-izquierdo">
+
+<div class="bloque" id="bloqueCrearNueva">
   <h2>1. Nombre real de la página</h2>
   <div class="fila">
     <div style="flex:1;">
@@ -105,7 +116,7 @@
   <ol class="pasos" id="pasosReales"></ol>
 </div>
 
-<div class="bloque">
+<div class="bloque" id="bloqueEditarExistente">
   <h2>Editar contenido real de una página existente</h2>
   <p class="hint">Elige una página real ya creada con Arquitecto. El nombre y el tipo de cada caja son reales (vienen del Sheet) -- lo único que escribes aquí es el contenido real de cada una. El <b>layout</b> es de una lista real fija (nunca CSS libre); cada caja solo dice en qué columna empieza y cuántas ocupa. Al reconstruir, se regenera la página entera a partir de sus cajas reales y se aplica con el mismo <code>aplicar_pagina_arquitecto.mjs</code>.</p>
   <div class="fila">
@@ -124,6 +135,14 @@
   </div>
   <div id="estadoEditar" class="estado"></div>
   <ol class="pasos" id="pasosEditar"></ol>
+</div>
+
+</div>
+<div class="panel-derecho">
+  <h2>Vista previa en vivo (boceto, aún no guardado)</h2>
+  <p class="hint">Se actualiza sola mientras editas -- es el mismo <code>generarHtmlReal()</code> real que construye la página de verdad, así que lo que ves aquí (incluidos los grafos embebidos) es exactamente lo que saldría. Nada de esto toca el Sheet ni la cola de despliegue hasta que pulses "Construir" o "Guardar y reconstruir".</p>
+  <iframe id="vistaPreviaFrame"></iframe>
+</div>
 </div>
 
 <script src="generador_paginas.js"></script>
@@ -655,6 +674,73 @@ async function guardarYReconstruir() {
     boton.disabled = false;
   }
 }
+
+// §8.133: boceto en vivo -- confirmado explícito por el operador ("me imagino a la
+// izquierda tener el configurador e ir viendo cómo se construye en la parte derecha, así
+// tendríamos un boceto antes de dar por buena la nueva HTML"). Reutiliza tal cual
+// generarHtmlReal() -- función pura, sin fetch/DOM propios -- así que lo que se ve en el
+// iframe es exactamente el HTML real que se construiría, grafos embebidos incluidos,
+// nunca una maqueta aparte que pueda desincronizarse. <base> real inyectada solo en la
+// vista previa (nunca en el HTML que de verdad se guarda/despliega) para que
+// tokens.css/grafo_*.json/vis-network resuelvan igual que en la página ya servida.
+function generarPreviewHtml(nombrePagina, cajas, colgarDe, layoutId) {
+  const html = generarHtmlReal(nombrePagina || 'Vista previa', cajas.length ? cajas : [{ nombre: '(añade una caja real)', piezas: [{ tipo: 'lista', contenido: [] }] }], colgarDe || 'home.html', layoutId);
+  const base = location.href.replace(/[^/]*$/, '');
+  return html.replace('<head>', '<head><base href="' + base + '">');
+}
+
+function actualizarVistaPrevia() {
+  try {
+    const nombrePagina = document.getElementById('nombrePagina').value.trim();
+    const colgarDe = document.getElementById('colgarDe').value || 'home.html';
+    const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
+    const cajas = [...document.querySelectorAll('#listaCajas > .caja')].map(el => ({
+      nombre: el.querySelector('.nombre-caja').value.trim() || '(sin nombre todavía)',
+      cabecera: el.querySelector('.cabecera-caja').value.trim(),
+      pie: el.querySelector('.pie-caja').value.trim(),
+      layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+      columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+      ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+      piezas: leerPiezasDeCaja(el),
+    }));
+    document.getElementById('vistaPreviaFrame').srcdoc = generarPreviewHtml(nombrePagina, cajas, colgarDe, layoutId);
+  } catch (e) {
+    // Boceto en vivo -- si algo del formulario aun esta a medias, nunca bloquea el resto.
+  }
+}
+
+function actualizarVistaPreviaEditar() {
+  if (!paginaEditarActual) return;
+  try {
+    const layoutId = document.getElementById('layoutPagina').value || LAYOUT_POR_DEFECTO;
+    const cajas = [...document.querySelectorAll('#listaCajasEditar > .caja')].map(el => ({
+      nombre: el.dataset.nombre,
+      cabecera: el.querySelector('.cabecera-caja').value.trim(),
+      pie: el.querySelector('.pie-caja').value.trim(),
+      layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+      columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+      ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+      piezas: leerPiezasDeCaja(el),
+    }));
+    document.getElementById('vistaPreviaFrame').srcdoc = generarPreviewHtml(paginaEditarActual.nombrePagina, cajas, paginaEditarActual.colgarDe, layoutId);
+  } catch (e) {
+    // Boceto en vivo -- nunca bloquea el resto del formulario.
+  }
+}
+
+// Un unico listener delegado por bloque (input+click) con un debounce corto -- cubre
+// escribir en un campo, cambiar un desplegable, añadir/quitar/reordenar cajas o piezas,
+// sin tener que cablear cada control por separado.
+let temporizadorVistaPrevia = null;
+function programarVistaPrevia(fn) {
+  clearTimeout(temporizadorVistaPrevia);
+  temporizadorVistaPrevia = setTimeout(fn, 250);
+}
+document.getElementById('bloqueCrearNueva').addEventListener('input', () => programarVistaPrevia(actualizarVistaPrevia));
+document.getElementById('bloqueCrearNueva').addEventListener('click', () => programarVistaPrevia(actualizarVistaPrevia));
+document.getElementById('bloqueEditarExistente').addEventListener('input', () => programarVistaPrevia(actualizarVistaPreviaEditar));
+document.getElementById('bloqueEditarExistente').addEventListener('click', () => programarVistaPrevia(actualizarVistaPreviaEditar));
+actualizarVistaPrevia(); // boceto real desde el primer render, con la caja vacía inicial
 </script>
 </body>
 </html>
