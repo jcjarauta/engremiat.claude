@@ -19,13 +19,14 @@
 </head>
 <body>
 <h1>Engremiat -- inicio</h1>
-<p class="hint">Mesa de trabajo real del operador. Se amplía con el tiempo -- hoy 9 piezas reales.</p>
-<!-- §8.137: las tarjetas de abajo son un snapshot real (respaldo si el servidor no
-     responde) -- en cuanto carga, cargarTarjetasReales() las sustituye por las que de
-     verdad existen ahora mismo en Índice, leyendo DESCRIPCION_PUBLICA real de cada una
-     (texto humano de presentación, separado de DESCRIPCION -- ese es uso técnico interno:
-     colgarDe/tipo/marca de reconstrucción). Este fichero nunca se reescribe ni pasa por
-     el ciclo de Arquitecto -- solo su contenido se actualiza en vivo, en el navegador. -->
+<p class="hint">Mesa de trabajo real del operador. Se amplía con el tiempo -- hoy 10 piezas reales.</p>
+<!-- §8.137/§8.148: las tarjetas de abajo son un snapshot real (respaldo si el servidor
+     no responde) -- en cuanto carga, cargarTarjetasReales() las sustituye por las
+     paginas reales de ENTRADA de todo el arbol (no solo Indice), leyendo
+     DESCRIPCION_PUBLICA real de cada una cuando existe (texto humano de presentación,
+     separado de DESCRIPCION -- ese es uso técnico interno: colgarDe/tipo/marca de
+     reconstrucción). Este fichero nunca se reescribe ni pasa por el ciclo de Arquitecto
+     -- solo su contenido se actualiza en vivo, en el navegador. -->
 <div class="menu" id="menuReal">
   <a class="item" href="panel_operativo.html">
     <h2>Panel operativo</h2>
@@ -72,21 +73,21 @@
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 
-// §8.137: lee en vivo las paginas reales de Indice (PRO-0002) y sustituye las tarjetas
-// -- nunca al reves. Si el servidor real no responde ahora mismo, el snapshot estatico
-// de arriba se queda tal cual, nunca una pantalla en blanco.
+// §8.137/§8.148: lee en vivo las paginas reales de ENTRADA de todo el arbol (no solo las
+// de Indice/PRO-0002) y sustituye las tarjetas -- nunca al reves. listarPaginasDeEntradaReales
+// (generador_paginas.js) recoge, por cada Campaña real, la pagina real mas superficial de
+// cada rama (sus paginas hijas ya son alcanzables desde ahi mismo -- verlas tambien aqui
+// seria redundante) -- antes fijo solo a Indice, "solo hay 9 tarjetas en el home" tras
+// crear una pagina real de nivel Campaña en otra Campaña (Demo Arquitecto, §8.146) que
+// nunca aparecia. Si el servidor real no responde ahora mismo, el snapshot estatico de
+// arriba se queda tal cual, nunca una pantalla en blanco.
 async function cargarTarjetasReales() {
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const indice = obtenerIndiceReal(j);
-    const candidatos = [];
-    for (const p of (indice && indice.hijos) || []) {
-      const m = /\(([\w.-]+\.html)\)/.exec(p.nombre || '');
-      if (m) candidatos.push({ id: p.id, archivo: m[1], nombre: p.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
-    }
+    const candidatos = listarPaginasDeEntradaReales(j);
     if (!candidatos.length) return;
     const fichas = await Promise.all(candidatos.map(c =>
-      fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(c.id)).then(r => r.ok ? r.json() : { campos: {} })
+      fetch(URL_MEMORIA + '/api/ficha?tipo=' + encodeURIComponent(tipoPorPrefijoId(c.id).toUpperCase()) + '&id=' + encodeURIComponent(c.id)).then(r => r.ok ? r.json() : { campos: {} })
     ));
     const tarjetas = candidatos.map((c, i) => ({
       archivo: c.archivo, nombre: c.nombre,

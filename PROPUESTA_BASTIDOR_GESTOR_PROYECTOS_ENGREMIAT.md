@@ -1873,6 +1873,16 @@ Reportado tras usar la campaña "Demo Arquitecto" de §8.146 para probar Arquite
 
 **Verificado en real**: reproducida la carrera exacta (100ms/900ms) contra el fichero ya corregido y desplegado -- `elTop` queda ahora en ~16px reales y `scrollY` se mueve correctamente, confirmado también visualmente por captura (sección "Editar contenido real de una página existente" con "Índice (grafos.html)" ya seleccionado, su contexto real y su caja "Constructor de grafos" cargada, todo visible sin más scroll manual).
 
+### 8.148 Dos bugs reales corregidos: `home.html` perdía tarjetas fuera de Índice, y `PRD-0004` llevaba el NOMBRE real equivocado
+
+Reportado tras construir Demo Arquitecto (§8.146): *"hemos perdido a el html indice, ahora sale grafos, revisalo y solo hay 9 tarjetas en el home, revisalo"*.
+
+**"Solo hay 9 tarjetas"**: real y esperado dado el código anterior -- `cargarTarjetasReales()` (§8.137) leía solo los hijos directos de Índice (PRO-0002), así que la tarjeta de "Demo Arquitecto" que se había añadido a mano al snapshot estático (§8.146) se perdía en cuanto el fetch real tenía éxito y sustituía `#menuReal` entero. Corregido con una función real nueva y genérica, `listarPaginasDeEntradaReales(j)` (`generador_paginas.js`): recorre TODO el árbol real y, en cuanto encuentra una página real de cualquier tipo, la recoge como punto de entrada real y NUNCA sigue bajando dentro de ella (sus páginas hijas ya son alcanzables desde ahí mismo -- mostrarlas también en Home sería redundante). Para Índice da exactamente las mismas 9 de siempre; para Demo Arquitecto da solo la propia Campaña (sus 4 páginas internas cuelgan de ella). `home.html` usa esta función en vez de la lógica fija a Índice, y pide la ficha real de cada candidato con su tipo real (`tipoPorPrefijoId`, ya no fijo a `PRODUCTO`).
+
+**"Hemos perdido el índice, ahora sale grafos"**: no era una regresión de código -- confirmado con `/api/ficha` que el NOMBRE real de `PRD-0004` era *"Índice (grafos.html)"* desde antes de esta sesión, pese a que su `DESCRIPCION`/`DESCRIPCION_PUBLICA` reales describen sin ambigüedad la galería de grafos ("Galería real por tipo... de todos los grafos del visor"). Mientras `cargarTarjetasReales()` leía solo el snapshot estático (que sí decía "Grafos del sistema", escrito a mano) el desajuste quedaba oculto; en cuanto la carga dinámica tuvo éxito de verdad, sustituyó ese título por el NOMBRE real del Sheet ("Índice"), y una tarjeta que llevaba a `grafos.html` pasó a llamarse "Índice" -- justo la confusión reportada. Corregido en el Sheet real (`03_PRODUCTOS!C5`): NOMBRE renombrado a *"Grafos del sistema (grafos.html)"*, coherente con su contenido real y con el snapshot estático que nunca cambió.
+
+**Verificado en real**: `/api/ficha?tipo=PRODUCTO&id=PRD-0004` devuelve ya el NOMBRE corregido; `listarPaginasDeEntradaReales` probada en aislado contra la jerarquía real exacta -- 10 páginas de entrada reales (las 9 de Índice + Demo Arquitecto), ninguna duplicada ni perdida; en el navegador real, tanto el snapshot estático como la carga dinámica (`fetch` inyectado con datos reales) muestran las mismas 10 tarjetas reales, con "Grafos del sistema" en vez de "Índice" y "Demo Arquitecto" ya presente en ambos caminos.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

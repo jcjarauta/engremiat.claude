@@ -188,6 +188,25 @@ function listarPaginasRealesEnArbol(j) {
   return paginas;
 }
 
+// §8.148: home.html mostraba siempre las 9 paginas reales de Indice (PRO-0002) y NUNCA
+// una pagina real de nivel Campaña/Proyecto de otra Campaña (ej. Demo Arquitecto,
+// §8.146) -- confirmado real: 'solo hay 9 tarjetas en el home'. Generaliza el criterio:
+// recorre TODO el arbol real y, en cuanto encuentra una pagina real, la recoge como
+// punto de entrada real y NUNCA sigue bajando dentro de ella (sus paginas hijas ya son
+// alcanzables desde ahi mismo, mostrarlas tambien en Home seria redundante). Para Indice
+// esto da exactamente las mismas 9 de siempre (ninguna es hija de otra pagina real); para
+// Demo Arquitecto da solo la propia Campaña (sus 4 paginas internas cuelgan de ella).
+function listarPaginasDeEntradaReales(j) {
+  const entradas = [];
+  const recorrer = (n) => {
+    const m = RE_PAGINA_REAL.exec(n.nombre || '');
+    if (m) { entradas.push({ id: n.id, archivo: m[1], nombre: n.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') }); return; }
+    for (const hijo of (n.hijos || [])) recorrer(hijo);
+  };
+  for (const campana of (j.arbol || j)) recorrer(campana);
+  return entradas;
+}
+
 // §8.131: Tipos reales de PIEZA -- contenido minimo dentro de una caja (antes "tipo de
 // caja", ahora una caja puede llevar varias piezas, ver normalizarCaja). Cada uno
 // reutiliza un patron de HTML basico ya usado de verdad en otra pagina de este mismo
