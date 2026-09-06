@@ -600,12 +600,34 @@ function guardarLayoutPagina(productoId, layoutId) {
 // fragmentos_cajas.json/layouts_pagina.json -- solo datos, en DIR_DATOS.
 const RUTA_PLANTILLAS_PROYECTO = join(DIR_DATOS, 'plantillas_proyecto.json');
 function leerPlantillasProyecto() {
-  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {} };
+  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {}, cajasReutilizables: {}, funcionesReutilizables: {} };
 }
 function guardarPlantillaProyecto(id, plantilla) {
   const datos = leerPlantillasProyecto();
   datos.plantillas = datos.plantillas || {};
   datos.plantillas[id] = { ...plantilla, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
+// §8.149: "sistema acoplable" -- Caja/Funcion reutilizables entre proyectos reales
+// distintos, un escalon mas abajo que las plantillas de pagina completa de arriba.
+// Mismo fichero real (mismo patron de fichero creciente, nunca se borra desde aqui),
+// dos catalogos nuevos: cajasReutilizables (tipo real de caja -- layoutInterno/cabecera/
+// pie, SIN contenido) y funcionesReutilizables (tipo real de funcion -- que tipo de
+// pieza es, ej. "botones" -- tampoco con contenido). El script real
+// construir_html_desde_arbol.mjs resuelve el NOMBRE real de cada Proceso/Tarea contra
+// estos catalogos por referencia -- nunca escribe el dato real de la Tarea como
+// contenido, ese sigue siendo un paso aparte, futuro y explicito.
+function guardarCajaReutilizable(id, caja) {
+  const datos = leerPlantillasProyecto();
+  datos.cajasReutilizables = datos.cajasReutilizables || {};
+  datos.cajasReutilizables[id] = { ...caja, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+function guardarFuncionReutilizable(id, funcion) {
+  const datos = leerPlantillasProyecto();
+  datos.funcionesReutilizables = datos.funcionesReutilizables || {};
+  datos.funcionesReutilizables[id] = { ...funcion, actualizadoEn: new Date().toISOString() };
   writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
@@ -1265,6 +1287,39 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la plantilla real: ' + e.message })); return;
+      }
+    }
+
+    // §8.149: catalogo real y creciente de Cajas reutilizables entre proyectos --
+    // referenciadas por NOMBRE real desde un Proceso/Producto real, nunca con contenido.
+    if (req.method === 'GET' && req.url === '/api/cajas_reutilizables') {
+      res.writeHead(200); res.end(JSON.stringify({ cajas: leerPlantillasProyecto().cajasReutilizables || {} })); return;
+    }
+    if (req.method === 'POST' && req.url === '/api/cajas_reutilizables') {
+      const { id, etiqueta, descripcion, layoutInterno, cabecera, pie } = await leerCuerpo(req);
+      if (!id || !etiqueta) { res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/etiqueta' })); return; }
+      try {
+        guardarCajaReutilizable(id, { etiqueta, descripcion: descripcion || '', layoutInterno: layoutInterno || 'una-columna', cabecera: cabecera || '', pie: pie || '' });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la caja reutilizable real: ' + e.message })); return;
+      }
+    }
+
+    // §8.149: catalogo real y creciente de Funciones reutilizables -- referenciadas por
+    // NOMBRE real desde una Tarea real; solo dicen que TIPO real de pieza son (ej.
+    // "botones"), nunca el dato/contenido real que llevarian.
+    if (req.method === 'GET' && req.url === '/api/funciones_reutilizables') {
+      res.writeHead(200); res.end(JSON.stringify({ funciones: leerPlantillasProyecto().funcionesReutilizables || {} })); return;
+    }
+    if (req.method === 'POST' && req.url === '/api/funciones_reutilizables') {
+      const { id, etiqueta, descripcion, tipoPieza } = await leerCuerpo(req);
+      if (!id || !etiqueta || !tipoPieza) { res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/etiqueta/tipoPieza' })); return; }
+      try {
+        guardarFuncionReutilizable(id, { etiqueta, descripcion: descripcion || '', tipoPieza });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la funcion reutilizable real: ' + e.message })); return;
       }
     }
 
