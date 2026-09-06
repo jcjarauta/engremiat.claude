@@ -1774,6 +1774,16 @@ Surgió al cerrar dos hilos que quedaban abiertos: la "bóveda mínima por Campa
 
 **Verificado de extremo a extremo, real, no simulado**: creado un Producto de prueba real (`PRD-0012`) bajo Índice, generado su HTML+Markdown reales con las funciones ya construidas, encolado vía la API real, y ejecutado de verdad `aplicar_boveda_campana.mjs` -- confirmado que crea `bovedas.claude/Panel Operativo/.obsidian/`, `00_Indice.md` y la nota real con checklist/cabecera/pie/Vínculo real correctos; ejecutado una segunda vez para confirmar idempotencia real (no duplica el wikilink, informa "Actualizada" en vez de "Creada"). Limpieza real: nota de prueba borrada, `00_Indice.md` devuelto a su estado inicial limpio (la carpeta/índice de "Panel Operativo" se dejan tal cual -- son el arranque real y legítimo de esa bóveda, no un experimento), entrada de la cola borrada, `PRD-0012` desactivado con `/api/activar_registro` (§8.129).
 
+### 8.141 Bug real corregido: el puente de §8.138 no saltaba de verdad a "Editar página existente"
+
+Capturado real por el operador sobre el árbol de campañas real (con los 3 puentes de §8.138 ya visibles): *"actualmente cuando doi a editar en arquitecto sale la plantilla vacia, deberia salir precargado el elemento seleccionado, revisalo y mejora la propuesta"*.
+
+**Diagnóstico real antes de tocar nada**: reproducido en el navegador real con la jerarquía real exacta inyectada (mismo método ya establecido dado el límite del sandbox de puertos) -- confirmado que `paginaEditarActual`, la selección del desplegable y las cajas cargadas eran **todas correctas** (`{"productoId":"PRD-0008","nombrePagina":"Mapa",...}`), pero `window.scrollY` se quedaba en `0` tras la inicialización, incluso esperando 1.5 segundos. El bug real: `document.getElementById('bloqueEditarExistente').scrollIntoView({behavior:'smooth', block:'start'})` nunca completaba el scroll real -- confirmado con una prueba de control (`window.scrollTo(0, 500)` sí funciona al instante) que el problema era específico de `scrollIntoView` con animación `smooth` en este layout, no un bloqueo general del scroll del documento.
+
+**Corregido**: sustituido por `window.scrollTo(0, elemento.getBoundingClientRect().top + window.scrollY - 16)` -- misma posición real calculada, sin depender de `scrollIntoView` ni de animación `smooth`, y verificado que sí mueve `scrollY` a la posición correcta de forma instantánea y fiable.
+
+**Verificado en real, en ambos flujos que usan el deep-link**: tras el fix, `scrollY` pasa correctamente a la posición real del bloque "Editar página existente"; confirmado visualmente en un viewport de escritorio (1600×1000) que la sección aparece con la página real ya seleccionada ("Mapa (mapa.html)"), el puente real "Ver posición real de 'Mapa' en Mapa" (§8.138) visible, y su caja real ya cargada debajo. Nota de método: una primera comprobación visual en un viewport estrecho (800px, por debajo del punto de corte responsive de 1100px del boceto en vivo) mostró una captura completamente negra pese a que `elementFromPoint` confirmaba contenido real correcto en esa posición -- descartado como artefacto de captura del entorno de pruebas en modo apilado, no un fallo real, al confirmarse visualmente correcto en un viewport de escritorio normal.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

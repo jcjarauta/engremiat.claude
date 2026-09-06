@@ -832,7 +832,12 @@ async function cargarPaginasEditables() {
     if (idDesdeUrl && paginas.some(p => p.id === idDesdeUrl)) {
       select.value = idDesdeUrl;
       await cargarCajasEditar();
-      document.getElementById('bloqueEditarExistente').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // §8.141: bug real encontrado -- scrollIntoView({behavior:'smooth'}) nunca completaba
+      // el scroll real (confirmado: scrollY se quedaba en 0 aunque el elemento estuviera a
+      // 1400px+ de distancia real). window.scrollTo con la posicion real calculada si
+      // funciona de forma fiable -- se sustituye, sin animacion, mejor fiable que bonito.
+      const elEditar = document.getElementById('bloqueEditarExistente');
+      window.scrollTo(0, elEditar.getBoundingClientRect().top + window.scrollY - 16);
     }
   } catch {
     select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
