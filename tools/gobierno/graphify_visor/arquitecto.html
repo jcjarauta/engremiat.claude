@@ -47,6 +47,11 @@
   .pieza select.grafo-pieza { width: 100%; margin-top: 6px; box-sizing: border-box; }
   .pieza .preview-grafo { margin-top: 6px; }
   button.mini { padding: 3px 8px; font-size: 10.5px; }
+  /* §8.134: cascada real de "¿de dónde cuelga?" -- un nivel real por cada paso de la
+     jerarquía ya existente, nunca una lista plana sin indicar profundidad. */
+  #cascadaColgarDe .nivel-cascada { margin-top: 6px; padding-left: 10px; border-left: 2px solid var(--color-base-borde); }
+  #cascadaColgarDe .nivel-cascada label { margin: 0 0 3px; }
+  #cascadaColgarDe .nivel-cascada select { width: 100%; }
   button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   button:hover { border-color: #6ea8ff; }
   button.quitar { padding: 4px 9px; font-size: 11px; color: #e85c8a; border-color: #e85c8a55; }
@@ -77,8 +82,9 @@
       <input id="nombrePagina" type="text" placeholder="Ej. Cronista">
     </div>
     <div style="flex:1;">
-      <label>¿De dónde cuelga?</label>
-      <select id="colgarDe" style="width:100%;"><option value="home.html">home.html</option></select>
+      <label>¿De dónde cuelga? (cascada real -- baja por la jerarquía existente)</label>
+      <div id="cascadaColgarDe"></div>
+      <p class="hint" id="migaPanColgarDe" style="margin:4px 0 0;"></p>
     </div>
   </div>
   <div class="fila">
@@ -344,29 +350,125 @@ function anadirCaja(nombreInicial) {
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
 
-// El desplegable "¿de dónde cuelga?" se construye en vivo con las páginas reales que ya
-// son Producto dentro de Índice (PRO-0002) -- nunca una lista fija a mano, crece sola segun
-// se den de alta paginas nuevas con este mismo Arquitecto. "home.html" no es un Producto
-// real (es la raiz, nunca un Producto de Indice) -- se anade siempre a mano como primera
-// opcion real y por defecto, tal como se pidio.
-async function cargarPaginasReales() {
-  const select = document.getElementById('colgarDe');
-  try {
-    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const indice = obtenerIndiceReal(j);
-    const paginas = [];
-    for (const producto of (indice && indice.hijos) || []) {
-      const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
-      if (m) paginas.push({ archivo: m[1], nombre: producto.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
+// §8.134: "¿de dónde cuelga?" pasa de lista plana a cascada real -- pedido explícito
+// tras ver que la lista de páginas reales iba a crecer y no distinguía profundidad real:
+// "TAMBIEN TENEMOS QUE TENER LA OPCION DE COLGAR LA PAGINA EN ALGUNA JERARQUIA POSTERIOR
+// A HOME... DESPLEGABLES DINAMICOS PARA PODER ELEGIR ENTRE LAS PAGINAS EN CASCADA".
+// El parentesco real de cada página ya vive en su DESCRIPCION ("colgada de X" -- mismo
+// patrón que ya usan cargarCajasEditar/reconstruirYEncolarPagina, nunca un campo nuevo
+// inventado). Una página sin esa marca real (las 6 anteriores a Arquitecto) se asume
+// colgada de home.html -- misma realidad de dónde están enlazadas hoy, marcado honesto
+// en su etiqueta para no fingir un dato que el Sheet no dice.
+let arbolPaginasCache = null;
+
+async function construirArbolPaginasReal() {
+  const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+  const indice = obtenerIndiceReal(j);
+  const candidatos = [];
+  for (const p of (indice && indice.hijos) || []) {
+    const m = /\(([\w.-]+\.html)\)/.exec(p.nombre || '');
+    if (m) candidatos.push({ id: p.id, archivo: m[1], nombre: p.nombre.replace(/\s*\([\w.-]+\.html\)\s*$/, '') });
+  }
+  const fichas = await Promise.all(candidatos.map(c =>
+    fetch(URL_MEMORIA + '/api/ficha?tipo=PRODUCTO&id=' + encodeURIComponent(c.id)).then(r => r.ok ? r.json() : { campos: {} })
+  ));
+  const paginas = candidatos.map((c, i) => {
+    const desc = (fichas[i].campos || {}).DESCRIPCION || '';
+    const mColgar = /colgada de (\S+)/.exec(desc);
+    return { ...c, colgarDeArchivo: mColgar ? mColgar[1] : 'home.html', tieneMarcaReal: !!mColgar };
+  });
+
+  // Real: solo cuenta lo alcanzable desde home.html real -- corta cualquier ciclo real
+  // (A cuelga de B, B cuelga de A) o referencia a un padre que no existe, en vez de
+  // colgarse en un bucle infinito o mentir con una cascada rota.
+  const hijosDe = new Map([['home.html', []]]);
+  for (const p of paginas) {
+    if (!hijosDe.has(p.colgarDeArchivo)) hijosDe.set(p.colgarDeArchivo, []);
+    hijosDe.get(p.colgarDeArchivo).push(p);
+  }
+  const alcanzables = new Set(['home.html']);
+  const cola = ['home.html'];
+  while (cola.length) {
+    const actual = cola.shift();
+    for (const hijo of (hijosDe.get(actual) || [])) {
+      if (alcanzables.has(hijo.archivo)) continue;
+      alcanzables.add(hijo.archivo);
+      cola.push(hijo.archivo);
     }
-    select.innerHTML = '<option value="home.html">home.html (raíz)</option>' +
-      paginas.map(p => '<option value="' + p.archivo + '">' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ')</option>').join('');
-  } catch {
-    // Si el Sheet real no responde ahora mismo, se queda solo la opcion real por defecto
-    // (home.html) -- nunca se inventa una lista de paginas sin poder confirmarla.
+  }
+  const huerfanas = paginas.filter(p => !alcanzables.has(p.archivo));
+  return { hijosDe, paginas, huerfanas };
+}
+
+function nombrePorArchivoCascada(archivo) {
+  if (archivo === 'home.html') return 'home.html (raíz)';
+  const p = arbolPaginasCache.paginas.find(x => x.archivo === archivo);
+  return p ? p.nombre + ' (' + p.archivo + ')' : archivo;
+}
+
+function renderNivelCascada(nivel, archivoPadre) {
+  const cont = document.getElementById('cascadaColgarDe');
+  [...cont.querySelectorAll('.nivel-cascada')].forEach(el => { if (Number(el.dataset.nivel) >= nivel) el.remove(); });
+
+  const hijos = (arbolPaginasCache.hijosDe.get(archivoPadre) || []);
+  if (!hijos.length) { actualizarMigaPanColgarDe(); return; } // no hay mas niveles reales que bajar
+
+  const opciones = hijos.map(h =>
+    '<option value="' + escapeHtmlLocal(h.archivo) + '">' + escapeHtmlLocal(h.nombre) + ' (' + escapeHtmlLocal(h.archivo) + ')' +
+    (h.tieneMarcaReal ? '' : ' -- sin marca real, asumida bajo home.html') + '</option>'
+  ).join('');
+  const div = document.createElement('div');
+  div.className = 'nivel-cascada';
+  div.dataset.nivel = nivel;
+  div.innerHTML =
+    '<label>' + (nivel === 0 ? 'Colgar bajo' : 'Y dentro de esa, colgar bajo') + '</label>' +
+    '<select onchange="alElegirNivelCascada(this, ' + nivel + ')"><option value="">-- colgar aquí --</option>' + opciones + '</select>';
+  cont.appendChild(div);
+  actualizarMigaPanColgarDe();
+}
+
+function alElegirNivelCascada(selectEl, nivel) {
+  if (selectEl.value) renderNivelCascada(nivel + 1, selectEl.value);
+  else {
+    [...document.getElementById('cascadaColgarDe').querySelectorAll('.nivel-cascada')].forEach(el => { if (Number(el.dataset.nivel) > nivel) el.remove(); });
+    actualizarMigaPanColgarDe();
   }
 }
-cargarPaginasReales();
+
+// El valor real elegido es el de la ultima selección con valor -- "colgar aquí" en
+// cualquier nivel corta la cascada ahi, nunca obliga a bajar hasta el fondo real.
+function obtenerColgarDeCascada() {
+  const selects = [...document.getElementById('cascadaColgarDe').querySelectorAll('.nivel-cascada select')];
+  let elegido = 'home.html';
+  for (const s of selects) { if (s.value) elegido = s.value; else break; }
+  return elegido;
+}
+
+function actualizarMigaPanColgarDe() {
+  const selects = [...document.getElementById('cascadaColgarDe').querySelectorAll('.nivel-cascada select')];
+  const camino = ['home.html (raíz)'];
+  for (const s of selects) { if (!s.value) break; camino.push(nombrePorArchivoCascada(s.value)); }
+  const migaPan = document.getElementById('migaPanColgarDe');
+  let texto = 'Colgará de: ' + camino.join(' → ');
+  if (arbolPaginasCache && arbolPaginasCache.huerfanas.length) {
+    texto += ' -- aviso real: ' + arbolPaginasCache.huerfanas.length + ' página(s) real(es) con DESCRIPCION rota (ciclo o padre inexistente) quedan fuera de esta cascada, revisa el Sheet.';
+  }
+  migaPan.textContent = texto;
+  programarVistaPrevia(actualizarVistaPrevia);
+}
+
+async function inicializarCascadaColgarDe() {
+  try {
+    arbolPaginasCache = await construirArbolPaginasReal();
+    renderNivelCascada(0, 'home.html');
+  } catch {
+    // Si el Sheet real no responde ahora mismo, se queda sin niveles reales -- nunca se
+    // inventa una jerarquia sin poder confirmarla; obtenerColgarDeCascada() ya cae a
+    // 'home.html' por defecto en ese caso.
+    document.getElementById('migaPanColgarDe').textContent = 'No se pudo leer la jerarquía real ahora mismo -- colgará de home.html por defecto.';
+  }
+}
+inicializarCascadaColgarDe();
 
 function copiarConFallback(texto, mensajeExito) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -408,9 +510,8 @@ async function crearRegistroReal(tipo, nombre, padreId, descripcion) {
 async function construirPagina() {
   const nombrePagina = document.getElementById('nombrePagina').value.trim();
   const archivoPagina = slug(nombrePagina) + '.html';
-  const selectColgarDe = document.getElementById('colgarDe');
-  const colgarDe = selectColgarDe.value || 'home.html';
-  const nombreColgarDe = selectColgarDe.options[selectColgarDe.selectedIndex].text;
+  const colgarDe = obtenerColgarDeCascada();
+  const nombreColgarDe = nombrePorArchivoCascada(colgarDe);
   const tipoPagina = document.getElementById('tipoPagina').value || 'Espacio';
   const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
   const estado = document.getElementById('estadoArquitecto');
@@ -692,7 +793,7 @@ function generarPreviewHtml(nombrePagina, cajas, colgarDe, layoutId) {
 function actualizarVistaPrevia() {
   try {
     const nombrePagina = document.getElementById('nombrePagina').value.trim();
-    const colgarDe = document.getElementById('colgarDe').value || 'home.html';
+    const colgarDe = arbolPaginasCache ? obtenerColgarDeCascada() : 'home.html';
     const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
     const cajas = [...document.querySelectorAll('#listaCajas > .caja')].map(el => ({
       nombre: el.querySelector('.nombre-caja').value.trim() || '(sin nombre todavía)',
