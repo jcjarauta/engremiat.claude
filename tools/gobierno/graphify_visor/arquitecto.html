@@ -75,6 +75,17 @@
 <div class="panel-izquierdo">
 
 <div class="bloque" id="bloqueCrearNueva">
+  <h2>0. Punto de partida</h2>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Empezar desde cero o reutilizar una plantilla real prediseñada</label>
+      <select id="plantillaElegida" style="width:100%;" onchange="alElegirPlantilla(this)">
+        <option value="">-- Empezar desde cero --</option>
+      </select>
+      <p class="hint" id="descPlantilla" style="margin-top:4px;"></p>
+    </div>
+  </div>
+
   <h2>1. Nombre real de la página</h2>
   <div class="fila">
     <div style="flex:1;">
@@ -106,8 +117,10 @@
   <div id="listaCajas"></div>
   <button onclick="anadirCaja()">+ Añadir caja</button>
 
-  <div style="margin-top:16px;">
+  <p class="hint" style="margin-top:16px;">Elige el destino real de este diseño: <b>producción</b> (crea el Producto/Procesos/Tareas reales y despliega) o <b>plantilla</b> (queda guardada aquí mismo, reutilizable la próxima vez, sin tocar el Sheet).</p>
+  <div style="margin-top:8px; display:flex; gap:8px;">
     <button class="primario" id="btnConstruir" onclick="construirPagina()">Construir página real (Sheet + HTML)</button>
+    <button onclick="guardarComoPlantillaProyecto()">Guardar como plantilla de proyecto (reutilizable)</button>
   </div>
   <div id="estadoArquitecto" class="estado"></div>
 </div>
@@ -184,6 +197,115 @@ function opcionesGrafoHtml(seleccionado) {
 (function cargarLayoutsPaginaNueva() {
   document.getElementById('layoutPaginaNueva').innerHTML = opcionesLayoutHtml(LAYOUT_POR_DEFECTO);
 })();
+
+// §8.135/§8.136: dos catalogos reales de plantillas de partida -- CATALOGO_PLANTILLAS_BASE
+// (fijo, generico, curado a mano en generador_paginas.js) y las plantillas de PROYECTO
+// (crecen solas, nacen de un diseno real ya hecho a mano en este mismo Arquitecto y
+// guardado como reutilizable via /api/plantillas_proyecto -- nunca escritas a mano por
+// Claude). plantillasDisponibles guarda ambas fusionadas por id para que alElegirPlantilla
+// no tenga que saber de que catalogo viene cada una.
+let plantillasDisponibles = {};
+
+async function cargarPlantillas() {
+  plantillasDisponibles = { ...CATALOGO_PLANTILLAS_BASE };
+  let optgroupProyecto = '';
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/plantillas_proyecto');
+    if (r.ok) {
+      const j = await r.json();
+      const proyecto = j.plantillas || {};
+      Object.assign(plantillasDisponibles, proyecto);
+      optgroupProyecto = Object.keys(proyecto).length
+        ? '<optgroup label="Plantillas de proyecto (Engremiat)">' +
+          Object.entries(proyecto).map(([id, p]) => '<option value="' + id + '">' + escapeHtmlLocal(p.etiqueta) + '</option>').join('') +
+          '</optgroup>'
+        : '';
+    }
+  } catch {
+    // Si el servidor real no responde ahora mismo, se queda solo con las plantillas base
+    // -- nunca se inventa una lista de plantillas de proyecto sin poder confirmarla.
+  }
+  const optgroupBase = '<optgroup label="Plantillas base">' +
+    Object.entries(CATALOGO_PLANTILLAS_BASE).map(([id, p]) => '<option value="' + id + '">' + escapeHtmlLocal(p.etiqueta) + '</option>').join('') +
+    '</optgroup>';
+  document.getElementById('plantillaElegida').innerHTML = '<option value="">-- Empezar desde cero --</option>' + optgroupBase + optgroupProyecto;
+}
+cargarPlantillas();
+
+// Aplicar una plantilla real SUSTITUYE las cajas ya escritas -- avisa antes si ya hay
+// contenido real tecleado, nunca lo borra en silencio.
+function alElegirPlantilla(selectEl) {
+  const id = selectEl.value;
+  const descEl = document.getElementById('descPlantilla');
+  if (!id) { descEl.textContent = ''; return; }
+  const plantilla = plantillasDisponibles[id];
+  if (!plantilla) return;
+  descEl.textContent = plantilla.descripcion || '';
+
+  const hayContenidoReal = [...document.querySelectorAll('#listaCajas > .caja')].some(el =>
+    el.querySelector('.nombre-caja').value.trim() ||
+    el.querySelector('.cabecera-caja').value.trim() ||
+    el.querySelector('.pie-caja').value.trim() ||
+    [...el.querySelectorAll('.contenido-pieza')].some(t => t.value.trim())
+  );
+  if (hayContenidoReal && !confirm('Esto sustituye las cajas reales ya escritas por las de "' + plantilla.etiqueta + '". ¿Seguro?')) {
+    selectEl.value = '';
+    descEl.textContent = '';
+    return;
+  }
+
+  document.getElementById('tipoPagina').value = plantilla.tipoPagina || 'Espacio';
+  document.getElementById('layoutPaginaNueva').value = plantilla.layoutId || LAYOUT_POR_DEFECTO;
+  document.getElementById('listaCajas').innerHTML = plantilla.cajas.map(c => crearBloqueCajaHtml({
+    nombre: c.nombre || '', cabecera: c.cabecera || '', pie: c.pie || '',
+    layoutInterno: c.layoutInterno || LAYOUT_POR_DEFECTO,
+    columnaInicio: c.columnaInicio || 1, ancho: c.ancho || 1,
+    piezas: c.piezas,
+  })).join('');
+  alCambiarLayoutPaginaNueva();
+  programarVistaPrevia(actualizarVistaPrevia);
+}
+
+// Lee del formulario real de "Crear pagina nueva" las cajas ya escritas -- compartido
+// entre construirPagina() (produccion real), actualizarVistaPrevia() (boceto) y
+// guardarComoPlantillaProyecto() (reutilizable), nunca tres lecturas del DOM distintas.
+function leerCajasCrearNueva() {
+  return [...document.querySelectorAll('#listaCajas > .caja')].map(el => ({
+    nombre: el.querySelector('.nombre-caja').value.trim(),
+    cabecera: el.querySelector('.cabecera-caja').value.trim(),
+    pie: el.querySelector('.pie-caja').value.trim(),
+    layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+    columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+    ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+    piezas: leerPiezasDeCaja(el),
+  }));
+}
+
+// §8.136: guarda el diseno real ya hecho a mano como plantilla de proyecto reutilizable
+// -- camino real paralelo a "Construir pagina real", nunca toca el Sheet ni la cola de
+// despliegue. El operador elige aqui mismo si este diseno pasa a produccion (boton de
+// abajo) o se queda como plantilla para la proxima vez.
+async function guardarComoPlantillaProyecto() {
+  const cajas = leerCajasCrearNueva().filter(c => c.nombre);
+  if (!cajas.length) { alert('Añade al menos una caja real con nombre antes de guardar la plantilla.'); return; }
+  const etiqueta = prompt('Nombre real de la plantilla (ej. "Panel de coste real"):');
+  if (!etiqueta || !etiqueta.trim()) return;
+  const descripcion = prompt('Descripción real (opcional) -- para qué sirve esta plantilla:') || '';
+  const id = slug(etiqueta);
+  const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
+  const tipoPagina = document.getElementById('tipoPagina').value || 'Espacio';
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/plantillas_proyecto', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, etiqueta: etiqueta.trim(), descripcion, layoutId, tipoPagina, cajas }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+    await cargarPlantillas();
+    alert('Plantilla real "' + etiqueta.trim() + '" guardada -- ya aparece en "0. Punto de partida" para la próxima página.');
+  } catch (e) {
+    alert('No se pudo guardar la plantilla real: ' + e.message);
+  }
+}
 
 function slug(s) {
   return String(s || '').toLowerCase()
@@ -519,18 +641,7 @@ async function construirPagina() {
   estado.className = 'estado';
   estado.textContent = '';
 
-  // Escopado real a #listaCajas -- nunca ".caja" a secas, que también matchearía las
-  // cajas de "Editar página existente" si ya se cargó una antes en la misma sesión.
-  const cajasEl = [...document.querySelectorAll('#listaCajas > .caja')];
-  const cajas = cajasEl.map(el => ({
-    nombre: el.querySelector('.nombre-caja').value.trim(),
-    cabecera: el.querySelector('.cabecera-caja').value.trim(),
-    pie: el.querySelector('.pie-caja').value.trim(),
-    layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
-    columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
-    ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
-    piezas: leerPiezasDeCaja(el),
-  })).filter(c => c.nombre);
+  const cajas = leerCajasCrearNueva().filter(c => c.nombre);
 
   if (!nombrePagina) { estado.className = 'estado error'; estado.textContent = 'Falta el nombre real de la página.'; return; }
   if (!cajas.length) { estado.className = 'estado error'; estado.textContent = 'Añade al menos una caja real con nombre.'; return; }
@@ -795,15 +906,7 @@ function actualizarVistaPrevia() {
     const nombrePagina = document.getElementById('nombrePagina').value.trim();
     const colgarDe = arbolPaginasCache ? obtenerColgarDeCascada() : 'home.html';
     const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
-    const cajas = [...document.querySelectorAll('#listaCajas > .caja')].map(el => ({
-      nombre: el.querySelector('.nombre-caja').value.trim() || '(sin nombre todavía)',
-      cabecera: el.querySelector('.cabecera-caja').value.trim(),
-      pie: el.querySelector('.pie-caja').value.trim(),
-      layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
-      columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
-      ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
-      piezas: leerPiezasDeCaja(el),
-    }));
+    const cajas = leerCajasCrearNueva().map(c => ({ ...c, nombre: c.nombre || '(sin nombre todavía)' }));
     document.getElementById('vistaPreviaFrame').srcdoc = generarPreviewHtml(nombrePagina, cajas, colgarDe, layoutId);
   } catch (e) {
     // Boceto en vivo -- si algo del formulario aun esta a medias, nunca bloquea el resto.

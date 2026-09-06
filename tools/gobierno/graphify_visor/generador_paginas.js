@@ -80,6 +80,83 @@ const LAYOUTS_PAGINA = {
 };
 const LAYOUT_POR_DEFECTO = 'una-columna';
 
+// §8.135: catalogo real de plantillas BASE de partida para "Crear pagina nueva" -- pedido
+// explicito: "la idea es crear un catalogo de plantillas html para distintos propositos...
+// empezar desde cero o reutilizar alguna plantilla prediseñada". Cada plantilla es solo
+// estructura real generica (layout de pagina + cajas/piezas ya colocadas), NUNCA contenido
+// inventado -- las piezas nacen vacias, el TODO honesto ya lo pone generarContenidoPieza()
+// solo, igual que una caja creada a mano. Cada una tiene precedente real ya usado en
+// alguna pagina de este mismo visor (mismo criterio que TIPOS_CAJA/CATALOGO_GRAFOS). Fijo
+// y curado a mano -- nunca cambia solo -- a diferencia de las plantillas de PROYECTO
+// (§8.136), que nacen del propio diseno real que el operador hace en Arquitecto y decide
+// guardar como reutilizable, viven en servidor_memoria.mjs (plantillas_proyecto.json),
+// nunca aqui.
+const CATALOGO_PLANTILLAS_BASE = {
+  hub_enlaces: {
+    etiqueta: 'Hub de enlaces', descripcion: 'Bienvenida + botones grandes a otras páginas reales. Precedente: home.html.',
+    layoutId: 'una-columna', tipoPagina: 'Espacio',
+    cajas: [{ nombre: 'Enlaces', cabecera: 'TODO: bienvenida real -- qué es esta página y a dónde lleva.', layoutInterno: 'una-columna', piezas: [{ tipo: 'botones', contenido: [] }] }],
+  },
+  galeria_tarjetas: {
+    etiqueta: 'Galería de tarjetas', descripcion: 'Una columna por categoría, cada una con sus tarjetas reales. Precedente: biblioteca.html/vista_recursos.html.',
+    layoutId: 'tres-columnas', tipoPagina: 'Espacio',
+    cajas: [
+      { nombre: 'Categoría 1', columnaInicio: 1, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'tarjetas', contenido: [] }] },
+      { nombre: 'Categoría 2', columnaInicio: 2, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'tarjetas', contenido: [] }] },
+      { nombre: 'Categoría 3', columnaInicio: 3, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'tarjetas', contenido: [] }] },
+    ],
+  },
+  panel_kpis: {
+    etiqueta: 'Panel con KPIs + tabla', descripcion: 'Métricas reales a un lado, tabla de detalle al otro. Precedente: panel_operativo.html.',
+    layoutId: 'dos-columnas', tipoPagina: 'Espacio',
+    cajas: [
+      { nombre: 'Resumen', columnaInicio: 1, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'metrica', contenido: [] }, { tipo: 'metrica', contenido: [] }] },
+      { nombre: 'Detalle', columnaInicio: 2, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'tabla', contenido: [] }] },
+    ],
+  },
+  cockpit_backlog: {
+    etiqueta: 'Cockpit de backlog', descripcion: 'Estado a la izquierda, backlog real en el centro, resumen a la derecha. Precedente: taller.html.',
+    layoutId: 'lateral-central-lateral', tipoPagina: 'Espacio',
+    cajas: [
+      { nombre: 'Estado', columnaInicio: 1, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'badges', contenido: [] }] },
+      { nombre: 'Backlog', columnaInicio: 2, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'tabla', contenido: [] }] },
+      { nombre: 'Resumen', columnaInicio: 3, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'metrica', contenido: [] }] },
+    ],
+  },
+  formulario_captura: {
+    etiqueta: 'Formulario de captura', descripcion: 'Un formulario real con su propósito y qué pasa con el dato. Precedente: patrón Formulario ya en Arquitecto/grafos.html.',
+    layoutId: 'una-columna', tipoPagina: 'Herramienta',
+    cajas: [{ nombre: 'Formulario', cabecera: 'TODO: propósito real de este formulario.', pie: 'TODO: qué pasa de verdad con el dato capturado.', layoutInterno: 'una-columna', piezas: [{ tipo: 'formulario', contenido: [] }] }],
+  },
+  ficha_referencia: {
+    etiqueta: 'Ficha de referencia/documentación', descripcion: 'Contexto, comandos y pasos reales en una sola caja apilada. Precedente: "Pasos reales" de Arquitecto.',
+    layoutId: 'una-columna', tipoPagina: 'Herramienta',
+    cajas: [{ nombre: 'Referencia', layoutInterno: 'una-columna', piezas: [{ tipo: 'texto', contenido: [] }, { tipo: 'codigo', contenido: [] }, { tipo: 'checklist', contenido: [] }] }],
+  },
+  grafo_anotado: {
+    etiqueta: 'Vista de grafo anotada', descripcion: 'Un grafo real embebido junto a notas de qué representa. Precedente: sheet-real.html/vista_sistema.html.',
+    layoutId: 'dos-columnas', tipoPagina: 'Transversal',
+    cajas: [
+      { nombre: 'Grafo', columnaInicio: 1, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'grafo', grafoId: '' }] },
+      { nombre: 'Notas', columnaInicio: 2, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'texto', contenido: [] }] },
+    ],
+  },
+  indice_jerarquia: {
+    etiqueta: 'Índice con jerarquía', descripcion: 'Una lista real con su estado a modo de badges. Precedente: arbol_campanas.html/mapa.html.',
+    layoutId: 'una-columna', tipoPagina: 'Espacio',
+    cajas: [{ nombre: 'Jerarquía', layoutInterno: 'una-columna', piezas: [{ tipo: 'lista', contenido: [] }, { tipo: 'badges', contenido: [] }] }],
+  },
+  landing_proyecto: {
+    etiqueta: 'Landing de proyecto/campaña', descripcion: 'Progreso, detalle y enlaces relacionados en tres columnas reales. Combina patrones ya usados en el visor.',
+    layoutId: 'lateral-central-lateral', tipoPagina: 'Espacio',
+    cajas: [
+      { nombre: 'Progreso', columnaInicio: 1, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'metrica', contenido: [] }] },
+      { nombre: 'Detalle', columnaInicio: 2, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'texto', contenido: [] }, { tipo: 'checklist', contenido: [] }] },
+      { nombre: 'Relacionado', columnaInicio: 3, ancho: 1, layoutInterno: 'una-columna', piezas: [{ tipo: 'botones', contenido: [] }] },
+    ],
+  },
+};
+
 // §8.131: normaliza una caja real a su forma canonica -- acepta tanto la forma nueva
 // (piezas reales, cabecera/pie/layoutInterno) como la forma plana antigua de antes de
 // §8.131 (tipo/tareas o tipo/contenido, un unico bloque por caja) para no perder ningun

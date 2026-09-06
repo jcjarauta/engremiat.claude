@@ -573,6 +573,24 @@ function guardarLayoutPagina(productoId, layoutId) {
   writeFileSync(RUTA_LAYOUTS_PAGINA, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
+// §8.136: plantillas reales de proyecto -- pedido explicito: "la idea es que las
+// siguientes plantillas adaptadas las pueda crear desde arquitecto", nunca escritas a
+// mano por Claude en generador_paginas.js cada vez. Complementan (nunca sustituyen) el
+// catalogo real CATALOGO_PLANTILLAS_BASE (fijo, generico, sin contenido real) -- estas
+// nacen del propio diseno real que el operador hace a mano en Arquitecto y decide
+// guardar como reutilizable en vez de llevarlo a produccion. Mismo patron real que
+// fragmentos_cajas.json/layouts_pagina.json -- solo datos, en DIR_DATOS.
+const RUTA_PLANTILLAS_PROYECTO = join(DIR_DATOS, 'plantillas_proyecto.json');
+function leerPlantillasProyecto() {
+  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {} };
+}
+function guardarPlantillaProyecto(id, plantilla) {
+  const datos = leerPlantillasProyecto();
+  datos.plantillas = datos.plantillas || {};
+  datos.plantillas[id] = { ...plantilla, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -1180,6 +1198,25 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el layout real: ' + e.message })); return;
+      }
+    }
+
+    // §8.136: catalogo real y creciente de plantillas de proyecto -- nunca se borran
+    // desde aqui (solo se listan/anaden), coherente con "una fila real nunca desaparece".
+    if (req.method === 'GET' && req.url === '/api/plantillas_proyecto') {
+      res.writeHead(200); res.end(JSON.stringify(leerPlantillasProyecto())); return;
+    }
+
+    if (req.method === 'POST' && req.url === '/api/plantillas_proyecto') {
+      const { id, etiqueta, descripcion, layoutId, tipoPagina, cajas } = await leerCuerpo(req);
+      if (!id || !etiqueta || !Array.isArray(cajas) || !cajas.length) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/etiqueta/cajas (array real, al menos una)' })); return;
+      }
+      try {
+        guardarPlantillaProyecto(id, { etiqueta, descripcion: descripcion || '', layoutId: layoutId || 'una-columna', tipoPagina: tipoPagina || 'Espacio', cajas });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la plantilla real: ' + e.message })); return;
       }
     }
 
