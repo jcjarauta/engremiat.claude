@@ -41,8 +41,13 @@
 </head>
 <body>
 <a class="volver" href="home.html">← Home</a>
-<h1>Mapa -- jerarquía real de Índice</h1>
-<p class="hint">Árbol real de <a href="grafos.html">Índice</a>: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). El botón "Ejecutar ahora" que aparece después necesita <code>node servidor_aplicar_local.mjs</code> arrancado en tu máquina (escucha solo en <code>127.0.0.1</code>) -- sin él, aplica el cambio a mano con el comando de siempre. Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver Índice dentro del árbol completo (con todas las demás Campañas/Proyectos reales), <a href="arbol_campanas.html?proyectoId=PRO-0002">ábrelo directamente aquí</a>.</p>
+<h1>Mapa -- jerarquía real de un Proyecto</h1>
+<p class="hint">Árbol real del Proyecto elegido: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). El botón "Ejecutar ahora" que aparece después necesita <code>node servidor_aplicar_local.mjs</code> arrancado en tu máquina (escucha solo en <code>127.0.0.1</code>) -- sin él, aplica el cambio a mano con el comando de siempre. Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver el Proyecto elegido dentro del árbol completo (con todas las demás Campañas/Proyectos reales), ábrelo directamente en <a id="enlaceArbolCompleto" href="arbol_campanas.html?proyectoId=PRO-0002">árbol de campañas</a>.</p>
+
+<div style="max-width:420px; margin-bottom:12px;">
+  <label style="display:block; font-size:11px; color:var(--color-base-texto-tenue); margin-bottom:3px;">¿Qué Proyecto real quieres organizar? (§8.139 -- ya no fijo a Índice)</label>
+  <select id="proyectoElegido" style="width:100%; background:var(--color-base-fondo); border:1px solid var(--color-base-borde); color:var(--color-base-texto); border-radius:6px; padding:7px 9px; font-size:12.5px; box-sizing:border-box; font-family:inherit;" onchange="alElegirProyecto()"><option value="">Cargando Proyectos reales...</option></select>
+</div>
 
 <div id="arbolMapa" class="raiz-hijos"><p class="hint">Leyendo la jerarquía real...</p></div>
 <p id="notaColumnas" class="hint" style="margin-top:8px;"></p>
@@ -62,14 +67,37 @@ const URL_MEMORIA = 'http://100.107.171.88:9330';
 // a mano) despues de cada escritura real, para no arriesgar drift con el Sheet.
 let productosReales = [];
 let nombreIndiceReal = 'Índice';
+// §8.139: ya no fijo a Indice -- el operador elige bajo que Proyecto real trabaja.
+// PRO-0002 sigue siendo el valor real por defecto (comportamiento identico al de antes
+// de este cambio si nadie toca el desplegable).
+let proyectoElegidoId = PROYECTO_INDICE_ID;
+let selectorProyectoPoblado = false;
+
+function alElegirProyecto() {
+  proyectoElegidoId = document.getElementById('proyectoElegido').value || PROYECTO_INDICE_ID;
+  document.getElementById('enlaceArbolCompleto').href = 'arbol_campanas.html?proyectoId=' + encodeURIComponent(proyectoElegidoId);
+  cargarMapa();
+}
 
 async function cargarMapa() {
   const cont = document.getElementById('arbolMapa');
   cont.innerHTML = '<p class="hint">Leyendo la jerarquía real...</p>';
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const indice = obtenerIndiceReal(j);
-    nombreIndiceReal = (indice && indice.nombre) || 'Índice';
+
+    // Puebla el desplegable real de Proyectos solo la primera vez -- nunca lo repinta en
+    // cada recarga, para no perder la seleccion real ya hecha por el operador.
+    if (!selectorProyectoPoblado) {
+      const proyectos = listarProyectosReales(j);
+      document.getElementById('proyectoElegido').innerHTML = proyectos.map(p =>
+        '<option value="' + p.id + '"' + (p.id === proyectoElegidoId ? ' selected' : '') + '>' +
+        escapeHtmlLocal(p.campanaNombre) + ' -- ' + escapeHtmlLocal(p.nombre) + '</option>'
+      ).join('');
+      selectorProyectoPoblado = true;
+    }
+
+    const indice = obtenerProyectoReal(j, proyectoElegidoId);
+    nombreIndiceReal = (indice && indice.nombre) || 'Proyecto';
     const productos = (indice && indice.hijos) || [];
 
     const fichas = await Promise.all(productos.map(p =>
@@ -163,7 +191,7 @@ function renderArbol() {
   const cont = document.getElementById('arbolMapa');
   const nota = document.getElementById('notaColumnas');
   if (!productosReales.length) {
-    cont.innerHTML = '<p class="hint">Índice todavía no tiene ninguna página real.</p>';
+    cont.innerHTML = '<p class="hint">' + escapeHtmlLocal(nombreIndiceReal) + ' todavía no tiene ninguna página real.</p>';
     nota.textContent = '';
     return;
   }
@@ -342,10 +370,11 @@ async function reconstruirYEncolarPagina(productoId) {
   const mColgarDe = /colgada de (\S+)/.exec(campos.DESCRIPCION || '');
   const colgarDe = mColgarDe ? mColgarDe[1] : 'home.html';
 
+  // §8.139: busca el Producto real en CUALQUIER Proyecto del arbol -- ya no asume que
+  // esta bajo Indice, para que Mapa pueda operar sobre el Proyecto real elegido.
   const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-  const indice = obtenerIndiceReal(j);
-  const nodoProducto = (indice.hijos || []).find(p => p.id === productoId);
-  const procesos = (nodoProducto && nodoProducto.hijos) || [];
+  const hallazgo = buscarProductoEnArbol(j, productoId);
+  const procesos = (hallazgo && hallazgo.producto.hijos) || [];
 
   const [fragmentos, layoutRes] = await Promise.all([
     Promise.all(procesos.map(p =>

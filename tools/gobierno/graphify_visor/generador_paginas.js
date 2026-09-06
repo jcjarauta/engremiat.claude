@@ -10,12 +10,47 @@ const PROYECTO_INDICE_ID = 'PRO-0002';
 
 function escapeHtmlLocal(s) { return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-// Busca el nodo real de Indice dentro del arbol completo real de campanas -- unica
-// fuente real, reutilizada por todo lo que necesite las paginas/cajas reales de Indice.
-function obtenerIndiceReal(j) {
+// §8.139: version real generalizada -- busca CUALQUIER Proyecto real por su id dentro del
+// arbol completo de campanas, no solo Indice. "generalizar Arquitecto/Mapa (elegir
+// Proyecto real en vez de Indice fijo)", confirmado explicito tras valorar el alcance
+// completo (bovedas por campana) y decidir empezar solo por este paso real mas barato.
+function obtenerProyectoReal(j, proyectoId) {
   for (const campana of (j.arbol || j)) {
-    const indice = (campana.hijos || []).find(p => p.id === PROYECTO_INDICE_ID);
-    if (indice) return indice;
+    const proyecto = (campana.hijos || []).find(p => p.id === proyectoId);
+    if (proyecto) return proyecto;
+  }
+  return null;
+}
+
+// Busca el nodo real de Indice dentro del arbol completo real de campanas -- unica
+// fuente real, reutilizada por quien de verdad solo quiere Indice (home.html, la
+// salvaguarda real de arbol_campanas.html que redirige a Arquitecto). Arquitecto/Mapa ya
+// no la usan -- ellos trabajan sobre el Proyecto real que elija el operador.
+function obtenerIndiceReal(j) {
+  return obtenerProyectoReal(j, PROYECTO_INDICE_ID);
+}
+
+// Lista todos los Proyectos reales del arbol completo, con el nombre real de su Campana
+// para distinguirlos en un desplegable -- nunca solo Indice.
+function listarProyectosReales(j) {
+  const proyectos = [];
+  for (const campana of (j.arbol || j)) {
+    for (const proyecto of (campana.hijos || [])) {
+      proyectos.push({ id: proyecto.id, nombre: proyecto.nombre, campanaNombre: campana.nombre });
+    }
+  }
+  return proyectos;
+}
+
+// Busca un Producto real por su id en CUALQUIER Proyecto del arbol completo (no asume
+// que este bajo un Proyecto concreto) -- reemplaza el patron real duplicado en
+// mapa.html/arbol_campanas.html que solo buscaba dentro de Indice.
+function buscarProductoEnArbol(j, productoId) {
+  for (const campana of (j.arbol || j)) {
+    for (const proyecto of (campana.hijos || [])) {
+      const producto = (proyecto.hijos || []).find(p => p.id === productoId);
+      if (producto) return { proyecto, producto };
+    }
   }
   return null;
 }

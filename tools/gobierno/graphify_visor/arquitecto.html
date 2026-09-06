@@ -72,7 +72,13 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Arquitecto -- constructor dinámico de páginas</h1>
-<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del proyecto <a href="grafos.html">Índice</a> (PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
+<p class="hint">Construye una página nueva real a partir de <b>cajas</b> (secciones) con sus funciones reales -- usa el mismo sistema de Panel de campaña ya real (Campaña→Proyecto→Producto→Proceso→Tarea): tu página nueva es un Producto real dentro del Proyecto real que elijas abajo (por defecto <a href="grafos.html">Índice</a>, PRO-0002, §8.115), cada caja es un Proceso real, cada función real dentro de la caja es una Tarea real. Dos pasos reales, nunca uno inventado por el otro: <b>1)</b> llamada en vivo a <code>/api/crear_registro</code> que crea de verdad el Producto/Procesos/Tareas en el Sheet CORE, con el dato real de de qué página cuelga (desplegable construido en vivo con las páginas reales de <a href="grafos.html">Índice</a>, nunca una lista fija) y su tipo real según el mismo estándar de <a href="grafos.html">Grafos del sistema</a> (Espacio/Personaje/Recurso/Módulo/Herramienta/Transversal). <b>2)</b> genera el HTML real de partida (con una sección por caja, en el patrón básico real que elijas por caja: Lista/Texto/Tabla/Tarjetas/Formulario) y lo deja en una cola real que <code>aplicar_pagina_arquitecto.mjs</code> (CLI, nunca esta página web -- ninguna página puede escribir un fichero nuevo ni tocar <code>docker-compose.yml</code>) aplica de un golpe: guarda el fichero, añade su volumen y despliega. Solo quedan para ti dos pasos reales que necesitan tu criterio: enlazar la página y rellenar los <code>TODO</code> con contenido de verdad -- pasos exactos más abajo.</p>
+
+<div class="bloque">
+  <h2>¿En qué Proyecto real trabajas?</h2>
+  <p class="hint" style="margin-bottom:8px;">§8.139 -- ya no fijo a Índice: elige cualquier Proyecto real (afecta a "Crear página nueva" y a "Editar página existente"). El sitio de dónde cuelga la página en <code>home.html</code> sigue siendo siempre real de Índice, sea cual sea el Proyecto elegido aquí -- son dos cosas distintas: dónde se registra en el Sheet, y dónde aparece en la navegación real del sitio.</p>
+  <select id="proyectoElegido" style="width:100%;" onchange="alElegirProyectoArquitecto(this)"><option value="">Cargando Proyectos reales...</option></select>
+</div>
 
 <div class="layout-arquitecto">
 <div class="panel-izquierdo">
@@ -171,6 +177,12 @@
 <script src="generador_paginas.js"></script>
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
+
+// §8.139: bajo que Proyecto real se registra el Producto/Proceso/Tarea de la pagina --
+// ya no fijo a Indice. PRO-0002 sigue siendo el valor por defecto real (mismo
+// comportamiento que antes de este cambio si nadie toca el desplegable nuevo).
+let proyectoActualId = PROYECTO_INDICE_ID;
+let nombreProyectoActual = 'Índice';
 // Mismo estandar real que ya usa grafos.html (TIPOS_REALES, linea 114) -- nunca una
 // lista distinta inventada aqui. "Espacio" primero y por defecto porque es el tipo
 // real mas comun (una pagina nueva casi siempre es un espacio de trabajo).
@@ -668,10 +680,10 @@ async function construirPagina() {
   if (!cajas.length) { estado.className = 'estado error'; estado.textContent = 'Añade al menos una caja real con nombre.'; return; }
 
   boton.disabled = true;
-  estado.textContent = 'Creando la estructura real en Índice...';
+  estado.textContent = 'Creando la estructura real en ' + nombreProyectoActual + '...';
   try {
     const descripcionProducto = 'Página real colgada de ' + colgarDe + ' -- tipo ' + tipoPagina + ' (creada con Arquitecto).';
-    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', PROYECTO_INDICE_ID, descripcionProducto);
+    const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', proyectoActualId, descripcionProducto);
     // Guarda el layout elegido ya desde la creacion -- si esto falla no bloquea nada real,
     // "Editar pagina existente" simplemente lo veria a LAYOUT_POR_DEFECTO la primera vez.
     guardarLayoutPaginaReal(productoId, layoutId).catch(() => {});
@@ -707,7 +719,7 @@ async function construirPagina() {
       await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado);
       estado.className = 'estado ok';
       estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        totalFunciones + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
+        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
       pasos = [
         'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- guarda el fichero real, añade su línea de volumen en <code>docker-compose.yml</code>, despliega y verifica, todo automático.',
         pasoEnlazar,
@@ -716,7 +728,7 @@ async function construirPagina() {
     } catch (e) {
       estado.className = 'estado ok';
       estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        totalFunciones + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
+        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
       pasos = [
         'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
         'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
@@ -780,7 +792,7 @@ async function cargarPaginasEditables() {
   const select = document.getElementById('paginaEditar');
   try {
     const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
-    const indice = obtenerIndiceReal(j);
+    const indice = obtenerProyectoReal(j, proyectoActualId);
     const paginas = [];
     for (const producto of (indice && indice.hijos) || []) {
       const m = /\(([\w.-]+\.html)\)/.exec(producto.nombre || '');
@@ -801,7 +813,43 @@ async function cargarPaginasEditables() {
     select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
   }
 }
-cargarPaginasEditables();
+
+// §8.139: cambiar de Proyecto real recarga solo "Editar pagina existente" -- la cascada
+// real de "de donde cuelga" (§8.134) sigue siempre sobre Indice a proposito (es la
+// navegacion real del sitio, distinta de bajo que Proyecto se registra el Producto).
+function alElegirProyectoArquitecto(selectEl) {
+  proyectoActualId = selectEl.value || PROYECTO_INDICE_ID;
+  const opt = selectEl.options[selectEl.selectedIndex];
+  nombreProyectoActual = opt ? opt.dataset.nombre : 'Índice';
+  cargarPaginasEditables();
+}
+
+// Resuelve bajo que Proyecto real trabajar antes de pintar nada mas -- si llegamos por
+// un deep-link real ?editar=PRD-000X (§8.138), el Proyecto real de partida es el que de
+// verdad aloja esa pagina (buscarProductoEnArbol en TODO el arbol), nunca el valor por
+// defecto, o la pagina no apareceria en la lista filtrada por Proyecto.
+async function inicializarProyectoYPaginas() {
+  const select = document.getElementById('proyectoElegido');
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+    const idDesdeUrl = new URLSearchParams(location.search).get('editar');
+    if (idDesdeUrl) {
+      const hallazgo = buscarProductoEnArbol(j, idDesdeUrl);
+      if (hallazgo) proyectoActualId = hallazgo.proyecto.id;
+    }
+    const proyectos = listarProyectosReales(j);
+    select.innerHTML = proyectos.map(p =>
+      '<option value="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '"' + (p.id === proyectoActualId ? ' selected' : '') + '>' +
+      escapeHtmlLocal(p.campanaNombre) + ' -- ' + escapeHtmlLocal(p.nombre) + '</option>'
+    ).join('');
+    const actual = proyectos.find(p => p.id === proyectoActualId);
+    nombreProyectoActual = actual ? actual.nombre : 'Índice';
+  } catch {
+    select.innerHTML = '<option value="' + PROYECTO_INDICE_ID + '" data-nombre="Índice">Índice (no se pudo leer el resto de Proyectos reales)</option>';
+  }
+  await cargarPaginasEditables();
+}
+inicializarProyectoYPaginas();
 
 async function cargarCajasEditar() {
   const productoId = document.getElementById('paginaEditar').value;
@@ -829,7 +877,7 @@ async function cargarCajasEditar() {
     const nombrePagina = (campos.NOMBRE || '').replace(/\s*\([\w.-]+\.html\)\s*$/, '');
     const colgarDe = mColgarDe ? mColgarDe[1] : 'home.html';
 
-    const indice = obtenerIndiceReal(jerarquia);
+    const indice = obtenerProyectoReal(jerarquia, proyectoActualId);
     const nodoProducto = (indice && indice.hijos || []).find(p => p.id === productoId);
     const procesos = (nodoProducto && nodoProducto.hijos) || [];
     if (!procesos.length) { lista.innerHTML = '<p class="hint">Este Producto real todavía no tiene ninguna caja (Proceso) real.</p>'; return; }
