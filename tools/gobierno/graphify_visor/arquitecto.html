@@ -64,7 +64,15 @@
     </div>
   </div>
 
-  <h2>2. Cajas reales (secciones)</h2>
+  <h2>2. Tipo de página (layout)</h2>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Layout real de la página (mismo catálogo que "Editar página existente")</label>
+      <select id="layoutPaginaNueva" style="width:100%;"></select>
+    </div>
+  </div>
+
+  <h2>3. Cajas reales (secciones)</h2>
   <div id="listaCajas"></div>
   <button onclick="anadirCaja()">+ Añadir caja</button>
 
@@ -117,6 +125,14 @@ const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta'
 (function cargarTiposReales() {
   document.getElementById('tipoPagina').innerHTML =
     TIPOS_REALES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
+})();
+
+// Mismo catalogo real LAYOUTS_PAGINA de generador_paginas.js que ya usa "Editar pagina
+// existente" -- una pagina nueva tambien elige su layout desde el primer momento, en vez
+// de nacer siempre a una columna y tener que ir luego a editar para cambiarlo.
+(function cargarLayoutsPaginaNueva() {
+  document.getElementById('layoutPaginaNueva').innerHTML = Object.entries(LAYOUTS_PAGINA)
+    .map(([v, info]) => '<option value="' + v + '"' + (v === LAYOUT_POR_DEFECTO ? ' selected' : '') + '>' + info.etiqueta + '</option>').join('');
 })();
 
 function slug(s) {
@@ -225,6 +241,7 @@ async function construirPagina() {
   const colgarDe = selectColgarDe.value || 'home.html';
   const nombreColgarDe = selectColgarDe.options[selectColgarDe.selectedIndex].text;
   const tipoPagina = document.getElementById('tipoPagina').value || 'Espacio';
+  const layoutId = document.getElementById('layoutPaginaNueva').value || LAYOUT_POR_DEFECTO;
   const estado = document.getElementById('estadoArquitecto');
   const boton = document.getElementById('btnConstruir');
   estado.className = 'estado';
@@ -245,6 +262,9 @@ async function construirPagina() {
   try {
     const descripcionProducto = 'Página real colgada de ' + colgarDe + ' -- tipo ' + tipoPagina + ' (creada con Arquitecto).';
     const productoId = await crearRegistroReal('PRODUCTO', nombrePagina + ' (' + archivoPagina + ')', PROYECTO_INDICE_ID, descripcionProducto);
+    // Guarda el layout elegido ya desde la creacion -- si esto falla no bloquea nada real,
+    // "Editar pagina existente" simplemente lo veria a LAYOUT_POR_DEFECTO la primera vez.
+    guardarLayoutPaginaReal(productoId, layoutId).catch(() => {});
     const idsCajas = [];
     for (const caja of cajas) {
       const procesoId = await crearRegistroReal('PROCESO', caja.nombre, productoId);
@@ -255,7 +275,7 @@ async function construirPagina() {
       idsCajas.push({ procesoId, nombre: caja.nombre, idsTareas });
     }
 
-    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe);
+    const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
     document.getElementById('htmlGenerado').value = htmlGenerado;
     const fragmentoEnlace = '<a href="' + escapeHtmlLocal(archivoPagina) + '">' + escapeHtmlLocal(nombrePagina) + '</a>';
     const pasoEnlazar = 'Enlaza la página nueva desde <code>' + escapeHtmlLocal(colgarDe) + '</code> (elegiste que cuelgue de "' + escapeHtmlLocal(nombreColgarDe) + '"), adaptando el estilo real de esa página: <code>' + escapeHtmlLocal(fragmentoEnlace) + '</code>';
