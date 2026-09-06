@@ -1123,7 +1123,7 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/pagina_pendiente') {
-      const { productoId, nombre, archivo, colgarDe, nombreColgarDe, html, reconstruccion } = await leerCuerpo(req);
+      const { productoId, nombre, archivo, colgarDe, nombreColgarDe, html, reconstruccion, markdown } = await leerCuerpo(req);
       if (!productoId || !nombre || !archivo || !html) {
         res.writeHead(400); res.end(JSON.stringify({ error: 'faltan productoId/nombre/archivo/html' })); return;
       }
@@ -1132,7 +1132,11 @@ const servidor = createServer(async (req, res) => {
         // una reconstruccion intencional (aplicar_pagina_arquitecto.mjs debe sobrescribir),
         // no una colision accidental con una pagina nueva -- nunca se asume, siempre viaja
         // explicito desde quien encola.
-        guardarPaginaPendiente({ productoId, nombre, archivo, colgarDe: colgarDe || 'home.html', nombreColgarDe: nombreColgarDe || 'home.html', html, reconstruccion: !!reconstruccion });
+        // §8.140: markdown es opcional real -- {campanaNombre, archivoMd, contenido} para
+        // la nota gemela real de Obsidian (bovedas.claude), generada en el mismo acto que
+        // el HTML real. Nunca se escribe aqui -- solo se encola, igual que el html, hasta
+        // que aplicar_pagina_arquitecto.mjs (CLI) lo aplique de verdad en disco.
+        guardarPaginaPendiente({ productoId, nombre, archivo, colgarDe: colgarDe || 'home.html', nombreColgarDe: nombreColgarDe || 'home.html', html, reconstruccion: !!reconstruccion, markdown: markdown || null });
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la pagina pendiente real: ' + e.message })); return;
@@ -1147,7 +1151,12 @@ const servidor = createServer(async (req, res) => {
         if (!entrada) { res.writeHead(404); res.end(JSON.stringify({ error: 'no hay ninguna pagina pendiente real con ese archivo' })); return; }
         res.writeHead(200); res.end(JSON.stringify(entrada)); return;
       }
-      res.writeHead(200); res.end(JSON.stringify({ paginas: (datos.paginas || []).map(({ html, ...resto }) => resto) })); return;
+      res.writeHead(200); res.end(JSON.stringify({
+        paginas: (datos.paginas || []).map(({ html, markdown, ...resto }) => ({
+          ...resto,
+          markdown: markdown ? { campanaNombre: markdown.campanaNombre, archivoMd: markdown.archivoMd } : null,
+        })),
+      })); return;
     }
 
     if (req.method === 'DELETE' && req.url.startsWith('/api/pagina_pendiente')) {

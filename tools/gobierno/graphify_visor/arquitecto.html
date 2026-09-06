@@ -183,6 +183,9 @@ const URL_MEMORIA = 'http://100.107.171.88:9330';
 // comportamiento que antes de este cambio si nadie toca el desplegable nuevo).
 let proyectoActualId = PROYECTO_INDICE_ID;
 let nombreProyectoActual = 'Índice';
+// §8.140: nombre real de la Campaña que aloja el Proyecto elegido -- necesario para la
+// ruta real de la nota gemela de Obsidian (bovedas.claude/<Campaña>/).
+let nombreCampanaActual = 'Panel Operativo';
 // Mismo estandar real que ya usa grafos.html (TIPOS_REALES, linea 114) -- nunca una
 // lista distinta inventada aqui. "Espacio" primero y por defecto porque es el tipo
 // real mas comun (una pagina nueva casi siempre es un espacio de trabajo).
@@ -642,10 +645,10 @@ function copiarHtmlGenerado() {
 // comentario real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs. Si esto
 // falla (servidor no disponible ahora mismo), no se pierde nada real: el HTML sigue
 // completo en el textarea de abajo para copiar y aplicar a mano.
-async function guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion) {
+async function guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion, markdown) {
   const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo: archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion: !!reconstruccion }),
+    body: JSON.stringify({ productoId, nombre: nombrePagina, archivo: archivoPagina, colgarDe, nombreColgarDe, html, reconstruccion: !!reconstruccion, markdown: markdown || null }),
   });
   if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
 }
@@ -710,17 +713,39 @@ async function construirPagina() {
 
     const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
     document.getElementById('htmlGenerado').value = htmlGenerado;
+
+    // §8.140: nota Markdown real gemela -- siempre, nunca opt-in (confirmado explícito).
+    // Necesita el urlSheet real de la fila recién creada, se lee de vuelta del árbol real
+    // en vez de inventarlo a mano. Si esto falla, no bloquea nada real -- la página HTML
+    // sigue construyéndose igual.
+    let markdownPendiente = null;
+    try {
+      const jReal = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+      const hallazgo = buscarProductoEnArbol(jReal, productoId);
+      const urlSheetReal = hallazgo ? hallazgo.producto.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + productoId);
+      const urlPaginaReal = 'http://100.107.171.88:9320/' + archivoPagina;
+      const markdownGenerado = generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal);
+      markdownPendiente = { campanaNombre: nombreCampanaActual, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
+    } catch (e) {
+      // Nota gemela no generada esta vez -- se puede generar a mano despues si hace falta.
+    }
+
     const fragmentoEnlace = '<a href="' + escapeHtmlLocal(archivoPagina) + '">' + escapeHtmlLocal(nombrePagina) + '</a>';
     const pasoEnlazar = 'Enlaza la página nueva desde <code>' + escapeHtmlLocal(colgarDe) + '</code> (elegiste que cuelgue de "' + escapeHtmlLocal(nombreColgarDe) + '"), adaptando el estilo real de esa página: <code>' + escapeHtmlLocal(fragmentoEnlace) + '</code>';
     const pasoTodo = 'Rellena los <code>TODO</code> reales del HTML con el contenido de verdad de cada caja.';
 
+    const pasoMarkdown = markdownPendiente
+      ? 'Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- crea la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaActual) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (Obsidian), con su Vínculo real de vuelta al Sheet y a la página.'
+      : 'Aviso: no se pudo generar la nota real gemela de Obsidian esta vez -- la página HTML real no se ve afectada.';
+
     let pasos;
     try {
-      await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado);
+      await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado, false, markdownPendiente);
       estado.className = 'estado ok';
       estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
+        totalFunciones + ' función(es) real(es)) -- dentro de ' + nombreProyectoActual + ' (' + proyectoActualId + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML y nota real de Obsidian guardados en la cola de aplicación.';
       pasos = [
+        pasoMarkdown + ' (ejecútalo <b>antes</b> del siguiente paso -- ese borra la entrada real de la cola al terminar).',
         'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- guarda el fichero real, añade su línea de volumen en <code>docker-compose.yml</code>, despliega y verifica, todo automático.',
         pasoEnlazar,
         pasoTodo,
@@ -821,6 +846,7 @@ function alElegirProyectoArquitecto(selectEl) {
   proyectoActualId = selectEl.value || PROYECTO_INDICE_ID;
   const opt = selectEl.options[selectEl.selectedIndex];
   nombreProyectoActual = opt ? opt.dataset.nombre : 'Índice';
+  nombreCampanaActual = opt ? opt.dataset.campana : 'Panel Operativo';
   cargarPaginasEditables();
 }
 
@@ -839,13 +865,14 @@ async function inicializarProyectoYPaginas() {
     }
     const proyectos = listarProyectosReales(j);
     select.innerHTML = proyectos.map(p =>
-      '<option value="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '"' + (p.id === proyectoActualId ? ' selected' : '') + '>' +
+      '<option value="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '" data-campana="' + escapeHtmlLocal(p.campanaNombre) + '"' + (p.id === proyectoActualId ? ' selected' : '') + '>' +
       escapeHtmlLocal(p.campanaNombre) + ' -- ' + escapeHtmlLocal(p.nombre) + '</option>'
     ).join('');
     const actual = proyectos.find(p => p.id === proyectoActualId);
     nombreProyectoActual = actual ? actual.nombre : 'Índice';
+    nombreCampanaActual = actual ? actual.campanaNombre : 'Panel Operativo';
   } catch {
-    select.innerHTML = '<option value="' + PROYECTO_INDICE_ID + '" data-nombre="Índice">Índice (no se pudo leer el resto de Proyectos reales)</option>';
+    select.innerHTML = '<option value="' + PROYECTO_INDICE_ID + '" data-nombre="Índice" data-campana="Panel Operativo">Índice (no se pudo leer el resto de Proyectos reales)</option>';
   }
   await cargarPaginasEditables();
 }
@@ -954,12 +981,27 @@ async function guardarYReconstruir() {
       });
     }
     const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
+
+    // §8.140: nota Markdown real gemela -- tambien al reconstruir, nunca solo al crear.
+    let markdownPendiente = null;
+    try {
+      const jReal = await (await fetch(URL_MEMORIA + '/api/jerarquia_campanas')).json();
+      const hallazgo = buscarProductoEnArbol(jReal, productoId);
+      const urlSheetReal = hallazgo ? hallazgo.producto.urlSheet : ('TODO: no se pudo leer el enlace real al Sheet justo ahora -- búscalo por ' + productoId);
+      const urlPaginaReal = 'http://100.107.171.88:9320/' + archivo;
+      const markdownGenerado = generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal);
+      markdownPendiente = { campanaNombre: nombreCampanaActual, archivoMd: slug(nombrePagina) + '.md', contenido: markdownGenerado };
+    } catch (e) {
+      // Nota gemela no actualizada esta vez -- se puede regenerar a mano despues.
+    }
+
     // reconstruccion=true -- distingue de una pagina nueva en la cola, ver comentario
     // real junto a RUTA_PAGINAS_PENDIENTES en servidor_memoria.mjs.
-    await guardarPaginaPendienteReal(productoId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true);
+    await guardarPaginaPendienteReal(productoId, nombrePagina, archivo, colgarDe, colgarDe, htmlGenerado, true, markdownPendiente);
     estado.className = 'estado ok';
-    estado.textContent = 'Contenido real guardado y página reconstruida en la cola (' + cajas.length + ' caja(s)).';
+    estado.textContent = 'Contenido real guardado y página reconstruida en la cola (' + cajas.length + ' caja(s)), nota real de Obsidian incluida.';
     document.getElementById('pasosEditar').innerHTML =
+      (markdownPendiente ? '<li>Ejecuta <code>node aplicar_boveda_campana.mjs ' + escapeHtmlLocal(archivo) + '</code> -- actualiza la nota real gemela en <code>bovedas.claude/' + escapeHtmlLocal(nombreCampanaActual) + '/' + escapeHtmlLocal(markdownPendiente.archivoMd) + '</code> (ejecútalo <b>antes</b> del siguiente paso -- ese borra la entrada real de la cola al terminar).</li>' : '') +
       '<li>Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivo) + '</code> -- reconstruye el fichero real y despliega, todo automático.</li>';
   } catch (e) {
     estado.className = 'estado error';

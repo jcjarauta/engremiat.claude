@@ -468,3 +468,104 @@ function generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId) {
     '<footer class="pie-real">\n  <p class="hint">TODO: contenido real del pie de esta página.</p>\n</footer>\n' +
     '</body>\n</html>\n';
 }
+
+// §8.140: mapeo real pieza -> Markdown -- reutiliza EXACTAMENTE los mismos datos reales
+// de cada pieza (nunca una segunda fuente de contenido), solo cambia la sintaxis de
+// salida. Varias piezas encajan mejor aqui que en HTML (Checklist nativo real,
+// Codigo con fences reales); Grafo nunca se ejecuta en Markdown -- solo se menciona con
+// una referencia real a la pagina que lo embebe de verdad.
+function generarContenidoPiezaMarkdown(p) {
+  const lineas = p.contenido || [];
+  if (p.tipo === 'grafo') {
+    const g = CATALOGO_GRAFOS[p.grafoId];
+    return g ? '> Grafo real embebido en la página: **' + g.etiqueta + '** (`' + g.archivo + '`).\n' : '> TODO: elige un grafo real.\n';
+  }
+  if (p.tipo === 'tabla') {
+    const filas = lineas.length ? lineas : ['TODO real | TODO real'];
+    const partes = filas.map(f => f.split('|').map(x => x.trim()));
+    const cabeceras = partes[0];
+    const cuerpo = partes.slice(1);
+    return '| ' + cabeceras.join(' | ') + ' |\n' +
+      '|' + cabeceras.map(() => '---').join('|') + '|\n' +
+      (cuerpo.length ? cuerpo.map(f => '| ' + f.join(' | ') + ' |').join('\n') : '| TODO real | |') + '\n';
+  }
+  if (p.tipo === 'tarjetas') {
+    const tarjetas = lineas.length ? lineas : ['TODO real - descripción real'];
+    return tarjetas.map(t => {
+      const [titulo, ...resto] = t.split(' - ');
+      const desc = resto.join(' - ').trim();
+      return '- **' + titulo.trim() + '**: ' + (desc || 'TODO: descripción real.');
+    }).join('\n') + '\n';
+  }
+  if (p.tipo === 'formulario') {
+    const campos = lineas.length ? lineas : ['TODO real'];
+    return campos.map(c => '- ' + c + ': ______').join('\n') + '\n';
+  }
+  if (p.tipo === 'texto') {
+    return (lineas.length ? lineas : ['TODO: contenido real de esta pieza.']).join('\n\n') + '\n';
+  }
+  if (p.tipo === 'botones') {
+    const items = lineas.length ? lineas : ['TODO real -> #'];
+    return items.map(l => {
+      const [etiqueta, destino] = l.split('->').map(x => (x || '').trim());
+      return '- [' + (etiqueta || destino || 'TODO') + '](' + (destino || '#') + ')';
+    }).join('\n') + '\n';
+  }
+  if (p.tipo === 'checklist') {
+    const items = lineas.length ? lineas : ['[ ] TODO real'];
+    return items.map(l => {
+      const hecho = /^\[x\]/i.test(l.trim());
+      const texto = l.replace(/^\[[ xX]\]\s*/, '');
+      return '- [' + (hecho ? 'x' : ' ') + '] ' + texto;
+    }).join('\n') + '\n';
+  }
+  if (p.tipo === 'imagen') {
+    const items = lineas.length ? lineas : ['TODO real | descripción real'];
+    return items.map(l => {
+      const [url, alt] = l.split('|').map(x => (x || '').trim());
+      return '![' + (alt || '') + '](' + url + ')';
+    }).join('\n') + '\n';
+  }
+  if (p.tipo === 'badges') {
+    const items = lineas.length ? lineas : ['TODO real'];
+    return items.map(l => '`' + l + '`').join(' ') + '\n';
+  }
+  if (p.tipo === 'metrica') {
+    const items = lineas.length ? lineas : ['TODO real | 0'];
+    return items.map(l => {
+      const [etiqueta, valor] = l.split('|').map(x => (x || '').trim());
+      return '**' + (etiqueta || 'TODO') + ':** ' + (valor || '0');
+    }).join('  \n') + '\n';
+  }
+  if (p.tipo === 'codigo') {
+    const items = lineas.length ? lineas : ['TODO real'];
+    return '```\n' + items.join('\n') + '\n```\n';
+  }
+  // 'lista' -- por defecto, mismo comportamiento real que en HTML.
+  return (lineas.length ? lineas : ['TODO: contenido real de esta pieza.']).map(t => '- ' + t).join('\n') + '\n';
+}
+
+// §8.140: genera la nota Markdown real gemela de una página real construida con
+// Arquitecto -- misma estructura de cajas/piezas ya real, nunca una segunda
+// configuración aparte que pueda divergir. Lleva siempre su "## Vínculo real" de vuelta
+// al Sheet y a la página HTML real ya desplegada -- cierra de raíz el hueco real
+// detectado antes (ninguna nota del vault mencionaba graphify_visor). Confirmado
+// explícito: "toda página real construida con Arquitecto genere siempre su nota gemela"
+// -- nunca opt-in, siempre se genera.
+function generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal) {
+  const cajasNormalizadas = cajas.map(normalizarCaja);
+  const cuerpo = cajasNormalizadas.map(c => {
+    const piezasMd = c.piezas.map(p => generarContenidoPiezaMarkdown(p)).join('\n');
+    return '## ' + c.nombre + '\n\n' +
+      (c.cabecera ? '_' + c.cabecera + '_\n\n' : '') +
+      piezasMd +
+      (c.pie ? '\n_' + c.pie + '_\n' : '');
+  }).join('\n\n');
+
+  return '# ' + nombrePagina + '\n\n' +
+    'TODO: descripción real de qué hace esta página y de dónde sale su dato.\n\n' +
+    cuerpo + '\n\n' +
+    '## Vínculo real\n\n' +
+    '- Página real: ' + urlPaginaReal + '\n' +
+    '- Ficha real en el Sheet: ' + urlSheetReal + '\n';
+}
