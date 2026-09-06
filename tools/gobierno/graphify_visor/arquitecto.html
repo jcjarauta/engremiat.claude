@@ -151,6 +151,7 @@
       <select id="layoutPagina" style="width:100%;" onchange="alCambiarLayoutPagina()"></select>
     </div>
   </div>
+  <p class="hint" id="enlaceMapaEditar"></p>
   <div id="listaCajasEditar"></div>
   <div style="margin-top:16px;">
     <button class="primario" id="btnReconstruir" onclick="guardarYReconstruir()" disabled>Guardar y reconstruir esta página</button>
@@ -787,6 +788,15 @@ async function cargarPaginasEditables() {
     }
     select.innerHTML = '<option value="">-- elige una página real --</option>' +
       paginas.map(p => '<option value="' + p.id + '">' + escapeHtmlLocal(p.nombre) + ' (' + p.archivo + ')</option>').join('');
+    // §8.138: puente real desde Mapa/árbol de campañas -- ?editar=PRD-000X preselecciona
+    // esa página real y hace scroll directo a "Editar página existente", en vez de
+    // aterrizar en el formulario en blanco y tener que buscarla a mano en el desplegable.
+    const idDesdeUrl = new URLSearchParams(location.search).get('editar');
+    if (idDesdeUrl && paginas.some(p => p.id === idDesdeUrl)) {
+      select.value = idDesdeUrl;
+      await cargarCajasEditar();
+      document.getElementById('bloqueEditarExistente').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } catch {
     select.innerHTML = '<option value="">No se pudo leer el Sheet real ahora mismo</option>';
   }
@@ -802,6 +812,7 @@ async function cargarCajasEditar() {
   boton.disabled = true;
   paginaEditarActual = null;
   lista.innerHTML = '';
+  document.getElementById('enlaceMapaEditar').innerHTML = '';
   if (!productoId) return;
 
   lista.innerHTML = '<p class="hint">Leyendo cajas reales...</p>';
@@ -854,6 +865,9 @@ async function cargarCajasEditar() {
     });
 
     paginaEditarActual = { productoId, nombrePagina, archivo, colgarDe };
+    // §8.138: puente real de vuelta -- ver donde esta colocada esta pagina real dentro
+    // de las demas de Indice, sin tener que salir y buscarla a mano en Mapa.
+    document.getElementById('enlaceMapaEditar').innerHTML = 'Ver posición real de "' + escapeHtmlLocal(nombrePagina) + '" en <a href="mapa.html">Mapa</a>.';
     boton.disabled = false;
     alCambiarLayoutPagina();
   } catch (e) {

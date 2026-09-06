@@ -1728,6 +1728,20 @@ Capturado real por el operador tras el trío de screenshots de Arquitecto+Mapa, 
 
 **Verificado de extremo a extremo**: sintaxis/colisión con `node`/`vm.Script` en `home.html`/`arquitecto.html`; registro real de `PRD-0011` confirmado leyendo su ficha de vuelta (sin marca de reconstrucción); columna `DESCRIPCION_PUBLICA` verificada con los 9 textos reales correctos, acentos incluidos; en el navegador real -- el snapshot estático de `home.html` se ve igual que antes (respaldo funcionando), confirmado el fallo esperado de `fetch` por el sandbox de puertos, y simulando la respuesta real exacta (9 hijos reales de Índice, incluido `Arquitecto`) se confirmó que `cargarTarjetasReales()` sustituye las tarjetas correctamente (título real "Índice" en vez del "Grafos del sistema" del snapshot, más la tarjeta nueva de Arquitecto); la leyenda de verbos probada con `grafo_holon.json` real (recuento exacto `opera_en·22`/`depende_de·8`/... confirmado por `querySelector`) y con `grafo_jerarquia.json` (mensaje honesto "no tiene verbos reales" en vez de inventar uno).
 
+### 8.138 Tres puentes reales de navegación entre Arquitecto, Mapa y el árbol de campañas
+
+Retomado tras el desvío de §8.137, confirmado explícito: *"sí, retoma los 3 puentes de navegación"*. Analizadas las tres piezas antes de valorar: **Árbol de campañas** es el configurador general real de cualquier Campaña/Proyecto (ya enlazado al Sheet); **Mapa** mueve cajas *entre* páginas de Índice; **Arquitecto** crea/edita el contenido *dentro* de una página. Verificado el estado real de enlaces antes de proponer nada (nunca asumido): `home.html` ya es el hub central; Mapa ya enlazaba a Arquitecto (genérico) y a `arbol_campanas.html?proyectoId=PRO-0002`; árbol de campañas ya redirigía a Arquitecto al *crear* un Producto bajo Índice (§8.123). El hueco real: ninguno enlazaba con contexto al *mirar* una página real ya existente.
+
+**Mecanismo real compartido**: `arquitecto.html?editar=PRD-000X` -- en `cargarPaginasEditables()`, tras poblar el desplegable real, se lee `editar` de `URLSearchParams(location.search)`; si coincide con una página real de la lista, se preselecciona, se llama a `cargarCajasEditar()` y se hace scroll directo al bloque "Editar página existente" -- nunca aterrizar en el formulario en blanco y tener que buscarla a mano.
+
+**Puente 1 (Mapa → Arquitecto)**: en `renderProducto()`, cada página real de Índice lleva ahora un enlace real "✎ Editar en Arquitecto" con el deep-link a su propio `id`.
+
+**Puente 2 (Arquitecto → Mapa)**: en "Editar página existente", en cuanto `cargarCajasEditar()` carga una página real con éxito, aparece "Ver posición real de [nombre] en Mapa" -- se limpia si se cambia de página o se deselecciona.
+
+**Puente 3 (árbol de campañas → Arquitecto)**: en `renderNodo()`, cualquier nodo `Producto` real cuyo nombre siga la convención `(archivo.html)` (misma regex real ya usada por Mapa/Arquitecto para reconocer páginas, nunca comprobado por proyecto padre) lleva ahora el mismo enlace real "✎ Editar en Arquitecto" -- visible al *navegar*, no solo al intentar crear.
+
+**Verificado de extremo a extremo**: sintaxis/colisión con `node`/`vm.Script` en los 3 ficheros; `renderNodo()` probado en aislado -- el botón aparece en un nodo página real (`Recursos (recursos.html)`) y NO aparece en un Producto real normal de otro proyecto (`La Yurta`); `renderProducto()` de Mapa probado en aislado -- enlace real con el `id` correcto. En el navegador real (con `fetch` simulado devolviendo la jerarquía real exacta, dado el límite ya conocido del sandbox de puertos): forzado `?editar=PRD-0009` vía `history.pushState` (el propio navegador de vista previa normaliza la URL y pierde el query string real al navegar directo, artefacto del entorno de pruebas, no del código) -- confirmado que preselecciona "Recursos", carga sus cajas reales, y pinta el enlace real de vuelta "Ver posición real de Recursos en Mapa".
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

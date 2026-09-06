@@ -160,6 +160,12 @@ async function intentarEncolarReconstruccionSiAplica(tipo, padreId) {
 // §8.129: "desactivar" real (nunca borrado fisico) -- ver comentario real junto a
 // establecerActivoReal() en servidor_memoria.mjs. Aviso explicito de hijos reales antes
 // de decidir, nunca cascada automatica -- cada nivel se desactiva a mano si se quiere.
+// §8.138: puente real hacia Arquitecto -- un nodo Producto real cuyo nombre sigue la
+// convencion "(archivo.html)" es una pagina real de Indice ya registrada (mismo regex
+// real que ya usan mapa.html/arquitecto.html para reconocerlas, nunca comprobado por
+// proyecto padre -- la convencion ya es suficiente, igual que en el resto del visor).
+const RE_PAGINA_REAL = /\(([\w.-]+\.html)\)/;
+
 function renderNodo(n) {
   const hijoTipo = SIGUIENTE_TIPO[n.tipo];
   const activo = n.activo !== false;
@@ -167,6 +173,10 @@ function renderNodo(n) {
   const botonActivo = activo
     ? `<button class="desactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', false, ${n.hijos.length})">🗑 Desactivar</button>`
     : `<button class="reactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', true, ${n.hijos.length})">♻ Reactivar</button>`;
+  const esPaginaReal = n.tipo === 'Producto' && RE_PAGINA_REAL.test(n.nombre || '');
+  const botonArquitecto = esPaginaReal
+    ? `<a class="ficha" href="arquitecto.html?editar=${encodeURIComponent(n.id)}">✎ Editar en Arquitecto</a>`
+    : '';
   return `
     <div class="nodo">
       <div class="fila${activo ? '' : ' inactiva'}" data-id="${n.id}">
@@ -176,6 +186,7 @@ function renderNodo(n) {
         <span class="badge ${n.retrasada ? 'alerta' : ''}">${n.estado || 'sin estado'}</span>
         ${n.porcentajeAvance !== '' ? `<span class="badge">${n.porcentajeAvance}%</span>` : ''}
         <a class="ficha" onclick="abrirFicha('${n.tipo}', '${n.id}', '${n.urlSheet}')">Ficha</a>
+        ${botonArquitecto}
         ${hijoTipo ? `<button class="crear" onclick="crear('${hijoTipo}', '${n.id}')">+ ${hijoTipo}</button>` : ''}
         ${botonActivo}
       </div>
