@@ -546,19 +546,16 @@ const RUTA_FRAGMENTOS_CAJAS = join(DIR_DATOS, 'fragmentos_cajas.json');
 function leerFragmentosCajas() {
   return existsSync(RUTA_FRAGMENTOS_CAJAS) ? JSON.parse(readFileSync(RUTA_FRAGMENTOS_CAJAS, 'utf-8')) : { fragmentos: {} };
 }
-// §8.127: columnaInicio/ancho son opcionales (posicion real en la rejilla de la
-// pagina) -- si no se dan, quedan null y el generador real las trata como "columna 1,
-// ancho completo", el mismo aspecto apilado de siempre. Nunca CSS libre aqui, solo dos
-// numeros reales.
-function guardarFragmentoCaja(procesoId, tipo, contenido, columnaInicio, ancho) {
+// §8.131: guarda el fragmento real de una caja tal cual lo manda el cliente --
+// deliberadamente agnostico de forma (antes de §8.131 era {tipo,contenido,columnaInicio,
+// ancho} plano; desde §8.131 es {cabecera,pie,layoutInterno,piezas,columnaInicio,ancho}).
+// La normalizacion entre ambas formas es logica de negocio pura (que forma tiene una
+// caja) y vive en generador_paginas.js (normalizarCaja), nunca duplicada aqui -- este
+// servidor solo guarda/devuelve bytes reales, mismo criterio que paginas_pendientes.
+function guardarFragmentoCaja(procesoId, caja) {
   const datos = leerFragmentosCajas();
   datos.fragmentos = datos.fragmentos || {};
-  datos.fragmentos[procesoId] = {
-    tipo, contenido,
-    columnaInicio: columnaInicio || null,
-    ancho: ancho || null,
-    actualizadoEn: new Date().toISOString(),
-  };
+  datos.fragmentos[procesoId] = { ...caja, actualizadoEn: new Date().toISOString() };
   writeFileSync(RUTA_FRAGMENTOS_CAJAS, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
@@ -1152,12 +1149,12 @@ const servidor = createServer(async (req, res) => {
     }
 
     if (req.method === 'POST' && req.url === '/api/fragmento_caja') {
-      const { procesoId, tipo, contenido, columnaInicio, ancho } = await leerCuerpo(req);
-      if (!procesoId || !tipo || !Array.isArray(contenido)) {
-        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan procesoId/tipo/contenido (array real)' })); return;
+      const { procesoId, ...caja } = await leerCuerpo(req);
+      if (!procesoId || !Array.isArray(caja.piezas)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan procesoId/piezas (array real)' })); return;
       }
       try {
-        guardarFragmentoCaja(procesoId, tipo, contenido, columnaInicio, ancho);
+        guardarFragmentoCaja(procesoId, caja);
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el fragmento real: ' + e.message })); return;

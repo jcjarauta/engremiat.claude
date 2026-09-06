@@ -355,10 +355,10 @@ async function reconstruirYEncolarPagina(productoId) {
   ]);
   const layoutId = layoutRes.ok ? (await layoutRes.json()).layoutId : LAYOUT_POR_DEFECTO;
 
-  const cajas = procesos.map((p, i) => ({
-    nombre: p.nombre, tipo: fragmentos[i].tipo, tareas: fragmentos[i].contenido || [],
-    columnaInicio: fragmentos[i].columnaInicio, ancho: fragmentos[i].ancho,
-  }));
+  // §8.131: se pasa el fragmento real tal cual (forma antigua plana o forma nueva con
+  // piezas) -- normalizarCaja() en generador_paginas.js decide que forma tiene, nunca
+  // se desestructura aqui un campo concreto que puede no existir en la forma nueva.
+  const cajas = procesos.map((p, i) => ({ nombre: p.nombre, ...fragmentos[i] }));
   const html = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
 
   const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {

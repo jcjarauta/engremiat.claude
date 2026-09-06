@@ -5,6 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Engremiat -- arquitecto</title>
 <link rel="stylesheet" href="tokens.css">
+<!-- §8.131: vis-network real -- misma version/CDN ya usada en 16 paginas del visor
+     (plantilla_grafo_espacio.html y demas), necesaria aqui para la vista previa en vivo
+     de la pieza "Insertar grafo" mientras se construye. -->
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"></script>
 <style>
   html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
   body { padding: 24px 28px 60px; max-width: 820px; }
@@ -20,12 +24,21 @@
   .caja { border-left: 3px solid var(--color-base-borde); border-radius: 0 8px 8px 0; padding: 12px 14px; margin-bottom: 10px; background: var(--color-base-fondo); }
   .caja .fila-caja { display: flex; gap: 8px; align-items: flex-start; }
   .caja .fila-caja input.nombre-caja { flex: 1; }
-  .caja .fila-caja select.tipo-caja { flex: 0 0 150px; }
-  .caja textarea.tareas-caja { width: 100%; margin-top: 6px; min-height: 54px; resize: vertical; }
-  .caja p.ayuda-tipo { font-size: 10.5px; color: var(--color-base-texto-tenue); margin: 4px 0 0; }
-  .caja .fila-grid { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
-  .caja .fila-grid label { display: inline; margin: 0; }
-  .caja .fila-grid input[type="number"] { width: 52px; }
+  /* §8.131: rejilla interna de piezas dentro de una caja -- cabecera/pie/layout propios,
+     mismo patron visual que las cajas de pagina, un nivel mas adentro. */
+  .caja .fila-posicion-pagina, .caja .fila-layout-interno { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 11px; color: var(--color-base-texto-tenue); }
+  .caja .fila-posicion-pagina input[type="number"] { width: 48px; }
+  .caja .fila-layout-interno select { flex: 1; }
+  .caja input.cabecera-caja, .caja input.pie-caja { width: 100%; margin-top: 8px; box-sizing: border-box; }
+  .caja .lista-piezas { margin-top: 8px; }
+  .pieza { border-left: 2px solid var(--color-base-borde); border-radius: 0 6px 6px 0; padding: 8px 10px; margin-top: 8px; background: var(--color-base-fondo); }
+  .pieza .fila-pieza { display: flex; gap: 6px; align-items: center; }
+  .pieza select.tipo-pieza { flex: 1; }
+  .pieza input.columna-pieza, .pieza input.ancho-pieza { width: 42px; flex: 0 0 42px; }
+  .pieza textarea.contenido-pieza { width: 100%; margin-top: 6px; min-height: 44px; resize: vertical; box-sizing: border-box; }
+  .pieza select.grafo-pieza { width: 100%; margin-top: 6px; box-sizing: border-box; }
+  .pieza .preview-grafo { margin-top: 6px; }
+  button.mini { padding: 3px 8px; font-size: 10.5px; }
   button { font-size: 12.5px; color: var(--color-base-texto); background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 7px 14px; cursor: pointer; }
   button:hover { border-color: #6ea8ff; }
   button.quitar { padding: 4px 9px; font-size: 11px; color: #e85c8a; border-color: #e85c8a55; }
@@ -68,7 +81,7 @@
   <div class="fila">
     <div style="flex:1;">
       <label>Layout real de la página (mismo catálogo que "Editar página existente")</label>
-      <select id="layoutPaginaNueva" style="width:100%;"></select>
+      <select id="layoutPaginaNueva" style="width:100%;" onchange="alCambiarLayoutPaginaNueva()"></select>
     </div>
   </div>
 
@@ -116,8 +129,6 @@
 <script src="generador_paginas.js"></script>
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
-let contadorCajas = 0;
-
 // Mismo estandar real que ya usa grafos.html (TIPOS_REALES, linea 114) -- nunca una
 // lista distinta inventada aqui. "Espacio" primero y por defecto porque es el tipo
 // real mas comun (una pagina nueva casi siempre es un espacio de trabajo).
@@ -127,12 +138,26 @@ const TIPOS_REALES = ['Espacio', 'Personaje', 'Recurso', 'Modulo', 'Herramienta'
     TIPOS_REALES.map(t => '<option value="' + t + '">' + t + '</option>').join('');
 })();
 
+// Helpers reales de opciones -- reutilizados tanto al crear pagina nueva como al editar
+// una existente, nunca dos listas de <option> distintas para el mismo catalogo real.
+function opcionesLayoutHtml(seleccionado) {
+  return Object.entries(LAYOUTS_PAGINA)
+    .map(([v, info]) => '<option value="' + v + '"' + (v === (seleccionado || LAYOUT_POR_DEFECTO) ? ' selected' : '') + '>' + info.etiqueta + '</option>').join('');
+}
+function opcionesTipoPiezaHtml(seleccionado) {
+  return Object.entries(TIPOS_CAJA)
+    .map(([v, info]) => '<option value="' + v + '"' + (v === seleccionado ? ' selected' : '') + '>' + info.etiqueta + '</option>').join('');
+}
+function opcionesGrafoHtml(seleccionado) {
+  return '<option value="">-- elige un grafo real --</option>' + Object.entries(CATALOGO_GRAFOS)
+    .map(([id, info]) => '<option value="' + id + '"' + (id === seleccionado ? ' selected' : '') + '>' + escapeHtmlLocal(info.etiqueta) + '</option>').join('');
+}
+
 // Mismo catalogo real LAYOUTS_PAGINA de generador_paginas.js que ya usa "Editar pagina
 // existente" -- una pagina nueva tambien elige su layout desde el primer momento, en vez
 // de nacer siempre a una columna y tener que ir luego a editar para cambiarlo.
 (function cargarLayoutsPaginaNueva() {
-  document.getElementById('layoutPaginaNueva').innerHTML = Object.entries(LAYOUTS_PAGINA)
-    .map(([v, info]) => '<option value="' + v + '"' + (v === LAYOUT_POR_DEFECTO ? ' selected' : '') + '>' + info.etiqueta + '</option>').join('');
+  document.getElementById('layoutPaginaNueva').innerHTML = opcionesLayoutHtml(LAYOUT_POR_DEFECTO);
 })();
 
 function slug(s) {
@@ -147,29 +172,156 @@ function slug(s) {
 // arbol_campanas.html) -- nunca duplicados aqui, esa duplicacion fue justo lo que causo
 // el bug real de §8.126.
 
-function actualizarAyudaCaja(selectEl) {
-  const caja = selectEl.closest('.caja');
-  const info = TIPOS_CAJA[selectEl.value] || TIPOS_CAJA.lista;
-  caja.querySelector('.tareas-caja').placeholder = info.ayuda;
-  caja.querySelector('.ayuda-tipo').textContent = info.ayuda;
+// §8.131: bloque real de UNA pieza dentro de una caja -- tipo (12 reales, ver
+// TIPOS_CAJA), su columna/ancho dentro del layout interno de la caja, y botones reales
+// de reordenar (arriba/abajo, confirmado explícito por el operador frente a
+// drag&drop nuevo). 'grafo' no lleva textarea -- lleva el desplegable del catálogo real
+// + vista previa en vivo (ver alElegirGrafoPieza).
+function crearBloquePiezaHtml(pieza) {
+  pieza = pieza || { tipo: 'lista', contenido: [] };
+  const esGrafo = pieza.tipo === 'grafo';
+  const ayuda = (TIPOS_CAJA[pieza.tipo] || TIPOS_CAJA.lista).ayuda;
+  const restoHtml = esGrafo
+    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml(pieza.grafoId) + '</select><div class="preview-grafo"></div>'
+    : '<textarea class="contenido-pieza" placeholder="' + ayuda + '">' + escapeHtmlLocal((pieza.contenido || []).join('\n')) + '</textarea>';
+  return (
+    '<div class="pieza">' +
+      '<div class="fila-pieza">' +
+        '<select class="tipo-pieza" onchange="alCambiarTipoPieza(this)">' + opcionesTipoPiezaHtml(pieza.tipo) + '</select>' +
+        '<input type="number" class="columna-pieza" min="1" value="' + (pieza.columnaInicio || 1) + '" title="Columna dentro de la caja">' +
+        '<input type="number" class="ancho-pieza" min="1" value="' + (pieza.ancho || 1) + '" title="Ancho dentro de la caja">' +
+        '<button class="mini" onclick="moverPieza(this, -1)" title="Subir">↑</button>' +
+        '<button class="mini" onclick="moverPieza(this, 1)" title="Bajar">↓</button>' +
+        '<button class="quitar mini" onclick="this.closest(\'.pieza\').remove()">Quitar</button>' +
+      '</div>' +
+      restoHtml +
+    '</div>'
+  );
+}
+
+function moverPieza(btn, direccion) {
+  const pieza = btn.closest('.pieza');
+  const hermano = direccion < 0 ? pieza.previousElementSibling : pieza.nextElementSibling;
+  if (!hermano) return;
+  if (direccion < 0) pieza.parentNode.insertBefore(pieza, hermano);
+  else pieza.parentNode.insertBefore(hermano, pieza);
+}
+
+function alCambiarTipoPieza(selectEl) {
+  const piezaEl = selectEl.closest('.pieza');
+  const filaEl = piezaEl.querySelector('.fila-pieza');
+  [...piezaEl.children].forEach(ch => { if (ch !== filaEl) ch.remove(); });
+  const tipo = selectEl.value;
+  const resto = tipo === 'grafo'
+    ? '<select class="grafo-pieza" onchange="alElegirGrafoPieza(this)">' + opcionesGrafoHtml('') + '</select><div class="preview-grafo"></div>'
+    : '<textarea class="contenido-pieza" placeholder="' + (TIPOS_CAJA[tipo] || TIPOS_CAJA.lista).ayuda + '"></textarea>';
+  filaEl.insertAdjacentHTML('afterend', resto);
+}
+
+// §8.131: vista previa REAL en vivo -- fetch real al grafo_X.json elegido y un mini
+// vis-network con la misma fisica ya probada (plantilla_grafo_espacio.html), para ver de
+// verdad que se va a insertar antes de construir la pagina. destruye la red anterior si
+// ya habia una (cambiar de grafo en el mismo desplegable no debe apilar redes reales).
+async function alElegirGrafoPieza(selectEl) {
+  const piezaEl = selectEl.closest('.pieza');
+  const contenedor = piezaEl.querySelector('.preview-grafo');
+  const grafoId = selectEl.value;
+  if (piezaEl._redPreview) { try { piezaEl._redPreview.destroy(); } catch {} piezaEl._redPreview = null; }
+  contenedor.innerHTML = '';
+  contenedor.style.cssText = '';
+  const info = CATALOGO_GRAFOS[grafoId];
+  if (!info) return;
+  contenedor.style.cssText = 'height:160px; border:1px solid var(--color-base-borde); border-radius:6px;';
+  try {
+    const datos = await (await fetch(info.archivo)).json();
+    const nodes = new vis.DataSet(datos.nodos.map(n => ({ id: n.id, label: n.nombre, title: n.id, shape: 'dot', size: 6, color: '#4c9aff', font: { color: 'rgba(0,0,0,0)' } })));
+    const edges = new vis.DataSet(datos.aristas.map((a, i) => ({ id: i, from: a.source, to: a.target, color: { color: '#3a3b47' } })));
+    const red = new vis.Network(contenedor, { nodes, edges }, {
+      physics: { solver: 'forceAtlas2Based', forceAtlas2Based: { gravitationalConstant: -50, springLength: 70, centralGravity: 0.01, damping: 0.4, avoidOverlap: 0.6 }, stabilization: { iterations: 100 } },
+      interaction: { hover: true, dragView: true, zoomView: true },
+    });
+    red.once('stabilizationIterationsDone', () => { red.setOptions({ physics: false }); red.setSize('100%', '100%'); red.redraw(); red.fit({ animation: false }); });
+    piezaEl._redPreview = red;
+  } catch (e) {
+    contenedor.innerHTML = '<p class="hint">No se pudo cargar ' + escapeHtmlLocal(info.archivo) + ' real ahora mismo.</p>';
+  }
+}
+
+function anadirPiezaACaja(btn) {
+  btn.closest('.caja').querySelector('.lista-piezas').insertAdjacentHTML('beforeend', crearBloquePiezaHtml(null));
+}
+
+// §8.131: bloque real de UNA caja -- ahora con cabecera/pie reales opcionales y su
+// propio layout interno (mismo catálogo LAYOUTS_PAGINA, un nivel más adentro), más su
+// posición real dentro de la rejilla de la PÁGINA (columna/ancho). Compartido entre
+// "Crear página nueva" (nombreEditable, permitirQuitar) y "Editar página existente"
+// (nombre fijo real del Proceso, sin quitar -- nunca se borran Procesos desde aquí,
+// procesoId marca de qué Proceso real es este bloque).
+function crearBloqueCajaHtml(opciones) {
+  const o = Object.assign({ nombre: '', nombreEditable: true, cabecera: '', pie: '', layoutInterno: LAYOUT_POR_DEFECTO, piezas: [null], columnaInicio: 1, ancho: 1, permitirQuitar: true, procesoId: '' }, opciones);
+  const nombreHtml = o.nombreEditable
+    ? '<input class="nombre-caja" type="text" placeholder="Nombre real de la caja (ej. Backlog real)" value="' + escapeHtmlLocal(o.nombre) + '">'
+    : '<div style="flex:1; padding:7px 0; font-size:12.5px;"><b>' + escapeHtmlLocal(o.nombre) + '</b></div>';
+  const quitarHtml = o.permitirQuitar ? '<button class="quitar" onclick="this.closest(\'.caja\').remove()">Quitar</button>' : '';
+  const attrs = o.procesoId ? ' data-proceso-id="' + escapeHtmlLocal(o.procesoId) + '" data-nombre="' + escapeHtmlLocal(o.nombre) + '"' : '';
+  return (
+    '<div class="caja"' + attrs + '>' +
+      '<div class="fila-caja">' + nombreHtml + quitarHtml + '</div>' +
+      '<div class="fila-posicion-pagina">' +
+        '<label style="margin:0;">Columna</label><input type="number" class="columna-caja-pagina" min="1" value="' + o.columnaInicio + '">' +
+        '<label style="margin:0;">Ancho</label><input type="number" class="ancho-caja-pagina" min="1" value="' + o.ancho + '">' +
+        '<span>posición de esta caja en la página</span>' +
+      '</div>' +
+      '<input class="cabecera-caja" type="text" placeholder="Cabecera real (opcional)" value="' + escapeHtmlLocal(o.cabecera) + '">' +
+      '<div class="fila-layout-interno">' +
+        '<label style="margin:0;">Layout interno</label>' +
+        '<select class="layout-interno-caja" onchange="alCambiarLayoutInternoCaja(this)">' + opcionesLayoutHtml(o.layoutInterno) + '</select>' +
+      '</div>' +
+      '<div class="lista-piezas">' + o.piezas.map(crearBloquePiezaHtml).join('') + '</div>' +
+      '<button class="mini" onclick="anadirPiezaACaja(this)">+ Añadir pieza</button>' +
+      '<input class="pie-caja" type="text" placeholder="Pie real (opcional)" value="' + escapeHtmlLocal(o.pie) + '">' +
+    '</div>'
+  );
+}
+
+// Nunca deja pedir una columna/ancho de pieza mayor que las columnas reales del layout
+// interno elegido para esa caja -- mismo criterio ya usado a nivel de página.
+function alCambiarLayoutInternoCaja(selectEl) {
+  const layout = LAYOUTS_PAGINA[selectEl.value] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
+  selectEl.closest('.caja').querySelectorAll('.lista-piezas > .pieza').forEach(piezaEl => {
+    piezaEl.querySelector('.columna-pieza').max = layout.columnas;
+    piezaEl.querySelector('.ancho-pieza').max = layout.columnas;
+  });
+}
+
+// Mismo criterio a nivel de página: la columna/ancho real de cada caja nunca puede pedir
+// más columnas de las que el layout de página elegido tiene de verdad.
+function alCambiarLayoutPaginaNueva() {
+  const layout = LAYOUTS_PAGINA[document.getElementById('layoutPaginaNueva').value] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
+  document.querySelectorAll('#listaCajas > .caja').forEach(cajaEl => {
+    cajaEl.querySelector('.columna-caja-pagina').max = layout.columnas;
+    cajaEl.querySelector('.ancho-caja-pagina').max = layout.columnas;
+  });
+}
+
+// Lee del DOM real las piezas ya construidas de una caja, en el orden real en que
+// quedaron tras subir/bajar -- ese orden es el que se guarda y se genera.
+function leerPiezasDeCaja(cajaEl) {
+  return [...cajaEl.querySelectorAll(':scope > .lista-piezas > .pieza')].map(piezaEl => {
+    const tipo = piezaEl.querySelector('.tipo-pieza').value;
+    const columnaInicio = Number(piezaEl.querySelector('.columna-pieza').value) || 1;
+    const ancho = Number(piezaEl.querySelector('.ancho-pieza').value) || 1;
+    if (tipo === 'grafo') {
+      return { tipo, grafoId: piezaEl.querySelector('.grafo-pieza').value, columnaInicio, ancho };
+    }
+    const contenido = piezaEl.querySelector('.contenido-pieza').value.split('\n').map(t => t.trim()).filter(Boolean);
+    return { tipo, contenido, columnaInicio, ancho };
+  });
 }
 
 function anadirCaja(nombreInicial) {
-  contadorCajas++;
-  const id = 'caja' + contadorCajas;
-  const div = document.createElement('div');
-  div.className = 'caja';
-  div.id = id;
-  const opcionesTipo = Object.entries(TIPOS_CAJA).map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('');
-  div.innerHTML =
-    '<div class="fila-caja">' +
-      '<input class="nombre-caja" type="text" placeholder="Nombre real de la caja (ej. Backlog real)" value="' + (nombreInicial || '') + '">' +
-      '<select class="tipo-caja" onchange="actualizarAyudaCaja(this)">' + opcionesTipo + '</select>' +
-      '<button class="quitar" onclick="document.getElementById(\'' + id + '\').remove()">Quitar</button>' +
-    '</div>' +
-    '<textarea class="tareas-caja" placeholder="' + TIPOS_CAJA.lista.ayuda + '"></textarea>' +
-    '<p class="ayuda-tipo">' + TIPOS_CAJA.lista.ayuda + '</p>';
-  document.getElementById('listaCajas').appendChild(div);
+  document.getElementById('listaCajas').insertAdjacentHTML('beforeend', crearBloqueCajaHtml({ nombre: nombreInicial || '' }));
+  alCambiarLayoutPaginaNueva();
 }
 anadirCaja(); // arranca con una caja real vacía, nunca cero
 
@@ -247,11 +399,17 @@ async function construirPagina() {
   estado.className = 'estado';
   estado.textContent = '';
 
-  const cajasEl = [...document.querySelectorAll('.caja')];
+  // Escopado real a #listaCajas -- nunca ".caja" a secas, que también matchearía las
+  // cajas de "Editar página existente" si ya se cargó una antes en la misma sesión.
+  const cajasEl = [...document.querySelectorAll('#listaCajas > .caja')];
   const cajas = cajasEl.map(el => ({
     nombre: el.querySelector('.nombre-caja').value.trim(),
-    tipo: el.querySelector('.tipo-caja').value || 'lista',
-    tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
+    cabecera: el.querySelector('.cabecera-caja').value.trim(),
+    pie: el.querySelector('.pie-caja').value.trim(),
+    layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+    columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+    ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+    piezas: leerPiezasDeCaja(el),
   })).filter(c => c.nombre);
 
   if (!nombrePagina) { estado.className = 'estado error'; estado.textContent = 'Falta el nombre real de la página.'; return; }
@@ -265,14 +423,25 @@ async function construirPagina() {
     // Guarda el layout elegido ya desde la creacion -- si esto falla no bloquea nada real,
     // "Editar pagina existente" simplemente lo veria a LAYOUT_POR_DEFECTO la primera vez.
     guardarLayoutPaginaReal(productoId, layoutId).catch(() => {});
-    const idsCajas = [];
+    let totalFunciones = 0;
     for (const caja of cajas) {
       const procesoId = await crearRegistroReal('PROCESO', caja.nombre, productoId);
-      const idsTareas = [];
-      for (const tarea of caja.tareas) {
-        idsTareas.push(await crearRegistroReal('TAREA', tarea, procesoId));
+      // Una Tarea real por linea de cada pieza con contenido -- 'grafo' no crea Tareas
+      // (no tiene lineas reales, referencia un grafo ya existente). El fragmento real
+      // completo (cabecera/pie/layoutInterno/piezas) se guarda aparte, igual que ya hace
+      // "Editar pagina existente" desde §8.119 -- el Sheet solo necesita saber que hay
+      // trabajo real bajo este Proceso, no la estructura fina de piezas.
+      for (const pieza of caja.piezas) {
+        if (pieza.tipo === 'grafo') continue;
+        for (const linea of (pieza.contenido || [])) {
+          await crearRegistroReal('TAREA', linea, procesoId);
+          totalFunciones++;
+        }
       }
-      idsCajas.push({ procesoId, nombre: caja.nombre, idsTareas });
+      await guardarFragmentoCajaReal(procesoId, {
+        cabecera: caja.cabecera, pie: caja.pie, layoutInterno: caja.layoutInterno,
+        piezas: caja.piezas, columnaInicio: caja.columnaInicio, ancho: caja.ancho,
+      }).catch(() => {});
     }
 
     const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
@@ -286,7 +455,7 @@ async function construirPagina() {
       await guardarPaginaPendienteReal(productoId, nombrePagina, archivoPagina, colgarDe, nombreColgarDe, htmlGenerado);
       estado.className = 'estado ok';
       estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
+        totalFunciones + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. HTML guardado real en la cola de aplicación.';
       pasos = [
         'Ejecuta <code>node aplicar_pagina_arquitecto.mjs ' + escapeHtmlLocal(archivoPagina) + '</code> -- guarda el fichero real, añade su línea de volumen en <code>docker-compose.yml</code>, despliega y verifica, todo automático.',
         pasoEnlazar,
@@ -295,7 +464,7 @@ async function construirPagina() {
     } catch (e) {
       estado.className = 'estado ok';
       estado.textContent = 'Estructura real creada: ' + productoId + ' (' + cajas.length + ' caja(s) real(es), ' +
-        cajas.reduce((n, c) => n + c.tareas.length, 0) + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
+        totalFunciones + ' función(es) real(es)) -- dentro de Índice (' + PROYECTO_INDICE_ID + '), colgada de ' + colgarDe + ', tipo ' + tipoPagina + '. Aviso: no se pudo guardar en la cola de aplicación (' + e.message + ') -- sigue el camino manual de abajo, el HTML completo ya está en el cuadro de arriba.';
       pasos = [
         'Guarda el HTML de arriba como <code>tools/gobierno/graphify_visor/' + escapeHtmlLocal(archivoPagina) + '</code>.',
         'Añade la fila real <code>./' + escapeHtmlLocal(archivoPagina) + ':/app/' + escapeHtmlLocal(archivoPagina) + ':ro</code> al volumen de <code>graphify-visor</code> en <code>docker-compose.yml</code>.',
@@ -314,14 +483,14 @@ async function construirPagina() {
   }
 }
 
-// §8.119: guarda solo el contenido real de una caja (nunca su nombre ni su tipo de
-// registro en el Sheet -- eso es estructura, fuera de alcance aqui). El Sheet solo
-// sabia el NOMBRE/orden real; el contenido de verdad vive aparte porque nunca tuvo
-// donde guardarse hasta ahora.
-async function guardarFragmentoCajaReal(procesoId, tipo, contenido, columnaInicio, ancho) {
+// §8.119/§8.131: guarda solo el contenido real de una caja (nunca su nombre ni su tipo
+// de registro en el Sheet -- eso es estructura, fuera de alcance aqui). El Sheet solo
+// sabia el NOMBRE/orden real; el contenido de verdad (desde §8.131: cabecera/pie/
+// layoutInterno/piezas) vive aparte porque nunca tuvo donde guardarse hasta ahora.
+async function guardarFragmentoCajaReal(procesoId, caja) {
   const r = await fetch(URL_MEMORIA + '/api/fragmento_caja', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ procesoId, tipo, contenido, columnaInicio, ancho }),
+    body: JSON.stringify({ procesoId, ...caja }),
   });
   if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
 }
@@ -343,12 +512,12 @@ async function guardarLayoutPaginaReal(productoId, layoutId) {
 
 // Al cambiar el layout en el editor, actualiza el limite real (max) de las cajas de
 // columna/ancho de cada caja ya pintada -- nunca deja que se pida una columna que el
-// layout elegido no tiene.
+// layout elegido no tiene. Mismo criterio/nombres de clase que alCambiarLayoutPaginaNueva().
 function alCambiarLayoutPagina() {
   const layout = LAYOUTS_PAGINA[document.getElementById('layoutPagina').value] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
-  document.querySelectorAll('#listaCajasEditar .caja').forEach(el => {
-    el.querySelector('.columna-caja').max = layout.columnas;
-    el.querySelector('.ancho-caja').max = layout.columnas;
+  document.querySelectorAll('#listaCajasEditar > .caja').forEach(el => {
+    el.querySelector('.columna-caja-pagina').max = layout.columnas;
+    el.querySelector('.ancho-caja-pagina').max = layout.columnas;
   });
 }
 
@@ -406,39 +575,36 @@ async function cargarCajasEditar() {
     const [fragmentos, layoutId] = await Promise.all([
       Promise.all(procesos.map(p =>
         fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
-          .then(r => r.ok ? r.json() : { tipo: 'lista', contenido: [] })
+          .then(r => r.ok ? r.json() : { piezas: [] })
       )),
       leerLayoutPaginaReal(productoId),
     ]);
 
-    const selectLayout = document.getElementById('layoutPagina');
-    selectLayout.innerHTML = Object.entries(LAYOUTS_PAGINA)
-      .map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('')
-      .replace('value="' + layoutId + '"', 'value="' + layoutId + '" selected');
-    const layout = LAYOUTS_PAGINA[layoutId] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
+    document.getElementById('layoutPagina').innerHTML = opcionesLayoutHtml(layoutId);
 
-    const opcionesTipo = Object.entries(TIPOS_CAJA).map(([v, info]) => '<option value="' + v + '">' + info.etiqueta + '</option>').join('');
+    // §8.131: mismo bloque real de caja que "Crear página nueva" (crearBloqueCajaHtml)
+    // -- nombre fijo (nunca editable, es el Proceso real ya existente), sin "Quitar"
+    // (nunca se borran Procesos reales desde aqui). El fragmento guardado puede venir en
+    // la forma antigua plana (antes de §8.131) o la nueva con piezas -- normalizarCaja()
+    // decide, nunca se lee un campo suelto que puede no existir en la otra forma.
     lista.innerHTML = procesos.map((p, i) => {
-      const frag = fragmentos[i] || { tipo: 'lista', contenido: [] };
-      const ayuda = (TIPOS_CAJA[frag.tipo] || TIPOS_CAJA.lista).ayuda;
-      const columnaInicio = frag.columnaInicio || 1;
-      const ancho = frag.ancho || layout.columnas;
-      return '<div class="caja" data-proceso-id="' + p.id + '" data-nombre="' + escapeHtmlLocal(p.nombre) + '">' +
-        '<div class="fila-caja">' +
-          '<div style="flex:1; padding:7px 0; font-size:12.5px;"><b>' + escapeHtmlLocal(p.nombre) + '</b></div>' +
-          '<select class="tipo-caja" onchange="actualizarAyudaCaja(this)">' + opcionesTipo.replace('value="' + frag.tipo + '"', 'value="' + frag.tipo + '" selected') + '</select>' +
-        '</div>' +
-        '<textarea class="tareas-caja" placeholder="' + ayuda + '">' + escapeHtmlLocal((frag.contenido || []).join('\n')) + '</textarea>' +
-        '<p class="ayuda-tipo">' + ayuda + '</p>' +
-        '<div class="fila-grid">' +
-          '<label>Columna</label><input type="number" class="columna-caja" min="1" max="' + layout.columnas + '" value="' + columnaInicio + '">' +
-          '<label>Ancho</label><input type="number" class="ancho-caja" min="1" max="' + layout.columnas + '" value="' + ancho + '">' +
-        '</div>' +
-      '</div>';
+      const c = normalizarCaja(fragmentos[i] || {});
+      return crearBloqueCajaHtml({
+        nombre: p.nombre, nombreEditable: false, permitirQuitar: false, procesoId: p.id,
+        cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
+        columnaInicio: c.columnaInicio || 1, ancho: c.ancho || 1, piezas: c.piezas,
+      });
     }).join('');
+
+    // Vista previa en vivo de las piezas "grafo" ya guardadas -- que se vea de verdad
+    // que grafo real tiene cada una, no solo el desplegable con el valor seleccionado.
+    document.querySelectorAll('#listaCajasEditar .grafo-pieza').forEach(sel => {
+      if (sel.value) alElegirGrafoPieza(sel);
+    });
 
     paginaEditarActual = { productoId, nombrePagina, archivo, colgarDe };
     boton.disabled = false;
+    alCambiarLayoutPagina();
   } catch (e) {
     lista.innerHTML = '<p class="estado error">No se pudo leer de verdad: ' + escapeHtmlLocal(e.message) + '</p>';
   }
@@ -454,20 +620,25 @@ async function guardarYReconstruir() {
   boton.disabled = true;
 
   const layoutId = document.getElementById('layoutPagina').value || LAYOUT_POR_DEFECTO;
-  const cajasEl = [...document.querySelectorAll('#listaCajasEditar .caja')];
+  const cajasEl = [...document.querySelectorAll('#listaCajasEditar > .caja')];
   const cajas = cajasEl.map(el => ({
     procesoId: el.dataset.procesoId,
     nombre: el.dataset.nombre,
-    tipo: el.querySelector('.tipo-caja').value || 'lista',
-    tareas: el.querySelector('.tareas-caja').value.split('\n').map(t => t.trim()).filter(Boolean),
-    columnaInicio: Number(el.querySelector('.columna-caja').value) || 1,
-    ancho: Number(el.querySelector('.ancho-caja').value) || 1,
+    cabecera: el.querySelector('.cabecera-caja').value.trim(),
+    pie: el.querySelector('.pie-caja').value.trim(),
+    layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+    columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+    ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+    piezas: leerPiezasDeCaja(el),
   }));
 
   try {
     await guardarLayoutPaginaReal(productoId, layoutId);
     for (const c of cajas) {
-      await guardarFragmentoCajaReal(c.procesoId, c.tipo, c.tareas, c.columnaInicio, c.ancho);
+      await guardarFragmentoCajaReal(c.procesoId, {
+        cabecera: c.cabecera, pie: c.pie, layoutInterno: c.layoutInterno,
+        piezas: c.piezas, columnaInicio: c.columnaInicio, ancho: c.ancho,
+      });
     }
     const htmlGenerado = generarHtmlReal(nombrePagina, cajas, colgarDe, layoutId);
     // reconstruccion=true -- distingue de una pagina nueva en la cola, ver comentario
