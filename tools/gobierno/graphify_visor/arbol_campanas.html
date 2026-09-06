@@ -175,7 +175,7 @@ function renderNodo(n) {
     : `<button class="reactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', true, ${n.hijos.length})">♻ Reactivar</button>`;
   const esPaginaReal = n.tipo === 'Producto' && RE_PAGINA_REAL.test(n.nombre || '');
   const botonArquitecto = esPaginaReal
-    ? `<a class="ficha" href="arquitecto.html?editar=${encodeURIComponent(n.id)}">✎ Editar en Arquitecto</a>`
+    ? `<a class="ficha" href="arquitecto?editar=${encodeURIComponent(n.id)}">✎ Editar en Arquitecto</a>`
     : '';
   return `
     <div class="nodo">

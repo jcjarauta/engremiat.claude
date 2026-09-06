@@ -42,7 +42,7 @@
 <body>
 <a class="volver" href="home.html">← Home</a>
 <h1>Mapa -- jerarquía real de un Proyecto</h1>
-<p class="hint">Árbol real del Proyecto elegido: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). El botón "Ejecutar ahora" que aparece después necesita <code>node servidor_aplicar_local.mjs</code> arrancado en tu máquina (escucha solo en <code>127.0.0.1</code>) -- sin él, aplica el cambio a mano con el comando de siempre. Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver el Proyecto elegido dentro del árbol completo (con todas las demás Campañas/Proyectos reales), ábrelo directamente en <a id="enlaceArbolCompleto" href="arbol_campanas.html?proyectoId=PRO-0002">árbol de campañas</a>.</p>
+<p class="hint">Árbol real del Proyecto elegido: Proyecto → Producto (página) → Proceso (caja) → Tarea. Las páginas 🔒 son reales pero hechas a mano -- se ven en solo lectura, nunca arrastrables (reconstruirlas sobrescribiría su contenido real de verdad). Solo las páginas creadas <b>con Arquitecto</b> admiten arrastrar sus cajas: <b>dentro</b> del mismo Producto para reordenar (se guarda sola, bajo riesgo -- usa el campo real <code>ORDEN_SECUENCIA</code>), o a <b>otro Producto</b> para moverla de página de verdad (pide confirmación explícita y reconstruye las DOS páginas reales afectadas). El botón "Ejecutar ahora" que aparece después necesita <code>node servidor_aplicar_local.mjs</code> arrancado en tu máquina (escucha solo en <code>127.0.0.1</code>) -- sin él, aplica el cambio a mano con el comando de siempre. Para crear páginas nuevas o editar el contenido real de una caja, usa <a href="arquitecto.html">Arquitecto</a>. Para ver el Proyecto elegido dentro del árbol completo (con todas las demás Campañas/Proyectos reales), ábrelo directamente en <a id="enlaceArbolCompleto" href="arbol_campanas?proyectoId=PRO-0002">árbol de campañas</a>.</p>
 
 <div style="max-width:420px; margin-bottom:12px;">
   <label style="display:block; font-size:11px; color:var(--color-base-texto-tenue); margin-bottom:3px;">¿Qué Proyecto real quieres organizar? (§8.139 -- ya no fijo a Índice)</label>
@@ -75,7 +75,7 @@ let selectorProyectoPoblado = false;
 
 function alElegirProyecto() {
   proyectoElegidoId = document.getElementById('proyectoElegido').value || PROYECTO_INDICE_ID;
-  document.getElementById('enlaceArbolCompleto').href = 'arbol_campanas.html?proyectoId=' + encodeURIComponent(proyectoElegidoId);
+  document.getElementById('enlaceArbolCompleto').href = 'arbol_campanas?proyectoId=' + encodeURIComponent(proyectoElegidoId);
   cargarMapa();
 }
 
@@ -179,7 +179,7 @@ function renderProducto(p) {
       '<span class="nombre" onclick="toggleArbolNodo(this.previousElementSibling)">' + candado + escapeHtmlLocal(p.nombre) + '</span>' +
       '<span class="badge">' + escapeHtmlLocal(p.archivo) + '</span>' +
       (p.creadaConArquitecto ? '' : '<span class="badge">hecha a mano, solo lectura</span>') +
-      ' <a href="arquitecto.html?editar=' + encodeURIComponent(p.id) + '" style="font-size:11px; color:#6fb3f2; text-decoration:none;">✎ Editar en Arquitecto</a>' +
+      ' <a href="arquitecto?editar=' + encodeURIComponent(p.id) + '" style="font-size:11px; color:#6fb3f2; text-decoration:none;">✎ Editar en Arquitecto</a>' +
     '</div>' +
     '<div class="hijos abierto" ' + atributosColumna + '>' +
       (p.procesos.length ? p.procesos.map(pc => renderProceso(pc, p)).join('') : '<p class="vacia">Sin cajas reales todavía.</p>') +

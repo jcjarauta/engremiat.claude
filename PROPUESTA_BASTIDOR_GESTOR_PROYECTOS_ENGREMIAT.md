@@ -1784,6 +1784,24 @@ Capturado real por el operador sobre el árbol de campañas real (con los 3 puen
 
 **Verificado en real, en ambos flujos que usan el deep-link**: tras el fix, `scrollY` pasa correctamente a la posición real del bloque "Editar página existente"; confirmado visualmente en un viewport de escritorio (1600×1000) que la sección aparece con la página real ya seleccionada ("Mapa (mapa.html)"), el puente real "Ver posición real de 'Mapa' en Mapa" (§8.138) visible, y su caja real ya cargada debajo. Nota de método: una primera comprobación visual en un viewport estrecho (800px, por debajo del punto de corte responsive de 1100px del boceto en vivo) mostró una captura completamente negra pese a que `elementFromPoint` confirmaba contenido real correcto en esa posición -- descartado como artefacto de captura del entorno de pruebas en modo apilado, no un fallo real, al confirmarse visualmente correcto en un viewport de escritorio normal.
 
+### 8.142 Segundo bug real, distinto del de §8.141: `serve` descartaba el `?editar=` al redirigir `.html` → sin extensión
+
+Tras desplegar el fix de §8.141, el operador reportó que el bug **seguía** para dos páginas reales concretas: *"al dar clic en indice me lleva a un arquitecto vacio, al dar clic en mapa tambien me lleva a arquietcto vacio, revisalo"* (Índice = PRD-0004, Mapa = PRD-0008).
+
+**Diagnóstico real, paso a paso**: primero se confirmó con `curl -sL` que el enlace real generado en `arbol_campanas.html` (`href="arquitecto.html?editar=${id}"`) seguía siendo correcto en el código fuente ya desplegado -- descartando un problema de despliegue/markup. Después se confirmó que el fix de scroll de §8.141 también estaba desplegado de verdad. Se trazó a mano la lógica completa de `inicializarProyectoYPaginas()`/`cargarPaginasEditables()` contra los datos reales exactos de `PRD-0004`/`PRD-0008` (leídos en vivo de `/api/jerarquia_campanas`) sin encontrar ningún fallo lógico -- lo que apuntaba a que el problema no estaba en el JavaScript de Arquitecto en absoluto.
+
+**Causa real encontrada**: `docker-compose.yml` sirve `graphify-visor` con `npx --yes serve /app -l 9320` -- el paquete `serve` trae **"clean URLs" activado por defecto**, que 301-redirige `/arquitecto.html` → `/arquitecto` cuando existe el fichero. Confirmado con `curl -sI "http://.../arquitecto.html?editar=PRD-0004"`: la cabecera `Location` real devuelta era `/arquitecto` -- **sin el query string**. El navegador sigue ese redirect automáticamente, así que `location.search` llegaba vacío a la página de verdad, y todo el bloque `if (idDesdeUrl && ...)` de §8.138 nunca se ejecutaba -- exactamente el síntoma reportado (formulario "Crear página nueva" en blanco). Esto explica por qué el fix de scroll de §8.141, aunque correcto para el bug que arreglaba, no bastaba: era un segundo bug real, independiente, en una capa distinta (servidor estático, no JavaScript de cliente).
+
+**Por qué las pruebas anteriores no lo detectaron**: toda la verificación de §8.138/§8.141 se hizo con `fetch` inyectado/mockeado en el navegador (por el límite ya conocido del sandbox contra `:9330`) -- ese método nunca pasa por el servidor HTTP real ni por sus redirects, así que el bug del redirect quedó invisible hasta la prueba real contra el servidor en vivo con `curl`.
+
+**Corregido**: los 4 enlaces reales que combinaban `.html` + query string se cambiaron para apuntar a la ruta sin extensión (que `serve` sirve directo en 200, sin redirect, preservando el query string de verdad):
+- [arbol_campanas.html:178](tools/gobierno/graphify_visor/arbol_campanas.html:178) -- `arquitecto?editar=`
+- [mapa.html:78](tools/gobierno/graphify_visor/mapa.html:78) -- `arbol_campanas?proyectoId=` (enlace dinámico) y su valor inicial en el `href` del HTML (línea 45)
+- [mapa.html:182](tools/gobierno/graphify_visor/mapa.html:182) -- `arquitecto?editar=`
+- [grafos.html:494](tools/gobierno/graphify_visor/grafos.html:494) -- `grafos?url=` (valor `pagina` guardado real en `/api/promover_grafo`)
+
+**Verificado en real tras el redespliegue**: `curl -sI "http://.../arquitecto?editar=PRD-0004"` y el mismo para `PRD-0008` devuelven **200 directo** (nunca 301), con el query string intacto. Verificación end-to-end en el navegador real (mismo método de `fetch` inyectado con los datos reales exactos de `PRO-0002`/`PRD-0004`/`PRD-0008`) tras la corrección: `location.search` = `?editar=PRD-0004` (o `PRD-0008`), `proyectoElegido` = `PRO-0002`, `paginaEditar` = el id correcto, y `window.scrollY` movido a la posición real del bloque "Editar página existente" (`elTop` ≈ 16px, igual que el fix de §8.141 preveía) -- confirmado para ambos casos reportados por el operador.
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**

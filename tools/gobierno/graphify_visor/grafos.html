@@ -491,7 +491,7 @@ async function promoverDesdeConstructor() {
   const descripcion = ultimoPreview.descripcion;
   if (!nombre) { alert('Falta el nombre real.'); return; }
   const id = nombre.replace(/[^a-z0-9_]/gi, '_').toLowerCase();
-  const pagina = 'grafos.html?url=' + encodeURIComponent(ultimoPreview.url);
+  const pagina = 'grafos?url=' + encodeURIComponent(ultimoPreview.url);
   const boton = document.getElementById('btnPromoverConstructor');
   boton.disabled = true;
   try {
