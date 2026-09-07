@@ -49,6 +49,20 @@
   #cajaFicha .campo span { word-break: break-word; }
   #cajaFicha .pie { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
   #cajaFicha .pie a { font-size: 11px; color: #6ea8ff; }
+  /* §8.163: modal real de creacion -- reemplaza la cadena de prompt() nativos (pedido
+     explicito: "quita este dialogo como requisito"). Mismo lenguaje visual que la Ficha
+     ya existente (#capaFicha/#cajaFicha), nunca fusionados en un mismo selector para no
+     arriesgar el modal ya en produccion. */
+  #capaCrear { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
+  #capaCrear.abierta { display: flex; }
+  #cajaCrear { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 20px; width: 420px; max-width: 90vw; max-height: 75vh; overflow-y: auto; }
+  #cajaCrear h3 { margin: 0 0 14px; font-size: 14px; }
+  #cajaCrear .campo-crear { margin-bottom: 10px; }
+  #cajaCrear .campo-crear label { display: block; font-size: 11px; color: var(--color-base-texto-suave); margin-bottom: 3px; }
+  #cajaCrear .campo-crear input { width: 100%; box-sizing: border-box; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; font-family: inherit; }
+  #cajaCrear .pie { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
+  #cajaCrear .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+  #cajaCrear .pie button.primario-crear { background: #4c9aff22; border-color: #4c9aff; }
   #cajaFicha .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
   .fila.resaltado-deeplink { background: #4c9aff22; border-radius: 4px; }
@@ -76,6 +90,17 @@
     <div class="pie">
       <a id="fichaEnlaceSheet" href="#" target="_blank">Editar en el Sheet →</a>
       <button onclick="cerrarFicha()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<div id="capaCrear">
+  <div id="cajaCrear">
+    <h3 id="crearTitulo">Nuevo</h3>
+    <div id="crearCampos"></div>
+    <div class="pie">
+      <button onclick="cerrarCrear()">Cancelar</button>
+      <button class="primario-crear" onclick="confirmarCrear()">Crear</button>
     </div>
   </div>
 </div>
@@ -361,15 +386,38 @@ function debeRedirigirAArquitecto(tipo, padreId) {
   return true;
 }
 
-async function crear(tipo, padreId) {
+// §8.163: modal real en vez de una cadena de prompt() nativos -- pedido explicito del
+// operador tras ver que el dialogo del navegador (sin contexto visual, un campo a la vez)
+// llevaba a escribir el dato equivocado en el campo equivocado sin darse cuenta (ver
+// §8.162). crearContexto real guarda que se esta creando mientras el modal esta abierto.
+let crearContexto = null;
+
+function crear(tipo, padreId) {
   if (debeRedirigirAArquitecto(tipo, padreId)) return;
-  const campos = CAMPOS_POR_TIPO[tipo];
+  crearContexto = { tipo, padreId };
+  document.getElementById('crearTitulo').textContent = tipo + ' nueva' + (padreId ? ' (bajo ' + padreId + ')' : '');
+  document.getElementById('crearCampos').innerHTML = CAMPOS_POR_TIPO[tipo].map((campo, i) =>
+    '<div class="campo-crear"><label>' + campo.c + (campo.r ? ' (obligatorio)' : ' (opcional)') + '</label>' +
+    '<input type="text" id="crearCampo_' + i + '" data-campo="' + campo.c + '" data-obligatorio="' + (campo.r ? '1' : '0') + '"></div>'
+  ).join('');
+  document.getElementById('capaCrear').classList.add('abierta');
+  const primerInput = document.getElementById('crearCampo_0');
+  if (primerInput) primerInput.focus();
+}
+
+function cerrarCrear() {
+  document.getElementById('capaCrear').classList.remove('abierta');
+  crearContexto = null;
+}
+
+async function confirmarCrear() {
+  if (!crearContexto) return;
+  const { tipo, padreId } = crearContexto;
   const datos = {};
-  for (const campo of campos) {
-    const valor = window.prompt(`${tipo} nueva${padreId ? ' (bajo ' + padreId + ')' : ''} -- ${campo.c}${campo.r ? ' (obligatorio)' : ' (opcional, Enter para saltar)'}:`);
-    if (valor === null) return; // cancelado
-    if (campo.r && !valor.trim()) { alert('NOMBRE es obligatorio -- cancelado.'); return; }
-    if (valor.trim()) datos[campo.c] = valor.trim();
+  for (const input of document.querySelectorAll('#crearCampos input')) {
+    const valor = input.value.trim();
+    if (input.dataset.obligatorio === '1' && !valor) { alert(input.dataset.campo + ' es obligatorio.'); input.focus(); return; }
+    if (valor) datos[input.dataset.campo] = valor;
   }
   try {
     const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
@@ -379,6 +427,7 @@ async function crear(tipo, padreId) {
     });
     const j = await r.json();
     if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    cerrarCrear();
     alert(`${tipo} real creada: ${j.id}`);
     if (tipo === 'Proceso' || tipo === 'Tarea') await intentarEncolarReconstruccionSiAplica(tipo, padreId);
     await cargarArbol();

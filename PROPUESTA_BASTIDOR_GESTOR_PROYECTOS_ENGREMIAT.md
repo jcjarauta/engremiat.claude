@@ -2089,6 +2089,14 @@ Reportado directo por el operador tras crear `CAM-0004 "ENTIDADES"` a mano: *"me
 
 **Verificado**: sintaxis real comprobada, desplegado, confirmado 200 real.
 
+### 8.163 "+Crear" real -- modal en la propia página en vez de prompt() nativos encadenados
+
+Pedido directo tras ver capturas reales del bug de §8.162 en curso: *"quita este diálogo como requisito"* -- el `window.prompt()` nativo (un campo a la vez, sin contexto visual, fácil escribir el dato en el campo equivocado sin darse cuenta) era la causa de fondo, no solo los campos de fecha ya corregidos.
+
+**Sustituido real**: `crear(tipo, padreId)` deja de encadenar `prompt()` -- abre un modal real en la página (`#capaCrear`/`#cajaCrear`, mismo lenguaje visual que la Ficha ya existente, `#capaFicha`/`#cajaFicha`, deliberadamente NO fusionados en el mismo selector para no arriesgar el modal ya en producción). Los campos reales se generan en vivo desde `CAMPOS_POR_TIPO[tipo]` -- todos visibles a la vez, con su etiqueta real (`NOMBRE (obligatorio)`, `TIPO_PROYECTO (opcional)`...), nunca uno oculto tras el anterior. `confirmarCrear()` valida los obligatorios y llama al mismo `/api/crear_registro` de siempre -- ningún cambio real en el backend ni en qué se guarda, solo en cómo se recoge el dato.
+
+**Verificado de extremo a extremo, real y no simulado**: modal real abierto en el navegador -- título correcto (`"Campaña nueva"`), campo NOMBRE visible y enfocado automáticamente, botones Cancelar/Crear reales. `cerrarCrear()` real confirmado (la capa vuelve a `display:none`). Probado también con `Proyecto` (2 campos reales, NOMBRE+TIPO_PROYECTO) -- ambos renderizados correctamente a la vez.
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.
