@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- histórico</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 900px; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  h1 { font-size: 18px; margin: 6px 0 4px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
+  input, select { background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; box-sizing: border-box; font-family: inherit; }
+  .fila { display: flex; gap: 8px; margin-bottom: 8px; }
+  .fila > div { flex: 1; }
+  label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }
+  #kpis { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 18px; }
+  .kpi { border: 1px solid var(--color-base-borde); border-radius: 6px; padding: 6px 10px; font-size: 12px; background: var(--color-base-panel); cursor: pointer; }
+  .kpi.activo { border-color: #6ea8ff; }
+  .kpi b { font-size: 14px; }
+  .lista-paginas { border: 1px solid var(--color-base-borde-suave); border-radius: 8px; overflow: hidden; }
+  .fila-pagina { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--color-base-borde-suave); font-size: 12.5px; }
+  .fila-pagina:last-child { border-bottom: none; }
+  .fila-pagina a.nombre { font-weight: 600; color: var(--color-base-texto); text-decoration: none; flex: 1; }
+  .fila-pagina a.nombre:hover { color: #6ea8ff; }
+  .fila-pagina .archivo { color: var(--color-base-texto-tenue); font-size: 11px; font-family: ui-monospace, monospace; width: 200px; }
+  .badge-estado { font-size: 10px; text-transform: uppercase; letter-spacing: 0.03em; border-radius: 4px; padding: 2px 7px; border: 1px solid; }
+  .badge-estado.borrador { color: #e8a33d; border-color: #e8a33d55; background: #e8a33d1a; }
+  .badge-estado.en-uso { color: #6ea8ff; border-color: #6ea8ff55; background: #6ea8ff1a; }
+  .badge-estado.activo { color: #4fce6f; border-color: #4fce6f55; background: #4fce6f1a; }
+  .badge-estado.obsoleta { color: #e85c8a; border-color: #e85c8a55; background: #e85c8a1a; }
+  .badge-estado.sin-clasificar { color: var(--color-base-texto-tenue); border-color: var(--color-base-borde-suave); }
+  select.selector-estado { width: 140px; }
+  .vacio-real { padding: 10px; color: var(--color-base-texto-tenue); font-size: 12px; }
+</style>
+</head>
+<body>
+<a class="volver" href="home.html">← Home</a>
+<h1>Histórico</h1>
+<p class="hint">Directorio real de las páginas <code>.html</code> servidas por este visor -- fuente real: <code>docker-compose.yml</code> (nunca el árbol del Sheet, que solo conoce páginas creadas vía Arquitecto, ver §8.159/160). El estado de cada una es un ciclo de vida real de artefacto -- <b>borrador</b> (en construcción) / <b>en uso</b> (referenciada activamente por otra página o proceso real) / <b>activo</b> (herramienta operativa del día a día) / <b>obsoleta</b> (histórica, ya no se recomienda tocar) -- distinto del <code>ESTADO</code> del Sheet, que mide progreso de trabajo, no ciclo de vida de la página.</p>
+<div id="kpis"></div>
+<div class="fila">
+  <div>
+    <label>Buscar por nombre o archivo</label>
+    <input type="text" id="filtroTexto" placeholder="ej.: catálogos, arbol_campanas.html...">
+  </div>
+</div>
+<div id="listaPaginas" class="lista-paginas"><p class="vacio-real">Cargando...</p></div>
+<script src="generador_paginas.js"></script>
+<script>
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+let estadosReales = {};
+let filtroKpiActivo = null;
+
+function escapeHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function claseEstado(estado) { return estado ? estado.replace(/\s+/g, '-') : 'sin-clasificar'; }
+function etiquetaEstado(estado) { return estado || 'sin clasificar'; }
+
+async function cargarEstados() {
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/estado_paginas')).json();
+    estadosReales = j.paginas || {};
+  } catch (e) {
+    estadosReales = {};
+  }
+}
+
+function renderKpis() {
+  const cont = document.getElementById('kpis');
+  const conteo = { 'sin clasificar': 0, borrador: 0, 'en uso': 0, activo: 0, obsoleta: 0 };
+  CATALOGO_PAGINAS_REALES.forEach((p) => {
+    const e = (estadosReales[p.archivo] || {}).estado || 'sin clasificar';
+    conteo[e] = (conteo[e] || 0) + 1;
+  });
+  cont.innerHTML = Object.keys(conteo).map((k) =>
+    '<div class="kpi' + (filtroKpiActivo === k ? ' activo' : '') + '" data-estado="' + escapeHtml(k) + '"><b>' + conteo[k] + '</b> ' + escapeHtml(k) + '</div>'
+  ).join('');
+  cont.querySelectorAll('.kpi').forEach((el) => {
+    el.addEventListener('click', () => {
+      filtroKpiActivo = filtroKpiActivo === el.dataset.estado ? null : el.dataset.estado;
+      render();
+    });
+  });
+}
+
+function render() {
+  renderKpis();
+  const cont = document.getElementById('listaPaginas');
+  const texto = document.getElementById('filtroTexto').value.trim().toLowerCase();
+  const filas = CATALOGO_PAGINAS_REALES.filter((p) => {
+    const estado = (estadosReales[p.archivo] || {}).estado || 'sin clasificar';
+    if (filtroKpiActivo && estado !== filtroKpiActivo) return false;
+    if (texto && !(p.nombre.toLowerCase().includes(texto) || p.archivo.toLowerCase().includes(texto))) return false;
+    return true;
+  });
+  if (!filas.length) { cont.innerHTML = '<p class="vacio-real">(ninguna página real coincide con el filtro)</p>'; return; }
+  cont.innerHTML = filas.map((p) => {
+    const estado = (estadosReales[p.archivo] || {}).estado || '';
+    return '<div class="fila-pagina">' +
+      '<a class="nombre" href="' + escapeHtml(p.archivo.replace(/\.html$/, '')) + '" target="_blank">' + escapeHtml(p.nombre) + '</a>' +
+      '<span class="archivo">' + escapeHtml(p.archivo) + '</span>' +
+      '<span class="badge-estado ' + claseEstado(estado || 'sin clasificar') + '">' + escapeHtml(etiquetaEstado(estado)) + '</span>' +
+      '<select class="selector-estado" data-archivo="' + escapeHtml(p.archivo) + '">' +
+        '<option value="">-- sin clasificar --</option>' +
+        ['borrador', 'en uso', 'activo', 'obsoleta'].map((e) => '<option value="' + e + '"' + (e === estado ? ' selected' : '') + '>' + e + '</option>').join('') +
+      '</select>' +
+      '</div>';
+  }).join('');
+  cont.querySelectorAll('.selector-estado').forEach((sel) => {
+    sel.addEventListener('change', () => guardarEstado(sel.dataset.archivo, sel.value));
+  });
+}
+
+// §8.161: nunca se borra cuando se elige "sin clasificar" -- si el operador quiere volver
+// a un estado real, simplemente lo elige de nuevo; "" solo evita ESCRIBIR un estado real
+// que no es cierto todavía.
+async function guardarEstado(archivo, estado) {
+  if (!estado) { render(); return; }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/estado_paginas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archivo, estado }) });
+    if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+    estadosReales[archivo] = { estado };
+    render();
+  } catch (e) {
+    alert('No se pudo guardar de verdad: ' + e.message);
+    render();
+  }
+}
+
+document.getElementById('filtroTexto').addEventListener('input', render);
+
+async function inicializar() {
+  await cargarEstados();
+  render();
+}
+inicializar();
+</script>
+</body>
+</html>

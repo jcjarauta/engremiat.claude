@@ -2069,8 +2069,48 @@ El operador diagnosticó desarrollo reactivo real (evidencia: 8 rondas de correc
 
 **Pendiente real, explícito**: las 37 páginas `.html` siguen sirviendo tal cual (nada que mover/borrar); la tabla de arquetipos (Index/Tree/Dashboard/Graph/CRUD, valorada en conversación) queda como filtro obligatorio antes de crear cualquier Campaña/página nueva de aquí en adelante -- para no repetir el ciclo reactivo que motivó esta pausa.
 
+### 8.161 Histórico -- directorio real de las 38 páginas del visor, con estado de ciclo de vida editable
+
+Retoma de lo dejado pendiente en §8.160. Construido `historico.html`, enlazado desde `home.html` (enlace fijo fuera de `#menuReal`, a propósito -- ese div lo reemplaza `cargarTarjetasReales()` con las páginas reales del árbol del Sheet, e `historico.html` no está Sheet-tracked). Resuelve directamente el "html_historico" pedido varias rondas atrás, con las correcciones ya acordadas entonces: fuente real la lista de ficheros, nunca el árbol del Sheet (§8.159 ya probó que la mayoría de páginas de infraestructura no tienen fila real); estado como concepto nuevo y propio, no el `ESTADO` del Sheet (progreso de trabajo, dimensión distinta).
+
+**`CATALOGO_PAGINAS_REALES`** (nuevo, `generador_paginas.js`, mismo criterio fijo/curado a mano que `TIPOS_CAJA`/`CATALOGO_GRAFOS`) -- las 38 páginas `.html` reales servidas, `nombre` tomado literal de su `<title>` real (nunca inventado). Verificado real contra disco: cero páginas reales fuera del catálogo, cero entradas del catálogo sin fichero real -- coincidencia exacta en ambas direcciones.
+
+**Catálogo de estado real** (`estadoPaginas`, `plantillas_proyecto.json`, mismo patrón GET/POST ya usado 5 veces esta sesión) -- lista cerrada de 4 estados (`borrador`/`en uso`/`activo`/`obsoleta`), **validada en el servidor** (rechaza cualquier otro valor con 400), indexada por nombre de fichero real. Sin entrada real = "sin clasificar" -- nunca se inventa un estado de partida por página, lo decide el operador a mano.
+
+**`historico.html`**: tira de KPI real (cuenta por estado, clicable como filtro -- mismo patrón de `arbol_campanas.html`), buscador de texto libre (nombre/archivo), lista con enlace real a cada página + selector de estado que guarda en vivo. Mismo criterio de enlaces reales ya establecido (`href="catalogos"`, nunca `"catalogos.html?..."` -- bug de §8.142).
+
+**Verificado de extremo a extremo, real y no simulado**: catálogo de páginas verificado exacto contra el disco real. Endpoint real probado -- guardado válido (`{ok:true}`), rechazo real de estado no reconocido (`400`), lectura real de vuelta confirma el dato -- las 2 entradas de prueba (`catalogos.html`/`panel_operativo.html`) limpiadas de inmediato tras la prueba, sin dejar clasificaciones inventadas por mí (le corresponde al operador clasificar de verdad). Página real desplegada y confirmada 200 (mismo falso "FALLO" transitorio de `index.html` de siempre). Filtro de texto probado real en el navegador (1 resultado exacto para "catalogos"). El guardado end-to-end disparado desde la propia UI no pudo verificarse visualmente en este entorno (Browser pane bloquea `:9330`, limitación ya conocida) -- compensado verificando la llamada real por separado contra la API, idéntica en forma a la que dispara el `<select>`.
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.
 - Ninguna pestaña `STG_*` se ha analizado columna a columna todavía — ahora con un propósito claro (§6.5), sigue pendiente de hacerse.
 - ~~`PRD-0009 "RECURSOS"` sin convención de Arquitecto~~ (§8.122/§8.124) — resuelto: retrofit real a `Recursos (recursos.html)`, HTML generado y desplegado, enlazado desde `home.html`.
+
+## 10. Metodología real de arquetipos UI (consulta obligatoria antes de construir)
+
+Fijada en pausa estratégica real (§8.160) tras diagnóstico de desarrollo reactivo (Catálogos, 8 rondas de corrección, §8.149→§8.158). Inventario real hecho con grep estructural sobre las 38 páginas `.html` reales (nunca de memoria) -- reveló que ya existían **tres mecanismos de reutilización distintos, cada uno funcionando de verdad**, nunca nombrados como sistema.
+
+**Los arquetipos reales, con su mecanismo real de reutilización:**
+
+| Arquetipo | Mecanismo real | Ejemplo real | Estado |
+|---|---|---|---|
+| **Index/Hub** (tarjetas de navegación) | Función JS compartida (`listarPaginasDeEntradaReales`, `generador_paginas.js`) | `home.html`, `herramientas.html`, `diseno.html` | Canonizado |
+| **Detail/Ficha** (ver un registro sin salir de la página) | Patrón "Ficha modal" (§8.80) | `arbol_campanas.html` | Documentado en Biblioteca, CSS pendiente de extraer (§8.159, en curso) |
+| **Tree/Jerarquía** | "Patrón árbol" (§8.159) | `arbol_campanas.html`, `mapa.html` | Registrado en el Sheet (`PCS-0051`/`TAR-0070`), construcción pendiente |
+| **Dashboard/KPI** | Plantilla JSON (`CATALOGO_PLANTILLAS_BASE.panel_kpis`/`cockpit_backlog`) | `panel_operativo.html` | Canonizado -- Arquitecto la ofrece de partida |
+| **Graph/Network embed** | Fichero-plantilla real + Biblioteca | 18 páginas reales, `plantilla_grafo_espacio.html` | El caso más maduro -- probado a gran escala |
+| **Create/Edit Form** | Piezas genéricas de Arquitecto (tipo `formulario`) para lo simple; formulario a medida cuando no basta | Arquitecto, Catálogos, `grafos.html` | Parcial -- sin criterio único todavía de cuándo usar cada uno |
+| **Catalog/Browse + CRUD** | Config-driven (`DEF_CATALOGOS`, §8.155) | Catálogos, `historico.html` (§8.161) | Con 2 aplicaciones reales -- candidato a extraer si aparece una 3ª |
+| **Documento estático curado** | Ninguno -- cada uno a mano, y está bien así | `resumen_universo.html`, `entidades.html` | No necesita patrón |
+
+**Los tres mecanismos de reutilización, y cuándo usar cada uno:**
+1. **Función JS compartida** (`generador_paginas.js`) -- cuando lo que se repite es **lógica** sobre el árbol del Sheet (recorrer, filtrar, resolver tipo). Nunca copiar-pegar un `recorrer()`.
+2. **Plantilla JSON** (`CATALOGO_PLANTILLAS_BASE`/`plantillas_proyecto.json`, vía Arquitecto) -- cuando lo que varía es solo el **dato** dentro de una composición genérica de piezas. Rápido, pero pierde fidelidad si la interacción es rica.
+3. **Fichero-plantilla real + Biblioteca** (`plantilla_grafo_espacio.html`) -- cuando la pieza lleva **CSS/interacción propia** que las piezas genéricas no pueden expresar.
+
+**Regla de uso, antes de construir cualquier página o Campaña nueva:**
+1. Clasificar contra la tabla de arriba -- ¿es un índice? ¿un árbol? ¿un dashboard? ¿un grafo? ¿un catálogo con CRUD? Si encaja en un arquetipo ya canonizado, reutilizar su mecanismo real -- nunca reinventar.
+2. Si no encaja en ninguno: construir la primera vez de forma honesta y simple, sin generalizar de más. Anotar el candidato.
+3. **"2ª vez real antes de canonizar"** (§8.154) sigue mandando -- nunca se extrae un patrón nuevo hasta que aparece su segunda aplicación real.
+4. Esta tabla se actualiza cada vez que un patrón sube de fila (de "sin canonizar" a "canonizado") o aparece un arquetipo real nuevo -- nunca por adelantado, nunca especulativo.

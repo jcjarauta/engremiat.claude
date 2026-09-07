@@ -344,6 +344,57 @@ const CATALOGO_PLANTILLAS_BASE = {
   },
 };
 
+// §8.161: catalogo real y fijo de TODAS las paginas .html reales servidas por
+// graphify-visor -- fuente real: docker-compose.yml (volumenes reales montados), NUNCA
+// el arbol del Sheet (ese solo conoce paginas creadas via Arquitecto desde §8.123 -- la
+// mayoria de la infraestructura propia del visor, home/arbol_campanas/arquitecto/etc.,
+// no tiene fila real ahi, confirmado en §8.159). `nombre` viene tal cual del <title>
+// real de cada fichero (sin inventar), curado a mano igual que CATALOGO_GRAFOS/
+// CATALOGO_PLANTILLAS_BASE -- crece cuando se anade una pagina real nueva al
+// docker-compose.yml, nunca se deriva solo. Usado por historico.html (§8.161) para
+// listar el directorio real de paginas -- el ESTADO real (borrador/en uso/activo/
+// obsoleta) de cada una vive aparte, en plantillas_proyecto.json (editable), nunca aqui.
+const CATALOGO_PAGINAS_REALES = [
+  { archivo: 'home.html', nombre: 'Inicio' },
+  { archivo: 'panel_operativo.html', nombre: 'Panel operativo' },
+  { archivo: 'arbol_campanas.html', nombre: 'Árbol de campañas' },
+  { archivo: 'arquitecto.html', nombre: 'Arquitecto' },
+  { archivo: 'mapa.html', nombre: 'Mapa' },
+  { archivo: 'grafos.html', nombre: 'Grafos del sistema' },
+  { archivo: 'taller.html', nombre: 'Taller de grafos' },
+  { archivo: 'tecnico.html', nombre: 'Técnico' },
+  { archivo: 'biblioteca.html', nombre: 'Biblioteca' },
+  { archivo: 'recursos.html', nombre: 'Recursos' },
+  { archivo: 'catalogos.html', nombre: 'Catálogos' },
+  { archivo: 'herramientas.html', nombre: 'Herramientas (índice)' },
+  { archivo: 'diseno.html', nombre: 'Diseño (índice)' },
+  { archivo: 'estilos.html', nombre: 'Estilos' },
+  { archivo: 'demo_arquitecto.html', nombre: 'Demo Arquitecto (histórico, §8.160)' },
+  { archivo: 'comunidad_eventos.html', nombre: 'Comunidad y eventos (demo, histórico)' },
+  { archivo: 'catalogo_ceramica.html', nombre: 'Catálogo de piezas (demo, histórico)' },
+  { archivo: 'seguimiento_horno.html', nombre: 'Seguimiento de horno (demo, histórico)' },
+  { archivo: 'registro_defectos.html', nombre: 'Registro de defectos (demo, histórico)' },
+  { archivo: 'anatomia.html', nombre: 'Anatomía real de una entidad' },
+  { archivo: 'entidades.html', nombre: 'Censo real de entidades' },
+  { archivo: 'holon.html', nombre: 'El grafo real del Holon' },
+  { archivo: 'grafo_maestro.html', nombre: 'Grafo maestro real' },
+  { archivo: 'n8n.html', nombre: 'Grafo real de workflows n8n' },
+  { archivo: 'nodejs.html', nombre: 'Grafo real de tools/ (capa Node)' },
+  { archivo: 'sheet-real.html', nombre: 'Grafos reales del Sheet y Baserow' },
+  { archivo: 'indice.html', nombre: 'Índice real de grafos' },
+  { archivo: 'vista_home.html', nombre: 'Mapa real desde home.html' },
+  { archivo: 'vista_sistema.html', nombre: 'Vista inicial del sistema' },
+  { archivo: 'vista_modulos.html', nombre: 'Grafo real de Módulos' },
+  { archivo: 'vista_recursos.html', nombre: 'Grafo real de Recursos' },
+  { archivo: 'vista_reglas.html', nombre: 'Grafo real de Reglas' },
+  { archivo: 'plantilla_grafo_espacio.html', nombre: 'Plantilla real: grafo de Espacio (Biblioteca)' },
+  { archivo: 'mesa_montaje.html', nombre: 'Mesa de montaje' },
+  { archivo: 'boceto_layout_6_zonas.html', nombre: 'Bastidor -- boceto de layout (6 zonas)' },
+  { archivo: 'resumen_universo.html', nombre: 'Universo Engremiat (resumen)' },
+  { archivo: 'index.html', nombre: 'Graphify -- índice histórico' },
+  { archivo: 'graph.html', nombre: 'Graphify -- graph histórico' },
+];
+
 // §8.131: normaliza una caja real a su forma canonica -- acepta tanto la forma nueva
 // (piezas reales, cabecera/pie/layoutInterno) como la forma plana antigua de antes de
 // §8.131 (tipo/tareas o tipo/contenido, un unico bloque por caja) para no perder ningun

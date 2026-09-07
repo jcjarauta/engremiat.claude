@@ -600,7 +600,7 @@ function guardarLayoutPagina(productoId, layoutId) {
 // fragmentos_cajas.json/layouts_pagina.json -- solo datos, en DIR_DATOS.
 const RUTA_PLANTILLAS_PROYECTO = join(DIR_DATOS, 'plantillas_proyecto.json');
 function leerPlantillasProyecto() {
-  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {}, cajasReutilizables: {}, funcionesReutilizables: {}, patronesBiblioteca: {} };
+  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {}, cajasReutilizables: {}, funcionesReutilizables: {}, patronesBiblioteca: {}, estadoPaginas: {} };
 }
 function guardarPlantillaProyecto(id, plantilla) {
   const datos = leerPlantillasProyecto();
@@ -664,6 +664,19 @@ function borrarPatronBiblioteca(id) {
   const datos = leerPlantillasProyecto();
   datos.patronesBiblioteca = datos.patronesBiblioteca || {};
   delete datos.patronesBiblioteca[id];
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
+// §8.161: estado real (ciclo de vida de artefacto, no progreso de trabajo) de cada
+// pagina real del visor -- borrador/en uso/activo/obsoleta (lista cerrada, nunca texto
+// libre). Indexado por nombre de fichero real (nunca por id del Sheet -- la mayoria de
+// paginas reales no tienen fila real, confirmado en §8.159/160). Sin entrada real =
+// "sin clasificar" -- nunca se inventa un estado de partida por pagina, lo clasifica el
+// operador a mano desde historico.html.
+function guardarEstadoPagina(archivo, estado) {
+  const datos = leerPlantillasProyecto();
+  datos.estadoPaginas = datos.estadoPaginas || {};
+  datos.estadoPaginas[archivo] = { estado, actualizadoEn: new Date().toISOString() };
   writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
@@ -1477,6 +1490,24 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
+      }
+    }
+
+    // §8.161: estado real de las paginas del directorio (historico.html) -- lista
+    // cerrada, nunca texto libre; se valida en el servidor, no solo en el formulario.
+    const ESTADOS_PAGINA_VALIDOS = new Set(['borrador', 'en uso', 'activo', 'obsoleta']);
+    if (req.method === 'GET' && req.url === '/api/estado_paginas') {
+      res.writeHead(200); res.end(JSON.stringify({ paginas: leerPlantillasProyecto().estadoPaginas || {} })); return;
+    }
+    if (req.method === 'POST' && req.url === '/api/estado_paginas') {
+      const { archivo, estado } = await leerCuerpo(req);
+      if (!archivo || !estado) { res.writeHead(400); res.end(JSON.stringify({ error: 'faltan archivo/estado' })); return; }
+      if (!ESTADOS_PAGINA_VALIDOS.has(estado)) { res.writeHead(400); res.end(JSON.stringify({ error: 'estado real no reconocido -- usa uno de: ' + [...ESTADOS_PAGINA_VALIDOS].join('/') })); return; }
+      try {
+        guardarEstadoPagina(archivo, estado);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar de verdad: ' + e.message })); return;
       }
     }
 
