@@ -138,14 +138,28 @@ async function main() {
   writeFileSync(rutaLocal, html, 'utf-8');
   console.log('  Guardado real para revisión: ' + rutaLocal);
 
+  // §8.150: nota gemela real "carpeta por pagina, nota por caja" -- toda pagina real
+  // construida (aqui, desde el arbol) sigue generando su nota gemela (§8.140), pero con
+  // la estructura real pedida explicita: una carpeta real por pagina, una nota real por
+  // caja (nunca una unica nota con todas las cajas como secciones, a diferencia del flujo
+  // real ya existente de Arquitecto -- ese sigue igual, sin tocar).
+  const urlPaginaReal = 'http://100.107.171.88:9320/' + archivo;
+  const campanaNombreReal = hallazgo.campana ? hallazgo.campana.nombre : nombrePagina;
+  const notaIndice = { archivoMd: '00_Indice.md', contenido: ctx.generarIndicePaginaReal(nombrePagina, cajas, urlPaginaReal, hallazgo.nodo.urlSheet || '') };
+  const notasCajas = hijosCaja.map((hijoCaja, i) => ({
+    archivoMd: hijoCaja.nombre.replace(/[\\/:*?"<>|]/g, '_') + '.md',
+    contenido: ctx.generarNotaCajaReal(cajas[i], hijoCaja.urlSheet || '', urlPaginaReal + '#' + hijoCaja.id),
+  }));
+  const markdownPendiente = { campanaNombre: campanaNombreReal, subcarpeta: nombrePagina, notas: [notaIndice, ...notasCajas] };
+
   if (encolar) {
     console.log('\n=== 4/4 Encolando real (--encolar) ===');
     const r = await fetch(URL_MEMORIA + '/api/pagina_pendiente', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ productoId: paginaId, nombre: nombrePagina, archivo, colgarDe, nombreColgarDe: colgarDe, html, reconstruccion: true, markdown: null }),
+      body: JSON.stringify({ productoId: paginaId, nombre: nombrePagina, archivo, colgarDe, nombreColgarDe: colgarDe, html, reconstruccion: true, markdown: markdownPendiente }),
     });
     if (!r.ok) fallar('no se pudo encolar de verdad: ' + (await r.json()).error);
-    console.log('  Encolada real: ' + archivo + ' -- ejecuta node aplicar_pagina_arquitecto.mjs ' + archivo + ' para aplicarla.');
+    console.log('  Encolada real: ' + archivo + ' (con ' + (1 + notasCajas.length) + ' nota(s) real(es) de bóveda) -- ejecuta node aplicar_boveda_campana.mjs ' + archivo + ' y luego node aplicar_pagina_arquitecto.mjs ' + archivo + ' para aplicarla.');
   } else {
     console.log('\n=== 4/4 (omitido -- pasa --encolar para aplicarla de verdad, revisa antes el fichero local) ===');
   }

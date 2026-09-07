@@ -88,10 +88,33 @@ async function main() {
     return;
   }
 
-  const { campanaNombre, archivoMd, contenido } = entrada.markdown;
-  const carpetaCampana = slugCampana(campanaNombre);
-  console.log(`\n=== 2/2 Aplicando la nota real en bovedas.claude/${carpetaCampana}/${archivoMd} ===`);
+  const carpetaCampana = slugCampana(entrada.markdown.campanaNombre);
   const { rutaCampana, rutaIndice } = asegurarBovedaCampana(carpetaCampana);
+
+  // §8.150: forma real nueva "carpeta por pagina, nota por caja" (construir_html_desde_arbol.mjs)
+  // -- entrada.markdown.notas es un array real (indice de la pagina + una nota por caja
+  // real), todas dentro de una subcarpeta real propia. La forma real de siempre (una unica
+  // nota por pagina, archivoMd/contenido sueltos) sigue igual -- nunca se toca el flujo ya
+  // existente de Arquitecto sin pedirlo explicito.
+  if (Array.isArray(entrada.markdown.notas)) {
+    const { subcarpeta, notas } = entrada.markdown;
+    if (!subcarpeta || !notas.length) fallar('markdown.notas real mal formado -- falta subcarpeta o viene vacío');
+    const rutaSubcarpeta = join(rutaCampana, slugCampana(subcarpeta));
+    if (!existsSync(rutaSubcarpeta)) mkdirSync(rutaSubcarpeta, { recursive: true });
+    console.log(`\n=== 2/2 Aplicando ${notas.length} nota(s) real(es) en bovedas.claude/${carpetaCampana}/${slugCampana(subcarpeta)}/ ===`);
+    for (const nota of notas) {
+      const rutaNota = join(rutaSubcarpeta, nota.archivoMd);
+      const yaExistia = existsSync(rutaNota);
+      writeFileSync(rutaNota, nota.contenido, 'utf-8');
+      console.log(`  ${yaExistia ? 'Actualizada' : 'Creada'} de verdad: ${rutaNota}`);
+    }
+    anadirAlIndiceSiFalta(rutaIndice, slugCampana(subcarpeta) + '/00_Indice');
+    console.log('\nAhora ejecuta node aplicar_pagina_arquitecto.mjs ' + archivo + ' para aplicar el HTML real y limpiar la cola.');
+    return;
+  }
+
+  const { archivoMd, contenido } = entrada.markdown;
+  console.log(`\n=== 2/2 Aplicando la nota real en bovedas.claude/${carpetaCampana}/${archivoMd} ===`);
   const rutaNota = join(rutaCampana, archivoMd);
   const yaExistia = existsSync(rutaNota);
   writeFileSync(rutaNota, contenido, 'utf-8');

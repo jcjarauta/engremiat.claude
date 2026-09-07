@@ -721,3 +721,34 @@ function generarMarkdownReal(nombrePagina, cajas, urlPaginaReal, urlSheetReal) {
     '- Página real: ' + urlPaginaReal + '\n' +
     '- Ficha real en el Sheet: ' + urlSheetReal + '\n';
 }
+
+// §8.150: version real "carpeta por pagina, nota por caja" -- pedido explicito
+// ("necesito crear carpetas y subcarpetas para tener controlado el orden") para la
+// boveda de una pagina real construida desde el arbol (construir_html_desde_arbol.mjs).
+// Cada caja real es su propia nota real (nunca una seccion dentro de una unica nota de
+// pagina, a diferencia de generarMarkdownReal de arriba, que sigue igual para el flujo
+// real de Arquitecto ya existente -- nunca se cambia sin pedirlo explicito, cambiaria el
+// comportamiento de paginas reales ya construidas).
+function generarNotaCajaReal(caja, urlSheetCajaReal, urlPaginaRealConAncla) {
+  const c = normalizarCaja(caja);
+  const piezasMd = c.piezas.map((p) => generarContenidoPiezaMarkdown(p)).join('\n');
+  return '# ' + c.nombre + '\n\n' +
+    (c.cabecera ? '_' + c.cabecera + '_\n\n' : '') +
+    piezasMd +
+    (c.pie ? '\n_' + c.pie + '_\n' : '') +
+    '\n## Vínculo real\n\n' +
+    '- Página real: ' + urlPaginaRealConAncla + '\n' +
+    '- Ficha real en el Sheet: ' + urlSheetCajaReal + '\n';
+}
+
+// Indice real de la carpeta de UNA pagina -- lista sus cajas reales como wikilinks (cada
+// una ya es su propia nota real, generarNotaCajaReal de arriba).
+function generarIndicePaginaReal(nombrePagina, cajas, urlPaginaReal, urlSheetPaginaReal) {
+  const lista = cajas.map((c) => '- [[' + c.nombre + ']]').join('\n');
+  return '# ' + nombrePagina + '\n\n' +
+    'TODO: descripción real de qué hace esta página y de dónde sale su dato.\n\n' +
+    (lista || '_(sin cajas reales todavía)_') + '\n\n' +
+    '## Vínculo real\n\n' +
+    '- Página real: ' + urlPaginaReal + '\n' +
+    '- Ficha real en el Sheet: ' + urlSheetPaginaReal + '\n';
+}
