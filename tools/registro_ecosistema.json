@@ -717,6 +717,10 @@
     {
       "fichero": "tools/gobierno/graphify_visor/arquitecto.html (inicializarArquitecto)",
       "que_hace": "§8.165: reportado con captura real -- al entrar con ?editar=PRO-0009 seguia viendose entero el bloque Crear pagina nueva (0/0.5, tipo/cascada/plantilla), sin relacion con editar, ensuciando la pantalla. El aislamiento ya se habia aplicado al modo nuevo ?catalogoPlantilla= (§8.156) pero nunca al modo ?editar= que ya existia desde antes -- inconsistencia real nunca corregida. Corregido con el mismo patron exacto: en cuanto el deep-link ?editar= resulta valido, bloqueCrearNueva pasa a display:none, solo queda Editar pagina existente (ya autorrelleno, logica de carga sin tocar) + boceto en vivo. Verificado real en el navegador (simulando el desplegable poblado, fetch real bloqueado en este entorno): bloqueCrearNueva oculto, bloqueEditarExistente visible, captura confirma pantalla limpia."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/arquitecto.html (bug layout + boton Anadir Caja real)",
+      "que_hace": "§8.166: bug real corregido -- opcionesLayoutHtml(layoutId) vivia despues de las ramas de carga de cajas en cargarCajasEditar(), asi que un return temprano (0 cajas reales, caso normal en pagina recien creada) dejaba el desplegable de layout vacio aunque layoutId ya se conocia. Nunca fue el bloqueo de red de este entorno, bug real de orden. Movido a justo despues de conocer layoutId, en ambas ramas, antes de cualquier return. §8.167: boton real +Anadir Caja real, cierra el callejon sin salida de Editar pagina existente cuando la pagina tiene 0 cajas -- antes habia que volver a arbol_campanas.html y regresar. Habilitado antes de cualquier return temprano (justo el caso que mas lo necesita). Modal real #capaAnadirCaja (mismo patron que §8.163, nunca prompt()) pide solo NOMBRE. Dos caminos reales sin mecanismo nuevo: crear_registro para paginas normales, cajas_sin_respaldo para paginas-Tarea. Verificado real de extremo a extremo: tipoCajaPara confirmado, Caja real de prueba creada bajo PRD-0020 y confirmada como hija real via la API, modal probado en el navegador."
     }
   ]
 }

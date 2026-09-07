@@ -2117,6 +2117,22 @@ Reportado con captura real: al entrar con `?editar=PRO-0009`, seguía viéndose 
 
 **Verificado real en el navegador** (simulando el desplegable ya poblado, ya que el fetch real está bloqueado en este entorno -- limitación ya conocida): `bloqueCrearNueva` pasa de `display:''` a `display:'none'`, `bloqueEditarExistente` se mantiene visible. Captura real confirma la pantalla limpia -- directo a "Editar contenido real de una página existente" con `CONSTRUCTOR (constructor.html)` ya seleccionado.
 
+### 8.166 Bug real corregido: el desplegable de layout se quedaba vacío en páginas sin Cajas
+
+Encontrado con captura real (`?editar=PRD-0020`, página recién configurada, 0 Cajas). Diagnóstico real leyendo `cargarCajasEditar()`: la línea que rellena `#layoutPagina` (`opcionesLayoutHtml(layoutId)`) vivía **después** de las dos ramas de carga de cajas -- si una rama hacía `return` temprano (0 cajas reales, caso normal y esperado en una página recién creada), esa línea nunca se ejecutaba, aunque `layoutId` ya se conocía. Nunca fue el bloqueo de red de este entorno -- bug real de orden, reproducible siempre que una página real tenga 0 Cajas.
+
+**Corregido**: la población de `#layoutPagina` se mueve a justo después de conocer `layoutId`, en ambas ramas (`sinRespaldo` y normal), antes de cualquier `return` temprano.
+
+### 8.167 "+ Añadir Caja real" -- cierra el callejón sin salida de "Editar página existente" sin Cajas
+
+Mejora real acordada tras la misma captura: llegar a editar una página real con 0 Cajas dejaba al operador sin ninguna acción posible ahí mismo -- para añadir la primera Caja había que volver a `arbol_campanas.html`, crearla ahí, y regresar. Mismo tipo de rodeo ya evitado en §8.156/163/164/165.
+
+**Botón real nuevo** "+ Añadir Caja real" junto a "Guardar y reconstruir", habilitado en cuanto se conoce la página real (antes de cualquier `return` temprano por 0 cajas -- justo el caso que más lo necesita). Modal real (`#capaAnadirCaja`, mismo lenguaje visual que `#capaCrear` de `arbol_campanas.html`, §8.163 -- nunca `prompt()`), pide solo el NOMBRE real de la Caja.
+
+**Dos caminos reales según el tipo de página**, ninguno nuevo -- reutiliza exactamente lo que `cargarCajasEditar()` ya usa: página normal → `POST /api/crear_registro` (fila real nueva, tipo `tipoCajaPara(tipo)`, bajo la página); página-Tarea (`sinRespaldo`) → `POST /api/cajas_sin_respaldo` (añade a su array real, sin fila del Sheet). Al confirmar, recarga `cargarCajasEditar()` en el sitio -- sin salir de Arquitecto.
+
+**Verificado de extremo a extremo, real y no simulado**: `tipoCajaPara('Producto')` confirmado `'Proceso'`; creada Caja real de prueba bajo `PRD-0020` (mismo POST exacto que dispara el botón) -- confirmada como hija real vía la API (`PCS-0052 -- Formulario`). Modal real probado en el navegador: texto de ayuda correcto ("Se creará una fila real nueva de tipo Proceso bajo esta página"), abre y cierra correctamente.
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.

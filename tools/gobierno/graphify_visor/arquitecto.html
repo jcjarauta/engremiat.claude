@@ -67,6 +67,18 @@
   textarea#htmlGenerado { width: 100%; min-height: 260px; font-family: ui-monospace, monospace; font-size: 11px; white-space: pre; }
   ol.pasos { font-size: 12px; line-height: 1.7; color: var(--color-base-texto-suave); padding-left: 20px; }
   ol.pasos code { color: #6fb3f2; }
+  /* §8.167: modal real "+ Añadir Caja real" -- mismo lenguaje visual que el modal de
+     creación ya probado en arbol_campanas.html (§8.163), nunca prompt(). Cierra el
+     callejón sin salida real de "Editar página existente" cuando la página aún no tiene
+     ninguna Caja (o para seguir añadiendo más sin volver al árbol). */
+  #capaAnadirCaja { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
+  #capaAnadirCaja.abierta { display: flex; }
+  #cajaAnadirCaja { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 20px; width: 420px; max-width: 90vw; }
+  #cajaAnadirCaja h3 { margin: 0 0 8px; font-size: 14px; }
+  #cajaAnadirCaja p.hint { margin: 0 0 14px; }
+  #cajaAnadirCaja label { display: block; font-size: 11px; color: var(--color-base-texto-tenue); margin-bottom: 3px; }
+  #cajaAnadirCaja input { width: 100%; box-sizing: border-box; }
+  #cajaAnadirCaja .pie { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
 </style>
 </head>
 <body>
@@ -189,7 +201,8 @@
   <p class="hint" id="enlaceMapaEditar"></p>
   <p class="hint" id="contextoPaginaEditar"></p>
   <div id="listaCajasEditar"></div>
-  <div style="margin-top:16px;">
+  <div style="margin-top:16px; display:flex; gap:8px;">
+    <button id="btnAnadirCajaReal" onclick="abrirAnadirCaja()" disabled>+ Añadir Caja real</button>
     <button class="primario" id="btnReconstruir" onclick="guardarYReconstruir()" disabled>Guardar y reconstruir esta página</button>
   </div>
   <div id="estadoEditar" class="estado"></div>
@@ -202,6 +215,19 @@
   <p class="hint">Se actualiza sola mientras editas -- es el mismo <code>generarHtmlReal()</code> real que construye la página de verdad, así que lo que ves aquí (incluidos los grafos embebidos) es exactamente lo que saldría. Nada de esto toca el Sheet ni la cola de despliegue hasta que pulses "Construir" o "Guardar y reconstruir".</p>
   <iframe id="vistaPreviaFrame"></iframe>
 </div>
+</div>
+
+<div id="capaAnadirCaja">
+  <div id="cajaAnadirCaja">
+    <h3 id="anadirCajaTitulo">Añadir Caja real</h3>
+    <p class="hint" id="anadirCajaHint"></p>
+    <label>NOMBRE (obligatorio)</label>
+    <input type="text" id="anadirCajaNombre" placeholder="Nombre real de la Caja">
+    <div class="pie">
+      <button onclick="cerrarAnadirCaja()">Cancelar</button>
+      <button class="primario" onclick="confirmarAnadirCaja()">Crear</button>
+    </div>
+  </div>
 </div>
 
 <script src="generador_paginas.js"></script>
@@ -1255,6 +1281,7 @@ async function cargarCajasEditar() {
   document.getElementById('estadoEditar').textContent = '';
   document.getElementById('pasosEditar').innerHTML = '';
   boton.disabled = true;
+  document.getElementById('btnAnadirCajaReal').disabled = true;
   paginaEditarActual = null;
   lista.innerHTML = '';
   document.getElementById('enlaceMapaEditar').innerHTML = '';
@@ -1287,6 +1314,12 @@ async function cargarCajasEditar() {
     // mismo nivel real (version ligera de "ver el arbol al lado", ver PROPUESTA_BASTIDOR).
     document.getElementById('contextoPaginaEditar').innerHTML = renderContextoHtml(contextoDeNodo(jerarquia, paginaId), 'editar');
 
+    // §8.167: paginaEditarActual (y el boton real "+ Anadir Caja") se fijan aqui, ANTES
+    // de las ramas que pueden hacer return temprano si 0 cajas -- ese es justo el caso
+    // real que mas necesita poder anadir la primera, nunca se debe quedar deshabilitado.
+    paginaEditarActual = { paginaId, tipo, nombrePagina, archivo, colgarDe, nombreCampanaEditar, sinRespaldo };
+    document.getElementById('btnAnadirCajaReal').disabled = false;
+
     let cajas, layoutId;
     if (sinRespaldo) {
       // Pagina-Tarea: sin fila real por debajo, las cajas viven enteras en
@@ -1297,6 +1330,11 @@ async function cargarCajasEditar() {
       ]);
       cajas = r.cajas || [];
       layoutId = layoutIdReal;
+      // §8.166: bug real encontrado -- el desplegable de layout se rellenaba DESPUES de
+      // este bloque, asi que un "return" temprano (pagina real sin cajas todavia) lo
+      // dejaba vacio de verdad, aunque layoutId ya se sabia. Movido aqui, antes de
+      // cualquier return, en ambas ramas.
+      document.getElementById('layoutPagina').innerHTML = opcionesLayoutHtml(layoutId);
       if (!cajas.length) { lista.innerHTML = '<p class="hint">Esta página real todavía no tiene ninguna caja. Una página-Tarea no puede tener cajas respaldadas por una fila real (Tarea es la hoja del Sheet) -- añádelas desde "0. Punto de partida" antes de construir, aquí solo se edita su contenido.</p>'; return; }
       lista.innerHTML = cajas.map((c, i) => {
         const n = normalizarCaja(c);
@@ -1308,15 +1346,13 @@ async function cargarCajasEditar() {
       }).join('');
     } else {
       const hijosCaja = (nodoPagina && nodoPagina.hijos) || [];
+      layoutId = await leerLayoutPaginaReal(paginaId);
+      document.getElementById('layoutPagina').innerHTML = opcionesLayoutHtml(layoutId);
       if (!hijosCaja.length) { lista.innerHTML = '<p class="hint">Esta página real todavía no tiene ninguna caja (' + tipoCajaPara(tipo) + ') real.</p>'; return; }
-      const [fragmentos, layoutIdReal] = await Promise.all([
-        Promise.all(hijosCaja.map(p =>
-          fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
-            .then(r => r.ok ? r.json() : { piezas: [] })
-        )),
-        leerLayoutPaginaReal(paginaId),
-      ]);
-      layoutId = layoutIdReal;
+      const fragmentos = await Promise.all(hijosCaja.map(p =>
+        fetch(URL_MEMORIA + '/api/fragmento_caja?procesoId=' + encodeURIComponent(p.id))
+          .then(r => r.ok ? r.json() : { piezas: [] })
+      ));
       lista.innerHTML = hijosCaja.map((p, i) => {
         const c = normalizarCaja(fragmentos[i] || {});
         return crearBloqueCajaHtml({
@@ -1327,15 +1363,12 @@ async function cargarCajasEditar() {
       }).join('');
     }
 
-    document.getElementById('layoutPagina').innerHTML = opcionesLayoutHtml(layoutId);
-
     // Vista previa en vivo de las piezas "grafo" ya guardadas -- que se vea de verdad
     // que grafo real tiene cada una, no solo el desplegable con el valor seleccionado.
     document.querySelectorAll('#listaCajasEditar .grafo-pieza').forEach(sel => {
       if (sel.value) alElegirGrafoPieza(sel);
     });
 
-    paginaEditarActual = { paginaId, tipo, nombrePagina, archivo, colgarDe, nombreCampanaEditar, sinRespaldo };
     // §8.138: puente real de vuelta a Mapa -- Mapa solo sabe representar paginas de tipo
     // Producto (Proyecto->Producto), asi que el enlace solo aparece para ese tipo.
     document.getElementById('enlaceMapaEditar').innerHTML = tipo === 'Producto'
@@ -1345,6 +1378,55 @@ async function cargarCajasEditar() {
     alCambiarLayoutPagina();
   } catch (e) {
     lista.innerHTML = '<p class="estado error">No se pudo leer de verdad: ' + escapeHtmlLocal(e.message) + '</p>';
+  }
+}
+
+// §8.167: "+ Anadir Caja real" -- cierra el callejon sin salida real de "Editar pagina
+// existente" cuando la pagina aun no tiene ninguna Caja (o para seguir anadiendo mas sin
+// volver al arbol). Dos caminos reales distintos segun el tipo de pagina (mismos ya
+// usados por cargarCajasEditar, nunca un tercero nuevo): pagina-Tarea (sinRespaldo) anade
+// a cajas_sin_respaldo.json; el resto crea una fila real nueva via /api/crear_registro,
+// del tipo real que le toque (tipoCajaPara).
+function abrirAnadirCaja() {
+  if (!paginaEditarActual) return;
+  const { tipo, sinRespaldo } = paginaEditarActual;
+  document.getElementById('anadirCajaHint').textContent = sinRespaldo
+    ? 'Esta página es de tipo Tarea -- su Caja nueva no genera fila real por debajo, se guarda entera junto al resto.'
+    : 'Se creará una fila real nueva de tipo ' + tipoCajaPara(tipo) + ' bajo esta página.';
+  document.getElementById('anadirCajaNombre').value = '';
+  document.getElementById('capaAnadirCaja').classList.add('abierta');
+  document.getElementById('anadirCajaNombre').focus();
+}
+
+function cerrarAnadirCaja() {
+  document.getElementById('capaAnadirCaja').classList.remove('abierta');
+}
+
+async function confirmarAnadirCaja() {
+  if (!paginaEditarActual) return;
+  const { paginaId, tipo, sinRespaldo } = paginaEditarActual;
+  const nombre = document.getElementById('anadirCajaNombre').value.trim();
+  if (!nombre) { alert('NOMBRE es obligatorio.'); return; }
+  try {
+    if (sinRespaldo) {
+      const actual = await (await fetch(URL_MEMORIA + '/api/cajas_sin_respaldo?paginaId=' + encodeURIComponent(paginaId))).json();
+      const cajas = (actual.cajas || []).concat([{ nombre, cabecera: '', pie: '', layoutInterno: LAYOUT_POR_DEFECTO, piezas: [] }]);
+      const r = await fetch(URL_MEMORIA + '/api/cajas_sin_respaldo', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paginaId, cajas }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'respuesta no ok');
+    } else {
+      const r = await fetch(URL_MEMORIA + '/api/crear_registro', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tipo: tipoCajaPara(tipo).toUpperCase(), campos: { NOMBRE: nombre }, padreId: paginaId }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'respuesta no ok');
+    }
+    cerrarAnadirCaja();
+    await cargarCajasEditar();
+  } catch (e) {
+    alert('No se pudo crear la Caja real: ' + e.message);
   }
 }
 
