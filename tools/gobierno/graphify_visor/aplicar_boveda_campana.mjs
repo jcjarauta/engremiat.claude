@@ -55,10 +55,27 @@ function asegurarBovedaCampana(carpetaCampana) {
   }
   if (!existsSync(rutaObsidian)) mkdirSync(rutaObsidian, { recursive: true });
   if (!existsSync(rutaIndice)) {
-    writeFileSync(rutaIndice, '# Índice real -- ' + carpetaCampana + '\n\nPáginas reales construidas con Arquitecto para esta Campaña:\n\n', 'utf-8');
+    writeFileSync(rutaIndice, '# Índice real -- ' + carpetaCampana + '\n\nPáginas y catálogos reales de esta Campaña:\n\n', 'utf-8');
   }
   if (creada) console.log(`(bóveda real nueva creada en ${rutaCampana})`);
   return { rutaCampana, rutaIndice };
+}
+
+// §8.151: "en obsidian nos interesa que cada carpeta sea un catalogo, para ordenar
+// obsidian con la jerarquia de carpetas/nodos" -- pedido explicito, cambia el criterio
+// real de §8.150 (ahi la carpeta era la PAGINA). Ahora la carpeta real es el TIPO/
+// catalogo real (ej. "CATALOGOS", una Caja reutilizable) -- cada tipo real tiene su
+// propia carpeta con su propio indice real (que instancias reales lo usan), y la pagina
+// pasa a ser una nota-indice real suelta en la carpeta de su Campaña (nunca una carpeta
+// propia), que enlaza a sus cajas reales alli donde vivan (una por cada carpeta-tipo).
+function asegurarCarpetaTipo(rutaCampana, carpetaTipo) {
+  const rutaTipo = join(rutaCampana, carpetaTipo);
+  const rutaIndiceTipo = join(rutaTipo, '00_Indice.md');
+  if (!existsSync(rutaTipo)) mkdirSync(rutaTipo, { recursive: true });
+  if (!existsSync(rutaIndiceTipo)) {
+    writeFileSync(rutaIndiceTipo, '# Catálogo real -- ' + carpetaTipo + '\n\nInstancias reales que usan este tipo:\n\n', 'utf-8');
+  }
+  return rutaIndiceTipo;
 }
 
 // Añade el enlace real (wikilink) a 00_Indice.md si todavia no esta -- nunca duplicado,
@@ -91,24 +108,34 @@ async function main() {
   const carpetaCampana = slugCampana(entrada.markdown.campanaNombre);
   const { rutaCampana, rutaIndice } = asegurarBovedaCampana(carpetaCampana);
 
-  // §8.150: forma real nueva "carpeta por pagina, nota por caja" (construir_html_desde_arbol.mjs)
-  // -- entrada.markdown.notas es un array real (indice de la pagina + una nota por caja
-  // real), todas dentro de una subcarpeta real propia. La forma real de siempre (una unica
-  // nota por pagina, archivoMd/contenido sueltos) sigue igual -- nunca se toca el flujo ya
-  // existente de Arquitecto sin pedirlo explicito.
+  // §8.151: forma real "carpeta por catalogo/tipo" (construir_html_desde_arbol.mjs) --
+  // entrada.markdown.indicePagina es la nota-indice real de la PROPIA pagina (suelta en
+  // la carpeta de la Campaña, nunca su propia carpeta); entrada.markdown.notas es un
+  // array real de notas de Caja, cada una con SU PROPIA subcarpeta real (el tipo/catalogo
+  // real al que pertenece esa caja -- puede repetirse entre paginas reales distintas, es
+  // la carpeta compartida de ese catalogo). La forma real de siempre (una unica nota por
+  // pagina, archivoMd/contenido sueltos, sin catalogo) sigue igual para el flujo real ya
+  // existente de Arquitecto -- nunca se toca sin pedirlo explicito.
   if (Array.isArray(entrada.markdown.notas)) {
-    const { subcarpeta, notas } = entrada.markdown;
-    if (!subcarpeta || !notas.length) fallar('markdown.notas real mal formado -- falta subcarpeta o viene vacío');
-    const rutaSubcarpeta = join(rutaCampana, slugCampana(subcarpeta));
-    if (!existsSync(rutaSubcarpeta)) mkdirSync(rutaSubcarpeta, { recursive: true });
-    console.log(`\n=== 2/2 Aplicando ${notas.length} nota(s) real(es) en bovedas.claude/${carpetaCampana}/${slugCampana(subcarpeta)}/ ===`);
+    const { indicePagina, notas } = entrada.markdown;
+    if (!indicePagina || !notas.length) fallar('markdown real mal formado -- falta indicePagina o notas viene vacío');
+
+    console.log(`\n=== 2/2 Aplicando ${1 + notas.length} nota(s) real(es) en bovedas.claude/${carpetaCampana}/ ===`);
+    const rutaIndicePagina = join(rutaCampana, indicePagina.archivoMd);
+    writeFileSync(rutaIndicePagina, indicePagina.contenido, 'utf-8');
+    console.log(`  Creada/actualizada de verdad: ${rutaIndicePagina}`);
+    anadirAlIndiceSiFalta(rutaIndice, indicePagina.archivoMd.replace(/\.md$/, ''));
+
     for (const nota of notas) {
-      const rutaNota = join(rutaSubcarpeta, nota.archivoMd);
+      if (!nota.subcarpeta) fallar('nota real de caja sin subcarpeta (tipo/catálogo) -- "' + nota.archivoMd + '"');
+      const carpetaTipo = slugCampana(nota.subcarpeta);
+      const rutaIndiceTipo = asegurarCarpetaTipo(rutaCampana, carpetaTipo);
+      const rutaNota = join(rutaCampana, carpetaTipo, nota.archivoMd);
       const yaExistia = existsSync(rutaNota);
       writeFileSync(rutaNota, nota.contenido, 'utf-8');
+      anadirAlIndiceSiFalta(rutaIndiceTipo, nota.archivoMd.replace(/\.md$/, ''));
       console.log(`  ${yaExistia ? 'Actualizada' : 'Creada'} de verdad: ${rutaNota}`);
     }
-    anadirAlIndiceSiFalta(rutaIndice, slugCampana(subcarpeta) + '/00_Indice');
     console.log('\nAhora ejecuta node aplicar_pagina_arquitecto.mjs ' + archivo + ' para aplicar el HTML real y limpiar la cola.');
     return;
   }

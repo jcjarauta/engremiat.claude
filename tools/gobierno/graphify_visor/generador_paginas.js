@@ -741,10 +741,14 @@ function generarNotaCajaReal(caja, urlSheetCajaReal, urlPaginaRealConAncla) {
     '- Ficha real en el Sheet: ' + urlSheetCajaReal + '\n';
 }
 
-// Indice real de la carpeta de UNA pagina -- lista sus cajas reales como wikilinks (cada
-// una ya es su propia nota real, generarNotaCajaReal de arriba).
-function generarIndicePaginaReal(nombrePagina, cajas, urlPaginaReal, urlSheetPaginaReal) {
-  const lista = cajas.map((c) => '- [[' + c.nombre + ']]').join('\n');
+// §8.151: indice real de UNA pagina -- ya no vive en su propia carpeta (la carpeta real
+// ahora es el tipo/catalogo, no la pagina), asi que enlaza a cada caja real con la ruta
+// real completa dentro de la boveda (carpeta-tipo/nota), nunca solo el nombre de la caja
+// -- notas distintas de tipos distintos podrian llamarse igual. `referencias` es un
+// array real [{ nombreCaja, carpetaTipo, archivoSinExtension }], en el mismo orden real
+// que las cajas.
+function generarIndicePaginaReal(nombrePagina, referencias, urlPaginaReal, urlSheetPaginaReal) {
+  const lista = referencias.map((r) => '- ' + r.nombreCaja + ': [[' + r.carpetaTipo + '/' + r.archivoSinExtension + ']]').join('\n');
   return '# ' + nombrePagina + '\n\n' +
     'TODO: descripción real de qué hace esta página y de dónde sale su dato.\n\n' +
     (lista || '_(sin cajas reales todavía)_') + '\n\n' +

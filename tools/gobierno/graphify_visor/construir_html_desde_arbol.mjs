@@ -86,9 +86,14 @@ async function main() {
   console.log(`\n=== 2/4 Resolviendo ${hijosCaja.length} caja(s) real(es) [${paginaId} -- ${nombrePagina}, tipo ${tipo}] ===`);
 
   let cajasSinCatalogar = 0, funcionesSinCatalogar = 0;
+  // §8.151: la carpeta real de la boveda es el TIPO/catalogo real de cada caja (no la
+  // pagina) -- se guarda en paralelo a `cajas`, en el mismo orden real, para saber luego
+  // en que carpeta real cae la nota de cada una.
+  const tiposCatalogoCajas = [];
   const cajas = hijosCaja.map((hijoCaja) => {
     const entradaCaja = buscarEnCatalogo(catalogoCajas, hijoCaja.nombre);
     if (!entradaCaja) cajasSinCatalogar++;
+    tiposCatalogoCajas.push(entradaCaja ? entradaCaja.etiqueta : 'Sin catalogar');
     console.log(`  - [${hijoCaja.id}] "${hijoCaja.nombre}" -> ${entradaCaja ? 'catalogada' : 'SIN catalogar (layout por defecto)'}`);
 
     let piezas;
@@ -138,19 +143,31 @@ async function main() {
   writeFileSync(rutaLocal, html, 'utf-8');
   console.log('  Guardado real para revisión: ' + rutaLocal);
 
-  // §8.150: nota gemela real "carpeta por pagina, nota por caja" -- toda pagina real
-  // construida (aqui, desde el arbol) sigue generando su nota gemela (§8.140), pero con
-  // la estructura real pedida explicita: una carpeta real por pagina, una nota real por
-  // caja (nunca una unica nota con todas las cajas como secciones, a diferencia del flujo
-  // real ya existente de Arquitecto -- ese sigue igual, sin tocar).
+  // §8.151: nota gemela real "carpeta por catálogo/tipo, nota por caja" -- pedido
+  // explícito para ordenar Obsidian con la jerarquía real de catálogos, no de páginas:
+  // "en obsidian nos interesa que cada carpeta sea un catálogo". La página ya NO tiene
+  // carpeta propia -- su índice real vive suelto en la Campaña, y cada caja real cae en
+  // la carpeta real de su tipo/catálogo resuelto (compartida entre páginas reales
+  // distintas que usen el mismo tipo). Nombrada por la página real para no chocar con
+  // otra instancia real del mismo tipo en otra página.
   const urlPaginaReal = 'http://100.107.171.88:9320/' + archivo;
   const campanaNombreReal = hallazgo.campana ? hallazgo.campana.nombre : nombrePagina;
-  const notaIndice = { archivoMd: '00_Indice.md', contenido: ctx.generarIndicePaginaReal(nombrePagina, cajas, urlPaginaReal, hallazgo.nodo.urlSheet || '') };
-  const notasCajas = hijosCaja.map((hijoCaja, i) => ({
-    archivoMd: hijoCaja.nombre.replace(/[\\/:*?"<>|]/g, '_') + '.md',
-    contenido: ctx.generarNotaCajaReal(cajas[i], hijoCaja.urlSheet || '', urlPaginaReal + '#' + hijoCaja.id),
+  const nombreArchivoBase = nombrePagina.replace(/[\\/:*?"<>|]/g, '_');
+  const notasCajas = hijosCaja.map((hijoCaja, i) => {
+    const archivoSinExtension = nombreArchivoBase + (hijosCaja.length > 1 ? ' -- ' + hijoCaja.nombre.replace(/[\\/:*?"<>|]/g, '_') : '');
+    return {
+      subcarpeta: tiposCatalogoCajas[i],
+      archivoMd: archivoSinExtension + '.md',
+      contenido: ctx.generarNotaCajaReal(cajas[i], hijoCaja.urlSheet || '', urlPaginaReal + '#' + hijoCaja.id),
+    };
+  });
+  const referencias = hijosCaja.map((hijoCaja, i) => ({
+    nombreCaja: hijoCaja.nombre,
+    carpetaTipo: tiposCatalogoCajas[i],
+    archivoSinExtension: notasCajas[i].archivoMd.replace(/\.md$/, ''),
   }));
-  const markdownPendiente = { campanaNombre: campanaNombreReal, subcarpeta: nombrePagina, notas: [notaIndice, ...notasCajas] };
+  const indicePagina = { archivoMd: nombreArchivoBase + '.md', contenido: ctx.generarIndicePaginaReal(nombrePagina, referencias, urlPaginaReal, hallazgo.nodo.urlSheet || '') };
+  const markdownPendiente = { campanaNombre: campanaNombreReal, indicePagina, notas: notasCajas };
 
   if (encolar) {
     console.log('\n=== 4/4 Encolando real (--encolar) ===');
