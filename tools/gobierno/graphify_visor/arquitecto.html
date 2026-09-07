@@ -1223,6 +1223,13 @@ async function inicializarArquitecto() {
   const idDesdeUrl = new URLSearchParams(location.search).get('editar');
   const select = document.getElementById('paginaEditar');
   if (idDesdeUrl && [...select.options].some(o => o.value === idDesdeUrl)) {
+    // §8.165: mismo criterio real ya usado en el modo ?catalogoPlantilla= (§8.156) --
+    // llegar con ?editar= significa que ya se sabe exactamente que pagina real se va a
+    // tocar, "Crear pagina nueva" (con su propio tipo/cascada/plantilla, sin relacion
+    // real con lo que se va a editar) nunca aporta aqui, solo ensucia la pantalla y
+    // confunde ("¿tengo que rellenar esto tambien?"). Nunca se habia aplicado a este
+    // modo, solo al nuevo -- confirmado real viendo la captura del operador.
+    document.getElementById('bloqueCrearNueva').style.display = 'none';
     select.value = idDesdeUrl;
     await cargarCajasEditar();
     // §8.141/§8.142: scrollIntoView({behavior:'smooth'}) nunca completaba el scroll real

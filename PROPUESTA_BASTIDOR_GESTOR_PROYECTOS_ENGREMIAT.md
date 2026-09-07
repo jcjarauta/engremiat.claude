@@ -2109,6 +2109,14 @@ Pedido directo: *"añadir un botón en la línea de los elementos de árbol camp
 
 **Verificado de extremo a extremo, real y no simulado**: rechazo real de formato inválido (`400`); `PRO-0009 CONSTRUCTOR` configurado de verdad -- `NOMBRE` real confirmado `"CONSTRUCTOR (constructor.html)"` en el Sheet, `RE_PAGINA_REAL` lo reconoce ya como página real vía la API; rechazo real de doble configuración sobre una fila que ya es página. Modal real probado en el navegador (título/sugerencia correctos). Detección real de colisión confirmada (`entidades.html` -- sí colisiona; un nombre nuevo -- no colisiona).
 
+### 8.165 Arquitecto -- `?editar=` oculta "Crear página nueva", mismo criterio ya usado en `?catalogoPlantilla=`
+
+Reportado con captura real: al entrar con `?editar=PRO-0009`, seguía viéndose entero el bloque "0. Punto de partida"/"0.5 ¿Dónde vive esta página?" (tipo/cascada/plantilla) -- sin relación real con la tarea de editar, solo ensuciando la pantalla y sugiriendo (falsamente) que había algo más que rellenar a mano. Diagnóstico real: ese aislamiento **ya se había aplicado** al modo nuevo `?catalogoPlantilla=` (§8.156) -- nunca al modo `?editar=` que ya existía desde antes, inconsistencia real nunca corregida hasta ahora.
+
+**Corregido real, mismo patrón exacto**: dentro de `inicializarArquitecto()`, en cuanto el deep-link `?editar=` resulta válido, `bloqueCrearNueva` pasa a `display:none` -- solo queda visible "Editar página existente" (ya autorrelleno por `cargarCajasEditar()`, sin tocar esa lógica) + el boceto en vivo. Cero mecanismo nuevo, cero cambio en la carga real de datos.
+
+**Verificado real en el navegador** (simulando el desplegable ya poblado, ya que el fetch real está bloqueado en este entorno -- limitación ya conocida): `bloqueCrearNueva` pasa de `display:''` a `display:'none'`, `bloqueEditarExistente` se mantiene visible. Captura real confirma la pantalla limpia -- directo a "Editar contenido real de una página existente" con `CONSTRUCTOR (constructor.html)` ya seleccionado.
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.
