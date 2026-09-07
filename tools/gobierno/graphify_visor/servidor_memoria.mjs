@@ -600,12 +600,24 @@ function guardarLayoutPagina(productoId, layoutId) {
 // fragmentos_cajas.json/layouts_pagina.json -- solo datos, en DIR_DATOS.
 const RUTA_PLANTILLAS_PROYECTO = join(DIR_DATOS, 'plantillas_proyecto.json');
 function leerPlantillasProyecto() {
-  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {}, cajasReutilizables: {}, funcionesReutilizables: {} };
+  return existsSync(RUTA_PLANTILLAS_PROYECTO) ? JSON.parse(readFileSync(RUTA_PLANTILLAS_PROYECTO, 'utf-8')) : { plantillas: {}, cajasReutilizables: {}, funcionesReutilizables: {}, patronesBiblioteca: {} };
 }
 function guardarPlantillaProyecto(id, plantilla) {
   const datos = leerPlantillasProyecto();
   datos.plantillas = datos.plantillas || {};
   datos.plantillas[id] = { ...plantilla, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+// §8.155: DELETE real de una plantilla de pagina -- a diferencia de Cajas/Funciones
+// (§8.149/152), una plantilla nunca se resuelve por coincidencia de NOMBRE contra una fila
+// real del Sheet (Arquitecto solo la ofrece como punto de partida al crear una pagina
+// nueva, confirmado leyendo cargarPlantillas() en arquitecto.html) -- borrarla no puede
+// dejar huerfana ninguna fila real, asi que no hace falta la proteccion de uso real de
+// borrarCajaReutilizable/borrarFuncionReutilizable.
+function borrarPlantillaProyecto(id) {
+  const datos = leerPlantillasProyecto();
+  datos.plantillas = datos.plantillas || {};
+  delete datos.plantillas[id];
   writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
@@ -628,6 +640,30 @@ function guardarFuncionReutilizable(id, funcion) {
   const datos = leerPlantillasProyecto();
   datos.funcionesReutilizables = datos.funcionesReutilizables || {};
   datos.funcionesReutilizables[id] = { ...funcion, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
+// §8.155: "Biblioteca pase a ser Catalogos" -- pedido explicito del operador tras notar que
+// Biblioteca (PRD-0007/biblioteca.html) era el UNICO catalogo real del sistema que seguia
+// exigiendo escribir HTML a mano, justo lo contrario del objetivo de esta pantalla ("acceso
+// a cualquier catalogo... sin escribir codigo"). Misma regla de fondo que ya gobierna
+// Biblioteca ("decisiones repetidas al menos dos veces, con su primera aplicacion real
+// como referencia") -- aqui se le da mecanismo real (API + formulario) en vez de edicion
+// manual. Forma real DISTINTA de Caja/Funcion (dominio+enlace real en vez de layout/tipo
+// de pieza) -- por eso es su propio catalogo, no una fila mas de cajasReutilizables.
+// biblioteca.html NO se retira (pedido explicito: "este sheet nos esta sirviendo de
+// pruebas, no hace falta borrar") -- este catalogo nuevo es la migracion real de su
+// contenido a un catalogo gobernado por formulario, ambos pueden convivir.
+function guardarPatronBiblioteca(id, patron) {
+  const datos = leerPlantillasProyecto();
+  datos.patronesBiblioteca = datos.patronesBiblioteca || {};
+  datos.patronesBiblioteca[id] = { ...patron, actualizadoEn: new Date().toISOString() };
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+function borrarPatronBiblioteca(id) {
+  const datos = leerPlantillasProyecto();
+  datos.patronesBiblioteca = datos.patronesBiblioteca || {};
+  delete datos.patronesBiblioteca[id];
   writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
@@ -1324,6 +1360,19 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la plantilla real: ' + e.message })); return;
       }
     }
+    // §8.155: sin proteccion de uso real (ver borrarPlantillaProyecto) -- una plantilla
+    // nunca se resuelve por nombre contra una fila real del Sheet.
+    if (req.method === 'DELETE' && req.url.startsWith('/api/plantillas_proyecto')) {
+      const id = new URL(req.url, 'http://x').searchParams.get('id');
+      if (!id) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta id' })); return; }
+      if (!(leerPlantillasProyecto().plantillas || {})[id]) { res.writeHead(404); res.end(JSON.stringify({ error: 'no existe esa plantilla real: ' + id })); return; }
+      try {
+        borrarPlantillaProyecto(id);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
+      }
+    }
 
     // §8.149: catalogo real y creciente de Cajas reutilizables entre proyectos --
     // referenciadas por NOMBRE real desde un Proceso/Producto real, nunca con contenido.
@@ -1396,6 +1445,35 @@ const servidor = createServer(async (req, res) => {
           }
         }
         borrarFuncionReutilizable(id);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
+      }
+    }
+
+    // §8.155: catalogo real de Patrones de Biblioteca -- migracion del contenido real de
+    // biblioteca.html (curado a mano) a un catalogo gobernado por formulario, mismo
+    // criterio de fondo ("2a vez real") que ya rige alli. Sin proteccion de uso real: un
+    // patron de Biblioteca nunca se resuelve por nombre contra una fila del Sheet.
+    if (req.method === 'GET' && req.url === '/api/patrones_biblioteca') {
+      res.writeHead(200); res.end(JSON.stringify({ patrones: leerPlantillasProyecto().patronesBiblioteca || {} })); return;
+    }
+    if (req.method === 'POST' && req.url === '/api/patrones_biblioteca') {
+      const { id, dominio, etiqueta, descripcion, enlace } = await leerCuerpo(req);
+      if (!id || !etiqueta) { res.writeHead(400); res.end(JSON.stringify({ error: 'faltan id/etiqueta' })); return; }
+      try {
+        guardarPatronBiblioteca(id, { dominio: dominio || '', etiqueta, descripcion: descripcion || '', enlace: enlace || '' });
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar el patron real: ' + e.message })); return;
+      }
+    }
+    if (req.method === 'DELETE' && req.url.startsWith('/api/patrones_biblioteca')) {
+      const id = new URL(req.url, 'http://x').searchParams.get('id');
+      if (!id) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta id' })); return; }
+      if (!(leerPlantillasProyecto().patronesBiblioteca || {})[id]) { res.writeHead(404); res.end(JSON.stringify({ error: 'no existe ese patron real: ' + id })); return; }
+      try {
+        borrarPatronBiblioteca(id);
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
