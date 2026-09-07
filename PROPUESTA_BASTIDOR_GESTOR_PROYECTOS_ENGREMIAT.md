@@ -2025,6 +2025,16 @@ Cierre de la ronda de asesoría sobre "Arquitecto como editor íntegro de catál
 
 **Verificado de extremo a extremo, real y no simulado**: DOM real confirmado -- `?catalogoPlantilla=hub_de_indice` activa `bloqueCatalogoPlantilla` (`display:block`) y oculta los otros dos (`display:none`). Round-trip estructural real contra la API -- añadida una pieza real de prueba a "Hub de Índice" (`cajas[0].piezas` de 1 a 2), confirmada, y revertida al estado original -- `JSON.stringify` antes/después idéntico bit a bit. Mecanismo real de `postMessage` probado end-to-end en el navegador: mensaje simulado recibido, aviso mostrado con el texto correcto. Botón "Cajas (Arquitecto)" probado -- revela la sección y fija el `src` real correcto (`arquitecto?catalogoPlantilla=hub_de_indice`, sin `.html`). El propio editor embebido no pudo verse relleno con datos reales en este entorno (el Browser pane bloquea por política las conexiones a `100.107.171.88:9330`, limitación ya conocida desde §8.152/154/155) -- compensado verificando cada pieza del mecanismo por separado, directamente contra la API real.
 
+### 8.157 Catálogos -- menú con submenú real (editables/fijos) y formulario a una sola columna
+
+Pedido directo tras ver la pantalla real: *"lo quiero con menú y submenú desplegable"* + *"formulario de edición de una sola columna"*. Dos ajustes reales, sin ronda de asesoría (implementación directa):
+
+- **Selector "Catálogo"**: pasa de un único desplegable plano de 8 entradas a `<optgroup>` real -- "Editables (formulario + API)" / "Fijos (solo lectura, vocabulario del código)" -- mismo patrón real ya usado en `arquitecto.html` (el selector de plantillas ya agrupa "Plantillas de proyecto"/"Plantillas base"), nunca una categoría inventada aparte: agrupa por la misma distinción real (`editable`) que ya gobierna todo `DEF_CATALOGOS` desde §8.155.
+- **Formulario de edición**: la única fila real que quedaba a dos columnas (`id`+`etiqueta`, lado a lado) pasa a dos filas reales separadas -- todo el formulario queda a una columna, para cualquier catálogo (los campos extra ya nacían uno por fila desde §8.155, no hacía falta tocarlos).
+- Limpieza menor: quitado el sufijo `(fijo)` de las 4 etiquetas de catálogos fijos -- ya redundante con el nuevo `<optgroup>` y con el badge "fijo" que ya llevaba cada fila de su lista.
+
+**Verificado real en el navegador**: capturas reales confirmando el desplegable abierto con los dos grupos reales visibles y el formulario en una columna, para "Plantillas de página" y también para "Cajas reutilizables" (el caso con más campos extra -- cabecera/pie, antes también a dos columnas en la fila superior).
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.

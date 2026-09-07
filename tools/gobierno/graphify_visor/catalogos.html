@@ -63,6 +63,8 @@
         <label>id</label>
         <input type="text" id="campoId" placeholder="ej.: caja-formulario-simple">
       </div>
+    </div>
+    <div class="fila">
       <div>
         <label>etiqueta</label>
         <input type="text" id="campoEtiqueta" placeholder="nombre real exacto que usará un Proceso/Tarea del Sheet">
@@ -114,10 +116,10 @@ const DEF_CATALOGOS = {
     campos: [{ id: 'tipoPieza', label: 'tipo de pieza', obligatorio: true }] },
   patrones: { etiqueta: 'Patrones de Biblioteca', editable: true, endpoint: '/api/patrones_biblioteca', clave: 'patrones', permiteCrear: true,
     campos: [{ id: 'dominio', label: 'dominio' }, { id: 'enlace', label: 'enlace real (dónde se aplicó)', area: true }] },
-  tiposPieza: { etiqueta: 'Tipos de pieza (fijo)', editable: false, fijo: () => TIPOS_CAJA },
-  grafos: { etiqueta: 'Grafos embebibles (fijo)', editable: false, fijo: () => CATALOGO_GRAFOS },
-  layouts: { etiqueta: 'Layouts (fijo)', editable: false, fijo: () => LAYOUTS_PAGINA },
-  plantillasBase: { etiqueta: 'Plantillas base (fijo)', editable: false, fijo: () => CATALOGO_PLANTILLAS_BASE },
+  tiposPieza: { etiqueta: 'Tipos de pieza', editable: false, fijo: () => TIPOS_CAJA },
+  grafos: { etiqueta: 'Grafos embebibles', editable: false, fijo: () => CATALOGO_GRAFOS },
+  layouts: { etiqueta: 'Layouts', editable: false, fijo: () => LAYOUTS_PAGINA },
+  plantillasBase: { etiqueta: 'Plantillas base', editable: false, fijo: () => CATALOGO_PLANTILLAS_BASE },
 };
 
 function escapeHtml(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -129,9 +131,20 @@ function mostrarAviso(mensaje, esError) {
   el.innerHTML = '<div class="aviso-real ' + (esError ? 'error' : 'ok') + '">' + escapeHtml(mensaje) + '</div>';
 }
 
+// §8.157: menú con submenú real desplegable -- pedido explícito ("lo quiero con menú y
+// submenú"), en vez de un único desplegable plano de 8 entradas. Mismo patrón real ya
+// usado en arquitecto.html (optgroup real de "Plantillas de proyecto"/"Plantillas base")
+// -- agrupa por la MISMA distinción real que ya gobierna todo el fichero (editable vs.
+// fijo), nunca una categoría inventada aparte.
 function poblarSelectorCatalogos() {
   const sel = document.getElementById('tipoCatalogo');
-  sel.innerHTML = Object.keys(DEF_CATALOGOS).map((k) => '<option value="' + k + '">' + escapeHtml(DEF_CATALOGOS[k].etiqueta) + '</option>').join('');
+  const claves = Object.keys(DEF_CATALOGOS);
+  const opcion = (k) => '<option value="' + k + '">' + escapeHtml(DEF_CATALOGOS[k].etiqueta) + '</option>';
+  const editables = claves.filter((k) => DEF_CATALOGOS[k].editable);
+  const fijos = claves.filter((k) => !DEF_CATALOGOS[k].editable);
+  sel.innerHTML =
+    '<optgroup label="Editables (formulario + API)">' + editables.map(opcion).join('') + '</optgroup>' +
+    '<optgroup label="Fijos (solo lectura, vocabulario del código)">' + fijos.map(opcion).join('') + '</optgroup>';
 }
 
 // Reconstruye los campos extra del formulario segun el catalogo activo -- cada catalogo
