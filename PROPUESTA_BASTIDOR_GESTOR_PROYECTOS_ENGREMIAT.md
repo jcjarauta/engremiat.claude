@@ -2035,6 +2035,12 @@ Pedido directo tras ver la pantalla real: *"lo quiero con menú y submenú despl
 
 **Verificado real en el navegador**: capturas reales confirmando el desplegable abierto con los dos grupos reales visibles y el formulario en una columna, para "Plantillas de página" y también para "Cajas reutilizables" (el caso con más campos extra -- cabecera/pie, antes también a dos columnas en la fila superior).
 
+### 8.158 Catálogos -- formulario de edición oculto hasta invocarlo
+
+Pedido directo: *"el formulario de edición déjalo oculto hasta que se invoque por su botón"*. `actualizarVisibilidadFormulario()` ahora oculta `#seccionFormulario` entera cada vez que cambia el catálogo activo -- solo `cargarEnFormulario()` (botón "Editar" de una fila real) la revela de verdad. Corrección en el momento: el primer intento también conectó "+ Nueva entrada" a revelar la sección -- el operador pidió explícito no tocar ese botón todavía (*"si lo quiero reservar en esta vista, por ahora no lo toques"*), revertido de inmediato -- "+ Nueva entrada" se queda exactamente como estaba.
+
+**Verificado real en el navegador**: estado inicial con "Formulario de edición" ausente de la pantalla; simulado el clic real en "Editar" -- la sección pasa a `display:block` de verdad.
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.

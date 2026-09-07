@@ -162,8 +162,12 @@ function reconstruirCamposExtra() {
   ).join('');
 }
 
+// §8.158: pedido directo -- "el formulario de edición déjalo oculto hasta que se invoque
+// por su botón". La sección entera nace oculta cada vez que cambia el catálogo activo;
+// solo `cargarEnFormulario()` (botón Editar) y "+ Nueva entrada" la revelan de verdad.
 function actualizarVisibilidadFormulario() {
   const def = defActivo();
+  document.getElementById('seccionFormulario').style.display = 'none';
   document.getElementById('formCatalogo').style.display = def.editable ? 'block' : 'none';
   document.getElementById('avisoSoloLectura').style.display = def.editable ? 'none' : 'block';
   document.getElementById('btnNuevo').style.display = def.editable && def.permiteCrear !== false ? 'inline-block' : 'none';
@@ -227,6 +231,7 @@ function cargarEnFormulario(entrada, id) {
   def.campos.forEach((c) => { document.getElementById('campoExtra_' + c.id).value = entrada[c.id] || c.porDefecto || ''; });
   document.getElementById('btnBorrar').disabled = false;
   mostrarAviso('');
+  document.getElementById('seccionFormulario').style.display = 'block';
 }
 
 function limpiarFormulario() {

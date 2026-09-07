@@ -685,6 +685,10 @@
     {
       "fichero": "tools/gobierno/graphify_visor/catalogos.html",
       "que_hace": "§8.157: pedido directo -- menu con submenu desplegable + formulario de edicion a una sola columna. Selector Catalogo pasa a optgroup real (Editables/Fijos), mismo patron ya usado en arquitecto.html para plantillas; agrupa por la misma distincion real (editable) que ya gobierna DEF_CATALOGOS desde §8.155. La unica fila a dos columnas que quedaba (id+etiqueta) pasa a dos filas separadas -- formulario queda a una columna para cualquier catalogo. Quitado el sufijo (fijo) de las 4 etiquetas fijas, redundante con el optgroup y el badge fijo ya existente. Verificado real en el navegador con capturas: desplegable abierto con los 2 grupos visibles, formulario en una columna para Plantillas de pagina y Cajas reutilizables (el caso con mas campos extra)."
+    },
+    {
+      "fichero": "tools/gobierno/graphify_visor/catalogos.html",
+      "que_hace": "§8.158: pedido directo -- formulario de edicion oculto hasta invocarlo por su boton. actualizarVisibilidadFormulario() oculta seccionFormulario entera en cada cambio de catalogo; solo cargarEnFormulario() (boton Editar) la revela. Correccion en el momento: el primer intento tambien conecto +Nueva entrada a revelar la seccion -- el operador pidio explicito no tocar ese boton todavia (\"si lo quiero reservar en esta vista, por ahora no lo toques\"), revertido de inmediato. Verificado real en el navegador: estado inicial sin el formulario visible, clic real en Editar revela la seccion (display:block)."
     }
   ]
 }
