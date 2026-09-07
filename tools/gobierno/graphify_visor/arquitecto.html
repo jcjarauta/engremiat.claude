@@ -156,6 +156,23 @@
   <ol class="pasos" id="pasosReales"></ol>
 </div>
 
+<div class="bloque" id="bloqueCatalogoPlantilla" style="display:none;">
+  <h2>Editando la estructura real de una plantilla de catálogo</h2>
+  <p class="hint">Abierta desde <a href="catalogos.html">Catálogos</a> -- aquí solo se edita el <b>layout</b> y las <b>Cajas/Piezas</b> reales de "<b id="tituloPlantillaCatalogo"></b>". La etiqueta/descripción se editan en Catálogos. Guardar aquí nunca toca el Sheet ni la cola de despliegue -- solo <code>plantillas_proyecto.json</code>.</p>
+  <div class="fila">
+    <div style="flex:1;">
+      <label>Layout real de la plantilla</label>
+      <select id="layoutPlantillaCatalogo" style="width:100%;" onchange="alCambiarLayoutPlantillaCatalogo()"></select>
+    </div>
+  </div>
+  <div id="listaCajasPlantillaCatalogo"></div>
+  <button onclick="anadirCajaPlantillaCatalogo()">+ Añadir caja</button>
+  <div style="margin-top:16px;">
+    <button class="primario" onclick="guardarPlantillaCatalogo()">Guardar cambios en la plantilla</button>
+  </div>
+  <div id="estadoCatalogoPlantilla" class="estado"></div>
+</div>
+
 <div class="bloque" id="bloqueEditarExistente">
   <h2>Editar contenido real de una página existente</h2>
   <p class="hint">Elige una página real ya creada con Arquitecto. El nombre y el tipo de cada caja son reales (vienen del Sheet) -- lo único que escribes aquí es el contenido real de cada una. El <b>layout</b> es de una lista real fija (nunca CSS libre); cada caja solo dice en qué columna empieza y cuántas ocupa. Al reconstruir, se regenera la página entera a partir de sus cajas reales y se aplica con el mismo <code>aplicar_pagina_arquitecto.mjs</code>.</p>
@@ -1089,6 +1106,105 @@ async function cargarPaginasEditables() {
   }
 }
 
+// §8.156: modo real nuevo -- editar la ESTRUCTURA (cajas/piezas) de una Plantilla de
+// catalogo (plantillas_proyecto.json -> plantillas), abierto desde catalogos.html en un
+// iframe (§8.155 dejo el formulario de Catalogos sin poder tocar el array real "cajas",
+// a proposito -- ese array es exactamente lo que Arquitecto ya sabe construir). Bloque
+// real AISLADO (bloqueCatalogoPlantilla), nunca reutiliza el DOM de bloqueCrearNueva/
+// bloqueEditarExistente -- mas seguro que ocultar/reconfigurar sus secciones especificas
+// del Sheet (serian muchas), a coste de repetir un puñado de funciones ya existentes
+// (crearBloqueCajaHtml/leerPiezasDeCaja/opcionesLayoutHtml/generarPreviewHtml -- todas
+// YA compartidas, nunca duplicadas aqui, solo se orquestan distinto).
+let plantillaCatalogoActual = null; // {id, etiqueta, descripcion, tipoPagina}
+
+async function inicializarModoCatalogoPlantilla(id) {
+  document.getElementById('bloqueCrearNueva').style.display = 'none';
+  document.getElementById('bloqueEditarExistente').style.display = 'none';
+  const bloque = document.getElementById('bloqueCatalogoPlantilla');
+  bloque.style.display = 'block';
+  const estado = document.getElementById('estadoCatalogoPlantilla');
+  try {
+    const j = await (await fetch(URL_MEMORIA + '/api/plantillas_proyecto')).json();
+    const entrada = (j.plantillas || {})[id];
+    if (!entrada) { estado.className = 'estado error'; estado.textContent = 'No existe esa plantilla real: ' + id; return; }
+    plantillaCatalogoActual = { id, etiqueta: entrada.etiqueta, descripcion: entrada.descripcion || '', tipoPagina: entrada.tipoPagina || 'Espacio' };
+    document.getElementById('tituloPlantillaCatalogo').textContent = entrada.etiqueta;
+    document.getElementById('layoutPlantillaCatalogo').innerHTML = opcionesLayoutHtml(entrada.layoutId || LAYOUT_POR_DEFECTO);
+    document.getElementById('listaCajasPlantillaCatalogo').innerHTML = (entrada.cajas || []).map(c => crearBloqueCajaHtml({
+      nombre: c.nombre || '', cabecera: c.cabecera || '', pie: c.pie || '',
+      layoutInterno: c.layoutInterno || LAYOUT_POR_DEFECTO,
+      columnaInicio: c.columnaInicio || 1, ancho: c.ancho || 1,
+      piezas: c.piezas,
+    })).join('');
+    alCambiarLayoutPlantillaCatalogo();
+    actualizarVistaPreviaPlantillaCatalogo();
+  } catch (e) {
+    estado.className = 'estado error'; estado.textContent = 'No se pudo leer la plantilla real: ' + e.message;
+  }
+}
+
+function anadirCajaPlantillaCatalogo() {
+  document.getElementById('listaCajasPlantillaCatalogo').insertAdjacentHTML('beforeend', crearBloqueCajaHtml({}));
+  alCambiarLayoutPlantillaCatalogo();
+}
+
+function alCambiarLayoutPlantillaCatalogo() {
+  const layout = LAYOUTS_PAGINA[document.getElementById('layoutPlantillaCatalogo').value] || LAYOUTS_PAGINA[LAYOUT_POR_DEFECTO];
+  document.querySelectorAll('#listaCajasPlantillaCatalogo > .caja').forEach(cajaEl => {
+    cajaEl.querySelector('.columna-caja-pagina').max = layout.columnas;
+    cajaEl.querySelector('.ancho-caja-pagina').max = layout.columnas;
+  });
+}
+
+function leerCajasPlantillaCatalogo() {
+  return [...document.querySelectorAll('#listaCajasPlantillaCatalogo > .caja')].map(el => ({
+    nombre: el.querySelector('.nombre-caja').value.trim(),
+    cabecera: el.querySelector('.cabecera-caja').value.trim(),
+    pie: el.querySelector('.pie-caja').value.trim(),
+    layoutInterno: el.querySelector('.layout-interno-caja').value || LAYOUT_POR_DEFECTO,
+    columnaInicio: Number(el.querySelector('.columna-caja-pagina').value) || 1,
+    ancho: Number(el.querySelector('.ancho-caja-pagina').value) || 1,
+    piezas: leerPiezasDeCaja(el),
+  }));
+}
+
+function actualizarVistaPreviaPlantillaCatalogo() {
+  if (!plantillaCatalogoActual) return;
+  try {
+    const layoutId = document.getElementById('layoutPlantillaCatalogo').value || LAYOUT_POR_DEFECTO;
+    const cajas = leerCajasPlantillaCatalogo().map(c => ({ ...c, nombre: c.nombre || '(sin nombre todavía)' }));
+    document.getElementById('vistaPreviaFrame').srcdoc = generarPreviewHtml(plantillaCatalogoActual.etiqueta, cajas, 'home.html', layoutId);
+  } catch (e) {
+    // Boceto en vivo -- nunca bloquea el resto del formulario.
+  }
+}
+
+// Guarda de vuelta al MISMO id real -- etiqueta/descripcion/tipoPagina se reenvian tal
+// cual se leyeron al abrir (Catalogos es quien edita esos campos, nunca este bloque),
+// solo layoutId/cajas cambian de verdad aqui. Avisa a quien lo embebio (postMessage,
+// §8.156 -- catalogos.html lo abre en un iframe) para que refresque su lista sola.
+async function guardarPlantillaCatalogo() {
+  const estado = document.getElementById('estadoCatalogoPlantilla');
+  estado.className = 'estado'; estado.textContent = 'Guardando...';
+  const cajas = leerCajasPlantillaCatalogo().filter(c => c.nombre);
+  if (!cajas.length) { estado.className = 'estado error'; estado.textContent = 'Añade al menos una caja real con nombre.'; return; }
+  const layoutId = document.getElementById('layoutPlantillaCatalogo').value || LAYOUT_POR_DEFECTO;
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/plantillas_proyecto', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: plantillaCatalogoActual.id, etiqueta: plantillaCatalogoActual.etiqueta, descripcion: plantillaCatalogoActual.descripcion, layoutId, tipoPagina: plantillaCatalogoActual.tipoPagina, cajas }),
+    });
+    if (!r.ok) throw new Error((await r.json()).error || 'error real desconocido');
+    estado.className = 'estado ok'; estado.textContent = 'Guardado de verdad: "' + plantillaCatalogoActual.etiqueta + '".';
+    if (window.parent !== window) window.parent.postMessage({ tipo: 'catalogo-guardado', catalogo: 'plantillas', id: plantillaCatalogoActual.id }, '*');
+  } catch (e) {
+    estado.className = 'estado error'; estado.textContent = 'No se pudo guardar de verdad: ' + e.message;
+  }
+}
+
+document.getElementById('bloqueCatalogoPlantilla').addEventListener('input', () => programarVistaPrevia(actualizarVistaPreviaPlantillaCatalogo));
+document.getElementById('bloqueCatalogoPlantilla').addEventListener('click', () => programarVistaPrevia(actualizarVistaPreviaPlantillaCatalogo));
+
 // §8.147: bug real encontrado -- el deep-link real ?editar=ID (§8.138) se aplicaba y
 // hacia scroll DENTRO de cargarPaginasEditables(), sin esperar a que las otras llamadas
 // reales de arranque (cargarPlantillas(), renderCascadaPadreSheet() -- esta ultima nueva
@@ -1101,6 +1217,8 @@ async function cargarPaginasEditables() {
 // simuladas). Corregido: el deep-link (seleccionar + scroll) se aplica DESPUES de que
 // las 3 llamadas reales de arranque hayan terminado del todo (Promise.all), nunca antes.
 async function inicializarArquitecto() {
+  const idCatalogoPlantilla = new URLSearchParams(location.search).get('catalogoPlantilla');
+  if (idCatalogoPlantilla) { await inicializarModoCatalogoPlantilla(idCatalogoPlantilla); return; }
   await Promise.all([cargarPlantillas(), renderCascadaPadreSheet(), cargarPaginasEditables()]);
   const idDesdeUrl = new URLSearchParams(location.search).get('editar');
   const select = document.getElementById('paginaEditar');

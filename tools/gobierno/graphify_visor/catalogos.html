@@ -85,6 +85,13 @@
   </form>
 </section>
 </div>
+
+<section id="seccionArquitectoEmbebido" style="display:none; margin-top:20px;">
+  <h2>Editando estructura real en Arquitecto</h2>
+  <p class="hint">Mismo editor de Cajas/Piezas ya construido en Arquitecto, sin salir de esta página -- al guardar, la lista de arriba se refresca sola.</p>
+  <iframe id="arquitectoFrame" style="width:100%; height:900px; border:1px solid var(--color-base-borde-suave); border-radius:10px;"></iframe>
+</section>
+
 <footer class="pie-real">
   <p class="hint">Los datos reales editables viven en <code>plantillas_proyecto.json</code> (servidor de memoria) -- nunca se inventa contenido de Tarea aquí, esto solo configura qué tipos reutilizables existen.</p>
 </footer>
@@ -171,17 +178,24 @@ async function cargarLista() {
       const resumen = def.editable
         ? def.campos.map((c) => e[c.id]).filter(Boolean).join(' · ')
         : Object.keys(e).filter((k) => !['etiqueta', 'descripcion', 'desc', 'ayuda'].includes(k) && typeof e[k] !== 'object').map((k) => k + ': ' + e[k]).join(' · ');
-      const boton = def.editable ? '<button type="button" data-id="' + escapeHtml(id) + '" class="btnEditar">Editar</button>' : '<span class="badge-fijo">fijo</span>';
+      const botonEditar = def.editable ? '<button type="button" data-id="' + escapeHtml(id) + '" class="btnEditar">Editar</button>' : '<span class="badge-fijo">fijo</span>';
+      // §8.156: Plantillas de página lleva su array real "cajas" -- esta pantalla nunca lo
+      // edita (§8.155, a proposito), un segundo boton real abre el editor de Cajas/Piezas
+      // ya construido en Arquitecto, embebido debajo en un iframe (nunca duplicado aqui).
+      const botonEstructura = def.clave === 'plantillas' ? ' <button type="button" data-id="' + escapeHtml(id) + '" class="btnEstructura">Cajas (Arquitecto)</button>' : '';
       return '<div class="fila-catalogo">' +
         '<span class="etq">' + escapeHtml(e.etiqueta || id) + '</span>' +
         '<span class="tipo">' + escapeHtml(resumen) + '</span>' +
         '<span class="desc">' + escapeHtml(e.descripcion || e.desc || e.ayuda || '') + '</span>' +
-        boton +
+        botonEditar + botonEstructura +
         '</div>';
     }).join('');
     if (def.editable) {
       cont.querySelectorAll('.btnEditar').forEach((btn) => {
         btn.addEventListener('click', () => cargarEnFormulario(catalogo[btn.dataset.id], btn.dataset.id));
+      });
+      cont.querySelectorAll('.btnEstructura').forEach((btn) => {
+        btn.addEventListener('click', () => abrirEnArquitecto(btn.dataset.id));
       });
     }
   } catch (e) {
@@ -260,6 +274,24 @@ async function borrar() {
     mostrarAviso('Error real de red borrando: ' + e.message, true);
   }
 }
+
+// §8.156: abre el editor real de Cajas/Piezas de Arquitecto embebido en un iframe debajo
+// -- nunca navega fuera de esta página (pedido explícito: "centralizar el trabajo para
+// evitar moverme entre páginas"). Arquitecto avisa por postMessage cuando guarda de
+// verdad (ver guardarPlantillaCatalogo() en arquitecto.html) para que la lista de arriba
+// se refresque sola, sin que el operador tenga que hacer nada.
+function abrirEnArquitecto(id) {
+  // §8.142: nunca "arquitecto.html?..." -- npx serve redirige y pierde el query string.
+  document.getElementById('arquitectoFrame').src = 'arquitecto?catalogoPlantilla=' + encodeURIComponent(id);
+  document.getElementById('seccionArquitectoEmbebido').style.display = 'block';
+  document.getElementById('seccionArquitectoEmbebido').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener('message', (ev) => {
+  if (!ev.data || ev.data.tipo !== 'catalogo-guardado') return;
+  mostrarAviso('Estructura real guardada desde Arquitecto: "' + ev.data.id + '".', false);
+  if (document.getElementById('tipoCatalogo').value === ev.data.catalogo) cargarLista();
+});
 
 document.getElementById('tipoCatalogo').addEventListener('change', () => { limpiarFormulario(); cargarLista(); });
 document.getElementById('formCatalogo').addEventListener('submit', guardar);
