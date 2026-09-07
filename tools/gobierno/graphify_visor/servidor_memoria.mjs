@@ -428,6 +428,61 @@ async function establecerActivoReal(tipo, id, activo) {
   if (hoja === '06_TAREAS') cacheTareas = { en: 0, datos: null };
 }
 
+// §8.164: "enviar a Arquitecto para configurar la pagina" (boton real en arbol_campanas.
+// html) -- caso real cuando la fila TODAVIA no es una pagina real (nunca tuvo
+// "(archivo.html)" en su NOMBRE). Arquitecto solo sabe crear filas nuevas de cero
+// (crearRegistroReal, confirmado leyendo arquitecto.html) -- nunca "adoptar" una fila ya
+// creada a mano, asi que hace falta este paso real intermedio: renombrar la fila real ya
+// existente anadiendole el sufijo real, para que pase a ser pagina real de verdad (mismo
+// resultado que el retrofit manual ya hecho una vez para PRD-0009 RECURSOS, §8.122/124,
+// ahora en un solo paso). Nunca crea fila nueva, nunca duplica.
+async function renombrarComoPaginaReal(tipo, id, archivo) {
+  const clave = tipo.toUpperCase();
+  const hoja = HOJA_ID[clave];
+  if (!hoja) throw new Error('tipo desconocido: ' + tipo);
+  const token = await obtenerAccessTokenSheetsEscritura();
+  const r = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values/' + hoja + '!A1:AZ5000',
+    { headers: { Authorization: 'Bearer ' + token } }
+  );
+  if (r.status >= 400) throw new Error('Sheets respondio ' + r.status + ' al leer ' + hoja + ': ' + await r.text());
+  const filas = (await r.json()).values || [];
+  const cab = filas[0] || [];
+  const iId = cab.indexOf('ID');
+  const iNombre = cab.indexOf('NOMBRE');
+  const iModPor = cab.indexOf('MODIFICADO_POR');
+  const iFechaMod = cab.indexOf('FECHA_MODIFICACION');
+  if (iId === -1 || iNombre === -1) throw new Error(hoja + ' no tiene columnas ID/NOMBRE reales');
+
+  let filaReal = -1, nombreActual = '';
+  for (let i = 1; i < filas.length; i++) {
+    if ((filas[i][iId] || '') === id) { filaReal = i + 1; nombreActual = filas[i][iNombre] || ''; break; }
+  }
+  if (filaReal === -1) throw new Error('no se encontro la fila real de ' + id + ' en ' + hoja);
+  if (/\([\w.-]+\.html\)\s*$/.test(nombreActual)) throw new Error('esa fila real ya es una pagina real: ' + nombreActual);
+
+  const nombreNuevo = nombreActual.trim() + ' (' + archivo + ')';
+  const data = [{ range: hoja + '!' + letraColumnaReal(iNombre) + filaReal, values: [[nombreNuevo]] }];
+  if (iModPor !== -1) data.push({ range: hoja + '!' + letraColumnaReal(iModPor) + filaReal, values: [['Panel Operativo (arbol_campanas.html)']] });
+  if (iFechaMod !== -1) data.push({ range: hoja + '!' + letraColumnaReal(iFechaMod) + filaReal, values: [[new Date().toISOString()]] });
+
+  const rw = await fetch(
+    'https://sheets.googleapis.com/v4/spreadsheets/' + SHEETS_SPREADSHEET_ID + '/values:batchUpdate',
+    { method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ valueInputOption: 'RAW', data }) }
+  );
+  if (rw.status >= 400) throw new Error('Sheets respondio ' + rw.status + ' al escribir NOMBRE real en ' + hoja + ': ' + await rw.text());
+
+  cacheJerarquia = { en: 0, datos: null };
+  cacheJerarquiaConInactivos = { en: 0, datos: null };
+  if (hoja === '01_CAMPANAS') cacheCampanas = { en: 0, datos: null };
+  if (hoja === '02_PROYECTOS') cacheProyectos2 = { en: 0, datos: null };
+  if (hoja === '03_PRODUCTOS') cacheProductos = { en: 0, datos: null };
+  if (hoja === '05_PROCESOS') cacheProcesos = { en: 0, datos: null };
+  if (hoja === '06_TAREAS') cacheTareas = { en: 0, datos: null };
+  return { nombreNuevo };
+}
+
 // §8.120: unico endpoint real que reasigna PRODUCTO_ID/ORDEN_SECUENCIA de un Proceso YA
 // EXISTENTE en 05_PROCESOS -- crear_registro solo crea filas nuevas, nunca reasigna una
 // real. Recalcula el orden real COMPLETO de la columna de destino en cada llamada (nunca
@@ -1194,6 +1249,28 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo ' + (activo ? 'reactivar' : 'desactivar') + ' de verdad: ' + e.message })); return;
+      }
+    }
+
+    // §8.164: convertir una fila real ya existente en pagina real -- ver
+    // renombrarComoPaginaReal(). Tras esto, el operador continua en Arquitecto
+    // (?editar=id) como si esa pagina ya existiera desde siempre.
+    if (req.method === 'POST' && req.url === '/api/configurar_como_pagina') {
+      if (!SHEETS_CREDENCIALES_PATH) {
+        res.writeHead(503); res.end(JSON.stringify({ error: 'sin credenciales reales configuradas para escribir en el Sheet' })); return;
+      }
+      const { tipo, id, archivo } = await leerCuerpo(req);
+      if (!tipo || !id || !archivo) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'faltan tipo/id/archivo' })); return;
+      }
+      if (!/^[\w-]+\.html$/.test(archivo)) {
+        res.writeHead(400); res.end(JSON.stringify({ error: 'archivo real debe ser un nombre simple terminado en .html (ej.: constructor.html)' })); return;
+      }
+      try {
+        const resultado = await renombrarComoPaginaReal(tipo, id, archivo);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true, ...resultado })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo configurar como pagina real: ' + e.message })); return;
       }
     }
 

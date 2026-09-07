@@ -2097,6 +2097,18 @@ Pedido directo tras ver capturas reales del bug de §8.162 en curso: *"quita est
 
 **Verificado de extremo a extremo, real y no simulado**: modal real abierto en el navegador -- título correcto (`"Campaña nueva"`), campo NOMBRE visible y enfocado automáticamente, botones Cancelar/Crear reales. `cerrarCrear()` real confirmado (la capa vuelve a `display:none`). Probado también con `Proyecto` (2 campos reales, NOMBRE+TIPO_PROYECTO) -- ambos renderizados correctamente a la vez.
 
+### 8.164 "→ Arquitecto" real -- botón por fila para convertir una fila ya creada en página real
+
+Pedido directo: *"añadir un botón en la línea de los elementos de árbol campaña que envíe ese elemento a arquitecto para configurar la página"*. Investigación real antes de proponer: `arbol_campanas.html` **ya tenía** el Caso A resuelto -- si la fila ya es página real (`(archivo.html)` en su NOMBRE), muestra `✎ Editar en Arquitecto` (`arquitecto?editar=id`). El hueco real era el Caso B: una fila recién creada (como `PRO-0009 CONSTRUCTOR`, sin página todavía) no mostraba nada ahí. Confirmado leyendo `arquitecto.html`: `construirPagina()` siempre crea una fila nueva (`crearRegistroReal`) -- nunca "adopta" una fila ya existente, así que hacía falta un paso real intermedio.
+
+**`renombrarComoPaginaReal(tipo, id, archivo)`** (nuevo, `servidor_memoria.mjs`, mismo patrón de lectura+`batchUpdate` real ya usado en `establecerActivoReal`) -- añade el sufijo real `(archivo.html)` al NOMBRE de una fila ya existente, sin crear ninguna fila nueva ni duplicar. Rechaza si la fila ya es página real. Endpoint nuevo `POST /api/configurar_como_pagina` (valida `archivo` real con regex simple, nunca texto libre sin forma).
+
+**Frontend real**: modal nuevo `#capaConfigurarPagina` (mismo patrón aislado que `#capaCrear`, §8.163 -- nunca `prompt()`), con sugerencia real de archivo (slug del nombre real, editable antes de confirmar). Al confirmar, renombra de verdad y navega directo a `arquitecto?editar=<id>` -- el operador continúa el flujo sin un paso más.
+
+**Bug real encontrado probando mi propia implementación**: la sugerencia automática para `CAM-0004 "ENTIDADES"` fue `entidades.html` -- que **ya existe** como página real servida (`entidades.html`, censo de entidades, §8.161). Corregido en el momento: `confirmarConfigurarPagina()` comprueba el archivo elegido contra `CATALOGO_PAGINAS_REALES` (mismo catálogo real ya construido en §8.161, nunca reinventado) y avisa explícito antes de continuar si hay colisión real.
+
+**Verificado de extremo a extremo, real y no simulado**: rechazo real de formato inválido (`400`); `PRO-0009 CONSTRUCTOR` configurado de verdad -- `NOMBRE` real confirmado `"CONSTRUCTOR (constructor.html)"` en el Sheet, `RE_PAGINA_REAL` lo reconoce ya como página real vía la API; rechazo real de doble configuración sobre una fila que ya es página. Modal real probado en el navegador (título/sugerencia correctos). Detección real de colisión confirmada (`entidades.html` -- sí colisiona; un nombre nuevo -- no colisiona).
+
 **Sin resolver, con criterio ya fijado:**
 - Leer filas de datos reales (no solo cabeceras) — el usuario aclara que serían datos simulados para ver comportamiento, no datos reales de cliente. Valoración: no bloqueante para la prioridad actual (ver `PROPUESTA_ECOSISTEMA_CONECTADO_ENGREMIAT.md`); sí sería útil antes de mapear `jerarquia` contra IDs reales de Producto/Proceso o antes de analizar `STG_*` columna a columna — hacerlo entonces, no antes.
 - `37_ETIQUETA_IMPACTO` — decisión: queda fuera de Bastidor a propósito, será su propio módulo/proyecto/misión más adelante. No se vuelve a tocar aquí.

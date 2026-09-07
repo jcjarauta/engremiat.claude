@@ -63,6 +63,19 @@
   #cajaCrear .pie { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
   #cajaCrear .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
   #cajaCrear .pie button.primario-crear { background: #4c9aff22; border-color: #4c9aff; }
+  /* §8.164: mismo modal real que #capaCrear, para el caso "esto todavia no es pagina
+     real" -- deliberadamente su propio par de IDs (nunca fusionado con #capaCrear/
+     #capaFicha, mismo criterio de aislamiento ya usado en §8.163). */
+  #capaConfigurarPagina { position: fixed; inset: 0; background: rgba(0,0,0,.6); display: none; align-items: flex-start; justify-content: center; padding-top: 60px; z-index: 10; }
+  #capaConfigurarPagina.abierta { display: flex; }
+  #cajaConfigurarPagina { background: var(--color-base-panel); border: 1px solid var(--color-base-borde); border-radius: 10px; padding: 20px; width: 420px; max-width: 90vw; }
+  #cajaConfigurarPagina h3 { margin: 0 0 8px; font-size: 14px; }
+  #cajaConfigurarPagina p.hint { margin: 0 0 14px; }
+  #cajaConfigurarPagina label { display: block; font-size: 11px; color: var(--color-base-texto-suave); margin-bottom: 3px; }
+  #cajaConfigurarPagina input { width: 100%; box-sizing: border-box; background: var(--color-base-fondo); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 7px 9px; font-size: 12.5px; font-family: inherit; }
+  #cajaConfigurarPagina .pie { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; }
+  #cajaConfigurarPagina .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 6px 14px; cursor: pointer; }
+  #cajaConfigurarPagina .pie button.primario-crear { background: #4c9aff22; border-color: #4c9aff; }
   #cajaFicha .pie button { font-size: 12px; background: var(--color-base-borde-suave); border: 1px solid var(--color-base-borde); color: var(--color-base-texto); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
   a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
   .fila.resaltado-deeplink { background: #4c9aff22; border-radius: 4px; }
@@ -101,6 +114,19 @@
     <div class="pie">
       <button onclick="cerrarCrear()">Cancelar</button>
       <button class="primario-crear" onclick="confirmarCrear()">Crear</button>
+    </div>
+  </div>
+</div>
+
+<div id="capaConfigurarPagina">
+  <div id="cajaConfigurarPagina">
+    <h3 id="configurarPaginaTitulo">Configurar como página</h3>
+    <p class="hint">Esta fila real todavía no es una página HTML -- dale un archivo real y continúa en Arquitecto para montar sus cajas/piezas. Nunca crea una fila nueva, reutiliza esta misma.</p>
+    <label>archivo real (ej.: constructor.html)</label>
+    <input type="text" id="configurarPaginaArchivo" placeholder="constructor.html">
+    <div class="pie">
+      <button onclick="cerrarConfigurarPagina()">Cancelar</button>
+      <button class="primario-crear" onclick="confirmarConfigurarPagina()">Configurar y abrir en Arquitecto</button>
     </div>
   </div>
 </div>
@@ -204,9 +230,12 @@ function renderNodo(n) {
     ? `<button class="desactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', false, ${n.hijos.length})">🗑 Desactivar</button>`
     : `<button class="reactivar" onclick="desactivarRegistroReal('${n.tipo}', '${n.id}', '${nombreJs}', true, ${n.hijos.length})">♻ Reactivar</button>`;
   const esPaginaReal = RE_PAGINA_REAL.test(n.nombre || '');
+  // §8.164: caso real "todavia no es pagina" -- boton que abre el modal de configurar,
+  // en vez de dejar el hueco vacio de siempre (Arquitecto no puede adoptar esta fila
+  // real sola, hace falta el paso intermedio real de renombrarla primero).
   const botonArquitecto = esPaginaReal
     ? `<a class="ficha" href="arquitecto?editar=${encodeURIComponent(n.id)}">✎ Editar en Arquitecto</a>`
-    : '';
+    : `<button class="crear" onclick="configurarComoPagina('${n.tipo}', '${n.id}', '${nombreJs}')">→ Arquitecto</button>`;
   return `
     <div class="nodo">
       <div class="fila${activo ? '' : ' inactiva'}" data-id="${n.id}">
@@ -433,6 +462,57 @@ async function confirmarCrear() {
     await cargarArbol();
   } catch (e) {
     alert('No se pudo crear: ' + e.message);
+  }
+}
+
+// §8.164: "enviar a Arquitecto para configurar la página" -- caso real de una fila que
+// todavía no tiene "(archivo.html)". Sugiere un nombre de archivo real a partir del
+// nombre real de la fila (slug simple, editable antes de confirmar -- nunca se escribe
+// sin que el operador lo vea primero).
+let configurarPaginaContexto = null;
+
+function slugArchivoReal(nombre) {
+  return String(nombre || '').trim().toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') + '.html';
+}
+
+function configurarComoPagina(tipo, id, nombre) {
+  configurarPaginaContexto = { tipo, id };
+  document.getElementById('configurarPaginaTitulo').textContent = 'Configurar "' + nombre + '" como página';
+  document.getElementById('configurarPaginaArchivo').value = slugArchivoReal(nombre);
+  document.getElementById('capaConfigurarPagina').classList.add('abierta');
+  document.getElementById('configurarPaginaArchivo').focus();
+}
+
+function cerrarConfigurarPagina() {
+  document.getElementById('capaConfigurarPagina').classList.remove('abierta');
+  configurarPaginaContexto = null;
+}
+
+async function confirmarConfigurarPagina() {
+  if (!configurarPaginaContexto) return;
+  const { tipo, id } = configurarPaginaContexto;
+  const archivo = document.getElementById('configurarPaginaArchivo').value.trim();
+  if (!/^[\w-]+\.html$/.test(archivo)) { alert('El archivo real debe ser un nombre simple terminado en .html (ej.: constructor.html).'); return; }
+  // §8.164: la sugerencia real (slug del nombre) puede colisionar con un fichero real ya
+  // servido (confirmado: "ENTIDADES" sugiere "entidades.html", que ya existe -- §8.161).
+  // CATALOGO_PAGINAS_REALES es la fuente real ya construida, nunca se reinventa aqui.
+  if (CATALOGO_PAGINAS_REALES.some((p) => p.archivo === archivo)) {
+    if (!confirm('"' + archivo + '" ya es un fichero real servido por este visor -- si sigues, la nueva página real apuntaría al mismo nombre y podría machacarlo al desplegar. ¿Seguro que quieres usar ese nombre igual?')) return;
+  }
+  try {
+    const r = await fetch(URL_MEMORIA + '/api/configurar_como_pagina', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo, id, archivo }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || 'respuesta no ok');
+    cerrarConfigurarPagina();
+    location.href = 'arquitecto?editar=' + encodeURIComponent(id);
+  } catch (e) {
+    alert('No se pudo configurar de verdad: ' + e.message);
   }
 }
 
