@@ -631,6 +631,41 @@ function guardarFuncionReutilizable(id, funcion) {
   writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
 }
 
+// §8.152: CRUD real completo del catalogo -- hasta ahora solo GET/POST (crear/actualizar
+// por id, nunca borrar). Borrar un tipo real de Caja/Funcion es peligroso de verdad: si
+// algun Proceso/Tarea real del Sheet todavia lo referencia por NOMBRE (construir_html_
+// desde_arbol.mjs resuelve por coincidencia exacta de etiqueta), borrarlo silenciosamente
+// dejaria esa fila real cayendo al default honesto sin que el operador se entere de por
+// que. Mismo principio real que "nunca se borra desde aqui" de las plantillas de pagina
+// (§8.136) pero aqui SI hace falta borrar de verdad (catalogo reutilizable en construccion,
+// no historial) -- la proteccion real es comprobar uso antes, nunca prohibir borrar sin mas.
+function normalizarNombreCatalogo(s) { return String(s || '').trim().toLowerCase(); }
+
+async function buscarUsoRealDeEtiqueta(etiqueta) {
+  const buscado = normalizarNombreCatalogo(etiqueta);
+  const arbol = await leerJerarquiaCampanas(true);
+  const usos = [];
+  const recorrer = (n) => {
+    if (normalizarNombreCatalogo(n.nombre) === buscado) usos.push({ tipo: n.tipo, id: n.id, nombre: n.nombre });
+    (n.hijos || []).forEach(recorrer);
+  };
+  arbol.forEach(recorrer);
+  return usos;
+}
+
+function borrarCajaReutilizable(id) {
+  const datos = leerPlantillasProyecto();
+  datos.cajasReutilizables = datos.cajasReutilizables || {};
+  delete datos.cajasReutilizables[id];
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+function borrarFuncionReutilizable(id) {
+  const datos = leerPlantillasProyecto();
+  datos.funcionesReutilizables = datos.funcionesReutilizables || {};
+  delete datos.funcionesReutilizables[id];
+  writeFileSync(RUTA_PLANTILLAS_PROYECTO, JSON.stringify(datos, null, 2), 'utf-8');
+}
+
 // -- §8.80: Ficha espejo real -- "Ficha" en arbol_campanas.html abria el Sheet externo
 // (el jugador/operador no deberia tener que salir de la pagina para ver un dato que ya
 // leemos). Mismo principio ya aplicado a Misiones->Como (§8.68): replicar, no enlazar.
@@ -1305,6 +1340,29 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la caja reutilizable real: ' + e.message })); return;
       }
     }
+    // §8.152: borrar de verdad, pero nunca si hay una fila real del Sheet que la usa por
+    // nombre -- se avisa con el listado real de que la usa en vez de borrar a ciegas.
+    // ?force=1 salta la comprobacion, para cuando el operador ya sabe y confirma aparte.
+    if (req.method === 'DELETE' && req.url.startsWith('/api/cajas_reutilizables')) {
+      const params = new URL(req.url, 'http://x').searchParams;
+      const id = params.get('id');
+      if (!id) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta id' })); return; }
+      const datos = leerPlantillasProyecto();
+      const entrada = (datos.cajasReutilizables || {})[id];
+      if (!entrada) { res.writeHead(404); res.end(JSON.stringify({ error: 'no existe esa caja reutilizable real: ' + id })); return; }
+      try {
+        if (params.get('force') !== '1') {
+          const usos = await buscarUsoRealDeEtiqueta(entrada.etiqueta);
+          if (usos.length) {
+            res.writeHead(409); res.end(JSON.stringify({ error: 'en uso real por ' + usos.length + ' nodo(s) del Sheet -- repite con &force=1 si de verdad quieres borrarla igual', usos })); return;
+          }
+        }
+        borrarCajaReutilizable(id);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
+      }
+    }
 
     // §8.149: catalogo real y creciente de Funciones reutilizables -- referenciadas por
     // NOMBRE real desde una Tarea real; solo dicen que TIPO real de pieza son (ej.
@@ -1320,6 +1378,27 @@ const servidor = createServer(async (req, res) => {
         res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
       } catch (e) {
         res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo guardar la funcion reutilizable real: ' + e.message })); return;
+      }
+    }
+    // §8.152: mismo criterio real de proteccion que /api/cajas_reutilizables arriba.
+    if (req.method === 'DELETE' && req.url.startsWith('/api/funciones_reutilizables')) {
+      const params = new URL(req.url, 'http://x').searchParams;
+      const id = params.get('id');
+      if (!id) { res.writeHead(400); res.end(JSON.stringify({ error: 'falta id' })); return; }
+      const datos = leerPlantillasProyecto();
+      const entrada = (datos.funcionesReutilizables || {})[id];
+      if (!entrada) { res.writeHead(404); res.end(JSON.stringify({ error: 'no existe esa funcion reutilizable real: ' + id })); return; }
+      try {
+        if (params.get('force') !== '1') {
+          const usos = await buscarUsoRealDeEtiqueta(entrada.etiqueta);
+          if (usos.length) {
+            res.writeHead(409); res.end(JSON.stringify({ error: 'en uso real por ' + usos.length + ' nodo(s) del Sheet -- repite con &force=1 si de verdad quieres borrarla igual', usos })); return;
+          }
+        }
+        borrarFuncionReutilizable(id);
+        res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+      } catch (e) {
+        res.writeHead(502); res.end(JSON.stringify({ error: 'no se pudo borrar de verdad: ' + e.message })); return;
       }
     }
 

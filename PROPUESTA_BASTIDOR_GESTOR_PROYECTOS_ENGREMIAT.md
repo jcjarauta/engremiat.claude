@@ -1932,6 +1932,24 @@ Corrección explícita pedida sobre el resultado de §8.150: *"en obsidian nos i
 - `RECURSOS/CATALOGOS/HERRAMIENTAS.md` → la nota real de la Caja, sin cambios en su contenido (5 campos TODO honestos), ahora viviendo dentro de la carpeta-tipo real en vez de dentro de una carpeta por página.
 - Cola real limpiada (`GET /api/pagina_pendiente?archivo=herramientas.html` → 404 tras `aplicar_pagina_arquitecto.mjs`); despliegue real re-verificado 200 en `http://100.107.171.88:9320/herramientas.html` (HTML sin cambios respecto a §8.150, solo cambió la bóveda).
 
+### 8.152 HERRAMIENTAS gana lógica real de guardado + CRUD real completo del catálogo (crear/editar/borrar)
+
+Dos pedidos explícitos seguidos, resueltos juntos por tocar el mismo par página+API: *"La lógica real de guardado del formulario (hoy son campos TODO, sin acción real detrás)"* y *"CRUD real del catálogo (borrar/editar) -- hoy los endpoints solo tienen GET/POST, sin DELETE"*.
+
+**Corte de criterio real importante**: `herramientas.html` deja de ser una página auto-generada por `construir_html_desde_arbol.mjs` -- ahora es una herramienta real de mantenimiento, escrita a mano, igual que `arquitecto.html`/`arbol_campanas.html`. El mecanismo genérico de plantillas (Caja/Función reutilizables, §8.149) sigue siendo correcto para configurar estructura -- nunca para alojar lógica real de un CRUD concreto, eso rompería "sistema acoplable" si cada Caja tuviera que saber generar su propio JavaScript real. Consecuencia real explícita: si se vuelve a ejecutar `construir_html_desde_arbol.mjs PRO-0007 --encolar`, sobreescribiría este HTML real con el andamiaje genérico de nuevo -- no debe volver a ejecutarse sobre esta página salvo que se acepte perder la lógica real a mano.
+
+**Backend real -- `servidor_memoria.mjs`**: nuevas `borrarCajaReutilizable(id)`/`borrarFuncionReutilizable(id)` + `buscarUsoRealDeEtiqueta(etiqueta)` (recorre el árbol real completo de `leerJerarquiaCampanas(true)`, normaliza nombre, devuelve los nodos reales -- tipo/id/nombre -- que coinciden). Dos endpoints nuevos: `DELETE /api/cajas_reutilizables?id=X` y `DELETE /api/funciones_reutilizables?id=X`. Nunca borran a ciegas: si `buscarUsoRealDeEtiqueta` encuentra alguna fila real del Sheet que referencia esa etiqueta, responden `409` con el listado real de nodos que la usan; solo con `&force=1` explícito se salta la comprobación y borra igual. Mismo principio real que ya regía en el resto del sistema (nunca destruir sin avisar de qué depende de ello), pero aquí SÍ hace falta poder borrar de verdad (catálogo en construcción activa, no historial inmutable como `plantillas_proyecto`).
+
+**Frontend real -- `herramientas.html` reescrito**: selector real Cajas/Funciones, lista real cargada por `fetch` desde `/api/cajas_reutilizables`/`/api/funciones_reutilizables` con botón "Editar" por fila, formulario real con los campos reales de cada tipo (Caja: id/etiqueta/descripcion/layoutInterno/cabecera/pie -- Función: id/etiqueta/descripcion/tipoPieza) y tres acciones reales: Guardar (POST, crea o actualiza según si el id ya existe), + Nueva entrada (limpia el formulario) y Borrar (DELETE; si el servidor responde 409 muestra al operador real qué nodo del Sheet la usa y pide confirmación explícita antes de reintentar con `force=1`).
+
+**Verificado de extremo a extremo, real y no simulado** (el Browser pane de este entorno bloquea por política las conexiones salientes a `100.107.171.88:9330` -- confirmado que el bloqueo es del entorno y no del código: `home.html`, ya en producción desde antes, sufre el mismo `ERR_BLOCKED_BY_CLIENT` al probarlo igual; verificación hecha entonces directamente contra la API real, exactamente las mismas llamadas que hace el JS del formulario):
+- Crear código real desechable (`test-caja-crud`) vía `POST /api/cajas_reutilizables` → confirmado con `GET`.
+- Actualizar (mismo `POST`, mismo id) → confirmado el cambio real de `descripcion`.
+- Borrar sin uso real → `200 {"ok":true}`, confirmado que ya no existe.
+- Borrar `catalogos` (en uso real por PRD-0018 "CATALOGOS") sin `force` → `409` real con `usos: [{"tipo":"Producto","id":"PRD-0018","nombre":"CATALOGOS"}]`; confirmado que la entrada real sigue existiendo tras el rechazo.
+- Borrar `campo-catalogo` (en uso real por PCS-0043 "Campo: catálogo") sin `force` → `409` real con el nodo Proceso exacto.
+- Desplegado real: `servidor_memoria.mjs` copiado al VPS + `docker compose restart memoria-montaje`; `herramientas.html` desplegado con `desplegar_visor.mjs` (mismo falso "FALLO" transitorio de siempre en `index.html`, confirmado real 200 aparte, sin entradas huérfanas en la cola esta vez).
+
 ## 9. Pendiente
 
 **Resuelto 2026-09-02:**
