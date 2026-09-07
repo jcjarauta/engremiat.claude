@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Engremiat -- estilos</title>
+<link rel="stylesheet" href="tokens.css">
+<style>
+  html, body { margin: 0; background: var(--color-base-fondo); color: var(--color-base-texto); font-family: system-ui, sans-serif; }
+  body { padding: 24px 28px 60px; max-width: 820px; }
+  a.volver { color: #6fb3f2; text-decoration: none; font-size: 12px; }
+  h1 { font-size: 18px; margin: 6px 0 4px; }
+  p.hint { color: var(--color-base-texto-suave); font-size: 12px; line-height: 1.6; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-base-texto-suave); margin: 26px 0 8px; }
+  .rejilla-patrones { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin-top: 12px; }
+  .patron { border: 1px solid var(--color-base-borde-suave); border-radius: 10px; padding: 14px 16px; }
+  .patron .etq { font-weight: 600; font-size: 13px; }
+  .patron .tipo { color: var(--color-base-texto-tenue); font-size: 11px; margin: 2px 0 6px; }
+  .patron p { font-size: 11.5px; color: var(--color-base-texto-suave); margin: 0; line-height: 1.5; }
+  .vacio-real { padding: 10px 0; color: var(--color-base-texto-tenue); font-size: 12px; }
+</style>
+</head>
+<body>
+<a class="volver" href="diseno.html">← Diseño</a>
+<h1>Estilos</h1>
+<p class="hint">Escaparate real de patrones (Cajas/Funciones) ya probados dos o más veces -- promovidos desde el catálogo en borrador de <a href="catalogos.html">Catálogos</a>. Una Tarea aquí solo aparece cuando un patrón demuestra su segunda reutilización real; hasta entonces se queda en Catálogos como borrador.</p>
+<h2>Productos</h2>
+<div id="listaPatrones"><p class="vacio-real">Cargando...</p></div>
+<script>
+// §8.154: PRD-0019 se hace propio ID -- pagina estatica, no hay forma de saber "quien soy"
+// salvo fijarlo aqui. PCS_PRODUCTOS es la Caja real "PRODUCTOS" dentro de esta pagina --
+// sus Tareas reales son los patrones ya promovidos (ninguno todavia, nace vacia a proposito,
+// ver PROPUESTA_BASTIDOR §8.154).
+const ID_PRODUCTO = 'PRD-0019';
+const ID_PROCESO_PRODUCTOS = 'PCS-0050';
+const URL_MEMORIA = 'http://100.107.171.88:9330';
+
+function escapeHtmlLocal(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function normalizar(s) { return String(s || '').trim().toLowerCase(); }
+function buscarEnCatalogo(catalogo, nombreReal) {
+  const buscado = normalizar(nombreReal);
+  for (const id of Object.keys(catalogo || {})) {
+    if (normalizar(catalogo[id].etiqueta) === buscado) return catalogo[id];
+  }
+  return null;
+}
+
+async function cargarPatrones() {
+  const cont = document.getElementById('listaPatrones');
+  try {
+    const [j, cajasR, funcionesR] = await Promise.all([
+      fetch(URL_MEMORIA + '/api/jerarquia_campanas').then((r) => r.json()),
+      fetch(URL_MEMORIA + '/api/cajas_reutilizables').then((r) => r.json()),
+      fetch(URL_MEMORIA + '/api/funciones_reutilizables').then((r) => r.json()),
+    ]);
+    const arbol = j.arbol || j;
+    function buscarNodo(arr, id) {
+      for (const n of arr) {
+        if (n.id === id) return n;
+        const r = buscarNodo(n.hijos || [], id);
+        if (r) return r;
+      }
+      return null;
+    }
+    const producto = buscarNodo(arbol, ID_PRODUCTO);
+    const procesoProductos = producto ? buscarNodo(producto.hijos || [], ID_PROCESO_PRODUCTOS) : null;
+    const tareas = procesoProductos ? (procesoProductos.hijos || []) : [];
+    if (!tareas.length) {
+      cont.innerHTML = '<p class="vacio-real">(sin patrones promovidos todavía -- nace vacío a propósito, ver <a href="catalogos.html">Catálogos</a> para el catálogo en borrador)</p>';
+      return;
+    }
+    cont.innerHTML = '<div class="rejilla-patrones">' + tareas.map((t) => {
+      const entradaCaja = buscarEnCatalogo(cajasR.cajas, t.nombre);
+      const entradaFuncion = !entradaCaja ? buscarEnCatalogo(funcionesR.funciones, t.nombre) : null;
+      const entrada = entradaCaja || entradaFuncion;
+      const tipoTexto = entradaCaja ? 'Caja · ' + (entradaCaja.layoutInterno || '') : (entradaFuncion ? 'Función · ' + (entradaFuncion.tipoPieza || '') : 'sin coincidencia en el catálogo');
+      const descripcion = entrada ? entrada.descripcion : '';
+      return '<div class="patron"><div class="etq">' + escapeHtmlLocal(t.nombre) + '</div><div class="tipo">' + escapeHtmlLocal(tipoTexto) + '</div><p>' + escapeHtmlLocal(descripcion) + '</p></div>';
+    }).join('') + '</div>';
+  } catch (e) {
+    cont.innerHTML = '<p class="vacio-real">Error real cargando los patrones: ' + escapeHtmlLocal(e.message) + '</p>';
+  }
+}
+cargarPatrones();
+</script>
+</body>
+</html>
