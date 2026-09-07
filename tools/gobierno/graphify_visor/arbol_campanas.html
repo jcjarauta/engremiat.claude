@@ -84,7 +84,11 @@
 <script>
 const URL_MEMORIA = 'http://100.107.171.88:9330';
 const CAMPOS_POR_TIPO = {
-  'Campaña': [{ c: 'NOMBRE', r: true }, { c: 'FECHA_INICIO_PLAN' }, { c: 'FECHA_FIN_PLAN' }],
+  // §8.162: antes pedia tambien FECHA_INICIO_PLAN/FECHA_FIN_PLAN por prompt() de texto
+  // libre -- confundia al operador real (escribio "CONSTRUCTOR"/"PAGINAS" pensando en
+  // nombre/descripcion, no en fechas -- CAM-0004). Ningun otro nivel pide fechas asi;
+  // se deja solo NOMBRE, igual que Producto/Proceso/Tarea, consistente de verdad.
+  'Campaña': [{ c: 'NOMBRE', r: true }],
   'Proyecto': [{ c: 'NOMBRE', r: true }, { c: 'TIPO_PROYECTO' }],
   'Producto': [{ c: 'NOMBRE', r: true }],
   'Proceso': [{ c: 'NOMBRE', r: true }],
