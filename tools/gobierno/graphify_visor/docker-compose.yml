@@ -76,6 +76,7 @@ services:
       - ./seguimiento_horno.html:/app/seguimiento_horno.html:ro
       - ./registro_defectos.html:/app/registro_defectos.html:ro
       - ./herramientas.html:/app/herramientas.html:ro
+      - ./catalogos.html:/app/catalogos.html:ro
     command: npx --yes serve /app -l 9320
     ports:
       - "100.107.171.88:9320:9320"
